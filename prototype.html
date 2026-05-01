@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1일 1비즈니스 · 유버디 비즈니스 사전 (프로토타입)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  html, body, #root { height: 100%; }
+  body { overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script type="text/babel" src="app/Sidebar.jsx"></script>
+<script type="text/babel" src="app/Home.jsx"></script>
+<script type="text/babel" src="app/Library.jsx"></script>
+<script type="text/babel" src="app/Study.jsx"></script>
+<script type="text/babel" src="app/Test.jsx"></script>
+<script type="text/babel" src="app/Inbox.jsx"></script>
+<script type="text/babel" src="app/App.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "orange",
+  "layout": "hero",
+  "cardStyle": "minimal",
+  "testStyle": "hardcore"
+}/*EDITMODE-END*/;
+
+// Accent palette — keep chroma low to feel sober & business-like
+const ACCENTS = {
+  orange: { o: "#F07D38", od: "#C95721", g: "rgba(240,125,56,0.14)", glow: "rgba(240,125,56,0.10)" },
+  navy:   { o: "#3D5A80", od: "#293E5A", g: "rgba(61,90,128,0.14)", glow: "rgba(61,90,128,0.10)" },
+  forest: { o: "#4A7C59", od: "#2F5739", g: "rgba(74,124,89,0.14)", glow: "rgba(74,124,89,0.10)" },
+  plum:   { o: "#7C4A6B", od: "#5A2F4A", g: "rgba(124,74,107,0.14)", glow: "rgba(124,74,107,0.10)" }
+};
+
+function applyAccent(name) {
+  const a = ACCENTS[name] || ACCENTS.orange;
+  const r = document.documentElement;
+  r.style.setProperty("--orange", a.o);
+  r.style.setProperty("--orange-dark", a.od);
+  r.style.setProperty("--orange-ghost", a.g);
+}
+
+function Root() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+
+  useEffect(() => { applyAccent(tweaks.accent); }, [tweaks.accent]);
+
+  return (
+    <window.DesignCanvas defaultSection="dashboards">
+      <window.DCSection id="dashboards" title="1일1비 — 메인 대시보드 옵션">
+        <window.DCArtboard id="desktop-hero" label="데스크톱 · Hero 레이아웃 (오늘의 단어 강조)" width={1280} height={820}>
+          <window.ProtoApp isMobile={false} layout="hero" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
+        </window.DCArtboard>
+        <window.DCArtboard id="desktop-newspaper" label="데스크톱 · 신문/저널 레이아웃 (Daily Issue)" width={1280} height={820}>
+          <window.ProtoApp isMobile={false} layout="newspaper" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
+        </window.DCArtboard>
+        <window.DCArtboard id="desktop-3col" label="데스크톱 · 3분할 (오늘 + 누적 + 공지)" width={1280} height={820}>
+          <window.ProtoApp isMobile={false} layout="split3" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
+        </window.DCArtboard>
+      </window.DCSection>
+
+      <window.DCSection id="mobile" title="모바일 · iPhone">
+        <window.DCArtboard id="mobile-hero" label="모바일 · Hero" width={420} height={900}>
+          <window.IOSDevice width={390} height={844}>
+            <div style={{ height: "100%" }}>
+              <window.ProtoApp isMobile={true} layout="hero" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
+            </div>
+          </window.IOSDevice>
+        </window.DCArtboard>
+        <window.DCArtboard id="mobile-newspaper" label="모바일 · Newspaper" width={420} height={900}>
+          <window.IOSDevice width={390} height={844}>
+            <div style={{ height: "100%" }}>
+              <window.ProtoApp isMobile={true} layout="newspaper" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
+            </div>
+          </window.IOSDevice>
+        </window.DCArtboard>
+      </window.DCSection>
+
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection title="컬러 / 톤">
+          <window.TweakRadio
+            label="Accent 컬러"
+            value={tweaks.accent}
+            onChange={v => setTweak("accent", v)}
+            options={[
+              { value: "orange", label: "오렌지 (유버디)" },
+              { value: "navy", label: "네이비" },
+              { value: "forest", label: "포레스트" },
+              { value: "plum", label: "플럼" },
+            ]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="메인 대시보드 레이아웃">
+          <window.TweakRadio
+            label="레이아웃"
+            value={tweaks.layout}
+            onChange={v => setTweak("layout", v)}
+            options={[
+              { value: "hero", label: "Hero (오늘 강조)" },
+              { value: "newspaper", label: "신문" },
+              { value: "split3", label: "3분할" },
+            ]}
+          />
+          <div style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.55 }}>
+            ※ 데스크톱 첫번째 아트보드에 적용됩니다. 다른 아트보드는 각 레이아웃을 동시에 비교용으로 표시합니다.
+          </div>
+        </window.TweakSection>
+
+        <window.TweakSection title="단어 카드 디자인">
+          <window.TweakRadio
+            label="카드 스타일"
+            value={tweaks.cardStyle}
+            onChange={v => setTweak("cardStyle", v)}
+            options={[
+              { value: "default", label: "기본" },
+              { value: "minimal", label: "미니멀 (대시 보더)" },
+              { value: "stamp", label: "스탬프 (№ 번호)" },
+            ]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="시험 인터랙션">
+          <window.TweakRadio
+            label="시험 방식"
+            value={tweaks.testStyle}
+            onChange={v => setTweak("testStyle", v)}
+            options={[
+              { value: "hardcore", label: "맞출 때까지 못 넘어감" },
+              { value: "lenient", label: "1번 틀리면 정답 보여주고 진행" },
+            ]}
+          />
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </window.DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+</script>
+</body>
+</html>

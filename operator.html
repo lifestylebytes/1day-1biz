@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1일1비 · 운영자 뷰 (유버디)</title>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1F14; min-height: 100vh; }
+.topbar {
+  background: #2A1F14; color: #F4EFE3; padding: 16px 28px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 10;
+  border-bottom: 1px solid #5C4A36;
+  flex-wrap: wrap;
+}
+.topbar .brand { font-weight: 900; font-size: 16px; letter-spacing: -0.01em; }
+.topbar .brand em { color: #F38A5C; font-style: normal; font-weight: 900; }
+.topbar .pill { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 10px; border-radius: 99px; background: rgba(243,138,92,0.18); color: #F38A5C; }
+.topbar .spacer { flex: 1; }
+.toggle {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font-size: 12px; color: #DBCFB4; padding: 6px 12px; border: 1px solid #5C4A36;
+  border-radius: 99px; transition: all 0.15s; text-decoration: none;
+}
+.toggle:hover { background: rgba(255,255,255,0.06); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 32px 28px; }
+.h1 { font-size: 24px; font-weight: 900; margin-bottom: 6px; letter-spacing: -0.02em; }
+.h1 em { font-style: normal; font-weight: 900; color: #D85A2A; }
+.lead { font-size: 13px; color: #5C4A36; line-height: 1.6; margin-bottom: 28px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.section { margin-bottom: 36px; }
+.section-title { font-size: 11px; letter-spacing: 0.16em; font-weight: 800; color: #8A7964; text-transform: uppercase; margin-bottom: 12px; }
+
+.card { background: white; border: 1px solid #C9BBA0; border-radius: 8px; padding: 20px; }
+.card.warn { background: #FFF7E8; border-color: #E8C99B; }
+.card .title { font-size: 13px; color: #8A7964; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.user-row { display: grid; grid-template-columns: 1.2fr 1fr 90px 70px 100px 110px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row.head { font-weight: 700; font-size: 11px; color: #8A7964; text-transform: uppercase; letter-spacing: 0.06em; background: #FAF6EB; }
+.user-row .actions { display: flex; gap: 6px; }
+.empty { padding: 28px; text-align: center; color: #8A7964; font-size: 13px; }
+
+.code-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+  background: #2A1F14; color: #F4EFE3;
+  padding: 4px 10px; border-radius: 4px;
+  cursor: pointer;
+}
+.code-pill:hover { background: #1a120a; }
+.code-pill.used { background: #E8DFCB; color: #8A7964; cursor: default; }
+.status-pill {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 99px;
+  background: #FAF6EB; color: #8A7964;
+}
+.status-pill.active { background: #E8F4E0; color: #2D8A3E; }
+
+textarea, input, select {
+  width: 100%; padding: 10px 12px; font-size: 13px; font-family: inherit;
+  background: #FAF6EB; border: 1px solid #C9BBA0; border-radius: 6px; color: #2A1F14;
+}
+textarea:focus, input:focus, select:focus { outline: none; border-color: #D85A2A; }
+label { display: block; font-size: 11px; font-weight: 700; color: #8A7964; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.form-row { margin-bottom: 14px; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 12px; font-weight: 700; background: #2A1F14; color: #F4EFE3; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
+.btn:hover:not(:disabled) { background: #1a120a; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #D85A2A; }
+.btn.primary:hover { background: #B8431A; }
+.btn-ghost { background: transparent; color: #5C4A36; border: 1px solid #C9BBA0; }
+.btn-ghost:hover { background: #FAF6EB; color: #2A1F14; }
+.btn-mini { padding: 4px 8px; font-size: 11px; font-weight: 600; }
+.btn-danger { background: #B8431A; color: white; }
+.btn-danger:hover { background: #963513; }
+
+.notice-item { background: #FAF6EB; padding: 12px 14px; border-radius: 6px; border: 1px solid #E8DFCB; font-size: 13px; margin-bottom: 8px; }
+.notice-item .meta { font-size: 11px; color: #8A7964; margin-bottom: 4px; }
+
+.copy-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #2A1F14; color: #F4EFE3;
+  padding: 12px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+@media (max-width: 800px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .user-row { grid-template-columns: 1fr 90px; gap: 8px; padding: 10px 12px; }
+  .user-row > .col-2, .user-row > .col-3, .user-row > .col-5 { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+const KEY_INVITES = '__OD_INVITES';
+const KEY_USER    = '__OD_USER';
+const KEY_NOTICES = '__OD_NOTICES';
+
+const load = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
+
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c = '';
+  for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+  return 'PILOT-' + c;
+}
+
+function App() {
+  const [invites, setInvites] = useState(() => load(KEY_INVITES, []));
+  const [currentUser, setCurrentUser] = useState(() => load(KEY_USER, null));
+  const [notices, setNotices] = useState(() => load(KEY_NOTICES, []));
+
+  const [newName, setNewName] = useState("");
+  const [newNote, setNewNote] = useState("");
+
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftBody, setDraftBody] = useState("");
+  const [draftType, setDraftType] = useState("notice");
+
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
+
+  // 다른 탭 동기화
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === KEY_INVITES) setInvites(load(KEY_INVITES, []));
+      if (e.key === KEY_USER) setCurrentUser(load(KEY_USER, null));
+      if (e.key === KEY_NOTICES) setNotices(load(KEY_NOTICES, []));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const issueCode = () => {
+    if (!newName.trim()) return;
+    const code = genCode();
+    const next = [{
+      code, name: newName.trim(), note: newNote.trim(),
+      issuedAt: new Date().toISOString(),
+      usedAt: null, usedBy: null,
+      currentDay: null, lastActive: null,
+    }, ...invites];
+    setInvites(next); save(KEY_INVITES, next);
+    setNewName(""); setNewNote("");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => showToast(`${code} 발급 완료 · 클립보드 복사됨`));
+    } else {
+      showToast(`${code} 발급 완료`);
+    }
+  };
+
+  const revokeCode = (code) => {
+    if (!confirm(`${code} 코드 삭제할까요?`)) return;
+    const next = invites.filter(i => i.code !== code);
+    setInvites(next); save(KEY_INVITES, next);
+  };
+
+  const copyCode = (code) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => showToast(`${code} 복사됨`));
+    }
+  };
+
+  const opsJumpDay = (delta) => {
+    if (!currentUser) { alert("이 기기에 등록된 사용자가 없어요."); return; }
+    const u = { ...currentUser, dayInCompany: Math.max(1, currentUser.dayInCompany + delta) };
+    setCurrentUser(u); save(KEY_USER, u);
+    showToast(`Day ${u.dayInCompany}로 이동`);
+  };
+  const opsSetDay = () => {
+    if (!currentUser) { alert("이 기기에 등록된 사용자가 없어요."); return; }
+    const v = prompt("이동할 Day (1-365):", String(currentUser.dayInCompany));
+    if (!v) return;
+    const n = Math.max(1, Math.min(365, parseInt(v, 10) || 1));
+    const u = { ...currentUser, dayInCompany: n };
+    setCurrentUser(u); save(KEY_USER, u);
+    showToast(`Day ${n}로 이동`);
+  };
+  const opsResetUser = () => {
+    if (!confirm("이 기기 사용자 데이터를 모두 지울까요?")) return;
+    localStorage.removeItem(KEY_USER);
+    setCurrentUser(null);
+    showToast("사용자 리셋 완료");
+  };
+
+  const addNotice = () => {
+    if (!draftTitle.trim() || !draftBody.trim()) return;
+    const next = [{
+      id: Date.now(), type: draftType,
+      title: draftTitle.trim(), body: draftBody.trim(),
+      from: "유버디 (CEO)", at: new Date().toISOString(),
+      unread: true,
+    }, ...notices];
+    setNotices(next); save(KEY_NOTICES, next);
+    setDraftTitle(""); setDraftBody("");
+    showToast("공지 발송됨");
+  };
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify({ user: currentUser, invites, notices }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `1ilbi-data-${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const totalIssued = invites.length;
+  const totalUsed = invites.filter(i => i.usedAt).length;
+  const totalActive = invites.filter(i => i.lastActive && (Date.now() - new Date(i.lastActive).getTime()) < 24*60*60*1000).length;
+
+  return (
+    <>
+      <div className="topbar">
+        <div className="brand">유버디 컴퍼니 · <em>운영자 뷰</em></div>
+        <div className="pill">BUDDY · OPERATOR</div>
+        <div className="spacer" />
+        <a className="toggle" href="simulator.html?dev=1">▶ 플레이어 + Dev 패널</a>
+        <a className="toggle" href="simulator.html">▶ 플레이어 (일반)</a>
+        <a className="toggle" href="dev.html">↩ 개발 런처</a>
+      </div>
+
+      <div className="wrap">
+        <div className="h1">안녕하세요 유버디. <em>회사 현황</em>입니다.</div>
+        <div className="lead">
+          시범 입사자 (Pilot Hire) 모집·관리 + 공지 발송 + 이 기기 사용자 디버깅 도구.
+          v1은 이 기기 안에서만 작동 — Supabase 연결되면 모든 사용자 통합 관리.
+        </div>
+
+        <div className="section">
+          <div className="section-title">📇 시범 입사자 — 입사 추천 코드 (Hiring Pass) 발급</div>
+          <div className="grid-2">
+            <div className="card">
+              <div className="title">새 코드 발급</div>
+              <div className="form-row">
+                <label>입사 후보 이름</label>
+                <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="예: 박서연 (코치)" autoFocus
+                  onKeyDown={e => e.key === 'Enter' && issueCode()} />
+              </div>
+              <div className="form-row">
+                <label>메모 (선택)</label>
+                <input value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="예: 인스타 DM, 외국계 1년차" />
+              </div>
+              <button className="btn primary" onClick={issueCode} disabled={!newName.trim()}>
+                🎫 코드 발급 + 자동 복사
+              </button>
+              <div style={{ fontSize: 11, color: '#8A7964', marginTop: 10, lineHeight: 1.6 }}>
+                발급된 코드를 카톡·DM으로 공유 → 받은 사람은 가입 첫 화면에 입력 → 이름 자동 채움 + 시범 입사자 마킹.
+              </div>
+            </div>
+            <div className="card">
+              <div className="title">코드 통계</div>
+              <div style={{ display: 'flex', gap: 24, marginTop: 10 }}>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900 }}>{totalIssued}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964' }}>발급</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: '#2D8A3E' }}>{totalUsed}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964' }}>가입 완료</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: '#D85A2A' }}>{totalActive}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964' }}>최근 24h 활동</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: '#8A7964', marginTop: 16, lineHeight: 1.6 }}>
+                목표 베타 모집 10-20명. 코드는 1인 1코드.
+              </div>
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 0, marginTop: 14 }}>
+            <div className="user-row head">
+              <div>이름 / 메모</div>
+              <div className="col-2">코드</div>
+              <div className="col-3">상태</div>
+              <div>Day</div>
+              <div className="col-5">최근 활동</div>
+              <div>액션</div>
+            </div>
+            {invites.length === 0 ? (
+              <div className="empty">아직 발급된 코드가 없어요. 위에서 첫 시범 입사자 등록!</div>
+            ) : invites.map(inv => (
+              <div key={inv.code} className="user-row">
+                <div>
+                  <div style={{ fontWeight: 700 }}>{inv.name}</div>
+                  {inv.note && <div style={{ fontSize: 11, color: '#8A7964', marginTop: 2 }}>{inv.note}</div>}
+                </div>
+                <div className="col-2">
+                  <span className={"code-pill " + (inv.usedAt ? "used" : "")} onClick={() => !inv.usedAt && copyCode(inv.code)}>
+                    {inv.code}
+                  </span>
+                </div>
+                <div className="col-3">
+                  {inv.usedAt
+                    ? <span className="status-pill active">가입 완료</span>
+                    : <span className="status-pill">대기</span>}
+                </div>
+                <div>{inv.currentDay ? `Day ${inv.currentDay}` : '—'}</div>
+                <div className="col-5" style={{ fontSize: 12, color: '#8A7964' }}>
+                  {inv.lastActive ? new Date(inv.lastActive).toLocaleDateString('ko-KR') : '—'}
+                </div>
+                <div className="actions">
+                  {!inv.usedAt && <button className="btn btn-mini btn-ghost" onClick={() => copyCode(inv.code)}>복사</button>}
+                  <button className="btn btn-mini btn-ghost" onClick={() => revokeCode(inv.code)}>삭제</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="section">
+          <div className="section-title">🛠 운영 도구 (이 기기 사용자에게 적용)</div>
+          <div className="card warn">
+            {currentUser ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 15 }}>{currentUser.name} · {currentUser.email}</div>
+                    <div style={{ fontSize: 12, color: '#8A7964', marginTop: 4 }}>
+                      사번 {currentUser.empNumber} · {currentUser.department && currentUser.department.short} · {currentUser.level && currentUser.level.ko}
+                    </div>
+                    <div style={{ fontSize: 13, marginTop: 8 }}>
+                      현재 <strong>Day {currentUser.dayInCompany}</strong>
+                      {currentUser.referredBy && <span style={{ marginLeft: 8, fontSize: 11, color: '#D85A2A' }}>· {currentUser.referredBy} 추천</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <button className="btn btn-ghost btn-mini" onClick={() => opsJumpDay(-1)}>← Day -1</button>
+                    <button className="btn btn-ghost btn-mini" onClick={() => opsJumpDay(+1)}>Day +1 →</button>
+                    <button className="btn btn-ghost btn-mini" onClick={() => opsJumpDay(+7)}>+7일</button>
+                    <button className="btn btn-ghost btn-mini" onClick={opsSetDay}>특정 Day로</button>
+                    <button className="btn btn-danger btn-mini" onClick={opsResetUser}>🗑 리셋</button>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: '#8A7964', marginTop: 12, lineHeight: 1.6 }}>
+                  ✏️ Day 변경 후 <a href="simulator.html" style={{ color: '#D85A2A' }}>시뮬레이터</a> 새로고침으로 적용.
+                  테스터와 동시 디버깅하려면 <a href="simulator.html?dev=1" style={{ color: '#D85A2A' }}>?dev=1</a> 모드.
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: 20, color: '#8A7964' }}>
+                이 기기엔 등록된 사용자가 없어요. <a href="onboarding.html" style={{ color: '#D85A2A' }}>온보딩</a>으로 직접 가입하거나, 위에서 코드 발급 후 그 코드로 가입.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="section">
+          <div className="section-title">📨 공지·이벤트 발송</div>
+          <div className="grid-2">
+            <div className="card">
+              <div className="form-row">
+                <label>유형</label>
+                <select value={draftType} onChange={e => setDraftType(e.target.value)}>
+                  <option value="notice">전사 공지</option>
+                  <option value="event">이벤트 안내</option>
+                  <option value="ceo">버디 톡 (유버디)</option>
+                  <option value="event-novelty">돌발 이벤트 (P3)</option>
+                </select>
+              </div>
+              <div className="form-row">
+                <label>제목</label>
+                <input value={draftTitle} onChange={e => setDraftTitle(e.target.value)} placeholder="예: [전사] 5월 워크샵" />
+              </div>
+              <div className="form-row">
+                <label>본문</label>
+                <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…" />
+              </div>
+              <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim()}>
+                📨 모든 입사자에게 발송
+              </button>
+            </div>
+            <div className="card">
+              <div className="title">발송한 공지 ({notices.length})</div>
+              {notices.length === 0 ? (
+                <div className="empty" style={{ padding: 16 }}>아직 공지 없음.</div>
+              ) : notices.slice(0, 6).map(n => (
+                <div key={n.id} className="notice-item">
+                  <div className="meta">[{n.type}] · {new Date(n.at).toLocaleString('ko-KR')}</div>
+                  <strong>{n.title}</strong>
+                  <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{n.body.slice(0, 100)}{n.body.length > 100 ? "…" : ""}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="section">
+          <div className="section-title">📥 데이터 백업</div>
+          <div className="card">
+            <button className="btn btn-ghost" onClick={exportData}>JSON으로 export</button>
+            <div style={{ fontSize: 11, color: '#8A7964', marginTop: 10, lineHeight: 1.6 }}>
+              localStorage는 브라우저 캐시 지우면 날아가니 자주 백업.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {toast && <div className="copy-toast">{toast}</div>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

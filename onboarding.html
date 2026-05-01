@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비 · 입사 안내</title>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+  --accent-soft: rgba(216,90,42,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 8px 8px;
+}
+
+.stage {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 32px 20px;
+}
+.card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 12px; padding: 40px 36px; width: 100%; max-width: 540px;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.25), 0 8px 24px rgba(58,40,18,0.08);
+  animation: cardIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  position: relative;
+}
+@keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.eyebrow { font-size: 11px; letter-spacing: 0.24em; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+h1 { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 14px; }
+h1 em { font-style: normal; font-weight: 900; color: var(--accent); }
+.lead { font-size: 14px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 28px; }
+
+.form-row { margin-bottom: 18px; }
+label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+input, textarea, select {
+  width: 100%; padding: 12px 14px; font-size: 14px; font-family: inherit;
+  background: var(--paper-warm); border: 1px solid var(--line); border-radius: 6px; color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; min-height: 70px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; font-size: 14px; font-weight: 700; font-family: inherit;
+  background: var(--ink); color: var(--paper); border: none; border-radius: 8px;
+  cursor: pointer; transition: transform 0.1s ease, background 0.15s ease;
+}
+.btn:hover:not(:disabled) { background: #1a120a; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; }
+.btn-ghost { background: transparent; color: var(--ink-soft); padding-left: 0; padding-right: 0; }
+.btn-ghost:hover:not(:disabled) { background: transparent; color: var(--ink); transform: none; }
+
+.stamp {
+  position: absolute; top: 22px; right: 22px;
+  font-size: 10px; letter-spacing: 0.2em; font-weight: 800;
+  color: var(--accent); border: 2px solid var(--accent);
+  padding: 4px 10px; border-radius: 4px; transform: rotate(-6deg);
+  opacity: 0.85;
+}
+
+/* 메일 스타일 */
+.email-card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 4px; max-width: 580px; width: 100%;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.3);
+  overflow: hidden;
+  animation: cardIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.email-head {
+  background: var(--paper-warm); padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft);
+}
+.email-head .from { color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.email-head .subject { color: var(--ink); font-weight: 700; font-size: 14px; margin-top: 8px; font-family: 'Noto Sans KR'; }
+.email-body { padding: 28px 30px; font-size: 14px; line-height: 1.85; color: var(--ink-soft); }
+.email-body p { margin-bottom: 16px; }
+.email-body strong { color: var(--ink); }
+.email-body .signature { margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.email-body .signature b { display: block; font-size: 15px; color: var(--ink); }
+.email-body .signature small { color: var(--ink-mute); font-size: 12px; }
+
+/* 배정 카드 (사번 등) */
+.assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0; }
+.assign-cell {
+  background: var(--paper-warm); border: 1px dashed var(--line);
+  border-radius: 6px; padding: 14px;
+  text-align: center;
+}
+.assign-cell .lab { font-size: 10px; letter-spacing: 0.16em; color: var(--ink-mute); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+.assign-cell .val { font-size: 15px; font-weight: 800; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+.assign-cell.full { grid-column: 1 / -1; }
+
+/* 로딩 */
+.loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; }
+.spinner {
+  width: 24px; height: 24px; border: 3px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--ink-soft); }
+
+.steps { display: flex; gap: 6px; margin-bottom: 22px; }
+.step-pip { flex: 1; height: 3px; background: var(--line); border-radius: 99px; transition: background 0.3s ease; }
+.step-pip.done { background: var(--accent); }
+
+.fine-print { font-size: 11px; color: var(--ink-mute); line-height: 1.6; margin-top: 16px; }
+
+@media (max-width: 600px) {
+  .card { padding: 30px 24px; }
+  h1 { font-size: 24px; }
+  .assign-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+// ============================================================
+// 데이터 풀: 부서, 사수 NPC, 입사 동기 NPC
+// ============================================================
+const DEPARTMENTS = [
+  { id: "growth", name: "Growth & Marketing", short: "마케팅" },
+  { id: "ops", name: "Business Operations", short: "운영" },
+  { id: "biz", name: "Business Development", short: "BD" },
+  { id: "product", name: "Product", short: "프로덕트" },
+  { id: "people", name: "People & Culture", short: "P&C (인사)" },
+];
+
+const MENTORS = [
+  { id: "kim", name: "김주연 대리", role: "Senior Associate", trait: "차분하고 꼼꼼함. 메일 문장을 빨갛게 봐줌." },
+  { id: "park", name: "박지훈 과장", role: "Manager", trait: "츤데레. 무뚝뚝한데 신입 챙김 1등." },
+  { id: "lee", name: "이서윤 대리", role: "Senior Associate", trait: "외국계 7년차. 영어 미팅 살아남는 법 알려줌." },
+  { id: "jung", name: "정민호 과장", role: "Manager", trait: "커피 사주는 게 취미. 대신 회식 조율은 너 시킴." },
+];
+
+const COWORKERS = [
+  { id: "co1", name: "한도윤", role: "동기 입사자 / Marketing", note: "너랑 같은 날 들어왔어." },
+  { id: "co2", name: "임재희", role: "동기 입사자 / Product", note: "유학파. 영어 잘함. 부럽지." },
+];
+
+// ============================================================
+// 유틸 — 사번 / 입사일 / 추정값 생성
+// ============================================================
+function generateEmpNumber(date, seed) {
+  const yyyymmdd = date.toISOString().slice(0,10).replace(/-/g, "");
+  const last4 = String(1000 + (seed % 9000)).padStart(4, "0");
+  return `${yyyymmdd}-${last4}`;
+}
+function pickRandom(arr, seed) { return arr[seed % arr.length]; }
+function hashString(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
+
+// ============================================================
+// 메인 앱 — 단계 머신
+// ============================================================
+function OnboardingApp() {
+  const [stage, setStage] = useState("welcome"); // welcome → application → reviewing → offer → assignment → ceo → ready
+
+  // URL ?code=PILOT-XXXX 자동 인식 + localStorage __OD_INVITES 매칭
+  const urlCode = useMemo(() => {
+    try { return new URLSearchParams(location.search).get('code') || ""; } catch(e) { return ""; }
+  }, []);
+  const [inviteCode, setInviteCode] = useState(urlCode.toUpperCase());
+
+  // 같은 기기에 운영자가 발급한 코드 있으면 이름 자동 채움
+  const matchedInvite = useMemo(() => {
+    if (!inviteCode || !/^PILOT-[A-Z0-9]{4}$/.test(inviteCode)) return null;
+    try {
+      const list = JSON.parse(localStorage.getItem('__OD_INVITES') || '[]');
+      return list.find(i => i.code === inviteCode) || null;
+    } catch(e) { return null; }
+  }, [inviteCode]);
+
+  const [name, setName] = useState(matchedInvite ? matchedInvite.name : "");
+  const [email, setEmail] = useState("");
+  const [motivation, setMotivation] = useState("");
+
+  // Dev 모드 (테스터 전용) — DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
+  const [devMode, setDevMode] = useState(false);
+  const [devCode, setDevCode] = useState("");
+  const VALID_DEV_CODES = ["DEV-TEST", "DEV-2026", "DEV-BUDDY"];
+  const isDevValid = devMode && VALID_DEV_CODES.includes(devCode.toUpperCase());
+
+  // matchedInvite 바뀌면 이름 자동 갱신
+  useEffect(() => {
+    if (matchedInvite && !name) setName(matchedInvite.name);
+  }, [matchedInvite]);
+
+  const seed = useMemo(() => hashString(email + name) || Date.now(), [email, name]);
+  const today = useMemo(() => new Date(), []);
+  const empNumber = useMemo(() => generateEmpNumber(today, seed), [seed, today]);
+  const dept = useMemo(() => pickRandom(DEPARTMENTS, seed), [seed]);
+  const mentor = useMemo(() => pickRandom(MENTORS, seed >> 3), [seed]);
+
+  const stageOrder = ["welcome", "application", "reviewing", "offer", "assignment", "ceo", "ready"];
+  const stageIdx = stageOrder.indexOf(stage);
+
+  // reviewing → offer 자동 전환 (3초)
+  useEffect(() => {
+    if (stage === "reviewing") {
+      const t = setTimeout(() => setStage("offer"), 2800);
+      return () => clearTimeout(t);
+    }
+  }, [stage]);
+
+  const finishOnboarding = () => {
+    const profile = {
+      // identity
+      email: email.trim(),
+      name: name.trim(),
+      signupDate: new Date().toISOString(),
+      // fictional identity
+      empNumber,
+      department: dept,
+      mentor,
+      coworkers: COWORKERS,
+      // progression
+      level: { id: "probation", ko: "수습", en: "Probation" },
+      dayInCompany: 1,
+      // metrics scaffold (학습 과학 측정용)
+      productionAttempts: { correct: 0, total: 0 },
+      noveltyEvents: [],
+      scenariosCompleted: [],
+      wordsStudied: [],
+      lastActive: new Date().toISOString(),
+      totalSessions: 1,
+      totalSessionMs: 0,
+      // settings
+      preferences: { notifications: true, timezone: "Asia/Seoul" },
+      // 운영 메타
+      onboardingMotivation: motivation.trim(),
+      cohort: null,
+      schemaVersion: 1,
+      // 시범 입사자 마킹 (코드 있으면)
+      inviteCode: inviteCode || null,
+      referredBy: matchedInvite ? "유버디" : (inviteCode ? "유버디" : null),
+      isPilotHire: !!inviteCode,
+      // Dev 모드 마킹 (테스터)
+      isDevMode: isDevValid,
+      devCode: isDevValid ? devCode.toUpperCase() : null,
+    };
+    try {
+      localStorage.setItem("__OD_USER", JSON.stringify(profile));
+      // 같은 기기에 코드 발급 목록 있으면 사용 마킹
+      if (matchedInvite) {
+        const list = JSON.parse(localStorage.getItem('__OD_INVITES') || '[]');
+        const updated = list.map(i => i.code === matchedInvite.code
+          ? { ...i, usedAt: new Date().toISOString(), usedBy: email.trim(), currentDay: 1, lastActive: new Date().toISOString() }
+          : i);
+        localStorage.setItem('__OD_INVITES', JSON.stringify(updated));
+      }
+    } catch (e) { console.warn("localStorage 저장 실패 (사파리 프라이빗 모드?)", e); }
+    // 시뮬레이터로 이동 (Dev 모드면 ?dev=1)
+    window.location.href = isDevValid ? "simulator.html?dev=1" : "simulator.html";
+  };
+
+  return (
+    <div className="stage">
+      {stage === "welcome" && (
+        <WelcomeScreen
+          inviteCode={inviteCode}
+          setInviteCode={setInviteCode}
+          matchedInvite={matchedInvite}
+          onNext={() => setStage("application")}
+        />
+      )}
+      {stage === "application" && (
+        <ApplicationScreen
+          name={name} setName={setName}
+          email={email} setEmail={setEmail}
+          motivation={motivation} setMotivation={setMotivation}
+          devMode={devMode} setDevMode={setDevMode}
+          devCode={devCode} setDevCode={setDevCode}
+          isDevValid={isDevValid}
+          stageIdx={stageIdx} totalStages={stageOrder.length}
+          onSubmit={() => setStage("reviewing")}
+        />
+      )}
+      {stage === "reviewing" && <ReviewingScreen name={name} stageIdx={stageIdx} totalStages={stageOrder.length} />}
+      {stage === "offer" && (
+        <OfferScreen name={name} dept={dept} empNumber={empNumber} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("assignment")} />
+      )}
+      {stage === "assignment" && (
+        <AssignmentScreen empNumber={empNumber} dept={dept} mentor={mentor} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("ceo")} />
+      )}
+      {stage === "ceo" && (
+        <CEOScreen name={name} dept={dept} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("ready")} />
+      )}
+      {stage === "ready" && (
+        <ReadyScreen name={name} mentor={mentor} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onStart={finishOnboarding} />
+      )}
+    </div>
+  );
+}
+
+function StepBar({ idx, total }) {
+  return (
+    <div className="steps">
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} className={"step-pip " + (i <= idx ? "done" : "")} />
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// 0. Welcome
+// ============================================================
+function WelcomeScreen({ onNext, inviteCode, setInviteCode, matchedInvite }) {
+  const [showCode, setShowCode] = useState(!!inviteCode);
+  const codeValid = inviteCode && /^PILOT-[A-Z0-9]{4}$/.test(inviteCode);
+
+  return (
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
+      <h1>당신의 <em>비즈니스 첫 출근</em>이<br/>오늘 시작됩니다.</h1>
+      <p className="lead">
+        유버디 컴퍼니는 한국에 본사를 둔 외국계 회사예요.<br/>
+        매일의 짧은 시나리오와 단어로 진짜 직장인 감각을 키우는 곳.<br/><br/>
+        <strong>직급은 매일 1단계씩 — 수습 → 사원 → 대리 → 과장 → 임원까지.</strong>
+        <br/>
+        지원서를 60초 안에 작성하고 바로 출근해보세요.
+      </p>
+
+      {showCode ? (
+        <div className="form-row" style={{ marginTop: 18, padding: 14, background: 'var(--paper-warm)', borderRadius: 8, border: '1px dashed var(--line)' }}>
+          <label>입사 추천 코드 (Hiring Pass) — 받은 사람만 입력</label>
+          <input
+            value={inviteCode}
+            onChange={e => setInviteCode(e.target.value.toUpperCase())}
+            placeholder="PILOT-XXXX"
+            style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em' }}
+          />
+          {matchedInvite && (
+            <div style={{ fontSize: 12, color: '#2D8A3E', marginTop: 8, fontWeight: 600 }}>
+              ✓ {matchedInvite.name}님 환영합니다 — 유버디가 추천하셨네요.
+            </div>
+          )}
+          {inviteCode && !codeValid && !matchedInvite && (
+            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginTop: 6 }}>
+              형식: PILOT-XXXX (예: PILOT-A3K7)
+            </div>
+          )}
+          {codeValid && !matchedInvite && (
+            <div style={{ fontSize: 12, color: '#B8431A', marginTop: 8 }}>
+              유효한 형식 — 가입 시 시범 입사자로 마킹돼.
+            </div>
+          )}
+        </div>
+      ) : (
+        <button className="btn btn-ghost" onClick={() => setShowCode(true)} style={{ fontSize: 12, marginTop: 12 }}>
+          🎫 입사 추천 코드 입력
+        </button>
+      )}
+
+      <div className="btn-row">
+        <button className="btn" onClick={onNext}>지원서 작성하기 →</button>
+      </div>
+      <div className="fine-print">소요 시간 약 1분 · 첫 출근 데이는 오늘 · 무료 베타</div>
+    </div>
+  );
+}
+
+// ============================================================
+// 1. Application Form
+// ============================================================
+function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, stageIdx, totalStages }) {
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email);
+  return (
+    <div className="card">
+      <div className="stamp">DRAFT</div>
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 1 · 입사 지원서</div>
+      <h1>먼저 <em>본인 확인</em>부터.</h1>
+      <p className="lead">실제 입사 지원서처럼, 너의 이름과 연락 받을 메일이면 충분해.</p>
+
+      <div className="form-row">
+        <label>이름</label>
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
+      </div>
+      <div className="form-row">
+        <label>이메일 (입사 안내 받을 곳)</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+      </div>
+      <div className="form-row">
+        <label>지원 동기 — 한 줄 (선택)</label>
+        <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
+      </div>
+
+      <div style={{ marginTop: 16, padding: 12, background: 'var(--paper-warm)', borderRadius: 8, border: '1px dashed var(--line)' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 0, textTransform: 'none', letterSpacing: 'normal', fontWeight: 600 }}>
+          <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} style={{ width: 'auto', cursor: 'pointer' }} />
+          🛠 테스터 (Dev 모드 — Day 점프 패널 켜기)
+        </label>
+        {devMode && (
+          <div style={{ marginTop: 10 }}>
+            <input
+              value={devCode}
+              onChange={e => setDevCode(e.target.value.toUpperCase())}
+              placeholder="DEV-XXXX 코드 입력"
+              style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', fontSize: 12 }}
+            />
+            <div style={{ fontSize: 11, color: isDevValid ? '#2D8A3E' : 'var(--ink-mute)', marginTop: 6, fontWeight: 600 }}>
+              {isDevValid ? '✓ Dev 모드 활성 — 가입 후 시뮬레이터에 자동으로 Day 패널 표시' : '예: DEV-TEST, DEV-2026, DEV-BUDDY'}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="btn-row">
+        <button className="btn" disabled={!valid} onClick={onSubmit}>지원서 제출 →</button>
+        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>* 비밀번호 없음 · 이 기기에 임시 저장</span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 2. Reviewing (자동 진행)
+// ============================================================
+function ReviewingScreen({ name, stageIdx, totalStages }) {
+  const [phase, setPhase] = useState(0);
+  const phases = [
+    "지원서 접수 확인 중…",
+    "인사팀이 검토하고 있어요…",
+    "임원진 면접 결과 회신 대기…",
+    "결과 확정 — 잠시만요!",
+  ];
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => Math.min(p + 1, phases.length - 1)), 700);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 2 · 심사 중</div>
+      <h1>{name}님,<br/>지원서를 <em>검토하고 있어요</em>.</h1>
+      <div className="loading">
+        <div className="spinner"></div>
+        <div className="loading-text">{phases[phase]}</div>
+      </div>
+      <p className="fine-print">실제 회사보다 100배 빠릅니다.</p>
+    </div>
+  );
+}
+
+// ============================================================
+// 3. Offer Letter (이메일 형태)
+// ============================================================
+function OfferScreen({ name, dept, empNumber, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="email-card">
+      <div className="email-head">
+        <div className="from">From. <strong>유버디 (CEO)</strong> &lt;ceo@youbuddy.co.kr&gt;</div>
+        <div>To. {name} &lt;you@example.com&gt;</div>
+        <div className="subject">[유버디 컴퍼니] 최종 합격을 축하드립니다 🎉</div>
+      </div>
+      <div className="email-body">
+        <p><strong>{name}님께,</strong></p>
+        <p>
+          유버디 컴퍼니에 지원해주셔서 감사합니다. 임원진 회의에서 만장일치로 <strong>최종 합격</strong>이 결정되었습니다.
+        </p>
+        <p>
+          {name}님께 부여된 사번은 <strong style={{ fontFamily: "JetBrains Mono, monospace" }}>{empNumber}</strong> 이며,
+          소속 부서는 <strong>{dept.name}</strong> ({dept.short})입니다.
+        </p>
+        <p>
+          첫 출근일은 <strong>오늘</strong>입니다. 다음 화면에서 사수 배정과 첫 업무를 안내드릴게요.
+          처음 30일은 수습 기간이고, 매일 짧은 시나리오로 회사에 적응하시면 됩니다.
+        </p>
+        <p>
+          <strong>오신 걸 환영합니다. 1일1비 컴퍼니에서 새로운 시작을!</strong>
+        </p>
+        <div className="signature">
+          <b>유버디</b>
+          <small>CEO · 유버디 컴퍼니 · YouBuddy Korea</small>
+        </div>
+      </div>
+      <div style={{ padding: "16px 30px", background: "var(--paper-warm)", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "flex-end" }}>
+        <button className="btn" onClick={onNext}>배정 확인하기 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 4. Assignment (사번/부서/사수)
+// ============================================================
+function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 4 · 배정 안내</div>
+      <h1>당신의 <em>자리</em>가 준비됐어요.</h1>
+      <p className="lead">사수와 부서가 자동 배정됐어. 첫 1년은 이 사람과 가장 많이 대화하게 될 거야.</p>
+
+      <div className="assign-grid">
+        <div className="assign-cell">
+          <div className="lab">사번</div>
+          <div className="val">{empNumber}</div>
+        </div>
+        <div className="assign-cell">
+          <div className="lab">부서</div>
+          <div className="val" style={{ fontFamily: "Noto Sans KR" }}>{dept.short}</div>
+        </div>
+        <div className="assign-cell full">
+          <div className="lab">배정 사수 (Mentor)</div>
+          <div className="val" style={{ fontFamily: "Noto Sans KR" }}>{mentor.name} · {mentor.role}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 8, fontStyle: "italic" }}>
+            "{mentor.trait}"
+          </div>
+        </div>
+      </div>
+
+      <div className="btn-row">
+        <button className="btn" onClick={onNext}>다음 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 5. CEO Welcome (유버디 직접 인사)
+// ============================================================
+function CEOScreen({ name, dept, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 5 · 너의 버디 인사</div>
+      <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 22, padding: "16px", background: "var(--paper-warm)", borderRadius: 8, border: "1px dashed var(--line)" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #D85A2A, #8B3A18)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900, fontSize: 22, flexShrink: 0 }}>🤝</div>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 14 }}>유버디 (YouBuddy)</div>
+          <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>1일1비를 만든 사람 · 너의 첫 회사 버디</div>
+        </div>
+      </div>
+      <h1>"안녕, 오늘부터 내가<br/><em>너의 버디</em>야."</h1>
+      <p className="lead">
+        반가워, {name}님. 나는 유버디. <strong>외국계 회사 다니면서 신입한테 버디 여러 번 해본 사람</strong>이야.
+        <br/><br/>
+        외국계엔 입사하면 "버디"가 붙어줘 — 모르는 거 부담 없이 물어볼 수 있는 한 발 앞선 동료. 근데 한국 회사엔 그게 거의 없어서 신입들이 답답해해.
+        <strong>1일1비는 그 버디를 누구나 받을 수 있게 만든 앱이야.</strong>
+        <br/><br/>
+        매일 5-10분, 너무 무리 마. 꾸준히가 핵심. 모르는 거 있으면 나한테 톡 보내.
+      </p>
+      <div style={{ marginTop: 18, padding: "14px 16px", background: "rgba(58,40,18,0.05)", borderRadius: 8, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+        💡 <strong>참, 우리 회사엔 또 한 사람 있어.</strong>
+        <br/>
+        회장님인데… 본사가 어디 계신지 아무도 몰라. 가끔 책상에 손글씨 메모만 발견되거든. <strong>임원까지 올라가야 만날 수 있다</strong>는 소문이 있어.
+      </div>
+      <div className="btn-row">
+        <button className="btn" onClick={onNext}>알겠어 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 6. Ready (출근 시작)
+// ============================================================
+function ReadyScreen({ name, mentor, stageIdx, totalStages, onStart }) {
+  return (
+    <div className="card">
+      <div className="stamp">READY</div>
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 6 · 첫 출근</div>
+      <h1>{name}님, 9시예요.<br/><em>출근하세요.</em></h1>
+      <p className="lead">
+        {mentor.name}님이 사옥 로비에서 기다리고 있어요. 첫날은 자기소개와 자리 안내, 그리고 아주 짧은 첫 미팅으로 끝납니다.
+        <br/><br/>
+        부담 갖지 말고 — 진짜 회사처럼, 천천히.
+      </p>
+      <div className="btn-row">
+        <button className="btn" onClick={onStart} style={{ fontSize: 15, padding: "14px 28px" }}>
+          🏢 사옥으로 출근하기
+        </button>
+      </div>
+      <div className="fine-print">출근 후엔 매일 다른 시나리오가 너를 기다리고 있어. 휴직도 가능 (걱정 ㄴㄴ).</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<OnboardingApp />);
+</script>
+</body>
+</html>

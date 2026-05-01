@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (v1.5에서 Vite 도입 시 사용)
+node_modules/
+.npm
+package-lock.json
+yarn.lock
+
+# Build (v1.5+)
+dist/
+build/
+.next/
+.cache/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.development
+
+# 임시·업로드
+uploads/
+tmp/
+*.tmp
+
+# 개인 메모 (커밋하지 말 것)
+PRIVATE.md
+NOTES.md
+.secrets

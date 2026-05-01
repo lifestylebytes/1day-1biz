@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%); margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; color: #2A1F14; }
+  .loading { text-align: center; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #C9BBA0; border-top-color: #D85A2A; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .msg { font-size: 13px; color: #5C4A36; }
+</style>
+</head>
+<body>
+<div class="loading">
+  <div class="spinner"></div>
+  <div class="msg">로딩 중…</div>
+</div>
+<script>
+  // ============================================================
+  // 라우터 — localStorage 보고 자동 분기
+  // ?mode=dev      → 개발 런처 (dev.html)
+  // ?mode=operator → 운영자 뷰 (operator.html)
+  // ?mode=reset    → 사용자 데이터 초기화 후 온보딩
+  // 사용자 있음    → simulator.html
+  // 사용자 없음    → onboarding.html
+  // ============================================================
+  (function() {
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('mode');
+
+    if (mode === 'dev') { location.replace('dev.html'); return; }
+    if (mode === 'operator') { location.replace('operator.html'); return; }
+    if (mode === 'reset') {
+      localStorage.removeItem('__OD_USER');
+      location.replace('onboarding.html');
+      return;
+    }
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch (e) {}
+
+    if (user && user.email) {
+      location.replace('simulator.html');
+    } else {
+      location.replace('onboarding.html');
+    }
+  })();
+</script>
+</body>
+</html>

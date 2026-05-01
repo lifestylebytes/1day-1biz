@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1일1비 · 전략·설계 문서</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.0/marked.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+  --accent-soft: rgba(216,90,42,0.12);
+  --code-bg: #2A1F14;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+
+aside {
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  padding: 24px 18px;
+  overflow-y: auto;
+  position: sticky; top: 0; height: 100vh;
+}
+.brand { font-weight: 900; font-size: 18px; letter-spacing: -0.02em; margin-bottom: 4px; }
+.brand em { font-style: normal; color: var(--accent); font-weight: 900; }
+.brand-sub { font-size: 11px; color: var(--ink-mute); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; }
+
+.nav-group { margin-bottom: 22px; }
+.nav-label { font-size: 10px; font-weight: 800; color: var(--ink-mute); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 8px; padding: 0 8px; }
+.nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 6px;
+  color: var(--ink-soft); text-decoration: none;
+  font-size: 13px; font-weight: 500;
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.nav-link:hover { background: var(--paper-warm); color: var(--ink); }
+.nav-link.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.nav-link .star { color: var(--accent); font-size: 11px; }
+.nav-divider { height: 1px; background: var(--line); margin: 16px 8px; opacity: 0.5; }
+.nav-link.external { color: var(--ink-mute); font-size: 12px; }
+
+main {
+  padding: 56px 8% 80px;
+  max-width: 920px;
+  width: 100%;
+  background: var(--paper);
+}
+
+.content {
+  font-size: 15px; line-height: 1.85; color: var(--ink-soft);
+}
+.content h1 {
+  font-size: 36px; font-weight: 900; letter-spacing: -0.02em; margin: 0 0 20px;
+  color: var(--ink); line-height: 1.2;
+}
+.content h1 em { font-style: normal; font-weight: 900; color: var(--accent); }
+.content h2 {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+  margin: 44px 0 14px; color: var(--ink);
+  padding-top: 22px; border-top: 1px solid var(--line);
+}
+.content h3 {
+  font-size: 17px; font-weight: 700;
+  margin: 28px 0 10px; color: var(--ink);
+}
+.content h4 {
+  font-size: 14px; font-weight: 700;
+  margin: 20px 0 8px; color: var(--ink);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.content p { margin: 12px 0; }
+.content strong { color: var(--ink); font-weight: 700; }
+.content em { color: var(--ink); font-style: italic; }
+.content ul, .content ol { margin: 12px 0 12px 22px; }
+.content li { margin: 6px 0; }
+.content blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 8px 18px;
+  background: var(--accent-soft);
+  margin: 16px 0;
+  color: var(--ink);
+  font-weight: 500;
+  border-radius: 0 6px 6px 0;
+}
+.content code {
+  background: rgba(58,40,18,0.08);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+.content pre {
+  background: var(--code-bg);
+  color: #E8DFCB;
+  padding: 18px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.content pre code { background: transparent; padding: 0; color: inherit; }
+.content hr { border: none; border-top: 1px solid var(--line); margin: 36px 0; }
+.content a { color: var(--accent); text-decoration: none; }
+.content a:hover { text-decoration: underline; }
+.content table {
+  border-collapse: collapse;
+  margin: 18px 0;
+  width: 100%;
+  font-size: 13px;
+}
+.content th, .content td {
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  text-align: left;
+}
+.content th {
+  background: var(--paper-warm);
+  font-weight: 700;
+  color: var(--ink);
+}
+.content tbody tr:nth-child(even) { background: rgba(58,40,18,0.02); }
+.content input[type="checkbox"] { margin-right: 6px; }
+
+.empty {
+  padding: 60px 0; text-align: center; color: var(--ink-mute);
+}
+.empty h1 { font-size: 24px; color: var(--ink); margin-bottom: 12px; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  main { padding: 32px 24px 60px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside>
+    <div class="brand"><em>1일1비</em></div>
+    <div class="brand-sub">전략·설계 문서</div>
+
+    <nav>
+      <div class="nav-group">
+        <div class="nav-label">시작</div>
+        <a class="nav-link" data-doc="README">📖 프로젝트 개요</a>
+        <a class="nav-link" data-doc="concept">컨셉 정의서</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">⭐ 핵심</div>
+        <a class="nav-link" data-doc="learning-science"><span class="star">★</span> 학습 과학 (5원칙)</a>
+        <a class="nav-link" data-doc="roadmap"><span class="star">★</span> 로드맵 + 매출</a>
+        <a class="nav-link" data-doc="retention-mechanics"><span class="star">★</span> Retention (NG+, 시즌, 멘토)</a>
+        <a class="nav-link" data-doc="day1-30-outline"><span class="star">★</span> Day 1-30 시나리오 outline</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">전략·설계</div>
+        <a class="nav-link" data-doc="progression">직급 레벨업</a>
+        <a class="nav-link" data-doc="job-titles">직급 체계 (외국계)</a>
+        <a class="nav-link" data-doc="vs-yubichal">유비챌 vs 1일1비</a>
+        <a class="nav-link" data-doc="community-strategy">커뮤니티 전략</a>
+        <a class="nav-link" data-doc="notices-events">공지·이벤트 풀</a>
+        <a class="nav-link" data-doc="youbuddy-role">유버디 캐릭터</a>
+        <a class="nav-link" data-doc="validation">검증 전략</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">기술·운영</div>
+        <a class="nav-link" data-doc="tech-stack">기술 스택</a>
+        <a class="nav-link" data-doc="customer-data">고객 데이터 스키마</a>
+        <a class="nav-link" data-doc="web-to-app">웹→앱 전환</a>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-group">
+        <div class="nav-label">앱</div>
+        <a class="nav-link external" href="index.html">↗ 메인 (라우터)</a>
+        <a class="nav-link external" href="onboarding.html">↗ 온보딩</a>
+        <a class="nav-link external" href="simulator.html">↗ 시뮬레이터</a>
+        <a class="nav-link external" href="simulator.html?dev=1">↗ 시뮬 + Dev 패널</a>
+        <a class="nav-link external" href="operator.html">↗ 운영자 뷰</a>
+        <a class="nav-link external" href="dev.html">↗ Dev 런처</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <div id="content" class="content">
+      <div class="empty">
+        <h1>좌측에서 문서 선택</h1>
+        <p>로드맵 → 학습 과학 → 직급 체계 순서로 읽어보면 그림이 잡혀.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     모든 마크다운 문서를 인라인으로 임베드 (file:// 동작 위해)
+     ============================================================ -->
+
+<script type="text/markdown" id="doc-README">
+# 1일1비 (One Day, One Business)
+
+회사 시뮬레이터 + 비즈니스 어휘 학습 + 직급 RPG.
+유버디(YouBuddy) 우산 아래의 두 번째 상품 — 유비챌 코호트와 보완재 관계.
+
+## 지금 바로 보기
+
+**옵션 1 — 더블클릭 (가장 빠름)**
+- `index.html` 더블클릭 → 라우팅 → 시뮬레이터 / 온보딩
+- `simulator.html`, `onboarding.html`, `operator.html`, `docs-viewer.html` 모두 self-contained — file:// 에서도 동작
+
+**옵션 2 — 로컬 서버 (안정적)**
+- 터미널에서 `./start.sh`
+- 브라우저 자동 오픈 → http://localhost:8080
+- Python 3 필요
+
+## 핵심 페이지
+
+```
+index.html        ← 메인 진입 (라우터)
+onboarding.html   ← 가입 흐름 (60초)
+simulator.html    ← 시뮬레이터 (Day 1+)
+operator.html     ← 운영자 뷰 (유버디)
+docs-viewer.html  ← 이 문서 viewer
+dev.html          ← 개발용 런처 (모든 화면 한눈에)
+```
+
+## 핵심 원칙 (외우기)
+
+1. **학습 효과가 핵심.** P1~P5 원칙이 모든 시나리오·기능의 판단 기준 (학습 과학 doc)
+2. **유비챌과 카니발리제이션 안 되게** — 다른 자아의 사용자 노린다
+3. **양 늘리기보다 매커니즘 추가** — 직급마다 새 게임플레이
+4. **v1은 살아남기 위해. v2는 살아남고 나서.** — 웹 먼저, 앱은 나중
+5. **한 번에 한 Phase, 동시 진행 X** — 솔로 운영자의 생존 룰
+
+## 지금 (2026-05-01) 위치
+
+**Phase 0 진행 중** — 1-2일 안에 베타 띄우는 게 목표.
+다음 액션: Vercel 배포 → PostHog 분석 → 5-10명에게 링크 보내기.
+
+자세한 건 로드맵 문서의 Phase 0 체크리스트 참고.
+</script>
+
+<script type="text/markdown" id="doc-concept">
+# 1일1비 — 컨셉 정의서
+
+> 1일 1비즈니스. 회사를 흉내 내며 비즈니스 어휘와 감각을 키우는 시뮬레이터 구독 서비스.
+
+## 한 줄 정의
+회사 시뮬레이터 + 비즈니스 어휘 학습 + 직급 RPG.
+
+## 누구를 위한 서비스인가
+- 사회 초년생 / 신입사원 / 이직 준비생
+- 비즈니스 어휘·표현·문화에 약한 사람
+- "공부"보다 "게임"이 맞는 사람 (혼자 묵묵히 영작 인증 같은 건 못 버티는 타입)
+- 출퇴근길 5–10분, 자기 페이스로 하고 싶은 사람
+
+## 핵심 메커니즘
+1. **개인 입사일 기반의 데일리 트랙** — 내 Day 1, Day 2… 가 곧 입사 N일차
+2. **시나리오 응대** — 단어 외우기가 아니라 "오늘 부장님이 보고서 양식 알려달라고 함" 같은 상황
+3. **NPC 동료/상사** — 동기, 사수, 부장, 클라이언트 등 캐릭터와 대화
+4. **직급 레벨업** — 수습 → 인턴 → 사원 → 대리 → 과장 → 차장/부장 → 임원
+5. **달력 기반 전사 이벤트** — 진도와 무관하게 모두 같은 날 겪는 분기 워크샵, 송년회 등 (커뮤니티 감각 + 실시간감)
+
+## 차별점 (vs. 일반 어휘 앱, vs. 유비챌)
+- 어휘 앱: 단어를 외움 → 1일1비: **상황을 산다**
+- 유비챌: 4주 코호트, 사람이 운영, 영어 발화 집중 → 1일1비: **무제한 셀프서브, 자동화, 회사 문화/롤플레잉 자체가 컨텐츠**
+- 두 상품은 **서로 대체재가 아니라 보완재**
+
+## 왜 구독인가
+- 회사 생활은 끝이 없어. 한 번 입사하면 매일 매일 새로운 일이 일어남 — 컨셉 자체가 구독에 자연스러움
+- 직급 레벨업 = 결제 동기가 게임 안에 내장됨 ("승진 면접 통과하면 인턴됨" 같은 결제 전환 트리거)
+- LTV 최대화: 1회성보다 누적 매출이 큼
+
+## 장기 비전
+1. **시즌 1** — 개인 입사 시뮬 (수습 → 인턴 → 사원)
+2. **시즌 2** — 팀 협업 (대리/과장 단계, 후배 멘토링)
+3. **시즌 3** — 부서 운영 (부장/임원, 의사결정)
+4. **확장** — 1일1비 안에 유저들끼리 메신저처럼 소통하는 자체 슬랙 (메인 비전)
+
+## 메타 — 가제 / 브랜드
+- 가제: **1일1비** (1일 1비즈니스)
+- 모회사 브랜드: **유버디 (YouBuddy)** — 유비챌과 같은 우산 아래
+- 결과적으로 "유버디"는 비즈니스 영어/문화 학습 종합 브랜드, 그 아래 코호트(유비챌)와 앱(1일1비) 두 갈래
+</script>
+
+<script type="text/markdown" id="doc-learning-science">
+# 1일1비 — 학습 과학 (Learning Science) 토대
+
+> "루틴 안에 새로운 이벤트가 있어야 기억에 잘 남는다" — 이 직관은 학계에 정확한 이름이 있는 현상이고, 1일1비는 이 메커니즘을 의도적으로 설계에 박아넣는다.
+
+이 문서는 **모든 시나리오 작성·기능 의사결정의 기준**이다. 새 기능 제안이 들어오면 여기 원칙 5개 중 어느 걸 강화하는지 답할 수 있어야 한다.
+
+---
+
+## 1. 핵심 메커니즘 7개
+
+### 1) 노벨티 → 도파민 → 해마 강화
+**Düzel et al. (2010), *Trends in Neurosciences*** — 새로운 자극은 SN/VTA-해마 회로를 통해 도파민을 분비시켜, 그 자극 전후 약 15-30분 동안 인코딩된 정보의 장기 기억 강화를 촉진한다.
+
+**1일1비 적용:** 매 3-5 시나리오마다 1번 예측 불가능한 이벤트 삽입. 그 이벤트 전후의 어휘가 가장 강하게 박힘.
+
+### 2) 일화기억 (Episodic) → 의미기억 (Semantic) 전이
+**Tulving (2002), *Annual Review of Psychology*** — 단어가 처음에 "언제·어디·누구"라는 일화적 맥락에 박혀 있어야 나중에 다양한 상황에서도 꺼낼 수 있다.
+
+**1일1비 적용:** 모든 단어는 첫 등장 시 특정 NPC + 특정 장소 + 특정 시간에 묶여 등장. 이후 다른 시나리오에서 다시 등장할 때 점진적으로 맥락을 다양화.
+
+### 3) 맥락 의존 기억 (Context-Dependent Memory)
+**Godden & Baddeley (1975), *British Journal of Psychology*** — 학습한 맥락과 회상하는 맥락이 일치하면 기억 회상률이 약 50% 향상.
+
+**1일1비 적용:** 단어마다 "회의실 / 메일 / 점심 / 보고" 같은 회사 맥락 태그 부여. 복습 시 동일 맥락에서 먼저 재출제 → 그 다음 다른 맥락으로 일반화.
+
+### 4) 스페이싱 효과 (Spacing Effect)
+**Cepeda et al. (2006), *Psychological Bulletin*** — 839개 효과 크기 메타분석. 최적 학습 간격은 목표 보유기간의 약 10-30%.
+
+**1일1비 적용:** 30일 보유가 목표면 재등장 간격은 약 3 / 7 / 14일.
+
+### 5) 검색 연습 / 테스트 효과 (Retrieval Practice)
+**Roediger & Karpicke (2006), *Psychological Science*** — 다시 읽기보다 능동적 인출이 1주 후 보유율 약 50% 우수.
+
+**1일1비 적용:** **모든 시나리오는 단어를 직접 입력/선택해서 NPC 대사로 만들어야 진행됨.** 이게 1일1비를 일반 어휘 카드 앱과 가르는 가장 큰 한 줄.
+
+### 6) 내러티브 우월성 (Narrative Superiority)
+**Bower & Clark (1969), *Psychonomic Science*** — 단어를 이야기에 엮어 외운 그룹이 단순 반복 그룹보다 6-7배 더 많이 회상.
+
+**1일1비 적용:** 매일의 시나리오는 도입-갈등-해결 구조의 짧은 플롯. 핵심 단어를 안 쓰면 플롯이 진행이 안 되도록.
+
+### 7) 생성 효과 (Generation Effect) + 감정적 각성
+**Slamecka & Graf (1978)** + **McGaugh (2000, 2013)** — 자가 생성한 답이 단순 제시받은 답보다 더 잘 기억됨.
+
+**1일1비 적용:** 빈칸/첫글자만 보여주고 사용자가 단어를 직접 떠올려 입력.
+
+---
+
+## 2. 보너스: 변동/인터리브 연습
+**Rohrer & Taylor (2007); Birnbaum et al. (2013)** — 다른 카테고리를 섞어서 연습하는 게 장기 보유·전이가 더 우수.
+
+**1일1비 적용:** 한 세션에 "메일 어휘 / 회의 어휘 / 점심 small talk 어휘" 섞어서 등장.
+
+---
+
+## 3. 모바일 앱 학습 연구
+- **Settles & 동료 (2018+, Duolingo 팀)** — 고정 SRS보다 half-life regression 기반 적응 스케줄링이 더 우수.
+- **Loewen et al. (2019, 2020)** — 듀오링고는 측정 가능한 능력 향상 있지만, **production 연습이 빠지면 정체**된다.
+- 시사점: **수동 인풋만으로는 부족하다.** 사용자가 직접 만들어내는 발화·작문·선택이 매 세션에 있어야 한다.
+
+---
+
+## 4. 1일1비에 박을 5대 설계 원칙 (랭킹)
+
+### P1. 강제 생성 (Forced Production) — 가장 큰 효과
+- **근거:** Roediger & Karpicke 2006 + Slamecka & Graf 1978
+- **사용자 행동:** 모든 시나리오 끝에 단어를 직접 입력/선택해서 본인 캐릭터 대사를 만든다.
+- **왜 좋은가:** 효과크기 d > 0.7로 문헌상 가장 큰 단일 변수.
+
+### P2. 단어가 줄거리의 도구 (Story-bound)
+- **근거:** Bower & Clark 1969 + Tulving 2002
+- **사용자 행동:** 매일의 시나리오는 짧은 플롯. 단어를 잘못 쓰면 NPC 반응이 달라지고 플롯이 어긋남.
+- **왜 좋은가:** 단어가 일화로 박힘. 다중 인출 단서.
+
+### P3. 노벨티 + 마일드 각성
+- **근거:** Düzel et al. 2010 + McGaugh 2013
+- **사용자 행동:** ~3-5 일상 씬마다 1번 예측 불가능한 이벤트.
+- **왜 좋은가:** 사용자의 "이벤트가 있어야 잘 남는다"는 직관은 메커니즘적으로 정확함.
+
+### P4. 적응형 스페이싱 + 인터리브
+- **근거:** Cepeda et al. 2006 + Rohrer & Taylor 2007
+- **사용자 행동:** 단어 재등장은 ~3/7/14일 간격으로, 다른 씬 타입에 섞여서.
+
+### P5. 맥락 단서 → 점진적 페이드
+- **근거:** Godden & Baddeley 1975
+- **사용자 행동:** 단어는 등장 씬 메타데이터와 같이 저장. 복습 프롬프트가 처음엔 단서 제공 → 점차 단서 줄여 일반 인출.
+
+---
+
+## 5. 시나리오 작성자용 체크리스트
+
+**모든 일일 시나리오 작성 시 답할 5 질문:**
+
+- [ ] **P1** — 사용자가 단어를 직접 생성하는 액션이 1개 이상인가?
+- [ ] **P2** — 핵심 단어 1-3개가 플롯 진행에 필수인가?
+- [ ] **P3** — 일상 흐름 안에 1개의 미니 노벨티 이벤트가 박혔는가?
+- [ ] **P4** — 이전 단원에서 배운 단어 1-2개가 다른 맥락으로 재등장하는가?
+- [ ] **P5** — 복습 회차에서 어떤 맥락 단서가 사용자에게 먼저 주어지는가?
+
+**5개 다 OK여야 합격.**
+
+---
+
+## 6. 의사결정 체크리스트
+
+> 이 기능은 P1~P5 중 어느 것을 강화하는가? 어느 것도 강화하지 않으면 만들지 않는다.
+
+예시:
+- **하루 학습 통계 차트** → 무엇도 강화 안 함 → 후순위
+- **단어 입력 시 빈칸+첫글자 힌트** → P1, P5 강화 → ✅
+- **NPC가 사용자 이름을 외워서 부르는 기능** → P2(일화기억) 강화 → ✅
+- **돌발 이벤트** → P3 정확히 강화 → ✅✅
+- **단어를 한 카테고리씩 묶은 단원** → P4(인터리빙)을 **저해함** → ❌
+
+---
+
+## 7. 검증해야 할 핵심 가정
+
+- [ ] **D7 단어 인출률** — 강제 생성 ON 그룹 vs OFF 그룹 비교 (목표: ON이 30%+ 우수)
+- [ ] **노벨티 이벤트 효과** — 노벨티 ±15분 단어의 D7 인출률
+- [ ] **인터리브 이득** — 카테고리 섞은 사용자 vs 한 카테고리만
+- [ ] **맥락 단서 페이드 곡선** — 단서 제거 후 인출 가능까지 평균 며칠
+</script>
+
+<script type="text/markdown" id="doc-roadmap">
+# 1일1비 — 로드맵
+
+> **원칙:** 살아남기 전엔 다음 단계 안 간다. 각 단계 성공 조건을 채워야만 다음 단계 GO.
+
+---
+
+## 🎯 7개월 매출 목표 (5월 → 12월)
+
+**목표:** **2026년 12월 월 매출 1,000만원**
+
+### 7개월 누적 매출 곡선 (가격 3만원, retention 70% 가정)
+
+| 월 | 신규 모집 | 누적 활성 | 월 매출 |
+|---|---|---|---|
+| 5월 (베타) | 20 | 20 | ₩0 (무료) |
+| 6월 (베타→정식) | 30 | 35 | ₩105만 |
+| 7월 | 50 | 75 | ₩225만 |
+| 8월 | 70 | 120 | ₩360만 |
+| 9월 | 90 | 175 | ₩525만 |
+| 10월 | 110 | 240 | ₩720만 |
+| 11월 | 130 | 305 | ₩915만 |
+| **12월** | **150** | **350** | **₩1,050만** ✅ |
+
+리스크:
+1. **월 retention 50% 이하** → 1000만원 도달 불가능. 학습 효과 부족이 주범
+2. **신규 모집 정체** → 마케팅 채널 다각화 필요
+3. **가격 저항** → 베타 마지막에 결제 의향 조사 필수
+
+---
+
+## Phase 0 — 1-2일 안에 띄우는 프로토 (지금 ↔ 5월 3일)
+
+**목표:** 유버디 사람 5-10명한테 "이거 해봐" 보내는 링크 만들기.
+
+### Day 1 (오늘)
+- [x] simulator.html 셀프 컨테인드 (file:// 더블클릭 동작)
+- [ ] Vercel 계정 만들기
+- [ ] 폴더를 GitHub 비공개 레포로 푸시
+- [ ] Vercel에 GitHub 레포 연결 → 자동 배포
+- [ ] 배포된 URL 확인
+
+### Day 2
+- [ ] 도메인 연결
+- [ ] PostHog 무료 → 분석 스니펫 추가
+- [ ] Tally 폼 만들고 피드백 수집
+- [ ] 시나리오 데이터 학습과학 5원칙으로 1차 점검
+
+**Phase 0 성공 조건:**
+- 외부 사람이 URL 누르면 시뮬레이터가 뜨고 끝까지 한 번 돌아간다
+- 사용자 행동(어디서 멈췄는지)이 PostHog에 잡힌다
+- 한 명이라도 피드백 폼 채운다
+
+---
+
+## Phase 1 — 클로즈드 베타 30일 (5월 3일 ↔ 6월 초)
+
+**목표:** 진짜 학습이 일어나는지 측정.
+
+### 모집
+- 유버디 채널·인스타로 "베타 입사자 모집" 공지 (10-20명)
+- 유비챌 졸업생 우선 초대
+- 무료 베타. "정식 출시 시 우선 입사 + 첫 달 50% 할인"
+
+### 측정
+- D1, D7, D14, D30 retention
+- 어디서 이탈하는지
+- 단어 인출 정확도
+- 피드백 정성 인터뷰 5명
+
+### 작은 개선만 — 큰 변경 X
+- 시나리오 오타 수정, 명백한 버그 픽스
+- 큰 신기능은 X
+
+**Phase 1 성공 조건:**
+- D7 retention 50%+
+- D30 retention 30%+
+- "정식 나오면 결제 의사 있다" 답변 50%+
+- 단어 인출 정확도 D7 60%+
+
+---
+
+## Phase 2 — v1 (정식 출시, 6월 ↔ 7월)
+
+### 작업
+- Vite 마이그레이션
+- TypeScript 점진 도입
+- Supabase 연결 (인증 + DB)
+- Toss Payments 정기결제
+- 가격 결정
+- 학습 과학 5원칙 본격 강화
+
+### 출시
+- 인스타·유버디 채널 동시 송출
+- 유비챌 졸업생 30% 할인 코드
+- 보증금 결제자 우선 입사
+
+**Phase 2 성공 조건:**
+- 정식 결제 사용자 50명+
+- 결제 후 7일 환불률 10% 이하
+- D30 retention 30%+
+
+---
+
+## Phase 3 — 컨텐츠 확장 (7월 ↔ 9월)
+
+- 인턴 단계 (Day 31-90) 시나리오 60개
+- 사원 단계 (Day 91-180) 시나리오 90개
+- NPC 캐릭터 시트 정식 정리
+- 달력 기반 전사 이벤트
+- A/B 테스트 인프라
+
+**Phase 3 성공 조건:**
+- 수습 → 인턴 전환율 40%+
+- 인턴 → 사원 전환율 30%+
+
+---
+
+## Phase 4 — 앱화 (10월 이후, 조건부)
+
+**조건:** Phase 3 끝났을 때 사용자 1,000명+ AND 월 매출 100만원+
+**조건 미달:** 앱 안 가고 컨텐츠/리텐션 더 강화
+
+- Capacitor 래핑 → iOS·Android 동시
+- 인앱결제 통합
+- 푸시 알림
+
+---
+
+## 의사결정 체크포인트
+
+1. 이 Phase 성공 조건 다 만족했나?
+2. No면, 어느 가설이 깨졌나?
+3. Yes면, 다음 Phase 가기 전에 1주 휴식.
+
+## 한 번에 한 Phase. 동시 진행 X.
+</script>
+
+<script type="text/markdown" id="doc-progression">
+# 1일1비 — 직급 레벨업 설계
+
+핵심 원칙: **각 직급은 양적 누적이 아니라 질적으로 다른 게임플레이.** 양만 늘면 두 번째 결제 안 한다.
+
+또 하나의 원칙: **진짜 회사 같은 디테일.** 단어 카드 외우기가 아니라, 진짜 직장인이 매일 겪는 미세한 감정·상황·관계를 그대로.
+
+---
+
+## 입사 전 (Day 0) — 합격 통보
+
+- 합격 메일 도착 (앱 푸시 형태로 연출)
+- "유버디 컴퍼니, ㅇㅇㅇ님께. 최종 합격을 축하드립니다…" 풀 메일 톤
+- 입사 안내: 출근 시간, 드레스코드, 가져올 것
+- 사전 과제 (간단한 자기소개) — 첫 결제 직전 액션
+
+## Day 1 — 첫 출근
+
+- 사옥 도착 → 인사팀 면담 → 사번 부여 → 사내 시스템 계정
+- **사수 배정** (NPC: "김대리" — 너의 1년 메인 가이드)
+- 자리 안내, 키보드, 첫 사내 메신저 로그인
+- 첫 점심: 팀원 4명과 식사. 자기소개 시나리오. 누구 이름 외워야 하는지 압박감
+- 첫 퇴근: 잘 적응했는지 사수가 카톡으로 물어봄
+
+이 한 시나리오에 자연스럽게 깔리는 어휘:
+*온보딩, 사번, 사내 메신저, 인사, 자기소개, 명함, 환영회…*
+
+## 수습 (Day 1–30)
+
+게임플레이: **시나리오 응대 + 어휘 학습**
+
+핵심 이벤트:
+- Day 3: 첫 회의 참관 (말 안 해도 됨, 대신 회의록 쓰기)
+- Day 7: 첫 보고서 양식 받음, 사수가 빨갛게 첨삭
+- Day 10: 회식 첫 참여 — 술 마실래 안 마실래, 1차/2차 어디까지, 부장 옆자리 압박
+- Day 14: 회사 생일자 단톡, "축하해요" 한 마디 어떻게 쓸지
+- Day 18: 외부 메일 첫 수신, 답장 어떻게 시작할지 (Hi vs Dear vs 안녕하세요)
+- Day 22: 사수 휴가, 너 혼자 들어온 메일 응대
+- Day 25: 첫 실수 (오타로 외부 메일 보냄) → 사과·복구
+- Day 30: **수습 종료 면접** (NPC 부장 1대1 인터뷰) — 정규직 전환
+
+연출 포인트: 매일 짧지만, 매일 약간씩 새로운 자극. 같은 NPC라도 화·금이 다른 톤.
+
+## 인턴 (Day 31–90)
+
+게임플레이 추가: **팀 협업 (멀티 NPC 대화)**
+
+- 너 + 동기 인턴 + 다른 부서 사람 = 3자 카톡방
+- "다음 주까지 자료 정리 같이 할 사람"
+- **첫 외부 클라이언트 미팅 동석**
+- 작은 갈등: 동기랑 의견 다름, 어떻게 정리할지
+- 인턴 중간평가
+- **Day 90 정규 전환 면접**
+
+수습 단계 매커니즘 + 협업·관계 매커니즘이 더해짐. **단순 응대 → 의견 제시**로 전환.
+
+## 사원 (Day 91–180)
+
+게임플레이 추가: **본인 의사결정 + KPI**
+
+- 본인 책임 프로젝트 첫 배정
+- 후배 인턴 들어옴 → **이제 너가 가르치는 입장**
+- 첫 프레젠테이션 → 임원 앞에서 떨림
+- 첫 위기: 클라이언트 컴플레인
+- 분기 평가, KPI 미달이면 어떻게 변명할지
+- 동료 이직: 송별회 + 너의 다음 행보 고민
+
+매커니즘: **선택의 무게.** 결정에 책임이 따른다.
+
+## 대리 (Day 181–365)
+
+게임플레이 추가: **소규모 팀 리딩 + 후배 관리**
+
+- 본인 팀(사원 1, 인턴 1) 운영
+- 1on1, 평가, 피드백
+- 채용 면접 참여 (면접관 역할)
+- 부서 정치 본격 시작
+- 첫 야근 폭주, 워라밸 위기
+
+매커니즘: **사람 관리.** NPC가 시키는 게 아니라 너가 NPC를 관리.
+
+## 과장 (Day 366–540)
+
+게임플레이 추가: **부서 간 협상 + 채용**
+
+- 다른 부서 과장과 자원 배분 협상
+- 채용 - 면접관 → 채용 결정자
+- 외부 파트너 미팅
+- 직속 부하의 이직 통보 → 만류할까 보내줄까
+
+## 차장/부장
+
+게임플레이 추가: **부서 운영 + 예산**
+
+- 부서 KPI, 인사 발령, 예산 협상
+- 임원 보고 (한 장짜리 자료의 무서움)
+- 본인 부서 위기 — 정원 감축 통보
+- **승진/이직 갈림길**
+
+## 임원
+
+게임플레이 추가: **회사 전략 + 외부 환경**
+
+- 분기 실적 발표
+- 인수합병 시나리오
+- 위기 대응 (홍보 사고, 노조, 클라이언트 이탈)
+- 사내 정치 최상위
+
+---
+
+## 매 단계 도입 매커니즘 요약
+
+| 단계 | 새 매커니즘 |
+|---|---|
+| 수습 | 시나리오 응대, 단어 학습 |
+| 인턴 | 멀티 NPC 협업, 의견 제시 |
+| 사원 | 본인 의사결정, KPI |
+| 대리 | 후배 관리, 1on1 |
+| 과장 | 부서 간 협상, 채용 결정 |
+| 부장 | 부서 운영, 예산, 임원 보고 |
+| 임원 | 전략, 위기 대응, 정치 |
+
+**같은 어휘 카드를 다음 단계에서도 쓰지만, 사용 방식이 완전히 달라진다.**
+
+---
+
+## 이탈 방지 디자인
+
+1. **승진 면접을 클라이맥스로** — 다음 단계 결제 직전이 게임에서 가장 짜릿한 순간
+2. **새 매커니즘은 다음 단계 시작 첫 주에 곧바로 등장**
+3. **휴직 컨셉** — 한 시즌 쉬어도 돌아올 수 있게
+4. **달력 기반 이벤트로 라이브감**
+5. **언락 콘텐츠** — 직급별 비공개 단톡방, 임원만 보는 임원 회의 시뮬
+
+## 안 하면 망하는 것
+
+- 단어 카드 양만 늘리기
+- 모든 단계가 같은 게임플레이의 변주
+- 직급이 그냥 호칭만 바뀌고 시스템은 똑같음
+- 너무 진지함 — 적당히 회사 풍자가 들어가야 즐거움
+
+## TODO
+
+- [ ] 수습 30일 시나리오 30개 상세 시안
+- [ ] NPC 캐릭터 시트
+- [ ] 어휘 카테고리 매핑
+- [ ] 승진 면접 시나리오 (수습→인턴) 상세 시안
+- [ ] 달력 이벤트 12개월 캘린더
+</script>
+
+<script type="text/markdown" id="doc-job-titles">
+# 1일1비 — 직급 체계 (외국계 한국 기업 스타일)
+
+## 컨셉 정의
+회사: **유버디 컴퍼니 (YouBuddy Korea)** — 한국에 본사를 둔 외국계 라이프 회사
+직급: **한+영 병기**, 한국식 호칭과 외국계 영문 직책을 자연스럽게 섞음.
+
+## 직급 사다리 (8단계 + 명예 단계)
+
+| # | 한국 호칭 | 영문 직책 | 게임 내 일수 | 결제 단위 |
+|---|---|---|---|---|
+| 1 | 수습 | Probation / Intern | Day 1 | 0개월 |
+| 2 | 사원 | Associate | Day 31 | 1개월 |
+| 3 | 선임 | Senior Associate | Day 91 | 3개월 |
+| 4 | 대리 | Assistant Manager | Day 181 | 6개월 |
+| 5 | 과장 | Manager | Day 365 | 12개월 |
+| 6 | 차장 | Senior Manager | Day 540 | 18개월 |
+| 7 | 부장 | Director | Day 720 | 24개월 |
+| 8 | 이사 | Executive Director | Day 900 | 30개월 |
+| ∞ | 대표 | CEO | Endgame | 명예 |
+
+각 단계는 결제 사이클의 자연스러운 hook — 다음 직급 직전 5일 = 가장 강한 결제 전환 구간.
+
+## 왜 이 명칭인가
+
+### 한국식 호칭 살린 이유
+- 외국계라도 한국 직원끼리는 "박 대리님", "이 과장님" 호칭이 일상
+- 게임의 몰입감 = 친숙한 호칭 = 한국식 우선
+- 학습 측면: 외국계 비즈니스 어휘 + 한국식 회사 문화 = 1일1비의 차별점
+
+### 영문 직책 병기한 이유
+- 외국계 = 명함·메일 서명·LinkedIn에 영문 직책 필수
+- 사용자가 실제로 알아야 할 어휘 (Senior Associate, Director, VP)
+- 게임 안에서 외국 클라이언트와 미팅 시 자연스럽게 등장
+
+## 단계별 새 매커니즘
+
+| 단계 | 새 게임플레이 | 새 어휘 카테고리 |
+|---|---|---|
+| 수습 | 시나리오 응대, NPC 1:1 | 인사, 자기소개, 메일 기본 |
+| 사원 | 멀티 NPC 대화, 작은 의견 제시 | 회의 표현, 협업 어휘, 외부 메일 |
+| 선임 | KPI 추적, 첫 프로젝트 리드 | 보고체계, 분기 평가 |
+| 대리 | 후배 인턴 멘토링, 1:1 | 피드백 기술, 리더십 표현 |
+| 과장 | 부서 간 협상, 채용 인터뷰 | 협상, 면접 영어, 경영 어휘 |
+| 차장 | 부서 운영, 예산 협상 | 재무 표현, 임원 보고 |
+| 부장 | 임원 보고, 위기 대응 | C-suite 보고, 위기 관리 |
+| 이사 | 회사 전략, 외부 IR | M&A 영어, 기관 투자자 응대 |
+| 대표 | 분기 컨퍼런스 콜, 비전 발표 | 글로벌 무대 영어 |
+
+## 표시 규칙
+
+- 헤더·프로필: **`수습 / Probation`**
+- 명함·메일 서명: **`Probation, Growth & Marketing`**
+- 운영자 뷰: 영문 + 한국 둘 다
+- 승진 발표: "축하합니다, **사원 (Associate)** 으로 승진하셨습니다!"
+
+## 사용자 입장의 가치
+
+- **수집욕** — 8단계 + 명예 = "다 모으고 싶어"
+- **현실 활용** — 게임 안에서 익힌 영문 직책을 실제 명함·LinkedIn에 그대로 사용
+- **사회적 신호** — "1일1비에서 과장됐어요" = 공유하고 싶은 마일스톤
+- **결제 hook** — 직급 변경이 자연스러운 결제 갱신 시점
+</script>
+
+<script type="text/markdown" id="doc-vs-yubichal">
+# 유비챌 vs 1일1비 — 두 상품 포지셔닝
+
+두 상품은 같은 우산(유버디) 아래에 있지만, **다른 자아의 사용자**한테 **다른 가치**를 준다.
+
+## 핵심 비교표
+
+| 축 | 유비챌 (5기 기준) | 1일1비 |
+|---|---|---|
+| 형태 | 4주 코호트 (사람이 운영) | 무제한 셀프서브 (자동화) |
+| 결제 모델 | 기수당 일시불 (베이직/프리미엄) | 월·연 구독 |
+| 학습 매개체 | 영작 인증 + AI 리뷰 + 발표 | 시나리오 롤플레잉 + NPC 응대 |
+| 컨텐츠 핵심 | 비즈니스 영어 표현 (3개/일) | 회사 상황·문화·어휘 통합 |
+| 사람/시스템 비중 | 운영자 + 동기 (커뮤니티 ↑) | NPC + 시스템 (혼자 모드) |
+| 진도 | 모두 같음 (코호트 동기화) | 개인별 입사일 기준 |
+| 게임화 | 빙고, 스트릭, 검증 통과 | 직급, 시나리오, 평가, 승진 |
+| 강도 | 고강도 (영작 매일 + 발표) | 저~중강도 (출퇴근길 5-10분) |
+| 기간 | 4주 한정 | 무제한 |
+
+## "둘 다 고민하는 사람"한테 뭐 추천할까
+
+### A 타입 → **유비챌**
+- "혼자 하면 안 함, 사람이 챙겨줘야 함"
+- "단기 4주 죽기살기로 끝내고 결과 갖고 싶음"
+- "영어 발화·작문 연습이 진짜 필요함"
+- "동기들이랑 같이 가는 게 동력이 됨"
+
+### B 타입 → **1일1비**
+- "꾸준히 자기 페이스로 하는 게 더 잘 맞음"
+- "지금 당장 영어보다 회사 분위기·용어 자체가 어색함"
+- "공부 같은 거 못 버틴다, 게임처럼 하고 싶음"
+- "출퇴근 자투리 5-10분이 내 한계"
+
+### C 타입 → **둘 다, 순차적으로**
+- 먼저 **1일1비로 회사 감각·기본 어휘 잡기**
+- 어느 순간 "더 본격적으로" → **유비챌 한 기수 들어가기**
+- 끝나고 다시 1일1비로 일상 유지 (헬스장 PT 후 혼자 운동 가는 패턴)
+
+## 시너지 funnel
+
+- 1일1비 신규 → 90일 사용 → 유비챌 기수 모집 시 자동 우선 알림
+- 유비챌 졸업생 → "끝났는데 감 잃기 싫음" → 1일1비 졸업생 할인 입사
+
+핵심: **유비챌은 점프, 1일1비는 일상.** 점프와 일상은 안 겹친다.
+
+## 컨텐츠 중복 위험 관리
+
+- **유비챌** = 미국식 비즈니스 영어 idiom·phrase 중심
+- **1일1비** = 한국식 + 영어 혼합 비즈니스 어휘 + 상황·문화·관계
+- 어휘 카테고리부터 다르게 설계해서 중복 최소화
+
+## 가격대 (가설)
+
+| 상품 | 객단가 | 빈도 | 연 LTV |
+|---|---|---|---|
+| 유비챌 베이직 | ?만원 (1회) | 1-2 기수/년 | 한 번 잡으면 끝 |
+| 1일1비 월구독 | 1.5-3만원 | 매월 | 12-24만원 |
+| 1일1비 연구독 | 12-20만원 | 매년 | 12-20만원 |
+
+→ **유비챌 = 한 번에 큰 금액 / 1일1비 = 작은 금액 누적.**
+</script>
+
+<script type="text/markdown" id="doc-community-strategy">
+# 1일1비 — 커뮤니티 / 멤버 가시성 전략
+
+## 질문
+**멤버 간 활동·가입을 서로 보이게 할까?**
+
+## 답: 단계적으로, 익명·집계 우선
+
+| Phase | 가시성 수준 |
+|---|---|
+| Phase 0–1 (베타) | **거의 안 보임 + 집계만** — "이번 주 47명이 함께 출근" 정도 |
+| Phase 2 (정식 v1) | **익명 동기 그룹** — 같은 입사일 5명 자동 매칭, 익명 닉네임으로 진도 공유 |
+| Phase 3 (확장) | **opt-in 프로필** — 본인이 "공개" 선택 시에만 다른 사람이 검색·확인 가능 |
+| Phase 4+ | **자체 슬랙** — 단톡방, 메시지, 채널 |
+
+## 왜 이 순서인가
+
+### 왜 처음엔 안 보이는 게 나은가
+1. **느린 학습자 보호** — 리더보드 보이면 빠른 사람만 살아남음
+2. **사회 비교 부작용** — "쟤는 벌써 대리네…" 자존감 저하 → 환불 트리거
+3. **개인정보 부담** — 가입 마찰 ↑
+4. **콘텐츠 부족** — 빈 단톡방 = 죽은 느낌
+
+### 왜 집계는 보여야 하나
+1. **사회적 증명** — "47명이 함께"
+2. **밴드웨곤 효과** — "다른 사람도 한다"
+3. **부담 없음** — 익명 집계는 누구도 노출 X
+
+### 왜 동기 그룹은 좋은가 (Phase 2부터)
+1. **소속감** — 진짜 회사처럼 "동기"가 있다는 느낌
+2. **약한 사회적 압박** — "동기들 출근 중"
+3. **5명 = sweet spot** — 던바 친밀권의 코어
+4. **익명** — 부담 줄이면서 사회 증명 받기
+
+## 절대 안 하는 것 (장기까지)
+
+- ❌ **공개 리더보드** — 학습 retention의 적
+- ❌ **연속 출근 일수 공개 비교** — 한 번 끊긴 사용자는 영원히 비교 열등
+- ❌ **자랑글 피드** — 1일1비는 학습 도구지 SNS 아님
+
+## 외부 공유는 환영
+
+- 직급 승진 시 "축하합니다 [이름]님" 카드 → 인스타 공유 가능
+- 결과 공유 = 신규 유입 채널 + 마일스톤 자존감
+
+## 결론
+**커뮤니티는 v1의 핵심이 아니다.** 학습 효과 + retention이 핵심.
+</script>
+
+<script type="text/markdown" id="doc-notices-events">
+# 1일1비 — 공지·이벤트 아이디에이션
+
+## 공지 유형 4가지
+
+| 유형 | 빈도 | 길이 | 예시 |
+|---|---|---|---|
+| 전사 공지 | 월 1-2회 | 2-3문단 | 전사 워크샵, 정책 변경, 인사이동 |
+| 이벤트 안내 | 월 1회 | 1-2문단 | 회식, 송년회, 워크샵 |
+| CEO Talk | 월 1회 | 3-5문단 | 학습 팁, 분기 비전, 격려 |
+| 돌발 (P3 노벨티) | 주 1-2회 | 1문단 | 갑작스런 회의, 외부 손님, 사무실 사고 |
+
+## 12개월 캘린더
+
+연간 흐름은 진짜 회사 캘린더 따라감. 이 자체가 학습 맥락이 됨.
+
+### 1월
+- 새해 시무식
+- 신년 회식
+- 사옥 보일러 고장 (돌발)
+
+### 2월
+- 인사 발령
+- CEO Talk: "1월 회고"
+- 외국 본사 임원 방한 (돌발)
+
+### 3월
+- 1분기 평가 (KPI)
+- 전사 워크샵 일정 안내
+- 사내 이메일 시스템 점검 (돌발)
+
+### 4월
+- 워크샵 (offsite)
+- Q1 결산 발표
+- 회사 창립 기념일 깜짝 케이크 (돌발)
+
+### 5월
+- 가정의 날
+- 프로젝트 마감 압박 (돌발)
+- 동기 환송회 (돌발)
+
+### 6월
+- 상반기 평가 시즌
+- 여름 휴가 안내
+- 2분기 결산 + 하반기 비전
+
+### 7월
+- 신입 인턴 입사 — 이제 너가 멘토!
+- 여름 회식
+- 화재 대피 훈련 (돌발)
+
+### 8월
+- 외국 클라이언트 방한 (영어 미팅 압박)
+- 사내 동호회 모집
+
+### 9월
+- 하반기 킥오프
+- "왜 우리가 이걸 하나" 비전 토크
+- 사내 정전 (돌발)
+
+### 10월
+- 가을 워크샵 (지방 출장)
+- 3분기 평가
+- 회사 이전 루머 (돌발)
+
+### 11월
+- 연말 보너스 안내
+- 사수 부서 이동 가능성 (돌발)
+
+### 12월
+- 송년회 (연중 가장 큰 이벤트)
+- 연말 격려 메시지
+- 새해 첫 회의 미리 잡힘 (돌발)
+
+## 노벨티 이벤트 풀 (랜덤 삽입용 30개)
+
+학습 과학 P3 — 매 3-5 시나리오마다 1번 박힘.
+
+1. 옆자리 동료가 커피 쏟음
+2. 갑자기 부장님이 "잠깐만" 부름
+3. 사옥 엘리베이터 고장
+4. 화장실에서 외국 임원 만남
+5. 점심 메뉴 회의에 갑자기 끌려감
+6. 누가 사무실 라디오 너무 크게 틀어둠
+7. 회의실 예약 더블 부킹
+8. 프린터 종이 떨어짐 (모두가 너 봄)
+9. 갑작스런 식중독 → 회식 중단
+10. 누가 책상 위에 사탕 놓고 감 (익명)
+11. 동료가 비밀 카톡 ("부장이 이상해…")
+12. 외국 클라이언트한테 미스 콜 받음
+13. 누가 우산 빌려감
+14. 비싼 노트북 떨어뜨릴 뻔함
+15. 정수기 물 떨어짐
+16. 갑자기 부서 이동 통보
+17. 사수가 며칠 휴가 → 너 혼자 응대
+18. "오늘 점심 같이 먹자" (어떻게 거절/수락)
+19. 회사 SNS에 누가 멋진 글 씀
+20. 외국 본사에서 화상 회의 갑자기 호출
+21. 회사 근처 상가 화재
+22. 동기가 회사에 늦게 옴
+23. 부서 회식 갑자기 잡힘
+24. 부장님 생일 케이크 누가 살지
+25. 사내 시스템 비밀번호 만료
+26. "회사 비전 어떻게 생각해?" 질문받음
+27. 외부에서 헤드헌터 연락 (이직 제안)
+28. 첫 LinkedIn 친구 신청
+29. 회사 워크샵 발표 자원받기
+30. 사옥 1층에 이상한 사람 들어옴 (보안 어휘)
+
+## 작성 가이드
+
+- [ ] 유형은 명확한가
+- [ ] 학습 과학 P1-P5 중 어느 걸 강화하는가?
+- [ ] 3-5개의 핵심 어휘가 자연스럽게 들어가는가?
+- [ ] NPC 누가 보내는가? 톤·서명 일관?
+- [ ] 사용자가 무슨 액션을 하게 되는가?
+</script>
+
+<script type="text/markdown" id="doc-youbuddy-role">
+# 유버디 — 캐릭터 역할 정의
+
+## 추천 결론
+**유버디 = CEO + 학습 코치 (이중 역할)**
+
+게임 안에선 CEO로 임팩트 있게 등장하고, 핵심 순간엔 학습 코치로 비계 역할.
+
+## 왜 이 조합인가
+
+### CEO여야 하는 이유
+- **권위감** — 입사 환영, 분기 비전, 큰 이벤트 발표
+- **희소성** — CEO 등장은 항상 "큰 일"이라는 신호
+- **브랜딩** — 실제 유버디 == 1일1비 컴퍼니 CEO 매핑이 직관적
+- **유비챌 매핑** — 일관된 페르소나
+
+### 학습 코치여야 하는 이유
+- **신뢰** — 게임 안에서 학습 팁을 누가 줘야 가장 신뢰받나? 권위 + 친밀감 = CEO
+- **차별화** — "유버디"는 학습 권위자 정체성을 이미 갖고 있음
+- **메커니즘** — 학습 과학 5원칙(P1~P5)을 게임 안에서 풀어줄 사람 필요
+
+## 등장 빈도 / 채널
+
+### 자주 등장 X (희소성 유지)
+- 매일 등장 X — 그러면 권위 떨어짐
+- 매일 등장하는 캐릭터는 사수(김대리 등)임
+
+### 핵심 등장 시점
+
+| 언제 | 어떤 모습 | 사용자 감정 |
+|---|---|---|
+| 온보딩 (Day 0) | 입사 환영 메시지 (CEO 톤) | 환영받음 |
+| 첫 출근 (Day 1) | 직접 인사 + 학습 원칙 1줄 가이드 | 안심 |
+| 매월 1일 | "CEO Talk" 공지 발송 | 새 달 다짐 |
+| 분기 끝 | 분기 결산 + 격려 메시지 | 의미 부여 |
+| 승진 시 | 직접 승진 축하 카드 발송 | 자긍심 |
+| 7일 미접속 | "기다리고 있어" 카톡 | 돌아오게 함 |
+| 검증/평가 통과 시 | 직접 축하 | 마일스톤 |
+| 큰 위기 시 | 힌트 1개 제공 | 도움받음 |
+
+## 톤 가이드
+
+### 유버디의 말투
+- **존댓말 기본**, 가끔 따뜻한 친근함
+- **간결** — 길게 안 씀. CEO는 바쁨
+- **개인 호칭** — 항상 사용자 이름을 부름
+- **학습 팁은 요점만** — 1-2문장
+- **이모지는 절제** — 가끔 1개
+
+### 절대 안 함
+- ❌ 이모지 5개씩
+- ❌ MZ 톤 ("개꿀이에요 ㅋㅋ")
+- ❌ 강의 톤
+- ❌ 너무 친밀
+
+## 시각적 표현
+
+- **아바타** — 동그라미에 "YB" 이니셜 (그라디언트 #D85A2A → #8B3A18)
+- **서명** — `유버디 · CEO · 유버디 컴퍼니 / YouBuddy Korea`
+- **메일 from** — `ceo@youbuddy.co.kr`
+- **사내 메신저 닉** — `유버디 (CEO)`
+
+## 운영자(실제 유버디 = 너) 입장
+
+### v1 (수동)
+- 매월 1일 CEO Talk 공지 직접 작성
+- 분기 끝 결산 작성
+- 승진자 발생 시 축하 메시지
+
+### v2 (반자동)
+- AI가 사용자 진도 보고 개인화 메시지 초안 작성
+- 너가 검토 후 발송 (1초 클릭)
+
+### v3 (자동)
+- 일정 자동화 (월 1회 / 분기 1회)
+
+## 한 줄 요약
+
+> 유버디는 사용자가 가장 만나고 싶어 하는 사람이어야 한다. 자주는 X, 만났을 때는 임팩트 있게.
+</script>
+
+<script type="text/markdown" id="doc-validation">
+# 1일1비 — 검증 전략
+
+## 현재 상황 (2026-05-01 기준)
+
+- **유비챌 5기 운영 중** — 매 기수 30~40명 꾸준히 모객. 비즈니스 학습 시장에 명확한 니즈 ✅
+- **유버디 브랜드 이미 형성** — 1일1비 출시 시점에 이미 잠재 고객 풀
+- **인스타 팔로워 2.5만** — 메인 모집 채널
+- **누적 유료 100명** (유비챌 5기수)
+- **1일1비는 아직 베타 전** — 프로토타입 단계
+
+## 검증 가설
+
+| # | 가설 | 검증 방법 |
+|---|---|---|
+| H1 | 비즈니스 어휘를 게임처럼 배우려는 수요가 있다 | 유비챌 모객 = 부분 검증. 게임화 형태 별도 검증 필요 |
+| H2 | 한 달 1.5–3만원 구독에 지불 의사가 있다 | 가격 테스트 (랜딩 3가지 가격대) |
+| H3 | 사용자가 매일 5–10분 꾸준히 사용한다 | 베타 30일 retention 측정 |
+| H4 | 직급 레벨업이 결제 전환을 만든다 | 30일차 결제 페이지 전환율 |
+| H5 | NPC 시나리오 응대가 단순 어휘 카드보다 재밌다 | 베타 사용자 NPS + 정성 인터뷰 |
+
+## 추천 순서
+
+### 1단계: 유비챌 졸업생 인터뷰 (이번 주)
+- 유비챌 5기 졸업자 5–10명에게 1:1 인터뷰
+- 핵심 질문: 끝나고 어떤 갈증이 남는지, 일상 유지 도구 있다면 쓸 의향
+- 1일1비 컨셉 노출은 마지막 5분에만
+
+### 2단계: 클로즈드 베타 (5월 중순–6월)
+- 유비챌 졸업생 + 본인 인스타 팔로워 중 10명 모집
+- 프로토타입으로 30일 운영
+- 매주 정성 피드백 + 사용 데이터 수집
+- **목표:** retention 60%+
+
+### 3단계: 가격 검증 (6월 말)
+- 랜딩 페이지 3개 (월 1.5만 / 2만 / 3만)
+- 인스타 광고 소액으로 트래픽
+- 보증금 형태 ("정식 출시 시 우선 입사 + 첫 달 50% 할인 — 1만원 보증금")
+- **목표:** 1만원 보증금 결제 30명 = 정식 출시 GO
+
+### 4단계: 정식 출시 (7월~)
+- 보증금 결제자에게 우선 입사 안내
+- 유비챌 졸업생 대상 30% 할인 코드
+- 인스타 + 직장인 커뮤니티에 컨셉 컨텐츠 동시 송출
+
+## 측정 지표
+
+핵심 KPI:
+- **D1, D7, D30 retention** (목표: 70 / 50 / 30%)
+- **승진 면접 통과율** = 두 번째 결제율 (목표: 40%+)
+- **결제 후 7일 환불률** (목표: 10% 이하)
+- **NPS** (목표: 30+)
+
+## 리스크와 대응
+
+| 리스크 | 대응 |
+|---|---|
+| 유비챌과 카니발리제이션 | 다른 자아의 사용자 노린다 |
+| 게임화가 가벼워서 진지한 학습자 이탈 | 진지한 학습자는 유비챌로 밀어주는 funnel |
+| 자동화 비용 (시나리오 30+) | 시즌별 출시 |
+| 컨텐츠 베껴짐 | 베껴지는 건 단어. 베끼지 못하는 건 brand + funnel + retention 데이터 |
+
+## 결정 트리
+
+유비챌 졸업생 인터뷰 5명 → 3명 이상이 "끝나고 일상 유지 도구 있으면 쓸래" 응답?
+- YES → 클로즈드 베타 GO
+- NO  → 컨셉 재정의 또는 타겟 재정의
+</script>
+
+<script type="text/markdown" id="doc-tech-stack">
+# 1일1비 — 기술 스택 결정 (웹 우선, 앱 v2 이후)
+
+## 제약 조건
+1. **솔로 운영자** — 새 기술 학습·유지보수 비용 = 시간 손실
+2. **v1은 웹만, 앱은 v2** — "앱까지 가면 지친다." 웹으로 먼저 살아남기
+3. **1-2일 안에 베타 띄울 수 있어야** — 거창한 인프라 X
+4. **단, 미래 앱화 가능성은 막지 않기**
+5. **자동화 기반 셀프서브** — 코호트 운영 X
+
+## v1 (웹 베타)
+
+| 영역 | 선택 | 이유 |
+|---|---|---|
+| 시작점 | **현재 simulator.html** | 인라인 React + Babel. 즉시 동작 |
+| 호스팅 | **Vercel** | GitHub 연결 자동 배포. 무료 |
+| 도메인 | `1ilbi.com` 또는 서브패스 | 신뢰도 |
+| 분석 | **PostHog 무료** | 펀널·리텐션. 1일1비 P1~P5 측정 |
+| 에러 | **Sentry 무료** | 자동 수집 |
+| 결제 | (없음) | v2에서 |
+| 인증 | (간단 비밀번호 + localStorage) | 진도 기기에 묶이지만 v1엔 충분 |
+| 피드백 | **Tally.so** + KakaoTalk | 5분 구축 |
+
+→ **새로 배워야 할 기술: 0개.**
+
+## v1.5 (1-2개월 후)
+
+| 영역 | 추가 |
+|---|---|
+| 번들러 | **Vite** |
+| 언어 | **TypeScript** |
+| 상태 관리 | **Zustand** |
+| DB·인증 | **Supabase** |
+| 결제 | **Toss Payments** |
+| 스타일 | **Tailwind CSS** |
+
+## v2 (앱화, 6개월+)
+
+| 영역 | 선택 |
+|---|---|
+| 모바일 래퍼 | **Capacitor** |
+| 앱 결제 | StoreKit / Play Billing |
+| 푸시 | OneSignal |
+
+→ v2는 v1 살아남았을 때만. 사용자 1,000명 + 월 30만원+ = v2 GO.
+
+## "지금부터 안 어기면 v2 갈 때 안 빡센" 원칙
+
+이 원칙들은 v1.5에서 본격 적용. v1 시점엔 인지만.
+
+### 원칙 1. 데이터와 UI 분리
+지금: 글로벌 변수. v1.5에 정리.
+
+### 원칙 2. 웹 전용 API 추상화
+- ❌ `localStorage.getItem('day')` 직접
+- ✅ `storage.get('day')` 함수로 감싸기
+
+### 원칙 3. 디자인 토큰 한 곳
+- 이미 `--paper`, `--ink` 같은 CSS 변수로 잘 돼있음
+
+### 원칙 4. 환경변수로 환경 분리
+v1.5부터 dev / production 분리.
+
+## v1엔 안 쓸 것
+
+- ❌ Next.js
+- ❌ Redux
+- ❌ TypeScript 처음부터
+- ❌ React Native 처음부터
+- ❌ AWS·자체 서버
+- ❌ Docker
+- ❌ GraphQL
+
+## 의문 들 때
+
+> **v1은 살아남기 위해 만든다. v2는 살아남고 나서.**
+
+v1 사용자 100명 D7 retention 30% 못 뚫으면 v2 갈 자격 없음.
+</script>
+
+<script type="text/markdown" id="doc-customer-data">
+# 1일1비 — 고객 데이터 스키마
+
+## v1 (현재 — localStorage)
+
+브라우저 localStorage 키:
+
+### `__OD_USER` — 사용자 프로필
+온보딩 완료 시 생성. 시뮬레이터·운영자 뷰가 읽음.
+
+```
+{
+  email, name, signupDate,
+  empNumber, department, mentor, coworkers,
+  level, dayInCompany,
+  scenariosCompleted, wordsStudied,
+  productionAttempts: { correct, total },     // P1
+  noveltyEvents: [...],                        // P3
+  lastActive, totalSessions, totalSessionMs,
+  preferences,
+  schemaVersion: 1,
+}
+```
+
+### `__OD_NOTICES` — 운영자가 보낸 공지
+운영자 뷰에서 작성, 시뮬레이터의 사내 메모(Inbox)에서 표시.
+
+```
+[{
+  id, type, title, body, from, at, unread
+}]
+```
+
+## v2 (Supabase 마이그레이션 매핑)
+
+### `users`
+`__OD_USER` 그대로. 로그인은 Supabase Auth.
+
+### `events` (이벤트 로그)
+모든 사용자 행동 1건 1행. 학습 과학 가설 측정의 원천.
+
+```
+event_id, user_id, type, payload (jsonb), happened_at
+```
+
+type: `scenario_started`, `word_attempted`, `production_correct`, `production_wrong`, `novelty_event_shown`, `notice_read`, `level_up`, `session_start`, `session_end`
+
+### `notices`, `scenarios`, `words`, `characters`
+정적 컨텐츠 + broadcast.
+
+## 캡처 우선순위 (베타 30일)
+
+핵심 4종:
+1. **신원** — email, name, signupDate
+2. **진도** — dayInCompany, scenariosCompleted, wordsStudied
+3. **P1 정확도** — productionAttempts.correct / .total
+4. **세션 활동** — lastActive, totalSessions
+
+이 4종만 있어도 D7/D30 retention + 학습 효과 측정 가능.
+
+## 프라이버시 / 신뢰
+
+- 이메일은 운영자 뷰에서 마스킹
+- 사용자에게: "당신의 학습 데이터는 본인 동의 하에만 분석에 사용"
+- 데이터 export 권리 (운영자 뷰 JSON export = 본인도 다운 가능)
+
+## 마이그레이션 절차 (v1 → v2)
+
+1. v1.5에서 사용자에게 "기존 진도 가져오기" 버튼
+2. localStorage의 `__OD_USER` JSON을 Supabase API로 POST
+3. 서버에서 받아서 `users` 테이블에 insert
+4. 이후엔 Supabase가 source of truth, localStorage는 캐시
+</script>
+
+<script type="text/markdown" id="doc-retention-mechanics">
+# 1일1비 — Retention 메커니즘 (평생 컨텐츠 설계)
+
+> Day 180 = 메인 코스 클라이맥스. 그 이후가 진짜 retention의 영역.
+> 모바일 시뮬게임 표준 메커니즘을 학습 컨셉 안에서 변형해서 박는다.
+
+## 모바일 시뮬게임 retention 메커니즘 (실제 사례)
+
+| 메커니즘 | 예시 | 효과 |
+|---|---|---|
+| NG+ (New Game Plus) | 심즈, Stardew Valley | endgame 후 다시 시작 → 평생 |
+| 시즌 / 분기 이벤트 | 동물의 숲, 카카오게임 | 1년 사이클 매년 반복 |
+| 컬렉션 시스템 | 포켓몬, 동물의 숲 | 무한 수집 |
+| 라이브 옵스 | 캔디크러시, Supercell | 운영자 매주 컨텐츠 push |
+| 멀티플레이어 / 친구 | 카카오게임 류 | 친구 진도 비교, 선물 |
+| 일상 루틴 | 모든 모바일 게임 | 매일 출석 보상 |
+
+## 1일1비 적용 — 7가지
+
+### A. NG+ — 라운드 시스템 (가장 강력)
+
+Day 180 회장 만남에서 5가지 길 선택:
+
+| 선택지 | 컨텐츠 | 어휘 풀 |
+|---|---|---|
+| 다른 부서 재입사 | 같은 회사, 다른 부서 | 그 부서 어휘 |
+| 외국 본사 발령 | 런던/뉴욕 본사 | 영국식 vs 미국식 |
+| 이직 (다른 외국계) | 컨설팅·IT·금융 | 산업 특화 어휘 |
+| 친구네 스타트업 | 작은 팀에서 멀티 역할 | 스타트업 어휘 |
+| 멘토 모드 | 신입 후배 받음 | 기존 어휘 깊이 강화 |
+
+→ 5개 길 × 6개월 = 30개월 자연스럽게.
+
+### B. 시즌 이벤트 — 매년 반복되는 회사 캘린더
+12개월 캘린더 매년 반복. 캐릭터 같지만 사건 다름. 시즌 한정 NPC.
+
+### C. 컬렉션 시스템
+
+| 컬렉션 | 보상 |
+|---|---|
+| 단어 도감 | 부서별 마스터 칭호 |
+| NPC 도감 | "외국계 50명" |
+| 시나리오 도감 | 진행률 |
+| 회장 단서 | 50개 |
+| 수료증 | 부서별·라운드별 (인스타 공유) |
+
+### D. 일상 루틴 (매일 5-10분)
+매일 출근, 매일 점심, 가끔 회식. 끝없는 일상 = 평생 컨텐츠.
+
+### E. 멘토 모드 — 학습 효과 폭발 (1일1비만의 차별점)
+
+2라운드부터 가능. 신입 후배가 너한테 질문 → 너가 답변. **가르치며 본인 복습 (Protégé Effect).** 일반 어휘 앱은 절대 못 함.
+
+### F. 친구·동기 (Phase 2 이후)
+동기 5명 (익명, 진도만). 사회적 자극.
+
+### G. 라이브 옵스
+운영자가 매주 1-2개 공지 push. 분기마다 큰 이벤트.
+
+## LTV 추정
+
+- Day 180까지 retention 70%, 그 후 50%
+- 가격 월 3만원
+- 평균 LTV = 9-12개월 = **30만원/사용자**
+- 350명 × 30만 = **연 1억 LTV**
+
+## 결제 사이클 매핑
+
+| 시점 | 결제 동기 |
+|---|---|
+| Day 14 | 정규직 + 부서 이동 |
+| Day 30 | 선임 승진 + 첫 분기 평가 |
+| Day 60 | 대리 승진 + 외국 출장 |
+| Day 90 | 과장 승진 |
+| Day 120 | 차장 승진 |
+| Day 150 | 부장 승진 |
+| **Day 180** | **회장 reveal + 라운드 선택** ⭐ 최대 hook |
+| Day 270 | 2라운드 진행 |
+| Day 365 | 1년 충성 사용자 한정 |
+
+## 절대 안 하는 것
+
+- ❌ Pay-to-win
+- ❌ 가챠
+- ❌ 무한 도파민 루프
+- ❌ 사회 비교 leaderboard
+
+→ 1일1비의 retention은 **학습 가치 + 캐릭터 애착**으로 끌어가야 함.
+</script>
+
+<script type="text/markdown" id="doc-day1-30-outline">
+# Day 1 ~ Day 30 시나리오 Outline (수습 + 사원 데모)
+
+> 메인 코스 첫 30일. 학습 과학 P1~P5 모두 적용.
+> 각 일자: 어휘 1-3개 + 핵심 사건 + NPC + P1 강제 생성 + (가끔) P3 노벨티.
+> Day 14 = 수습 종료 면접 ⭐ / Day 30 = 선임 승진 면접 ⭐
+
+전체 outline은 `docs/day1-30-outline.md` 참고. 핵심 요약:
+
+## 수습 단계 (Day 1–14)
+
+| Day | 핵심 어휘 | 사건 | P1 액션 |
+|---|---|---|---|
+| 1 | onboarding, mentor | 첫 출근, 사번, 사수 만남 | 자기소개 한 줄 |
+| 2 | ping, DM | 사내 메신저 첫 적응 | "확인했습니다" 톤 선택 |
+| 3 | stakeholder, agenda | 첫 회의 참관 | stakeholder map 정리 |
+| 4 | Dear / Hi / Hello | 메일 양식 학습 | 톤별 인사 채우기 |
+| 5 | draft, due date | 첫 보고서 | 마감 표현 채우기 |
+| 6 | recommend, treat | 동료 점심 | 추천 영문 답 |
+| 7 | team dinner | 첫 회식 | 거절/수락 |
+| 8 | external, ETA | Daniel(런던) 첫 메일 | 답장 첫 줄 |
+| 9 | group chat, mute | 부서 단톡 적응 | 첫 인사 한 줄 |
+| 10 | cc, attached | Daniel 답장 작성 | 본문 직접 작성 |
+| 11 | VPN, password | 시스템 트러블 | 정중한 부탁 |
+| 12 | opinion, suggest | 첫 회의 발언 | 의견 한 줄 |
+| 13 | congrats | 박 대리 생일 | 한 마디 |
+| **14** | **probation** | **수습 종료 면접** ⭐ | "정규직 남고 싶은 이유" + **부서 이동 reveal** |
+
+## 사원 단계 (Day 15–30)
+
+| Day | 핵심 어휘 | 사건 | P1 액션 |
+|---|---|---|---|
+| 15 | associate | 정규직 첫 날 | 새 명함 영문 |
+| 16 | badge, ID | 사원증 받기 | 보안 서약 |
+| 17 | solo, handle | 사수 부재, 단독 메일 | 답장 직접 |
+| 18 | business trip | 외국 출장 떡밥 | (수동) |
+| 19 | assignment | 첫 단독 책임 | "I'll take ownership of ___" |
+| 20 | pair work | 동기 페어 | 작업 분담 제안 |
+| 21 | disagree, align | 동기 의견 충돌 | "I see your point, but ___" |
+| 22 | caller, on behalf | Sarah(미국) 첫 등장 | 미국식 톤 답 |
+| 23 | schedule(셰줄/스케줄) | 미국식 vs 영국식 | 발음 구분 |
+| 24 | post, comment | 회사 SNS | 댓글 영문 |
+| 25 | typo, apology | 첫 실수 | 사과 메일 작성 |
+| 26 | give notice | 박 대리 이직 통보 | "축하해, 잘 가" |
+| 27 | farewell | 환송회 | 환송 메시지 |
+| 28 | rotation, transfer | 부서 이동 떡밥 (강) | 의향 한 줄 |
+| 29 | review, KPI | 분기 평가 준비 | 강점 한 줄 |
+| **30** | **promotion** | **선임 승진 면접** ⭐ | 영문 평가 답 + **부서 이동 가능** |
+
+## 떡밥 누적 (Day 1-30)
+
+| 떡밥 | Day | 강도 |
+|---|---|---|
+| 회장 미스테리 | 1, 7, 14, 23, 30 | 약-중 |
+| 부서 이동 | 1, 14, 28 | Day 14에 첫 reveal |
+| 외국 본사 출장 | 18 | 약 (Day 60 reveal) |
+| Daniel + Sarah | 8, 22 | 외국 클라이언트 등장 |
+| 사내 정치 | 12 (한도윤 비밀 카톡) | 씨앗 |
+| 이직 | 26 (박 대리) | 씨앗 |
+
+## 다음 작업
+
+이 outline OK면:
+1. simulator.html SCENARIOS 데이터 30개 항목 재작성
+2. 어휘 (window.WORDS) 30개 매칭
+3. NPC 데이터 추가 (Sarah 디테일 등)
+4. P1 강제 생성 액션 UI 시안
+
+전체 detailed outline: `docs/day1-30-outline.md`
+</script>
+
+<script type="text/markdown" id="doc-web-to-app">
+# 1일1비 — 웹에서 앱으로 가는 길
+
+## 결론 먼저
+**쉬운 편이야. 단, 지금부터 결정하는 한 가지가 그 길을 결정한다 — "데이터/로직과 UI를 분리하라."**
+
+## 현재 코드 상태 진단
+
+```
+prototype.html  →  React 18 + Babel standalone (CDN)
+mobile.html     →  iframe으로 simulator.html 감싸기
+simulator.html  →  React + Babel standalone, 인라인 컴포넌트
+data.js         →  window.WORDS = [...] 글로벌 변수
+```
+
+**평가:**
+- ✅ 컴포넌트 단위 분리는 어느정도 됨
+- ⚠️ Babel standalone — 프로토타입엔 OK, 프로덕션엔 부적절
+- ⚠️ 데이터가 글로벌 변수 — 앱으로 갈 때 가장 큰 짐
+
+## 앱으로 가는 3가지 길
+
+### 길 1: PWA (1주, 임시)
+- manifest.json + service worker 추가
+- 받는 것: 홈 화면 설치, 푸시, 오프라인
+- 못 받는 것: App Store / Play Store
+
+### 길 2: Capacitor 래핑 (2~3주, 추천)
+- 웹앱 그대로를 네이티브 앱 안에 WebView로 감쌈
+- 받는 것: 앱스토어 출시, 네이티브 푸시·결제, 웹 코드 그대로
+- 못 받는 것: 진짜 네이티브 느낌의 부드러운 애니메이션
+- 인스타·트위터·디스코드도 한참 동안 WebView였음
+
+### 길 3: React Native (Expo) — 트래픽 검증 후
+- UI를 RN 컴포넌트로 다시 작성
+- 비용: UI 재작성. 잘 분리해뒀으면 70% 재사용
+- 5,000+ 유료 사용자 시점에 권장
+
+## 추천 로드맵
+
+```
+지금 (베타)        →  웹 (현재)
+정식 출시 (v1)     →  Vite + Capacitor → 앱스토어
+6개월 후 (v2)      →  RN 점진 마이그레이션
+```
+
+## 지금부터 무조건 지킬 4가지
+
+### 1. 데이터 레이어 분리
+
+```
+❌ const words = window.WORDS;
+✅ const words = await fetchWords({ day: user.currentDay });
+```
+
+UI는 데이터가 어디서 오는지 모르게.
+
+### 2. 상태 관리 도입
+글로벌 변수 ❌ → Zustand ✅
+
+### 3. 웹 전용 API 비즈니스 로직에서 직접 호출 X
+- ❌ `localStorage.getItem`
+- ✅ `storage.get` 함수로 감싸기
+
+### 4. 디자인 토큰 한 곳
+
+```
+// tokens.js
+export const colors = { primary: '#2A1F14', surface: '#E8DFCB' };
+```
+
+## 비용/시간
+
+| 단계 | 작업 | 시간 |
+|---|---|---|
+| 1 | Vite + 데이터 분리 | 1~2주 |
+| 2 | Capacitor + 앱스토어 | 2~3주 |
+| 3 | RN 전환 | 2~3개월 |
+
+총 **MVP 앱스토어까지 4~6주**.
+
+## 백엔드
+
+- **추천:** Supabase
+- **결제:** Toss + 인앱결제 병행
+- **NPC AI:** Claude API (차후)
+</script>
+
+<script>
+function loadDoc(key) {
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.toggle('active', a.dataset.doc === key);
+  });
+  const el = document.getElementById('doc-' + key);
+  const content = document.getElementById('content');
+  if (!el) return;
+  const md = el.textContent.trim();
+  content.innerHTML = marked.parse(md);
+  window.scrollTo(0, 0);
+}
+
+function handleRoute() {
+  const params = new URLSearchParams(location.search);
+  const doc = params.get('doc');
+  if (doc && document.getElementById('doc-' + doc)) loadDoc(doc);
+}
+
+window.addEventListener('popstate', handleRoute);
+
+document.querySelectorAll('.nav-link[data-doc]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const doc = a.dataset.doc;
+    history.pushState({ doc }, '', '?doc=' + doc);
+    loadDoc(doc);
+  });
+});
+
+handleRoute();
+</script>
+</body>
+</html>

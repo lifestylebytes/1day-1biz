@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1일1비 · 모바일 뷰</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap');
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100vh; }
+  body {
+    background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+    font-family: 'Noto Sans KR', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #2A1F14;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+      radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
+    background-size: 32px 32px, 8px 8px;
+    background-position: 0 0, 4px 4px;
+  }
+  .stage {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 36px 20px 60px;
+    gap: 24px;
+  }
+  .header {
+    text-align: center;
+    max-width: 460px;
+  }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 0.24em; font-weight: 800;
+    color: #8A7964; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+    margin: 0 0 8px; line-height: 1.2;
+  }
+  .header h1 em { font-style: normal; color: #D85A2A; }
+  .header p {
+    font-size: 13px; color: #5C4A36; margin: 0;
+    line-height: 1.55;
+  }
+  .device-row {
+    display: flex; gap: 28px; align-items: center; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .device-shell {
+    position: relative;
+    width: 393px; height: 852px;
+    border-radius: 56px;
+    background: #1A130B;
+    padding: 12px;
+    box-shadow:
+      0 0 0 2px rgba(0,0,0,0.5),
+      0 0 0 3px rgba(255,255,255,0.06),
+      0 60px 100px -20px rgba(58,40,18,0.45),
+      0 30px 50px -10px rgba(58,40,18,0.25);
+  }
+  .device-screen {
+    width: 100%; height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    background: #F4EFE3;
+  }
+  .device-screen iframe {
+    width: 100%; height: 100%;
+    border: none; display: block;
+  }
+  .dynamic-island {
+    position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 37px; border-radius: 24px; background: #000;
+    z-index: 10; pointer-events: none;
+  }
+  .home-indicator {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    width: 139px; height: 5px; border-radius: 100px;
+    background: rgba(0,0,0,0.3);
+    z-index: 10; pointer-events: none;
+  }
+  .device-side-buttons {
+    position: absolute; pointer-events: none;
+  }
+  .btn-mute { left: -2px; top: 130px; width: 4px; height: 32px; background: #0A0805; border-radius: 2px 0 0 2px; }
+  .btn-vol-up { left: -2px; top: 200px; width: 4px; height: 56px; background: #0A0805; border-radius: 2px 0 0 2px; }
+  .btn-vol-down { left: -2px; top: 270px; width: 4px; height: 56px; background: #0A0805; border-radius: 2px 0 0 2px; }
+  .btn-power { right: -2px; top: 220px; width: 4px; height: 80px; background: #0A0805; border-radius: 0 2px 2px 0; }
+
+  .caption {
+    margin-top: 14px; text-align: center;
+    font-size: 11px; letter-spacing: 0.18em; font-weight: 800;
+    color: #8A7964; text-transform: uppercase;
+  }
+
+  /* 다음줄 페어드 디바이스 */
+  .pair {
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* 작은 화면에서 디바이스 스케일 */
+  @media (max-width: 480px) {
+    .stage { padding: 18px 8px 40px; }
+    .header h1 { font-size: 22px; }
+    .header p { font-size: 12px; }
+    .device-shell {
+      transform: scale(0.78);
+      transform-origin: top center;
+      margin-bottom: -188px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="header">
+    <div class="header-eyebrow">MOBILE PREVIEW · IPHONE 16 PRO</div>
+    <h1><em>1일1비</em> 모바일 뷰</h1>
+    <p>iframe 안에서 동작하는 진짜 인터랙티브 시뮬레이터예요.<br/>탭바 누르고, 미션 풀고, 평가까지 다 됩니다.</p>
+  </div>
+
+  <div class="device-row">
+    <div class="pair">
+      <div class="device-shell">
+        <div class="device-side-buttons btn-mute"></div>
+        <div class="device-side-buttons btn-vol-up"></div>
+        <div class="device-side-buttons btn-vol-down"></div>
+        <div class="device-side-buttons btn-power"></div>
+        <div class="device-screen">
+          <iframe src="simulator.html" title="1일1비 모바일 시뮬레이터"></iframe>
+          <div class="dynamic-island"></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+      <div class="caption">393 × 852 · iOS 17</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
