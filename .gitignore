@@ -41,3 +41,9 @@ tmp/
 PRIVATE.md
 NOTES.md
 .secrets
+
+# Internal
+docs/
+MORNING.md
+docs-viewer.html
+dev.html
