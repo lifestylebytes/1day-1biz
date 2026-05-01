@@ -175,11 +175,13 @@ const COWORKERS = [
 ];
 
 // Dev 모드 코드 — 모듈 최상위에 둬야 ApplicationScreen에서도 접근 가능
+// dev      : Day 점프 패널 (?dev=1) 표시 여부
+// operator : 운영자 뷰 / 모든 사용자 데이터 권한 여부
 const DEV_CODES = {
-  "DEV-TEST":  { dev: true, cohort: null,             operator: false, label: "기본 베타테스터" },
-  "DEV-2026":  { dev: true, cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
-  "DEV-OPS":   { dev: true, cohort: "team",           operator: true,  label: "운영팀 (Crew)" },
-  "DEV-BUDDY": { dev: true, cohort: null,             operator: true,  label: "운영자 (유버디)" },
+  "DEV-TEST":  { dev: true,  cohort: null,             operator: false, label: "기본 베타테스터" },
+  "DEV-2026":  { dev: true,  cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
+  "DEV-OPS":   { dev: true,  cohort: "team",           operator: true,  label: "운영팀 (Crew)" },
+  "DEV-BUDDY": { dev: true,  cohort: null,             operator: true,  label: "운영자 (유버디)" },
 };
 
 // ============================================================
@@ -277,11 +279,14 @@ function OnboardingApp() {
       inviteCode: inviteCode || null,
       referredBy: matchedInvite ? "유버디" : (inviteCode ? "유버디" : null),
       isPilotHire: !!inviteCode,
-      // Dev 모드 마킹 (테스터) + 코드별 권한 적용
-      isDevMode: isDevValid,
+      // Dev 모드 마킹 + 코드별 권한 적용
+      // 테스터(DEV-TEST/2026)는 dev:false라 isDevMode도 false → 일반 사용자 흐름
+      isDevMode: !!(matchedDevCode && matchedDevCode.dev),
       devCode: isDevValid ? devCode.toUpperCase() : null,
       cohort: (matchedDevCode && matchedDevCode.cohort) || null,
       isOperator: !!(matchedDevCode && matchedDevCode.operator),
+      // 테스터 마킹 (운영자 뷰 통계에서 분리하기 위함)
+      isTester: !!(matchedDevCode && !matchedDevCode.operator),
     };
     try {
       localStorage.setItem("__OD_USER", JSON.stringify(profile));
@@ -308,12 +313,11 @@ function OnboardingApp() {
     }
 
     // 가입 후 이동:
-    // - DEV-BUDDY (운영자) → operator.html 직행
-    // - DEV-TEST / DEV-2026 → simulator?dev=1 (dev 패널)
-    // - 일반 사용자 → simulator.html
+    // - DEV-BUDDY / DEV-OPS (운영자) → operator.html 직행
+    // - 일반 사용자 / 테스터(DEV-TEST/2026) → simulator.html (dev 패널 없음)
     if (matchedDevCode && matchedDevCode.operator) {
       window.location.href = "operator.html";
-    } else if (isDevValid) {
+    } else if (matchedDevCode && matchedDevCode.dev) {
       window.location.href = "simulator.html?dev=1";
     } else {
       window.location.href = "simulator.html";
@@ -381,13 +385,20 @@ function WelcomeScreen({ onNext }) {
   return (
     <div className="card">
       <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
-      <h1>당신의 <em>비즈니스 첫 출근</em>이<br/>오늘 시작됩니다.</h1>
+      <h1><em>신입 사원</em> 모집</h1>
       <p className="lead">
-        유버디 컴퍼니는 한국에 지점이 있는 외국계 대기업이에요.<br/>
-        매일의 짧은 시나리오와 단어로 진짜 직장인 감각을 키우는 곳.<br/><br/>
-        <strong>직급은 매일 1단계씩 — 수습 → 사원 → 대리 → 과장 → 임원까지.</strong>
-        <br/>
-        지원서를 60초 안에 작성하고 바로 출근해보세요.
+        유버디 코리아입니다.<br/>
+        한국에 지점을 둔 <strong>외국계 대기업</strong>이에요.
+        <br/><br/>
+        이번에 신입 사원을 뽑고 있습니다.
+        <br/><br/>
+        · 매일 짧은 출근 (약 <strong>5~10분</strong>)<br/>
+        · 사수가 1:1로 비즈니스 표현·문화 코칭<br/>
+        · 외국 본사 동료들과도 협업 (Daniel, Sarah)<br/>
+        · 수습 30일 후 정규직 전환 → 사원 → 대리 → 과장 → 임원<br/>
+        · <em>회장님은 만난 사람이 없습니다</em> (이사 도달 시 첫 대면)
+        <br/><br/>
+        지원서 제출 시 사번이 즉시 부여되고, 오늘부터 출근 가능합니다.
       </p>
 
       <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
@@ -451,7 +462,7 @@ function LoginScreen({ onBack }) {
 
     if (!result.ok) {
       setLoading(false);
-      setError("연결 실패 — 잠시 후 다시 시도해주세요.");
+      setError("연결 실패. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -580,14 +591,14 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
       </div>
       <div className="form-row">
-        <label>지원 동기 — 한 줄 (선택)</label>
+        <label>지원 동기 (한 줄, 선택)</label>
         <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
       </div>
 
       <div style={{ marginTop: 16, padding: 12, background: 'var(--paper-warm)', borderRadius: 8, border: '1px dashed var(--line)' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 0, textTransform: 'none', letterSpacing: 'normal', fontWeight: 600 }}>
           <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} style={{ width: 'auto', cursor: 'pointer' }} />
-          🛠 테스터 (Dev 모드 — Day 점프 패널 켜기)
+          🛠 테스터 (Dev 모드 · Day 점프 패널 켜기)
         </label>
         {devMode && (
           <div style={{ marginTop: 10 }}>
@@ -599,7 +610,7 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
             />
             {isDevValid && (
               <div style={{ fontSize: 11, color: '#2D8A3E', marginTop: 6, fontWeight: 600 }}>
-                ✓ {DEV_CODES[devCode.toUpperCase()].label} — Dev 모드 활성
+                ✓ {DEV_CODES[devCode.toUpperCase()].label} · Dev 모드 활성
               </div>
             )}
             {devCode && !isDevValid && (
@@ -628,7 +639,7 @@ function ReviewingScreen({ name, stageIdx, totalStages }) {
     "지원서 접수 확인 중…",
     "인사팀이 검토하고 있어요…",
     "임원진 면접 결과 회신 대기…",
-    "결과 확정 — 잠시만요!",
+    "결과 확정. 잠시만요!",
   ];
   useEffect(() => {
     const t = setInterval(() => setPhase(p => Math.min(p + 1, phases.length - 1)), 700);
@@ -742,7 +753,7 @@ function CEOScreen({ name, dept, stageIdx, totalStages, onNext }) {
       <p className="lead">
         반가워, {name}님. 나는 유버디. <strong>외국계 회사 다니면서 신입한테 버디 여러 번 해본 사람</strong>이야.
         <br/><br/>
-        외국계엔 입사하면 "버디"가 붙어줘 — 모르는 거 부담 없이 물어볼 수 있는 한 발 앞선 동료. 근데 한국 회사엔 그게 거의 없어서 신입들이 답답해해.
+        외국계엔 입사하면 "버디"가 붙어줘요. 모르는 거 부담 없이 물어볼 수 있는, 한 발 앞선 동료. 근데 한국 회사엔 그게 거의 없어서 신입들이 답답해해요.
         <strong>1일1비는 그 버디를 누구나 받을 수 있게 만든 앱이야.</strong>
         <br/><br/>
         매일 5-10분, 너무 무리 마. 꾸준히가 핵심. 모르는 거 있으면 나한테 톡 보내.
@@ -772,7 +783,7 @@ function ReadyScreen({ name, mentor, stageIdx, totalStages, onStart }) {
       <p className="lead">
         {mentor.name}님이 사옥 로비에서 기다리고 있어요. 첫날은 자기소개와 자리 안내, 그리고 아주 짧은 첫 미팅으로 끝납니다.
         <br/><br/>
-        부담 갖지 말고 — 진짜 회사처럼, 천천히.
+        부담 갖지 말고, 진짜 회사처럼 천천히.
       </p>
       <div className="btn-row">
         <button className="btn" onClick={onStart} style={{ fontSize: 15, padding: "14px 28px" }}>

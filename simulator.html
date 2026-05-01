@@ -1434,11 +1434,11 @@ const _todayLabel = _today.getFullYear() + "." +
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
 const _NOTICES_ALL = [
   { id: "n-welcome",    from: "hr",     to: "신입 사원",    date: "오늘",      subject: "[필수] 입사 첫 주 안내",       preview: "오리엔테이션 + 사옥 출입증 + 사내 시스템 접속 가이드. 첫 주 차근차근 안내드릴게요.", unread: true, tag: "필수",  showFromDay: 1 },
-  { id: "n-mentor-hi",  from: "mentor", to: "당신",         date: "오늘",      subject: _mentorFirstName + "입니다 — 잘 부탁해요", preview: "매일 아침 노란 포스트잇으로 단어 한 개씩 알려드릴게요. 모르는 거 부담 없이 물어봐요.", unread: true, tag: "사수",  showFromDay: 1 },
-  { id: "n-eval",       from: "hr",     to: "수습 사원",    date: "사전 안내", subject: "수습 평가 안내 — Day 30 분기 평가", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.",        unread: false, tag: "평가",  showFromDay: 1 },
+  { id: "n-mentor-hi",  from: "mentor", to: "당신",         date: "오늘",      subject: _mentorFirstName + "입니다, 잘 부탁해요", preview: "매일 아침 노란 포스트잇으로 단어 한 개씩 알려드릴게요. 모르는 거 부담 없이 물어봐요.", unread: true, tag: "사수",  showFromDay: 1 },
+  { id: "n-eval",       from: "hr",     to: "수습 사원",    date: "사전 안내", subject: "수습 평가 안내 (Day 30 분기 평가)", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.",        unread: false, tag: "평가",  showFromDay: 1 },
   { id: "n-park-lunch", from: "park",   to: "당신",         date: "Day 5",     subject: "오늘 점심 같이 갈래?",          preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.",                                       unread: true,  tag: "동기",  showFromDay: 5 },
   { id: "n-workshop",   from: "hr",     to: "신입 사원 전원", date: "다음 주",   subject: "[전사] 5월 워크숍 일정 안내",   preview: "5월 둘째 주 워크숍 일정이 확정. 각자 일정표 확인 부탁드립니다.",                  unread: true,  tag: "이벤트", showFromDay: 7 },
-  { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차 — 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. — " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
+  { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차, 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. by " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
 ];
 const NOTICES = _NOTICES_ALL.filter(n => n.showFromDay <= USER.currentDay);
 
@@ -1638,7 +1638,7 @@ function HomePage({ setActive, openScene, openMemo }) {
     { title: "오늘부터 첫 출근이에요 🎉", body: "5초만 둘러볼게요. 어디서 뭘 하면 되는지." },
     { title: "오늘의 시추에이션", body: "왼쪽 큰 카드가 오늘의 단어와 미션이에요. 클릭하면 풀 수 있어요." },
     { title: "사수의 노란 메모", body: "오른쪽 노란 포스트잇은 사수가 단어 뉘앙스를 알려주는 메모예요. 매일 한 장씩." },
-    { title: "출근부 + 사내 메모", body: "출근부엔 매일 도장이 찍혀요. 사내 메모는 HR·사수가 보내는 메시지 — 빨간 점이 새 거." },
+    { title: "출근부 + 사내 메모", body: "출근부엔 매일 도장이 찍혀요. 사내 메모는 HR·사수가 보내는 메시지. 빨간 점이 새로 온 거예요." },
     { title: "오늘 일정 — 9시부터", body: "아래 일정은 9시부터 차근차근. 각 항목 클릭하면 진행돼요. 출근부터 눌러보세요." },
   ];
   const closeTour = () => {
@@ -2262,6 +2262,20 @@ function MyPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showPause, setShowPause] = useState(false);
 
+  const handleLogout = () => {
+    if (!confirm("로그아웃 하시겠어요?\n\n진도는 서버에 저장돼있어서 다음에 같은 이메일로 다시 들어오면 그대로 이어져요.")) return;
+    // 사용자 + 일정·투어 진행상태 정리
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k === "__OD_USER" || k.startsWith("__OD_TASKS_") || k.startsWith("__OD_TOUR_")) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    window.location.href = "onboarding.html";
+  };
+
   return (
     <div>
       <div className="desk-header">
@@ -2380,6 +2394,24 @@ function MyPage() {
                 </div>
               </div>
             )}
+
+            {/* 로그아웃 — 설정 맨 아래 */}
+            <div className="hr-row" style={{ borderTop: "1px dashed var(--line)", paddingTop: 14, marginTop: 6 }}>
+              <span className="hr-row-label">로그아웃</span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: "transparent", border: "1px solid var(--ink-mute)",
+                  color: "var(--ink-soft)", padding: "6px 14px", borderRadius: 6,
+                  fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                🚪 로그아웃
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "4px 18px 14px", lineHeight: 1.5 }}>
+              이 기기에서만 로그아웃돼요. 진도는 서버에 안전하게 저장 — 같은 이메일로 다시 들어오면 그대로 이어져요.
+            </div>
           </>
         )}
       </div>
@@ -2577,6 +2609,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY_USER) || 'null'); } catch(e) { return null; } };
   const save = (u) => { try { localStorage.setItem(KEY_USER, JSON.stringify(u)); } catch(e) {} };
 
+  // 권한 체크 — 운영자(isOperator) 또는 명시적 Dev 모드만 허용
+  // 테스터(DEV-TEST/2026)는 일반 사용자라 ?dev=1 무시 + URL 정리
+  const _checkUser = load();
+  if (!_checkUser || (!_checkUser.isOperator && !_checkUser.isDevMode)) {
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch(e) {}
+    return;
+  }
+
   const style = document.createElement('style');
   style.textContent = `
     #dev-panel {
@@ -2675,10 +2715,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
         <button class="dp-btn" data-act="reload">새로고침</button>
         <button class="dp-btn danger" data-act="reset">사용자 리셋</button>
       </div>
-      <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
-        <a href="operator.html" class="dp-link">↗ 운영자 뷰</a> ·
-        <a href="dev.html" class="dp-link">↗ Dev 런처</a>
-      </div>
+      ${u.isOperator ? '<div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)"><a href="operator.html" class="dp-link">↗ 운영자 뷰</a> · <a href="dev.html" class="dp-link">↗ Dev 런처</a></div>' : ''}
     `;
     panel.querySelector('#dp-collapse').onclick = () => { panel.classList.add('collapsed'); render(); };
     panel.querySelectorAll('[data-act]').forEach(btn => {
