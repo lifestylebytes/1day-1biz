@@ -174,6 +174,14 @@ const COWORKERS = [
   { id: "co2", name: "임재희", role: "동기 입사자 / Product", note: "유학파. 영어 잘함. 부럽지." },
 ];
 
+// Dev 모드 코드 — 모듈 최상위에 둬야 ApplicationScreen에서도 접근 가능
+const DEV_CODES = {
+  "DEV-TEST":  { dev: true, cohort: null,             operator: false, label: "기본 베타테스터" },
+  "DEV-2026":  { dev: true, cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
+  "DEV-OPS":   { dev: true, cohort: "team",           operator: true,  label: "운영팀 (Crew)" },
+  "DEV-BUDDY": { dev: true, cohort: null,             operator: true,  label: "운영자 (유버디)" },
+};
+
 // ============================================================
 // 유틸 — 사번 / 입사일 / 추정값 생성
 // ============================================================
@@ -213,13 +221,6 @@ function OnboardingApp() {
   // Dev 모드 (테스터 전용) — DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
   const [devMode, setDevMode] = useState(false);
   const [devCode, setDevCode] = useState("");
-
-  // 코드별 권한·플래그
-  const DEV_CODES = {
-    "DEV-TEST":  { dev: true, cohort: null,             operator: false, label: "기본 베타테스터" },
-    "DEV-2026":  { dev: true, cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
-    "DEV-BUDDY": { dev: true, cohort: null,             operator: true,  label: "운영자 (유버디)" },
-  };
   const matchedDevCode = devMode ? DEV_CODES[devCode.toUpperCase()] : null;
   const isDevValid = !!matchedDevCode;
 
@@ -271,7 +272,6 @@ function OnboardingApp() {
       preferences: { notifications: true, timezone: "Asia/Seoul" },
       // 운영 메타
       onboardingMotivation: motivation.trim(),
-      cohort: null,
       schemaVersion: 1,
       // 시범 입사자 마킹 (코드 있으면)
       inviteCode: inviteCode || null,
@@ -369,9 +369,15 @@ function StepBar({ idx, total }) {
 }
 
 // ============================================================
-// 0. Welcome
+// 0. Welcome — 신규 가입 OR 로그인 선택
 // ============================================================
 function WelcomeScreen({ onNext }) {
+  const [showLogin, setShowLogin] = useState(false);
+
+  if (showLogin) {
+    return <LoginScreen onBack={() => setShowLogin(false)} />;
+  }
+
   return (
     <div className="card">
       <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
@@ -401,8 +407,152 @@ function WelcomeScreen({ onNext }) {
           ✉️ 대기 등록하기
         </a>
       </div>
-      <div className="fine-print">
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={() => setShowLogin(true)}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
         초대 안 받으셨으면 대기 등록 추천 · 정식 출시 시 우선 안내
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 0b. Login — 다른 기기에서 다시 출근
+// ============================================================
+function LoginScreen({ onBack }) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
+      setError("이메일을 정확히 입력해주세요.");
+      return;
+    }
+
+    if (!window.OD || !window.OD.enabled) {
+      setError("서버 연결이 필요한 기능입니다. 운영자에게 문의해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    const result = await window.OD.fetchByEmail(trimmed);
+
+    if (!result.ok) {
+      setLoading(false);
+      setError("연결 실패 — 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    if (!result.user) {
+      setLoading(false);
+      setError("가입 기록이 없어요. 처음이신 분은 지원서 작성하기로 이동해주세요.");
+      return;
+    }
+
+    // Supabase row → localStorage 프로필 형식으로 복원
+    const u = result.user;
+    const profile = {
+      email: u.email,
+      name: u.name,
+      signupDate: u.signup_date,
+      empNumber: u.emp_number,
+      department: u.department,
+      mentor: u.mentor,
+      coworkers: u.coworkers || [],
+      level: u.level,
+      dayInCompany: u.day_in_company || 1,
+      productionAttempts: u.production_attempts || { correct: 0, total: 0 },
+      noveltyEvents: u.novelty_events || [],
+      scenariosCompleted: u.scenarios_completed || [],
+      wordsStudied: u.words_studied || [],
+      lastActive: new Date().toISOString(),
+      totalSessions: (u.total_sessions || 0) + 1,
+      totalSessionMs: u.total_session_ms || 0,
+      preferences: u.preferences || { notifications: true, timezone: "Asia/Seoul" },
+      onboardingMotivation: u.onboarding_motivation || "",
+      cohort: u.cohort || null,
+      schemaVersion: u.schema_version || 1,
+      isOperator: !!u.is_operator,
+      isPilotHire: !!u.is_pilot_hire,
+      isDevMode: !!u.is_dev_mode,
+      isTester: !!u.is_tester,
+    };
+
+    try {
+      localStorage.setItem("__OD_USER", JSON.stringify(profile));
+    } catch (e) {
+      console.warn("localStorage 저장 실패", e);
+    }
+
+    // 역할별 redirect
+    if (profile.isOperator) {
+      window.location.href = "operator.html";
+    } else if (profile.isDevMode) {
+      window.location.href = "simulator.html?dev=1";
+    } else {
+      window.location.href = "simulator.html";
+    }
+  };
+
+  return (
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 사번 인증</div>
+      <h1>다시 만나서 반가워요.<br/><em>출근하시죠.</em></h1>
+      <p className="lead">
+        가입할 때 입력한 이메일로 들어가시면 진도가 그대로 이어져요.
+        <br/>
+        <strong>새 기기에서도 동일하게 사용 가능.</strong>
+      </p>
+
+      <div className="form-row" style={{ marginTop: 18 }}>
+        <label>가입 이메일</label>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          autoFocus
+          onKeyDown={e => e.key === 'Enter' && !loading && handleLogin()}
+        />
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+          ⚠ {error}
+        </div>
+      )}
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+        <button
+          className="btn"
+          onClick={handleLogin}
+          disabled={loading || !email.trim()}
+          style={{ justifyContent: "center" }}
+        >
+          {loading ? "확인 중..." : "🏢 다시 출근하기"}
+        </button>
+        <a
+          onClick={onBack}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
+        >
+          ← 신규 입사 / 대기 등록으로 돌아가기
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        비밀번호 없이 이메일만으로 진도 복원 · v1.5에 정식 인증 도입 예정
       </div>
     </div>
   );
@@ -447,11 +597,16 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
               placeholder="DEV-XXXX 코드 입력"
               style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', fontSize: 12 }}
             />
-            <div style={{ fontSize: 11, color: isDevValid ? '#2D8A3E' : 'var(--ink-mute)', marginTop: 6, fontWeight: 600 }}>
-              {isDevValid
-                ? '✓ ' + (DEV_CODES[devCode.toUpperCase()].label) + ' — Dev 모드 활성'
-                : '코드: DEV-TEST (테스터) / DEV-2026 (1기) / DEV-BUDDY (운영자)'}
-            </div>
+            {isDevValid && (
+              <div style={{ fontSize: 11, color: '#2D8A3E', marginTop: 6, fontWeight: 600 }}>
+                ✓ {DEV_CODES[devCode.toUpperCase()].label} — Dev 모드 활성
+              </div>
+            )}
+            {devCode && !isDevValid && (
+              <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginTop: 6 }}>
+                코드를 다시 확인해주세요
+              </div>
+            )}
           </div>
         )}
       </div>
