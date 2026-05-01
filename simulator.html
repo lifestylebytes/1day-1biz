@@ -1907,7 +1907,7 @@ function Postit({ mentor, text, word }) {
     <div className="postit">
       <div className="postit-from">▶ {mentor.name} 사수의 메모</div>
       <div>오늘 단어 <b style={{ background: "rgba(255,255,255,0.5)", padding: "1px 5px" }}>{word}</b> 야. {text}</div>
-      <div className="postit-sig">— 차윤아 ✍︎</div>
+      <div className="postit-sig">{mentor.name} ✍︎</div>
     </div>
   );
 }
@@ -2482,15 +2482,15 @@ function SceneModal({ scenario, onClose }) {
               </div>
             ) : (
               <div style={{ marginTop: 16, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)" }}>
-                <div className="postit-from" style={{ marginBottom: 8 }}>▶ 차윤아 사수의 피드백</div>
+                <div className="postit-from" style={{ marginBottom: 8 }}>▶ {CHARACTERS.mentor.name} 사수의 피드백</div>
                 <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)" }}>
-                  좋아요 — <b>{scenario.word}</b> 의 뉘앙스를 잘 잡았어요. 모범 답안도 같이 봐둘게요:
+                  좋아요. <b>{scenario.word}</b> 의 뉘앙스를 잘 잡았어요. 모범 답안도 같이 봐둘게요:
                 </div>
                 <div style={{ marginTop: 10, padding: 10, background: "rgba(255,255,255,0.5)", fontSize: 13.5, fontWeight: 700 }}>
                   "{scenario.sampleAnswer}"
                 </div>
                 <div style={{ marginTop: 12, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>{scenario.mentorTip}</div>
-                <div className="postit-sig">— 차윤아 ✍︎</div>
+                <div className="postit-sig">{CHARACTERS.mentor.name} ✍︎</div>
               </div>
             )}
           </div>
