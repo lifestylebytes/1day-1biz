@@ -1386,14 +1386,6 @@ const SCENARIOS = [
     tags: ["milestone", "promotion", "career"], status: "locked" },
 ];
 
-// 사내 공지 (인트라넷 메모)
-const NOTICES = [
-  { id: "n1", from: "hr", to: "신입 사원 전원", date: "4/30", subject: "[필수] 5월 워크숍 일정 안내", preview: "5월 둘째 주 워크숍 일정이 확정되었습니다. 각자 일정표 확인 부탁드립니다.", unread: true, tag: "필수" },
-  { id: "n2", from: "mentor", to: "당신", date: "4/29", subject: "수습 14일차 — 잘 하고 있어요", preview: "이번 주 미팅에서 'circle back' 자연스럽게 쓰는 거 봤어. 단어가 살아 움직이기 시작한 거야.", unread: true, tag: "사수" },
-  { id: "n3", from: "hr", to: "수습 사원", date: "4/28", subject: "수습 평가 안내 — Day 30 분기 평가", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.", unread: false, tag: "평가" },
-  { id: "n4", from: "park", to: "당신", date: "4/27", subject: "오늘 점심 같이 갈래?", preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.", unread: false, tag: "동기" },
-];
-
 // 사용자 상태 — localStorage 우선, 없으면 데모 기본값
 const _localUser = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
 const USER = {
@@ -1402,6 +1394,7 @@ const USER = {
   positionEn: _localUser?.level?.en || "Probation",
   team: _localUser?.department?.short ? (_localUser.department.short + " · 12F") : "Strategy Team · 12F",
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
+  empNumber: _localUser?.empNumber || "2026-04-15",
   currentDay: _localUser?.dayInCompany || 1,
   totalDays: 30,
   studiedDays: 0,  // 아래에서 자동 계산
@@ -1410,6 +1403,18 @@ const USER = {
   badges: _localUser ? ["첫 출근"] : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
 };
 
+// 사수(mentor)도 localStorage에 배정된 사람으로 덮어쓰기
+if (_localUser?.mentor && _localUser.mentor.name) {
+  CHARACTERS.mentor = {
+    ...CHARACTERS.mentor,
+    name: _localUser.mentor.name,
+    role: _localUser.mentor.role || CHARACTERS.mentor.role,
+    avatar: _localUser.mentor.name.charAt(0),
+    note: _localUser.mentor.trait || CHARACTERS.mentor.note,
+  };
+}
+
+// 부서 동기화 — 매니저 NPC role도 부서명 반영 (선택적)
 // 시추에이션 status 자동 계산 — currentDay 기준으로 studied/today/locked 분류
 SCENARIOS.forEach(s => {
   if (s.day < USER.currentDay) s.status = "studied";
@@ -1418,14 +1423,33 @@ SCENARIOS.forEach(s => {
 });
 USER.studiedDays = SCENARIOS.filter(s => s.status === "studied").length;
 
+// 오늘 날짜 (eyebrow에 사용)
+const _today = new Date();
+const _weekdayKo = ["일","월","화","수","목","금","토"][_today.getDay()];
+const _todayLabel = _today.getFullYear() + "." +
+  String(_today.getMonth()+1).padStart(2,"0") + "." +
+  String(_today.getDate()).padStart(2,"0") + " · " + _weekdayKo + "요일";
+
+// 사내 공지 (인트라넷 메모) — currentDay 기준 동적 필터링
+const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
+const _NOTICES_ALL = [
+  { id: "n-welcome",    from: "hr",     to: "신입 사원",    date: "오늘",      subject: "[필수] 입사 첫 주 안내",       preview: "오리엔테이션 + 사옥 출입증 + 사내 시스템 접속 가이드. 첫 주 차근차근 안내드릴게요.", unread: true, tag: "필수",  showFromDay: 1 },
+  { id: "n-mentor-hi",  from: "mentor", to: "당신",         date: "오늘",      subject: _mentorFirstName + "입니다 — 잘 부탁해요", preview: "매일 아침 노란 포스트잇으로 단어 한 개씩 알려드릴게요. 모르는 거 부담 없이 물어봐요.", unread: true, tag: "사수",  showFromDay: 1 },
+  { id: "n-eval",       from: "hr",     to: "수습 사원",    date: "사전 안내", subject: "수습 평가 안내 — Day 30 분기 평가", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.",        unread: false, tag: "평가",  showFromDay: 1 },
+  { id: "n-park-lunch", from: "park",   to: "당신",         date: "Day 5",     subject: "오늘 점심 같이 갈래?",          preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.",                                       unread: true,  tag: "동기",  showFromDay: 5 },
+  { id: "n-workshop",   from: "hr",     to: "신입 사원 전원", date: "다음 주",   subject: "[전사] 5월 워크숍 일정 안내",   preview: "5월 둘째 주 워크숍 일정이 확정. 각자 일정표 확인 부탁드립니다.",                  unread: true,  tag: "이벤트", showFromDay: 7 },
+  { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차 — 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. — " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
+];
+const NOTICES = _NOTICES_ALL.filter(n => n.showFromDay <= USER.currentDay);
+
 // 오늘의 일정 (홈 화면)
 const TODAY_SCHEDULE = [
-  { time: "09:00", title: "출근 / 슬랙 확인", status: "done" },
-  { time: "09:30", title: "사수 모닝 브리핑", status: "done", note: "오늘의 단어 도착" },
-  { time: "10:00", title: "분기 전략 회의 (Daniel 참석)", status: "now", note: "← 오늘의 시추에이션" },
-  { time: "12:30", title: "박 대리와 점심", status: "next" },
-  { time: "14:00", title: "Sarah Chen 클라이언트 콜", status: "next" },
-  { time: "17:00", title: "주간 회고 + 단어 정리", status: "next" },
+  { id: "checkin",   time: "09:00", title: "사옥 도착 / 사번 받기", action: "출근 첫 도장 ✓ — 1층 인포에서 사번 받았어." },
+  { id: "morning",   time: "09:30", title: CHARACTERS.mentor.name + " 사수 모닝 브리핑", note: "오늘의 단어 도착", action: "사수가 노란 포스트잇 줬어. 오른쪽 메모 확인 ↗" },
+  { id: "scenario",  time: "10:00", title: "오늘의 첫 시추에이션", note: "← 클릭해서 시작", action: null /* opens scene modal */ },
+  { id: "lunch",     time: "12:30", title: "동기 (한도윤·임재희) 와 점심", action: "한도윤이 1층 김밥집 추천. 같이 다녀옴 🍱" },
+  { id: "afternoon", time: "14:00", title: "오후 — 자리 정리 / IT 시스템", action: "IT팀에서 사내 시스템 비밀번호 받음 💻" },
+  { id: "wrapup",    time: "17:00", title: "첫 퇴근 / 일과 정리", action: "오늘 수고했어. 내일은 첫 회의 참관 🌙" },
 ];
 
 // ============================================================
@@ -1459,7 +1483,7 @@ const BUDDY_ANSWERS = {
   ],
 };
 
-window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS };
+window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS, todayLabel: _todayLabel };
 
 </script>
 
@@ -1581,21 +1605,83 @@ function ApprovalLine({ doc, applicant, today, status }) {
 // 홈 — 오늘의 책상
 // ============================================================
 function HomePage({ setActive, openScene, openMemo }) {
-  const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS } = window.__SIM;
+  const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
   const today = SCENARIOS.find(s => s.day === USER.currentDay);
   const npc = CHARACTERS[today.npc];
-  const cells = Array.from({ length: 14 }, (_, i) => {
+  // 출근부 — 14일 그리드
+  const ATTEND_DAYS = 14;
+  const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
     const day = i + 1;
     if (day < USER.currentDay) return { day, state: "done" };
     if (day === USER.currentDay) return { day, state: "today" };
     return { day, state: "" };
   });
 
+  // 일정 진행 상태 (localStorage 저장 — 새로고침해도 유지)
+  const taskKey = "__OD_TASKS_DAY_" + USER.currentDay;
+  const [doneTasks, setDoneTasks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(taskKey) || "{}"); } catch(e) { return {}; }
+  });
+  const [toast, setToast] = useState(null);
+  const showToast = (msg, ms) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), ms || 2400);
+  };
+
+  // Day 1 투어 (첫 방문 시만)
+  const TOUR_KEY = "__OD_TOUR_DONE_DAY_" + USER.currentDay;
+  const [tourStep, setTourStep] = useState(() => {
+    if (USER.currentDay !== 1) return -1;
+    try { return localStorage.getItem(TOUR_KEY) ? -1 : 0; } catch(e) { return -1; }
+  });
+  const TOUR_STEPS = [
+    { title: "오늘부터 첫 출근이에요 🎉", body: "5초만 둘러볼게요. 어디서 뭘 하면 되는지." },
+    { title: "오늘의 시추에이션", body: "왼쪽 큰 카드가 오늘의 단어와 미션이에요. 클릭하면 풀 수 있어요." },
+    { title: "사수의 노란 메모", body: "오른쪽 노란 포스트잇은 사수가 단어 뉘앙스를 알려주는 메모예요. 매일 한 장씩." },
+    { title: "출근부 + 사내 메모", body: "출근부엔 매일 도장이 찍혀요. 사내 메모는 HR·사수가 보내는 메시지 — 빨간 점이 새 거." },
+    { title: "오늘 일정 — 9시부터", body: "아래 일정은 9시부터 차근차근. 각 항목 클릭하면 진행돼요. 출근부터 눌러보세요." },
+  ];
+  const closeTour = () => {
+    setTourStep(-1);
+    try { localStorage.setItem(TOUR_KEY, "1"); } catch(e) {}
+  };
+
+  // 항목별 클릭 처리
+  const handleScheduleClick = (item, idx) => {
+    if (doneTasks[item.id]) return;
+    const prevDone = idx === 0 || doneTasks[TODAY_SCHEDULE[idx-1].id];
+    if (!prevDone) {
+      showToast("⏳ 이전 항목 먼저 끝내주세요");
+      return;
+    }
+    const next = { ...doneTasks, [item.id]: true };
+    setDoneTasks(next);
+    try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
+
+    if (item.id === "scenario") {
+      openScene(today);
+    } else if (item.action) {
+      showToast(item.action, 3000);
+    }
+
+    // 마지막 항목 완료 시 축하
+    if (idx === TODAY_SCHEDULE.length - 1) {
+      setTimeout(() => showToast("🎊 Day " + USER.currentDay + " 완주! 내일 또 봐요.", 4000), 200);
+    }
+  };
+
+  // 각 항목의 computed status
+  const scheduleWithStatus = TODAY_SCHEDULE.map((item, i) => {
+    if (doneTasks[item.id]) return { ...item, computed: "done" };
+    const prevDone = i === 0 || doneTasks[TODAY_SCHEDULE[i-1].id];
+    return { ...item, computed: prevDone ? "now" : "locked" };
+  });
+
   return (
     <div>
       <div className="desk-header">
         <div>
-          <div className="desk-eyebrow">2026.04.30 · 금요일 · DAY {USER.currentDay} / {USER.totalDays}</div>
+          <div className="desk-eyebrow">{todayLabel} · DAY {USER.currentDay} / {USER.totalDays}</div>
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
         </div>
         <div className="desk-meta">
@@ -1615,15 +1701,24 @@ function HomePage({ setActive, openScene, openMemo }) {
               <span>오늘 일정 · DAY {USER.currentDay}</span>
               <span style={{ color: "var(--orange)" }}>● 진행 중</span>
             </div>
-            {TODAY_SCHEDULE.map((row, i) => (
-              <div key={i} className={"schedule-row " + row.status}>
+            {scheduleWithStatus.map((row, i) => (
+              <div
+                key={row.id}
+                className={"schedule-row " + row.computed}
+                onClick={() => row.computed !== "locked" && handleScheduleClick(row, i)}
+                style={{
+                  cursor: row.computed === "locked" ? "not-allowed" : "pointer",
+                  opacity: row.computed === "locked" ? 0.4 : 1,
+                  transition: "all 0.15s",
+                }}
+              >
                 <span className="schedule-time">{row.time}</span>
                 <span>
-                  <span className="schedule-title">{row.title}</span>
+                  <span className="schedule-title" style={{ textDecoration: row.computed === "done" ? "line-through" : "none" }}>{row.title}</span>
                   {row.note ? <div className="schedule-note">{row.note}</div> : null}
                 </span>
-                <span className={"schedule-status " + row.status}>
-                  {row.status === "done" ? "완료" : row.status === "now" ? "지금" : "예정"}
+                <span className={"schedule-status " + row.computed}>
+                  {row.computed === "done" ? "✓ 완료" : row.computed === "now" ? "👉 지금" : "🔒 잠금"}
                 </span>
               </div>
             ))}
@@ -1674,16 +1769,91 @@ function HomePage({ setActive, openScene, openMemo }) {
           </button>
         </div>
       </div>
+
+      {/* 토스트 — 일정 항목 클릭 시 안내 */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)",
+          background: "#2A1F14", color: "#F4EFE3",
+          padding: "12px 20px", borderRadius: 10,
+          fontSize: 13, fontWeight: 600, lineHeight: 1.5,
+          boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+          maxWidth: 420, zIndex: 9000,
+          animation: "fadeUp 0.25s ease-out",
+        }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Day 1 투어 — 첫 방문 시 5단계 팝업 */}
+      {tourStep >= 0 && tourStep < TOUR_STEPS.length && (
+        <>
+          <div style={{
+            position: "fixed", inset: 0, background: "rgba(42,31,20,0.45)",
+            zIndex: 9100,
+          }} onClick={closeTour} />
+          <div style={{
+            position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+            background: "var(--paper)", border: "2px solid var(--accent)",
+            borderRadius: 14, padding: "26px 28px",
+            maxWidth: 420, width: "calc(100% - 40px)",
+            boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+            zIndex: 9101,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 8 }}>
+              📍 첫 출근 가이드 · {tourStep + 1} / {TOUR_STEPS.length}
+            </div>
+            <h3 style={{ fontSize: 19, fontWeight: 900, marginBottom: 10, lineHeight: 1.3 }}>
+              {TOUR_STEPS[tourStep].title}
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 18 }}>
+              {TOUR_STEPS[tourStep].body}
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+              <button
+                onClick={closeTour}
+                style={{
+                  background: "transparent", border: "none", color: "var(--ink-mute)",
+                  fontSize: 12, cursor: "pointer", textDecoration: "underline",
+                }}
+              >건너뛰기</button>
+              <button
+                onClick={() => tourStep < TOUR_STEPS.length - 1 ? setTourStep(tourStep + 1) : closeTour()}
+                style={{
+                  background: "var(--accent)", color: "white", border: "none",
+                  padding: "10px 20px", borderRadius: 8,
+                  fontSize: 13, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                {tourStep < TOUR_STEPS.length - 1 ? "다음 →" : "시작하기 ✓"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes fadeUp { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .schedule-row.now { background: rgba(216,90,42,0.08); border-left: 3px solid var(--accent); }
+        .schedule-row.now:hover { background: rgba(216,90,42,0.14); }
+        .schedule-row.done { background: rgba(45,138,62,0.04); }
+        .schedule-row.locked { background: transparent; }
+        .schedule-status.done { color: #2D8A3E; font-weight: 700; }
+        .schedule-status.now { color: var(--accent); font-weight: 800; animation: blink 1.5s ease-in-out infinite; }
+        .schedule-status.locked { color: var(--ink-mute); opacity: 0.6; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+      `}</style>
     </div>
   );
 }
 
 function ApplicationLine() {
+  const U = window.__SIM.USER;
   return (
     <ApprovalLine
-      doc="YB-2026-04-15"
-      applicant="김지원 (수습 사원)"
-      status="진행 중 · 수습 15/30일"
+      doc={"YB-" + U.empNumber}
+      applicant={U.name + " (" + U.position + ")"}
+      status={"진행 중 · " + (U.position && U.position.replace(" 사원","")) + " " + U.currentDay + "/" + U.totalDays + "일"}
     />
   );
 }
