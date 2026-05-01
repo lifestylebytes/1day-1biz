@@ -7,6 +7,9 @@
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
@@ -210,8 +213,15 @@ function OnboardingApp() {
   // Dev 모드 (테스터 전용) — DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
   const [devMode, setDevMode] = useState(false);
   const [devCode, setDevCode] = useState("");
-  const VALID_DEV_CODES = ["DEV-TEST", "DEV-2026", "DEV-BUDDY"];
-  const isDevValid = devMode && VALID_DEV_CODES.includes(devCode.toUpperCase());
+
+  // 코드별 권한·플래그
+  const DEV_CODES = {
+    "DEV-TEST":  { dev: true, cohort: null,             operator: false, label: "기본 베타테스터" },
+    "DEV-2026":  { dev: true, cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
+    "DEV-BUDDY": { dev: true, cohort: null,             operator: true,  label: "운영자 (유버디)" },
+  };
+  const matchedDevCode = devMode ? DEV_CODES[devCode.toUpperCase()] : null;
+  const isDevValid = !!matchedDevCode;
 
   // matchedInvite 바뀌면 이름 자동 갱신
   useEffect(() => {
@@ -235,7 +245,7 @@ function OnboardingApp() {
     }
   }, [stage]);
 
-  const finishOnboarding = () => {
+  const finishOnboarding = async () => {
     const profile = {
       // identity
       email: email.trim(),
@@ -267,9 +277,11 @@ function OnboardingApp() {
       inviteCode: inviteCode || null,
       referredBy: matchedInvite ? "유버디" : (inviteCode ? "유버디" : null),
       isPilotHire: !!inviteCode,
-      // Dev 모드 마킹 (테스터)
+      // Dev 모드 마킹 (테스터) + 코드별 권한 적용
       isDevMode: isDevValid,
       devCode: isDevValid ? devCode.toUpperCase() : null,
+      cohort: (matchedDevCode && matchedDevCode.cohort) || null,
+      isOperator: !!(matchedDevCode && matchedDevCode.operator),
     };
     try {
       localStorage.setItem("__OD_USER", JSON.stringify(profile));
@@ -282,19 +294,36 @@ function OnboardingApp() {
         localStorage.setItem('__OD_INVITES', JSON.stringify(updated));
       }
     } catch (e) { console.warn("localStorage 저장 실패 (사파리 프라이빗 모드?)", e); }
-    // 시뮬레이터로 이동 (Dev 모드면 ?dev=1)
-    window.location.href = isDevValid ? "simulator.html?dev=1" : "simulator.html";
+
+    // Supabase 동기화 — 가입 정보를 서버에도 저장 (실패해도 시뮬레이터 진행)
+    if (window.OD && window.OD.enabled) {
+      try {
+        const result = await window.OD.signup(profile);
+        if (result.ok) {
+          console.log("[Supabase] 가입 동기화 완료");
+        }
+      } catch (err) {
+        console.warn("[Supabase] 가입 동기화 실패 — localStorage만 진행:", err);
+      }
+    }
+
+    // 가입 후 이동:
+    // - DEV-BUDDY (운영자) → operator.html 직행
+    // - DEV-TEST / DEV-2026 → simulator?dev=1 (dev 패널)
+    // - 일반 사용자 → simulator.html
+    if (matchedDevCode && matchedDevCode.operator) {
+      window.location.href = "operator.html";
+    } else if (isDevValid) {
+      window.location.href = "simulator.html?dev=1";
+    } else {
+      window.location.href = "simulator.html";
+    }
   };
 
   return (
     <div className="stage">
       {stage === "welcome" && (
-        <WelcomeScreen
-          inviteCode={inviteCode}
-          setInviteCode={setInviteCode}
-          matchedInvite={matchedInvite}
-          onNext={() => setStage("application")}
-        />
+        <WelcomeScreen onNext={() => setStage("application")} />
       )}
       {stage === "application" && (
         <ApplicationScreen
@@ -342,10 +371,7 @@ function StepBar({ idx, total }) {
 // ============================================================
 // 0. Welcome
 // ============================================================
-function WelcomeScreen({ onNext, inviteCode, setInviteCode, matchedInvite }) {
-  const [showCode, setShowCode] = useState(!!inviteCode);
-  const codeValid = inviteCode && /^PILOT-[A-Z0-9]{4}$/.test(inviteCode);
-
+function WelcomeScreen({ onNext }) {
   return (
     <div className="card">
       <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
@@ -358,41 +384,26 @@ function WelcomeScreen({ onNext, inviteCode, setInviteCode, matchedInvite }) {
         지원서를 60초 안에 작성하고 바로 출근해보세요.
       </p>
 
-      {showCode ? (
-        <div className="form-row" style={{ marginTop: 18, padding: 14, background: 'var(--paper-warm)', borderRadius: 8, border: '1px dashed var(--line)' }}>
-          <label>입사 추천 코드 (Hiring Pass) — 받은 사람만 입력</label>
-          <input
-            value={inviteCode}
-            onChange={e => setInviteCode(e.target.value.toUpperCase())}
-            placeholder="PILOT-XXXX"
-            style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em' }}
-          />
-          {matchedInvite && (
-            <div style={{ fontSize: 12, color: '#2D8A3E', marginTop: 8, fontWeight: 600 }}>
-              ✓ {matchedInvite.name}님 환영합니다 — 유버디가 추천하셨네요.
-            </div>
-          )}
-          {inviteCode && !codeValid && !matchedInvite && (
-            <div style={{ fontSize: 11, color: 'var(--ink-mute)', marginTop: 6 }}>
-              형식: PILOT-XXXX (예: PILOT-A3K7)
-            </div>
-          )}
-          {codeValid && !matchedInvite && (
-            <div style={{ fontSize: 12, color: '#B8431A', marginTop: 8 }}>
-              유효한 형식 — 가입 시 시범 입사자로 마킹돼.
-            </div>
-          )}
-        </div>
-      ) : (
-        <button className="btn btn-ghost" onClick={() => setShowCode(true)} style={{ fontSize: 12, marginTop: 12 }}>
-          🎫 입사 추천 코드 입력
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
+        <button className="btn" onClick={onNext} style={{ justifyContent: "center" }}>
+          지원서 작성하기 →
+          <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
+            (초대된 베타테스터 전용)
+          </span>
         </button>
-      )}
-
-      <div className="btn-row">
-        <button className="btn" onClick={onNext}>지원서 작성하기 →</button>
+        <a
+          className="btn btn-ghost"
+          href="https://tally.so/r/pb4yZb"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
+        >
+          ✉️ 대기 등록하기
+        </a>
       </div>
-      <div className="fine-print">소요 시간 약 1분 · 첫 출근 데이는 오늘 · 무료 베타</div>
+      <div className="fine-print">
+        초대 안 받으셨으면 대기 등록 추천 · 정식 출시 시 우선 안내
+      </div>
     </div>
   );
 }
@@ -437,7 +448,9 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
               style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', fontSize: 12 }}
             />
             <div style={{ fontSize: 11, color: isDevValid ? '#2D8A3E' : 'var(--ink-mute)', marginTop: 6, fontWeight: 600 }}>
-              {isDevValid ? '✓ Dev 모드 활성 — 가입 후 시뮬레이터에 자동으로 Day 패널 표시' : '예: DEV-TEST, DEV-2026, DEV-BUDDY'}
+              {isDevValid
+                ? '✓ ' + (DEV_CODES[devCode.toUpperCase()].label) + ' — Dev 모드 활성'
+                : '코드: DEV-TEST (테스터) / DEV-2026 (1기) / DEV-BUDDY (운영자)'}
             </div>
           </div>
         )}
@@ -445,7 +458,7 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
 
       <div className="btn-row">
         <button className="btn" disabled={!valid} onClick={onSubmit}>지원서 제출 →</button>
-        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>* 비밀번호 없음 · 이 기기에 임시 저장</span>
+        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>✓ 진도·기록 자동 저장</span>
       </div>
     </div>
   );
