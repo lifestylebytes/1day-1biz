@@ -109,6 +109,8 @@ CREATE TABLE IF NOT EXISTS waitlist (
 
   -- 페르소나·니즈 데이터 (선택)
   current_env TEXT,                          -- "foreign-junior" | "korean-only" | etc.
+  english_usage JSONB DEFAULT '[]'::jsonb,   -- ["meeting","email","messenger"] 등 다중
+  study_methods JSONB DEFAULT '[]'::jsonb,   -- ["academy","video-tutor","ai"] 등 다중
   pain_points JSONB DEFAULT '[]'::jsonb,     -- ["meeting","email-tone"] 등 다중
   goal TEXT,                                 -- "foreign-job" | "current-conf" | etc.
   goal_detail TEXT,                          -- 자유 입력
@@ -123,6 +125,8 @@ CREATE TABLE IF NOT EXISTS waitlist (
 
 -- 이미 waitlist 테이블이 있으면 컬럼만 추가 (마이그레이션)
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS current_env TEXT;
+ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS english_usage JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS study_methods JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS pain_points JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS goal TEXT;
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS goal_detail TEXT;

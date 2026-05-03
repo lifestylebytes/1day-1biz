@@ -448,19 +448,19 @@ function WelcomeScreen({ onNext }) {
       </p>
 
       <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
-        <button className="btn" onClick={onNext} style={{ justifyContent: "center" }}>
-          지원서 작성하기 →
+        <a
+          className="btn"
+          href="waitlist.html"
+          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
+        >
+          ✉️ 대기 등록하기 →
+        </a>
+        <button className="btn btn-ghost" onClick={onNext} style={{ justifyContent: "center" }}>
+          지원서 작성하기
           <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
             (초대된 베타테스터 전용)
           </span>
         </button>
-        <a
-          className="btn btn-ghost"
-          href="waitlist.html"
-          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
-        >
-          ✉️ 대기 등록하기
-        </a>
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>

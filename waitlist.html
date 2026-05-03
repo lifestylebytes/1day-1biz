@@ -183,6 +183,29 @@ const PAIN_OPTIONS = [
   { id: "culture",     label: "외국계 문화 자체가 낯설어요" },
 ];
 
+const USAGE_OPTIONS = [
+  { id: "meeting",      label: "회사 회의 / 미팅" },
+  { id: "email",        label: "메일 작성 · 답장" },
+  { id: "messenger",    label: "메신저 (Slack, Teams 등)" },
+  { id: "presentation", label: "발표 · 프레젠테이션" },
+  { id: "smalltalk",    label: "외국 동료와의 small talk" },
+  { id: "client",       label: "외부 클라이언트 응대 / 출장" },
+  { id: "rarely",       label: "일상에선 거의 안 써요" },
+  { id: "other",        label: "그 외" },
+];
+
+const STUDY_OPTIONS = [
+  { id: "academy",      label: "학원 · 1:1 과외" },
+  { id: "video-tutor",  label: "화상 영어 (캠블리, 링글 등)" },
+  { id: "content",      label: "영어 콘텐츠 (유튜브 · 넷플릭스 · 팟캐스트)" },
+  { id: "book",         label: "책 · 교재로 독학" },
+  { id: "app",          label: "어플 (듀오링고, 야나두 등)" },
+  { id: "challenge",    label: "챌린지 · 스터디" },
+  { id: "ai",           label: "ChatGPT 등 AI 활용" },
+  { id: "none",         label: "지금은 거의 안 하고 있어요" },
+  { id: "other",        label: "그 외" },
+];
+
 const GOAL_OPTIONS = [
   { id: "foreign-job",   label: "외국계 회사 이직 준비" },
   { id: "current-conf",  label: "현재 회사에서 더 자신감 있게" },
@@ -198,6 +221,8 @@ function WaitlistApp() {
   const [phone, setPhone] = useState("");
   const [cohorts, setCohorts] = useState([]);
   const [currentEnv, setCurrentEnv] = useState("");
+  const [usage, setUsage] = useState([]);
+  const [studyMethods, setStudyMethods] = useState([]);
   const [painPoints, setPainPoints] = useState([]);
   const [goal, setGoal] = useState("");
   const [heardFrom, setHeardFrom] = useState("");
@@ -233,6 +258,8 @@ function WaitlistApp() {
       phone: phone.trim() || null,
       priorCohorts: cohorts,
       currentEnv: currentEnv || null,
+      englishUsage: usage,
+      studyMethods: studyMethods,
       painPoints: painPoints,
       goal: goal || null,
       heardFrom: heardFrom.trim() || null,
@@ -414,6 +441,54 @@ function WaitlistApp() {
                   name="env"
                   checked={currentEnv === opt.id}
                   onChange={() => setCurrentEnv(opt.id)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            평소 영어를 언제 많이 쓰세요?
+            <span className="desc">중복 선택 가능 · 선택</span>
+          </label>
+          <div className="checkbox-list">
+            {USAGE_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (usage.includes(opt.id) ? "checked" : "")}
+              >
+                <input
+                  type="checkbox"
+                  checked={usage.includes(opt.id)}
+                  onChange={() => setUsage(prev =>
+                    prev.includes(opt.id) ? prev.filter(p => p !== opt.id) : [...prev, opt.id]
+                  )}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            지금 영어 공부 어떻게 하고 계세요?
+            <span className="desc">중복 선택 가능 · 선택</span>
+          </label>
+          <div className="checkbox-list">
+            {STUDY_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (studyMethods.includes(opt.id) ? "checked" : "")}
+              >
+                <input
+                  type="checkbox"
+                  checked={studyMethods.includes(opt.id)}
+                  onChange={() => setStudyMethods(prev =>
+                    prev.includes(opt.id) ? prev.filter(p => p !== opt.id) : [...prev, opt.id]
+                  )}
                 />
                 {opt.label}
               </label>
