@@ -162,16 +162,53 @@ const COHORT_OPTIONS = [
   { id: "none",       label: "없다" },
 ];
 
+const ENV_OPTIONS = [
+  { id: "foreign-junior",  label: "외국계 회사 재직 중 (주니어, 1~3년)" },
+  { id: "foreign-mid",     label: "외국계 회사 재직 중 (4년 이상)" },
+  { id: "korean-with-foreign", label: "한국 기업 + 외국 클라이언트·본사 응대" },
+  { id: "korean-only",     label: "한국 기업 (영어 거의 안 씀)" },
+  { id: "preparing",       label: "이직 준비 중 (외국계 노리는)" },
+  { id: "student",         label: "학생 / 취준생" },
+  { id: "freelance",       label: "프리랜서 / 1인 사업" },
+  { id: "other",           label: "그 외" },
+];
+
+const PAIN_OPTIONS = [
+  { id: "meeting",     label: "회의에서 영어 표현이 안 떠올라요" },
+  { id: "email-tone",  label: "메일 톤·격식이 헷갈려요" },
+  { id: "small-talk",  label: "외국 동료와의 small talk가 어색해요" },
+  { id: "nuance",      label: "외국계 특유의 어휘·뉘앙스 (bandwidth, circle back 등)" },
+  { id: "presentation",label: "발표·프레젠테이션이 두려워요" },
+  { id: "writing",     label: "영작 자체가 느리고 자신 없어요" },
+  { id: "culture",     label: "외국계 문화 자체가 낯설어요" },
+];
+
+const GOAL_OPTIONS = [
+  { id: "foreign-job",   label: "외국계 회사 이직 준비" },
+  { id: "current-conf",  label: "현재 회사에서 더 자신감 있게" },
+  { id: "daily-english", label: "일상 영어 회화 향상" },
+  { id: "promotion",     label: "승진·포지션업 준비" },
+  { id: "fun",           label: "그냥 재미로 / 루틴 만들기" },
+  { id: "other",         label: "그 외" },
+];
+
 function WaitlistApp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [cohorts, setCohorts] = useState([]);
+  const [currentEnv, setCurrentEnv] = useState("");
+  const [painPoints, setPainPoints] = useState([]);
+  const [goal, setGoal] = useState("");
+  const [heardFrom, setHeardFrom] = useState("");
+  const [motivation, setMotivation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && cohorts.length > 0;
+  const valid = name.trim().length >= 2
+    && /\S+@\S+\.\S+/.test(email)
+    && cohorts.length > 0;
 
   const toggleCohort = (id) => {
     setCohorts(prev => {
@@ -195,6 +232,11 @@ function WaitlistApp() {
       email: email.trim().toLowerCase(),
       phone: phone.trim() || null,
       priorCohorts: cohorts,
+      currentEnv: currentEnv || null,
+      painPoints: painPoints,
+      goal: goal || null,
+      heardFrom: heardFrom.trim() || null,
+      motivation: motivation.trim() || null,
       source: "waitlist-page",
       userAgent: navigator.userAgent,
     };
@@ -235,7 +277,7 @@ function WaitlistApp() {
             </p>
           </div>
           <div className="brand-foot">
-            <a href="/">← 1일1비 메인으로</a>
+            <a href="onboarding.html">← 1일1비 메인으로</a>
           </div>
         </div>
       </div>
@@ -347,6 +389,116 @@ function WaitlistApp() {
           </div>
         </div>
 
+        <div style={{ borderTop: "1px dashed var(--line)", paddingTop: 22, marginTop: 28, marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 6 }}>
+            🤝 지원 동기에 대해 간단히 알려주세요
+          </div>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.6 }}>
+            정확한 매칭, 컨텐츠 다듬는 데만 써요. 다 선택이에요 :)
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            지금 어떤 환경에서 일하시나요?
+            <span className="desc">선택</span>
+          </label>
+          <div className="checkbox-list">
+            {ENV_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (currentEnv === opt.id ? "checked" : "")}
+              >
+                <input
+                  type="radio"
+                  name="env"
+                  checked={currentEnv === opt.id}
+                  onChange={() => setCurrentEnv(opt.id)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            가장 답답하신 부분은 어떤 거예요?
+            <span className="desc">중복 선택 가능 · 선택</span>
+          </label>
+          <div className="checkbox-list">
+            {PAIN_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (painPoints.includes(opt.id) ? "checked" : "")}
+              >
+                <input
+                  type="checkbox"
+                  checked={painPoints.includes(opt.id)}
+                  onChange={() => setPainPoints(prev =>
+                    prev.includes(opt.id) ? prev.filter(p => p !== opt.id) : [...prev, opt.id]
+                  )}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            1일1비로 어떤 변화를 원하세요?
+            <span className="desc">선택</span>
+          </label>
+          <div className="checkbox-list">
+            {GOAL_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (goal === opt.id ? "checked" : "")}
+              >
+                <input
+                  type="radio"
+                  name="goal"
+                  checked={goal === opt.id}
+                  onChange={() => setGoal(opt.id)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            어떻게 알게 되셨어요?
+            <span className="desc">예: 인스타, 유비챌, 친구 추천 · 선택</span>
+          </label>
+          <input
+            type="text"
+            value={heardFrom}
+            onChange={e => setHeardFrom(e.target.value)}
+            placeholder="자유롭게"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>
+            지원 동기 / 한 줄 메시지
+            <span className="desc">기대하는 점이나 궁금한 점 · 선택</span>
+          </label>
+          <textarea
+            value={motivation}
+            onChange={e => setMotivation(e.target.value)}
+            placeholder="자유롭게..."
+            rows={3}
+            style={{
+              width: "100%", padding: "11px 14px", fontSize: 14, fontFamily: "inherit",
+              background: "white", border: "1px solid var(--line)", borderRadius: 8,
+              color: "var(--ink)", resize: "vertical", minHeight: 70,
+            }}
+          />
+        </div>
+
         {error && <div className="error">⚠ {error}</div>}
 
         <button className="btn" onClick={submit} disabled={!valid || submitting}>
@@ -358,7 +510,7 @@ function WaitlistApp() {
         </div>
 
         <div className="brand-foot">
-          <a href="/">← 1일1비 메인으로</a>
+          <a href="onboarding.html">← 1일1비 메인으로</a>
         </div>
       </div>
     </div>

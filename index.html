@@ -42,7 +42,14 @@
     try { user = JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch (e) {}
 
     if (user && user.email) {
-      location.replace('simulator.html');
+      // 운영자면 operator.html 직행
+      if (user.isOperator) {
+        location.replace('operator.html');
+      } else if (user.isDevMode) {
+        location.replace('simulator.html?dev=1');
+      } else {
+        location.replace('simulator.html');
+      }
     } else {
       location.replace('onboarding.html');
     }

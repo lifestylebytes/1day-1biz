@@ -7,6 +7,9 @@
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -136,6 +139,31 @@ function App() {
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
 
+  // Supabase — 전체 사용자 + 통계
+  const [supaEnabled, setSupaEnabled] = useState(false);
+  const [supaUsers, setSupaUsers] = useState([]);
+  const [supaStats, setSupaStats] = useState(null);
+  const [supaLoading, setSupaLoading] = useState(true);
+
+  const refreshSupabase = async () => {
+    if (!window.OD || !window.OD.enabled) {
+      setSupaEnabled(false);
+      setSupaLoading(false);
+      return;
+    }
+    setSupaEnabled(true);
+    setSupaLoading(true);
+    const [usersRes, statsRes] = await Promise.all([
+      window.OD.fetchAllUsers(),
+      window.OD.fetchStats(),
+    ]);
+    if (usersRes.ok) setSupaUsers(usersRes.users);
+    if (statsRes.ok) setSupaStats(statsRes.stats);
+    setSupaLoading(false);
+  };
+
+  useEffect(() => { refreshSupabase(); }, []);
+
   // 다른 탭 동기화
   useEffect(() => {
     const onStorage = (e) => {
@@ -233,14 +261,106 @@ function App() {
         <a className="toggle" href="simulator.html?dev=1">▶ 플레이어 + Dev 패널</a>
         <a className="toggle" href="simulator.html">▶ 플레이어 (일반)</a>
         <a className="toggle" href="dev.html">↩ 개발 런처</a>
+        <a className="toggle" onClick={() => {
+          if (!confirm("로그아웃 하시겠어요?")) return;
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k === "__OD_USER" || k.startsWith("__OD_TASKS_") || k.startsWith("__OD_TOUR_")) {
+              keysToRemove.push(k);
+            }
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+          window.location.href = "onboarding.html";
+        }} style={{ cursor: "pointer", borderColor: "rgba(216,90,42,0.4)", color: "#F38A5C" }}>
+          🚪 로그아웃
+        </a>
       </div>
 
       <div className="wrap">
         <div className="h1">안녕하세요 유버디. <em>회사 현황</em>입니다.</div>
         <div className="lead">
-          시범 입사자 (Pilot Hire) 모집·관리 + 공지 발송 + 이 기기 사용자 디버깅 도구.
-          v1은 이 기기 안에서만 작동 — Supabase 연결되면 모든 사용자 통합 관리.
+          {supaEnabled
+            ? "🟢 Supabase 연결 — 모든 사용자 실시간 추적 중."
+            : "⚪ Supabase 미연결 — lib/supabase-config.js 설정 필요. 지금은 이 기기 데이터만 보임."}
         </div>
+
+        {/* Supabase 전체 사용자 — 가장 위에 배치 */}
+        {supaEnabled && (
+          <div className="section">
+            <div className="section-title">🌐 전체 사용자 (Supabase)
+              <button className="btn btn-ghost btn-mini" style={{ marginLeft: 12, padding: '2px 10px', fontSize: 11 }} onClick={refreshSupabase} disabled={supaLoading}>
+                {supaLoading ? "로딩…" : "↻ 새로고침"}
+              </button>
+            </div>
+            {supaStats && (
+              <div className="grid-2" style={{ marginBottom: 14 }}>
+                <div className="card">
+                  <div className="title">전체 가입자</div>
+                  <div style={{ fontSize: 28, fontWeight: 900 }}>{supaStats.total_users || 0}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964', marginTop: 6 }}>
+                    24h 활성 {supaStats.active_24h || 0} · 7d 활성 {supaStats.active_7d || 0}
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="title">평균 진도 / 마일스톤</div>
+                  <div style={{ fontSize: 28, fontWeight: 900 }}>Day {Math.round(supaStats.avg_day || 1)}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964', marginTop: 6 }}>
+                    Day14 도달 {supaStats.reached_day14 || 0} · Day30 {supaStats.reached_day30 || 0} · Day180 {supaStats.reached_day180 || 0}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="card" style={{ padding: 0 }}>
+              <div className="user-row head">
+                <div>이름 / 이메일</div>
+                <div className="col-2">사번</div>
+                <div className="col-3">레벨</div>
+                <div>Day</div>
+                <div className="col-5">마지막 활동</div>
+                <div>플래그</div>
+              </div>
+              {supaUsers.length === 0 ? (
+                <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
+              ) : supaUsers.map(u => (
+                <div key={u.id} className="user-row">
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{u.name}</div>
+                    <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{u.email}</div>
+                  </div>
+                  <div className="col-2" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{u.emp_number || '—'}</div>
+                  <div className="col-3" style={{ fontSize: 12 }}>{u.level && (u.level.ko || '—')}</div>
+                  <div>Day {u.day_in_company || 1}</div>
+                  <div className="col-5" style={{ fontSize: 11, color: '#8A7964' }}>
+                    {u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR') : '—'}
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {u.is_operator && <span className="status-pill active" style={{ fontSize: 10 }}>OP</span>}
+                    {u.is_dev_mode && <span className="status-pill" style={{ fontSize: 10, background: '#FFF3D6', color: '#B8431A' }}>DEV</span>}
+                    {u.is_pilot_hire && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
+                    {u.is_tester && <span className="status-pill" style={{ fontSize: 10 }}>TEST</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: '#8A7964', marginTop: 10, lineHeight: 1.6 }}>
+              실시간 데이터. 새 가입자는 30초마다 자동 ↻ 또는 위 버튼으로 갱신.
+            </div>
+          </div>
+        )}
+
+        {!supaEnabled && (
+          <div className="section">
+            <div className="card warn" style={{ padding: 24 }}>
+              <strong>⚪ Supabase 연결 필요</strong>
+              <div style={{ fontSize: 13, color: '#5C4A36', marginTop: 8, lineHeight: 1.7 }}>
+                전체 사용자 추적하려면 <code style={{ background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: 4 }}>lib/supabase-config.js</code> 에 너의 Supabase Project URL + anon key 넣으면 활성화돼.
+                자세한 셋업: <code>supabase/SETUP.md</code> 참고.
+              </div>
+            </div>
+          </div>
+        )}
+
 
         <div className="section">
           <div className="section-title">📇 시범 입사자 — 입사 추천 코드 (Hiring Pass) 발급</div>
