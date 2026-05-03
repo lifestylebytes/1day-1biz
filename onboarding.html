@@ -377,12 +377,59 @@ function StepBar({ idx, total }) {
 // ============================================================
 function WelcomeScreen({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
+  // 새로고침할 때마다 인트로 팝업 다시 노출 (localStorage 저장 X)
+  const [showIntro, setShowIntro] = useState(true);
+  const dismissIntro = () => setShowIntro(false);
 
   if (showLogin) {
     return <LoginScreen onBack={() => setShowLogin(false)} />;
   }
 
   return (
+    <>
+    {showIntro && (
+      <>
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9000,
+        }} />
+        <div style={{
+          position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "var(--paper)", border: "2px solid var(--accent)",
+          borderRadius: 14, padding: "30px 30px 22px",
+          maxWidth: 460, width: "calc(100% - 40px)",
+          boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+          zIndex: 9001,
+          textAlign: "left",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 4 }}>
+            ℹ️ 1일 1비란?
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 14 }}>
+            = 1일 1비즈니스 표현 배우기
+          </div>
+          <p style={{ fontSize: 15, color: "var(--ink)", lineHeight: 1.7, marginBottom: 18, fontWeight: 500 }}>
+            <strong>비즈니스 영어 표현</strong>이 매일 한 개씩 제공되는 <strong>회사 롤플레잉 서비스</strong>예요.
+          </p>
+          <ul style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.85, marginBottom: 22, paddingLeft: 0, listStyle: "none" }}>
+            <li>· <strong>유버디가 외국계 6년 다니며 건진 표현들</strong> 위주</li>
+            <li>· 유버디 컴퍼니에서 <strong>다양한 상황 제공</strong> (유버디 전매특허일 예정)</li>
+            <li>· 모은 표현으로 <strong>테스트 보기</strong> 가능</li>
+            <li>· <strong>월 구독제</strong>로 진행됩니다</li>
+          </ul>
+          <button
+            onClick={dismissIntro}
+            style={{
+              background: "var(--accent)", color: "white", border: "none",
+              padding: "12px 22px", borderRadius: 8,
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            알겠어요, 시작할게요 →
+          </button>
+        </div>
+      </>
+    )}
     <div className="card">
       <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
       <h1>이 회사,<br/><em>30일만</em> 다녀볼까요?</h1>
@@ -393,9 +440,8 @@ function WelcomeScreen({ onNext }) {
         이번에 신입 사원을 뽑고 있습니다.
         <br/><br/>
         · 매일 짧은 출근 (약 <strong>5~10분</strong>)<br/>
-        · 사수가 1:1로 비즈니스 표현·문화 코칭<br/>
-        · 외국 본사 동료들과도 협업 (Daniel, Sarah)<br/>
-        · 수습 30일 후 정규직 전환 → 사원 → 대리 → 과장 → 임원<br/>
+        · 1:1 사수가 비즈니스 표현·문화 코칭 (디지털 사수라 잠도 안 자고 24시간 대기, 답장도 빠릅니다)<br/>
+        · <strong>수습 30일 후 정규직 전환 기회</strong>가 있습니다. 승진 제도(사원·대리·과장·임원)도 운영 중이니 열심히 임해주시길 바랍니다<br/>
         · <strong>유버디 컴퍼니 TIP</strong>: 회장님을 아직 뵌 사람이 없대요 (알려진 건, 임원으로 승진하면 볼 기회가 있다는 것 정도..?)
         <br/><br/>
         지원서 제출 시 사번이 즉시 부여되고, 오늘부터 출근 가능합니다.
@@ -432,6 +478,7 @@ function WelcomeScreen({ onNext }) {
         초대 안 받으셨으면 대기 등록 추천 · 정식 출시 시 우선 안내
       </div>
     </div>
+    </>
   );
 }
 
