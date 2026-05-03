@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비 · 베타 테스트 신청</title>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+  --accent-soft: rgba(216,90,42,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 8px 8px;
+}
+
+.stage {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 32px 20px;
+}
+.card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 12px; padding: 40px 36px; width: 100%; max-width: 540px;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.25), 0 8px 24px rgba(58,40,18,0.08);
+}
+
+.eyebrow {
+  font-size: 11px; letter-spacing: 0.16em; font-weight: 800;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
+}
+h1 {
+  font-size: 26px; font-weight: 900; line-height: 1.3;
+  letter-spacing: -0.02em; margin-bottom: 12px;
+}
+h1 em { font-style: normal; font-weight: 900; color: var(--accent); }
+.lead {
+  font-size: 13.5px; color: var(--ink-soft); line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.form-row { margin-bottom: 18px; }
+label {
+  display: block; font-size: 13px; font-weight: 700; color: var(--ink);
+  margin-bottom: 8px; line-height: 1.5;
+}
+label .req { color: var(--accent); margin-left: 4px; }
+label .desc {
+  display: block; font-size: 12px; color: var(--ink-mute);
+  font-weight: 400; margin-top: 4px;
+}
+input[type="text"], input[type="email"], input[type="tel"] {
+  width: 100%; padding: 11px 14px; font-size: 14px; font-family: inherit;
+  background: white; border: 1px solid var(--line); border-radius: 8px;
+  color: var(--ink); transition: border 0.15s;
+}
+input:focus { outline: none; border-color: var(--accent); }
+
+.checkbox-list {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 4px;
+}
+.checkbox-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: white;
+  border: 1px solid var(--line); border-radius: 8px;
+  cursor: pointer; font-size: 13.5px;
+  transition: all 0.15s;
+}
+.checkbox-row:hover { background: var(--paper-warm); }
+.checkbox-row.checked {
+  background: var(--accent-soft); border-color: var(--accent); font-weight: 700;
+}
+.checkbox-row input { width: auto; cursor: pointer; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 13px 24px; font-size: 14px; font-weight: 700;
+  background: var(--ink); color: var(--paper); border: none;
+  border-radius: 8px; cursor: pointer; font-family: inherit;
+  width: 100%;
+  transition: all 0.15s;
+}
+.btn:hover:not(:disabled) { background: #1a120a; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.error {
+  font-size: 12.5px; color: #B8431A; font-weight: 600;
+  margin-top: 4px;
+}
+
+.success-card {
+  text-align: center; padding: 20px 0;
+}
+.success-card .check {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 18px;
+}
+.success-card h2 {
+  font-size: 22px; font-weight: 900; margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.success-card p {
+  font-size: 14px; color: var(--ink-soft); line-height: 1.7;
+}
+
+.fine-print {
+  font-size: 11.5px; color: var(--ink-mute); margin-top: 16px;
+  line-height: 1.6;
+}
+
+.brand-foot {
+  text-align: center; margin-top: 22px; font-size: 11px;
+  color: var(--ink-mute); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.brand-foot a { color: inherit; text-decoration: none; }
+.brand-foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const COHORT_OPTIONS = [
+  { id: "yubichal-1", label: "유비챌 1기" },
+  { id: "yubichal-2", label: "유비챌 2기" },
+  { id: "yubichal-3", label: "유비챌 3기" },
+  { id: "yubichal-4", label: "유비챌 4기" },
+  { id: "yubichal-5", label: "유비챌 5기" },
+  { id: "none",       label: "없다" },
+];
+
+function WaitlistApp() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [cohorts, setCohorts] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && cohorts.length > 0;
+
+  const toggleCohort = (id) => {
+    setCohorts(prev => {
+      if (id === "none") {
+        // "없다" 선택 시 다른 거 다 해제
+        return prev.includes("none") ? [] : ["none"];
+      }
+      // 다른 거 선택 시 "없다" 해제
+      const without = prev.filter(c => c !== "none");
+      return without.includes(id) ? without.filter(c => c !== id) : [...without, id];
+    });
+  };
+
+  const submit = async () => {
+    if (!valid || submitting) return;
+    setError("");
+    setSubmitting(true);
+
+    const entry = {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone.trim() || null,
+      priorCohorts: cohorts,
+      source: "waitlist-page",
+      userAgent: navigator.userAgent,
+    };
+
+    if (!window.OD || !window.OD.enabled) {
+      setError("서버 연결 준비 중입니다. 잠시 후 다시 시도해주세요.");
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const result = await window.OD.saveWaitlistEntry(entry);
+      if (result.ok) {
+        setDone(true);
+      } else {
+        setError(result.error || "저장 실패. 다시 시도해주세요.");
+      }
+    } catch (e) {
+      setError("연결 오류. 다시 시도해주세요.");
+      console.error(e);
+    }
+    setSubmitting(false);
+  };
+
+  if (done) {
+    return (
+      <div className="stage">
+        <div className="card">
+          <div className="success-card">
+            <div className="check">✓</div>
+            <h2>대기 등록 완료!</h2>
+            <p>
+              <strong>{name}</strong> 님, 신청해주셔서 고마워요.
+              <br/>
+              정식 오픈 시 이메일로 우선 안내드릴게요.
+              <br/><br/>
+              곧 만나요 :)
+            </p>
+          </div>
+          <div className="brand-foot">
+            <a href="/">← 1일1비 메인으로</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="stage">
+      <div className="card">
+        <div className="eyebrow">YOUBUDDY KOREA · 베타 대기 등록</div>
+        <h1>[1일1비] 비즈니스 영어 시뮬레이션<br/><em>베타 테스트 신청</em></h1>
+        <p className="lead">
+          첫 오픈 전, 함께 다듬어주실 분들을 모십니다.
+        </p>
+
+        <div style={{
+          background: "var(--paper-warm)",
+          border: "1px solid var(--line)",
+          borderRadius: 10,
+          padding: "16px 18px",
+          marginBottom: 24,
+          fontSize: 13,
+          lineHeight: 1.75,
+          color: "var(--ink-soft)",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 10 }}>
+            ℹ️ 안내
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <strong style={{ color: "var(--ink)" }}>왜 모집하나요?</strong><br/>
+            정식 오픈 전, 실제 사용해보고 솔직한 피드백을 주실 분들을 통해 서비스를 다듬으려고 해요.
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <strong style={{ color: "var(--ink)" }}>몇 명 뽑나요?</strong><br/>
+            <strong style={{ color: "var(--accent)" }}>3~5명</strong> 소수로 진행합니다. (1:1로 챙겨드리기 위해)
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <strong style={{ color: "var(--ink)" }}>어떻게 연락하나요?</strong><br/>
+            선발되시면 <strong>이메일</strong>로 카카오톡 오픈채팅방 입장 안내를 드려요.
+          </div>
+          <div>
+            <strong style={{ color: "var(--ink)" }}>이번에 못 뽑히면요?</strong><br/>
+            따로 연락은 가지 않지만, <strong>2차 모집에 자동으로 등록</strong>되어 그때 가장 먼저 연락드려요.
+          </div>
+        </div>
+
+        <div className="form-row">
+          <label>
+            성함<span className="req">*</span>
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="홍길동"
+            autoFocus
+          />
+        </div>
+
+        <div className="form-row">
+          <label>
+            이메일<span className="req">*</span>
+            <span className="desc">
+              하루에 하나씩 단어가 제공되는 회사 시뮬레이션입니다. 받아보실 이메일을 적어주세요.
+            </span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>
+            휴대폰 번호 (선택)
+            <span className="desc">
+              이메일 확인이 안될 때 연락드릴 번호를 적어주세요.
+            </span>
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder="010-0000-0000"
+          />
+        </div>
+
+        <div className="form-row">
+          <label>
+            유버디가 진행했던 챌린지에 참여하셨던 적이 있나요?<span className="req">*</span>
+            <span className="desc">중복 선택 가능</span>
+          </label>
+          <div className="checkbox-list">
+            {COHORT_OPTIONS.map(opt => (
+              <label
+                key={opt.id}
+                className={"checkbox-row " + (cohorts.includes(opt.id) ? "checked" : "")}
+              >
+                <input
+                  type="checkbox"
+                  checked={cohorts.includes(opt.id)}
+                  onChange={() => toggleCohort(opt.id)}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {error && <div className="error">⚠ {error}</div>}
+
+        <button className="btn" onClick={submit} disabled={!valid || submitting}>
+          {submitting ? "저장 중..." : "입력하기 →"}
+        </button>
+
+        <div className="fine-print">
+          제출하신 정보는 베타 안내 목적으로만 사용되며, 정식 오픈 후 일정 기간 보관됩니다.
+        </div>
+
+        <div className="brand-foot">
+          <a href="/">← 1일1비 메인으로</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<WaitlistApp />);
+</script>
+</body>
+</html>
