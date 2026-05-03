@@ -129,9 +129,10 @@ ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS goal_detail TEXT;
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS heard_from TEXT;
 -- 만약 이전 버전에서 current_role 컬럼이 만들어졌다면 rename
+-- ("current_role"은 PG 예약어라 반드시 큰따옴표로 감싸야 컬럼명으로 인식됨)
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='waitlist' AND column_name='current_role') THEN
-    ALTER TABLE waitlist RENAME COLUMN current_role TO current_env;
+    EXECUTE 'ALTER TABLE waitlist RENAME COLUMN "current_role" TO current_env';
   END IF;
 END $$;
 
