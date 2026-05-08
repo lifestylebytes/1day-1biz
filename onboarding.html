@@ -415,13 +415,16 @@ function OnboardingApp() {
 
     // 가입 후 이동:
     // - DEV-BUDDY / DEV-OPS (운영자) → operator.html 직행
-    // - 일반 사용자 / 테스터(DEV-TEST/2026) → simulator.html (dev 패널 없음)
+    // - DEV-TEST / DEV-2026 (테스터) → mainboard.html?dev=1
+    // - 일반 사용자 → simulator.html (출근 대기실: 코드 입력 시 mainboard 입장)
+    //   URL에 ?code=...가 있었다면 페이월에 자동 채워줌
     if (matchedDevCode && matchedDevCode.operator) {
       window.location.href = "operator.html";
     } else if (matchedDevCode && matchedDevCode.dev) {
-      window.location.href = "simulator.html?dev=1";
+      window.location.href = "mainboard.html?dev=1";
     } else {
-      window.location.href = "simulator.html";
+      var passCode = inviteCode ? ("?code=" + encodeURIComponent(inviteCode)) : "";
+      window.location.href = "simulator.html" + passCode;
     }
   };
 
@@ -435,13 +438,12 @@ function OnboardingApp() {
           name={name} setName={setName}
           email={email} setEmail={setEmail}
           motivation={motivation} setMotivation={setMotivation}
-          inviteCode={inviteCode} setInviteCode={setInviteCode}
-          hasValidInvite={hasValidInvite}
           devMode={devMode} setDevMode={setDevMode}
           devCode={devCode} setDevCode={setDevCode}
           isDevValid={isDevValid}
           stageIdx={stageIdx} totalStages={stageOrder.length}
           onSubmit={() => setStage("reviewing")}
+          onBack={() => setStage("welcome")}
         />
       )}
       {stage === "reviewing" && <ReviewingScreen name={name} stageIdx={stageIdx} totalStages={stageOrder.length} />}
@@ -631,6 +633,7 @@ function LoginScreen({ onBack }) {
       mentor: u.mentor,
       coworkers: u.coworkers || [],
       level: u.level,
+      unlocked: u.unlocked === true,
       dayInCompany: u.day_in_company || 1,
       productionAttempts: u.production_attempts || { correct: 0, total: 0 },
       noveltyEvents: u.novelty_events || [],
@@ -658,10 +661,16 @@ function LoginScreen({ onBack }) {
     }
 
     // 역할별 redirect
+    // - 운영자 → operator.html
+    // - 내부 테스터(DevMode) → mainboard.html?dev=1
+    // - unlocked === true (이전에 코드로 입장했던 사용자) → mainboard.html 직행
+    // - 그 외 → simulator.html (출근 대기실)
     if (profile.isOperator) {
       window.location.href = "operator.html";
     } else if (profile.isDevMode) {
-      window.location.href = "simulator.html?dev=1";
+      window.location.href = "mainboard.html?dev=1";
+    } else if (profile.unlocked === true) {
+      window.location.href = "mainboard.html";
     } else {
       window.location.href = "simulator.html";
     }
@@ -722,8 +731,8 @@ function LoginScreen({ onBack }) {
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, inviteCode, setInviteCode, hasValidInvite, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, stageIdx, totalStages }) {
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && hasValidInvite;
+function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, stageIdx, totalStages }) {
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email);
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -732,30 +741,6 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
       <h1>먼저 <em>본인 확인</em>부터.</h1>
       <p className="lead">실제 입사 지원서처럼, 너의 이름과 연락 받을 메일이면 충분해.</p>
 
-      <div className="form-row">
-        <label>초대 코드</label>
-        <input
-          value={inviteCode}
-          onChange={e => setInviteCode(e.target.value.toUpperCase())}
-          placeholder="PILOT-XXXX"
-          style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
-        />
-        {inviteCode && hasValidInvite && (
-          <div style={{ fontSize: 11, color: '#2D8A3E', marginTop: 6, fontWeight: 600 }}>
-            ✓ 코드 확인됨
-          </div>
-        )}
-        {inviteCode && !hasValidInvite && (
-          <div style={{ fontSize: 11, color: '#B8431A', marginTop: 6, fontWeight: 600 }}>
-            ⚠ 코드 형식이 맞지 않아요 (PILOT-XXXX)
-          </div>
-        )}
-        {!inviteCode && (
-          <div className="fine-print" style={{ marginTop: 4 }}>
-            운영자가 보내드린 베타 초대 코드를 입력해주세요. 없으시면 <a href="waitlist.html" style={{ color: 'var(--accent)', fontWeight: 700 }}>대기 등록</a>으로 가시면 됩니다.
-          </div>
-        )}
-      </div>
       <div className="form-row">
         <label>이름</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
@@ -775,6 +760,15 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
       <div className="btn-row">
         <button className="btn" disabled={!valid} onClick={onSubmit}>지원서 제출 →</button>
         <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>✓ 진도·기록 자동 저장</span>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={onBack}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          ← 1일1비 메인으로 돌아가기
+        </a>
       </div>
     </div>
   );

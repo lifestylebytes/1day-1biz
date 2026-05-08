@@ -258,8 +258,8 @@ function App() {
         <div className="brand">유버디 컴퍼니 · <em>운영자 뷰</em></div>
         <div className="pill">BUDDY · OPERATOR</div>
         <div className="spacer" />
-        <a className="toggle" href="simulator.html?dev=1">▶ 플레이어 + Dev 패널</a>
-        <a className="toggle" href="simulator.html">▶ 플레이어 (일반)</a>
+        <a className="toggle" href="mainboard.html?dev=1">▶ 플레이어 + Dev 패널</a>
+        <a className="toggle" href="mainboard.html">▶ 플레이어 (일반)</a>
         <a className="toggle" href="dev.html">↩ 개발 런처</a>
         <a className="toggle" onClick={() => {
           if (!confirm("로그아웃 하시겠어요?")) return;
@@ -470,8 +470,8 @@ function App() {
                   </div>
                 </div>
                 <div style={{ fontSize: 11, color: '#8A7964', marginTop: 12, lineHeight: 1.6 }}>
-                  ✏️ Day 변경 후 <a href="simulator.html" style={{ color: '#D85A2A' }}>시뮬레이터</a> 새로고침으로 적용.
-                  테스터와 동시 디버깅하려면 <a href="simulator.html?dev=1" style={{ color: '#D85A2A' }}>?dev=1</a> 모드.
+                  ✏️ Day 변경 후 <a href="mainboard.html" style={{ color: '#D85A2A' }}>시뮬레이터</a> 새로고침으로 적용.
+                  테스터와 동시 디버깅하려면 <a href="mainboard.html?dev=1" style={{ color: '#D85A2A' }}>?dev=1</a> 모드.
                 </div>
               </>
             ) : (

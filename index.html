@@ -23,7 +23,7 @@
   // ?mode=dev      → 개발 런처 (dev.html)
   // ?mode=operator → 운영자 뷰 (operator.html)
   // ?mode=reset    → 사용자 데이터 초기화 후 온보딩
-  // 사용자 있음    → simulator.html
+  // 사용자 있음    → mainboard.html
   // 사용자 없음    → onboarding.html
   // ============================================================
   (function() {
@@ -46,9 +46,9 @@
       if (user.isOperator) {
         location.replace('operator.html');
       } else if (user.isDevMode) {
-        location.replace('simulator.html?dev=1');
+        location.replace('mainboard.html?dev=1');
       } else {
-        location.replace('simulator.html');
+        location.replace('mainboard.html');
       }
     } else {
       location.replace('onboarding.html');

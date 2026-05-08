@@ -78,6 +78,35 @@ CREATE TRIGGER trigger_auto_mark_operator
 
 
 -- ====================
+-- PILOT_CODES 테이블 (베타 초대 코드 화이트리스트)
+-- 클라이언트 정규식만으로는 'PILOT-XXXX' 같은 placeholder도 통과되므로,
+-- 실제 발급된 코드인지 서버에서 SELECT로 검증한다.
+-- ====================
+CREATE TABLE IF NOT EXISTS pilot_codes (
+  code TEXT PRIMARY KEY,
+  label TEXT,
+  active BOOLEAN DEFAULT TRUE,
+  cohort TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  used_count INT DEFAULT 0
+);
+
+-- 1기 베타 통일 코드 시드
+INSERT INTO pilot_codes (code, label, cohort) VALUES
+  ('PILOT-2026', '1기 베타 통일 코드', 'season-2026-1')
+ON CONFLICT (code) DO NOTHING;
+
+-- RLS: 익명 사용자도 활성 코드 존재 여부는 SELECT 가능 (검증용),
+-- 코드 발급/수정은 운영자(service_role)만 가능
+ALTER TABLE pilot_codes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS pilot_codes_anon_read ON pilot_codes;
+CREATE POLICY pilot_codes_anon_read ON pilot_codes
+  FOR SELECT TO anon, authenticated
+  USING (active = TRUE);
+
+
+-- ====================
 -- EVENTS 테이블 (학습·활동 로그)
 -- ====================
 CREATE TABLE IF NOT EXISTS events (

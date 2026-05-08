@@ -6,8 +6,8 @@
 ## 지금 바로 보기
 
 **옵션 1 — 더블클릭 (가장 빠름)**
-- `index.html` 더블클릭 → 런처 → 시뮬레이터 클릭
-- `simulator.html`은 모든 JSX/CSS/data 인라인된 셀프 컨테인드 파일이라 file:// 에서도 동작
+- `index.html` 더블클릭 → 런처 → 메인보드 클릭
+- `mainboard.html`은 모든 JSX/CSS/data 인라인된 셀프 컨테인드 파일이라 file:// 에서도 동작
 
 **옵션 2 — 로컬 서버 (안정적)**
 - 터미널에서 `./start.sh`
@@ -33,14 +33,15 @@
 │   └── web-to-app.md          ← 앱 전환 전략 (v2 이후)
 │
 ├── prototype.html             ← 데스크탑 디자인 프로토타입
-├── mobile.html                ← 모바일 뷰 (시뮬레이터 iframe)
-├── simulator.html             ← ⭐ 신입 시뮬레이터 (셀프 컨테인드)
+├── mobile.html                ← 모바일 뷰 (메인보드 iframe)
+├── mainboard.html             ← ⭐ 신입 메인보드 (셀프 컨테인드)
+├── coming-soon.html           ← 정식 베타 시작 전 안내 페이지
 │
 ├── styles.css, data.js        ← prototype.html 전용 자산
 ├── design-canvas.jsx, ios-frame.jsx, tweaks-panel.jsx ← 보조 컴포넌트
 │
 ├── app/                       ← prototype.html이 쓰는 컴포넌트 모듈
-└── sim/                       ← simulator.html의 원본 모듈 (인라인 전 dev 버전)
+└── sim/                       ← mainboard.html의 원본 모듈 (인라인 전 dev 버전)
 ```
 
 ## 핵심 원칙 (외우기)
