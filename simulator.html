@@ -129,6 +129,37 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 .footer-links a { color: var(--ink-soft); text-decoration: underline; }
 .footer-links a:hover { color: var(--ink); }
+
+/* ── 세션 인디케이터 (현재 로그인 계정 표시) ── */
+.session-pill {
+  position: fixed; top: 14px; right: 14px; z-index: 1000;
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(42,31,20,0.9);
+  color: var(--paper);
+  padding: 7px 12px 7px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0;
+  box-shadow: 0 6px 18px -6px rgba(58,40,18,0.4);
+  backdrop-filter: blur(8px);
+}
+.session-pill .si-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+.session-pill .si-email { font-weight: 600; }
+.session-pill .si-role {
+  background: var(--accent); color: #fff;
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.session-pill .si-role.role-pending { background: #6b7280; }
+.session-pill .si-logout {
+  color: var(--paper); opacity: 0.55; cursor: pointer;
+  text-decoration: underline; margin-left: 2px; font-size: 10px;
+}
+.session-pill .si-logout:hover { opacity: 1; }
+@media (max-width: 600px) {
+  .session-pill { font-size: 10px; padding: 5px 10px 5px 8px; top: 8px; right: 8px; }
+}
 </style>
 </head>
 <body>
@@ -149,6 +180,33 @@ input:focus { outline: none; border-color: var(--accent); }
       location.replace('mainboard.html');
     }
   } catch(e) {}
+})();
+</script>
+
+<!-- 세션 인디케이터 — 현재 로그인 계정 표시 -->
+<script>
+(function(){
+  try {
+    var u = JSON.parse(localStorage.getItem('__OD_USER') || 'null');
+    if (!u || !u.email) return; // 로그인 안 된 상태에선 표시 안 함
+    var role = 'pending', dot = '#fbbf24';
+    if (u.isOperator)      { role = 'operator';  dot = '#4ade80'; }
+    else if (u.isDevMode)  { role = 'dev';       dot = '#60a5fa'; }
+    else if (u.unlocked)   { role = 'unlocked';  dot = '#4ade80'; }
+    var pill = document.createElement('div');
+    pill.className = 'session-pill';
+    pill.innerHTML =
+      '<span class="si-dot" style="background:' + dot + '"></span>' +
+      '<span class="si-email">' + u.email + '</span>' +
+      '<span class="si-role role-' + role + '">' + role + '</span>' +
+      '<a class="si-logout" id="si-logout">로그아웃</a>';
+    document.body.appendChild(pill);
+    document.getElementById('si-logout').addEventListener('click', function(){
+      if (!confirm('로그아웃 하시겠어요?')) return;
+      localStorage.removeItem('__OD_USER');
+      location.reload();
+    });
+  } catch(e){}
 })();
 </script>
 
