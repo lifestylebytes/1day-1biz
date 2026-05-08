@@ -428,16 +428,15 @@ function OnboardingApp() {
   return (
     <div className="stage">
       {stage === "welcome" && (
-        <WelcomeScreen
-          hasValidInvite={hasValidInvite}
-          onNext={() => { if (hasValidInvite) setStage("application"); }}
-        />
+        <WelcomeScreen onNext={() => setStage("application")} />
       )}
       {stage === "application" && (
         <ApplicationScreen
           name={name} setName={setName}
           email={email} setEmail={setEmail}
           motivation={motivation} setMotivation={setMotivation}
+          inviteCode={inviteCode} setInviteCode={setInviteCode}
+          hasValidInvite={hasValidInvite}
           devMode={devMode} setDevMode={setDevMode}
           devCode={devCode} setDevCode={setDevCode}
           isDevValid={isDevValid}
@@ -479,7 +478,7 @@ function StepBar({ idx, total }) {
 // ============================================================
 // 0. Welcome — 신규 가입 OR 로그인 선택
 // ============================================================
-function WelcomeScreen({ onNext, hasValidInvite }) {
+function WelcomeScreen({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
   // 새로고침할 때마다 인트로 팝업 다시 노출 (localStorage 저장 X)
   const [showIntro, setShowIntro] = useState(true);
@@ -559,31 +558,12 @@ function WelcomeScreen({ onNext, hasValidInvite }) {
         >
           ✉️ 대기 등록하기 →
         </a>
-        {hasValidInvite ? (
-          <button className="btn btn-ghost" onClick={onNext} style={{ justifyContent: "center" }}>
-            지원서 작성하기
-            <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
-              (초대 코드 확인됨 ✓)
-            </span>
-          </button>
-        ) : (
-          <div style={{
-            padding: "12px 14px",
-            background: "var(--paper-warm)",
-            border: "1px dashed var(--line)",
-            borderRadius: 8,
-            fontSize: 12.5,
-            color: "var(--ink-soft)",
-            lineHeight: 1.6,
-            textAlign: "center",
-          }}>
-            🔒 <strong>지원서 작성은 초대 코드가 필요해요.</strong><br/>
-            <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
-              운영자가 보내드린 링크(<code>?code=PILOT-XXXX</code>)로 다시 들어와주세요.<br/>
-              초대 못 받으셨으면 위 <strong>대기 등록</strong>으로 가시면 됩니다.
-            </span>
-          </div>
-        )}
+        <button className="btn btn-ghost" onClick={onNext} style={{ justifyContent: "center" }}>
+          지원서 작성하기
+          <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
+            (초대된 베타테스터 전용)
+          </span>
+        </button>
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
@@ -742,8 +722,8 @@ function LoginScreen({ onBack }) {
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, stageIdx, totalStages }) {
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email);
+function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, inviteCode, setInviteCode, hasValidInvite, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, stageIdx, totalStages }) {
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && hasValidInvite;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -752,6 +732,30 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
       <h1>먼저 <em>본인 확인</em>부터.</h1>
       <p className="lead">실제 입사 지원서처럼, 너의 이름과 연락 받을 메일이면 충분해.</p>
 
+      <div className="form-row">
+        <label>초대 코드</label>
+        <input
+          value={inviteCode}
+          onChange={e => setInviteCode(e.target.value.toUpperCase())}
+          placeholder="PILOT-XXXX"
+          style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+        />
+        {inviteCode && hasValidInvite && (
+          <div style={{ fontSize: 11, color: '#2D8A3E', marginTop: 6, fontWeight: 600 }}>
+            ✓ 코드 확인됨
+          </div>
+        )}
+        {inviteCode && !hasValidInvite && (
+          <div style={{ fontSize: 11, color: '#B8431A', marginTop: 6, fontWeight: 600 }}>
+            ⚠ 코드 형식이 맞지 않아요 (PILOT-XXXX)
+          </div>
+        )}
+        {!inviteCode && (
+          <div className="fine-print" style={{ marginTop: 4 }}>
+            운영자가 보내드린 베타 초대 코드를 입력해주세요. 없으시면 <a href="waitlist.html" style={{ color: 'var(--accent)', fontWeight: 700 }}>대기 등록</a>으로 가시면 됩니다.
+          </div>
+        )}
+      </div>
       <div className="form-row">
         <label>이름</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
