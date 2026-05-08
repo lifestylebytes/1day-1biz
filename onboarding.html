@@ -302,6 +302,10 @@ function OnboardingApp() {
   }, []);
   const [inviteCode, setInviteCode] = useState(urlCode.toUpperCase());
 
+  // 입사 지원 가능 여부 — 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
+  // 운영자(DEV-OPS/DEV-BUDDY)는 operator.html로 직접 접근하므로 이 흐름과 무관
+  const hasValidInvite = useMemo(() => /^PILOT-[A-Z0-9]{4}$/.test(inviteCode || ""), [inviteCode]);
+
   // 같은 기기에 운영자가 발급한 코드 있으면 이름 자동 채움
   const matchedInvite = useMemo(() => {
     if (!inviteCode || !/^PILOT-[A-Z0-9]{4}$/.test(inviteCode)) return null;
@@ -424,7 +428,10 @@ function OnboardingApp() {
   return (
     <div className="stage">
       {stage === "welcome" && (
-        <WelcomeScreen onNext={() => setStage("application")} />
+        <WelcomeScreen
+          hasValidInvite={hasValidInvite}
+          onNext={() => { if (hasValidInvite) setStage("application"); }}
+        />
       )}
       {stage === "application" && (
         <ApplicationScreen
@@ -472,7 +479,7 @@ function StepBar({ idx, total }) {
 // ============================================================
 // 0. Welcome — 신규 가입 OR 로그인 선택
 // ============================================================
-function WelcomeScreen({ onNext }) {
+function WelcomeScreen({ onNext, hasValidInvite }) {
   const [showLogin, setShowLogin] = useState(false);
   // 새로고침할 때마다 인트로 팝업 다시 노출 (localStorage 저장 X)
   const [showIntro, setShowIntro] = useState(true);
@@ -552,12 +559,31 @@ function WelcomeScreen({ onNext }) {
         >
           ✉️ 대기 등록하기 →
         </a>
-        <button className="btn btn-ghost" onClick={onNext} style={{ justifyContent: "center" }}>
-          지원서 작성하기
-          <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
-            (초대된 베타테스터 전용)
-          </span>
-        </button>
+        {hasValidInvite ? (
+          <button className="btn btn-ghost" onClick={onNext} style={{ justifyContent: "center" }}>
+            지원서 작성하기
+            <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 500, marginLeft: 6 }}>
+              (초대 코드 확인됨 ✓)
+            </span>
+          </button>
+        ) : (
+          <div style={{
+            padding: "12px 14px",
+            background: "var(--paper-warm)",
+            border: "1px dashed var(--line)",
+            borderRadius: 8,
+            fontSize: 12.5,
+            color: "var(--ink-soft)",
+            lineHeight: 1.6,
+            textAlign: "center",
+          }}>
+            🔒 <strong>지원서 작성은 초대 코드가 필요해요.</strong><br/>
+            <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
+              운영자가 보내드린 링크(<code>?code=PILOT-XXXX</code>)로 다시 들어와주세요.<br/>
+              초대 못 받으셨으면 위 <strong>대기 등록</strong>으로 가시면 됩니다.
+            </span>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
