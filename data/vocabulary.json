@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-04",
+  "description": "1day-1biz 어휘·표현 마스터 아카이브. 매일 저장·priority/빈도/유비챌 출처 마킹. 시뮬레이터 SCENARIOS의 source of truth.",
+  "fields": {
+    "id":              "유니크 ID. 단어-숫자 형식 권장 (예: 'stakeholder-001')",
+    "word":            "단어 또는 표현 (영어)",
+    "phonetic":        "발음 기호. 선택",
+    "pos":             "품사 (n. / v. / phr. / idiom 등). 선택",
+    "meaning_ko":      "한국어 의미",
+    "meaning_en":      "영어 의미. 선택",
+    "priority":        "P1 (필수) / P2 (중요) / P3 (있으면 좋음)",
+    "frequency":       "very-high (매일 봄) / high (주 1+) / mid (월 1+) / low (가끔)",
+    "from_yubichal":   "유비챌 출처 여부 (true/false)",
+    "yubichal_cohort": "유비챌 N기. 1~5. 선택",
+    "category":        "business-core / meeting / email / smalltalk / nuance / tech / culture / etc.",
+    "tags":            "[meeting, project, ...] 자유 태그",
+    "examples":        "[예문1, 예문2, ...] 1~3개 권장",
+    "scenario_hint":   "어떤 상황에서 쓰는지 한 줄. 시추에이션 작성 시 힌트.",
+    "added_at":        "추가 날짜 (YYYY-MM-DD)",
+    "notes":           "운영 메모. 선택"
+  },
+  "categories": {
+    "business-core": "외국계 기본 비즈니스 어휘 (deadline, stakeholder 등)",
+    "meeting":       "회의 표현 (circle back, take this offline 등)",
+    "email":         "메일 톤·격식 (per our discussion, kindly note 등)",
+    "smalltalk":     "동료와의 small talk (How was your weekend, 등)",
+    "nuance":        "뉘앙스 표현 (bandwidth, low-hanging fruit 등)",
+    "tech":          "테크/SaaS 어휘 (deploy, sprint, blocker 등)",
+    "culture":       "외국계 문화어 (1:1, OOO, async 등)",
+    "client":        "클라이언트 응대 (per your request, please advise 등)",
+    "presentation":  "발표·프레젠테이션 (let me walk you through, 등)",
+    "feedback":      "피드백·1:1 (constructive, room for improvement 등)"
+  },
+  "priority_guide": {
+    "P1": "30일 안에 무조건 박아야 하는 핵심 — 매일 회의·메일·슬랙에서 만남",
+    "P2": "30일 후 자연스럽게 마주칠 — 6개월 코스에 분산",
+    "P3": "심화·뉘앙스 — 임원 레벨·1년+ 코스용"
+  },
+  "frequency_guide": {
+    "very-high": "외국계 회사에서 거의 매일 보거나 듣는 표현",
+    "high":      "주 1회 이상은 만남",
+    "mid":       "월 1~2회 마주칠 정도",
+    "low":       "특정 상황·연차에서만 등장"
+  },
+  "words": []
+}

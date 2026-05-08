@@ -339,7 +339,7 @@ function MyPage() {
         <div className="id-card-body">
           <div className="id-card-photo">{USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
-            <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name} / Jiwon Kim</span></div>
+            <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
             <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
@@ -371,11 +371,10 @@ function MyPage() {
         <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
       </div>
 
-      {/* 구독 정보 (읽기) */}
+      {/* 구독 정보 (읽기) — 가격/결제 정보는 정식 출시 후 노출 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <div className="hr-section-head">구독 정보</div>
-        <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value">월 9,900원 · <b>1일 1비즈니스</b></span></div>
-        <div className="hr-row"><span className="hr-row-label">결제일</span><span className="hr-row-value">매월 16일 · 다음 5월 16일</span></div>
+        <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value"><b>1일 1비즈니스</b> · 베타</span></div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
         <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
       </div>

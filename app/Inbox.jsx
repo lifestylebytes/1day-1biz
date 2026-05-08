@@ -61,19 +61,16 @@ function MyPage({ user, setUser }) {
             <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "var(--muted)", textTransform: "uppercase" }}>SUBSCRIPTION</span>
             <span className={"status-pill " + (user.subscriptionStatus === "active" ? "green" : "muted")}>{user.subscriptionStatus === "active" ? "● 진행 중" : "● 일시중지"}</span>
           </div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink-hi)", letterSpacing: "-0.03em", marginTop: 6, fontFamily: "'Noto Sans KR', sans-serif" }}>월 9,900원 플랜</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink-hi)", letterSpacing: "-0.03em", marginTop: 6, fontFamily: "'Noto Sans KR', sans-serif" }}>1일 1비즈니스 · 베타</div>
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 6, lineHeight: 1.6 }}>매일 오전 8시 비즈니스 단어 1개 + 누적 단어 사전 + 월말 시험 페이지</div>
           <div style={{ marginTop: 18 }}>
             <div className="kvrow"><span className="k">구독 시작일</span><span className="v">{user.subscribedAt}</span></div>
             <div className="kvrow"><span className="k">현재 일자</span><span className="v">Day {user.currentDay}</span></div>
-            <div className="kvrow"><span className="k">다음 결제일</span><span className="v">2026-05-16</span></div>
-            <div className="kvrow"><span className="k">결제 수단</span><span className="v">카카오페이 ··· 7842</span></div>
           </div>
           <div style={{ marginTop: 18, display: "flex", gap: 8 }}>
             <button className={"btn " + (user.subscriptionStatus === "active" ? "btn-danger" : "btn-primary")} onClick={togglePause}>
               {user.subscriptionStatus === "active" ? "일시중지" : "재구독하기"}
             </button>
-            <button className="btn btn-ghost">결제수단 변경</button>
           </div>
         </div>
 

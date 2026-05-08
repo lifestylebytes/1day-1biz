@@ -462,6 +462,18 @@ body::before {
 }
 .att-cell.today::after { content: "오늘"; font-size: 8px; color: var(--orange); font-weight: 800; }
 
+/* 주말 칸 — 가벼운 톤. 도장 찍히면 ☕ */
+.att-cell.weekend {
+  background: rgba(216,90,42,0.04);
+  color: var(--ink-mute);
+  opacity: 0.85;
+  font-style: italic;
+}
+.att-cell.weekend.done { background: rgba(216,90,42,0.06); color: var(--ink-mute); }
+.att-cell.weekend.done::after { content: "☕"; font-size: 10px; color: var(--ink-mute); }
+.att-cell.weekend.today { border-color: var(--ink-mute); background: var(--paper-warm); }
+.att-cell.weekend.today::after { content: "주말"; color: var(--ink-mute); }
+
 /* 사내 메모 박스 (홈 우측) */
 .memo-box {
   background: var(--cream);
@@ -619,7 +631,7 @@ body::before {
   color: var(--ink-mute); cursor: not-allowed;
 }
 .biz-card.locked:hover { transform: none; box-shadow: 1px 1px 0 var(--paper-shadow); border-color: var(--line); }
-.biz-card.locked .biz-card-word { color: var(--ink-mute); filter: blur(2px); user-select: none; }
+.biz-card.locked .biz-card-word { color: var(--ink-mute); filter: blur(9px); user-select: none; letter-spacing: 0.05em; }
 .biz-card.today {
   border: 2px solid var(--orange);
   background: linear-gradient(135deg, var(--cream) 0%, #FFF6E6 100%);
@@ -1158,6 +1170,53 @@ body::before {
 // 1일1비 — 신입 출근 시뮬레이터 데이터
 // ============================================================
 
+// === Sticky URL 정리 — 옛날 ?weekend= override 가 남아있으면 청소 ===
+(function() {
+  try {
+    const url = new URL(location.href);
+    if (url.searchParams.has('weekend')) {
+      url.searchParams.delete('weekend');
+      history.replaceState(null, '', url.toString());
+    }
+  } catch (e) {}
+})();
+
+// === Calendar day 헬퍼 (이 스크립트 + 다음 babel 블록에서 같이 씀) ===
+// dow: 0=월, 1=화, 2=수, 3=목, 4=금, 5=토, 6=일
+function _dayOfWeek(day) {
+  const d = (day | 0);
+  if (d < 1) return 0;
+  return ((d - 1) % 7 + 7) % 7;
+}
+function _isWeekendDay(day) {
+  return _dayOfWeek(day) >= 5;
+}
+function _workingDayIndex(day) {
+  if ((day | 0) < 1) return null;
+  const dow = _dayOfWeek(day);
+  if (dow >= 5) return null;
+  return Math.floor((day - 1) / 7) * 5 + dow + 1;
+}
+function _wordsCollected(day) {
+  const d = (day | 0);
+  if (d < 1) return 0;
+  const dow = _dayOfWeek(d);
+  return Math.floor((d - 1) / 7) * 5 + Math.min(dow, 4) + 1;
+}
+function _nextWeekdayDay(day) {
+  let d = (day | 0) + 1;
+  while (_isWeekendDay(d)) d++;
+  return d;
+}
+const _DOW_KO = ["월","화","수","목","금","토","일"];
+// window 에 노출 — babel 블록(다음 script 태그) 에서도 접근
+window._dayOfWeek = _dayOfWeek;
+window._isWeekendDay = _isWeekendDay;
+window._workingDayIndex = _workingDayIndex;
+window._wordsCollected = _wordsCollected;
+window._nextWeekdayDay = _nextWeekdayDay;
+window._DOW_KO = _DOW_KO;
+
 // 등장 인물
 const CHARACTERS = {
   buddy: { id: "buddy", name: "유버디", role: "내 버디 · 1일1비 만든 사람", avatar: "🤝", color: "#D85A2A", note: "외국계 회사 다니면서 신입 버디 여러 번 해본 사람. 모를 때 부담 없이 톡 보낼 수 있는 한 발 앞선 동료. 매일 한 마디씩 응원과 팁을 줌." },
@@ -1415,13 +1474,20 @@ if (_localUser?.mentor && _localUser.mentor.name) {
 }
 
 // 부서 동기화 — 매니저 NPC role도 부서명 반영 (선택적)
-// 시추에이션 status 자동 계산 — currentDay 기준으로 studied/today/locked 분류
+// 시추에이션 status 자동 계산 — Calendar day → working day index 매핑
+// SCENARIOS.day 는 working day (1-30). USER.currentDay 는 calendar day.
+const _wdNow = _workingDayIndex(USER.currentDay);   // 평일이면 오늘 단어 번호, 주말이면 null
+const _wdMax = _wordsCollected(USER.currentDay);    // 지금까지 도착한 단어 수
 SCENARIOS.forEach(s => {
-  if (s.day < USER.currentDay) s.status = "studied";
-  else if (s.day === USER.currentDay) s.status = "today";
+  if (s.day === _wdNow) s.status = "today";
+  else if (s.day < _wdMax) s.status = "studied";
+  else if (_wdNow === null && s.day === _wdMax) s.status = "studied"; // 주말: 그 주 금요일까지 모두 studied
   else s.status = "locked";
 });
 USER.studiedDays = SCENARIOS.filter(s => s.status === "studied").length;
+USER.workingDay = _wdNow;          // 평일이면 단어 번호, 주말이면 null
+USER.wordsCollected = _wdMax;      // 누적 도착한 단어 수
+USER.dayOfWeekKo = _DOW_KO[_dayOfWeek(USER.currentDay)];
 
 // 오늘 날짜 (eyebrow에 사용)
 const _today = new Date();
@@ -1442,15 +1508,143 @@ const _NOTICES_ALL = [
 ];
 const NOTICES = _NOTICES_ALL.filter(n => n.showFromDay <= USER.currentDay);
 
-// 오늘의 일정 (홈 화면)
-const TODAY_SCHEDULE = [
-  { id: "checkin",   time: "09:00", title: "사옥 도착 / 사번 받기", action: "출근 첫 도장 ✓ — 1층 인포에서 사번 받았어." },
-  { id: "morning",   time: "09:30", title: CHARACTERS.mentor.name + " 사수 모닝 브리핑", note: "오늘의 단어 도착", action: "사수가 노란 포스트잇 줬어. 오른쪽 메모 확인 ↗" },
-  { id: "scenario",  time: "10:00", title: "오늘의 첫 시추에이션", note: "← 클릭해서 시작", action: null /* opens scene modal */ },
-  { id: "lunch",     time: "12:30", title: "동기 (한도윤·임재희) 와 점심", action: "한도윤이 1층 김밥집 추천. 같이 다녀옴 🍱" },
-  { id: "afternoon", time: "14:00", title: "오후 — 자리 정리 / IT 시스템", action: "IT팀에서 사내 시스템 비밀번호 받음 💻" },
-  { id: "wrapup",    time: "17:00", title: "첫 퇴근 / 일과 정리", action: "오늘 수고했어. 내일은 첫 회의 참관 🌙" },
+// ============================================================
+// 오늘의 일정 — Day별로 다른 컨텍스트 (사용자가 매일 새로움 느끼도록)
+// ============================================================
+// 핵심 학습 루프는 모든 Day 공통 (word_drop → scenario → mini_mission → recap → journal)
+// 변화: 점심 파트너 / 오후 업무 / 미니 미션 컨텍스트 / 모닝 브리핑 톤
+//
+// type: checkin / word_drop / scenario / mini_mission / english_lunch / office_task / recap / journal / wrapup
+// item.context = 모달이 사용할 추가 정보 (점심 파트너, 미션 시나리오 등)
+
+const _LUNCH_PARTNERS = [
+  { day: 1,  who: "동기 (한도윤·임재희)", lead: "한도윤",  greet: "Hey 지원! Wanna grab lunch? 1층에 새로 생긴 김밥집 try해볼래?" },
+  { day: 2,  who: "동기 임재희",           lead: "임재희",  greet: "지원아 — Coffee run? 나 오늘 야근 각인데, 아메리카노 한 잔 살게." },
+  { day: 3,  who: "박 대리님",              lead: "박 대리", greet: "지원 씨, 점심 같이 가요. 회사 근처 백반집 알려줄게." },
+  { day: 5,  who: "정민호 과장 (사수)",     lead: "사수",    greet: "지원아, 잠깐 — 점심 같이 가자. 하고 싶은 얘기 좀 있어." },
+  { day: 7,  who: "Sarah Chen (US 본사 방문)", lead: "Sarah",   greet: "Hi Jiwon, mind if I join you for lunch? I'd love to hear what you've been working on." },
+  { day: 10, who: "한도윤 + 박 대리",       lead: "한도윤",  greet: "지원아 점심 ㄱㄱ! 박 대리님도 같이 — Daniel 본사 얘기 들으러 가자." },
+  { day: 14, who: "Daniel Park (UK 본사 화상)", lead: "Daniel",  greet: "Jiwon — quick virtual lunch? I've got 20 min before my next call. Tell me about your week." },
+  { day: 20, who: "동기 한도윤",            lead: "한도윤",  greet: "야 우리 벌써 20일째다 ㄷㄷ. 오늘은 내가 한식 살게 — 김치찌개 ㄱ?" },
+  { day: 25, who: "정민호 과장 + 박 대리",  lead: "사수",    greet: "지원아, 박 대리님이랑 셋이서 점심 어때? 곧 평가도 있고 — 얘기 좀 하자." },
+  { day: 30, who: "정민호 과장",            lead: "사수",    greet: "지원아 — 수습 마지막 점심이야. 30일 정말 수고 많았어. 가자." },
 ];
+function _lunchForDay(day) {
+  // 가장 가까운 lower-bound 매칭
+  const sorted = [..._LUNCH_PARTNERS].sort((a,b) => b.day - a.day);
+  return sorted.find(p => p.day <= day) || _LUNCH_PARTNERS[0];
+}
+
+const _AFTERNOON_TASKS = {
+  1:  "IT팀에서 사내 시스템 비밀번호 받음 💻 · 자리 정리 끝.",
+  2:  "어제 회의록 정리 + 오늘 단어 한 번 더 확인 📝",
+  3:  "팀 슬랙 채널 둘러보기 · 사내 약어 정리 노트 만듦 📒",
+  5:  "사수가 클라이언트 메일 초안 검토 부탁 ✉️ — 톤 다듬기 좋은 연습.",
+  7:  "Daniel 본사에서 온 자료 번역 도움 요청 📎 — 단어 맥락 잡힘.",
+  10: "첫 미팅 진행 보조 🎤 — 사수 옆에서 메모 담당.",
+  14: "수습 중간 1:1 면담 📋 — 박 대리님이 \"많이 늘었다\" 코멘트.",
+  20: "사내 워크숍 준비 — 자료 정리 📊",
+  25: "분기 평가 모의 리허설 🎬 — 사수와 함께 표현 점검.",
+  30: "수습 평가 직전 — 책상 정리, 마음 정리 🌅",
+};
+function _afternoonForDay(day) {
+  if (_AFTERNOON_TASKS[day]) return _AFTERNOON_TASKS[day];
+  // 가장 가까운 이전 day 매칭
+  const days = Object.keys(_AFTERNOON_TASKS).map(Number).sort((a,b) => b-a);
+  const match = days.find(d => d <= day);
+  return _AFTERNOON_TASKS[match] || _AFTERNOON_TASKS[1];
+}
+
+const _MORNING_TONES = [
+  "사수가 노란 포스트잇 줬어. 오른쪽 메모 확인 ↗",
+  "오늘은 사수가 손글씨로 단어 줬어 — 좀 진지한 느낌 ↗",
+  "사수: \"이거 오늘 회의에서 진짜 쓸 거야.\" 메모 ↗",
+  "포스트잇에 작은 그림까지 ㅋㅋ 단어 메모 ↗",
+  "사수 빠른 슬랙 한 줄 + 포스트잇 — 오늘의 단어 ↗",
+];
+
+const _MISSION_CONTEXTS = [
+  { ctx: "팀 슬랙",     prompt: "팀 슬랙 채널에 한 줄 던진다고 생각하고." },
+  { ctx: "메일 답장",   prompt: "방금 받은 메일에 한 줄 답장한다고 생각하고." },
+  { ctx: "사수 DM",     prompt: "사수한테 슬랙 DM 한 줄 보낸다고 생각하고." },
+  { ctx: "회의 멘트",   prompt: "회의에서 발언 한 줄 한다고 생각하고." },
+  { ctx: "클라이언트",  prompt: "클라이언트 답장 한 줄 쓴다고 생각하고." },
+];
+
+function getScheduleForDay(day) {
+  const isLastDay = day >= 30;
+  const lunch = _lunchForDay(day);
+  const afternoonTask = _afternoonForDay(day);
+  const morningTone = _MORNING_TONES[(day - 1) % _MORNING_TONES.length];
+  const missionCtx = _MISSION_CONTEXTS[(day - 1) % _MISSION_CONTEXTS.length];
+
+  // Day별 변동 활동: mini_mission → english_lunch → recap → office_task 순환
+  // (P5 contextual variability — 매일 다른 맥락으로 표현 만남)
+  const VARIANT_ROTATION = ["mini_mission", "english_lunch", "recap", "office_task"];
+  const variantType = VARIANT_ROTATION[(day - 1) % VARIANT_ROTATION.length];
+
+  const variantItem = (() => {
+    switch (variantType) {
+      case "mini_mission":
+        return {
+          id: "mission", time: "14:00", type: "mini_mission",
+          title: "미니 미션 — 오늘 표현 써먹기",
+          note: missionCtx.ctx + "에 한 줄",
+          context: missionCtx,
+        };
+      case "english_lunch":
+        return {
+          id: "lunch", time: "12:30", type: "english_lunch",
+          title: lunch.who + "와 점심",
+          note: "한영 믹스 small talk",
+          context: lunch,
+        };
+      case "recap":
+        return {
+          id: "recap", time: "15:30", type: "recap",
+          title: "오늘 표현 Recap (10초 퀴즈)",
+          note: "4지선다 빠른 복습",
+        };
+      case "office_task":
+      default:
+        return {
+          id: "afternoon", time: "14:00", type: "office_task",
+          title: "오후 업무",
+          action: afternoonTask,
+        };
+    }
+  })();
+
+  // 4개 고정 슬롯 — 출근+단어 / 시추에이션 / Day별 변동 / 일지+퇴근
+  return [
+    {
+      id: "checkin", time: "09:00", type: "checkin",
+      title: day === 1 ? "출근 + 사번 받기 + 오늘의 단어" : "출근 + 오늘의 단어 도착",
+      note: morningTone,
+      action: day === 1
+        ? "사옥 도착 ✓ · 사번 발급 ✓ · 사수가 노란 포스트잇 줬어 ↗"
+        : "출근 도장 ✓ · 사수가 오늘의 단어 줬어 ↗",
+    },
+    {
+      id: "scenario", time: "10:00", type: "scenario",
+      title: "오늘의 시추에이션",
+      note: "← 클릭해서 시작",
+      action: null,
+    },
+    variantItem,
+    {
+      id: "wrapup", time: "17:00", type: "journal",
+      title: isLastDay ? "수습 평가 + 업무일지 + 퇴근" : "업무일지 작성 + 퇴근",
+      note: "오늘 한 줄 + 유버디 응원",
+      action: null,
+      isLastDay,
+    },
+  ];
+}
+
+// 호환용 — 기존 코드가 TODAY_SCHEDULE 직접 참조하는 곳 대응
+// 평일에만 schedule. 주말이면 빈 배열 (WeekendHomePage가 별도 렌더)
+const TODAY_SCHEDULE = USER.workingDay !== null ? getScheduleForDay(USER.workingDay) : [];
 
 // ============================================================
 // 버디 멘트 — 홈 사이드 / 페이지 곳곳에 흩뿌릴 한 마디
@@ -1492,7 +1686,7 @@ window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUD
 
 /* --- Home.jsx --- */
 /* global React */
-const { useState, useMemo } = React;
+const { useState, useMemo, useEffect } = React;
 
 // ============================================================
 // Sidebar = 사물함
@@ -1602,72 +1796,363 @@ function ApprovalLine({ doc, applicant, today, status }) {
 }
 
 // ============================================================
+// 주말 모드 홈 — 토/일이면 가벼운 콘텐츠로 전환
+// ============================================================
+function WeekendHomePage({ kind, setActive, openMemo }) {
+  const { USER, CHARACTERS, NOTICES, todayLabel } = window.__SIM;
+  const [done, setDone] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(_weekendKey()) || "{}"); } catch(e) { return {}; }
+  });
+  const [activeItem, setActiveItem] = useState(null);
+  const items = _getWeekendSchedule(kind);
+  const allDone = items.every(it => done[it.id]);
+
+  const onComplete = () => {
+    if (!activeItem) return;
+    const next = { ...done, [activeItem.id]: true };
+    setDone(next);
+    try { localStorage.setItem(_weekendKey(), JSON.stringify(next)); } catch(e) {}
+    setActiveItem(null);
+  };
+
+  const subtitle = kind === "sat"
+    ? "이번 주 빡셌어요. 토요일은 진짜 쉬는 날 ☕️"
+    : "주말 끝나가요. 월요일 가볍게 시작해요 🌅";
+  const meta = kind === "sat" ? "이틀" : "하루";
+  const nextMon = _nextWeekdayDay(USER.currentDay);
+  const nextWordNum = _wordsCollected(nextMon);
+
+  return (
+    <div>
+      <div className="desk-header">
+        <div>
+          <div className="desk-eyebrow">
+            {todayLabel} · DAY {USER.currentDay} ({USER.dayOfWeekKo}) · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
+          </div>
+          <h1 className="desk-title"><em>주말</em>이에요. 진짜 쉬세요.</h1>
+        </div>
+        <div className="desk-meta">
+          이번 주 누적 <b>{USER.wordsCollected}</b>개<br/>
+          {kind === "sat" ? "월요일 = Day " + nextMon : "내일 월요일 = Day " + nextMon}
+        </div>
+      </div>
+
+      <ApplicationLine />
+
+      <div className="desk-grid">
+        <div className="col">
+          {/* 주말 카드 */}
+          <div style={{
+            background: "var(--paper-warm)",
+            border: "1px solid var(--line)",
+            borderRadius: 8,
+            padding: 28,
+            position: "relative",
+            boxShadow: "2px 2px 0 var(--line)",
+          }}>
+            <div style={{ position: "absolute", top: 16, right: 16, fontSize: 10, fontWeight: 800, letterSpacing: "0.16em", color: "var(--ink-mute)", padding: "4px 10px", border: "1.5px dashed var(--line)", borderRadius: 4 }}>
+              OFF DUTY
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.16em", marginBottom: 12 }}>
+              ☕️ WEEKEND MODE · {kind === "sat" ? "SATURDAY" : "SUNDAY"}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.4, marginBottom: 10, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+              {subtitle}
+            </div>
+            <div style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 20, wordBreak: "keep-all" }}>
+              월요일까지 <b>{meta}</b> 남았어요. 단어 휘발 방지용 <b>가벼운 거 하나</b>만 — 안 해도 스트릭 안 끊겨요. 진짜 쉬는 게 우선.
+            </div>
+
+            {items.map(item => {
+              const isDone = done[item.id];
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => !isDone && setActiveItem(item)}
+                  style={{
+                    padding: 16, borderRadius: 8,
+                    background: isDone ? "rgba(74,124,89,0.08)" : "#fff",
+                    border: "1px solid " + (isDone ? "rgba(74,124,89,0.3)" : "rgba(216,90,42,0.25)"),
+                    cursor: isDone ? "default" : "pointer",
+                    marginBottom: 10,
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={e => !isDone && (e.currentTarget.style.transform = "translateY(-2px)")}
+                  onMouseLeave={e => (e.currentTarget.style.transform = "")}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
+                      {isDone ? "✓ " : "○ "}{item.title}
+                    </div>
+                    <div style={{ fontSize: 11, color: isDone ? "var(--green)" : "var(--accent)", fontWeight: 700 }}>
+                      {isDone ? "주말 보너스 ✓" : "선택"}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "var(--ink-mute)", lineHeight: 1.5 }}>{item.note}</div>
+                </div>
+              );
+            })}
+
+            {allDone && (
+              <div style={{ marginTop: 18, padding: "14px 16px", background: "rgba(74,124,89,0.08)", border: "1px dashed rgba(74,124,89,0.4)", borderRadius: 8, textAlign: "center" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--green)", marginBottom: 4 }}>
+                  ☕️ 주말도 챙겼어요 — 보너스 도장 +1
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
+                  {kind === "sat" ? "내일은 일요일 — 미니 회고가 기다려요." : "월요일에 새 단어로 봐요!"}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.7 }}>
+              💡 <b>주말도 스트릭 유지</b> — 일정 카드는 평일에만 와요. 토일에 안 와도 출근부 안 끊겨요. 그래도 한 번 들르면 <b>주말 보너스 도장</b>이 따로 쌓여요.
+            </div>
+          </div>
+
+          {/* 다음 주 미리보기 */}
+          <div style={{
+            marginTop: 16, padding: "18px 20px",
+            background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.16em", marginBottom: 8 }}>
+              📅 NEXT WEEKDAY
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 6 }}>
+              월요일 09:00 — Day {nextMon} · 단어 {nextWordNum}번째 도착
+            </div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+              알림 켜놨으면 바로 받아요. 출근 도장 → 시추에이션 → 미션 → 퇴근까지 5분.
+            </div>
+          </div>
+        </div>
+
+        <div className="col">
+          <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} />
+
+          <div className="memo-box">
+            <div className="memo-box-head">
+              <span>사내 메모 · INTRANET</span>
+              <b>{NOTICES.filter(n => n.unread).length}건</b>
+            </div>
+            {NOTICES.slice(0, 3).map(n => {
+              const c = CHARACTERS[n.from];
+              return (
+                <button key={n.id} className={"memo-row " + (n.unread ? "unread" : "")} onClick={() => openMemo(n)}>
+                  <div className="memo-from-avatar" style={{ background: c.color }}>{c.avatar}</div>
+                  <div>
+                    <div className="memo-subject">
+                      <span className={"memo-tag " + (n.tag === "필수" ? "req" : "")}>{n.tag}</span>
+                      {n.subject}
+                    </div>
+                  </div>
+                  <div className="memo-meta">{n.date}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {activeItem ? (
+        <ActivityModal
+          item={activeItem}
+          today={null}
+          onClose={() => setActiveItem(null)}
+          onComplete={onComplete}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// ============================================================
 // 홈 — 오늘의 책상
 // ============================================================
 function HomePage({ setActive, openScene, openMemo }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
-  const today = SCENARIOS.find(s => s.day === USER.currentDay);
-  const npc = CHARACTERS[today.npc];
-  // 출근부 — 14일 그리드
-  const ATTEND_DAYS = 14;
-  const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
-    const day = i + 1;
-    if (day < USER.currentDay) return { day, state: "done" };
-    if (day === USER.currentDay) return { day, state: "today" };
-    return { day, state: "" };
-  });
 
-  // 일정 진행 상태 (localStorage 저장 — 새로고침해도 유지)
+  // === 모든 hooks 먼저 — Rules of Hooks (early return 전에 무조건 같은 순서로) ===
   const taskKey = "__OD_TASKS_DAY_" + USER.currentDay;
   const [doneTasks, setDoneTasks] = useState(() => {
     try { return JSON.parse(localStorage.getItem(taskKey) || "{}"); } catch(e) { return {}; }
   });
   const [toast, setToast] = useState(null);
+  const [activeItem, setActiveItem] = useState(null); // todo 클릭 → 어휘 활동 모달
   const showToast = (msg, ms) => {
     setToast(msg);
     setTimeout(() => setToast(null), ms || 2400);
   };
 
-  // Day 1 투어 (첫 방문 시만)
+  // Day 1 투어 (첫 방문 시만) — 인터랙티브 spotlight
   const TOUR_KEY = "__OD_TOUR_DONE_DAY_" + USER.currentDay;
   const [tourStep, setTourStep] = useState(() => {
     if (USER.currentDay !== 1) return -1;
     try { return localStorage.getItem(TOUR_KEY) ? -1 : 0; } catch(e) { return -1; }
   });
   const TOUR_STEPS = [
-    { title: "오늘부터 첫 출근이에요 🎉", body: "5초만 둘러볼게요. 어디서 뭘 하면 되는지." },
-    { title: "오늘의 시추에이션", body: "왼쪽 큰 카드가 오늘의 단어와 미션이에요. 클릭하면 풀 수 있어요." },
-    { title: "사수의 노란 메모", body: "오른쪽 노란 포스트잇은 사수가 단어 뉘앙스를 알려주는 메모예요. 매일 한 장씩." },
-    { title: "출근부 + 사내 메모", body: "출근부엔 매일 도장이 찍혀요. 사내 메모는 HR·사수가 보내는 메시지. 빨간 점이 새로 온 거예요." },
-    { title: "오늘 일정 — 9시부터", body: "아래 일정은 9시부터 차근차근. 각 항목 클릭하면 진행돼요. 출근부터 눌러보세요." },
+    {
+      selector: null,
+      title: "오늘부터 첫 출근이에요 🎉",
+      body: "5초만 둘러볼게요. 어디서 뭘 누르면 되는지 — 그러고 나서 출근 도장 찍으러 가요.",
+    },
+    {
+      selector: ".scene-card",
+      placement: "right",
+      title: "오늘의 시추에이션",
+      body: "왼쪽 큰 카드 = 단어 + NPC가 던진 상황 + 한 줄 미션. 클릭하면 영작 활동이 열려요. 사수 피드백까지 들어와요.",
+    },
+    {
+      selector: ".schedule",
+      placement: "right",
+      title: "오늘 일정 — 9시부터 차례대로",
+      body: "9시 출근 → 10시 시추에이션 → 14시 미션 → 17시 퇴근. 각 항목 클릭하면 어휘 연습 활동이 열려요. 위에서부터 한 칸씩 풀어가세요. 잠금된 건 이전 항목 끝나면 풀려요.",
+    },
+    {
+      selector: ".empty-postit, .postit",
+      placement: "left",
+      title: "여긴 처음엔 비어있어요",
+      body: "출근 도장 찍으면 사수가 노란 메모를, 시추에이션 풀면 유버디가 한 마디를 여기에 떨어뜨려요. 활동 풀수록 책상이 채워져요.",
+    },
+    {
+      selector: ".attendance",
+      placement: "left",
+      title: "출근부 · 14일",
+      body: "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 14일 모이면 30일차에 완주 도장 ✨",
+    },
+    {
+      selector: ".schedule-row.now",
+      placement: "right",
+      title: "자, 시작! 👇",
+      body: "09:00 '출근 + 단어 받기' 가 첫 활동이에요. 누르면 오늘 단어가 도착해요.",
+      cta: "출근 도장 찍으러 가자 →",
+    },
   ];
   const closeTour = () => {
     setTourStep(-1);
     try { localStorage.setItem(TOUR_KEY, "1"); } catch(e) {}
   };
 
-  // 항목별 클릭 처리
+  // 타겟 요소 위치 추적 — tourStep 바뀔 때마다 측정 + scroll into view
+  const [targetRect, setTargetRect] = useState(null);
+  useEffect(() => {
+    if (tourStep < 0 || tourStep >= TOUR_STEPS.length) {
+      setTargetRect(null);
+      return;
+    }
+    const step = TOUR_STEPS[tourStep];
+    if (!step.selector) {
+      setTargetRect(null);
+      return;
+    }
+    let raf, cancelled = false;
+    const measure = () => {
+      if (cancelled) return;
+      const el = document.querySelector(step.selector);
+      if (!el) { setTargetRect(null); return; }
+      const r = el.getBoundingClientRect();
+      setTargetRect({ left: r.left, top: r.top, width: r.width, height: r.height });
+    };
+    const el0 = document.querySelector(step.selector);
+    if (el0) {
+      try { el0.scrollIntoView({ behavior: "smooth", block: "center" }); } catch(e) {}
+    }
+    let count = 0;
+    const tick = () => {
+      measure();
+      count++;
+      if (count < 40 && !cancelled) raf = requestAnimationFrame(tick);
+    };
+    tick();
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onResize, true);
+    return () => {
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onResize, true);
+    };
+  }, [tourStep]);
+
+  // === 모든 hooks 끝난 후 — 데이터 lookup + 안전장치 early return ===
+  const today = SCENARIOS.find(s => s.day === USER.workingDay);
+  const npc = today ? CHARACTERS[today.npc] : null;
+
+  if (!today) {
+    return (
+      <div style={{ padding: 60, textAlign: "center", color: "var(--ink-mute)", fontSize: 14, lineHeight: 1.7 }}>
+        <div style={{ fontSize: 32, marginBottom: 16 }}>🌅</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>
+          오늘은 새 단어가 없는 날이에요
+        </div>
+        Day {USER.currentDay} ({USER.dayOfWeekKo}요일) — 평일이지만 단어 카드는 1-30번까지에요.<br/>
+        Dev panel에서 다른 Day로 점프해보세요.
+      </div>
+    );
+  }
+
+  // 출근부 — 14일 그리드 (오늘 일정 다 끝내면 'stamped'). 주말 칸은 시각적 구분.
+  const ATTEND_DAYS = 14;
+  const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
+  const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
+    const day = i + 1;
+    const isWk = _isWeekendDay(day);
+    if (day < USER.currentDay) return { day, state: "done", weekend: isWk };
+    if (day === USER.currentDay) return { day, state: allTodayDone ? "stamped" : "today", weekend: isWk };
+    return { day, state: "", weekend: isWk };
+  });
+
+  // 마지막 항목 완료 토스트
+  const _maybeFinaleToast = (idx) => {
+    if (idx === TODAY_SCHEDULE.length - 1) {
+      setTimeout(() => showToast("🎊 Day " + USER.currentDay + " 완주! 내일 또 봐요.", 4000), 200);
+    }
+  };
+
+  // 항목별 클릭 처리 — scenario는 SceneModal로 (즉시 done), 나머지는 ActivityModal로 (활동 완료해야 done)
   const handleScheduleClick = (item, idx) => {
-    if (doneTasks[item.id]) return;
+    if (doneTasks[item.id]) {
+      // 이미 끝낸 활동도 한 번 더 풀어볼 수 있게 모달은 열어줌 (done 상태 유지)
+      if (item.id !== "scenario" && item.type !== "scenario") {
+        setActiveItem({ item, idx, replay: true });
+      } else {
+        openScene(today);
+      }
+      return;
+    }
     const prevDone = idx === 0 || doneTasks[TODAY_SCHEDULE[idx-1].id];
     if (!prevDone) {
       showToast("⏳ 이전 항목 먼저 끝내주세요");
       return;
     }
-    const next = { ...doneTasks, [item.id]: true };
-    setDoneTasks(next);
-    try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
 
     if (item.id === "scenario") {
+      // 시추에이션 — 기존 SceneModal 유지. 클릭 즉시 done 처리.
+      const next = { ...doneTasks, [item.id]: true };
+      setDoneTasks(next);
+      try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
       openScene(today);
-    } else if (item.action) {
-      showToast(item.action, 3000);
+      _maybeFinaleToast(idx);
+      return;
     }
 
-    // 마지막 항목 완료 시 축하
-    if (idx === TODAY_SCHEDULE.length - 1) {
-      setTimeout(() => showToast("🎊 Day " + USER.currentDay + " 완주! 내일 또 봐요.", 4000), 200);
+    // 그 외 활동은 ActivityModal — 활동 끝나야 done
+    setActiveItem({ item, idx, replay: false });
+  };
+
+  // ActivityModal 완료 핸들러 — 처음 완료할 때만 doneTasks에 기록
+  const completeActivity = () => {
+    if (!activeItem) return;
+    const { item, idx, replay } = activeItem;
+    if (!replay && !doneTasks[item.id]) {
+      const next = { ...doneTasks, [item.id]: true };
+      setDoneTasks(next);
+      try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
+      _maybeFinaleToast(idx);
+    } else {
+      showToast("👍 다시 풀어봤어요 — 표현이 더 자연스러워질 거예요");
     }
+    setActiveItem(null);
   };
 
   // 각 항목의 computed status
@@ -1681,7 +2166,9 @@ function HomePage({ setActive, openScene, openMemo }) {
     <div>
       <div className="desk-header">
         <div>
-          <div className="desk-eyebrow">{todayLabel} · DAY {USER.currentDay} / {USER.totalDays}</div>
+          <div className="desk-eyebrow">
+            {todayLabel} · DAY {USER.currentDay} / {USER.totalDays} · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
+          </div>
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
         </div>
         <div className="desk-meta">
@@ -1726,8 +2213,27 @@ function HomePage({ setActive, openScene, openMemo }) {
         </div>
 
         <div className="col">
-          <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} />
-          <Postit mentor={CHARACTERS.mentor} text={today.mentorTip} word={today.word} />
+          {/* 사수 포스트잇 — 첫 todo (출근/단어 받기) 끝나면 책상에 떨어짐 */}
+          {Object.keys(doneTasks).length >= 1 ? (
+            <div key={"postit-" + USER.currentDay} className="appear-postit">
+              <Postit mentor={CHARACTERS.mentor} text={today.mentorTip} word={today.word} />
+            </div>
+          ) : (
+            <div className="empty-slot empty-postit">
+              <span>📝 출근 도장 찍으면 사수가 노란 메모를 줘요</span>
+            </div>
+          )}
+
+          {/* 유버디 1:1 — 시추에이션(2번째 todo) 끝나면 등장 */}
+          {Object.keys(doneTasks).length >= 2 ? (
+            <div key={"buddy-" + USER.currentDay} className="appear-buddy">
+              <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} />
+            </div>
+          ) : (
+            <div className="empty-slot empty-buddy">
+              <span>💬 오늘 시추에이션 풀고 나면 유버디가 한 마디 줘요</span>
+            </div>
+          )}
 
           <div className="attendance">
             <div className="attendance-head">
@@ -1735,7 +2241,15 @@ function HomePage({ setActive, openScene, openMemo }) {
               <span className="attendance-num">{USER.streak}<small>일 연속</small></span>
             </div>
             <div className="attendance-cells">
-              {cells.map(c => <div key={c.day} className={"att-cell " + c.state} title={`Day ${c.day}`}>{c.state === "" ? c.day : ""}</div>)}
+              {cells.map(c => (
+                <div
+                  key={c.day}
+                  className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
+                  title={`Day ${c.day} · ${_DOW_KO[_dayOfWeek(c.day)]}요일${c.weekend ? " (주말)" : ""}`}
+                >
+                  {c.state === "" ? c.day : ""}
+                </div>
+              ))}
             </div>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 10, lineHeight: 1.5 }}>
               하루도 빠지지 않으면 30일차에 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.
@@ -1785,52 +2299,109 @@ function HomePage({ setActive, openScene, openMemo }) {
         </div>
       )}
 
-      {/* Day 1 투어 — 첫 방문 시 5단계 팝업 */}
-      {tourStep >= 0 && tourStep < TOUR_STEPS.length && (
-        <>
-          <div style={{
-            position: "fixed", inset: 0, background: "rgba(42,31,20,0.45)",
-            zIndex: 9100,
-          }} onClick={closeTour} />
-          <div style={{
-            position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-            background: "var(--paper)", border: "2px solid var(--accent)",
-            borderRadius: 14, padding: "26px 28px",
-            maxWidth: 420, width: "calc(100% - 40px)",
-            boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
-            zIndex: 9101,
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 8 }}>
-              📍 첫 출근 가이드 · {tourStep + 1} / {TOUR_STEPS.length}
+      {/* 어휘 연습 활동 모달 — checkin / mission / lunch / recap / office_task / journal */}
+      {activeItem ? (
+        <ActivityModal
+          item={activeItem.item}
+          today={today}
+          onClose={() => setActiveItem(null)}
+          onComplete={completeActivity}
+        />
+      ) : null}
+
+      {/* Day 1 투어 — 인터랙티브 spotlight (실제 UI 요소를 가리키며 안내) */}
+      {tourStep >= 0 && tourStep < TOUR_STEPS.length && (() => {
+        const step = TOUR_STEPS[tourStep];
+        const tt = targetRect ? _computeTooltipPos(targetRect, step.placement) : null;
+        const isLast = tourStep === TOUR_STEPS.length - 1;
+        const hasTarget = !!targetRect;
+        return (
+          <>
+            {/* 백드롭 — 타겟 있으면 spotlight, 없으면 단순 dim */}
+            {hasTarget ? (
+              <>
+                {/* 외곽 4개 박스로 spotlight 효과 (클릭 차단 + dim) */}
+                <div className="tour-dim" style={{ left: 0, top: 0, right: 0, height: Math.max(0, targetRect.top - 8) }} onClick={closeTour} />
+                <div className="tour-dim" style={{ left: 0, top: targetRect.top + targetRect.height + 8, right: 0, bottom: 0 }} onClick={closeTour} />
+                <div className="tour-dim" style={{ left: 0, top: Math.max(0, targetRect.top - 8), width: Math.max(0, targetRect.left - 8), height: targetRect.height + 16 }} onClick={closeTour} />
+                <div className="tour-dim" style={{ left: targetRect.left + targetRect.width + 8, top: Math.max(0, targetRect.top - 8), right: 0, height: targetRect.height + 16 }} onClick={closeTour} />
+                {/* spotlight 테두리 (펄스) */}
+                <div className="tour-spotlight" style={{
+                  position: "fixed",
+                  left: targetRect.left - 8, top: targetRect.top - 8,
+                  width: targetRect.width + 16, height: targetRect.height + 16,
+                  pointerEvents: "none",
+                }} />
+              </>
+            ) : (
+              <div className="tour-dim" style={{ inset: 0 }} onClick={closeTour} />
+            )}
+
+            {/* 툴팁 — 타겟 옆에 anchor, 없으면 화면 중앙 */}
+            <div style={{
+              position: "fixed",
+              ...(tt ? { left: tt.left, top: tt.top } : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }),
+              width: 360, maxWidth: "calc(100vw - 32px)",
+              background: "var(--paper)", border: "2px solid var(--accent)",
+              borderRadius: 14, padding: "22px 24px",
+              boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+              zIndex: 9200,
+              transition: "left 0.35s cubic-bezier(.4,.6,.3,1), top 0.35s cubic-bezier(.4,.6,.3,1)",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)" }}>
+                  📍 첫 출근 가이드 · {tourStep + 1} / {TOUR_STEPS.length}
+                </div>
+                <div style={{ display: "flex", gap: 3 }}>
+                  {TOUR_STEPS.map((_, i) => (
+                    <span key={i} style={{
+                      width: 6, height: 6, borderRadius: 3,
+                      background: i === tourStep ? "var(--accent)" : i < tourStep ? "var(--accent-soft, rgba(216,90,42,0.3))" : "rgba(58,40,18,0.18)",
+                    }} />
+                  ))}
+                </div>
+              </div>
+              <h3 style={{ fontSize: 19, fontWeight: 900, marginBottom: 10, lineHeight: 1.3, color: "var(--ink)" }}>
+                {step.title}
+              </h3>
+              <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18, wordBreak: "keep-all" }}>
+                {step.body}
+              </p>
+              <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <button
+                    onClick={closeTour}
+                    style={{
+                      background: "transparent", border: "none", color: "var(--ink-mute)",
+                      fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit",
+                    }}
+                  >건너뛰기</button>
+                  {tourStep > 0 && (
+                    <button
+                      onClick={() => setTourStep(tourStep - 1)}
+                      style={{
+                        background: "transparent", border: "none", color: "var(--ink-mute)",
+                        fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+                      }}
+                    >← 이전</button>
+                  )}
+                </div>
+                <button
+                  onClick={() => isLast ? closeTour() : setTourStep(tourStep + 1)}
+                  style={{
+                    background: "var(--accent)", color: "white", border: "none",
+                    padding: "10px 18px", borderRadius: 8,
+                    fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                    boxShadow: "0 4px 12px rgba(216,90,42,0.3)",
+                  }}
+                >
+                  {isLast ? (step.cta || "시작하기 ✓") : "다음 →"}
+                </button>
+              </div>
             </div>
-            <h3 style={{ fontSize: 19, fontWeight: 900, marginBottom: 10, lineHeight: 1.3 }}>
-              {TOUR_STEPS[tourStep].title}
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 18 }}>
-              {TOUR_STEPS[tourStep].body}
-            </p>
-            <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
-              <button
-                onClick={closeTour}
-                style={{
-                  background: "transparent", border: "none", color: "var(--ink-mute)",
-                  fontSize: 12, cursor: "pointer", textDecoration: "underline",
-                }}
-              >건너뛰기</button>
-              <button
-                onClick={() => tourStep < TOUR_STEPS.length - 1 ? setTourStep(tourStep + 1) : closeTour()}
-                style={{
-                  background: "var(--accent)", color: "white", border: "none",
-                  padding: "10px 20px", borderRadius: 8,
-                  fontSize: 13, fontWeight: 700, cursor: "pointer",
-                }}
-              >
-                {tourStep < TOUR_STEPS.length - 1 ? "다음 →" : "시작하기 ✓"}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
 
       <style>{`
         @keyframes fadeUp { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -1842,6 +2413,86 @@ function HomePage({ setActive, openScene, openMemo }) {
         .schedule-status.now { color: var(--accent); font-weight: 800; animation: blink 1.5s ease-in-out infinite; }
         .schedule-status.locked { color: var(--ink-mute); opacity: 0.6; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        /* === 인터랙티브 투어 — spotlight + 펄스 === */
+        .tour-dim {
+          position: fixed; background: rgba(42,31,20,0.55);
+          z-index: 9100; transition: all 0.35s cubic-bezier(.4,.6,.3,1);
+        }
+        .tour-spotlight {
+          border-radius: 12px;
+          border: 2.5px solid var(--orange);
+          z-index: 9150;
+          transition: all 0.35s cubic-bezier(.4,.6,.3,1);
+          animation: tourPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes tourPulse {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(216,90,42,0.25), 0 0 24px rgba(216,90,42,0.4); }
+          50%      { box-shadow: 0 0 0 12px rgba(216,90,42,0.08), 0 0 32px rgba(216,90,42,0.55); }
+        }
+
+        /* === 출근 인증 도장 — 오늘 일정 다 끝내면 빨간 도장 === */
+        .att-cell.stamped {
+          background: rgba(178,58,44,0.06);
+          border-color: var(--stamp-red);
+          color: var(--stamp-red);
+          font-weight: 900;
+          position: relative;
+          animation: stampPlace 0.65s cubic-bezier(.3,1.6,.4,1) both;
+        }
+        .att-cell.stamped::after {
+          content: "출근";
+          position: absolute; inset: -2px;
+          display: grid; place-items: center;
+          font-size: 11px; font-weight: 900; letter-spacing: 0.06em;
+          color: var(--stamp-red);
+          border: 2.5px solid var(--stamp-red);
+          border-radius: 6px;
+          transform: rotate(-8deg);
+          background: rgba(178,58,44,0.05);
+          animation: stampInk 0.45s cubic-bezier(.4,1.6,.36,1) 0.2s both;
+        }
+        @keyframes stampPlace {
+          from { transform: scale(1.18); }
+          to   { transform: scale(1); }
+        }
+        @keyframes stampInk {
+          0%   { opacity: 0; transform: rotate(-25deg) scale(1.8); }
+          60%  { opacity: 1; transform: rotate(-4deg) scale(0.94); }
+          100% { opacity: 1; transform: rotate(-8deg) scale(1); }
+        }
+
+        /* todo 완료 시 등장 애니메이션 */
+        @keyframes postitDrop {
+          0%   { opacity: 0; transform: translateY(-32px) rotate(-12deg) scale(0.86); }
+          55%  { opacity: 1; transform: translateY(6px)   rotate(-1deg)  scale(1.03); }
+          75%  { transform: translateY(-2px) rotate(0deg) scale(0.99); }
+          100% { opacity: 1; transform: translateY(0)    rotate(-1deg)  scale(1); }
+        }
+        @keyframes buddySlide {
+          0%   { opacity: 0; transform: translateX(36px) scale(0.96); }
+          100% { opacity: 1; transform: translateX(0)    scale(1); }
+        }
+        .appear-postit { animation: postitDrop 0.75s cubic-bezier(.22,1.4,.36,1) both; transform-origin: top center; }
+        .appear-buddy  { animation: buddySlide  0.55s ease-out both; }
+
+        /* 비어있는 슬롯 — todo 완료 전 placeholder */
+        .empty-slot {
+          padding: 18px 18px;
+          margin-bottom: 14px;
+          border: 1.5px dashed var(--line);
+          border-radius: 8px;
+          background: rgba(255,255,255,0.25);
+          color: var(--ink-mute);
+          font-size: 12px;
+          line-height: 1.55;
+          text-align: center;
+          letter-spacing: 0.01em;
+          transition: opacity 0.2s;
+        }
+        .empty-slot:hover { opacity: 0.75; }
+        .empty-postit { background: rgba(255,233,166,0.18); border-color: rgba(216,180,90,0.35); }
+        .empty-buddy  { background: rgba(216,90,42,0.04); border-color: rgba(216,90,42,0.22); }
       `}</style>
     </div>
   );
@@ -1953,7 +2604,7 @@ function LibraryPage({ openScene }) {
   const [search, setSearch] = useState("");
   const [npcFilter, setNpcFilter] = useState("all");
 
-  const accessible = SCENARIOS.filter(s => s.day <= USER.currentDay);
+  const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
   const filtered = accessible.filter(s => {
     if (filter === "studied" && s.status !== "studied") return false;
     if (filter === "today" && s.status !== "today") return false;
@@ -1961,7 +2612,7 @@ function LibraryPage({ openScene }) {
     if (search && !s.word.toLowerCase().includes(search.toLowerCase()) && !(s.meaning || "").includes(search)) return false;
     return true;
   });
-  const locked = SCENARIOS.filter(s => s.day > USER.currentDay);
+  const locked = SCENARIOS.filter(s => s.day > USER.wordsCollected);
 
   return (
     <div>
@@ -1970,7 +2621,7 @@ function LibraryPage({ openScene }) {
           <div className="desk-eyebrow">RECORDS · 업무 노트 (Vocabulary Notebook)</div>
           <h1 className="desk-title"><em>지금까지</em> 만난 비즈니스 단어</h1>
         </div>
-        <div className="desk-meta"><b>{accessible.length}</b>개 수집 · {USER.totalDays - USER.currentDay}일 남음</div>
+        <div className="desk-meta"><b>{accessible.length}</b>개 수집 · 30개 중 {30 - USER.wordsCollected}개 남음</div>
       </div>
 
       <ApprovalLine doc="YB-NOTE-2026" applicant={USER.name} status={`${accessible.length} / ${USER.totalDays} 수집`} />
@@ -2013,13 +2664,17 @@ function LibraryPage({ openScene }) {
             </button>
           );
         })}
-        {locked.slice(0, 4).map(s => (
-          <div key={s.day} className="biz-card locked">
-            <div className="biz-card-head"><span className="biz-card-day">DAY {String(s.day).padStart(2, "0")}</span><span>🔒 잠금</span></div>
-            <div className="biz-card-word">{s.word}</div>
-            <div className="biz-card-meaning" style={{ color: "var(--ink-mute)" }}>Day {s.day}에 만나요</div>
-          </div>
-        ))}
+        {locked.slice(0, 4).map(s => {
+          // 잠긴 단어는 길이만 흉내내고 글자는 마스킹 (CSS blur 풀어도 못 봄)
+          const masked = "▒".repeat(Math.max(5, Math.min(12, (s.word || "").length)));
+          return (
+            <div key={s.day} className="biz-card locked">
+              <div className="biz-card-head"><span className="biz-card-day">DAY {String(s.day).padStart(2, "0")}</span><span>🔒 잠금</span></div>
+              <div className="biz-card-word" aria-label="잠긴 단어">{masked}</div>
+              <div className="biz-card-meaning" style={{ color: "var(--ink-mute)" }}>Day {s.day}에 만나요</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -2268,7 +2923,7 @@ function MyPage() {
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k === "__OD_USER" || k.startsWith("__OD_TASKS_") || k.startsWith("__OD_TOUR_")) {
+      if (k === "__OD_USER" || k.startsWith("__OD_TASKS_") || k.startsWith("__OD_TOUR_") || k.startsWith("__OD_NOTICE_READS_")) {
         keysToRemove.push(k);
       }
     }
@@ -2296,11 +2951,11 @@ function MyPage() {
         <div className="id-card-body">
           <div className="id-card-photo">{USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
-            <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name} / Jiwon Kim</span></div>
+            <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
             <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
-            <div className="id-field"><span className="id-field-label">수습</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 🔥 {USER.streak}</span></div>
+            <div className="id-field"><span className="id-field-label">수습</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 표현 {USER.wordsCollected}개 · 🔥 {USER.streak}</span></div>
           </div>
         </div>
         <div className="id-card-foot">
@@ -2328,11 +2983,10 @@ function MyPage() {
         <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
       </div>
 
-      {/* 구독 정보 (읽기) */}
+      {/* 구독 정보 (읽기) — 가격/결제 정보는 정식 출시 후 노출 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <div className="hr-section-head">구독 정보</div>
-        <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value">월 9,900원 · <b>1일 1비즈니스</b></span></div>
-        <div className="hr-row"><span className="hr-row-label">결제일</span><span className="hr-row-value">매월 16일 · 다음 5월 16일</span></div>
+        <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value"><b>1일 1비즈니스</b> · 베타</span></div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
         <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
       </div>
@@ -2524,6 +3178,878 @@ function SceneModal({ scenario, onClose }) {
 }
 
 // ============================================================
+// Activity Modal — todo 클릭 시 어휘 연습 활동
+// 활동 타입: checkin / mini_mission / english_lunch / recap / office_task / journal
+// 매일 다른 컨텍스트로 같은 단어를 4-5번 만나게 — P5 contextual variability
+// ============================================================
+function _shuf(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+// === Calendar day 헬퍼는 data 블록 (앞 <script>) 에서 정의됨. ===
+// classic <script> 는 같은 global scope 를 공유하므로 같은 이름으로 그대로 호출 가능.
+
+// 주말 감지 — 순전히 Day 번호로 결정 (URL override 없음. Dev panel은 Day jump로)
+function _weekendKind() {
+  const day = (window.__SIM && window.__SIM.USER && window.__SIM.USER.currentDay) || 1;
+  const dow = _dayOfWeek(day);
+  if (dow === 5) return "sat";
+  if (dow === 6) return "sun";
+  return null;
+}
+function _weekendKey() {
+  const day = (window.__SIM && window.__SIM.USER && window.__SIM.USER.currentDay) || 1;
+  return "__OD_WEEKEND_DAY_" + day;
+}
+function _getWeekendSchedule(kind) {
+  if (kind === "sat") {
+    return [{
+      id: "sat_chat", time: "토요일", type: "weekend_chat",
+      title: "동기 카톡 — 한 줄로 가볍게",
+      note: "격식 X · 30초면 끝",
+    }];
+  }
+  return [{
+    id: "sun_recap", time: "일요일", type: "weekend_recap",
+    title: "이번 주 표현 미니 회고",
+    note: "3문제 · 1분 · 안 풀어도 스트릭 안 끊겨요",
+  }];
+}
+
+// 인터랙티브 투어 — 타겟 사각형 기준 툴팁 위치 계산
+function _computeTooltipPos(rect, placement) {
+  const TT_W = 360, TT_H = 200, PAD = 18;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let p = placement || "auto";
+  if (p === "auto") {
+    if (rect.right + TT_W + PAD < vw) p = "right";
+    else if (rect.left - TT_W - PAD > 0) p = "left";
+    else if (rect.bottom + TT_H + PAD < vh) p = "bottom";
+    else p = "top";
+  }
+  let left, top;
+  switch (p) {
+    case "right":  left = rect.right + PAD;          top = rect.top + rect.height/2 - TT_H/2; break;
+    case "left":   left = rect.left - TT_W - PAD;    top = rect.top + rect.height/2 - TT_H/2; break;
+    case "top":    left = rect.left + rect.width/2 - TT_W/2; top = rect.top - TT_H - PAD;     break;
+    case "bottom":
+    default:       left = rect.left + rect.width/2 - TT_W/2; top = rect.bottom + PAD;
+  }
+  left = Math.max(PAD, Math.min(vw - TT_W - PAD, left));
+  top  = Math.max(PAD, Math.min(vh - TT_H - PAD, top));
+  return { left, top, placement: p };
+}
+
+// 음성 — 남/여 번갈아 (할아버지 보이스 회피)
+window.__OD_VOICE_TURN = window.__OD_VOICE_TURN || 0;
+const _VOICE_FEMALE = ["Samantha", "Karen", "Tessa", "Kate", "Allison", "Victoria", "Susan", "Ava", "Moira", "Isha", "Joanna", "Salli"];
+const _VOICE_MALE   = ["Alex", "Daniel", "Aaron", "Tom", "Lee", "Oliver", "Arthur", "Reed", "Rocko", "Joey", "Matthew"];
+function _pickVoice() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  const turn = window.__OD_VOICE_TURN++;
+  const wantFemale = turn % 2 === 0;
+  const tryList = (names) => {
+    for (const name of names) {
+      const v = voices.find(v => v.name.toLowerCase().includes(name.toLowerCase()) && v.lang.toLowerCase().startsWith("en"));
+      if (v) return v;
+    }
+    return null;
+  };
+  return tryList(wantFemale ? _VOICE_FEMALE : _VOICE_MALE)
+    || tryList(wantFemale ? _VOICE_MALE : _VOICE_FEMALE)
+    || voices.find(v => v.lang === "en-US")
+    || voices.find(v => v.lang.toLowerCase().startsWith("en"))
+    || voices[0];
+}
+function _speakWord(word) {
+  if (!("speechSynthesis" in window) || !word) return;
+  const fire = () => {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = "en-US"; u.rate = 0.92; u.pitch = 1.0;
+    const v = _pickVoice();
+    if (v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  };
+  // 첫 호출 시 voices 비어있을 수 있음 → 짧게 기다렸다 재시도
+  if (!window.speechSynthesis.getVoices().length) setTimeout(fire, 250);
+  else fire();
+}
+// 페이지 로드 시 voices 미리 로드 트리거
+if ("speechSynthesis" in window) {
+  try { window.speechSynthesis.getVoices(); } catch(e) {}
+  window.speechSynthesis.onvoiceschanged = () => { /* warm */ };
+}
+
+function _pickField(currentWord, count, key) {
+  const { SCENARIOS, USER } = window.__SIM;
+  const pool = SCENARIOS
+    .filter(s => s.word !== currentWord && s.day <= Math.max(USER.wordsCollected + 5, 12))
+    .map(s => s[key])
+    .filter(Boolean);
+  return _shuf([...new Set(pool)]).slice(0, count);
+}
+function _pickWordObjects(excludeWord, count) {
+  const { SCENARIOS, USER } = window.__SIM;
+  const pool = SCENARIOS.filter(s => s.word !== excludeWord && s.day <= Math.max(USER.wordsCollected, 12));
+  return _shuf(pool).slice(0, count);
+}
+
+// 공용 모달 셸
+function ActivityShell({ title, children, onClose, footer, accent }) {
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-doc" onClick={e => e.stopPropagation()}>
+        <div className="modal-doc-head" style={accent ? { background: accent } : null}>
+          <span>{title}</span>
+          <button onClick={onClose} style={{ color: "var(--paper)", fontSize: 16 }}>✕</button>
+        </div>
+        <div className="modal-doc-body">{children}</div>
+        {footer ? <div style={{ padding: "14px 28px 22px", borderTop: "1px dashed var(--line)" }}>{footer}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+// 작은 정답/오답 피드백 박스
+function FeedbackBox({ ok, correct, hint }) {
+  return (
+    <div style={{
+      marginTop: 14, padding: 14,
+      background: ok ? "rgba(74,124,89,0.10)" : "rgba(178,58,44,0.08)",
+      border: "1px solid " + (ok ? "rgba(74,124,89,0.4)" : "rgba(178,58,44,0.35)"),
+      borderRadius: 8,
+    }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: ok ? "var(--green)" : "var(--stamp-red)", marginBottom: 6 }}>
+        {ok ? "✓ 정답!" : "✗ 다음 번엔 이거"}
+      </div>
+      {!ok && correct ? <div style={{ fontSize: 13, color: "var(--ink)", marginBottom: 6 }}>👉 <b>{correct}</b></div> : null}
+      {hint ? <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.55 }}>{hint}</div> : null}
+    </div>
+  );
+}
+
+// === 1. CHECKIN — 단어 첫 인사 (발음 → 4지선다 의미 매칭) ===
+function CheckinActivity({ today, item, onClose, onComplete }) {
+  const [step, setStep] = useState(0);
+  const [pick, setPick] = useState(null);
+  const distractors = useMemo(() => _pickField(today.word, 3, "meaning"), [today.word]);
+  const opts = useMemo(() => _shuf([today.meaning, ...distractors]), [today.meaning, distractors]);
+
+  const speak = () => _speakWord(today.word);
+
+  return (
+    <ActivityShell title={`MORNING CHECK-IN · DAY ${today.day}`} onClose={onClose}>
+      {step === 0 && (
+        <>
+          <span className="label-doc label-orange">▶ 9시 · 오늘의 단어 도착</span>
+          <div style={{ marginTop: 14, padding: 22, background: "#FFE9A6", border: "1px dashed var(--line)", borderRadius: 8, position: "relative" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.12em", marginBottom: 8 }}>YOUR DESK · POST-IT</div>
+            <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{today.word}</div>
+            <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 4 }}>{today.pos} · {today.phonetic}</div>
+            <div style={{ fontSize: 14, color: "var(--ink)", marginTop: 8, fontWeight: 700 }}>{today.meaning}</div>
+            <button className="btn btn-soft" style={{ marginTop: 14 }} onClick={speak}>🔊 한 번 들어보기</button>
+          </div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 14, lineHeight: 1.6 }}>
+            한 번 들어봤다면 다음 — 진짜 외웠는지 가벼운 매칭 테스트 한 번.
+          </div>
+          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+            <button className="btn btn-primary" onClick={() => setStep(1)}>들어봤어요 → 다음</button>
+          </div>
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <span className="label-doc label-orange">▶ 빠른 매칭</span>
+          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 12, letterSpacing: "-0.02em" }}>
+            "{today.word}" 의 뜻은?
+          </div>
+          <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+            {opts.map((o, i) => {
+              const isCorrect = o === today.meaning;
+              const isPicked = pick === o;
+              const showResult = pick !== null;
+              return (
+                <button
+                  key={i}
+                  onClick={() => pick === null && setPick(o)}
+                  style={{
+                    textAlign: "left", padding: "14px 16px", borderRadius: 8,
+                    border: "1.5px solid " + (showResult && isCorrect ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                    background: showResult && isCorrect ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.08)" : "var(--cream)",
+                    cursor: pick === null ? "pointer" : "default",
+                    fontSize: 14, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)",
+                    fontWeight: showResult && isCorrect ? 800 : 500,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {String.fromCharCode(65 + i)}. {o}
+                  {showResult && isCorrect ? <span style={{ float: "right", color: "var(--green)" }}>✓</span> : null}
+                </button>
+              );
+            })}
+          </div>
+          {pick !== null && (
+            <>
+              <FeedbackBox ok={pick === today.meaning} correct={today.meaning} hint={today.mentorTip} />
+              <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+                <button className="btn btn-primary" onClick={onComplete}>출근 도장 찍기 ✓</button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 2. MINI_MISSION — 컨텍스트 한 줄 미션 (3중 가장 자연스러운 거 고르기) ===
+function MissionActivity({ today, item, onClose, onComplete }) {
+  const ctx = item.context || { ctx: "팀 슬랙", prompt: "팀 슬랙에 한 줄 던진다고 생각하고." };
+  const { CHARACTERS } = window.__SIM;
+  const buddy = CHARACTERS.buddy;
+  const [pick, setPick] = useState(null);
+
+  // 3 옵션: 정답(sampleAnswer) + 너무 격식 + 단어 안 쓴 어색한 표현
+  const options = useMemo(() => {
+    const correct = today.sampleAnswer || `Let's ${today.word} on this — quick win.`;
+    const tooFormal = `Pursuant to my prior correspondence, kindly note ${today.word} accordingly.`;
+    const noWord = `Yeah ok let me think and get back to you on this one.`;
+    return _shuf([
+      { text: correct, kind: "correct", note: "오늘 단어 자연스럽게 + 톤 정확. 이게 정답." },
+      { text: tooFormal, kind: "formal", note: "단어는 들어갔지만 톤이 너무 무거워 — 사내 슬랙엔 부담." },
+      { text: noWord, kind: "missing", note: "톤은 OK인데 오늘 단어를 못 살렸어. 미션 실패." },
+    ]);
+  }, [today.word, today.sampleAnswer]);
+
+  const picked = options.find(o => o.text === pick);
+
+  return (
+    <ActivityShell title={`MINI MISSION · ${ctx.ctx.toUpperCase()}`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 써먹기</span>
+      <div style={{ marginTop: 12, padding: 16, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8 }}>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 800, letterSpacing: "0.12em", marginBottom: 6 }}>📍 SITUATION</div>
+        <div style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.55 }}>{ctx.prompt}</div>
+        <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink)" }}>오늘 단어: <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b></div>
+      </div>
+      <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
+        가장 자연스러운 한 줄을 골라보세요.
+      </div>
+      <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+        {options.map((o, i) => {
+          const isPicked = pick === o.text;
+          const showResult = pick !== null;
+          const ok = o.kind === "correct";
+          return (
+            <button
+              key={i}
+              onClick={() => pick === null && setPick(o.text)}
+              style={{
+                textAlign: "left", padding: "14px 16px", borderRadius: 8,
+                border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "var(--cream)",
+                cursor: pick === null ? "pointer" : "default",
+                fontSize: 13.5, lineHeight: 1.55, fontFamily: "inherit", color: "var(--ink)",
+                transition: "all 0.15s",
+              }}
+            >
+              {String.fromCharCode(65 + i)}. "{o.text}"
+              {showResult ? <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>{o.note}</div> : null}
+            </button>
+          );
+        })}
+      </div>
+      {picked && (
+        <>
+          <FeedbackBox ok={picked.kind === "correct"} correct={today.sampleAnswer} hint={today.mentorTip} />
+          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end", gap: 8 }}>
+            <button className="btn btn-ghost" onClick={() => setPick(null)}>다시 풀기</button>
+            <button className="btn btn-primary" onClick={onComplete}>미션 완료 ✓</button>
+          </div>
+        </>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 3. ENGLISH_LUNCH — 점심 small talk (선택지 1-2턴) ===
+function LunchActivity({ today, item, onClose, onComplete }) {
+  const partner = item.context || { who: "동기", lead: "동기", greet: "Hey, lunch?" };
+  const [turn, setTurn] = useState(0);
+  const [pick, setPick] = useState(null);
+  const [log, setLog] = useState([{ from: "them", text: partner.greet }]);
+
+  // Turn 1 옵션 — 오늘 단어 활용
+  const turn1Opts = useMemo(() => _shuf([
+    { text: `Sure! Quick question — can we ${today.word} on the project after?`, kind: "correct", note: "단어 자연스럽게 + 점심 흐름 안 깸. 좋아." },
+    { text: `Affirmative. I shall partake in the dining engagement.`, kind: "stiff", note: "너무 딱딱 — 친구한테 이렇게 말하면 어색해." },
+    { text: `Hmm, busy. Maybe later.`, kind: "cold", note: "톤은 OK지만 단어 못 써먹었고 거리감만 줘." },
+  ]), [today.word]);
+
+  // Turn 2 옵션 — 단어 한 번 더 등장
+  const turn2Opts = useMemo(() => _shuf([
+    { text: `Good point — I'll keep the ${today.word} thing in mind for next standup.`, kind: "correct", note: "오늘 단어 두 번째 사용 — 진짜 익혀짐." },
+    { text: `Yeah whatever sounds good.`, kind: "shallow", note: "단어 안 써먹고 흐름 흐려졌어." },
+    { text: `Per our discussion I shall consider the matter.`, kind: "stiff", note: "다시 너무 딱딱 — small talk엔 안 어울려." },
+  ]), [today.word]);
+
+  const opts = turn === 0 ? turn1Opts : turn2Opts;
+  const picked = opts.find(o => o.text === pick);
+
+  const onPick = (opt) => {
+    if (pick) return;
+    setPick(opt.text);
+    setLog(l => [...l, { from: "me", text: opt.text }]);
+    if (opt.kind === "correct" && turn === 0) {
+      // turn 0 정답 → 상대 응답 + turn 1로
+      setTimeout(() => {
+        const reply = `Oh nice — I had something similar last week. Let's grab lunch and I'll tell you.`;
+        setLog(l => [...l, { from: "them", text: reply }]);
+        setTurn(1);
+        setPick(null);
+      }, 700);
+    }
+  };
+
+  return (
+    <ActivityShell title={`ENGLISH LUNCH · ${partner.lead.toUpperCase()}`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 12:30 · {partner.who}와 점심</span>
+      <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        한영 믹스 small talk — 오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b> 한 번이라도 써보면 점수 +1.
+      </div>
+
+      <div style={{ marginTop: 14, padding: 14, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, display: "flex", flexDirection: "column", gap: 10 }}>
+        {log.map((m, i) => (
+          <div key={i} style={{
+            alignSelf: m.from === "me" ? "flex-end" : "flex-start",
+            maxWidth: "82%",
+            padding: "10px 14px",
+            borderRadius: 12,
+            background: m.from === "me" ? "var(--orange-soft)" : "#fff",
+            border: "1px solid var(--line)",
+            fontSize: 13, lineHeight: 1.5,
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", marginBottom: 4 }}>
+              {m.from === "me" ? "YOU" : partner.lead}
+            </div>
+            {m.text}
+          </div>
+        ))}
+      </div>
+
+      {!picked || picked.kind !== "correct" || turn === 0 ? null : (
+        <FeedbackBox ok={true} hint={"단어 한 번 더 던져 — '오늘 한 번' 보다 '두 번' 이 진짜 외움."} />
+      )}
+
+      {(!pick || picked?.kind !== "correct") && (
+        <>
+          <div style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
+            응답 고르기 ({turn + 1}/2)
+          </div>
+          <div style={{ marginTop: 8, display: "grid", gap: 8 }}>
+            {opts.map((o, i) => {
+              const isPicked = pick === o.text;
+              const showResult = pick !== null;
+              const ok = o.kind === "correct";
+              return (
+                <button
+                  key={i}
+                  onClick={() => onPick(o)}
+                  style={{
+                    textAlign: "left", padding: "12px 14px", borderRadius: 8,
+                    border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                    background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "#fff",
+                    cursor: pick === null ? "pointer" : "default",
+                    fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)",
+                  }}
+                >
+                  {String.fromCharCode(65 + i)}. "{o.text}"
+                  {showResult ? <div style={{ marginTop: 4, fontSize: 11, color: "var(--ink-mute)" }}>{o.note}</div> : null}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {picked && picked.kind !== "correct" && (
+        <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+          <button className="btn btn-ghost" onClick={() => setPick(null)}>다시 골라보기</button>
+        </div>
+      )}
+
+      {turn === 1 && picked?.kind === "correct" && (
+        <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+          <button className="btn btn-primary" onClick={onComplete}>점심 잘 먹었어요 ✓</button>
+        </div>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 4. RECAP — 10초 퀴즈 (3문제 빠른 4지선다) ===
+function RecapActivity({ today, item, onClose, onComplete }) {
+  const [qIdx, setQIdx] = useState(0);
+  const [picks, setPicks] = useState([]);
+  const [pick, setPick] = useState(null);
+
+  // Q1: KO 뜻 → EN 단어
+  // Q2: 빈칸 채우기 (예문에서 단어 빠진 거)
+  // Q3: 동의어 매칭
+  const questions = useMemo(() => {
+    const otherWords = _pickWordObjects(today.word, 3);
+    const otherWordSyn = otherWords.map(o => (o.synonyms && o.synonyms[0]) || o.word).filter(Boolean);
+    return [
+      {
+        prompt: `한국어 뜻을 영어 단어로`,
+        target: today.meaning,
+        options: _shuf([today.word, ...otherWords.map(o => o.word)]),
+        correct: today.word,
+        hint: today.mentorTip,
+      },
+      {
+        prompt: `빈 칸에 들어갈 단어`,
+        target: (today.quote || today.sampleAnswer || "").replace(new RegExp(today.word, "gi"), "_____"),
+        options: _shuf([today.word, ...otherWords.map(o => o.word).slice(0, 3)]),
+        correct: today.word,
+        hint: `원문: "${today.quote || today.sampleAnswer}"`,
+      },
+      {
+        prompt: `비슷한 표현은?`,
+        target: today.word,
+        options: _shuf([
+          (today.synonyms && today.synonyms[0]) || today.meaning,
+          ...otherWordSyn.slice(0, 3),
+        ]).slice(0, 4),
+        correct: (today.synonyms && today.synonyms[0]) || today.meaning,
+        hint: today.synonyms ? `유사: ${(today.synonyms || []).join(" · ")}` : "",
+      },
+    ];
+  }, [today.word]);
+
+  const q = questions[qIdx];
+  const lastQ = qIdx >= questions.length - 1;
+  const score = picks.filter(p => p.ok).length;
+
+  const onPick = (opt) => {
+    if (pick) return;
+    setPick(opt);
+    const ok = opt === q.correct;
+    setTimeout(() => {
+      setPicks([...picks, { ok, q: q.target, opt }]);
+      if (lastQ) {
+        setQIdx(qIdx + 1);
+      } else {
+        setQIdx(qIdx + 1);
+        setPick(null);
+      }
+    }, 900);
+  };
+
+  if (qIdx >= questions.length) {
+    const finalScore = picks.filter(p => p.ok).length;
+    return (
+      <ActivityShell title="RECAP · 10초 퀴즈 결과" onClose={onClose}>
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ fontSize: 56, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            {finalScore}<span style={{ fontSize: 22, color: "var(--ink-mute)" }}> / {questions.length}</span>
+          </div>
+          <div style={{ marginTop: 14, fontSize: 14, color: "var(--ink-soft)" }}>
+            {finalScore === questions.length ? "전부 맞췄어요. 머릿속에 박혔네 🌟" :
+             finalScore >= 2 ? "괜찮아요. 한 번 더 만나면 완전히 외워져요." :
+             "오늘 단어 한 번만 더 입으로 굴려봐요 — 내일 또 만나요."}
+          </div>
+        </div>
+        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          {picks.map((p, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: p.ok ? "rgba(74,124,89,0.06)" : "rgba(178,58,44,0.06)", border: "1px solid var(--line)", borderRadius: 6, fontSize: 12 }}>
+              <span>Q{i+1}</span>
+              <span style={{ fontWeight: 800, color: p.ok ? "var(--green)" : "var(--stamp-red)" }}>{p.ok ? "✓ 정답" : "✗ 오답"}</span>
+            </div>
+          ))}
+        </div>
+        <div className="row" style={{ marginTop: 18, justifyContent: "flex-end" }}>
+          <button className="btn btn-primary" onClick={onComplete}>Recap 완료 ✓</button>
+        </div>
+      </ActivityShell>
+    );
+  }
+
+  return (
+    <ActivityShell title={`RECAP · 10초 퀴즈 · ${qIdx + 1} / ${questions.length}`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 15:30 · 빠른 복습</span>
+      <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink-mute)", letterSpacing: "0.04em", fontWeight: 700 }}>{q.prompt}</div>
+      <div style={{ marginTop: 8, padding: 18, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 18, fontWeight: 800, color: "var(--ink)", lineHeight: 1.45, letterSpacing: "-0.01em" }}>
+        {q.target}
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+        {q.options.map((o, i) => {
+          const isPicked = pick === o;
+          const showResult = pick !== null;
+          const ok = o === q.correct;
+          return (
+            <button
+              key={i}
+              onClick={() => onPick(o)}
+              style={{
+                textAlign: "left", padding: "12px 16px", borderRadius: 8,
+                border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "#fff",
+                cursor: pick === null ? "pointer" : "default",
+                fontSize: 14, lineHeight: 1.4, fontFamily: "inherit", color: "var(--ink)",
+                fontWeight: showResult && ok ? 800 : 500,
+              }}
+            >
+              {String.fromCharCode(65 + i)}. {o}
+            </button>
+          );
+        })}
+      </div>
+      {pick && q.hint ? (
+        <div style={{ marginTop: 12, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.55, padding: "10px 12px", background: "rgba(216,90,42,0.06)", borderRadius: 6 }}>
+          💡 {q.hint}
+        </div>
+      ) : null}
+    </ActivityShell>
+  );
+}
+
+// === 5. OFFICE_TASK — 오후 업무 (메일 빈칸 채우기) ===
+function OfficeTaskActivity({ today, item, onClose, onComplete }) {
+  const action = item.action || "사수가 클라이언트 메일 초안 검토 부탁 ✉️";
+  const [pick, setPick] = useState(null);
+
+  // 메일 초안 — 오늘 단어 빈칸
+  const draft = useMemo(() => {
+    const s = today.sampleAnswer || `Let's ${today.word} on this and circle back.`;
+    return s.replace(new RegExp(today.word, "i"), "_____");
+  }, [today.word, today.sampleAnswer]);
+
+  const otherWords = useMemo(() => _pickWordObjects(today.word, 3).map(o => o.word), [today.word]);
+  const opts = useMemo(() => _shuf([today.word, ...otherWords]), [today.word, otherWords]);
+
+  return (
+    <ActivityShell title="AFTERNOON TASK · 메일 검토" onClose={onClose}>
+      <span className="label-doc label-orange">▶ 14:00 · 오후 업무</span>
+      <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>{action}</div>
+
+      <div style={{ marginTop: 18, padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 8, boxShadow: "2px 2px 0 var(--line)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.12em", marginBottom: 10 }}>📧 DRAFT EMAIL · TO CLIENT</div>
+        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.7 }}>
+          Hi team,<br/><br/>
+          Thanks for the call earlier. <span style={{ background: "var(--highlight)", padding: "1px 4px", fontWeight: 800 }}>{draft}</span><br/><br/>
+          Best,<br/>
+          {window.__SIM.USER.name}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
+        빈 칸에 들어갈 가장 자연스러운 단어는?
+      </div>
+      <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {opts.map((o, i) => {
+          const isPicked = pick === o;
+          const showResult = pick !== null;
+          const ok = o === today.word;
+          return (
+            <button
+              key={i}
+              onClick={() => pick === null && setPick(o)}
+              style={{
+                padding: "12px 14px", borderRadius: 8,
+                border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "var(--cream)",
+                cursor: pick === null ? "pointer" : "default",
+                fontSize: 13.5, fontFamily: "inherit", color: "var(--ink)", textAlign: "center",
+                fontWeight: 700,
+              }}
+            >
+              {o}
+            </button>
+          );
+        })}
+      </div>
+      {pick !== null && (
+        <>
+          <FeedbackBox ok={pick === today.word} correct={today.word} hint={`사수: "이 자리엔 ${today.word} 가 톤 잡기 딱 좋아." · ${today.mentorTip || ""}`} />
+          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+            <button className="btn btn-primary" onClick={onComplete}>초안 회신 ✓</button>
+          </div>
+        </>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 6. JOURNAL — 업무일지 + 퇴근 (한 줄 회고 + 버디 응원) ===
+function JournalActivity({ today, item, onClose, onComplete }) {
+  const { CHARACTERS } = window.__SIM;
+  const buddy = CHARACTERS.buddy;
+  const [text, setText] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const buddyReply = useMemo(() => {
+    const pool = [
+      `좋아 — ${today.word} 한 번 자기 입으로 써본 거, 진짜 외운 거야. 내일 또 만나자.`,
+      `오늘 ${today.word} 한 번도 입으로 안 굴렸으면 휘발돼. 자기 전에 한 번만 더 — 그러면 진짜 머리에 박혀.`,
+      `30일 중 ${window.__SIM.USER.currentDay}일째. ${today.word} 같은 표현 30개 모이면 회의 분위기 자체가 달라져.`,
+    ];
+    return pool[(today.day - 1) % pool.length];
+  }, [today.word, today.day]);
+
+  return (
+    <ActivityShell title="WORK JOURNAL · 업무일지 + 퇴근" onClose={onClose}>
+      <span className="label-doc label-orange">▶ 17:00 · 오늘의 한 줄</span>
+      <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b> — 진짜 어디서 쓸 수 있을 것 같아요? 한 줄만.
+      </div>
+      <textarea
+        className="scene-input"
+        placeholder={`예: 다음 회의에서 ${today.word} 한 번 써봐야지. 박 대리한테 ${today.word} 들으면 이제 안 헷갈려.`}
+        value={text}
+        onChange={e => setText(e.target.value)}
+        disabled={submitted}
+        style={{ marginTop: 12 }}
+      />
+      {!submitted ? (
+        <div className="row" style={{ marginTop: 12, justifyContent: "space-between" }}>
+          <button className="btn btn-ghost" onClick={() => setText(`다음 ${item?.context?.ctx || "회의"}에서 ${today.word} 한 번 써먹어보기.`)}>예시로 채우기</button>
+          <button className="btn btn-primary" onClick={() => setSubmitted(true)} disabled={!text.trim()}>일지 제출 →</button>
+        </div>
+      ) : (
+        <>
+          <div style={{ marginTop: 16, padding: 16, background: "rgba(216,90,42,0.06)", border: "1px solid rgba(216,90,42,0.25)", borderRadius: 8 }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+              <div className="buddy-avatar small" style={{ width: 32, height: 32, fontSize: 13 }}>{buddy.avatar}</div>
+              <div>
+                <div className="buddy-name" style={{ fontSize: 13 }}>{buddy.name}</div>
+                <div className="buddy-role" style={{ fontSize: 11 }}>오늘의 응원 한 마디</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.6 }}>{buddyReply}</div>
+          </div>
+          <div style={{ marginTop: 16, textAlign: "center", padding: "20px 0", position: "relative" }}>
+            <div style={{
+              display: "inline-block",
+              padding: "16px 28px",
+              border: "3px solid var(--stamp-red)",
+              color: "var(--stamp-red)",
+              fontSize: 18, fontWeight: 900, letterSpacing: "0.18em",
+              transform: "rotate(-6deg)",
+              fontFamily: "'Noto Sans KR', sans-serif",
+            }}>
+              퇴근 · DAY {today.day} 완주
+            </div>
+          </div>
+          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+            <button className="btn btn-primary" onClick={onComplete}>퇴근하기 ✓</button>
+          </div>
+        </>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 7. WEEKEND_CHAT — 토요일 동기 카톡 한 줄 ===
+function WeekendChatActivity({ item, onClose, onComplete }) {
+  const [pick, setPick] = useState(null);
+  const partners = useMemo(() => _shuf([
+    { name: "한도윤", greet: "야 우리 이번 주 ㄹㅇ 빡셌다 ㅋㅋ. weekend plan 있어?" },
+    { name: "임재희", greet: "Hey 우리 다음 주에 점심 한 번 ㄱㄱ? 새로 생긴 라멘집 가보자. 영어로 menu 볼 수 있어 거기 ㅋㅋ" },
+  ]), []);
+  const partner = partners[0];
+  const opts = useMemo(() => _shuf([
+    { text: "Lol 그니까. I'm just gonna chill at home — 넷플릭스 무한 루프 ㅋㅋ. 너는?", kind: "good", note: "톤 자연스럽고 한영 믹스 OK. 동기끼리 이렇게." },
+    { text: "Pursuant to our intense work schedule, I shall remain at home for repose.", kind: "stiff", note: "어허, 임원한테나 쓸 톤. 동기한테 이러면 차단당해." },
+    { text: "ㅇㅇ", kind: "short", note: "한 마디는 너무 차가워 — small talk 안 됨." },
+  ]), []);
+  const picked = opts.find(o => o.text === pick);
+
+  return (
+    <ActivityShell title="WEEKEND · 동기 카톡" onClose={onClose}>
+      <span className="label-doc label-orange">▶ 토요일 · 카톡 알림</span>
+      <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        주말 톡은 격식 빼고. 영어 한 줄 섞으면 자연스러워요.
+      </div>
+      <div style={{ marginTop: 14, padding: "12px 14px", background: "#FEEED8", border: "1px dashed var(--line)", borderRadius: 12, alignSelf: "flex-start", maxWidth: "82%" }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", marginBottom: 4 }}>{partner.name}</div>
+        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.55 }}>{partner.greet}</div>
+      </div>
+      <div style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>가장 자연스러운 답장 골라보세요</div>
+      <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+        {opts.map((o, i) => {
+          const isPicked = pick === o.text;
+          const showResult = pick !== null;
+          const ok = o.kind === "good";
+          return (
+            <button
+              key={i}
+              onClick={() => pick === null && setPick(o.text)}
+              style={{
+                textAlign: "left", padding: "12px 14px", borderRadius: 8,
+                border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "var(--cream)",
+                cursor: pick === null ? "pointer" : "default",
+                fontSize: 13, lineHeight: 1.55, fontFamily: "inherit", color: "var(--ink)",
+              }}
+            >
+              {String.fromCharCode(65 + i)}. "{o.text}"
+              {showResult ? <div style={{ marginTop: 4, fontSize: 11, color: "var(--ink-mute)" }}>{o.note}</div> : null}
+            </button>
+          );
+        })}
+      </div>
+      {picked && (
+        <>
+          <FeedbackBox ok={picked.kind === "good"} hint={"주말 동기 톡은 70% 톤, 30% 단어. 너무 정확하려고 안 해도 OK."} />
+          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+            <button className="btn btn-primary" onClick={onComplete}>주말 보너스 받기 ✓</button>
+          </div>
+        </>
+      )}
+    </ActivityShell>
+  );
+}
+
+// === 8. WEEKEND_RECAP — 일요일 이번 주 표현 미니 회고 (3문제) ===
+function WeekendRecapActivity({ item, onClose, onComplete }) {
+  const { SCENARIOS, USER } = window.__SIM;
+  const recent = useMemo(() => {
+    return SCENARIOS.filter(s => s.day <= USER.wordsCollected && s.day >= Math.max(1, USER.wordsCollected - 5));
+  }, []);
+
+  const questions = useMemo(() => {
+    if (recent.length === 0) return [];
+    const picks = _shuf(recent).slice(0, Math.min(3, recent.length));
+    return picks.map(s => {
+      // KO 뜻 → EN 단어 4지선다
+      const others = SCENARIOS.filter(o => o.word !== s.word).map(o => o.word);
+      const distractors = _shuf(others).slice(0, 3);
+      return {
+        target: s.meaning,
+        prompt: "이번 주 본 단어 — 한국어 뜻으로 영어 단어 맞추기",
+        options: _shuf([s.word, ...distractors]),
+        correct: s.word,
+        hint: s.mentorTip || s.tags?.map(t => "#"+t).join(" ") || "",
+      };
+    });
+  }, [recent]);
+
+  const [qIdx, setQIdx] = useState(0);
+  const [pick, setPick] = useState(null);
+  const [results, setResults] = useState([]);
+
+  if (recent.length === 0) {
+    return (
+      <ActivityShell title="WEEKEND · 미니 회고" onClose={onClose}>
+        <div style={{ textAlign: "center", padding: "30px 0" }}>
+          <div style={{ fontSize: 36, marginBottom: 14 }}>☕️</div>
+          <div style={{ fontSize: 15, color: "var(--ink)", fontWeight: 700, marginBottom: 8 }}>이번 주는 아직 단어 모은 게 없네요</div>
+          <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7 }}>월요일에 첫 단어부터 차근차근 — 다음 일요일에 만나요.</div>
+        </div>
+        <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+          <button className="btn btn-primary" onClick={onComplete}>알겠어요 ✓</button>
+        </div>
+      </ActivityShell>
+    );
+  }
+
+  const q = questions[qIdx];
+  if (qIdx >= questions.length) {
+    const correct = results.filter(r => r.ok).length;
+    return (
+      <ActivityShell title="WEEKEND · 회고 결과" onClose={onClose}>
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ fontSize: 56, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            {correct}<span style={{ fontSize: 22, color: "var(--ink-mute)" }}> / {questions.length}</span>
+          </div>
+          <div style={{ marginTop: 14, fontSize: 14, color: "var(--ink-soft)" }}>
+            {correct === questions.length ? "이번 주 단어 다 잡았어요 🌟" :
+             correct >= Math.ceil(questions.length / 2) ? "이번 주 단어 머릿속에 살아있어요." :
+             "월요일에 다시 한 번 굴려봐요."}
+          </div>
+          <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-mute)" }}>
+            ☕️ 주말도 챙겼으니 보너스 도장 +1
+          </div>
+        </div>
+        <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+          <button className="btn btn-primary" onClick={onComplete}>월요일에 봐요 ✓</button>
+        </div>
+      </ActivityShell>
+    );
+  }
+
+  const onPick = (opt) => {
+    if (pick) return;
+    setPick(opt);
+    const ok = opt === q.correct;
+    setTimeout(() => {
+      setResults(r => [...r, { ok, opt }]);
+      setQIdx(qIdx + 1);
+      setPick(null);
+    }, 900);
+  };
+
+  return (
+    <ActivityShell title={`WEEKEND · 회고 ${qIdx + 1} / ${questions.length}`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 일요일 · 이번 주 표현</span>
+      <div style={{ marginTop: 12, fontSize: 12, color: "var(--ink-mute)", letterSpacing: "0.04em", fontWeight: 700 }}>{q.prompt}</div>
+      <div style={{ marginTop: 8, padding: 18, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 18, fontWeight: 800, color: "var(--ink)", lineHeight: 1.45 }}>
+        {q.target}
+      </div>
+      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {q.options.map((o, i) => {
+          const isPicked = pick === o;
+          const showResult = pick !== null;
+          const ok = o === q.correct;
+          return (
+            <button
+              key={i}
+              onClick={() => onPick(o)}
+              style={{
+                padding: "12px 14px", borderRadius: 8,
+                border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
+                background: showResult && ok ? "rgba(74,124,89,0.10)" : isPicked ? "rgba(178,58,44,0.06)" : "#fff",
+                cursor: pick === null ? "pointer" : "default",
+                fontSize: 13.5, fontFamily: "inherit", color: "var(--ink)",
+                fontWeight: showResult && ok ? 800 : 600, textAlign: "center",
+              }}
+            >
+              {o}
+            </button>
+          );
+        })}
+      </div>
+      {pick && q.hint ? (
+        <div style={{ marginTop: 12, fontSize: 12, color: "var(--ink-soft)", padding: "10px 12px", background: "rgba(216,90,42,0.06)", borderRadius: 6 }}>
+          💡 {q.hint}
+        </div>
+      ) : null}
+    </ActivityShell>
+  );
+}
+
+// 디스패처 — type별 활동 라우팅
+function ActivityModal({ item, today, onClose, onComplete }) {
+  if (!item) return null;
+  const props = { item, today, onClose, onComplete };
+  // 주말 활동 — today 없어도 동작
+  if (item.type === "weekend_chat") return <WeekendChatActivity {...props} />;
+  if (item.type === "weekend_recap") return <WeekendRecapActivity {...props} />;
+  // 평일 활동 — today 필요
+  if (!today) return null;
+  switch (item.type) {
+    case "checkin": return <CheckinActivity {...props} />;
+    case "mini_mission": return <MissionActivity {...props} />;
+    case "english_lunch": return <LunchActivity {...props} />;
+    case "recap": return <RecapActivity {...props} />;
+    case "office_task": return <OfficeTaskActivity {...props} />;
+    case "journal": return <JournalActivity {...props} />;
+    default: return null;
+  }
+}
+
+// ============================================================
 // Memo Modal — 사내 메모 상세
 // ============================================================
 function MemoModal({ memo, onClose }) {
@@ -2570,17 +4096,50 @@ function App() {
   const [active, setActive] = useState("home");
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
-  const { NOTICES, USER } = window.__SIM;
+  const { USER } = window.__SIM;
+
+  // 사내 메모 읽음 상태 — localStorage에 사용자 단위로 저장
+  const READ_KEY = "__OD_NOTICE_READS_" + (USER.email || "guest");
+  const ALL_NOTICES = React.useMemo(() => window.__SIM.NOTICES, []);
+  const [readIds, setReadIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(READ_KEY);
+      return new Set(saved ? JSON.parse(saved) : []);
+    } catch { return new Set(); }
+  });
+
+  // 원본 unread 플래그에 readIds 적용
+  const NOTICES = ALL_NOTICES.map(n => ({ ...n, unread: n.unread && !readIds.has(n.id) }));
+  window.__SIM.NOTICES = NOTICES; // 자식 페이지가 window.__SIM에서 읽으므로 갱신
   const unread = NOTICES.filter(n => n.unread).length;
+
+  const handleOpenMemo = (n) => {
+    setMemo(n);
+    if (!readIds.has(n.id)) {
+      setReadIds(prev => {
+        const next = new Set(prev); next.add(n.id);
+        try { localStorage.setItem(READ_KEY, JSON.stringify([...next])); } catch {}
+        return next;
+      });
+      // (v1.5) Supabase events 로그 — 추후 활성화
+      // window.OD?.logEvent?.(USER.id, "notice_read", { id: n.id });
+    }
+  };
+
+  // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
+  const weekend = _weekendKind();
 
   return (
     <div className="office">
       <Locker active={active} setActive={setActive} user={USER} unread={unread} />
       <main className="desk">
-        {active === "home" && <HomePage setActive={setActive} openScene={setScene} openMemo={setMemo} />}
+        {active === "home" && (weekend
+          ? <WeekendHomePage kind={weekend} setActive={setActive} openMemo={handleOpenMemo} />
+          : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} />
+        )}
         {active === "library" && <LibraryPage openScene={setScene} />}
         {active === "test" && <TestPage />}
-        {active === "inbox" && <InboxPage openMemo={setMemo} />}
+        {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "mypage" && <MyPage />}
       </main>
       <MobileTabbar active={active} setActive={setActive} unread={unread} />
@@ -2713,7 +4272,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
       </div>
       <div class="dp-row" style="grid-template-columns: 1fr 1fr; margin-top:8px">
         <button class="dp-btn" data-act="reload">새로고침</button>
-        <button class="dp-btn danger" data-act="reset">사용자 리셋</button>
+        <button class="dp-btn" data-act="reset-day" title="오늘 일정 진행만 초기화 (다른 날은 그대로)">↻ 오늘 학습 리셋</button>
+      </div>
+      <div class="dp-row" style="grid-template-columns: 1fr 1fr 1fr; margin-top:4px">
+        <button class="dp-btn" data-act="jump-sat" title="가장 가까운 토요일로 점프">☕ 토요일로</button>
+        <button class="dp-btn" data-act="jump-sun" title="가장 가까운 일요일로 점프">☕ 일요일로</button>
+        <button class="dp-btn" data-act="jump-mon" title="가장 가까운 월요일로 점프">💼 월요일로</button>
+      </div>
+      <div class="dp-row" style="grid-template-columns: 1fr; margin-top:4px">
+        <button class="dp-btn danger" data-act="reset">사용자 리셋 (전체)</button>
       </div>
       ${u.isOperator ? '<div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)"><a href="operator.html" class="dp-link">↗ 운영자 뷰</a> · <a href="dev.html" class="dp-link">↗ Dev 런처</a></div>' : ''}
     `;
@@ -2723,19 +4290,29 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
     });
   }
 
+  function reloadCleanUrl() {
+    // 옛날 ?weekend= 같은 sticky 파라미터 청소하고 reload
+    const url = new URL(location.href);
+    if (url.searchParams.has('weekend')) {
+      url.searchParams.delete('weekend');
+      location.href = url.toString();
+    } else {
+      location.reload();
+    }
+  }
   function handle(act) {
     let u = load();
     if (!u && act !== 'reload') return;
     switch (act) {
-      case 'd+1': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 1); save(u); location.reload(); break;
-      case 'd-1': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 1); save(u); location.reload(); break;
-      case 'd+7': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 7); save(u); location.reload(); break;
-      case 'd-7': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 7); save(u); location.reload(); break;
+      case 'd+1': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 1); save(u); reloadCleanUrl(); break;
+      case 'd-1': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 1); save(u); reloadCleanUrl(); break;
+      case 'd+7': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 7); save(u); reloadCleanUrl(); break;
+      case 'd-7': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 7); save(u); reloadCleanUrl(); break;
       case 'set': {
         const v = prompt('이동할 Day (1-365):', String(u.dayInCompany || 1));
         if (!v) return;
         const n = Math.max(1, Math.min(365, parseInt(v, 10) || 1));
-        u.dayInCompany = n; save(u); location.reload();
+        u.dayInCompany = n; save(u); reloadCleanUrl();
         break;
       }
       case 'reset':
@@ -2744,6 +4321,38 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
           location.href = 'onboarding.html';
         }
         break;
+      case 'reset-day': {
+        // 오늘(currentDay)의 학습 진행만 초기화 — 다른 날은 그대로
+        const day = u.dayInCompany || 1;
+        const taskKey = '__OD_TASKS_DAY_' + day;
+        const tourKey = '__OD_TOUR_DONE_DAY_' + day;
+        if (confirm('Day ' + day + ' 의 일정 진행 + 투어를 초기화할까요? 다른 날 진행은 그대로 유지돼요.')) {
+          try {
+            localStorage.removeItem(taskKey);
+            localStorage.removeItem(tourKey);
+          } catch (e) {}
+          location.reload();
+        }
+        break;
+      }
+      case 'jump-sat':
+      case 'jump-sun':
+      case 'jump-mon': {
+        // 가장 가까운 (앞쪽으로) 해당 요일로 dayInCompany 점프
+        // dow 매핑: 월=0, 화=1, ..., 금=4, 토=5, 일=6
+        const targetDow = act === 'jump-sat' ? 5 : act === 'jump-sun' ? 6 : 0;
+        const cur = u.dayInCompany || 1;
+        const curDow = ((cur - 1) % 7 + 7) % 7;
+        let delta = (targetDow - curDow + 7) % 7;
+        if (delta === 0) delta = 7;       // 같은 요일이면 다음 주
+        u.dayInCompany = Math.max(1, Math.min(365, cur + delta));
+        save(u);
+        // URL 에서 옛날 ?weekend= 가 남아있으면 청소 (예전 버전 호환)
+        const url = new URL(location.href);
+        url.searchParams.delete('weekend');
+        location.href = url.toString();
+        break;
+      }
       case 'reload': location.reload(); break;
     }
   }
