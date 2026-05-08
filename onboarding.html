@@ -319,6 +319,37 @@ function OnboardingApp() {
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
 
+  // 코드 검증 — 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleApplicationSubmit = async () => {
+    if (submitting) return;
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      const code = (inviteCode || "").trim().toUpperCase();
+      if (!code) {
+        setSubmitError("초대 코드를 입력해주세요.");
+        setSubmitting(false);
+        return;
+      }
+      if (window.OD && window.OD.enabled) {
+        const result = await window.OD.checkInviteCode(code);
+        if (!result || !result.valid) {
+          setSubmitError("유효하지 않은 초대 코드예요. 다시 확인해주세요.");
+          setSubmitting(false);
+          return;
+        }
+      }
+      // 통과 → 다음 단계로
+      setStage("reviewing");
+    } catch (e) {
+      setSubmitError("코드 확인에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setSubmitting(false);
+    }
+  };
+
   // Dev 모드 (테스터 전용) — DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
   const [devMode, setDevMode] = useState(false);
   const [devCode, setDevCode] = useState("");
@@ -353,6 +384,8 @@ function OnboardingApp() {
       email: email.trim(),
       name: name.trim(),
       signupDate: new Date().toISOString(),
+      // 가입 단계에서 코드 검증 통과한 사용자는 unlock 마킹 (mainboard 직행)
+      unlocked: true,
       // fictional identity
       empNumber,
       department: dept,
@@ -413,18 +446,16 @@ function OnboardingApp() {
       }
     }
 
-    // 가입 후 이동:
+    // 가입 후 이동 — 코드 검증을 이미 ApplicationScreen에서 통과했으므로 바로 사옥으로
     // - DEV-BUDDY / DEV-OPS (운영자) → operator.html 직행
     // - DEV-TEST / DEV-2026 (테스터) → mainboard.html?dev=1
-    // - 일반 사용자 → simulator.html (출근 대기실: 코드 입력 시 mainboard 입장)
-    //   URL에 ?code=...가 있었다면 페이월에 자동 채워줌
+    // - 일반 사용자 (unlocked) → mainboard.html 직행
     if (matchedDevCode && matchedDevCode.operator) {
       window.location.href = "operator.html";
     } else if (matchedDevCode && matchedDevCode.dev) {
       window.location.href = "mainboard.html?dev=1";
     } else {
-      var passCode = inviteCode ? ("?code=" + encodeURIComponent(inviteCode)) : "";
-      window.location.href = "simulator.html" + passCode;
+      window.location.href = "mainboard.html";
     }
   };
 
@@ -438,11 +469,13 @@ function OnboardingApp() {
           name={name} setName={setName}
           email={email} setEmail={setEmail}
           motivation={motivation} setMotivation={setMotivation}
+          inviteCode={inviteCode} setInviteCode={setInviteCode}
           devMode={devMode} setDevMode={setDevMode}
           devCode={devCode} setDevCode={setDevCode}
           isDevValid={isDevValid}
+          submitting={submitting} submitError={submitError}
           stageIdx={stageIdx} totalStages={stageOrder.length}
-          onSubmit={() => setStage("reviewing")}
+          onSubmit={handleApplicationSubmit}
           onBack={() => setStage("welcome")}
         />
       )}
@@ -731,16 +764,38 @@ function LoginScreen({ onBack }) {
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, stageIdx, totalStages }) {
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email);
+function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
       <StepBar idx={stageIdx} total={totalStages} />
       <div className="eyebrow">STEP 1 · 입사 지원서</div>
       <h1>먼저 <em>본인 확인</em>부터.</h1>
-      <p className="lead">실제 입사 지원서처럼, 너의 이름과 연락 받을 메일이면 충분해.</p>
+      <p className="lead">실제 입사 지원서처럼, 이름과 본인 확인을 위한 메일을 작성해주세요.</p>
 
+      <div style={{
+        marginBottom: 20, padding: "12px 14px",
+        background: "var(--paper-warm)",
+        border: "1px dashed var(--accent)",
+        borderRadius: 8,
+        fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, fontWeight: 600,
+      }}>
+        🎟 <span style={{ color: "var(--accent)" }}>초대 코드가 있어야</span> 등록이 가능해요.
+        <div style={{ fontSize: 11.5, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
+          운영자가 보내드린 베타 코드를 아래에 입력해주세요.
+        </div>
+      </div>
+
+      <div className="form-row">
+        <label>초대 코드</label>
+        <input
+          value={inviteCode}
+          onChange={e => setInviteCode(e.target.value.toUpperCase())}
+          placeholder="초대받으신 코드를 입력하세요"
+          style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+        />
+      </div>
       <div className="form-row">
         <label>이름</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
@@ -757,9 +812,22 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
       {/* Dev 모드 토글 UI 제거 — 베타테스터(PILOT)는 일반 사용자 흐름으로만 진입.
           운영자는 ?dev=1 / operator.html 직접 접근으로 분리 */}
 
+      {submitError && (
+        <div style={{
+          marginTop: 12, padding: "10px 12px",
+          background: "#fdecea", border: "1px solid #f5c2c0",
+          borderRadius: 6, fontSize: 12.5, color: "#B8431A", fontWeight: 600,
+        }}>
+          ⚠ {submitError}
+        </div>
+      )}
       <div className="btn-row">
-        <button className="btn" disabled={!valid} onClick={onSubmit}>지원서 제출 →</button>
-        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>✓ 진도·기록 자동 저장</span>
+        <button className="btn" disabled={!valid || submitting} onClick={onSubmit}>
+          {submitting ? "코드 확인 중…" : "지원서 제출 →"}
+        </button>
+        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>
+          {submitting ? "" : "✓ 진도·기록 자동 저장"}
+        </span>
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
