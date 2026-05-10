@@ -1283,11 +1283,12 @@ body::before {
 })();
 
 // === Calendar day 헬퍼 (이 스크립트 + 다음 babel 블록에서 같이 씀) ===
-// dow: 0=월, 1=화, 2=수, 3=목, 4=금, 5=토, 6=일
+// dow: 0=월, 1=화, 2=수, 3=목, 4=금  (베타 기간 — 주말 OFF, 5일 순환)
+// 정식 출시 시 7일 순환으로 복구: ((d - 1) % 7 + 7) % 7
 function _dayOfWeek(day) {
   const d = (day | 0);
   if (d < 1) return 0;
-  return ((d - 1) % 7 + 7) % 7;
+  return ((d - 1) % 5 + 5) % 5;
 }
 // 베타 기간 — 주말 가드 OFF (모든 day가 학습일)
 // 정식 출시 시 아래 주석 처리된 원본 로직으로 복구
@@ -1334,7 +1335,7 @@ const CHARACTERS = {
 // 단어 + 시추에이션 — Day 1~30 (status는 USER.currentDay 기준 자동 계산)
 const SCENARIOS = [
   { day: 1, word: "stakeholder", pos: "n.", meaning: "이해관계자", phonetic: "/ˈsteɪkˌhoʊldər/",
-    scene: "월요일 09:30, 입사 첫 회의실. 김 팀장이 화이트보드에 도식을 그리며.",
+    scene: "09:30, 입사 첫 회의실. 김 팀장이 화이트보드에 도식을 그리며.",
     npc: "manager", quote: "이번 프로젝트 stakeholder map 부터 정리해보자. 누가 누구지?",
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지 — 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
@@ -1366,7 +1367,7 @@ const SCENARIOS = [
         "stake = '말뚝, 지분, 건 것'. \"내 stake가 걸려있다\" = \"내 지분이 있다\".\n\n→ stakeholder = stake를 쥔 사람 = 영향받는 사람\n\n오늘은 그냥 '이해관계자 = stakeholder'만 외워도 충분해. 회의 한두 번 듣다 보면 자연스럽게 와.",
     } },
   { day: 2, word: "deadline", pos: "n.", meaning: "마감 기한", phonetic: "/ˈdedlaɪn/",
-    scene: "화요일 18:40, 김 팀장이 자리로 와서.", npc: "manager",
+    scene: "18:40, 김 팀장이 자리로 와서.", npc: "manager",
     quote: "Daniel한테 deadline 다시 한번 confirm 좀.",
     youDo: "Daniel에게 슬랙으로 마감일 재확인 메시지를 보냈다.",
     mentorTip: "deadline은 진짜 '죽는 선'이라는 어원. due date보다 무거운 뉘앙스라 협상이 어려워.",
@@ -1385,7 +1386,7 @@ const SCENARIOS = [
       default: "dead + line. 미국 남북전쟁 때 포로 수용소에서 '이 선 넘으면 사살' 했던 데서 유래. 그래서 '넘으면 죽는 선'.\n\n외우기: 마감을 못 지키면 (비유적으로) 죽을 만큼 곤란하다. 그래서 한국말 '기한'보다 훨씬 무겁게 느껴짐.\n\n오늘은 \"deadline = 절대 못 미루는 마감\"으로만 외워도 충분.",
     } },
   { day: 3, word: "follow up", pos: "phr.", meaning: "후속 조치하다", phonetic: "/ˈfɑloʊ ʌp/",
-    scene: "수요일 11:00, 사수가 지나가며.", npc: "mentor",
+    scene: "11:00, 사수가 지나가며.", npc: "mentor",
     quote: "어제 미팅 follow up 메일 보냈어?",
     youDo: "회의 액션 아이템을 정리해 참석자 전원에게 메일을 보냈다.",
     mentorTip: "회의가 끝나면 24시간 내 follow up. 이거 한 번만 챙겨도 신뢰가 달라져.",
@@ -1404,7 +1405,7 @@ const SCENARIOS = [
       default: "follow + up. 따라가서 위로 띄우다 = '챙겨서 다음 단계로'.\n\n외우기 팁: 회의 끝나면 머릿속에 \"FOLLOW UP\" 알람 켜기. 24시간 내 한 줄이라도 보내면 신뢰 점수 +10.\n\n사수가 \"follow up 했어?\" 물어볼 때 \"아 내일이요\" 보다 \"방금 보냈습니다\" 가 정답.",
     } },
   { day: 4, word: "ASAP", pos: "abbr.", meaning: "최대한 빨리", phonetic: "/ˌeɪ ɛs eɪ ˈpi/",
-    scene: "목요일 16:00, Sarah로부터 슬랙.", npc: "sarah",
+    scene: "16:00, Sarah로부터 슬랙.", npc: "sarah",
     quote: "Need the revised numbers ASAP — board meeting tomorrow.",
     youDo: "수치 다시 검토해서 1시간 안에 회신했다.",
     mentorTip: "ASAP는 강한 표현이야. 우리가 쓸 땐 'by EOD' 같은 구체적 시간이 더 프로페셔널해.",
@@ -1423,7 +1424,7 @@ const SCENARIOS = [
       default: "A + S + A + P = As Soon As Possible.\n\n외우기: \"에이쌥\"으로 발음. 한국 직장에선 거의 그대로 들어와서 부담 없음.\n\n다만 외국 동료한테 자주 쓰면 '신입이라 다 급해 보이나?' 인상을 줄 수 있어. 정말 급할 때만 아껴서. 평소엔 'by [구체적 시간]' 사용.",
     } },
   { day: 5, word: "circle back", pos: "phr.", meaning: "(나중에) 다시 얘기하다", phonetic: "/ˈsɝkəl bæk/",
-    scene: "금요일 14:00, 회의 중 시간이 부족.", npc: "daniel",
+    scene: "14:00, 회의 중 시간이 부족.", npc: "daniel",
     quote: "Let's circle back on this next week — running short on time.",
     youDo: "다음 주 화요일로 follow-up 미팅을 잡았다.",
     mentorTip: "회의를 자연스럽게 끊을 때 쓰는 마법의 표현. 한국말로 '이건 다음에' 보다 부드러워.",
@@ -1442,7 +1443,7 @@ const SCENARIOS = [
       default: "circle (원) + back (뒤로). 야구에서 \"라운드 돌아서 베이스로 돌아온다\" 이미지. → 한 바퀴 돌아 다시 이 얘기로.\n\n외우기: 회의에서 시간 부족할 때 '아 이거 다음에 얘기해요' 머릿속에 떠오르면 → \"Let's circle back on this.\"\n\n실제 외국계 회의에서 가장 많이 듣는 표현 TOP 5 안에 들어가니까 익혀두면 손해 없어.",
     } },
   { day: 6, word: "loop in", pos: "phr.", meaning: "(메일/대화에) 포함시키다", phonetic: "/luːp ɪn/",
-    scene: "월요일 10:00, 박 대리가 옆자리에서.", npc: "park",
+    scene: "10:00, 박 대리가 옆자리에서.", npc: "park",
     quote: "이 건 디자인팀도 loop in 해야 할 것 같은데?",
     youDo: "디자인팀 리드를 cc에 추가해 메일을 다시 보냈다.",
     mentorTip: "정보 공유의 동사. cc보다 '동참시킨다'는 뉘앙스가 강해서 협업할 때 자주 써.",
@@ -1461,7 +1462,7 @@ const SCENARIOS = [
       default: "loop (고리) + in (안으로). 정보의 고리 안으로 사람을 데려오는 이미지.\n\n외우기: 그룹 채팅방에 친구 추가하는 느낌으로 → \"Looping you in.\"\n\n외국계 슬랙에서 하루 5번은 보는 표현. 연습 삼아 본인이 메시지 쓸 때 한 번 써보기 — \"Looping in @sa-shu\" 같은 식으로.",
     } },
   { day: 7, word: "deliverable", pos: "n.", meaning: "산출물, 납품물", phonetic: "/dɪˈlɪvərəbl/",
-    scene: "화요일 09:30, 분기 리뷰 회의.", npc: "manager",
+    scene: "09:30, 분기 리뷰 회의.", npc: "manager",
     quote: "이번 분기 핵심 deliverable 3개만 정리해보자.",
     youDo: "팀의 핵심 산출물을 노션에 정리해 공유했다.",
     mentorTip: "'결과물' 보다 '약속한 산출물' 의 무게가 있어. 계약/프로젝트에서 자주 봐.",
@@ -1480,7 +1481,7 @@ const SCENARIOS = [
       default: "deliver (전달) + able (가능한) → 전달할 수 있는 것. 즉 약속하고 만들어서 넘겨주는 결과물.\n\n외우기: 택배 deliver = 약속한 물건 → 같은 deliver로 만든 deliverable = 약속한 결과물. 둘 다 '받기로 한 사람한테 넘기는 것'.\n\n분기 회의에서 '이번 분기 deliverable 뭐예요?' 한 번만 자연스럽게 물으면 격이 확 올라가.",
     } },
   { day: 8, word: "ramp up", pos: "phr.", meaning: "(생산·활동을) 늘리다", phonetic: "/ræmp ʌp/",
-    scene: "수요일 11:30, 채용 회의.", npc: "manager",
+    scene: "11:30, 채용 회의.", npc: "manager",
     quote: "엔지니어링팀 ramp up 일정이 어떻게 돼?",
     youDo: "채용 일정과 온보딩 계획을 한 페이지로 정리해 공유했다.",
     mentorTip: "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
@@ -1499,7 +1500,7 @@ const SCENARIOS = [
       default: "ramp (경사로) + up (위로). 자동차가 ramp 타고 단계적으로 올라가는 이미지.\n\n외우기: 갑자기 점프 X, 경사로 타고 천천히 올라가기. 그래서 '단계적' 뉘앙스.\n\n외국계 채용·전략 회의에선 거의 매번 등장. 하나만 외운다면 \"We're ramping up [무엇] [시점부터]\" 패턴.",
     } },
   { day: 9, word: "low-hanging fruit", pos: "phr.", meaning: "쉽게 얻을 수 있는 성과", phonetic: "/loʊ ˈhæŋɪŋ fruːt/",
-    scene: "목요일 15:00, 전략 워크숍.", npc: "daniel",
+    scene: "15:00, 전략 워크숍.", npc: "daniel",
     quote: "Let's start with the low-hanging fruit before the heavy lifting.",
     youDo: "당장 실행 가능한 3개 액션을 따로 빼서 to-do 리스트로 만들었다.",
     mentorTip: "'쉬운 거 먼저' — 회의에서 우선순위 정할 때 거의 매번 등장.",
@@ -1518,7 +1519,7 @@ const SCENARIOS = [
       default: "low (낮은) + hanging (매달린) + fruit (과일). 가지에서 낮게 매달려 손만 뻗으면 따는 과일 = 쉬운 성과.\n\n외우기: 사다리 안 가져와도 따는 과일 = 노력 적게 들이고 얻는 성과.\n\n전략·기획 회의에서 거의 매번 등장. \"Let's grab the low-hanging fruit first\" 한 번만 자연스럽게 던지면 격이 올라.",
     } },
   { day: 10, word: "touch base", pos: "phr.", meaning: "잠깐 얘기하다, 안부 묻다", phonetic: "/tʌtʃ beɪs/",
-    scene: "금요일 17:00, 사수가 캘린더 초대를 보냄.", npc: "mentor",
+    scene: "17:00, 사수가 캘린더 초대를 보냄.", npc: "mentor",
     quote: "월요일 15분만 touch base 하자. 진행 상황 듣고 싶어.",
     youDo: "월요일까지 진행 상황을 한 페이지로 정리해뒀다.",
     mentorTip: "야구의 '베이스 터치' 에서 옴. 가볍게 점검하는 짧은 미팅을 잡을 때 부담 없이 써.",
@@ -1537,7 +1538,7 @@ const SCENARIOS = [
       default: "touch (터치) + base (베이스). 야구에서 주자가 베이스에 발 한 번 대고 다음으로 가는 동작 = 한 번 거치고 가기.\n\n외우기: 베이스 한 번 터치하듯 짧게 얘기하고 끝. 무겁지 않게.\n\n사수가 \"touch base 하자\" 하면 = '잠깐 얘기 좀'. 부담 갖지 말고 1페이지 진행 상황만 정리해 가면 충분.",
     } },
   { day: 11, word: "due diligence", pos: "n.", meaning: "실사, 충분한 검토", phonetic: "/duː ˈdɪlɪdʒəns/",
-    scene: "월요일 14:00, M&A 검토 회의.", npc: "manager",
+    scene: "14:00, M&A 검토 회의.", npc: "manager",
     quote: "due diligence 끝나기 전엔 사인 못 해. 이번 주 안에 마무리.",
     youDo: "재무·법무·운영 체크리스트를 만들어 분담했다.",
     mentorTip: "법률·재무 검토 전부. 이 한 단어가 며칠치 일을 함축해.",
@@ -1556,7 +1557,7 @@ const SCENARIOS = [
       default: "due (마땅한) + diligence (성실함). 직역하면 '마땅히 해야 할 성실한 검토'.\n\n어원: 중세 라틴어 법률 용어 'debitum diligentia'에서 유래. 800년째 같은 의미로 쓰이는 중.\n\n외우기: 큰 거래 전 '꼼꼼히 살펴봐야 하는 의무' = due diligence. 안 하고 사인하면 나중에 책임 추궁받음.\n\nM&A·투자 회의에선 거의 매번 등장하니 익혀두면 손해 없어.",
     } },
   { day: 12, word: "pivot", pos: "v./n.", meaning: "(전략을) 전환하다", phonetic: "/ˈpɪvət/",
-    scene: "화요일 16:00, 임원 보고.", npc: "daniel",
+    scene: "16:00, 임원 보고.", npc: "daniel",
     quote: "Numbers aren't there. We may need to pivot.",
     youDo: "B2C → B2B 전환 시나리오를 1페이지로 그려봤다.",
     mentorTip: "스타트업 용어가 일반 비즈니스로 넘어온 사례. '방향 자체를 트는' 뉘앙스라 작은 변경엔 안 써.",
@@ -1575,7 +1576,7 @@ const SCENARIOS = [
       default: "pivot은 농구의 '피벗' — 한 발 고정하고 몸 회전시키는 동작. 자리는 그대로지만 방향이 바뀜.\n\n어원: 농구·발레·스타트업(린 스타트업, 에릭 리스). 2010년대 스타트업 붐 타고 일반 비즈니스로 퍼짐.\n\n외우기: 발 한쪽 땅에 박고 (자원·인력) 몸은 새 방향으로 (전략 변경). 자원은 유지, 방향은 전환.\n\n임원 자리에서 누가 \"we need to pivot\" 하면 = '큰 결정 임박'. 메모하고 1페이지 시나리오 준비하면 책임감 있게 보임.",
     } },
   { day: 13, word: "actionable", pos: "adj.", meaning: "실행 가능한, 바로 할 수 있는", phonetic: "/ˈækʃənəbl/",
-    scene: "수요일 11:00, 사수가 초안 리뷰.", npc: "mentor",
+    scene: "11:00, 사수가 초안 리뷰.", npc: "mentor",
     quote: "피드백은 좋은데, 좀 더 actionable 하게 정리해줄래?",
     youDo: "추상적인 조언을 '담당자/기한/액션' 3열 표로 다시 썼다.",
     mentorTip: "'그래서 뭐 해?' 라는 질문에 답이 되면 actionable. 보고서의 마지막 페이지에 꼭 들어가야 해.",
@@ -1594,7 +1595,7 @@ const SCENARIOS = [
       default: "action (행동) + able (가능한) → '행동으로 옮길 수 있는'.\n\n외우기: 보고서 읽고 \"그래서 내가 뭐 해야 돼?\" 라는 질문이 안 나오면 actionable. 나오면 not actionable.\n\n시니어가 신입 보고서 보고 가장 많이 던지는 말 = \"make it actionable\". 한 번이라도 들으면 다음부턴 owner + deadline + 동사 3종 세트로 항상 정리.",
     } },
   { day: 14, word: "ballpark", pos: "n./adj.", meaning: "대략적인 추정치", phonetic: "/ˈbɔːlpɑːrk/",
-    scene: "목요일 13:30, Sarah와 통화.", npc: "sarah",
+    scene: "13:30, Sarah와 통화.", npc: "sarah",
     quote: "Just a ballpark — what are we looking at, budget-wise?",
     youDo: "정확한 수치 대신 '500만~700만원 범위' 라고 답했다.",
     mentorTip: "정확한 답을 줄 수 없을 때 시간을 버는 표현. 한국말 '대충 얼마' 보다 훨씬 프로페셔널해.",
@@ -1613,7 +1614,7 @@ const SCENARIOS = [
       default: "ballpark = 야구장. 야구장 크기 정도는 '눈대중으로 알 수 있다' 는 뉘앙스에서 옴.\n\n외우기: 야구장 크기를 정확히 cm로 못 말해도 '대충 200m × 150m' 정도는 감 잡듯 → ballpark.\n\n실전 팁: 클라이언트가 'ballpark만 달라' 하면 절대 거절 X. 책임 분명히 하면서 범위 + 정식 약속을 같이 ('ballpark X-Y, I can firm up by Z').",
     } },
   { day: 15, word: "table", pos: "v.", meaning: "(논의를) 보류하다", phonetic: "/ˈteɪbəl/",
-    scene: "금요일 10:00, 분기 전략 회의. Daniel이 시계를 본다.",
+    scene: "10:00, 분기 전략 회의. Daniel이 시계를 본다.",
     npc: "daniel",
     quote: "We're running short on time. Let's table the pricing discussion for now.",
     youDo: null,
@@ -1635,7 +1636,7 @@ const SCENARIOS = [
     } },
   // ===== Day 16-30 = 수습 후반 + 사원 첫 발 (full content) =====
   { day: 16, word: "align", pos: "v.", meaning: "(의견·계획을) 정렬시키다, 합의를 맞추다", phonetic: "/əˈlaɪn/",
-    scene: "월요일 14:00, 분기 전략 회의 마무리. Daniel이 화면 공유를 끄며.",
+    scene: "14:00, 분기 전략 회의 마무리. Daniel이 화면 공유를 끄며.",
     npc: "daniel",
     quote: "Before we wrap, let's make sure we're aligned on next steps. Anyone disagree?",
     youDo: null,
@@ -1656,7 +1657,7 @@ const SCENARIOS = [
       default: "align = '한 줄로 정렬하다'. 자동차 휠 align먼트(정렬)와 같은 어원.\n\n외우기: 모두가 같은 방향 가리키게 정렬 = align. 100% 동의가 아니어도 큰 방향만 맞으면 OK.\n\n회의 끝에 'aligned?' 라고 물어보면 = '다 같은 방향이지?' 확인. 'Yes, aligned' 한 단어로 답하면 깔끔.",
     } },
   { day: 17, word: "sync up", pos: "phr.", meaning: "(짧게) 동기화하다, 진행상황 맞추다", phonetic: "/sɪŋk ʌp/",
-    scene: "화요일 09:30, 사수가 캘린더 초대를 보냄.",
+    scene: "09:30, 사수가 캘린더 초대를 보냄.",
     npc: "mentor",
     quote: "내일 15분만 sync up 하자. 너 진행 상황 듣고 싶어.",
     youDo: null,
@@ -1677,7 +1678,7 @@ const SCENARIOS = [
       default: "sync (synchronize 동기화) + up (위로). 시계 두 개를 같은 시간으로 맞추듯 진행 상황을 동기화.\n\n외우기: 폰 \"sync\"가 데이터 동기화 — 같은 sync로 미팅 sync up = 정보·진행 동기화.\n\n실전: 사수가 'sync up 하자' 하면 = '15분만 빠르게 진행 공유'. 무거운 안건 아님. 진행 상황 1페이지 + 막힌 거 1개만 정리해 가도 충분.",
     } },
   { day: 18, word: "bandwidth", pos: "n.", meaning: "(업무) 처리 여력, 시간/에너지", phonetic: "/ˈbændwɪdθ/",
-    scene: "수요일 11:00, 박 대리가 옆자리에서 부탁.",
+    scene: "11:00, 박 대리가 옆자리에서 부탁.",
     npc: "park",
     quote: "이번 주 bandwidth 좀 있어? 디자인팀 자료 정리 같이 하면 좋을 것 같은데.",
     youDo: null,
@@ -1698,7 +1699,7 @@ const SCENARIOS = [
       default: "bandwidth = 통신 대역폭. 인터넷이 처리할 수 있는 데이터 양. 그걸 사람한테 비유 = 처리할 수 있는 일의 양.\n\n외우기: WiFi가 느려질 때 'bandwidth 부족' 하듯, 사람도 일 많을 때 'bandwidth 부족'.\n\n실전: 무리한 부탁 거절할 때 가장 정중한 영어. \"I don't have the bandwidth right now\" 한 줄이면 사이 안 어색하고 거절 가능.",
     } },
   { day: 19, word: "scope", pos: "n./v.", meaning: "범위, 범위를 정하다", phonetic: "/skoʊp/",
-    scene: "목요일 10:00, 김 팀장이 화이트보드 앞에서.",
+    scene: "10:00, 김 팀장이 화이트보드 앞에서.",
     npc: "manager",
     quote: "이번 프로젝트 scope 다시 정리하자. 너무 커지고 있어.",
     youDo: null,
@@ -1719,7 +1720,7 @@ const SCENARIOS = [
       default: "scope = 망원경(telescope, microscope). 보는 범위 → 일의 범위.\n\n외우기: 망원경으로 보면 '여기까지 보임' = 범위. 프로젝트도 같음 — '여기까지 함' 이 scope.\n\n프로젝트가 커지면 'scope creep' 가장 큰 적. 'in/out' 명확히 적고 팀장과 한 번 align만 해도 야근 절반 줄어.",
     } },
   { day: 20, word: "step up", pos: "phr.", meaning: "더 적극 나서다, 책임을 늘리다", phonetic: "/stɛp ʌp/",
-    scene: "금요일 16:00, 사수와 분기 회고.",
+    scene: "16:00, 사수와 분기 회고.",
     npc: "mentor",
     quote: "이번 분기 너 진짜 step up 했어. 첫 단독 메일도, 첫 미팅 발언도. 다 너가 먼저 해본 거야.",
     youDo: null,
@@ -1740,7 +1741,7 @@ const SCENARIOS = [
       default: "step + up = '계단 한 칸 올라가기'. 본인 책임·역할이 한 단계 올라간 상태.\n\n외우기: 게임에서 '레벨 업'과 거의 동의어. 본인이 새로운 단계로 진입.\n\n실전: 사수·매니저한테 'you stepped up' 들으면 평가 시즌에 좋은 신호. 한국식으로 너무 깎아내리지 말고 \"Thanks, was a stretch\" 정도로 받기.",
     } },
   { day: 21, word: "heads up", pos: "phr.", meaning: "미리 알리는 말, 사전 공유", phonetic: "/hɛdz ʌp/",
-    scene: "월요일 17:00, 박 대리가 비밀스럽게 슬랙 DM.",
+    scene: "17:00, 박 대리가 비밀스럽게 슬랙 DM.",
     npc: "park",
     quote: "Heads up — 부장님 내일 우리 팀 KPI 직접 본대. 자료 준비 미리 해.",
     youDo: null,
@@ -1761,7 +1762,7 @@ const SCENARIOS = [
       default: "head + up = '머리 (위로) 들어'. 야구·아이스하키에서 공이 날아올 때 외치는 말 → 미리 대비.\n\n외우기: '공 날아온다, 머리 들어!' = 위험 미리 알리기. 직장에선 '회의 일정 변경됐다, 미리 알아둬' 같은 정보.\n\n실전: 신뢰는 'heads up' 주고받는 횟수에 비례. 본인도 동료한테 도움 될 정보 있으면 'heads up' 한 줄 보내기.",
     } },
   { day: 22, word: "take ownership", pos: "phr.", meaning: "주도권을 갖다, 책임지다", phonetic: "/teɪk ˈoʊnərʃɪp/",
-    scene: "화요일 11:00, 김 팀장이 작은 프로젝트를 너에게.",
+    scene: "11:00, 김 팀장이 작은 프로젝트를 너에게.",
     npc: "manager",
     quote: "이건 작지만 네가 take ownership 해봐. 끝까지 끌고 가는 경험이 필요해.",
     youDo: null,
@@ -1782,7 +1783,7 @@ const SCENARIOS = [
       default: "take + ownership = '소유권을 가진다'. 회사 일을 '내 것'처럼 = 끝까지 책임.\n\n외우기: 자기 집 청소는 끝까지 하지만 남의 집 청소는 적당히 — 차이가 ownership 있냐 없냐.\n\n수습 평가의 핵심 키워드. 사수가 'take ownership 해봐' 하면 = '너 정규직 가능성 테스트'. 받았을 때 명확히 'Yes, I'll own it' 답하면 신호 잘 보내짐.",
     } },
   { day: 23, word: "buy-in", pos: "n.", meaning: "동의, 지지 확보", phonetic: "/ˈbaɪɪn/",
-    scene: "수요일 14:00, Sarah와 화상 회의.",
+    scene: "14:00, Sarah와 화상 회의.",
     npc: "sarah",
     quote: "We need executive buy-in before we move on this. Can you pitch it Friday?",
     youDo: null,
@@ -1790,7 +1791,7 @@ const SCENARIOS = [
     sampleAnswer: "I'll prep a one-pager to get exec buy-in by Friday.",
     tags: ["client", "exec"], status: "locked" },
   { day: 24, word: "leverage", pos: "v.", meaning: "(자원·관계를) 최대한 활용하다", phonetic: "/ˈlevərɪdʒ/",
-    scene: "목요일 10:30, Daniel이 슬랙으로.",
+    scene: "10:30, Daniel이 슬랙으로.",
     npc: "daniel",
     quote: "Let's leverage Sarah's network on the West Coast — she has the right contacts.",
     youDo: null,
@@ -1798,7 +1799,7 @@ const SCENARIOS = [
     sampleAnswer: "Agreed — I'll loop Sarah in and leverage her intros.",
     tags: ["strategy", "client"], status: "locked" },
   { day: 25, word: "OOO", pos: "abbr.", meaning: "out of office — 부재 중, 휴가 중", phonetic: "/aʊt əv ˈɔːfɪs/",
-    scene: "금요일 09:00, 사수가 단톡에 안내.",
+    scene: "09:00, 사수가 단톡에 안내.",
     npc: "mentor",
     quote: "다음 주 월·화 OOO야. 급한 거 있으면 박 대리한테.",
     youDo: null,
@@ -1806,7 +1807,7 @@ const SCENARIOS = [
     sampleAnswer: "Noted — I'll loop in 박 대리 if anything urgent comes up.",
     tags: ["schedule", "team"], status: "locked" },
   { day: 26, word: "north star", pos: "n.", meaning: "(전략의) 가장 중요한 지향점", phonetic: "/nɔːrθ stɑːr/",
-    scene: "월요일 10:00, 김 팀장이 전사 미팅에서.",
+    scene: "10:00, 김 팀장이 전사 미팅에서.",
     npc: "manager",
     quote: "Our north star is user retention. Every feature should earn its place against that.",
     youDo: null,
@@ -1814,7 +1815,7 @@ const SCENARIOS = [
     sampleAnswer: "If retention is our north star, this feature deprioritizes.",
     tags: ["strategy", "exec"], status: "locked" },
   { day: 27, word: "pushback", pos: "n.", meaning: "반대 의견, 저항", phonetic: "/ˈpʊʃbæk/",
-    scene: "화요일 16:00, 박 대리가 자리로 와서. 평소답지 않게.",
+    scene: "16:00, 박 대리가 자리로 와서. 평소답지 않게.",
     npc: "park",
     quote: "이직 결정했어. 부장님은 pushback 좀 있을 것 같은데, 정해서 말씀드리려고.",
     youDo: null,
@@ -1822,7 +1823,7 @@ const SCENARIOS = [
     sampleAnswer: "There'll be some pushback — but if your mind's made up, just be clear and direct.",
     tags: ["career", "team"], status: "locked" },
   { day: 28, word: "in the weeds", pos: "phr.", meaning: "지엽적인 디테일에 빠진 상태", phonetic: "/ɪn ðə wiːdz/",
-    scene: "수요일 18:30, 사수가 너 책상 옆을 지나가며.",
+    scene: "18:30, 사수가 너 책상 옆을 지나가며.",
     npc: "mentor",
     quote: "너 너무 in the weeds 빠진 거 아냐? 큰 그림 한 번 보고 다시 와.",
     youDo: null,
@@ -1830,7 +1831,7 @@ const SCENARIOS = [
     sampleAnswer: "Yeah, I was getting lost in the formatting — let me zoom out and revisit.",
     tags: ["growth", "feedback"], status: "locked" },
   { day: 29, word: "take a stab", pos: "phr.", meaning: "한 번 시도해보다", phonetic: "/teɪk ə stæb/",
-    scene: "목요일 09:30, 김 팀장이 너에게.",
+    scene: "09:30, 김 팀장이 너에게.",
     npc: "manager",
     quote: "내일 발표 슬라이드 한 번 take a stab 해볼래? 첫 시도라 부담 갖지 마.",
     youDo: null,
@@ -1838,7 +1839,7 @@ const SCENARIOS = [
     sampleAnswer: "Sure — I'll take a stab and share a draft by EOD.",
     tags: ["growth", "first-time"], status: "locked" },
   { day: 30, word: "milestone", pos: "n.", meaning: "수습 종료 — 가장 큰 이정표 ⭐", phonetic: "/ˈmaɪlstoʊn/",
-    scene: "금요일 14:00, 부장실 1대1. 김 팀장이 미소. 책상 위에 작은 손글씨 메모 — '수고했어. — 회장'",
+    scene: "14:00, 부장실 1대1. 김 팀장이 미소. 책상 위에 작은 손글씨 메모 — '수고했어. — 회장'",
     npc: "manager",
     quote: "30일 milestone — 이제 수습 끝났어. 정규직 전환 + 다음 분기 부서 선택할 수 있어. 어디 가고 싶어?",
     youDo: null,
@@ -1905,7 +1906,7 @@ SCENARIOS.forEach(s => {
 USER.studiedDays = SCENARIOS.filter(s => s.status === "studied").length;
 USER.workingDay = _wdNow;          // 평일이면 단어 번호, 주말이면 null
 USER.wordsCollected = _wdMax;      // 누적 도착한 단어 수
-USER.dayOfWeekKo = _DOW_KO[_dayOfWeek(USER.currentDay)];
+USER.dayOfWeekKo = "";  // 베타 — 요일 개념 제거
 
 // 오늘 날짜 (eyebrow에 사용)
 const _today = new Date();
@@ -2245,7 +2246,7 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
       <div className="desk-header">
         <div>
           <div className="desk-eyebrow">
-            {todayLabel} · DAY {USER.currentDay} ({USER.dayOfWeekKo}) · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
+            {todayLabel} · DAY {USER.currentDay} · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
           </div>
           <h1 className="desk-title"><em>주말</em>이에요. 진짜 쉬세요.</h1>
         </div>
@@ -2503,7 +2504,7 @@ function HomePage({ setActive, openScene, openMemo }) {
         <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>
           오늘은 새 단어가 없는 날이에요
         </div>
-        Day {USER.currentDay} ({USER.dayOfWeekKo}요일) — 평일이지만 단어 카드는 1-30번까지에요.<br/>
+        Day {USER.currentDay} — 단어 카드는 Day 1-30번까지에요.<br/>
         Dev panel에서 다른 Day로 점프해보세요.
       </div>
     );
@@ -2663,7 +2664,7 @@ function HomePage({ setActive, openScene, openMemo }) {
                 <div
                   key={c.day}
                   className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
-                  title={`Day ${c.day} · ${_DOW_KO[_dayOfWeek(c.day)]}요일${c.weekend ? " (주말)" : ""}`}
+                  title={`Day ${c.day}`}
                 >
                   {c.state === "" ? c.day : ""}
                 </div>
