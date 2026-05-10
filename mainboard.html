@@ -540,6 +540,83 @@ body::before {
 .btn-ink:hover { background: #1A130B; }
 .btn-sm { padding: 7px 12px; font-size: 11.5px; }
 
+/* ===== 슬랙 컨텍스트 — Mini Mission 슬랙 모양 ===== */
+.slack-frame {
+  background: #fff;
+  border: 1px solid #DDDDE3;
+  border-radius: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,0.08);
+  font-family: 'Noto Sans KR', 'Helvetica Neue', system-ui, sans-serif;
+}
+.slack-head {
+  background: #350D36;
+  color: #fff;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid #481349;
+}
+.slack-channel { font-weight: 800; }
+.slack-channel-meta { color: #BCABBC; font-size: 10.5px; margin-left: auto; }
+.slack-body { padding: 14px 14px 4px; background: #fff; }
+.slack-msg { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+.slack-msg-avatar {
+  width: 36px; height: 36px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 13px; flex-shrink: 0;
+}
+.slack-msg-content { flex: 1; min-width: 0; }
+.slack-msg-name { font-weight: 800; font-size: 13.5px; color: #1D1C1D; }
+.slack-msg-time { color: #616061; font-size: 11px; margin-left: 6px; font-weight: 500; }
+.slack-msg-text {
+  margin-top: 2px; font-size: 14px; line-height: 1.5; color: #1D1C1D;
+  white-space: pre-wrap; word-break: keep-all;
+}
+.slack-msg-text b, .slack-msg-text mark {
+  background: #FFE066; padding: 1px 4px; border-radius: 2px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+}
+.slack-replies-prompt {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #F8F8F8;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #616061;
+}
+.slack-replies-prompt b { color: #1D1C1D; }
+.slack-reply-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #DDDDE3;
+  background: #fff;
+  border-radius: 6px;
+  padding: 11px 14px;
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #1D1C1D;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  font-family: inherit;
+}
+.slack-reply-option:hover { border-color: #1264A3; background: #F8F8F8; }
+.slack-reply-option.picked-correct { border-color: #2BAC76; background: #ECFDF1; }
+.slack-reply-option.picked-wrong { border-color: #E01E5A; background: #FCEBEF; }
+.slack-reply-option .opt-letter { font-weight: 800; color: #616061; margin-right: 6px; }
+.slack-reply-option .opt-note {
+  margin-top: 7px; padding-top: 7px;
+  border-top: 1px dashed #DDDDE3;
+  font-size: 11.5px;
+  color: #616061;
+  line-height: 1.5;
+  font-style: italic;
+}
+
 /* ===== 공통 라벨 ===== */
 .label-doc {
   display: inline-block;
@@ -1260,6 +1337,24 @@ const SCENARIOS = [
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지 — 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
     sampleAnswer: "I'll map out the key stakeholders by tomorrow morning.", tags: ["meeting", "project"], status: "studied",
+    // Mini-mission MC 옵션 (단어가 셋 다 들어가서 진짜 헷갈림 — 톤·맥락 차이로 정답 가림)
+    mcOptions: [
+      {
+        text: "Looping in @design-lead — they're a key stakeholder for this launch.",
+        kind: "correct",
+        note: "✓ 슬랙에서 가장 자연스러운 동사(looping in) + @ 멘션으로 누구 부르는지 명확. 'key stakeholder for this launch' 라고 누가·왜를 한 줄에 압축.",
+      },
+      {
+        text: "All stakeholders will be informed in due course.",
+        kind: "formal",
+        note: "공지문 톤이라 슬랙엔 어색해. 'in due course'는 \"적당한 때에\" 같은 모호한 표현 — 슬랙은 구체성이 핵심이야.",
+      },
+      {
+        text: "I'll DM each stakeholder one by one when I get a chance.",
+        kind: "weak",
+        note: "단어는 들어갔지만 1:1 DM은 비효율적. 'when I get a chance'는 우선순위 낮은 톤이라 신뢰 떨어져 — 그룹 채널에서 한 번에 looping이 정석.",
+      },
+    ],
     buddyAnswers: {
       nuance:
         "stakeholder는 'shareholder(주주)'보다 훨씬 넓어. 주주 + 임직원 + 클라이언트 + 협력사까지 — 이 프로젝트에 영향을 주거나 받는 모든 사람.\n\n한국어 '이해관계자' 번역되지만, 실제 회의에서 \"stakeholder map 정리하자\"는 \"누구한테 보고할지, 누구 의견 받을지\" 라고 보면 돼.\n\n비슷해 보이는 단어 헷갈리지 않게:\n• shareholder = 주주 (돈 투자한 사람만)\n• stakeholder = 이해관계자 (영향받는 모든 사람)\n• party = 당사자 (계약 맥락)",
@@ -3655,10 +3750,18 @@ function MissionActivity({ today, item, onClose, onComplete }) {
   const ctx = item.context || { ctx: "팀 슬랙", prompt: "팀 슬랙에 한 줄 던진다고 생각하고." };
   const { CHARACTERS } = window.__SIM;
   const buddy = CHARACTERS.buddy;
+  const npc = CHARACTERS[today.npc] || CHARACTERS.manager;
   const [pick, setPick] = useState(null);
 
-  // 3 옵션: 정답(sampleAnswer) + 너무 격식 + 단어 안 쓴 어색한 표현
+  // 슬랙·DM 컨텍스트면 슬랙 모양 UI 적용
+  const isSlack = (ctx.ctx || "").includes("슬랙") || (ctx.ctx || "").includes("DM");
+  const slackChannel = (ctx.ctx || "").includes("DM") ? `@${(npc.name || "사수")}` : "#project-launch";
+
+  // 옵션 — scenario.mcOptions 우선, 없으면 일반 fallback
   const options = useMemo(() => {
+    if (today.mcOptions && today.mcOptions.length >= 2) {
+      return _shuf(today.mcOptions.map(o => ({ ...o })));
+    }
     const correct = today.sampleAnswer || `Let's ${today.word} on this — quick win.`;
     const tooFormal = `Pursuant to my prior correspondence, kindly note ${today.word} accordingly.`;
     const noWord = `Yeah ok let me think and get back to you on this one.`;
@@ -3667,10 +3770,69 @@ function MissionActivity({ today, item, onClose, onComplete }) {
       { text: tooFormal, kind: "formal", note: "단어는 들어갔지만 톤이 너무 무거워 — 사내 슬랙엔 부담." },
       { text: noWord, kind: "missing", note: "톤은 OK인데 오늘 단어를 못 살렸어. 미션 실패." },
     ]);
-  }, [today.word, today.sampleAnswer]);
+  }, [today.word, today.sampleAnswer, today.mcOptions]);
 
   const picked = options.find(o => o.text === pick);
 
+  // ─── SLACK 스타일 (슬랙·DM 컨텍스트) ───
+  if (isSlack) {
+    return (
+      <ActivityShell title={`MINI MISSION · ${ctx.ctx.toUpperCase()}`} onClose={onClose}>
+        <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 써먹기</span>
+
+        <div className="slack-frame" style={{ marginTop: 12 }}>
+          <div className="slack-head">
+            <span>{slackChannel.startsWith("@") ? "💬" : "#"}</span>
+            <span className="slack-channel">{slackChannel}</span>
+            <span className="slack-channel-meta">3 members · 14:00</span>
+          </div>
+          <div className="slack-body">
+            <div className="slack-msg">
+              <div className="slack-msg-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
+              <div className="slack-msg-content">
+                <div>
+                  <span className="slack-msg-name">{npc.name}</span>
+                  <span className="slack-msg-time">14:00</span>
+                </div>
+                <div className="slack-msg-text">{today.quote}</div>
+              </div>
+            </div>
+            <div className="slack-replies-prompt">
+              💬 답장 — 오늘 단어 <b>{today.word}</b> 을(를) 자연스럽게 써서 한 줄. 셋 중 가장 슬랙스러운 한 줄을 골라보세요.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+          {options.map((o, i) => {
+            const isPicked = pick === o.text;
+            const showResult = pick !== null;
+            const ok = o.kind === "correct";
+            const cls = "slack-reply-option" + (showResult && ok ? " picked-correct" : isPicked && !ok ? " picked-wrong" : "");
+            return (
+              <button key={i} className={cls} onClick={() => pick === null && setPick(o.text)} disabled={pick !== null}>
+                <span className="opt-letter">{String.fromCharCode(65 + i)}.</span>
+                {o.text}
+                {showResult ? <div className="opt-note">{o.note}</div> : null}
+              </button>
+            );
+          })}
+        </div>
+
+        {picked && (
+          <>
+            <FeedbackBox ok={picked.kind === "correct"} correct={today.sampleAnswer} hint={today.mentorTip} />
+            <div className="row" style={{ marginTop: 14, justifyContent: "flex-end", gap: 8 }}>
+              <button className="btn btn-ghost" onClick={() => setPick(null)}>다시 풀기</button>
+              <button className="btn btn-primary" onClick={onComplete}>미션 완료 ✓</button>
+            </div>
+          </>
+        )}
+      </ActivityShell>
+    );
+  }
+
+  // ─── 일반 스타일 (이메일·회의·클라이언트) ───
   return (
     <ActivityShell title={`MINI MISSION · ${ctx.ctx.toUpperCase()}`} onClose={onClose}>
       <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 써먹기</span>
