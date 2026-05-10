@@ -322,6 +322,9 @@ function OnboardingApp() {
   // 코드 검증 — 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  // 검증 통과한 코드 정보 — finishOnboarding에서 cohort 저장 + used_count 증가에 사용
+  const [verifiedCode, setVerifiedCode] = useState(null);
+  const [verifiedCohort, setVerifiedCohort] = useState(null);
 
   const handleApplicationSubmit = async () => {
     if (submitting) return;
@@ -341,6 +344,9 @@ function OnboardingApp() {
           setSubmitting(false);
           return;
         }
+        // 검증 정보 저장 — finishOnboarding에서 사용
+        setVerifiedCode(code);
+        setVerifiedCohort(result.cohort || null);
       }
       // 통과 → 다음 단계로
       setStage("reviewing");
@@ -415,7 +421,8 @@ function OnboardingApp() {
       // 테스터(DEV-TEST/2026)는 dev:false라 isDevMode도 false → 일반 사용자 흐름
       isDevMode: !!(matchedDevCode && matchedDevCode.dev),
       devCode: isDevValid ? devCode.toUpperCase() : null,
-      cohort: (matchedDevCode && matchedDevCode.cohort) || null,
+      // cohort: DEV 코드 우선, 그 다음 PILOT 코드 검증 결과의 cohort
+      cohort: (matchedDevCode && matchedDevCode.cohort) || verifiedCohort || null,
       isOperator: !!(matchedDevCode && matchedDevCode.operator),
       // 테스터 마킹 (운영자 뷰 통계에서 분리하기 위함)
       isTester: !!(matchedDevCode && !matchedDevCode.operator),
@@ -440,6 +447,10 @@ function OnboardingApp() {
         const result = await window.OD.signup(profile);
         if (result.ok) {
           console.log("[Supabase] 가입 동기화 완료");
+          // PILOT 코드 사용 카운트 +1 (실패해도 가입은 그대로 진행)
+          if (verifiedCode && window.OD.incrementCodeUsage) {
+            try { await window.OD.incrementCodeUsage(verifiedCode); } catch (_) {}
+          }
         }
       } catch (err) {
         console.warn("[Supabase] 가입 동기화 실패 — localStorage만 진행:", err);

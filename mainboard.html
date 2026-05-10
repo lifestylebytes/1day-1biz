@@ -2381,12 +2381,15 @@ function HomePage({ setActive, openScene, openMemo }) {
             <div style={{
               position: "fixed",
               ...(tt ? { left: tt.left, top: tt.top } : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }),
-              width: 360, maxWidth: "calc(100vw - 32px)",
+              width: window.innerWidth < 600 ? Math.min(360, window.innerWidth - 32) : 360,
+              maxWidth: "calc(100vw - 32px)",
               background: "var(--paper)", border: "2px solid var(--accent)",
-              borderRadius: 14, padding: "22px 24px",
+              borderRadius: 14,
+              padding: window.innerWidth < 600 ? "18px 18px" : "22px 24px",
               boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
               zIndex: 9200,
               transition: "left 0.35s cubic-bezier(.4,.6,.3,1), top 0.35s cubic-bezier(.4,.6,.3,1)",
+              boxSizing: "border-box",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)" }}>
@@ -3256,8 +3259,31 @@ function _getWeekendSchedule(kind) {
 
 // 인터랙티브 투어 — 타겟 사각형 기준 툴팁 위치 계산
 function _computeTooltipPos(rect, placement) {
-  const TT_W = 360, TT_H = 200, PAD = 18;
   const vw = window.innerWidth, vh = window.innerHeight;
+  const PAD = 16;
+  const isNarrow = vw < 600;
+  // 모바일에선 width를 viewport에 맞춰서 줄임 (좌우 16px 마진)
+  const TT_W = isNarrow ? Math.min(360, vw - 32) : 360;
+  const TT_H = isNarrow ? 240 : 200;
+
+  // ── 모바일: placement 무시하고 가운데 정렬, 위/아래 중 공간 더 큰 쪽 ──
+  if (isNarrow) {
+    const left = Math.max(PAD, (vw - TT_W) / 2);
+    const spaceBelow = vh - rect.bottom - PAD;
+    const spaceAbove = rect.top - PAD;
+    let top;
+    if (spaceBelow >= TT_H) {
+      top = rect.bottom + PAD;
+    } else if (spaceAbove >= TT_H) {
+      top = rect.top - TT_H - PAD;
+    } else {
+      top = (vh - TT_H) / 2;  // 공간 부족 → 중앙
+    }
+    top = Math.max(PAD, Math.min(vh - TT_H - PAD, top));
+    return { left, top, placement: 'mobile' };
+  }
+
+  // ── 데스크탑: placement 기준 + 부족하면 fallback ──
   let p = placement || "auto";
   if (p === "auto") {
     if (rect.right + TT_W + PAD < vw) p = "right";
@@ -3265,6 +3291,10 @@ function _computeTooltipPos(rect, placement) {
     else if (rect.bottom + TT_H + PAD < vh) p = "bottom";
     else p = "top";
   }
+  // 지정된 placement에 공간 없으면 자동 fallback
+  if (p === "right" && rect.right + TT_W + PAD > vw) p = (rect.left - TT_W - PAD > 0) ? "left" : "bottom";
+  if (p === "left"  && rect.left  - TT_W - PAD < 0)  p = (rect.right + TT_W + PAD < vw) ? "right" : "bottom";
+
   let left, top;
   switch (p) {
     case "right":  left = rect.right + PAD;          top = rect.top + rect.height/2 - TT_H/2; break;
