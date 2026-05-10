@@ -1471,6 +1471,22 @@ const SCENARIOS = [
 
 // 사용자 상태 — localStorage 우선, 없으면 데모 기본값
 const _localUser = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
+
+// ── 가입일 기반 자동 day 계산 (KST 타임존) ──
+// 사용자가 학습 안 해도 매일 자정(KST)이 지나면 다음 day 자동 공개.
+// 운영자/Dev는 dayInCompany를 수동으로 +/- 가능 (operator.html 또는 dev 패널).
+const _todayKST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+const _signupKST = _localUser?.signupDate
+  ? new Date(_localUser.signupDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
+  : _todayKST;
+const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
+const _autoDay = Math.max(1, Math.min(30, _daysSince + 1));
+// 운영자/Dev만 dayInCompany 수동 override 가능 — 일반 사용자는 자동 계산값 사용
+const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
+const _resolvedDay = _isInternal && _localUser?.dayInCompany
+  ? _localUser.dayInCompany
+  : _autoDay;
+
 const USER = {
   name: _localUser?.name || "김지원",
   position: _localUser?.level?.ko ? (_localUser.level.ko + " 사원") : "수습 사원",
@@ -1478,10 +1494,10 @@ const USER = {
   team: _localUser?.department?.short ? (_localUser.department.short + " · 12F") : "Strategy Team · 12F",
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
   empNumber: _localUser?.empNumber || "2026-04-15",
-  currentDay: _localUser?.dayInCompany || 1,
+  currentDay: _resolvedDay,
   totalDays: 30,
   studiedDays: 0,  // 아래에서 자동 계산
-  streak: _localUser?.dayInCompany ? Math.min(_localUser.dayInCompany - 1, 30) : 0,
+  streak: Math.min(Math.max(0, _resolvedDay - 1), 30),
   vacationDays: 3,
   badges: _localUser ? ["첫 출근"] : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
 };
