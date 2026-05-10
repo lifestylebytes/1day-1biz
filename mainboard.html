@@ -1259,7 +1259,15 @@ const SCENARIOS = [
     npc: "manager", quote: "이번 프로젝트 stakeholder map 부터 정리해보자. 누가 누구지?",
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지 — 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
-    sampleAnswer: "I'll map out the key stakeholders by tomorrow morning.", tags: ["meeting", "project"], status: "studied" },
+    sampleAnswer: "I'll map out the key stakeholders by tomorrow morning.", tags: ["meeting", "project"], status: "studied",
+    buddyAnswers: {
+      nuance:
+        "stakeholder는 'shareholder(주주)'보다 훨씬 넓어. 주주 + 임직원 + 클라이언트 + 협력사까지 — 이 프로젝트에 영향을 주거나 받는 모든 사람.\n\n한국어 '이해관계자' 번역되지만, 실제 회의에서 \"stakeholder map 정리하자\"는 \"누구한테 보고할지, 누구 의견 받을지\" 라고 보면 돼.\n\n비슷해 보이는 단어 헷갈리지 않게:\n• shareholder = 주주 (돈 투자한 사람만)\n• stakeholder = 이해관계자 (영향받는 모든 사람)\n• party = 당사자 (계약 맥락)",
+      example:
+        "🗣 회의: \"Who are the key stakeholders for Q3?\"\n📧 메일: \"I've looped in the relevant stakeholders.\"\n🚀 출시 전: \"Let me run this by all stakeholders before we ship.\"\n\n자주 같이 쓰는 표현:\n• stakeholder map (이해관계자 지도)\n• key stakeholders (핵심 관계자)\n• internal/external stakeholders (사내/사외)",
+      default:
+        "stake = '말뚝, 지분, 건 것'. \"내 stake가 걸려있다\" = \"내 지분이 있다\".\n\n→ stakeholder = stake를 쥔 사람 = 영향받는 사람\n\n오늘은 그냥 '이해관계자 = stakeholder'만 외워도 충분해. 회의 한두 번 듣다 보면 자연스럽게 와.",
+    } },
   { day: 2, word: "deadline", pos: "n.", meaning: "마감 기한", phonetic: "/ˈdedlaɪn/",
     scene: "화요일 18:40, 김 팀장이 자리로 와서.", npc: "manager",
     quote: "Daniel한테 deadline 다시 한번 confirm 좀.",
@@ -2688,15 +2696,36 @@ function LibraryPage({ openScene }) {
       <div className="word-rolodex">
         {filtered.map(s => {
           const c = CHARACTERS[s.npc];
+          const myAnswer = _loadCompletion(s.day);  // 본인이 쓴 문장 (있으면)
+          const myPreview = myAnswer?.sentence
+            ? (myAnswer.sentence.length > 70 ? myAnswer.sentence.slice(0, 70) + "…" : myAnswer.sentence)
+            : null;
           return (
             <button key={s.day} className={"biz-card " + (s.status === "today" ? "today" : "")} onClick={() => openScene(s)}>
               <div className="biz-card-head">
                 <span className="biz-card-day">DAY {String(s.day).padStart(2, "0")}</span>
-                <span>{s.status === "today" ? "● 오늘" : "✓ 완료"}</span>
+                <span>{myAnswer ? "✏️ 작성 완료" : s.status === "today" ? "● 오늘" : "✓ 완료"}</span>
               </div>
               <div className="biz-card-word">{s.word}</div>
               <div style={{ fontSize: 10.5, color: "var(--ink-mute)", fontWeight: 600 }}>{s.pos} · {s.phonetic}</div>
               <div className="biz-card-meaning">{s.meaning}</div>
+              {myPreview && (
+                <div style={{
+                  marginTop: 8,
+                  padding: "8px 10px",
+                  background: "var(--paper-warm)",
+                  borderLeft: "2px solid var(--accent)",
+                  borderRadius: 3,
+                  fontSize: 11.5,
+                  color: "var(--ink)",
+                  lineHeight: 1.45,
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  textAlign: "left",
+                }}>
+                  ✏️ "{myPreview}"
+                </div>
+              )}
               <div className="biz-card-foot">
                 <span className="biz-card-npc">
                   <span className="biz-card-npc-dot" style={{ background: c.color }}></span>
@@ -3117,19 +3146,122 @@ function MyPage() {
 }
 
 // ============================================================
+// 사수 피드백 — 룰 기반 (5체크 + 시나리오별 코멘트)
+// ============================================================
+function _classifyMentorFeedback(sentence, scenario) {
+  const word = (scenario.word || "").toLowerCase();
+  const lower = sentence.toLowerCase();
+  const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
+
+  const hasWord    = lower.includes(word);
+  const tooFormal  = /\b(pursuant|kindly|hereby|aforementioned|herein|thereof|wherein)\b/i.test(sentence);
+  const tooCasual  = /\byo\b|\bhey\b|\blol\b|\bomg\b|\bpls\b|\bthx\b/i.test(sentence);
+  const hasAction  = /\bI'll\b|\bI will\b|\blet me\b|\bI'm\s+(?:going|gonna)\b|\bI can\b/i.test(sentence);
+  const tooShort   = wordCount < 5;
+  const tooLong    = wordCount > 30;
+  const isExample  = sentence.trim() === (scenario.sampleAnswer || "").trim();
+
+  // 체크 결과 배열
+  const checks = [];
+  checks.push(hasWord
+    ? { ok: true,  label: "단어 사용",   note: `${scenario.word} 자연스럽게 들어감` }
+    : { ok: false, label: "단어 사용",   note: `${scenario.word} 못 살림 — 한 번 더 써보자` });
+
+  if (tooFormal)      checks.push({ ok: false, label: "톤", note: "너무 격식 — 사내 메시지엔 부담" });
+  else if (tooCasual) checks.push({ ok: false, label: "톤", note: "사내 톤으로는 살짝 가벼움" });
+  else                checks.push({ ok: true,  label: "톤", note: "사내 메시지로 적절" });
+
+  if (hasAction)      checks.push({ ok: true,  label: "Action", note: "주체·행동 명확함" });
+
+  if (tooShort)       checks.push({ ok: false, label: "길이", note: "조금 더 풀어 써도 좋아" });
+  else if (tooLong)   checks.push({ ok: false, label: "길이", note: "한 호흡 짧게 — 슬랙은 짧을수록 좋아" });
+
+  // 헤드라인 — 가장 중요한 한 마디 (우선순위)
+  let headline;
+  if (isExample) {
+    headline = "예시 문장 그대로 제출하셨네. 본인 표현으로 한 번 써보면 더 늘어요.";
+  } else if (!hasWord) {
+    headline = `${scenario.word}이(가) 빠졌어요. 오늘 단어를 꼭 써봐야 입에 붙어요.`;
+  } else if (tooFormal) {
+    headline = "단어는 잘 살렸는데, 표현이 너무 무거워. 슬랙 한 줄 정도 가벼움이 좋아.";
+  } else if (tooCasual) {
+    headline = `톤이 좀 가벼워. ${scenario.word}을(를) 잘 살렸으니, 사내 채널엔 무게 살짝만 더 줘.`;
+  } else if (tooShort) {
+    headline = "한 줄로는 의도가 안 보일 수 있어. 누가/언제/뭘 한다 정도까지 풀어보자.";
+  } else if (tooLong) {
+    headline = "내용은 좋은데 길어. 한 호흡으로 끊으면 임팩트 더 살아.";
+  } else if (hasAction) {
+    headline = `오늘 단어 자연스럽게 들어갔고, action까지 명확. 이대로면 회의에서도 통해요.`;
+  } else {
+    headline = `${scenario.word} 잘 들어갔어. 다음엔 "I'll …" 같은 액션 동사 더해보면 더 프로페셔널해져.`;
+  }
+
+  // 전체 통과 여부 (4개 이상 ok이면 우수)
+  const okCount = checks.filter(c => c.ok).length;
+  const overall = isExample ? "neutral" : okCount >= checks.length - 1 ? "good" : "needs-work";
+
+  return { checks, headline, overall, isExample };
+}
+
+// scenariosCompleted 저장/조회 헬퍼
+function _loadCompletion(day) {
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    return (u?.scenariosCompleted || []).find(s => s.day === day) || null;
+  } catch (e) { return null; }
+}
+function _saveCompletion(entry) {
+  try {
+    const raw = localStorage.getItem("__OD_USER");
+    const u = raw ? JSON.parse(raw) : {};
+    u.scenariosCompleted = u.scenariosCompleted || [];
+    const idx = u.scenariosCompleted.findIndex(s => s.day === entry.day);
+    if (idx >= 0) u.scenariosCompleted[idx] = entry;
+    else u.scenariosCompleted.push(entry);
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    // Supabase 동기화 (실패해도 로컬은 진행)
+    if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
+      window.OD.updateProgress(u.email, { scenarios_completed: u.scenariosCompleted }).catch(() => {});
+    }
+  } catch (e) { console.warn("saveCompletion failed:", e); }
+}
+
+// ============================================================
 // Scene Modal — 시추에이션 상세 + 영어 답변 작성
 // ============================================================
 function SceneModal({ scenario, onClose }) {
   const { CHARACTERS, BUDDY_ANSWERS } = window.__SIM;
   const npc = CHARACTERS[scenario.npc];
   const buddy = CHARACTERS.buddy;
-  const [draft, setDraft] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  // 이미 푼 day면 저장된 답변 + 피드백 복원
+  const saved = useMemo(() => _loadCompletion(scenario.day), [scenario.day]);
+  const [draft, setDraft] = useState(saved?.sentence || "");
+  const [submitted, setSubmitted] = useState(!!saved);
+  const [feedback, setFeedback] = useState(saved?.feedback || null);
+  const [editing, setEditing] = useState(false);
   const [buddyMsgs, setBuddyMsgs] = useState([]);
 
+  function handleSubmit() {
+    const fb = _classifyMentorFeedback(draft, scenario);
+    setFeedback(fb);
+    setSubmitted(true);
+    setEditing(false);
+    _saveCompletion({
+      day: scenario.day,
+      word: scenario.word,
+      sentence: draft,
+      feedback: fb,
+      submittedAt: new Date().toISOString(),
+    });
+  }
+
   function askBuddy(kind) {
-    const pool = BUDDY_ANSWERS[kind] || BUDDY_ANSWERS.default;
-    const reply = pool[Math.floor(Math.random() * pool.length)];
+    // 시나리오별 buddy 답변 우선, 없으면 기본 풀에서 랜덤
+    const customAnswer = scenario.buddyAnswers && scenario.buddyAnswers[kind];
+    const reply = customAnswer || (function() {
+      const pool = BUDDY_ANSWERS[kind] || BUDDY_ANSWERS.default;
+      return pool[Math.floor(Math.random() * pool.length)];
+    })();
     const userQ = kind === "nuance" ? "이거 뉘앙스가 좀 헷갈려요" : kind === "example" ? "예문 더 보고 싶어요" : "이 표현 어떻게 외우면 좋을까요?";
     setBuddyMsgs([...buddyMsgs, { from: "me", text: userQ }, { from: "buddy", text: reply }]);
   }
@@ -3170,25 +3302,70 @@ function SceneModal({ scenario, onClose }) {
               placeholder={`${scenario.word}을(를) 포함한 영어 한 문장…`}
               value={draft}
               onChange={e => setDraft(e.target.value)}
-              disabled={submitted}
+              disabled={submitted && !editing}
             />
-            {!submitted ? (
+            {(!submitted || editing) ? (
               <div className="row" style={{ marginTop: 12 }}>
-                <button className="btn btn-primary" onClick={() => setSubmitted(true)} disabled={!draft.trim()}>제출 → 사수 피드백 받기</button>
+                <button className="btn btn-primary" onClick={handleSubmit} disabled={!draft.trim()}>
+                  {editing ? "다시 제출 → 새 피드백" : "제출 → 사수 피드백 받기"}
+                </button>
                 <button className="btn btn-ghost" onClick={() => setDraft(scenario.sampleAnswer)}>예문 보기</button>
+                {editing && (
+                  <button className="btn btn-ghost" onClick={() => { setEditing(false); setDraft(saved?.sentence || draft); }}>취소</button>
+                )}
               </div>
             ) : (
-              <div style={{ marginTop: 16, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)" }}>
-                <div className="postit-from" style={{ marginBottom: 8 }}>▶ {CHARACTERS.mentor.name} 사수의 피드백</div>
-                <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)" }}>
-                  좋아요. <b>{scenario.word}</b> 의 뉘앙스를 잘 잡았어요. 모범 답안도 같이 봐둘게요:
+              <>
+                {/* 본인이 쓴 문장 — 강조 표시 */}
+                <div style={{ marginTop: 14, padding: "12px 14px", background: "var(--paper-warm)", borderLeft: "3px solid var(--accent)", borderRadius: 4 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)", marginBottom: 4 }}>
+                    ✏️ 내가 쓴 한 줄
+                  </div>
+                  <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.55, fontWeight: 600, fontStyle: "italic" }}>
+                    "{draft}"
+                  </div>
                 </div>
-                <div style={{ marginTop: 10, padding: 10, background: "rgba(255,255,255,0.5)", fontSize: 13.5, fontWeight: 700 }}>
-                  "{scenario.sampleAnswer}"
+
+                {/* 사수 피드백 — 헤드라인 + 체크 항목 + 예시 + 팁 */}
+                <div style={{ marginTop: 14, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)", position: "relative" }}>
+                  <div className="postit-from" style={{ marginBottom: 8 }}>
+                    ▶ {CHARACTERS.mentor.name} 사수의 피드백
+                  </div>
+
+                  {feedback && (
+                    <>
+                      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>
+                        {feedback.headline}
+                      </div>
+
+                      {feedback.checks && feedback.checks.length > 0 && (
+                        <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
+                          {feedback.checks.map((c, i) => (
+                            <div key={i} style={{ fontSize: 12, color: c.ok ? "#2D7A3D" : "#B8431A", fontWeight: 500, lineHeight: 1.5 }}>
+                              {c.ok ? "✓" : "⚠"} <b>{c.label}</b> — {c.note}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(255,255,255,0.55)", borderRadius: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>💡 사수 예시 답안 (참고용)</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>"{scenario.sampleAnswer}"</div>
+                      </div>
+
+                      <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>
+                        {scenario.mentorTip}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="postit-sig">{CHARACTERS.mentor.name} ✍︎</div>
                 </div>
-                <div style={{ marginTop: 12, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>{scenario.mentorTip}</div>
-                <div className="postit-sig">{CHARACTERS.mentor.name} ✍︎</div>
-              </div>
+
+                <div className="row" style={{ marginTop: 12, justifyContent: "flex-end" }}>
+                  <button className="btn btn-ghost" onClick={() => setEditing(true)}>✏️ 다시 쓰기</button>
+                </div>
+              </>
             )}
           </div>
 
