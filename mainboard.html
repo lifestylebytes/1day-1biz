@@ -1881,6 +1881,17 @@ const USER = {
   badges: _localUser ? ["첫 출근"] : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
 };
 
+// ── auto-day가 저장된 dayInCompany보다 진척했으면 localStorage·DB 둘 다 업데이트 ──
+// (외부 사용자만 — operator/dev는 수동 override 우선)
+if (_localUser && !_isInternal && _autoDay > (_localUser.dayInCompany || 1)) {
+  try {
+    _localUser.dayInCompany = _autoDay;
+    localStorage.setItem('__OD_USER', JSON.stringify(_localUser));
+    // Supabase 동기화는 babel 블록(다음 script)에서 window.OD 준비된 후 실행
+    window.__OD_PENDING_DAY_SYNC = { email: _localUser.email, day: _autoDay };
+  } catch (e) {}
+}
+
 // 사수(mentor)도 localStorage에 배정된 사람으로 덮어쓰기
 if (_localUser?.mentor && _localUser.mentor.name) {
   CHARACTERS.mentor = {
@@ -4960,6 +4971,22 @@ window.SimApp = App;
 
 /* --- 마운트 --- */
 ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
+
+/* --- auto-day Supabase 동기화 (외부 사용자만) --- */
+(function syncDayToSupabase() {
+  const pending = window.__OD_PENDING_DAY_SYNC;
+  if (!pending) return;
+  let tries = 0;
+  const tick = () => {
+    if (window.OD && window.OD.enabled && window.OD.updateProgress) {
+      window.OD.updateProgress(pending.email, { day_in_company: pending.day }).catch(() => {});
+      window.__OD_PENDING_DAY_SYNC = null;
+    } else if (tries++ < 20) {
+      setTimeout(tick, 250);
+    }
+  };
+  setTimeout(tick, 500);
+})();
 </script>
 
 <!-- ============================================================
