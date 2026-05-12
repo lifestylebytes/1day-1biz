@@ -1340,6 +1340,7 @@ const SCENARIOS = [
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지 — 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
     sampleAnswer: "I'll map out the key stakeholders by tomorrow morning.", tags: ["meeting", "project"], status: "studied",
+    task: { to: "manager", channel: "face", promptKo: "회의실에서 김 팀장의 질문에 그 자리에서 한 줄로 답하세요. (언제까지 정리할지 약속하면 좋음)" },
     // Mini-mission MC 옵션 (단어가 셋 다 들어가서 진짜 헷갈림 — 톤·맥락 차이로 정답 가림)
     mcOptions: [
       {
@@ -1372,6 +1373,7 @@ const SCENARIOS = [
     youDo: "Daniel에게 슬랙으로 마감일 재확인 메시지를 보냈다.",
     mentorTip: "deadline은 진짜 '죽는 선'이라는 어원. due date보다 무거운 뉘앙스라 협상이 어려워.",
     sampleAnswer: "Just to confirm — the deadline for the draft is this Friday EOD?", tags: ["email", "schedule"], status: "studied",
+    task: { to: "daniel", channel: "slack-dm", promptKo: "김 팀장의 지시에 따라, Daniel에게 슬랙 DM으로 마감일 재확인 메시지를 보내세요." },
     mcOptions: [
       { text: "Quick check — is the deadline for the draft this Friday EOD?", kind: "correct",
         note: "✓ 'Quick check'로 부드럽게 시작 + 구체적 시점(Friday EOD)까지 한 줄에. Daniel이 바로 yes/no 답할 수 있어." },
@@ -1391,6 +1393,7 @@ const SCENARIOS = [
     youDo: "회의 액션 아이템을 정리해 참석자 전원에게 메일을 보냈다.",
     mentorTip: "회의가 끝나면 24시간 내 follow up. 이거 한 번만 챙겨도 신뢰가 달라져.",
     sampleAnswer: "Following up on yesterday's call — here are the action items.", tags: ["email", "meeting"], status: "studied",
+    task: { to: "team", channel: "email", promptKo: "어제 회의 참석자들에게 follow-up 메일 첫 줄을 작성하세요. (액션 아이템 공유 알리는 톤)" },
     mcOptions: [
       { text: "Following up on yesterday's call — sharing the action items below.", kind: "correct",
         note: "✓ 메일 첫 줄로 완벽. 'Following up on X' 패턴은 회의 후 24시간 내 보내는 표준 오프닝." },
@@ -1410,6 +1413,7 @@ const SCENARIOS = [
     youDo: "수치 다시 검토해서 1시간 안에 회신했다.",
     mentorTip: "ASAP는 강한 표현이야. 우리가 쓸 땐 'by EOD' 같은 구체적 시간이 더 프로페셔널해.",
     sampleAnswer: "Sending the revised numbers within the hour.", tags: ["urgent", "client"], status: "studied",
+    task: { to: "sarah", channel: "slack-dm", promptKo: "Sarah의 슬랙 DM에 한 줄로 답장하세요. (받았다는 확인 + 구체적 시간 약속)" },
     mcOptions: [
       { text: "On it — sending the revised numbers within the hour.", kind: "correct",
         note: "✓ 'On it' = 미국 직장 표준 응답 ('맡았습니다'). 'within the hour'로 ASAP을 구체적 시간으로 변환 — 프로페셔널." },
@@ -1429,6 +1433,7 @@ const SCENARIOS = [
     youDo: "다음 주 화요일로 follow-up 미팅을 잡았다.",
     mentorTip: "회의를 자연스럽게 끊을 때 쓰는 마법의 표현. 한국말로 '이건 다음에' 보다 부드러워.",
     sampleAnswer: "Sounds good — I'll set up a follow-up for next Tuesday.", tags: ["meeting", "schedule"], status: "studied",
+    task: { to: "daniel", channel: "video-call", promptKo: "회상 회의 중 Daniel의 제안에 한 줄로 답하세요. (다음 미팅 시점까지 구체적으로 약속)" },
     mcOptions: [
       { text: "Sounds good — I'll circle back with a Tuesday slot on your calendar.", kind: "correct",
         note: "✓ Daniel의 'circle back'을 그대로 받아서 자연스럽게 + 구체적 액션(Tuesday slot 잡음). 회의 매끄러운 마무리." },
@@ -3723,7 +3728,59 @@ function SceneModal({ scenario, onClose }) {
 
           <div className="scene-task">
             <div className="scene-task-label">▶ 오늘의 미션</div>
-            <div className="scene-task-prompt"><b>{scenario.word}</b> 을(를) 써서 위 상황에 한 마디 답하세요.</div>
+
+            {/* task: 누구에게 어떤 채널로 보내나 명확히 (있을 때만) */}
+            {scenario.task && (() => {
+              const toId = scenario.task.to;
+              const toChar = toId === "team"
+                ? { name: "회의 참석자 전원", avatar: "👥", color: "var(--ink-soft)", role: "어제 미팅 참석한 동료들" }
+                : (CHARACTERS[toId] || { name: toId, avatar: "?", color: "var(--ink-mute)", role: "" });
+              const channelMeta = {
+                "face":         { icon: "🏢", label: "같은 자리에서 즉답" },
+                "slack-dm":     { icon: "💬", label: "슬랙 1:1 DM" },
+                "slack-channel":{ icon: "#",  label: "슬랙 채널" },
+                "email":        { icon: "📧", label: "이메일" },
+                "video-call":   { icon: "📹", label: "화상 회의 중 발언" },
+              }[scenario.task.channel] || { icon: "💬", label: "메시지" };
+              return (
+                <div style={{
+                  marginBottom: 14, padding: "12px 14px",
+                  background: "var(--cream)",
+                  border: "1px solid var(--line)",
+                  borderLeft: "3px solid var(--orange)",
+                  borderRadius: 6,
+                }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--ink-mute)", marginBottom: 8 }}>
+                    📨 누구에게 보내나요?
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 6,
+                      background: toChar.color, color: "#fff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 800, fontSize: 14, flexShrink: 0,
+                    }}>{toChar.avatar}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>{toChar.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 1 }}>{toChar.role}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--orange)", fontWeight: 700, marginTop: 4 }}>
+                        {channelMeta.icon} {channelMeta.label}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    marginTop: 10, paddingTop: 10, borderTop: "1px dashed var(--line)",
+                    fontSize: 13, color: "var(--ink)", lineHeight: 1.55, fontWeight: 500,
+                  }}>
+                    {scenario.task.promptKo}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="scene-task-prompt">
+              <b>{scenario.word}</b> 을(를) 자연스럽게 써서 한 줄로 작성해보세요.
+            </div>
             <textarea
               className="scene-input"
               placeholder={`${scenario.word}을(를) 포함한 영어 한 문장…`}
