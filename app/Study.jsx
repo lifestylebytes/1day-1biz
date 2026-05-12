@@ -55,7 +55,7 @@ function StudyPage({ word, onBack, isStudied, onMarkStudied }) {
           </div>
           <div className="study-syn-card">
             <div className="study-syn-card-label">ANTONYMS</div>
-            <div className="word">{word.antonyms.length ? word.antonyms.join(" · ") : "—"}</div>
+            <div className="word">{word.antonyms.length ? word.antonyms.join(" · ") : "-"}</div>
           </div>
         </div>
       </div>

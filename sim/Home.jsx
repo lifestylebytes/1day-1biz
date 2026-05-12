@@ -109,7 +109,7 @@ function ApprovalLine({ doc, applicant, today, status }) {
 }
 
 // ============================================================
-// 홈 — 오늘의 책상
+// 홈, 오늘의 책상
 // ============================================================
 function HomePage({ setActive, openScene, openMemo }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS } = window.__SIM;
@@ -268,7 +268,7 @@ function Postit({ mentor, text, word }) {
     <div className="postit">
       <div className="postit-from">▶ {mentor.name} 사수의 메모</div>
       <div>오늘 단어 <b style={{ background: "rgba(255,255,255,0.5)", padding: "1px 5px" }}>{word}</b> 야. {text}</div>
-      <div className="postit-sig">— 차윤아 ✍︎</div>
+      <div className="postit-sig">- 차윤아 ✍︎</div>
     </div>
   );
 }

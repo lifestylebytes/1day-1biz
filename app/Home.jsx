@@ -36,7 +36,7 @@ function HomePage({ user, words, onOpenWord, onOpenNotice, notices, onGoTest, la
         <div className="pane-eyebrow">DAY {user.currentDay} · {new Date().getMonth()+1}월 {new Date().getDate()}일</div>
         <h1 className="pane-title">
           <em>Good morning,</em>
-          <span className="kr">{user.name} 님 — 오늘의 단어 도착했어요.</span>
+          <span className="kr">{user.name} 님, 오늘의 단어 도착했어요.</span>
         </h1>
       </div>
 
@@ -238,7 +238,7 @@ function StreakCard({ user, cells }) {
         <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "var(--muted)", textTransform: "uppercase" }}>🔥 STREAK</span>
         <span style={{ fontFamily: "'Noto Sans KR', sans-serif", fontSize: 28, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.03em" }}>{user.streak}<span style={{ fontSize: 13, color: "var(--muted)", marginLeft: 4, fontWeight: 600 }}>일</span></span>
       </div>
-      <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 6, lineHeight: 1.5 }}>최근 14일 출석 — 오늘 도장 찍으면 13일!</div>
+      <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 6, lineHeight: 1.5 }}>최근 14일 출석, 오늘 도장 찍으면 13일!</div>
       <div className="streak-cal">
         {cells.map((c, i) => (
           <div key={i} className={"streak-cell " + c.state} title={c.day > 0 ? `Day ${c.day}` : ""}>{c.label || ""}</div>

@@ -2,7 +2,7 @@
 const { useState: useS_t, useEffect: useE_t, useRef: useR_t, useMemo: useM_t } = React;
 
 // ============================================================
-// Test Page — 주관식 단어 시험 (유버디 스타일)
+// Test Page, 주관식 단어 시험 (유버디 스타일)
 // ============================================================
 function TestPage({ user, words, testStyle }) {
   const studiedWords = useM_t(() => user.studied.map(d => words.find(w => w.day === d)).filter(Boolean), [user, words]);
@@ -42,7 +42,7 @@ function TestPage({ user, words, testStyle }) {
     } else {
       if (testStyle === "hardcore") {
         // 못 넘어감 - 흔들기만
-        setFeedback({ type: "wrong", msg: `다시 — 입력한 답: "${input}". 맞출 때까진 못 넘어가요.` });
+        setFeedback({ type: "wrong", msg: `다시, 입력한 답: "${input}". 맞출 때까진 못 넘어가요.` });
         if (inputRef.current) {
           inputRef.current.classList.add("shake");
           setTimeout(() => inputRef.current?.classList.remove("shake"), 450);

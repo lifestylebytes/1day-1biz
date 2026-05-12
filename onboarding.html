@@ -144,7 +144,7 @@ textarea { resize: vertical; min-height: 70px; }
   .assign-grid { grid-template-columns: 1fr; }
 }
 
-/* ── 모바일 차단 팝업 — "어허! 업무를 모바일로요?" ── */
+/* ── 모바일 차단 팝업, "어허! 업무를 모바일로요?" ── */
 .mobile-block { display: none; position: fixed; inset: 0; z-index: 99999;
   background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
   align-items: center; justify-content: center; padding: 22px;
@@ -189,10 +189,10 @@ textarea { resize: vertical; min-height: 70px; }
 </head>
 <body>
 
-<!-- 모바일 차단 팝업 — "어허! 업무를 모바일로요?" -->
+<!-- 모바일 차단 팝업, "어허! 업무를 모바일로요?" -->
 <div id="mobile-block" class="mobile-block">
   <div class="mb-card">
-    <div class="mb-stamp">어허—!</div>
+    <div class="mb-stamp">어허-!</div>
     <h2>업무를 누가 모바일로 하나요?</h2>
     <p class="mb-lead">
       여긴 <b>외국계 회사 입사 시뮬레이터</b>예요.<br/>
@@ -254,7 +254,7 @@ const COWORKERS = [
   { id: "co2", name: "임재희", role: "동기 입사자 / Product", note: "유학파. 영어 잘함. 부럽지." },
 ];
 
-// Dev 모드 코드 — 모듈 최상위에 둬야 ApplicationScreen에서도 접근 가능
+// Dev 모드 코드, 모듈 최상위에 둬야 ApplicationScreen에서도 접근 가능
 // dev      : Day 점프 패널 (?dev=1) 표시 여부
 // operator : 운영자 뷰 / 모든 사용자 데이터 권한 여부
 const DEV_CODES = {
@@ -265,7 +265,7 @@ const DEV_CODES = {
 };
 
 // ============================================================
-// 유틸 — 사번 / 입사일 / 추정값 생성
+// 유틸, 사번 / 입사일 / 추정값 생성
 // ============================================================
 function generateEmpNumber(date, seed) {
   const yyyymmdd = date.toISOString().slice(0,10).replace(/-/g, "");
@@ -276,7 +276,7 @@ function pickRandom(arr, seed) { return arr[seed % arr.length]; }
 function hashString(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
 
 // 새 계정 가입/로그인 시 이전 계정의 브라우저 단위 잔여 데이터 정리
-// (오늘의 태스크 체크, 투어 완료, 공지 읽음, 주말 이벤트 등 — 계정과 분리되어 누수되던 값들)
+// (오늘의 태스크 체크, 투어 완료, 공지 읽음, 주말 이벤트 등, 계정과 분리되어 누수되던 값들)
 function clearStaleLocalData() {
   try {
     const PREFIXES = ["__OD_TASKS_", "__OD_TOUR_", "__OD_NOTICE_READS_", "__OD_WEEKEND_"];
@@ -291,7 +291,7 @@ function clearStaleLocalData() {
 }
 
 // ============================================================
-// 메인 앱 — 단계 머신
+// 메인 앱, 단계 머신
 // ============================================================
 function OnboardingApp() {
   const [stage, setStage] = useState("welcome"); // welcome → application → reviewing → offer → assignment → ceo → ready
@@ -302,7 +302,7 @@ function OnboardingApp() {
   }, []);
   const [inviteCode, setInviteCode] = useState(urlCode.toUpperCase());
 
-  // 입사 지원 가능 여부 — 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
+  // 입사 지원 가능 여부, 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
   // 운영자(DEV-OPS/DEV-BUDDY)는 operator.html로 직접 접근하므로 이 흐름과 무관
   const hasValidInvite = useMemo(() => /^PILOT-[A-Z0-9]{4}$/.test(inviteCode || ""), [inviteCode]);
 
@@ -319,10 +319,10 @@ function OnboardingApp() {
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
 
-  // 코드 검증 — 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
+  // 코드 검증, 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  // 검증 통과한 코드 정보 — finishOnboarding에서 cohort 저장 + used_count 증가에 사용
+  // 검증 통과한 코드 정보, finishOnboarding에서 cohort 저장 + used_count 증가에 사용
   const [verifiedCode, setVerifiedCode] = useState(null);
   const [verifiedCohort, setVerifiedCohort] = useState(null);
 
@@ -344,7 +344,7 @@ function OnboardingApp() {
           setSubmitting(false);
           return;
         }
-        // 검증 정보 저장 — finishOnboarding에서 사용
+        // 검증 정보 저장, finishOnboarding에서 사용
         setVerifiedCode(code);
         setVerifiedCohort(result.cohort || null);
       }
@@ -356,7 +356,7 @@ function OnboardingApp() {
     }
   };
 
-  // Dev 모드 (테스터 전용) — DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
+  // Dev 모드 (테스터 전용), DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
   const [devMode, setDevMode] = useState(false);
   const [devCode, setDevCode] = useState("");
   const matchedDevCode = devMode ? DEV_CODES[devCode.toUpperCase()] : null;
@@ -441,7 +441,7 @@ function OnboardingApp() {
       }
     } catch (e) { console.warn("localStorage 저장 실패 (사파리 프라이빗 모드?)", e); }
 
-    // Supabase 동기화 — 가입 정보를 서버에도 저장 (실패해도 시뮬레이터 진행)
+    // Supabase 동기화, 가입 정보를 서버에도 저장 (실패해도 시뮬레이터 진행)
     if (window.OD && window.OD.enabled) {
       try {
         const result = await window.OD.signup(profile);
@@ -453,11 +453,11 @@ function OnboardingApp() {
           }
         }
       } catch (err) {
-        console.warn("[Supabase] 가입 동기화 실패 — localStorage만 진행:", err);
+        console.warn("[Supabase] 가입 동기화 실패, localStorage만 진행:", err);
       }
     }
 
-    // 가입 후 이동 — 코드 검증을 이미 ApplicationScreen에서 통과했으므로 바로 사옥으로
+    // 가입 후 이동, 코드 검증을 이미 ApplicationScreen에서 통과했으므로 바로 사옥으로
     // - DEV-BUDDY / DEV-OPS (운영자) → operator.html 직행
     // - DEV-TEST / DEV-2026 (테스터) → mainboard.html?dev=1
     // - 일반 사용자 (unlocked) → mainboard.html 직행
@@ -522,7 +522,7 @@ function StepBar({ idx, total }) {
 }
 
 // ============================================================
-// 0. Welcome — 신규 가입 OR 로그인 선택
+// 0. Welcome, 신규 가입 OR 로그인 선택
 // ============================================================
 function WelcomeScreen({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
@@ -630,7 +630,7 @@ function WelcomeScreen({ onNext }) {
 }
 
 // ============================================================
-// 0b. Login — 다른 기기에서 다시 출근
+// 0b. Login, 다른 기기에서 다시 출근
 // ============================================================
 function LoginScreen({ onBack }) {
   const [email, setEmail] = useState("");
@@ -820,7 +820,7 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
         <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
       </div>
 
-      {/* Dev 모드 토글 UI 제거 — 베타테스터(PILOT)는 일반 사용자 흐름으로만 진입.
+      {/* Dev 모드 토글 UI 제거, 베타테스터(PILOT)는 일반 사용자 흐름으로만 진입.
           운영자는 ?dev=1 / operator.html 직접 접근으로 분리 */}
 
       {submitError && (
@@ -950,7 +950,7 @@ function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNe
         </div>
       </div>
 
-      {/* 부서 시스템 안내 — 30일 무작위 → 이후 이동 신청 가능 */}
+      {/* 부서 시스템 안내, 30일 무작위 → 이후 이동 신청 가능 */}
       <div style={{
         marginTop: 22, padding: "16px 18px",
         background: "var(--paper-warm)",
@@ -962,17 +962,17 @@ function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNe
           📋 부서 배정 시스템
         </div>
         <p style={{ marginBottom: 10 }}>
-          신입은 <strong>처음 30일 동안 수습으로 무작위 배치</strong>돼요. 다양한 환경을 경험하라는 거예요 — 수습 끝나면 본인 의지로 <strong>팀 이동/교체 신청</strong>할 수 있어요.
+          신입은 <strong>처음 30일 동안 수습으로 무작위 배치</strong>돼요. 다양한 환경을 경험하라는 거예요, 수습 끝나면 본인 의지로 <strong>팀 이동/교체 신청</strong>할 수 있어요.
         </p>
         <p style={{ marginBottom: 10 }}>
           현재 운영 중인 5개 부서:
         </p>
         <ul style={{ margin: "0 0 10px", paddingLeft: 16, fontSize: 12, listStyle: "none" }}>
-          <li>· <strong>Growth & Marketing</strong> — 마케팅</li>
-          <li>· <strong>Business Operations</strong> — 운영</li>
-          <li>· <strong>Business Development</strong> — BD</li>
-          <li>· <strong>Product</strong> — 프로덕트</li>
-          <li>· <strong>People & Culture</strong> — P&C (인사)</li>
+          <li>· <strong>Growth & Marketing</strong>, 마케팅</li>
+          <li>· <strong>Business Operations</strong>, 운영</li>
+          <li>· <strong>Business Development</strong>, BD</li>
+          <li>· <strong>Product</strong>, 프로덕트</li>
+          <li>· <strong>People & Culture</strong>, P&C (인사)</li>
         </ul>
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--line)" }}>
           💡 회사 성장하면서 <strong>새 부서가 신설</strong>될 수도 있어요 (Design, Data, Legal …). 사내 공지에서 알려드릴게요.

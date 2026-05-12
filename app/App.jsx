@@ -2,7 +2,7 @@
 const { useState: useS_app, useEffect: useE_app, useMemo: useM_app } = React;
 
 // ============================================================
-// Main App — 한 prototype 안에서 페이지 라우팅
+// Main App, 한 prototype 안에서 페이지 라우팅
 // ============================================================
 function ProtoApp({ isMobile, layout, cardStyle, testStyle, accent }) {
   const [active, setActive] = useS_app("home");

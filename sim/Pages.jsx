@@ -95,7 +95,7 @@ function TestPage() {
   const [picked, setPicked] = useState(null);
   const [results, setResults] = useState([]);
 
-  // Hooks must be called unconditionally — keep at top
+  // Hooks must be called unconditionally, keep at top
   const cur = queue[idx];
   const opts = useMemo(() => {
     if (!cur) return [];
@@ -371,7 +371,7 @@ function MyPage() {
         <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
       </div>
 
-      {/* 구독 정보 (읽기) — 가격/결제 정보는 정식 출시 후 노출 */}
+      {/* 구독 정보 (읽기), 가격/결제 정보는 정식 출시 후 노출 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <div className="hr-section-head">구독 정보</div>
         <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value"><b>1일 1비즈니스</b> · 베타</span></div>
@@ -379,7 +379,7 @@ function MyPage() {
         <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
       </div>
 
-      {/* 설정 (쓰기) — 디스클로저 */}
+      {/* 설정 (쓰기), 디스클로저 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <button
           className="hr-section-head settings-toggle"
@@ -414,7 +414,7 @@ function MyPage() {
               <button className={"toggle on"}></button>
             </div>
 
-            {/* 휴직(일시중지) — 한 단계 더 들어가야 보임 */}
+            {/* 휴직(일시중지), 한 단계 더 들어가야 보임 */}
             <button
               className="hr-row danger-zone-toggle"
               onClick={() => setShowPause(!showPause)}
@@ -444,7 +444,7 @@ function MyPage() {
 }
 
 // ============================================================
-// Scene Modal — 시추에이션 상세 + 영어 답변 작성
+// Scene Modal, 시추에이션 상세 + 영어 답변 작성
 // ============================================================
 function SceneModal({ scenario, onClose }) {
   const { CHARACTERS, BUDDY_ANSWERS } = window.__SIM;
@@ -508,13 +508,13 @@ function SceneModal({ scenario, onClose }) {
               <div style={{ marginTop: 16, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)" }}>
                 <div className="postit-from" style={{ marginBottom: 8 }}>▶ 차윤아 사수의 피드백</div>
                 <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)" }}>
-                  좋아요 — <b>{scenario.word}</b> 의 뉘앙스를 잘 잡았어요. 모범 답안도 같이 봐둘게요:
+                  좋아요, <b>{scenario.word}</b> 의 뉘앙스를 잘 잡았어요. 모범 답안도 같이 봐둘게요:
                 </div>
                 <div style={{ marginTop: 10, padding: 10, background: "rgba(255,255,255,0.5)", fontSize: 13.5, fontWeight: 700 }}>
                   "{scenario.sampleAnswer}"
                 </div>
                 <div style={{ marginTop: 12, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>{scenario.mentorTip}</div>
-                <div className="postit-sig">— 차윤아 ✍︎</div>
+                <div className="postit-sig">- 차윤아 ✍︎</div>
               </div>
             )}
           </div>
@@ -548,7 +548,7 @@ function SceneModal({ scenario, onClose }) {
 }
 
 // ============================================================
-// Memo Modal — 사내 메모 상세
+// Memo Modal, 사내 메모 상세
 // ============================================================
 function MemoModal({ memo, onClose }) {
   const { CHARACTERS } = window.__SIM;

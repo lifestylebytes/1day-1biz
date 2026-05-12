@@ -139,7 +139,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
 
-  // Supabase — 전체 사용자 + 통계
+  // Supabase, 전체 사용자 + 통계
   const [supaEnabled, setSupaEnabled] = useState(false);
   const [supaUsers, setSupaUsers] = useState([]);
   const [supaStats, setSupaStats] = useState(null);
@@ -281,11 +281,11 @@ function App() {
         <div className="h1">안녕하세요 유버디. <em>회사 현황</em>입니다.</div>
         <div className="lead">
           {supaEnabled
-            ? "🟢 Supabase 연결 — 모든 사용자 실시간 추적 중."
-            : "⚪ Supabase 미연결 — lib/supabase-config.js 설정 필요. 지금은 이 기기 데이터만 보임."}
+            ? "🟢 Supabase 연결, 모든 사용자 실시간 추적 중."
+            : "⚪ Supabase 미연결, lib/supabase-config.js 설정 필요. 지금은 이 기기 데이터만 보임."}
         </div>
 
-        {/* Supabase 전체 사용자 — 가장 위에 배치 */}
+        {/* Supabase 전체 사용자, 가장 위에 배치 */}
         {supaEnabled && (
           <div className="section">
             <div className="section-title">🌐 전체 사용자 (Supabase)
@@ -328,11 +328,11 @@ function App() {
                     <div style={{ fontWeight: 700 }}>{u.name}</div>
                     <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{u.email}</div>
                   </div>
-                  <div className="col-2" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{u.emp_number || '—'}</div>
-                  <div className="col-3" style={{ fontSize: 12 }}>{u.level && (u.level.ko || '—')}</div>
+                  <div className="col-2" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{u.emp_number || '-'}</div>
+                  <div className="col-3" style={{ fontSize: 12 }}>{u.level && (u.level.ko || '-')}</div>
                   <div>Day {u.day_in_company || 1}</div>
                   <div className="col-5" style={{ fontSize: 11, color: '#8A7964' }}>
-                    {u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR') : '—'}
+                    {u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR') : '-'}
                   </div>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     {u.is_operator && <span className="status-pill active" style={{ fontSize: 10 }}>OP</span>}
@@ -363,7 +363,7 @@ function App() {
 
 
         <div className="section">
-          <div className="section-title">📇 시범 입사자 — 입사 추천 코드 (Hiring Pass) 발급</div>
+          <div className="section-title">📇 시범 입사자, 입사 추천 코드 (Hiring Pass) 발급</div>
           <div className="grid-2">
             <div className="card">
               <div className="title">새 코드 발급</div>
@@ -432,9 +432,9 @@ function App() {
                     ? <span className="status-pill active">가입 완료</span>
                     : <span className="status-pill">대기</span>}
                 </div>
-                <div>{inv.currentDay ? `Day ${inv.currentDay}` : '—'}</div>
+                <div>{inv.currentDay ? `Day ${inv.currentDay}` : '-'}</div>
                 <div className="col-5" style={{ fontSize: 12, color: '#8A7964' }}>
-                  {inv.lastActive ? new Date(inv.lastActive).toLocaleDateString('ko-KR') : '—'}
+                  {inv.lastActive ? new Date(inv.lastActive).toLocaleDateString('ko-KR') : '-'}
                 </div>
                 <div className="actions">
                   {!inv.usedAt && <button className="btn btn-mini btn-ghost" onClick={() => copyCode(inv.code)}>복사</button>}

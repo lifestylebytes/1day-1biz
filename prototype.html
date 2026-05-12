@@ -43,7 +43,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "testStyle": "hardcore"
 }/*EDITMODE-END*/;
 
-// Accent palette — keep chroma low to feel sober & business-like
+// Accent palette, keep chroma low to feel sober & business-like
 const ACCENTS = {
   orange: { o: "#F07D38", od: "#C95721", g: "rgba(240,125,56,0.14)", glow: "rgba(240,125,56,0.10)" },
   navy:   { o: "#3D5A80", od: "#293E5A", g: "rgba(61,90,128,0.14)", glow: "rgba(61,90,128,0.10)" },
@@ -66,7 +66,7 @@ function Root() {
 
   return (
     <window.DesignCanvas defaultSection="dashboards">
-      <window.DCSection id="dashboards" title="1일1비 — 메인 대시보드 옵션">
+      <window.DCSection id="dashboards" title="1일1비, 메인 대시보드 옵션">
         <window.DCArtboard id="desktop-hero" label="데스크톱 · Hero 레이아웃 (오늘의 단어 강조)" width={1280} height={820}>
           <window.ProtoApp isMobile={false} layout="hero" cardStyle={tweaks.cardStyle} testStyle={tweaks.testStyle} accent={tweaks.accent} />
         </window.DCArtboard>

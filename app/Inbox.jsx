@@ -29,7 +29,7 @@ function InboxPage({ notices, onOpenNotice }) {
 }
 
 // ============================================================
-// MyPage — 구독/Saved Point/일시중지/알림설정
+// MyPage, 구독/Saved Point/일시중지/알림설정
 // ============================================================
 function MyPage({ user, setUser }) {
   const [confirmPause, setConfirmPause] = useS_in(false);
@@ -103,7 +103,7 @@ function MyPage({ user, setUser }) {
             <div className="kvrow"><span className="k">학습한 단어</span><span className="v">{user.studied.length}개</span></div>
             <div className="kvrow"><span className="k">미학습 단어</span><span className="v">{user.unstudied.length}개</span></div>
             <div className="kvrow"><span className="k">스트릭</span><span className="v">{user.streak}일</span></div>
-            <div className="kvrow"><span className="k">최근 시험 점수</span><span className="v">{user.testHistory[0] ? `${user.testHistory[0].score}/${user.testHistory[0].total}` : "—"}</span></div>
+            <div className="kvrow"><span className="k">최근 시험 점수</span><span className="v">{user.testHistory[0] ? `${user.testHistory[0].score}/${user.testHistory[0].total}` : "-"}</span></div>
           </div>
         </div>
       </div>

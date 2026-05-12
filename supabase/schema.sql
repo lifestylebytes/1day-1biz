@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_dev_mode BOOLEAN DEFAULT FALSE,
   is_tester BOOLEAN DEFAULT FALSE,
 
-  -- 로그인 (선택 — Supabase Auth 연동 시 별도 처리)
+  -- 로그인 (선택, Supabase Auth 연동 시 별도 처리)
   password_hash TEXT,
   password_salt TEXT,
 
@@ -127,7 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_events_type ON events(type, happened_at DESC);
 
 
 -- ====================
--- WAITLIST 테이블 (대기 등록 — 정식 오픈 전 신청자)
+-- WAITLIST 테이블 (대기 등록, 정식 오픈 전 신청자)
 -- ====================
 CREATE TABLE IF NOT EXISTS waitlist (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -230,14 +230,14 @@ ALTER TABLE notices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notice_reads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
--- waitlist — 누구나 INSERT, 운영자만 SELECT (v1.5에서 강화)
+-- waitlist, 누구나 INSERT, 운영자만 SELECT (v1.5에서 강화)
 DROP POLICY IF EXISTS waitlist_insert ON waitlist;
 CREATE POLICY waitlist_insert ON waitlist FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS waitlist_select ON waitlist;
 CREATE POLICY waitlist_select ON waitlist FOR SELECT USING (true);
 
--- users — 모두 INSERT (가입), 모두 SELECT (운영자 뷰)
+-- users, 모두 INSERT (가입), 모두 SELECT (운영자 뷰)
 DROP POLICY IF EXISTS users_insert ON users;
 CREATE POLICY users_insert ON users FOR INSERT WITH CHECK (true);
 
@@ -247,21 +247,21 @@ CREATE POLICY users_select ON users FOR SELECT USING (true);
 DROP POLICY IF EXISTS users_update ON users;
 CREATE POLICY users_update ON users FOR UPDATE USING (true);
 
--- events — 모두 INSERT, 모두 SELECT
+-- events, 모두 INSERT, 모두 SELECT
 DROP POLICY IF EXISTS events_insert ON events;
 CREATE POLICY events_insert ON events FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS events_select ON events;
 CREATE POLICY events_select ON events FOR SELECT USING (true);
 
--- notices — 모두 SELECT, 운영자만 INSERT (v1.5에 강화)
+-- notices, 모두 SELECT, 운영자만 INSERT (v1.5에 강화)
 DROP POLICY IF EXISTS notices_select ON notices;
 CREATE POLICY notices_select ON notices FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS notices_insert ON notices;
 CREATE POLICY notices_insert ON notices FOR INSERT WITH CHECK (true);
 
--- notice_reads — 모두
+-- notice_reads, 모두
 DROP POLICY IF EXISTS notice_reads_all ON notice_reads;
 CREATE POLICY notice_reads_all ON notice_reads FOR ALL USING (true);
 

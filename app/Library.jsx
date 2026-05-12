@@ -2,7 +2,7 @@
 const { useState: useS_lib, useMemo: useM_lib } = React;
 
 // ============================================================
-// Library — 누적 단어 라이브러리
+// Library, 누적 단어 라이브러리
 // ============================================================
 function LibraryPage({ user, words, onOpenWord, cardStyle }) {
   const [filter, setFilter] = useS_lib("all"); // all | studied | unstudied

@@ -1,4 +1,4 @@
-# Supabase 셋업 — 30분이면 끝
+# Supabase 셋업, 30분이면 끝
 
 ## 1. 프로젝트 만들기 (5분)
 
@@ -6,7 +6,7 @@
 2. **New Project** 클릭
 3. 입력:
    - **Name**: `1day-1biz`
-   - **Database Password**: 강한 비번 — **어딘가에 저장!** (지금 안 보면 다신 못 봄)
+   - **Database Password**: 강한 비번, **어딘가에 저장!** (지금 안 보면 다신 못 봄)
    - **Region**: `Northeast Asia (Seoul)` ← 한국 사용자 빠르게
    - **Pricing**: Free
 4. **Create new project** → 1-2분 대기
@@ -93,11 +93,11 @@ window.__SUPABASE_CONFIG = {
 
 ---
 
-## 부록 — 대기 등록(waitlist) 이메일 알림 설정
+## 부록, 대기 등록(waitlist) 이메일 알림 설정
 
 waitlist에 새 row 추가될 때 `youbuddy.co@gmail.com`으로 알림 받기.
 
-### 옵션 A — Supabase Edge Function + Resend (추천)
+### 옵션 A, Supabase Edge Function + Resend (추천)
 
 **1. Resend 가입 (무료 100통/일)**
 - https://resend.com → Sign up → API key 발급
@@ -117,7 +117,7 @@ serve(async (req) => {
   const { record } = await req.json();
 
   const html = `
-    <h2>새 대기 등록 — 1일1비</h2>
+    <h2>새 대기 등록, 1일1비</h2>
     <table style="border-collapse:collapse">
       <tr><td><b>이름</b></td><td>${record.name}</td></tr>
       <tr><td><b>이메일</b></td><td>${record.email}</td></tr>
@@ -161,7 +161,7 @@ Edge Functions → Settings → Secrets → `RESEND_API_KEY` 추가
 
 이러면 waitlist에 row 추가될 때마다 자동으로 youbuddy.co@gmail.com에 알림 메일 옴.
 
-### 옵션 B — Zapier (코드 0줄)
+### 옵션 B, Zapier (코드 0줄)
 
 1. **Zapier 가입** (무료 100건/월)
 2. New Zap:
@@ -169,9 +169,9 @@ Edge Functions → Settings → Secrets → `RESEND_API_KEY` 추가
    - Action: **Email by Zapier** → To: youbuddy.co@gmail.com / Subject: 새 대기 등록 / Body: form fields
 3. Supabase Database Webhook → URL에 Zapier URL 입력
 
-### 옵션 C — 일괄 확인 (가장 간단)
+### 옵션 C, 일괄 확인 (가장 간단)
 
 알림 없이 그냥 매일/매주 한 번 운영자 뷰에서 waitlist 테이블 확인.
-운영자 뷰에 "📬 대기 등록자 N명 — 보기" 섹션 추가하면 됨 (v1.5에 추가 예정).
+운영자 뷰에 "📬 대기 등록자 N명, 보기" 섹션 추가하면 됨 (v1.5에 추가 예정).
 
 → **베타 단계엔 옵션 C로 충분.** 신청자 많아지면 옵션 A로 자동화.

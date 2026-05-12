@@ -1483,7 +1483,10 @@ const SCENARIOS = [
     quote: "이 건 디자인팀도 loop in 해야 할 것 같은데?",
     youDo: "디자인팀 리드를 cc에 추가해 메일을 다시 보냈다.",
     mentorTip: "정보 공유의 동사. cc보다 '동참시킨다'는 뉘앙스가 강해서 협업할 때 자주 써.",
-    sampleAnswer: "Looping in @design-lead, could you weigh in on this?", tags: ["email", "team"], status: "studied",
+    sampleAnswer: "Looping in @design-lead, could you weigh in on this?", tags: ["email", "team"], status: "studied",,
+    task: { to: "team", channel: "slack-channel",
+      promptKo: "디자인팀 슬랙 채널에 디자인 리드 looping in하는 한 줄.",
+      koSentence: "디자인 리드 분 추가합니다, 이 부분 의견 주실 수 있을까요?" },
     mcOptions: [
       { text: "Looping in @design-lead, could you weigh in on the visuals?", kind: "correct",
         note: "✓ '@ 멘션 + weigh in' 콤보. 누구를(디자인 리드), 왜(visuals 의견) 한 줄에. 슬랙·메일 양쪽 다 자연스러움." },
@@ -1502,7 +1505,10 @@ const SCENARIOS = [
     quote: "이번 분기 핵심 deliverable 3개만 정리해보자.",
     youDo: "팀의 핵심 산출물을 노션에 정리해 공유했다.",
     mentorTip: "'결과물' 보다 '약속한 산출물' 의 무게가 있어. 계약/프로젝트에서 자주 봐.",
-    sampleAnswer: "The three key deliverables for Q2 are the report, prototype, and rollout plan.", tags: ["project", "meeting"], status: "studied",
+    sampleAnswer: "The three key deliverables for Q2 are the report, prototype, and rollout plan.", tags: ["project", "meeting"], status: "studied",,
+    task: { to: "manager", channel: "face",
+      promptKo: "회의실에서 김 팀장 질문에 한 줄로 답, 핵심 deliverable 3개 명확히.",
+      koSentence: "Q2 핵심 deliverable 3개는 보고서, 프로토타입, 출시 계획입니다." },
     mcOptions: [
       { text: "Q2 key deliverables: report, prototype, rollout plan. Owners assigned.", kind: "correct",
         note: "✓ 회의 보드/슬라이드용 압축 표현. 명사형 핵심만 + owner까지, 명확하고 사수가 좋아하는 톤." },
@@ -1521,7 +1527,10 @@ const SCENARIOS = [
     quote: "엔지니어링팀 ramp up 일정이 어떻게 돼?",
     youDo: "채용 일정과 온보딩 계획을 한 페이지로 정리해 공유했다.",
     mentorTip: "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
-    sampleAnswer: "We're ramping up engineering hires from May through July.", tags: ["hr", "team"], status: "studied",
+    sampleAnswer: "We're ramping up engineering hires from May through July.", tags: ["hr", "team"], status: "studied",,
+    task: { to: "manager", channel: "face",
+      promptKo: "회의 중 김 팀장 질문에 채용 일정 한 줄 답변.",
+      koSentence: "5월부터 7월까지 엔지니어링 채용을 ramp up 할 예정입니다." },
     mcOptions: [
       { text: "Ramping up engineering hires May through July, 3 per month, with onboarding plan.", kind: "correct",
         note: "✓ 단어 + 구체적 시점 + 숫자 + 후속 계획까지. 회의에서 '준비된 사람' 인상 확실하게." },
@@ -1540,7 +1549,10 @@ const SCENARIOS = [
     quote: "Let's start with the low-hanging fruit before the heavy lifting.",
     youDo: "당장 실행 가능한 3개 액션을 따로 빼서 to-do 리스트로 만들었다.",
     mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장.",
-    sampleAnswer: "I've pulled out three low-hanging fruit we can ship this week.", tags: ["strategy", "priority"], status: "studied",
+    sampleAnswer: "I've pulled out three low-hanging fruit we can ship this week.", tags: ["strategy", "priority"], status: "studied",,
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "전략 워크숍에서 Daniel 제안에 한 줄로 답, 구체적 액션 약속.",
+      koSentence: "이번 주에 바로 처리 가능한 low-hanging fruit 3개 뽑아뒀어요." },
     mcOptions: [
       { text: "Pulled out 3 low-hanging fruit we can ship this week, owners noted.", kind: "correct",
         note: "✓ 단어 + 구체적 숫자(3) + 시점(this week) + owner 언급. 우선순위 회의의 모범 답." },
@@ -1559,7 +1571,10 @@ const SCENARIOS = [
     quote: "월요일 15분만 touch base 하자. 진행 상황 듣고 싶어.",
     youDo: "월요일까지 진행 상황을 한 페이지로 정리해뒀다.",
     mentorTip: "야구의 '베이스 터치' 에서 옴. 가볍게 점검하는 짧은 미팅을 잡을 때 부담 없이 써.",
-    sampleAnswer: "Sure, let's touch base Monday at 3, I'll have an update ready.", tags: ["meeting", "schedule"], status: "studied",
+    sampleAnswer: "Sure, let's touch base Monday at 3, I'll have an update ready.", tags: ["meeting", "schedule"], status: "studied",,
+    task: { to: "mentor", channel: "slack-dm",
+      promptKo: "사수 캘린더 초대 확인 답신.",
+      koSentence: "좋아요, 월요일 3시에 touch base 하시죠, 진행 상황 미리 준비할게요." },
     mcOptions: [
       { text: "Sure, let's touch base Monday at 3. I'll have a 1-pager ready.", kind: "correct",
         note: "✓ 사수 제안 그대로 받음 + 구체적 시간 + 준비물(1-pager) 미리 안내. 사수가 좋아할 답." },
@@ -1578,7 +1593,10 @@ const SCENARIOS = [
     quote: "due diligence 끝나기 전엔 사인 못 해. 이번 주 안에 마무리.",
     youDo: "재무·법무·운영 체크리스트를 만들어 분담했다.",
     mentorTip: "법률·재무 검토 전부. 이 한 단어가 며칠치 일을 함축해.",
-    sampleAnswer: "Due diligence will wrap by Thursday, we'll review findings Friday.", tags: ["legal", "deal"], status: "studied",
+    sampleAnswer: "Due diligence will wrap by Thursday, we'll review findings Friday.", tags: ["legal", "deal"], status: "studied",,
+    task: { to: "manager", channel: "face",
+      promptKo: "회의 중 김 팀장 지시에 마감 일정 답변.",
+      koSentence: "Due diligence는 목요일까지 마무리되고, 금요일에 결과 리뷰 잡을게요." },
     mcOptions: [
       { text: "Due diligence wraps Thursday, review session Friday 2pm.", kind: "correct",
         note: "✓ 단어 + 마감 시점 + 다음 액션. 임원 회의에서 한 줄 요약으로 완벽." },
@@ -1597,7 +1615,10 @@ const SCENARIOS = [
     quote: "Numbers aren't there. We may need to pivot.",
     youDo: "B2C → B2B 전환 시나리오를 1페이지로 그려봤다.",
     mentorTip: "스타트업 용어가 일반 비즈니스로 넘어온 사례. '방향 자체를 트는' 뉘앙스라 작은 변경엔 안 써.",
-    sampleAnswer: "If conversion stays flat, we should consider a pivot to B2B.", tags: ["strategy", "exec"], status: "studied",
+    sampleAnswer: "If conversion stays flat, we should consider a pivot to B2B.", tags: ["strategy", "exec"], status: "studied",,
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "임원 보고 중 Daniel 발언에 응답, 조건부 pivot 시나리오 제시.",
+      koSentence: "전환율이 이대로면 B2B로 pivot하는 것도 고려해봐야 할 것 같아요." },
     mcOptions: [
       { text: "If conversion stays flat through Q2, we should pivot to B2B, 1-pager attached.", kind: "correct",
         note: "✓ 조건(if) + 시점(Q2) + 액션(B2B) + 준비물(1-pager). 임원 자리에서 책임감 있는 답." },
@@ -1616,7 +1637,10 @@ const SCENARIOS = [
     quote: "피드백은 좋은데, 좀 더 actionable 하게 정리해줄래?",
     youDo: "추상적인 조언을 '담당자/기한/액션' 3열 표로 다시 썼다.",
     mentorTip: "'그래서 뭐 해?' 라는 질문에 답이 되면 actionable. 보고서의 마지막 페이지에 꼭 들어가야 해.",
-    sampleAnswer: "Here are three actionable items, owner and deadline included.", tags: ["report", "feedback"], status: "studied",
+    sampleAnswer: "Here are three actionable items, owner and deadline included.", tags: ["report", "feedback"], status: "studied",,
+    task: { to: "mentor", channel: "slack-dm",
+      promptKo: "사수에게 수정한 보고서 첨부 + 한 줄.",
+      koSentence: "actionable 항목 3개로 정리, 담당자와 마감일도 함께 적었어요." },
     mcOptions: [
       { text: "3 actionable items below, each with owner and deadline.", kind: "correct",
         note: "✓ 사수가 원한 그대로. 'actionable' + owner + deadline = '바로 실행 가능' 의 정의 자체." },
@@ -1635,7 +1659,10 @@ const SCENARIOS = [
     quote: "Just a ballpark, what are we looking at, budget-wise?",
     youDo: "정확한 수치 대신 '500만~700만원 범위' 라고 답했다.",
     mentorTip: "정확한 답을 줄 수 없을 때 시간을 버는 표현. 한국말 '대충 얼마' 보다 훨씬 프로페셔널해.",
-    sampleAnswer: "Ballpark, we're looking at 5 to 7 million won.", tags: ["client", "budget"], status: "studied",
+    sampleAnswer: "Ballpark, we're looking at 5 to 7 million won.", tags: ["client", "budget"], status: "studied",,
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "Sarah와 통화 중 예산 범위 답변.",
+      koSentence: "대략 ballpark로 500만원에서 700만원 정도 보시면 돼요." },
     mcOptions: [
       { text: "Ballpark, 5 to 7M won. I can firm it up by Friday.", kind: "correct",
         note: "✓ 단어 + 범위 + 정확한 숫자 약속(Friday). 'ballpark만 줘'에 정확히 답하면서 후속 약속까지." },
@@ -1656,7 +1683,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "재밌는 단어야. 미국식은 '보류', 영국식은 '정식 안건으로 올리다', 정반대! Daniel은 영국 본사라 헷갈릴 수 있어. 문맥으로 잡아야 해.",
     sampleAnswer: "Agreed. Let's table pricing and pick it up next week with the full deck.",
-    tags: ["meeting", "decision"], status: "locked",
+    tags: ["meeting", "decision"], status: "locked",,
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "Daniel의 제안에 회의 마무리 톤으로 동의.",
+      koSentence: "동의해요, 가격 논의는 table하고 다음 주에 전체 자료로 다시 보시죠." },
     mcOptions: [
       { text: "Agreed, let's table pricing and pick it up next week with the full deck.", kind: "correct",
         note: "✓ Daniel의 'table' 그대로 받아 + 다음 시점 + 준비물(deck). 회의 매끄러운 마무리의 정석." },
@@ -1678,7 +1708,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "agree보다 부드러워. '동의'까진 아니어도 '같은 방향'이라는 뜻. 회의 끝에 빈번해.",
     sampleAnswer: "I'm aligned, I'll own the rollout plan and circle back by Wednesday.",
-    tags: ["meeting", "strategy"], status: "locked",
+    tags: ["meeting", "strategy"], status: "locked",,
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "회의 마무리에서 동의 + 본인 책임 약속.",
+      koSentence: "저는 align됐어요, rollout 계획은 제가 맡고 수요일까지 다시 공유드릴게요." },
     mcOptions: [
       { text: "Aligned, I'll own the rollout plan and circle back Wednesday.", kind: "correct",
         note: "✓ 'Aligned' 한 단어로 동의 표시 + 본인 책임(I'll own) + 시점(Wednesday). 회의 마무리의 모범." },
@@ -1699,7 +1732,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "touch base의 짧은 버전. 격식 없이 쓰는 표현이라 사수·동기끼리 자주 써.",
     sampleAnswer: "Sounds good, I'll send a quick agenda before we sync up.",
-    tags: ["meeting", "schedule"], status: "locked",
+    tags: ["meeting", "schedule"], status: "locked",,
+    task: { to: "mentor", channel: "slack-dm",
+      promptKo: "사수의 sync up 제안 응답.",
+      koSentence: "좋아요, sync up 전에 간단한 안건 미리 보내드릴게요." },
     mcOptions: [
       { text: "Sounds good, sending a quick agenda before we sync up.", kind: "correct",
         note: "✓ 사수 제안 그대로 받음 + 미리 agenda 준비 신호 = '진행 상황 정리해 가요' 메시지. 사수가 가장 좋아할 답." },
@@ -1720,7 +1756,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'시간 있어?' 보다 자기 부담 인정하는 뉘앙스. 거절할 때 'I don't have the bandwidth'가 정중해.",
     sampleAnswer: "Honestly tight this week, can we sync up on it Monday?",
-    tags: ["team", "schedule"], status: "locked",
+    tags: ["team", "schedule"], status: "locked",,
+    task: { to: "park", channel: "slack-dm",
+      promptKo: "동기 박 대리의 부탁에 정중한 거절.",
+      koSentence: "솔직히 이번 주 bandwidth가 빠듯해요, 월요일에 같이 sync up하면 어떨까요?" },
     mcOptions: [
       { text: "Honestly tight on bandwidth this week, can we sync Monday?", kind: "correct",
         note: "✓ 'tight on bandwidth' = 정중한 거절 + 대안(Monday) 제시. 거절하면서도 도울 의지 보임." },
@@ -1741,7 +1780,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "프로젝트가 부풀어오를 때 (scope creep) 가장 중요한 단어. 'what's in / what's out' 명확히 적는 게 핵심.",
     sampleAnswer: "I'll scope down to the MVP features and circulate by EOD.",
-    tags: ["project", "planning"], status: "locked",
+    tags: ["project", "planning"], status: "locked",,
+    task: { to: "manager", channel: "face",
+      promptKo: "김 팀장의 범위 정리 지시에 본인 액션 약속.",
+      koSentence: "MVP 기능으로 scope down 정리해서 오늘 퇴근 전까지 공유드릴게요." },
     mcOptions: [
       { text: "I'll scope down to MVP features, circulate by EOD with what's in/out.", kind: "correct",
         note: "✓ 동사 'scope down' 사용 + 구체적 범위(MVP) + 시점(EOD) + 전달 형식(what's in/out). 책임감 있는 답." },
@@ -1762,7 +1804,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'레벨업' 같은 뉘앙스. 본인 책임을 한 단계 늘렸을 때 칭찬으로 자주 들어. 사수가 신입한테 해주는 최고의 한 마디.",
     sampleAnswer: "Thanks, felt like step-up moments at the time, scary but worth it.",
-    tags: ["review", "growth"], status: "locked",
+    tags: ["review", "growth"], status: "locked",,
+    task: { to: "mentor", channel: "face",
+      promptKo: "사수의 칭찬에 자연스럽게 받는 답변.",
+      koSentence: "고마워요, 그땐 step up 하는 순간들이 좀 무서웠는데 해보길 잘했어요." },
     mcOptions: [
       { text: "Thanks, felt like real step-up moments. Scary but worth it.", kind: "correct",
         note: "✓ 'step-up moments'로 단어 받음 + 솔직한 감정(scary) + 긍정 마무리(worth it). 회고에서 가장 자연스러운 답." },
@@ -1783,7 +1828,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "warn보다 부드럽고, FYI보다 액션이 필요한 톤. 동료끼리 자주 주고받아.",
     sampleAnswer: "Thanks for the heads up, I'll have the deck ready by 9am.",
-    tags: ["team", "intel"], status: "locked",
+    tags: ["team", "intel"], status: "locked",,
+    task: { to: "park", channel: "slack-dm",
+      promptKo: "동기의 사전 정보 공유에 감사 + 즉시 액션 약속.",
+      koSentence: "Heads up 고마워요, 자료는 내일 오전 9시까지 준비해둘게요." },
     mcOptions: [
       { text: "Thanks for the heads up, deck ready by 9am, polished version by lunch.", kind: "correct",
         note: "✓ 단어로 감사 표시 + 즉시 액션(9am) + 추가 약속(polished by lunch). 정보 준 동료가 좋아할 답." },
@@ -1804,7 +1852,10 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "수습 단계에서 가장 중요한 표현. 'I'll handle it' 보다 책임감의 무게가 더해져.",
     sampleAnswer: "Got it, I'll take ownership and keep you posted weekly.",
-    tags: ["leadership", "growth"], status: "locked",
+    tags: ["leadership", "growth"], status: "locked",,
+    task: { to: "manager", channel: "face",
+      promptKo: "김 팀장의 작은 프로젝트 위임에 책임 표명.",
+      koSentence: "알겠어요, 제가 take ownership하고 주간으로 진행 상황 공유드릴게요." },
     mcOptions: [
       { text: "Got it, I'll take ownership and send weekly updates Friday EOD.", kind: "correct",
         note: "✓ 단어 그대로 받음 + 명확한 약속(weekly Friday). 신뢰 보여주는 답의 정석." },
@@ -1825,7 +1876,39 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "단순 동의가 아닌 '지지·납득'의 뉘앙스. 보고서 마지막 슬라이드의 핵심.",
     sampleAnswer: "I'll prep a one-pager to get exec buy-in by Friday.",
-    tags: ["client", "exec"], status: "locked" },
+    tags: ["client", "exec"], status: "locked",
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "Sarah와 화상회의 중 buy-in 확보 계획 약속.",
+      koSentence: "임원 buy-in 받을 1페이지 자료를 금요일까지 준비할게요." },
+    mcOptions: [
+      { text: "I'll prep a one-pager for exec buy-in by Friday, sharing draft Thursday.", kind: "correct", note: '✓ 액션(1-pager) + 명확한 시점(Friday) + 중간 공유(Thursday). buy-in 확보 위해 준비됐다는 신호.' },
+      { text: 'Pursuant to your request, executive endorsement shall be diligently pursued.', kind: "formal", note: "변호사 보고서 톤. 'pursuant', 'diligently pursued' = 직역체. 임원과의 화상회의에 무거움." },
+      { text: "Sure, I'll try to get them to agree somehow.", kind: "weak", note: "'try', 'somehow' = 책임 회피 톤. buy-in은 적극적 확보가 핵심인데 정반대." },
+    ],
+    buddyAnswers: {
+      nuance: "buy-in은 단순 동의(agree)가 아닌 '지지·납득' 뉘앙스. 의사 결정자가 마음으로 받아들이는 것.
+
+비슷한 표현 비교:
+• agreement = 동의 (계약 단계)
+• endorsement = 추천·지지 (외부 표명)
+• buy-in = 내적 납득 + 지원 (가장 중요)
+• alignment = 방향만 맞춤 (약함)
+
+임원 보고에서 'we need buy-in' = 위에서 진심으로 끄덕여야 한다는 신호. 결정 권한 있는 사람한테 1:1로 따로 설득하는 게 핵심.",
+      example: '🗣 회의: "We\'ll need exec buy-in before we move."
+📧 메일: "Building buy-in for the Q3 plan, deck attached."
+💬 슬랙: "Got initial buy-in from leadership."
+
+자주 같이 쓰는 표현:
+• exec buy-in (임원 동의)
+• get/secure buy-in (확보)
+• without buy-in (지원 없이)',
+      default: "buy + in. '사주다, 안으로 들이다' = 마음으로 받아들이는 것.
+
+외우기: 주식 'buy-in price' 처럼 '내 돈 들여서 산다' 느낌. 단순 끄덕임 X, 본인 자원 투자할 의지.
+
+임원 보고 자리에서 'buy-in 받았다' = 다음 단계 진행 OK 신호.",
+    } },
   { day: 24, word: "leverage", pos: "v.", meaning: "(자원·관계를) 최대한 활용하다", phonetic: "/ˈlevərɪdʒ/",
     scene: "10:30, Daniel이 슬랙으로.",
     npc: "daniel",
@@ -1833,7 +1916,43 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'활용한다'의 비즈니스 버전. use보다 '있는 자원을 기회로 바꾼다'는 뉘앙스가 강해.",
     sampleAnswer: "Agreed, I'll loop Sarah in and leverage her intros.",
-    tags: ["strategy", "client"], status: "locked" },
+    tags: ["strategy", "client"], status: "locked",
+    task: { to: "daniel", channel: "slack-dm",
+      promptKo: "Daniel의 슬랙 제안에 동의 + 액션.",
+      koSentence: "동의해요, Sarah loop in해서 그분 인맥 leverage하는 방향으로 갈게요." },
+    mcOptions: [
+      { text: "Agreed, I'll loop Sarah in and leverage her West Coast network by EOW.", kind: "correct", note: '✓ 동의 + 액션(loop in) + 단어 사용(leverage) + 시점(EOW). 슬랙에서 가장 자연스러운 답.' },
+      { text: "I shall endeavor to capitalize on Sarah's professional connections forthwith.", kind: "formal", note: "관료 보고서 톤. 'endeavor', 'capitalize on', 'forthwith' = 직역체. 슬랙엔 부담." },
+      { text: 'Yeah let me think about asking Sarah to use her contacts.', kind: "weak", note: "'think about', 'use' = 모호. leverage 같은 적극적 단어 안 살림." },
+    ],
+    buddyAnswers: {
+      nuance: "leverage는 use보다 적극적. '있는 자원을 기회로 바꾼다' 뉘앙스.
+
+use vs leverage:
+• use = 그냥 쓰다 (중립)
+• leverage = 전략적으로 활용 (가치 증폭)
+• utilize = 격식 있는 use
+• capitalize on = leverage와 거의 동의어
+
+자주 leverage하는 대상:
+• 인맥 (network)
+• 기존 자원 (existing resources)
+• 강점 (strengths)
+• 데이터 (data)",
+      example: '🗣 회의: "Let\'s leverage Sarah\'s network on the West Coast."
+📧 메일: "Leveraging Q1 learnings for the new launch."
+💬 슬랙: "Can we leverage the data team\'s models here?"
+
+자주 같이 쓰는 표현:
+• leverage [무엇] for [목적]
+• leverage existing [자원]
+• competitive leverage',
+      default: "leverage = '지렛대'. 작은 힘으로 큰 것을 움직이는 도구.
+
+외우기: 지렛대 받침점 잘 잡으면 적은 노력으로 큰 효과. 비즈니스도 같은 원리, 인맥·자원을 leverage하면 적은 노력으로 큰 성과.
+
+전략·임원 회의에서 가장 자주 듣는 표현 중 하나.",
+    } },
   { day: 25, word: "OOO", pos: "abbr.", meaning: "out of office, 부재 중, 휴가 중", phonetic: "/aʊt əv ˈɔːfɪs/",
     scene: "09:00, 사수가 단톡에 안내.",
     npc: "mentor",
@@ -1841,7 +1960,40 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "메일 자동응답에 거의 항상 등장. OOO만 써도 다 알아들어. 한국식 '휴가입니다'보다 가벼워.",
     sampleAnswer: "Noted, I'll loop in 박 대리 if anything urgent comes up.",
-    tags: ["schedule", "team"], status: "locked" },
+    tags: ["schedule", "team"], status: "locked",
+    task: { to: "mentor", channel: "slack-dm",
+      promptKo: "사수의 OOO 공지에 응답.",
+      koSentence: "알겠어요, 급한 일 생기면 박 대리님께 loop in 할게요." },
+    mcOptions: [
+      { text: "Noted, OOO covered. I'll loop in 박 대리 for anything urgent.", kind: "correct", note: "✓ 'Noted' 한 단어로 확인 + 'OOO covered'로 책임 명확. 사수 안심시키는 답." },
+      { text: 'Acknowledged. I shall delegate urgent matters to 박 대리 in your absence.', kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
+      { text: "OK so you're gone, what should I do if something happens?", kind: "weak", note: '되묻기 = 준비 부족. 사수가 이미 박 대리 안내했는데 다시 물어보면 신뢰 깎임.' },
+    ],
+    buddyAnswers: {
+      nuance: 'OOO = Out Of Office. 부재 중·휴가 중을 한 단어로 압축한 미국 직장 표준 약어.
+
+비슷한 표현:
+• OOO = 일반 부재 (휴가·외출 포함)
+• PTO = Paid Time Off (유급 휴가)
+• on leave = 장기 휴가 (출산·병가)
+• OOTO = Out Of The Office (변형)
+
+메일 자동응답 표준:
+"I\'m OOO from [날짜] to [날짜]. For urgent matters contact [동료]."',
+      example: '📧 자동응답: "I\'m OOO May 10-13. Back Tuesday."
+📅 캘린더: "OOO, PTO"
+💬 슬랙 status: "🌴 OOO until Tuesday"
+
+자주 같이 쓰는 표현:
+• OOO from X to Y
+• covering for OOO (부재자 업무 대신)
+• OOO message (부재 알림)',
+      default: "Out + Of + Office = OOO. 한국식 '휴가입니다'보다 가볍고 짧음.
+
+외우기: 이메일 자동응답에서 거의 매일 보는 약어. 동그라미 3개라 시각적으로도 기억 쉬워.
+
+Slack status에 🌴 + OOO만 띄워도 다 알아들음.",
+    } },
   { day: 26, word: "north star", pos: "n.", meaning: "(전략의) 가장 중요한 지향점", phonetic: "/nɔːrθ stɑːr/",
     scene: "10:00, 김 팀장이 전사 미팅에서.",
     npc: "manager",
@@ -1849,7 +2001,41 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "전략 회의·임원 보고에서 핵심 표현. 단 하나의 지향점이 north star. 여러 개면 의미 없어.",
     sampleAnswer: "If retention is our north star, this feature deprioritizes.",
-    tags: ["strategy", "exec"], status: "locked" },
+    tags: ["strategy", "exec"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "전사 미팅 김 팀장 발언에 동의 + 본인 의견.",
+      koSentence: "retention이 north star라면, 이 기능은 우선순위 낮추는 게 맞을 것 같아요." },
+    mcOptions: [
+      { text: 'If retention is our north star, this acquisition feature deprioritizes.', kind: "correct", note: '✓ 조건(if) + 단어 사용(north star) + 본인 의견(deprioritizes). 임원에게 책임감 있는 답.' },
+      { text: 'Pursuant to retention being paramount, alternative initiatives warrant deprioritization.', kind: "formal", note: "임원 보고서 톤. 'pursuant', 'paramount', 'warrant' = 직역체. 화상회의 발언으론 무거움." },
+      { text: "Yeah retention sounds important, let's focus on that I guess.", kind: "weak", note: "'sounds important', 'I guess' = 결정 회피. 임원 자리에서 약한 답." },
+    ],
+    buddyAnswers: {
+      nuance: "north star = '북극성'. 항해의 길잡이가 되는 단 하나의 별. 비즈니스에선 단 하나의 지향점·KPI.
+
+중요한 건 '단 하나'. 여러 개면 north star 의미 없어.
+
+비슷한 표현 비교:
+• north star metric = 가장 중요한 단일 지표
+• KPI = 여러 핵심 지표 (복수 가능)
+• goal = 일반 목표 (가벼움)
+• vision = 큰 그림 (추상적)
+
+전략 회의에서 'what's our north star?' = 가장 중요한 거 단 하나만 골라라.",
+      example: '🗣 임원 회의: "Our north star is user retention."
+📊 OKR 문서: "North star metric: weekly active users"
+💬 슬랙: "Does this feature serve our north star?"
+
+자주 같이 쓰는 표현:
+• north star metric
+• align to the north star
+• lose sight of the north star',
+      default: "north (북쪽) + star (별). 항해할 때 북극성 보고 방향 잡듯, 기업도 단 하나의 지향점.
+
+외우기: '북극성' = 절대 안 변하는 기준점. 회사·팀의 '북극성'은 1개뿐.
+
+Silicon Valley 스타트업 용어에서 일반 비즈로 퍼짐. 임원·전략 회의에서 자주 등장.",
+    } },
   { day: 27, word: "pushback", pos: "n.", meaning: "반대 의견, 저항", phonetic: "/ˈpʊʃbæk/",
     scene: "16:00, 박 대리가 자리로 와서. 평소답지 않게.",
     npc: "park",
@@ -1857,7 +2043,41 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'반대 부딪힘' 정도. resistance보다 비즈니스 톤이고, 협상·이직에서 자주 나와.",
     sampleAnswer: "There'll be some pushback, but if your mind's made up, just be clear and direct.",
-    tags: ["career", "team"], status: "locked" },
+    tags: ["career", "team"], status: "locked",
+    task: { to: "park", channel: "face",
+      promptKo: "이직 결심한 동기에게 솔직한 조언.",
+      koSentence: "pushback이 좀 있겠지만, 마음 정했으면 명확하게 솔직하게 말씀드려요." },
+    mcOptions: [
+      { text: "There'll be some pushback, but if your mind's made up, be clear and direct.", kind: "correct", note: '✓ 현실 인정(pushback) + 격려(if made up) + 구체적 조언(clear and direct). 동기에게 따뜻한 답.' },
+      { text: 'Resistance is anticipated, however clarity in your decision is paramount.', kind: "formal", note: "교과서. 동기와의 사적 대화에 'resistance', 'paramount' 같은 단어는 어색." },
+      { text: 'I think people might not like it but who knows, just try.', kind: "weak", note: "'might not', 'who knows', 'just try' = 모호함의 끝판왕. pushback 같은 정확한 단어로 잡아줘야 동기가 안심." },
+    ],
+    buddyAnswers: {
+      nuance: "pushback = '반대·이의'. resistance보다 비즈니스 톤이고, 협상·이직·전략 결정에서 자주 등장.
+
+반대 표현 강도 비교:
+• disagreement = 의견 차이 (약함)
+• concerns = 우려 (걱정 표현)
+• pushback = 적극적 반대 ← 비즈니스 톤
+• resistance = 저항 (격함, 부정적)
+• opposition = 반대 (강함, 정치적)
+
+pushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나은 결정' 가능.",
+      example: '🗣 회의: "Expecting some pushback on the price increase."
+📧 메일: "Got pushback from legal, let\'s reconvene."
+💬 슬랙: "Heads up, leadership had pushback."
+
+자주 같이 쓰는 표현:
+• expect pushback
+• get pushback
+• push back on X (이의 제기)
+• minimal pushback',
+      default: "push + back. 누가 미는데 뒤로 밀어내기 = 반대.
+
+외우기: 비즈니스 협상은 정말 '서로 미는' 게임. 너 push, 상대 pushback. 균형 잡는 게 핵심.
+
+협상·이직 면담에서 자주 들음. '이의 제기는 자연스러운 일' 정도로 받아들이면 됨.",
+    } },
   { day: 28, word: "in the weeds", pos: "phr.", meaning: "지엽적인 디테일에 빠진 상태", phonetic: "/ɪn ðə wiːdz/",
     scene: "18:30, 사수가 너 책상 옆을 지나가며.",
     npc: "mentor",
@@ -1865,7 +2085,44 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'잡초 속' = 디테일에 매몰. 사수가 신입한테 자주 해주는 말. step back 하라는 신호.",
     sampleAnswer: "Yeah, I was getting lost in the formatting, let me zoom out and revisit.",
-    tags: ["growth", "feedback"], status: "locked" },
+    tags: ["growth", "feedback"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "사수 피드백 받고 자기 인정 + 액션.",
+      koSentence: "맞아요, 포맷 디테일에 빠져있었네요, 큰 그림 다시 보고 올게요." },
+    mcOptions: [
+      { text: 'Yeah, I was getting too in the weeds with formatting, zooming out now.', kind: "correct", note: '✓ 인정(was getting) + 단어 사용(in the weeds) + 즉시 액션(zooming out). 사수가 좋아할 답.' },
+      { text: 'Indeed, I was overly engrossed in granular details. Course-correcting promptly.', kind: "formal", note: "비즈 컨설팅 톤. 사수와 즉답엔 무거움. 일상 톤으로 'yeah, got it'이 자연스러움." },
+      { text: "Hmm maybe, I'll think about it more later.", kind: "weak", note: "'maybe', 'later' = 인정 회피 + 액션 지연. in the weeds 피드백은 즉시 step back이 정답." },
+    ],
+    buddyAnswers: {
+      nuance: "in the weeds = '잡초 속에 빠진' = 세부에 매몰. 사수가 신입한테 가장 자주 해주는 말 중 하나.
+
+반대 개념:
+• big picture = 큰 그림
+• 30,000-foot view = 비행 고도 시점
+• zoom out = 한 발 물러서기
+
+비슷한 표현:
+• in the weeds = 디테일에 빠짐 ← 가장 흔함
+• down in the details = 같은 의미
+• rabbit hole = 토끼굴 (더 심각)
+• analysis paralysis = 분석 마비
+
+사수가 'in the weeds 빠진 거 아냐?' = step back 하라는 신호.",
+      example: '🗣 1:1: "You\'re getting in the weeds, let\'s zoom out."
+💬 슬랙: "Don\'t want to get in the weeds, just need the headline."
+📊 회의: "This is too in the weeds for an exec audience."
+
+자주 같이 쓰는 표현:
+• get/be in the weeds
+• too in the weeds
+• zoom out from the weeds',
+      default: 'in + the + weeds (잡초). 정원사가 잡초 뽑다가 큰 그림 못 보는 이미지.
+
+외우기: 잡초 뽑기 = 세부 작업. 너무 오래 하면 정원 전체 안 보임. 비즈니스도 같음.
+
+사수가 \'in the weeds\' 말하면 = \'잠깐 멈추고 큰 그림 봐\'. 받았을 때 "You\'re right, let me zoom out" 한 마디면 충분.',
+    } },
   { day: 29, word: "take a stab", pos: "phr.", meaning: "한 번 시도해보다", phonetic: "/teɪk ə stæb/",
     scene: "09:30, 김 팀장이 너에게.",
     npc: "manager",
@@ -1873,7 +2130,42 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "'한 번 찔러봐' = 완벽 안 해도 OK. 신입한테 부담 줄여주는 표현. 정말 자주 들어.",
     sampleAnswer: "Sure, I'll take a stab and share a draft by EOD.",
-    tags: ["growth", "first-time"], status: "locked" },
+    tags: ["growth", "first-time"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "김 팀장의 부담 없는 제안에 시도 약속.",
+      koSentence: "네, 한 번 take a stab 해보고 오늘 퇴근 전까지 초안 공유드릴게요." },
+    mcOptions: [
+      { text: "Sure, I'll take a stab at the deck and share a rough draft by EOD.", kind: "correct", note: "✓ 'Sure' 가볍게 수락 + 단어 사용(take a stab) + 시점(EOD) + 형태 명시(rough draft). 사수가 안심하는 답." },
+      { text: 'I shall undertake the initial slide preparation expeditiously.', kind: "formal", note: "변호사 답변. 'undertake', 'expeditiously' = 신입한테 부담 줄이려는 사수에게 정반대 톤." },
+      { text: "Hmm I'm not sure I can do that, never made slides before.", kind: "weak", note: "'not sure', 'never before' = 부정적 자기인식. take a stab는 '완벽 안 해도 OK' 신호인데 거절은 신뢰 깎임." },
+    ],
+    buddyAnswers: {
+      nuance: 'take a stab = \'한 번 찔러봐\' = 완벽 안 해도 OK, 시도해봐. 신입한테 부담 줄여주는 표현.
+
+시도 표현 비교:
+• take a stab = 가볍게 시도 (실패해도 OK 신호) ← 추천
+• give it a shot = 한 번 해봐 (비슷함)
+• take a crack at = 도전해봐 (강함)
+• attempt = 시도 (격식, 무거움)
+
+받았을 때 좋은 답:
+• "Sure, I\'ll take a stab and share a draft."
+• \'try\'보다 적극적, \'do\'보다 부담 적음.',
+      example: '🗣 미팅: "Want to take a stab at the proposal?"
+📧 메일: "Taking a stab at the budget, draft attached."
+💬 슬랙: "Took a stab at it, let me know what to improve."
+
+자주 같이 쓰는 표현:
+• take a stab at [무엇]
+• first stab (첫 시도)
+• rough stab (대략적 시도)
+• give it another stab',
+      default: "stab = '찌르다'. 완벽한 게 아니라 '일단 한 번 찔러본다' 이미지.
+
+외우기: 처음 만든 초안 = first stab. 칼로 정확히 자르는 게 아니라 일단 찔러봄. 부담 없이.
+
+사수가 'take a stab' = '완벽 안 해도 돼, 일단 시작'. 신입한테 가장 따뜻한 한 마디.",
+    } },
   { day: 30, word: "milestone", pos: "n.", meaning: "수습 종료, 가장 큰 이정표 ⭐", phonetic: "/ˈmaɪlstoʊn/",
     scene: "14:00, 부장실 1대1. 김 팀장이 미소. 책상 위에 작은 손글씨 메모, '수고했어., 회장'",
     npc: "manager",
@@ -1881,7 +2173,45 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "수습 종료 = 가장 큰 milestone. 외국계는 부서 이동 자유로워서, 본인 의지로 다음 분기 결정 가능. 마음에 안 들면 다른 부서 갈 수 있어.",
     sampleAnswer: "I'd like to stay in Marketing one more quarter, but I'm curious about BD long-term.",
-    tags: ["milestone", "promotion", "career"], status: "locked" },
+    tags: ["milestone", "promotion", "career"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "수습 종료 milestone, 본인 의지 솔직히.",
+      koSentence: "Marketing에 한 분기 더 있고 싶고, 장기적으로 BD가 궁금해요." },
+    mcOptions: [
+      { text: "Stay in Marketing one more quarter, but I'd love to explore BD long-term.", kind: "correct", note: '✓ 현재 선택(Marketing) + 미래 의지(BD long-term). 명확하고 솔직한 정규직 답변.' },
+      { text: 'I respectfully request continued tenure in Marketing with future BD aspirations.', kind: "formal", note: '공식 발령 신청서 톤. 김 팀장과의 1:1 자리엔 무거움. 정규직 전환은 마음 편히 솔직하게.' },
+      { text: 'I dunno, wherever you want to put me is fine.', kind: "weak", note: "'I dunno', 'wherever' = 본인 의지 없음. milestone 자리에선 자신의 방향성을 보여주는 게 핵심." },
+    ],
+    buddyAnswers: {
+      nuance: "milestone = 도로의 '이정표'. 큰 단계나 분기점.
+
+비슷한 표현 비교:
+• milestone = 큰 분기점 (가장 무거움) ← 추천
+• checkpoint = 점검 지점 (가벼움)
+• deadline = 마감 (시간 단위)
+• goal = 일반 목표 (방향)
+• benchmark = 기준점 (비교용)
+
+프로젝트에서 milestone:
+• 30-day milestone (수습 종료)
+• Q1 milestone (분기 종료)
+• product launch milestone (출시 분기점)
+• personal milestone (개인 성장)",
+      example: '🎉 1:1: "Congrats on the 30-day milestone!"
+📊 보고서: "Q2 milestones achieved, see attached."
+📅 캘린더: "Milestone review, Q3 kickoff"
+
+자주 같이 쓰는 표현:
+• hit a milestone
+• reach the milestone
+• major milestone
+• mark the milestone (기념)',
+      default: "mile (마일) + stone (돌). 옛날 도로에 1마일마다 박아둔 돌 = 거리 표시 이정표.
+
+외우기: '여기까지 왔구나' 표시. 단순 도달이 아니라 '의미 있는 단계' 통과.
+
+수습 종료, 정규직 전환, 첫 단독 프로젝트, 모두 milestone. 자축하고 다음으로.",
+    } },
 ];
 
 // 사용자 상태, localStorage 우선, 없으면 데모 기본값
