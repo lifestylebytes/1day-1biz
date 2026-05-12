@@ -1881,33 +1881,14 @@ const SCENARIOS = [
       promptKo: "Sarah와 화상회의 중 buy-in 확보 계획 약속.",
       koSentence: "임원 buy-in 받을 1페이지 자료를 금요일까지 준비할게요." },
     mcOptions: [
-      { text: "I'll prep a one-pager for exec buy-in by Friday, sharing draft Thursday.", kind: "correct", note: '✓ 액션(1-pager) + 명확한 시점(Friday) + 중간 공유(Thursday). buy-in 확보 위해 준비됐다는 신호.' },
-      { text: 'Pursuant to your request, executive endorsement shall be diligently pursued.', kind: "formal", note: "변호사 보고서 톤. 'pursuant', 'diligently pursued' = 직역체. 임원과의 화상회의에 무거움." },
+      { text: "I'll prep a one-pager for exec buy-in by Friday, sharing draft Thursday.", kind: "correct", note: "✓ 액션(1-pager) + 명확한 시점(Friday) + 중간 공유(Thursday). buy-in 확보 위해 준비됐다는 신호." },
+      { text: "Pursuant to your request, executive endorsement shall be diligently pursued.", kind: "formal", note: "변호사 보고서 톤. 'pursuant', 'diligently pursued' = 직역체. 임원과의 화상회의에 무거움." },
       { text: "Sure, I'll try to get them to agree somehow.", kind: "weak", note: "'try', 'somehow' = 책임 회피 톤. buy-in은 적극적 확보가 핵심인데 정반대." },
     ],
     buddyAnswers: {
-      nuance: "buy-in은 단순 동의(agree)가 아닌 '지지·납득' 뉘앙스. 의사 결정자가 마음으로 받아들이는 것.
-
-비슷한 표현 비교:
-• agreement = 동의 (계약 단계)
-• endorsement = 추천·지지 (외부 표명)
-• buy-in = 내적 납득 + 지원 (가장 중요)
-• alignment = 방향만 맞춤 (약함)
-
-임원 보고에서 'we need buy-in' = 위에서 진심으로 끄덕여야 한다는 신호. 결정 권한 있는 사람한테 1:1로 따로 설득하는 게 핵심.",
-      example: '🗣 회의: "We\'ll need exec buy-in before we move."
-📧 메일: "Building buy-in for the Q3 plan, deck attached."
-💬 슬랙: "Got initial buy-in from leadership."
-
-자주 같이 쓰는 표현:
-• exec buy-in (임원 동의)
-• get/secure buy-in (확보)
-• without buy-in (지원 없이)',
-      default: "buy + in. '사주다, 안으로 들이다' = 마음으로 받아들이는 것.
-
-외우기: 주식 'buy-in price' 처럼 '내 돈 들여서 산다' 느낌. 단순 끄덕임 X, 본인 자원 투자할 의지.
-
-임원 보고 자리에서 'buy-in 받았다' = 다음 단계 진행 OK 신호.",
+      nuance: "buy-in은 단순 동의(agree)가 아닌 '지지·납득' 뉘앙스. 의사 결정자가 마음으로 받아들이는 것.\n\n비슷한 표현 비교:\n• agreement = 동의 (계약 단계)\n• endorsement = 추천·지지 (외부 표명)\n• buy-in = 내적 납득 + 지원 (가장 중요)\n• alignment = 방향만 맞춤 (약함)\n\n임원 보고에서 'we need buy-in' = 위에서 진심으로 끄덕여야 한다는 신호. 결정 권한 있는 사람한테 1:1로 따로 설득하는 게 핵심.",
+      example: "🗣 회의: \"We'll need exec buy-in before we move.\"\n📧 메일: \"Building buy-in for the Q3 plan, deck attached.\"\n💬 슬랙: \"Got initial buy-in from leadership.\"\n\n자주 같이 쓰는 표현:\n• exec buy-in (임원 동의)\n• get/secure buy-in (확보)\n• without buy-in (지원 없이)",
+      default: "buy + in. '사주다, 안으로 들이다' = 마음으로 받아들이는 것.\n\n외우기: 주식 'buy-in price' 처럼 '내 돈 들여서 산다' 느낌. 단순 끄덕임 X, 본인 자원 투자할 의지.\n\n임원 보고 자리에서 'buy-in 받았다' = 다음 단계 진행 OK 신호.",
     } },
   { day: 24, word: "leverage", pos: "v.", meaning: "(자원·관계를) 최대한 활용하다", phonetic: "/ˈlevərɪdʒ/",
     scene: "10:30, Daniel이 슬랙으로.",
@@ -1921,37 +1902,14 @@ const SCENARIOS = [
       promptKo: "Daniel의 슬랙 제안에 동의 + 액션.",
       koSentence: "동의해요, Sarah loop in해서 그분 인맥 leverage하는 방향으로 갈게요." },
     mcOptions: [
-      { text: "Agreed, I'll loop Sarah in and leverage her West Coast network by EOW.", kind: "correct", note: '✓ 동의 + 액션(loop in) + 단어 사용(leverage) + 시점(EOW). 슬랙에서 가장 자연스러운 답.' },
+      { text: "Agreed, I'll loop Sarah in and leverage her West Coast network by EOW.", kind: "correct", note: "✓ 동의 + 액션(loop in) + 단어 사용(leverage) + 시점(EOW). 슬랙에서 가장 자연스러운 답." },
       { text: "I shall endeavor to capitalize on Sarah's professional connections forthwith.", kind: "formal", note: "관료 보고서 톤. 'endeavor', 'capitalize on', 'forthwith' = 직역체. 슬랙엔 부담." },
-      { text: 'Yeah let me think about asking Sarah to use her contacts.', kind: "weak", note: "'think about', 'use' = 모호. leverage 같은 적극적 단어 안 살림." },
+      { text: "Yeah let me think about asking Sarah to use her contacts.", kind: "weak", note: "'think about', 'use' = 모호. leverage 같은 적극적 단어 안 살림." },
     ],
     buddyAnswers: {
-      nuance: "leverage는 use보다 적극적. '있는 자원을 기회로 바꾼다' 뉘앙스.
-
-use vs leverage:
-• use = 그냥 쓰다 (중립)
-• leverage = 전략적으로 활용 (가치 증폭)
-• utilize = 격식 있는 use
-• capitalize on = leverage와 거의 동의어
-
-자주 leverage하는 대상:
-• 인맥 (network)
-• 기존 자원 (existing resources)
-• 강점 (strengths)
-• 데이터 (data)",
-      example: '🗣 회의: "Let\'s leverage Sarah\'s network on the West Coast."
-📧 메일: "Leveraging Q1 learnings for the new launch."
-💬 슬랙: "Can we leverage the data team\'s models here?"
-
-자주 같이 쓰는 표현:
-• leverage [무엇] for [목적]
-• leverage existing [자원]
-• competitive leverage',
-      default: "leverage = '지렛대'. 작은 힘으로 큰 것을 움직이는 도구.
-
-외우기: 지렛대 받침점 잘 잡으면 적은 노력으로 큰 효과. 비즈니스도 같은 원리, 인맥·자원을 leverage하면 적은 노력으로 큰 성과.
-
-전략·임원 회의에서 가장 자주 듣는 표현 중 하나.",
+      nuance: "leverage는 use보다 적극적. '있는 자원을 기회로 바꾼다' 뉘앙스.\n\nuse vs leverage:\n• use = 그냥 쓰다 (중립)\n• leverage = 전략적으로 활용 (가치 증폭)\n• utilize = 격식 있는 use\n• capitalize on = leverage와 거의 동의어\n\n자주 leverage하는 대상:\n• 인맥 (network)\n• 기존 자원 (existing resources)\n• 강점 (strengths)\n• 데이터 (data)",
+      example: "🗣 회의: \"Let's leverage Sarah's network on the West Coast.\"\n📧 메일: \"Leveraging Q1 learnings for the new launch.\"\n💬 슬랙: \"Can we leverage the data team's models here?\"\n\n자주 같이 쓰는 표현:\n• leverage [무엇] for [목적]\n• leverage existing [자원]\n• competitive leverage",
+      default: "leverage = '지렛대'. 작은 힘으로 큰 것을 움직이는 도구.\n\n외우기: 지렛대 받침점 잘 잡으면 적은 노력으로 큰 효과. 비즈니스도 같은 원리, 인맥·자원을 leverage하면 적은 노력으로 큰 성과.\n\n전략·임원 회의에서 가장 자주 듣는 표현 중 하나.",
     } },
   { day: 25, word: "OOO", pos: "abbr.", meaning: "out of office, 부재 중, 휴가 중", phonetic: "/aʊt əv ˈɔːfɪs/",
     scene: "09:00, 사수가 단톡에 안내.",
@@ -1966,33 +1924,13 @@ use vs leverage:
       koSentence: "알겠어요, 급한 일 생기면 박 대리님께 loop in 할게요." },
     mcOptions: [
       { text: "Noted, OOO covered. I'll loop in 박 대리 for anything urgent.", kind: "correct", note: "✓ 'Noted' 한 단어로 확인 + 'OOO covered'로 책임 명확. 사수 안심시키는 답." },
-      { text: 'Acknowledged. I shall delegate urgent matters to 박 대리 in your absence.', kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
-      { text: "OK so you're gone, what should I do if something happens?", kind: "weak", note: '되묻기 = 준비 부족. 사수가 이미 박 대리 안내했는데 다시 물어보면 신뢰 깎임.' },
+      { text: "Acknowledged. I shall delegate urgent matters to 박 대리 in your absence.", kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
+      { text: "OK so you're gone, what should I do if something happens?", kind: "weak", note: "되묻기 = 준비 부족. 사수가 이미 박 대리 안내했는데 다시 물어보면 신뢰 깎임." },
     ],
     buddyAnswers: {
-      nuance: 'OOO = Out Of Office. 부재 중·휴가 중을 한 단어로 압축한 미국 직장 표준 약어.
-
-비슷한 표현:
-• OOO = 일반 부재 (휴가·외출 포함)
-• PTO = Paid Time Off (유급 휴가)
-• on leave = 장기 휴가 (출산·병가)
-• OOTO = Out Of The Office (변형)
-
-메일 자동응답 표준:
-"I\'m OOO from [날짜] to [날짜]. For urgent matters contact [동료]."',
-      example: '📧 자동응답: "I\'m OOO May 10-13. Back Tuesday."
-📅 캘린더: "OOO, PTO"
-💬 슬랙 status: "🌴 OOO until Tuesday"
-
-자주 같이 쓰는 표현:
-• OOO from X to Y
-• covering for OOO (부재자 업무 대신)
-• OOO message (부재 알림)',
-      default: "Out + Of + Office = OOO. 한국식 '휴가입니다'보다 가볍고 짧음.
-
-외우기: 이메일 자동응답에서 거의 매일 보는 약어. 동그라미 3개라 시각적으로도 기억 쉬워.
-
-Slack status에 🌴 + OOO만 띄워도 다 알아들음.",
+      nuance: "OOO = Out Of Office. 부재 중·휴가 중을 한 단어로 압축한 미국 직장 표준 약어.\n\n비슷한 표현:\n• OOO = 일반 부재 (휴가·외출 포함)\n• PTO = Paid Time Off (유급 휴가)\n• on leave = 장기 휴가 (출산·병가)\n• OOTO = Out Of The Office (변형)\n\n메일 자동응답 표준:\n\"I'm OOO from [날짜] to [날짜]. For urgent matters contact [동료].\"",
+      example: "📧 자동응답: \"I'm OOO May 10-13. Back Tuesday.\"\n📅 캘린더: \"OOO, PTO\"\n💬 슬랙 status: \"🌴 OOO until Tuesday\"\n\n자주 같이 쓰는 표현:\n• OOO from X to Y\n• covering for OOO (부재자 업무 대신)\n• OOO message (부재 알림)",
+      default: "Out + Of + Office = OOO. 한국식 '휴가입니다'보다 가볍고 짧음.\n\n외우기: 이메일 자동응답에서 거의 매일 보는 약어. 동그라미 3개라 시각적으로도 기억 쉬워.\n\nSlack status에 🌴 + OOO만 띄워도 다 알아들음.",
     } },
   { day: 26, word: "north star", pos: "n.", meaning: "(전략의) 가장 중요한 지향점", phonetic: "/nɔːrθ stɑːr/",
     scene: "10:00, 김 팀장이 전사 미팅에서.",
@@ -2006,35 +1944,14 @@ Slack status에 🌴 + OOO만 띄워도 다 알아들음.",
       promptKo: "전사 미팅 김 팀장 발언에 동의 + 본인 의견.",
       koSentence: "retention이 north star라면, 이 기능은 우선순위 낮추는 게 맞을 것 같아요." },
     mcOptions: [
-      { text: 'If retention is our north star, this acquisition feature deprioritizes.', kind: "correct", note: '✓ 조건(if) + 단어 사용(north star) + 본인 의견(deprioritizes). 임원에게 책임감 있는 답.' },
-      { text: 'Pursuant to retention being paramount, alternative initiatives warrant deprioritization.', kind: "formal", note: "임원 보고서 톤. 'pursuant', 'paramount', 'warrant' = 직역체. 화상회의 발언으론 무거움." },
+      { text: "If retention is our north star, this acquisition feature deprioritizes.", kind: "correct", note: "✓ 조건(if) + 단어 사용(north star) + 본인 의견(deprioritizes). 임원에게 책임감 있는 답." },
+      { text: "Pursuant to retention being paramount, alternative initiatives warrant deprioritization.", kind: "formal", note: "임원 보고서 톤. 'pursuant', 'paramount', 'warrant' = 직역체. 화상회의 발언으론 무거움." },
       { text: "Yeah retention sounds important, let's focus on that I guess.", kind: "weak", note: "'sounds important', 'I guess' = 결정 회피. 임원 자리에서 약한 답." },
     ],
     buddyAnswers: {
-      nuance: "north star = '북극성'. 항해의 길잡이가 되는 단 하나의 별. 비즈니스에선 단 하나의 지향점·KPI.
-
-중요한 건 '단 하나'. 여러 개면 north star 의미 없어.
-
-비슷한 표현 비교:
-• north star metric = 가장 중요한 단일 지표
-• KPI = 여러 핵심 지표 (복수 가능)
-• goal = 일반 목표 (가벼움)
-• vision = 큰 그림 (추상적)
-
-전략 회의에서 'what's our north star?' = 가장 중요한 거 단 하나만 골라라.",
-      example: '🗣 임원 회의: "Our north star is user retention."
-📊 OKR 문서: "North star metric: weekly active users"
-💬 슬랙: "Does this feature serve our north star?"
-
-자주 같이 쓰는 표현:
-• north star metric
-• align to the north star
-• lose sight of the north star',
-      default: "north (북쪽) + star (별). 항해할 때 북극성 보고 방향 잡듯, 기업도 단 하나의 지향점.
-
-외우기: '북극성' = 절대 안 변하는 기준점. 회사·팀의 '북극성'은 1개뿐.
-
-Silicon Valley 스타트업 용어에서 일반 비즈로 퍼짐. 임원·전략 회의에서 자주 등장.",
+      nuance: "north star = '북극성'. 항해의 길잡이가 되는 단 하나의 별. 비즈니스에선 단 하나의 지향점·KPI.\n\n중요한 건 '단 하나'. 여러 개면 north star 의미 없어.\n\n비슷한 표현 비교:\n• north star metric = 가장 중요한 단일 지표\n• KPI = 여러 핵심 지표 (복수 가능)\n• goal = 일반 목표 (가벼움)\n• vision = 큰 그림 (추상적)\n\n전략 회의에서 'what's our north star?' = 가장 중요한 거 단 하나만 골라라.",
+      example: "🗣 임원 회의: \"Our north star is user retention.\"\n📊 OKR 문서: \"North star metric: weekly active users\"\n💬 슬랙: \"Does this feature serve our north star?\"\n\n자주 같이 쓰는 표현:\n• north star metric\n• align to the north star\n• lose sight of the north star",
+      default: "north (북쪽) + star (별). 항해할 때 북극성 보고 방향 잡듯, 기업도 단 하나의 지향점.\n\n외우기: '북극성' = 절대 안 변하는 기준점. 회사·팀의 '북극성'은 1개뿐.\n\nSilicon Valley 스타트업 용어에서 일반 비즈로 퍼짐. 임원·전략 회의에서 자주 등장.",
     } },
   { day: 27, word: "pushback", pos: "n.", meaning: "반대 의견, 저항", phonetic: "/ˈpʊʃbæk/",
     scene: "16:00, 박 대리가 자리로 와서. 평소답지 않게.",
@@ -2048,35 +1965,14 @@ Silicon Valley 스타트업 용어에서 일반 비즈로 퍼짐. 임원·전략
       promptKo: "이직 결심한 동기에게 솔직한 조언.",
       koSentence: "pushback이 좀 있겠지만, 마음 정했으면 명확하게 솔직하게 말씀드려요." },
     mcOptions: [
-      { text: "There'll be some pushback, but if your mind's made up, be clear and direct.", kind: "correct", note: '✓ 현실 인정(pushback) + 격려(if made up) + 구체적 조언(clear and direct). 동기에게 따뜻한 답.' },
-      { text: 'Resistance is anticipated, however clarity in your decision is paramount.', kind: "formal", note: "교과서. 동기와의 사적 대화에 'resistance', 'paramount' 같은 단어는 어색." },
-      { text: 'I think people might not like it but who knows, just try.', kind: "weak", note: "'might not', 'who knows', 'just try' = 모호함의 끝판왕. pushback 같은 정확한 단어로 잡아줘야 동기가 안심." },
+      { text: "There'll be some pushback, but if your mind's made up, be clear and direct.", kind: "correct", note: "✓ 현실 인정(pushback) + 격려(if made up) + 구체적 조언(clear and direct). 동기에게 따뜻한 답." },
+      { text: "Resistance is anticipated, however clarity in your decision is paramount.", kind: "formal", note: "교과서. 동기와의 사적 대화에 'resistance', 'paramount' 같은 단어는 어색." },
+      { text: "I think people might not like it but who knows, just try.", kind: "weak", note: "'might not', 'who knows', 'just try' = 모호함의 끝판왕. pushback 같은 정확한 단어로 잡아줘야 동기가 안심." },
     ],
     buddyAnswers: {
-      nuance: "pushback = '반대·이의'. resistance보다 비즈니스 톤이고, 협상·이직·전략 결정에서 자주 등장.
-
-반대 표현 강도 비교:
-• disagreement = 의견 차이 (약함)
-• concerns = 우려 (걱정 표현)
-• pushback = 적극적 반대 ← 비즈니스 톤
-• resistance = 저항 (격함, 부정적)
-• opposition = 반대 (강함, 정치적)
-
-pushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나은 결정' 가능.",
-      example: '🗣 회의: "Expecting some pushback on the price increase."
-📧 메일: "Got pushback from legal, let\'s reconvene."
-💬 슬랙: "Heads up, leadership had pushback."
-
-자주 같이 쓰는 표현:
-• expect pushback
-• get pushback
-• push back on X (이의 제기)
-• minimal pushback',
-      default: "push + back. 누가 미는데 뒤로 밀어내기 = 반대.
-
-외우기: 비즈니스 협상은 정말 '서로 미는' 게임. 너 push, 상대 pushback. 균형 잡는 게 핵심.
-
-협상·이직 면담에서 자주 들음. '이의 제기는 자연스러운 일' 정도로 받아들이면 됨.",
+      nuance: "pushback = '반대·이의'. resistance보다 비즈니스 톤이고, 협상·이직·전략 결정에서 자주 등장.\n\n반대 표현 강도 비교:\n• disagreement = 의견 차이 (약함)\n• concerns = 우려 (걱정 표현)\n• pushback = 적극적 반대 ← 비즈니스 톤\n• resistance = 저항 (격함, 부정적)\n• opposition = 반대 (강함, 정치적)\n\npushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나은 결정' 가능.",
+      example: "🗣 회의: \"Expecting some pushback on the price increase.\"\n📧 메일: \"Got pushback from legal, let's reconvene.\"\n💬 슬랙: \"Heads up, leadership had pushback.\"\n\n자주 같이 쓰는 표현:\n• expect pushback\n• get pushback\n• push back on X (이의 제기)\n• minimal pushback",
+      default: "push + back. 누가 미는데 뒤로 밀어내기 = 반대.\n\n외우기: 비즈니스 협상은 정말 '서로 미는' 게임. 너 push, 상대 pushback. 균형 잡는 게 핵심.\n\n협상·이직 면담에서 자주 들음. '이의 제기는 자연스러운 일' 정도로 받아들이면 됨.",
     } },
   { day: 28, word: "in the weeds", pos: "phr.", meaning: "지엽적인 디테일에 빠진 상태", phonetic: "/ɪn ðə wiːdz/",
     scene: "18:30, 사수가 너 책상 옆을 지나가며.",
@@ -2090,38 +1986,14 @@ pushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나
       promptKo: "사수 피드백 받고 자기 인정 + 액션.",
       koSentence: "맞아요, 포맷 디테일에 빠져있었네요, 큰 그림 다시 보고 올게요." },
     mcOptions: [
-      { text: 'Yeah, I was getting too in the weeds with formatting, zooming out now.', kind: "correct", note: '✓ 인정(was getting) + 단어 사용(in the weeds) + 즉시 액션(zooming out). 사수가 좋아할 답.' },
-      { text: 'Indeed, I was overly engrossed in granular details. Course-correcting promptly.', kind: "formal", note: "비즈 컨설팅 톤. 사수와 즉답엔 무거움. 일상 톤으로 'yeah, got it'이 자연스러움." },
+      { text: "Yeah, I was getting too in the weeds with formatting, zooming out now.", kind: "correct", note: "✓ 인정(was getting) + 단어 사용(in the weeds) + 즉시 액션(zooming out). 사수가 좋아할 답." },
+      { text: "Indeed, I was overly engrossed in granular details. Course-correcting promptly.", kind: "formal", note: "비즈 컨설팅 톤. 사수와 즉답엔 무거움. 일상 톤으로 'yeah, got it'이 자연스러움." },
       { text: "Hmm maybe, I'll think about it more later.", kind: "weak", note: "'maybe', 'later' = 인정 회피 + 액션 지연. in the weeds 피드백은 즉시 step back이 정답." },
     ],
     buddyAnswers: {
-      nuance: "in the weeds = '잡초 속에 빠진' = 세부에 매몰. 사수가 신입한테 가장 자주 해주는 말 중 하나.
-
-반대 개념:
-• big picture = 큰 그림
-• 30,000-foot view = 비행 고도 시점
-• zoom out = 한 발 물러서기
-
-비슷한 표현:
-• in the weeds = 디테일에 빠짐 ← 가장 흔함
-• down in the details = 같은 의미
-• rabbit hole = 토끼굴 (더 심각)
-• analysis paralysis = 분석 마비
-
-사수가 'in the weeds 빠진 거 아냐?' = step back 하라는 신호.",
-      example: '🗣 1:1: "You\'re getting in the weeds, let\'s zoom out."
-💬 슬랙: "Don\'t want to get in the weeds, just need the headline."
-📊 회의: "This is too in the weeds for an exec audience."
-
-자주 같이 쓰는 표현:
-• get/be in the weeds
-• too in the weeds
-• zoom out from the weeds',
-      default: 'in + the + weeds (잡초). 정원사가 잡초 뽑다가 큰 그림 못 보는 이미지.
-
-외우기: 잡초 뽑기 = 세부 작업. 너무 오래 하면 정원 전체 안 보임. 비즈니스도 같음.
-
-사수가 \'in the weeds\' 말하면 = \'잠깐 멈추고 큰 그림 봐\'. 받았을 때 "You\'re right, let me zoom out" 한 마디면 충분.',
+      nuance: "in the weeds = '잡초 속에 빠진' = 세부에 매몰. 사수가 신입한테 가장 자주 해주는 말 중 하나.\n\n반대 개념:\n• big picture = 큰 그림\n• 30,000-foot view = 비행 고도 시점\n• zoom out = 한 발 물러서기\n\n비슷한 표현:\n• in the weeds = 디테일에 빠짐 ← 가장 흔함\n• down in the details = 같은 의미\n• rabbit hole = 토끼굴 (더 심각)\n• analysis paralysis = 분석 마비\n\n사수가 'in the weeds 빠진 거 아냐?' = step back 하라는 신호.",
+      example: "🗣 1:1: \"You're getting in the weeds, let's zoom out.\"\n💬 슬랙: \"Don't want to get in the weeds, just need the headline.\"\n📊 회의: \"This is too in the weeds for an exec audience.\"\n\n자주 같이 쓰는 표현:\n• get/be in the weeds\n• too in the weeds\n• zoom out from the weeds",
+      default: "in + the + weeds (잡초). 정원사가 잡초 뽑다가 큰 그림 못 보는 이미지.\n\n외우기: 잡초 뽑기 = 세부 작업. 너무 오래 하면 정원 전체 안 보임. 비즈니스도 같음.\n\n사수가 'in the weeds' 말하면 = '잠깐 멈추고 큰 그림 봐'. 받았을 때 \"You're right, let me zoom out\" 한 마디면 충분.",
     } },
   { day: 29, word: "take a stab", pos: "phr.", meaning: "한 번 시도해보다", phonetic: "/teɪk ə stæb/",
     scene: "09:30, 김 팀장이 너에게.",
@@ -2136,35 +2008,13 @@ pushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나
       koSentence: "네, 한 번 take a stab 해보고 오늘 퇴근 전까지 초안 공유드릴게요." },
     mcOptions: [
       { text: "Sure, I'll take a stab at the deck and share a rough draft by EOD.", kind: "correct", note: "✓ 'Sure' 가볍게 수락 + 단어 사용(take a stab) + 시점(EOD) + 형태 명시(rough draft). 사수가 안심하는 답." },
-      { text: 'I shall undertake the initial slide preparation expeditiously.', kind: "formal", note: "변호사 답변. 'undertake', 'expeditiously' = 신입한테 부담 줄이려는 사수에게 정반대 톤." },
+      { text: "I shall undertake the initial slide preparation expeditiously.", kind: "formal", note: "변호사 답변. 'undertake', 'expeditiously' = 신입한테 부담 줄이려는 사수에게 정반대 톤." },
       { text: "Hmm I'm not sure I can do that, never made slides before.", kind: "weak", note: "'not sure', 'never before' = 부정적 자기인식. take a stab는 '완벽 안 해도 OK' 신호인데 거절은 신뢰 깎임." },
     ],
     buddyAnswers: {
-      nuance: 'take a stab = \'한 번 찔러봐\' = 완벽 안 해도 OK, 시도해봐. 신입한테 부담 줄여주는 표현.
-
-시도 표현 비교:
-• take a stab = 가볍게 시도 (실패해도 OK 신호) ← 추천
-• give it a shot = 한 번 해봐 (비슷함)
-• take a crack at = 도전해봐 (강함)
-• attempt = 시도 (격식, 무거움)
-
-받았을 때 좋은 답:
-• "Sure, I\'ll take a stab and share a draft."
-• \'try\'보다 적극적, \'do\'보다 부담 적음.',
-      example: '🗣 미팅: "Want to take a stab at the proposal?"
-📧 메일: "Taking a stab at the budget, draft attached."
-💬 슬랙: "Took a stab at it, let me know what to improve."
-
-자주 같이 쓰는 표현:
-• take a stab at [무엇]
-• first stab (첫 시도)
-• rough stab (대략적 시도)
-• give it another stab',
-      default: "stab = '찌르다'. 완벽한 게 아니라 '일단 한 번 찔러본다' 이미지.
-
-외우기: 처음 만든 초안 = first stab. 칼로 정확히 자르는 게 아니라 일단 찔러봄. 부담 없이.
-
-사수가 'take a stab' = '완벽 안 해도 돼, 일단 시작'. 신입한테 가장 따뜻한 한 마디.",
+      nuance: "take a stab = '한 번 찔러봐' = 완벽 안 해도 OK, 시도해봐. 신입한테 부담 줄여주는 표현.\n\n시도 표현 비교:\n• take a stab = 가볍게 시도 (실패해도 OK 신호) ← 추천\n• give it a shot = 한 번 해봐 (비슷함)\n• take a crack at = 도전해봐 (강함)\n• attempt = 시도 (격식, 무거움)\n\n받았을 때 좋은 답:\n• \"Sure, I'll take a stab and share a draft.\"\n• 'try'보다 적극적, 'do'보다 부담 적음.",
+      example: "🗣 미팅: \"Want to take a stab at the proposal?\"\n📧 메일: \"Taking a stab at the budget, draft attached.\"\n💬 슬랙: \"Took a stab at it, let me know what to improve.\"\n\n자주 같이 쓰는 표현:\n• take a stab at [무엇]\n• first stab (첫 시도)\n• rough stab (대략적 시도)\n• give it another stab",
+      default: "stab = '찌르다'. 완벽한 게 아니라 '일단 한 번 찔러본다' 이미지.\n\n외우기: 처음 만든 초안 = first stab. 칼로 정확히 자르는 게 아니라 일단 찔러봄. 부담 없이.\n\n사수가 'take a stab' = '완벽 안 해도 돼, 일단 시작'. 신입한테 가장 따뜻한 한 마디.",
     } },
   { day: 30, word: "milestone", pos: "n.", meaning: "수습 종료, 가장 큰 이정표 ⭐", phonetic: "/ˈmaɪlstoʊn/",
     scene: "14:00, 부장실 1대1. 김 팀장이 미소. 책상 위에 작은 손글씨 메모, '수고했어., 회장'",
@@ -2178,39 +2028,14 @@ pushback 받으면 무조건 나쁜 게 아님. '이의 제기를 통한 더 나
       promptKo: "수습 종료 milestone, 본인 의지 솔직히.",
       koSentence: "Marketing에 한 분기 더 있고 싶고, 장기적으로 BD가 궁금해요." },
     mcOptions: [
-      { text: "Stay in Marketing one more quarter, but I'd love to explore BD long-term.", kind: "correct", note: '✓ 현재 선택(Marketing) + 미래 의지(BD long-term). 명확하고 솔직한 정규직 답변.' },
-      { text: 'I respectfully request continued tenure in Marketing with future BD aspirations.', kind: "formal", note: '공식 발령 신청서 톤. 김 팀장과의 1:1 자리엔 무거움. 정규직 전환은 마음 편히 솔직하게.' },
-      { text: 'I dunno, wherever you want to put me is fine.', kind: "weak", note: "'I dunno', 'wherever' = 본인 의지 없음. milestone 자리에선 자신의 방향성을 보여주는 게 핵심." },
+      { text: "Stay in Marketing one more quarter, but I'd love to explore BD long-term.", kind: "correct", note: "✓ 현재 선택(Marketing) + 미래 의지(BD long-term). 명확하고 솔직한 정규직 답변." },
+      { text: "I respectfully request continued tenure in Marketing with future BD aspirations.", kind: "formal", note: "공식 발령 신청서 톤. 김 팀장과의 1:1 자리엔 무거움. 정규직 전환은 마음 편히 솔직하게." },
+      { text: "I dunno, wherever you want to put me is fine.", kind: "weak", note: "'I dunno', 'wherever' = 본인 의지 없음. milestone 자리에선 자신의 방향성을 보여주는 게 핵심." },
     ],
     buddyAnswers: {
-      nuance: "milestone = 도로의 '이정표'. 큰 단계나 분기점.
-
-비슷한 표현 비교:
-• milestone = 큰 분기점 (가장 무거움) ← 추천
-• checkpoint = 점검 지점 (가벼움)
-• deadline = 마감 (시간 단위)
-• goal = 일반 목표 (방향)
-• benchmark = 기준점 (비교용)
-
-프로젝트에서 milestone:
-• 30-day milestone (수습 종료)
-• Q1 milestone (분기 종료)
-• product launch milestone (출시 분기점)
-• personal milestone (개인 성장)",
-      example: '🎉 1:1: "Congrats on the 30-day milestone!"
-📊 보고서: "Q2 milestones achieved, see attached."
-📅 캘린더: "Milestone review, Q3 kickoff"
-
-자주 같이 쓰는 표현:
-• hit a milestone
-• reach the milestone
-• major milestone
-• mark the milestone (기념)',
-      default: "mile (마일) + stone (돌). 옛날 도로에 1마일마다 박아둔 돌 = 거리 표시 이정표.
-
-외우기: '여기까지 왔구나' 표시. 단순 도달이 아니라 '의미 있는 단계' 통과.
-
-수습 종료, 정규직 전환, 첫 단독 프로젝트, 모두 milestone. 자축하고 다음으로.",
+      nuance: "milestone = 도로의 '이정표'. 큰 단계나 분기점.\n\n비슷한 표현 비교:\n• milestone = 큰 분기점 (가장 무거움) ← 추천\n• checkpoint = 점검 지점 (가벼움)\n• deadline = 마감 (시간 단위)\n• goal = 일반 목표 (방향)\n• benchmark = 기준점 (비교용)\n\n프로젝트에서 milestone:\n• 30-day milestone (수습 종료)\n• Q1 milestone (분기 종료)\n• product launch milestone (출시 분기점)\n• personal milestone (개인 성장)",
+      example: "🎉 1:1: \"Congrats on the 30-day milestone!\"\n📊 보고서: \"Q2 milestones achieved, see attached.\"\n📅 캘린더: \"Milestone review, Q3 kickoff\"\n\n자주 같이 쓰는 표현:\n• hit a milestone\n• reach the milestone\n• major milestone\n• mark the milestone (기념)",
+      default: "mile (마일) + stone (돌). 옛날 도로에 1마일마다 박아둔 돌 = 거리 표시 이정표.\n\n외우기: '여기까지 왔구나' 표시. 단순 도달이 아니라 '의미 있는 단계' 통과.\n\n수습 종료, 정규직 전환, 첫 단독 프로젝트, 모두 milestone. 자축하고 다음으로.",
     } },
 ];
 
