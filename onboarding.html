@@ -638,6 +638,7 @@ function LoginScreen({ onBack }) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleLogin = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -654,74 +655,56 @@ function LoginScreen({ onBack }) {
     setLoading(true);
     setError("");
 
-    const result = await window.OD.fetchByEmail(trimmed);
-
-    if (!result.ok) {
+    // 가입 기록 먼저 확인 (매직 링크 보내기 전)
+    const check = await window.OD.fetchByEmail(trimmed);
+    if (!check.ok) {
       setLoading(false);
       setError("연결 실패. 잠시 후 다시 시도해주세요.");
       return;
     }
-
-    if (!result.user) {
+    if (!check.user) {
       setLoading(false);
       setError("가입 기록이 없어요. 처음이신 분은 지원서 작성하기로 이동해주세요.");
       return;
     }
 
-    // Supabase row → localStorage 프로필 형식으로 복원
-    const u = result.user;
-    const profile = {
-      email: u.email,
-      name: u.name,
-      signupDate: u.signup_date,
-      empNumber: u.emp_number,
-      department: u.department,
-      mentor: u.mentor,
-      coworkers: u.coworkers || [],
-      level: u.level,
-      unlocked: u.unlocked === true,
-      dayInCompany: u.day_in_company || 1,
-      productionAttempts: u.production_attempts || { correct: 0, total: 0 },
-      noveltyEvents: u.novelty_events || [],
-      scenariosCompleted: u.scenarios_completed || [],
-      savedNotes: u.saved_notes || {},
-      wordsStudied: u.words_studied || [],
-      lastActive: new Date().toISOString(),
-      totalSessions: (u.total_sessions || 0) + 1,
-      totalSessionMs: u.total_session_ms || 0,
-      preferences: u.preferences || { notifications: true, timezone: "Asia/Seoul" },
-      onboardingMotivation: u.onboarding_motivation || "",
-      cohort: u.cohort || null,
-      schemaVersion: u.schema_version || 1,
-      isOperator: !!u.is_operator,
-      isPilotHire: !!u.is_pilot_hire,
-      isDevMode: !!u.is_dev_mode,
-      isTester: !!u.is_tester,
-    };
-
-    try {
-      // 다른 계정으로 로그인 시 이전 계정의 브라우저 단위 잔여 데이터 제거
-      clearStaleLocalData();
-      localStorage.setItem("__OD_USER", JSON.stringify(profile));
-    } catch (e) {
-      console.warn("localStorage 저장 실패", e);
+    // 매직 링크 발송
+    const result = await window.OD.sendMagicLink(trimmed);
+    setLoading(false);
+    if (!result.ok) {
+      setError("로그인 메일 발송 실패: " + (result.error || "잠시 후 다시"));
+      return;
     }
-
-    // 역할별 redirect
-    // - 운영자 → operator.html
-    // - 내부 테스터(DevMode) → mainboard.html?dev=1
-    // - unlocked === true (이전에 코드로 입장했던 사용자) → mainboard.html 직행
-    // - 그 외 → simulator.html (출근 대기실)
-    if (profile.isOperator) {
-      window.location.href = "operator.html";
-    } else if (profile.isDevMode) {
-      window.location.href = "mainboard.html?dev=1";
-    } else if (profile.unlocked === true) {
-      window.location.href = "mainboard.html";
-    } else {
-      window.location.href = "simulator.html";
-    }
+    setSent(true);
   };
+
+  // 매직 링크 발송 완료 화면
+  if (sent) {
+    return (
+      <div className="card">
+        <div className="eyebrow">YOUBUDDY KOREA · 메일 확인</div>
+        <h1>✉️ 메일함을<br/><em>확인해주세요</em></h1>
+        <p className="lead">
+          <strong>{email}</strong> 으로 로그인 링크를 보냈어요.<br/>
+          메일에 있는 버튼을 클릭하시면 30일 동안 자동 로그인 유지됩니다.
+        </p>
+        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginTop: 8 }}>
+          💡 메일이 안 보이시면:<br/>
+          · <strong>스팸함</strong>도 확인해보세요<br/>
+          · 메일 30분 안에 클릭해주세요 (그 후엔 만료)<br/>
+          · 같은 이메일로 다시 신청하면 새 링크 발송돼요
+        </div>
+        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 8, marginTop: 18 }}>
+          <button className="btn btn-ghost" onClick={() => { setSent(false); setEmail(""); }} style={{ justifyContent: "center" }}>
+            다른 이메일로 다시 시도
+          </button>
+          <a onClick={onBack} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}>
+            ← 처음 화면으로
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card">
@@ -758,7 +741,7 @@ function LoginScreen({ onBack }) {
           disabled={loading || !email.trim()}
           style={{ justifyContent: "center" }}
         >
-          {loading ? "확인 중..." : "🏢 다시 출근하기"}
+          {loading ? "메일 보내는 중..." : "✉️ 로그인 메일 받기"}
         </button>
         <a
           onClick={onBack}
@@ -769,7 +752,7 @@ function LoginScreen({ onBack }) {
       </div>
 
       <div className="fine-print" style={{ marginTop: 12 }}>
-        비밀번호 없이 이메일만으로 진도 복원 · v1.5에 정식 인증 도입 예정
+        비밀번호 없이 메일로 인증 · 한 번 로그인하면 <strong>30일간</strong> 자동 유지
       </div>
     </div>
   );

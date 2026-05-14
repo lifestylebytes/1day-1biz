@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비 · 로그인 처리 중</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+  --danger: #B8431A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 20px;
+}
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 48px 40px;
+  max-width: 480px; width: 100%;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.25);
+  text-align: center;
+}
+.eyebrow {
+  font-size: 11px; letter-spacing: 0.22em; font-weight: 800;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 18px;
+}
+h1 { font-size: 22px; font-weight: 900; line-height: 1.4; margin-bottom: 16px; letter-spacing: -0.01em; }
+.lead { font-size: 14px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 20px; word-break: keep-all; }
+.spinner {
+  width: 36px; height: 36px; margin: 16px auto;
+  border: 3px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn {
+  display: inline-block; padding: 12px 24px; font-size: 14px; font-weight: 700;
+  background: var(--ink); color: var(--paper); border: none; border-radius: 8px;
+  cursor: pointer; text-decoration: none; font-family: inherit;
+}
+.btn:hover { background: #1a120a; }
+.err { color: var(--danger); font-size: 13px; line-height: 1.6; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="eyebrow">YOUBUDDY KOREA · 로그인</div>
+  <h1>로그인 처리 중…</h1>
+  <div class="spinner"></div>
+  <p class="lead" id="msg">잠시만요, 인증 정보 확인하고 있어요.</p>
+</div>
+
+<script>
+(async function() {
+  const card = document.getElementById('card');
+  const msg = document.getElementById('msg');
+
+  function showError(text) {
+    card.innerHTML = `
+      <div class="eyebrow" style="color: var(--danger)">YOUBUDDY KOREA · 로그인 실패</div>
+      <h1>로그인이 안 됐어요</h1>
+      <p class="lead">${text}</p>
+      <p class="err">메일에 받은 링크가 이미 사용됐거나 30분이 지났을 수 있어요.</p>
+      <div style="margin-top: 20px;">
+        <a href="onboarding.html" class="btn">처음 화면으로 →</a>
+      </div>
+    `;
+  }
+
+  // window.OD 로드 대기
+  let tries = 0;
+  while ((!window.OD || !window.OD.enabled) && tries < 40) {
+    await new Promise(r => setTimeout(r, 100));
+    tries++;
+  }
+  if (!window.OD || !window.OD.enabled) {
+    showError('서버 연결이 안 돼요. 인터넷 상태를 확인해주세요.');
+    return;
+  }
+
+  try {
+    // Supabase JS SDK가 URL hash의 토큰을 자동 처리. 잠깐 대기.
+    await new Promise(r => setTimeout(r, 400));
+    const { ok, session } = await window.OD.getCurrentSession();
+    if (!ok || !session || !session.user) {
+      showError('인증 정보를 찾을 수 없어요.');
+      return;
+    }
+    const email = session.user.email;
+    if (!email) {
+      showError('이메일 정보를 가져오지 못했어요.');
+      return;
+    }
+
+    msg.textContent = '학습 데이터 불러오는 중…';
+
+    // 기존 user row 확인 및 localStorage 복원
+    const result = await window.OD.fetchByEmail(email);
+    if (!result.ok || !result.user) {
+      showError('가입 기록이 없어요. 처음 가입은 지원서 작성을 통해서만 가능해요.');
+      return;
+    }
+    const u = result.user;
+
+    // localStorage 프로필 구성
+    const profile = {
+      email: u.email,
+      name: u.name,
+      signupDate: u.signup_date,
+      empNumber: u.emp_number,
+      department: u.department,
+      mentor: u.mentor,
+      coworkers: u.coworkers || [],
+      level: u.level,
+      unlocked: u.unlocked === true,
+      dayInCompany: u.day_in_company || 1,
+      productionAttempts: u.production_attempts || { correct: 0, total: 0 },
+      noveltyEvents: u.novelty_events || [],
+      scenariosCompleted: u.scenarios_completed || [],
+      savedNotes: u.saved_notes || {},
+      wordsStudied: u.words_studied || [],
+      lastActive: new Date().toISOString(),
+      totalSessions: (u.total_sessions || 0) + 1,
+      preferences: u.preferences || { notifications: true, timezone: 'Asia/Seoul' },
+      onboardingMotivation: u.onboarding_motivation || '',
+      cohort: u.cohort || null,
+      schemaVersion: u.schema_version || 1,
+      isOperator: !!u.is_operator,
+      isPilotHire: !!u.is_pilot_hire,
+      isDevMode: !!u.is_dev_mode,
+      isTester: !!u.is_tester,
+    };
+
+    // 이전 사용자 잔여 데이터 정리 (다른 계정으로 들어왔을 가능성)
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k === '__OD_USER' || k.startsWith('__OD_TASKS_') || k.startsWith('__OD_TOUR_') || k.startsWith('__OD_NOTICE_READS_') || k.startsWith('__OD_WEEKEND_'))) {
+        localStorage.removeItem(k);
+      }
+    }
+    localStorage.setItem('__OD_USER', JSON.stringify(profile));
+
+    // 역할별 redirect
+    if (profile.isOperator)        window.location.replace('operator.html');
+    else if (profile.isDevMode)    window.location.replace('mainboard.html?dev=1');
+    else if (profile.unlocked)     window.location.replace('mainboard.html');
+    else                           window.location.replace('simulator.html');
+  } catch (e) {
+    console.error(e);
+    showError('처리 중 오류가 발생했어요: ' + (e.message || e));
+  }
+})();
+</script>
+</body>
+</html>
