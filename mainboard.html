@@ -3865,8 +3865,12 @@ function _saveCompletion(entry) {
     if (idx >= 0) u.scenariosCompleted[idx] = entry;
     else u.scenariosCompleted.push(entry);
     localStorage.setItem("__OD_USER", JSON.stringify(u));
-    // Supabase 동기화 (실패해도 로컬은 진행)
-    if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
+
+    // ★ atomic merge RPC 사용 (덮어쓰기 방지 + history 영구 기록)
+    if (window.OD && window.OD.enabled && window.OD.saveScenarioAtomic && u.email) {
+      window.OD.saveScenarioAtomic(u.email, entry).catch(() => {});
+    } else if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
+      // RPC 없으면 fallback (old client, 일시적)
       window.OD.updateProgress(u.email, { scenarios_completed: u.scenariosCompleted }).catch(() => {});
     }
   } catch (e) { console.warn("saveCompletion failed:", e); }
@@ -3928,8 +3932,12 @@ function SceneModal({ scenario, onClose }) {
         text, savedAt: new Date().toISOString(),
       });
       localStorage.setItem("__OD_USER", JSON.stringify(u));
-      // Supabase sync (있으면)
-      if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
+
+      // ★ atomic merge RPC (덮어쓰기 방지 + 중복 제거 + history 영구 기록)
+      const noteEntry = u.savedNotes[dayKey][u.savedNotes[dayKey].length - 1];
+      if (window.OD && window.OD.enabled && window.OD.saveNoteAtomic && u.email) {
+        window.OD.saveNoteAtomic(u.email, dayKey, noteEntry).catch(() => {});
+      } else if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
         window.OD.updateProgress(u.email, { saved_notes: u.savedNotes }).catch(() => {});
       }
       return true;
