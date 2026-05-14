@@ -338,9 +338,19 @@ function OnboardingApp() {
         return;
       }
       if (window.OD && window.OD.enabled) {
+        // 1) 코드 검증
         const result = await window.OD.checkInviteCode(code);
         if (!result || !result.valid) {
           setSubmitError("유효하지 않은 초대 코드예요. 다시 확인해주세요.");
+          setSubmitting(false);
+          return;
+        }
+        // 2) ★ 중복 가입 가드 — 같은 이메일이 이미 users 테이블에 있으면 차단
+        //    덮어쓰기로 기존 진도가 통째로 날라가는 사고 방지.
+        const emailTrimmed = (email || "").trim().toLowerCase();
+        const existing = await window.OD.fetchByEmail(emailTrimmed);
+        if (existing && existing.ok && existing.user) {
+          setSubmitError("이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
           setSubmitting(false);
           return;
         }
@@ -453,6 +463,13 @@ function OnboardingApp() {
           if (verifiedCode && window.OD.incrementCodeUsage) {
             try { await window.OD.incrementCodeUsage(verifiedCode); } catch (_) {}
           }
+        } else if (result.duplicate) {
+          // ★ 클라이언트 가드 우회 또는 race condition 으로 서버가 중복 거부한 경우
+          //    잘못 만든 localStorage 프로필을 즉시 제거해서 다른 계정 진입 방지
+          try { localStorage.removeItem("__OD_USER"); } catch (_) {}
+          alert("이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
+          window.location.href = "onboarding.html";
+          return;
         }
       } catch (err) {
         console.warn("[Supabase] 가입 동기화 실패, localStorage만 진행:", err);

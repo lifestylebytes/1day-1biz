@@ -3854,6 +3854,62 @@ function MyPage() {
 }
 
 // ============================================================
+// 영어 동사 활용형 생성기, "loop" → [loop, loops, looped, looping]
+// 룰: 3인칭 단수 -s/-es/-ies, 과거 -ed/-d/-ied/-CVCed, 진행 -ing/-CVCing/-e+ing
+// 완벽한 형태소 분석 아님, 흔한 활용형 다 잡기 위한 휴리스틱
+// ============================================================
+function _verbForms(v) {
+  v = (v || "").toLowerCase();
+  if (!v) return [];
+  const forms = new Set([v]);
+  const last = v.slice(-1);
+  const last2 = v.slice(-2);
+  // 3인칭 단수
+  if (/(s|x|z|ch|sh)$/.test(v))      forms.add(v + "es");
+  else if (/[^aeiou]y$/.test(v))     forms.add(v.slice(0, -1) + "ies");
+  else                                forms.add(v + "s");
+  // 과거형
+  if (last === "e")                  forms.add(v + "d");
+  else if (/[^aeiou]y$/.test(v))     forms.add(v.slice(0, -1) + "ied");
+  else if (/[^aeiou][aeiou][^aeiouwxy]$/.test(v) && v.length >= 3) {
+    forms.add(v + last + "ed");      // CVC: stop → stopped
+    forms.add(v + "ed");
+  } else                              forms.add(v + "ed");
+  // 진행형 -ing
+  if (last === "e" && last2 !== "ee" && v.length > 2) forms.add(v.slice(0, -1) + "ing");
+  else if (/[^aeiou][aeiou][^aeiouwxy]$/.test(v) && v.length >= 3) {
+    forms.add(v + last + "ing");     // stopping
+    forms.add(v + "ing");
+  } else                              forms.add(v + "ing");
+  return [...forms];
+}
+
+function _escapeRegex(s) {
+  return (s || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// 문장에 타깃 단어가 들어있는지 (활용형 포함) 검사.
+// 1차: 그대로 substring 매치 (가장 빠름, 명사·약어·하이픈 단어에 강함)
+// 2차: 첫 토큰을 동사로 보고 활용형 정규식, 다중어 구는 인접 매치 가정
+//     예) target "loop in", sentence "looping in @design-lead" → 매치
+function _hasTargetWord(sentence, targetWord) {
+  if (!targetWord || !sentence) return false;
+  const lower = sentence.toLowerCase();
+  const target = (targetWord || "").toLowerCase().trim();
+  if (!target) return false;
+  if (lower.includes(target)) return true;
+  const tokens = target.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return false;
+  const head = "(?:" + _verbForms(tokens[0]).map(_escapeRegex).join("|") + ")";
+  const tail = tokens.slice(1).map(_escapeRegex).join("\\s+");
+  const pattern = tail
+    ? "(^|[^a-z])" + head + "\\s+" + tail + "([^a-z]|$)"
+    : "(^|[^a-z])" + head + "([^a-z]|$)";
+  try { return new RegExp(pattern, "i").test(sentence); }
+  catch (_) { return false; }
+}
+
+// ============================================================
 // 사수 피드백, 룰 기반 (5체크 + 시나리오별 코멘트)
 // ============================================================
 function _classifyMentorFeedback(sentence, scenario) {
@@ -3861,7 +3917,7 @@ function _classifyMentorFeedback(sentence, scenario) {
   const lower = sentence.toLowerCase();
   const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
 
-  const hasWord    = lower.includes(word);
+  const hasWord    = _hasTargetWord(sentence, scenario.word);
   const tooFormal  = /\b(pursuant|kindly|hereby|aforementioned|herein|thereof|wherein)\b/i.test(sentence);
   const tooCasual  = /\byo\b|\bhey\b|\blol\b|\bomg\b|\bpls\b|\bthx\b/i.test(sentence);
   const hasAction  = /\bI'll\b|\bI will\b|\blet me\b|\bI'm\s+(?:going|gonna)\b|\bI can\b/i.test(sentence);
