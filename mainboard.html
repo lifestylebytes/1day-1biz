@@ -3649,6 +3649,43 @@ function MyPage() {
     window.location.href = "onboarding.html";
   };
 
+  // 회원 탈퇴 (30일 유예 후 영구 삭제)
+  const [withdrawing, setWithdrawing] = useState(false);
+  const handleWithdraw = async () => {
+    const ok = confirm(
+      "정말 탈퇴하시겠어요?\n\n" +
+      "· 탈퇴 신청 후 30일 동안은 같은 이메일로 복구 요청 가능해요\n" +
+      "· 30일 후 모든 학습 데이터·노트가 영구 삭제됩니다\n" +
+      "· 이 작업은 되돌릴 수 없어요"
+    );
+    if (!ok) return;
+    const reconfirm = prompt("확인을 위해 '탈퇴'를 입력해주세요.");
+    if (reconfirm !== "탈퇴") {
+      alert("취소됐어요. 탈퇴를 원하시면 정확히 '탈퇴' 두 글자를 입력해주세요.");
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      if (window.OD && window.OD.enabled && window.OD.client && USER.email) {
+        const { error } = await window.OD.client
+          .from("users")
+          .update({ withdrawn_at: new Date().toISOString() })
+          .eq("email", USER.email);
+        if (error) throw error;
+      }
+      // localStorage 비우고 안내 화면
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("__OD_")) localStorage.removeItem(k);
+      }
+      alert("탈퇴가 정상 접수됐어요.\n30일 안에 같은 이메일로 가입하시면 복구 가능합니다.\n그 외엔 모든 데이터가 영구 삭제됩니다.\n그동안 함께해주셔서 감사해요.");
+      window.location.href = "onboarding.html";
+    } catch (e) {
+      alert("탈퇴 처리 중 오류가 발생했어요: " + (e.message || e));
+      setWithdrawing(false);
+    }
+  };
+
   return (
     <div>
       <div className="desk-header">
@@ -3783,6 +3820,31 @@ function MyPage() {
             </div>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "4px 18px 14px", lineHeight: 1.5 }}>
               이 기기에서만 로그아웃돼요. 진도는 서버에 안전하게 저장, 같은 이메일로 다시 들어오면 그대로 이어져요.
+            </div>
+
+            {/* 회원 탈퇴 (개인정보보호법 준수: 데이터 삭제 권리) */}
+            <div className="hr-row" style={{ borderTop: "1px dashed var(--line)", paddingTop: 14, marginTop: 6 }}>
+              <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>회원 탈퇴</span>
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawing}
+                style={{
+                  background: "transparent", border: "1px solid #B8431A",
+                  color: "#B8431A", padding: "6px 14px", borderRadius: 6,
+                  fontSize: 12, fontWeight: 600, cursor: withdrawing ? "wait" : "pointer",
+                  opacity: withdrawing ? 0.6 : 1,
+                }}
+              >
+                {withdrawing ? "처리 중..." : "🗑 탈퇴하기"}
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "4px 18px 14px", lineHeight: 1.5 }}>
+              탈퇴 신청 후 30일 유예 기간이 지나면 모든 학습 데이터·노트가 영구 삭제됩니다.
+              유예 기간 안에 같은 이메일로 재가입하시면 복구 가능해요.
+              <br/>
+              <a href="privacy.html" target="_blank" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>개인정보처리방침</a>
+              {" · "}
+              <a href="terms.html" target="_blank" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>이용약관</a>
             </div>
           </>
         )}

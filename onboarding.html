@@ -390,6 +390,8 @@ function OnboardingApp() {
       email: email.trim(),
       name: name.trim(),
       signupDate: new Date().toISOString(),
+      // 법적 동의 기록 (PIPA 의무) - 가입 시점에 약관·개인정보·만 14세 모두 체크됨
+      agreedAt: new Date().toISOString(),
       // 가입 단계에서 코드 검증 통과한 사용자는 unlock 마킹 (mainboard 직행)
       unlocked: true,
       // fictional identity
@@ -777,7 +779,16 @@ function LoginScreen({ onBack }) {
 // 1. Application Form
 // ============================================================
 function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0;
+  // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
+  const [agreeAge, setAgreeAge] = React.useState(false);
+  const [agreeTerms, setAgreeTerms] = React.useState(false);
+  const [agreePrivacy, setAgreePrivacy] = React.useState(false);
+  const allAgreed = agreeAge && agreeTerms && agreePrivacy;
+  const toggleAll = () => {
+    const next = !allAgreed;
+    setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
+  };
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -821,8 +832,66 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
         <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
       </div>
 
-      {/* Dev 모드 토글 UI 제거, 베타테스터(PILOT)는 일반 사용자 흐름으로만 진입.
-          운영자는 ?dev=1 / operator.html 직접 접근으로 분리 */}
+      {/* ── 법적 동의 (필수) ── */}
+      <div style={{
+        marginTop: 18, padding: "14px 16px",
+        background: "var(--paper-warm)",
+        border: "1px solid var(--line)",
+        borderRadius: 8,
+      }}>
+        <label
+          onClick={toggleAll}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            cursor: "pointer", marginBottom: 10,
+            fontSize: 13, fontWeight: 800, color: "var(--ink)",
+            textTransform: "none", letterSpacing: "normal",
+            paddingBottom: 8, borderBottom: "1px dashed var(--line)",
+          }}
+        >
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 18, height: 18, borderRadius: 4,
+            border: "1.5px solid " + (allAgreed ? "var(--accent)" : "var(--line)"),
+            background: allAgreed ? "var(--accent)" : "transparent",
+            color: "#fff", fontSize: 11, fontWeight: 900,
+          }}>{allAgreed ? "✓" : ""}</span>
+          전체 동의 (필수)
+        </label>
+
+        {[
+          { v: agreeAge,     set: setAgreeAge,     text: "만 14세 이상입니다.", req: true, link: null },
+          { v: agreeTerms,   set: setAgreeTerms,   text: "이용약관에 동의합니다.", req: true, link: "terms.html" },
+          { v: agreePrivacy, set: setAgreePrivacy, text: "개인정보처리방침에 동의합니다 (Supabase 미국 서버 국외 이전 포함).", req: true, link: "privacy.html" },
+        ].map((it, i) => (
+          <label key={i} onClick={() => it.set(!it.v)} style={{
+            display: "flex", alignItems: "flex-start", gap: 8,
+            cursor: "pointer", marginBottom: 6,
+            fontSize: 12.5, color: "var(--ink-soft)",
+            textTransform: "none", letterSpacing: "normal", fontWeight: 500,
+            lineHeight: 1.55,
+          }}>
+            <span style={{
+              flexShrink: 0,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 16, height: 16, borderRadius: 3,
+              border: "1.5px solid " + (it.v ? "var(--accent)" : "var(--line)"),
+              background: it.v ? "var(--accent)" : "transparent",
+              color: "#fff", fontSize: 10, fontWeight: 900,
+              marginTop: 1,
+            }}>{it.v ? "✓" : ""}</span>
+            <span style={{ flex: 1 }}>
+              <span style={{ color: "var(--accent)", fontWeight: 700 }}>[필수]</span> {it.text}
+              {it.link && (
+                <a href={it.link} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}
+                   style={{ marginLeft: 6, fontSize: 11.5, color: "var(--ink-mute)", textDecoration: "underline" }}>
+                  전문 보기
+                </a>
+              )}
+            </span>
+          </label>
+        ))}
+      </div>
 
       {submitError && (
         <div style={{

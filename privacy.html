@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비 · 개인정보처리방침</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 40px 20px 60px;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 8px 8px;
+}
+
+.doc {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 48px 44px;
+  max-width: 720px;
+  margin: 0 auto;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.2), 0 8px 24px rgba(58,40,18,0.06);
+}
+.eyebrow {
+  font-size: 11px; letter-spacing: 0.22em; font-weight: 800;
+  color: var(--accent); text-transform: uppercase;
+  margin-bottom: 14px;
+}
+h1 {
+  font-size: 26px; font-weight: 900; letter-spacing: -0.02em;
+  line-height: 1.3; margin-bottom: 8px;
+}
+.meta {
+  font-size: 12px; color: var(--ink-mute); margin-bottom: 32px;
+  padding-bottom: 18px; border-bottom: 1px dashed var(--line);
+}
+
+section { margin-top: 26px; }
+h2 {
+  font-size: 16px; font-weight: 800; letter-spacing: -0.01em;
+  margin-bottom: 10px; color: var(--ink);
+}
+p, li {
+  font-size: 13.5px; color: var(--ink-soft); line-height: 1.8;
+  word-break: keep-all;
+}
+ul, ol { margin: 8px 0 8px 22px; }
+li { margin-bottom: 4px; }
+
+.highlight {
+  background: var(--paper-warm); border-left: 3px solid var(--accent);
+  padding: 12px 16px; border-radius: 4px; margin: 12px 0;
+  font-size: 13px; color: var(--ink); line-height: 1.7;
+}
+.contact-card {
+  background: var(--paper-warm); border: 1px dashed var(--line);
+  border-radius: 6px; padding: 14px 16px; margin-top: 20px;
+}
+.contact-card .row { display: flex; gap: 8px; margin-bottom: 4px; font-size: 13px; }
+.contact-card .label { font-weight: 700; color: var(--ink-mute); min-width: 90px; }
+.contact-card .value { color: var(--ink); }
+
+.back-link {
+  display: inline-block; margin-top: 32px; font-size: 13px;
+  color: var(--ink-soft); text-decoration: underline;
+}
+.back-link:hover { color: var(--ink); }
+
+table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  font-size: 12.5px;
+}
+th, td {
+  text-align: left; padding: 8px 10px;
+  border: 1px solid var(--line);
+}
+th { background: var(--paper-warm); font-weight: 700; }
+
+@media (max-width: 600px) {
+  .doc { padding: 32px 24px; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="eyebrow">YOUBUDDY KOREA</div>
+  <h1>1일1비 개인정보처리방침</h1>
+  <div class="meta">최종 시행일: 2026년 5월 14일 · 버전 1.0 (베타)</div>
+
+  <p>
+    유버디 컴퍼니 (이하 '회사')는 1일1비 서비스(이하 '서비스') 이용자의 개인정보를 중요하게 생각하며,
+    「개인정보 보호법」 및 관련 법령을 준수합니다. 본 개인정보처리방침은 회사가 처리하는 개인정보의 항목, 처리 목적,
+    보유 기간, 이용자의 권리 등에 관한 사항을 안내합니다.
+  </p>
+
+  <section>
+    <h2>1. 수집하는 개인정보 항목</h2>
+    <table>
+      <tr><th style="width:90px">구분</th><th>수집 항목</th><th>수집 시점</th></tr>
+      <tr><td>필수</td><td>이메일, 이름</td><td>회원가입 시</td></tr>
+      <tr><td>선택</td><td>지원 동기 (한 줄)</td><td>회원가입 시</td></tr>
+      <tr><td>자동</td><td>학습 진도, 작성한 답변, 저장한 노트, 마지막 접속 일시, 브라우저·OS 정보</td><td>서비스 이용 중</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>2. 개인정보 수집 및 이용 목적</h2>
+    <ul>
+      <li>서비스 제공: 매일 학습 콘텐츠 배달, 진도 복원, 사용자 식별</li>
+      <li>서비스 개선: 베타 사용자 피드백을 통한 기능 개선</li>
+      <li>운영 안내: 베타 진행 안내, 정식 출시 알림, 중요 공지 발송</li>
+      <li>통계 분석: 학습 완주율, 평균 진도 등 익명 통계 (개별 식별 불가)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. 개인정보 보유 및 이용 기간</h2>
+    <ul>
+      <li>회원 탈퇴 시: 탈퇴 요청 후 30일 유예 기간 후 모든 개인정보 영구 파기</li>
+      <li>베타 종료 후: 베타 종료일로부터 6개월 내 베타 데이터 익명화 또는 삭제</li>
+      <li>법령에 따른 보존: 관련 법령에서 보존 의무를 정한 경우 해당 기간 동안만 보관</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. 개인정보 제3자 제공</h2>
+    <p>
+      회사는 이용자의 개인정보를 외부에 제공하지 않습니다. 다만, 법령에 의거하거나 수사기관의 요청이 있는 경우 예외로 합니다.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. 개인정보 처리 위탁 및 국외 이전</h2>
+    <p>회사는 원활한 서비스 제공을 위해 아래 업체에 개인정보 처리를 위탁하고 있습니다.</p>
+    <table>
+      <tr><th>수탁 업체</th><th>위탁 업무</th><th>이전 국가</th><th>보유 기간</th></tr>
+      <tr>
+        <td>Supabase Inc.</td>
+        <td>데이터베이스 호스팅, 사용자 데이터 저장</td>
+        <td>미국 (US-East)</td>
+        <td>회원 탈퇴 시까지</td>
+      </tr>
+      <tr>
+        <td>Vercel Inc.</td>
+        <td>웹사이트 호스팅 (CDN)</td>
+        <td>미국 / 글로벌</td>
+        <td>서비스 운영 기간</td>
+      </tr>
+    </table>
+    <div class="highlight">
+      이용자는 회원가입 시 위 국외 이전에 동의한 것으로 봅니다. 동의를 원치 않으실 경우 회원가입이 제한될 수 있습니다.
+    </div>
+  </section>
+
+  <section>
+    <h2>6. 이용자의 권리 및 행사 방법</h2>
+    <p>이용자는 언제든지 다음 권리를 행사할 수 있습니다.</p>
+    <ul>
+      <li>개인정보 조회: 마이페이지에서 본인 정보 확인 가능</li>
+      <li>개인정보 정정·삭제: 마이페이지 또는 아래 이메일로 요청</li>
+      <li>처리 정지·동의 철회: 회원 탈퇴를 통해 가능 (마이페이지 → 탈퇴)</li>
+    </ul>
+    <p>요청 후 지체 없이 처리하며, 정당한 사유 없이 7일 이내 처리 완료합니다.</p>
+  </section>
+
+  <section>
+    <h2>7. 만 14세 미만 아동의 개인정보</h2>
+    <p>
+      회사는 만 14세 미만 아동의 회원가입을 허용하지 않습니다. 만 14세 미만 아동이 가입한 사실이 확인될 경우
+      해당 계정을 즉시 삭제합니다.
+    </p>
+  </section>
+
+  <section>
+    <h2>8. 개인정보 안전성 확보 조치</h2>
+    <ul>
+      <li>암호화 전송: 모든 통신을 HTTPS로 암호화 처리</li>
+      <li>접근 제어: 데이터베이스 행 단위 권한 분리 (Row Level Security)</li>
+      <li>저장 백업: 매일 자정 자동 스냅샷 + 14일치 보관</li>
+      <li>변경 이력: 학습 데이터의 모든 변경 사항을 별도 테이블에 영구 보존</li>
+      <li>최소 수집: 서비스 운영에 필요한 최소한의 개인정보만 수집</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>9. 개인정보 보호책임자 및 문의처</h2>
+    <div class="contact-card">
+      <div class="row"><span class="label">서비스명</span><span class="value">1일1비 (One Day, One Biz)</span></div>
+      <div class="row"><span class="label">운영자</span><span class="value">유버디 컴퍼니</span></div>
+      <div class="row"><span class="label">개인정보 보호책임자</span><span class="value">유버디 운영팀</span></div>
+      <div class="row"><span class="label">문의 이메일</span><span class="value">youbuddy.co@gmail.com</span></div>
+      <div class="row"><span class="label">고객센터</span><span class="value">인스타그램 @youbuddy_day DM</span></div>
+    </div>
+    <p style="margin-top:12px;">
+      개인정보 관련 권리 침해에 대한 신고나 상담이 필요한 경우 아래 기관에 문의하실 수 있습니다.
+    </p>
+    <ul>
+      <li>개인정보침해신고센터 (한국인터넷진흥원): privacy.kisa.or.kr / 국번 없이 118</li>
+      <li>개인정보분쟁조정위원회: kopico.go.kr / 1833-6972</li>
+      <li>대검찰청 사이버수사과: spo.go.kr / 국번 없이 1301</li>
+      <li>경찰청 사이버수사국: ecrm.cyber.go.kr / 국번 없이 182</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>10. 개정 이력</h2>
+    <ul>
+      <li>2026-05-14: 최초 시행 (1.0 / 베타 버전)</li>
+    </ul>
+    <p style="margin-top:10px;">
+      본 방침이 변경될 경우, 시행 7일 전 서비스 내 공지로 안내드립니다.
+    </p>
+  </section>
+
+  <a href="onboarding.html" class="back-link">← 가입 페이지로 돌아가기</a>
+</div>
+</body>
+</html>
