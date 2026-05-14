@@ -682,6 +682,7 @@ function LoginScreen({ onBack }) {
       productionAttempts: u.production_attempts || { correct: 0, total: 0 },
       noveltyEvents: u.novelty_events || [],
       scenariosCompleted: u.scenarios_completed || [],
+      savedNotes: u.saved_notes || {},
       wordsStudied: u.words_studied || [],
       lastActive: new Date().toISOString(),
       totalSessions: (u.total_sessions || 0) + 1,

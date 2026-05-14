@@ -5282,9 +5282,14 @@ function MemoModal({ memo, onClose }) {
               <span style={{ color: "var(--ink-mute)" }}>받는 사람: {memo.to}</span>
             </div>
           </div>
-          <div style={{ marginTop: 18, fontSize: 14, lineHeight: 1.7, color: "var(--ink)" }}>
-            {memo.preview}<br/><br/>
-            자세한 내용은 인트라넷 게시판에서 확인 부탁드립니다. 문의는 인사팀 (12F) 으로.
+          <div style={{ marginTop: 18, fontSize: 14, lineHeight: 1.75, color: "var(--ink)", whiteSpace: "pre-wrap", wordBreak: "keep-all" }}>
+            {memo.body || memo.preview}
+            {!memo.isDb && (
+              <>
+                <br/><br/>
+                자세한 내용은 인트라넷 게시판에서 확인 부탁드립니다. 문의는 인사팀 (12F) 으로.
+              </>
+            )}
           </div>
           <div className="row" style={{ marginTop: 22 }}>
             <button className="btn btn-primary" onClick={onClose}>확인했습니다</button>
@@ -5307,13 +5312,60 @@ function App() {
 
   // 사내 메모 읽음 상태, localStorage에 사용자 단위로 저장
   const READ_KEY = "__OD_NOTICE_READS_" + (USER.email || "guest");
-  const ALL_NOTICES = React.useMemo(() => window.__SIM.NOTICES, []);
+  const HARDCODED_NOTICES = React.useMemo(() => window.__SIM.NOTICES, []);
+  const [dbNotices, setDbNotices] = useState([]);
   const [readIds, setReadIds] = useState(() => {
     try {
       const saved = localStorage.getItem(READ_KEY);
       return new Set(saved ? JSON.parse(saved) : []);
     } catch { return new Set(); }
   });
+
+  // Supabase notices 테이블에서 운영자 발송 공지 가져오기 (mount 시 1회)
+  React.useEffect(() => {
+    if (!window.OD || !window.OD.enabled || !window.OD.fetchNotices) return;
+    window.OD.fetchNotices(50).then(r => {
+      if (!r.ok || !r.notices) return;
+      const fromMap = {
+        "유버디 (Buddy)": "buddy", "유버디": "buddy", "Buddy": "buddy",
+        "인사팀": "hr", "HR": "hr",
+        "사수": "mentor", "차윤아": "mentor",
+        "팀장": "manager", "김 팀장": "manager",
+      };
+      const tagMap = {
+        "announcement": "공지", "event": "이벤트", "broadcast": "전사",
+        "ceo": "회장", "hr": "인사", "notice": "공지",
+      };
+      const converted = r.notices.map(n => {
+        const fromId = fromMap[n.from_name] || "buddy";
+        const dateStr = n.sent_at
+          ? new Date(n.sent_at).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
+          : "";
+        const body = n.body || "";
+        return {
+          id: "db-" + n.id,
+          from: fromId,
+          fromName: n.from_name,
+          to: "당신",
+          date: dateStr,
+          subject: n.title,
+          preview: body.slice(0, 80),
+          body: body,
+          unread: true,
+          tag: tagMap[n.type] || "공지",
+          showFromDay: 0,
+          isDb: true,
+        };
+      });
+      setDbNotices(converted);
+    });
+  }, []);
+
+  // DB 공지 + 하드코딩된 공지 병합 (DB 공지가 위로)
+  const ALL_NOTICES = React.useMemo(
+    () => [...dbNotices, ...HARDCODED_NOTICES],
+    [dbNotices, HARDCODED_NOTICES]
+  );
 
   // 원본 unread 플래그에 readIds 적용
   const NOTICES = ALL_NOTICES.map(n => ({ ...n, unread: n.unread && !readIds.has(n.id) }));
@@ -5452,6 +5504,86 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
     }
   };
   setTimeout(tick, 500);
+})();
+
+/* --- ★ 데이터 손실 방지: mainboard 진입 시 DB → localStorage 동기화 ---
+ * cross-device 사용 시 localStorage가 stale 상태에서 새 학습 저장하면 DB 덮어쓰는 버그 방지.
+ * DB의 scenariosCompleted, savedNotes를 localStorage와 union merge.
+ * 본인 답변·노트는 day별로 보존, 최신 submittedAt 우선.
+ */
+(function hydrateFromDb() {
+  let tries = 0;
+  const tick = async () => {
+    if (!window.OD || !window.OD.enabled || !window.OD.client) {
+      if (tries++ < 20) setTimeout(tick, 250);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem("__OD_USER");
+      const local = raw ? JSON.parse(raw) : null;
+      if (!local || !local.email) return;
+
+      const { data: dbUser, error } = await window.OD.client
+        .from("users")
+        .select("scenarios_completed, saved_notes")
+        .eq("email", local.email)
+        .maybeSingle();
+      if (error || !dbUser) return;
+
+      // scenarios_completed merge (union by day, 최신 submittedAt 우선)
+      const localCompleted = local.scenariosCompleted || [];
+      const dbCompleted = dbUser.scenarios_completed || [];
+      const byDay = new Map();
+      [...dbCompleted, ...localCompleted].forEach(s => {
+        if (!s || !s.day) return;
+        const prev = byDay.get(s.day);
+        if (!prev || new Date(s.submittedAt || 0) > new Date(prev.submittedAt || 0)) {
+          byDay.set(s.day, s);
+        }
+      });
+      const mergedCompleted = [...byDay.values()].sort((a, b) => a.day - b.day);
+
+      // saved_notes merge (day별 배열 union, 텍스트 중복 제거)
+      const localNotes = local.savedNotes || {};
+      const dbNotes = dbUser.saved_notes || {};
+      const mergedNotes = {};
+      const allDayKeys = new Set([...Object.keys(localNotes), ...Object.keys(dbNotes)]);
+      for (const d of allDayKeys) {
+        const a = localNotes[d] || [];
+        const b = dbNotes[d] || [];
+        const seen = new Set();
+        const out = [];
+        [...b, ...a].forEach(n => {
+          if (n && n.text && !seen.has(n.text)) {
+            seen.add(n.text); out.push(n);
+          }
+        });
+        if (out.length) mergedNotes[d] = out;
+      }
+
+      // 변화가 있을 때만 localStorage 갱신 + DB 동기화
+      const changed =
+        mergedCompleted.length !== localCompleted.length ||
+        JSON.stringify(mergedNotes) !== JSON.stringify(localNotes);
+
+      local.scenariosCompleted = mergedCompleted;
+      local.savedNotes = mergedNotes;
+      localStorage.setItem("__OD_USER", JSON.stringify(local));
+
+      if (changed && window.OD.updateProgress) {
+        window.OD.updateProgress(local.email, {
+          scenarios_completed: mergedCompleted,
+          saved_notes: mergedNotes,
+        }).catch(() => {});
+        console.log("[hydrate] DB와 localStorage 병합 완료. 다음 새로고침 시 반영.");
+      } else {
+        console.log("[hydrate] DB·localStorage 일치, 추가 동기화 없음.");
+      }
+    } catch (e) {
+      console.warn("[hydrate] DB sync failed:", e.message);
+    }
+  };
+  setTimeout(tick, 600);
 })();
 </script>
 
