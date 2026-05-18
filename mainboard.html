@@ -455,6 +455,14 @@ body::before {
   content: "✓"; position: absolute;
   font-size: 11px; font-weight: 900; color: var(--stamp-red);
 }
+/* 결근, 출근일은 지났지만 학습 완료 기록 없음, 시각적으로 비워둠 */
+.att-cell.missed {
+  background: transparent;
+  color: var(--ink-mute);
+  border-style: dashed;
+  border-color: var(--line);
+  opacity: 0.55;
+}
 .att-cell.today {
   border: 2px solid var(--orange);
   background: var(--highlight);
@@ -2070,6 +2078,10 @@ const USER = {
   streak: Math.min(Math.max(0, _resolvedDay - 1), 30),
   vacationDays: 3,
   badges: _localUser ? ["첫 출근"] : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
+  email: _localUser?.email || null,
+  // ★ 출근부·업무노트가 정확히 표시되려면 USER에 학습/노트 데이터가 반영돼있어야 함
+  scenariosCompleted: _localUser?.scenariosCompleted || [],
+  savedNotes: _localUser?.savedNotes || {},
 };
 
 // ── auto-day가 저장된 dayInCompany보다 진척했으면 localStorage·DB 둘 다 업데이트 ──
@@ -2747,12 +2759,34 @@ function HomePage({ setActive, openScene, openMemo }) {
   }
 
   // 출근부, 14일 그리드 (오늘 일정 다 끝내면 'stamped'). 주말 칸은 시각적 구분.
+  // ★ 실제로 학습 완료한 날만 done. 안 한 날은 missed (결근). 무조건 done 처리 금지.
+  // 완료 판단 기준 (셋 중 하나라도 만족하면 출근 인정):
+  //   1. scenariosCompleted 에 그날 entry 있음 (시추에이션 문장 제출)
+  //   2. dailyJournals 에 그날 entry 있음 (업무일지 제출)
+  //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
   const ATTEND_DAYS = 14;
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
+  const _completedDays = new Set();
+  (USER.scenariosCompleted || []).forEach(s => { if (s && s.day) _completedDays.add(s.day); });
+  Object.keys(USER.dailyJournals || {}).forEach(k => {
+    const d = parseInt(k, 10);
+    if (d) _completedDays.add(d);
+  });
+  for (let d = 1; d < USER.currentDay; d++) {
+    if (_completedDays.has(d)) continue;
+    try {
+      const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + d) || "{}");
+      const checkedCount = Object.values(tasks).filter(Boolean).length;
+      if (checkedCount >= 3) _completedDays.add(d);
+    } catch (e) {}
+  }
   const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
     const day = i + 1;
     const isWk = _isWeekendDay(day);
-    if (day < USER.currentDay) return { day, state: "done", weekend: isWk };
+    if (day < USER.currentDay) {
+      const actuallyDone = _completedDays.has(day);
+      return { day, state: actuallyDone ? "done" : "missed", weekend: isWk };
+    }
     if (day === USER.currentDay) return { day, state: allTodayDone ? "stamped" : "today", weekend: isWk };
     return { day, state: "", weekend: isWk };
   });
@@ -2900,9 +2934,9 @@ function HomePage({ setActive, openScene, openMemo }) {
                 <div
                   key={c.day}
                   className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
-                  title={`Day ${c.day}`}
+                  title={c.state === "missed" ? `Day ${c.day} 결근` : `Day ${c.day}`}
                 >
-                  {c.state === "" ? c.day : ""}
+                  {(c.state === "" || c.state === "missed") ? c.day : ""}
                 </div>
               ))}
             </div>
@@ -3311,12 +3345,16 @@ function LibraryPage({ openScene }) {
         ))}
       </div>
 
-      {/* 저장된 노트 로드 (전체 사용자 한 번에) */}
+      {/* 저장된 노트 + 업무일지 로드 (전체 사용자 한 번에) */}
       {(() => {
         try {
           const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
           window.__savedNotesByDay = (u && u.savedNotes) || {};
-        } catch(e) { window.__savedNotesByDay = {}; }
+          window.__dailyJournalsByDay = (u && u.dailyJournals) || {};
+        } catch(e) {
+          window.__savedNotesByDay = {};
+          window.__dailyJournalsByDay = {};
+        }
         return null;
       })()}
 
@@ -3328,6 +3366,7 @@ function LibraryPage({ openScene }) {
             ? (myAnswer.sentence.length > 70 ? myAnswer.sentence.slice(0, 70) + "…" : myAnswer.sentence)
             : null;
           const savedNotes = (window.__savedNotesByDay && window.__savedNotesByDay[String(s.day)]) || [];
+          const myJournal = (window.__dailyJournalsByDay && window.__dailyJournalsByDay[String(s.day)]) || null;
           return (
             <button key={s.day} className={"biz-card " + (s.status === "today" ? "today" : "")} onClick={() => openScene(s)}>
               <div className="biz-card-head">
@@ -3370,6 +3409,22 @@ function LibraryPage({ openScene }) {
                   <span style={{ marginLeft: 6, color: "var(--ink-mute)", fontWeight: 500 }}>
                     ({savedNotes.map(n => n.label).join(", ")})
                   </span>
+                </div>
+              )}
+              {myJournal && myJournal.text && (
+                <div style={{
+                  marginTop: 6,
+                  padding: "8px 10px",
+                  background: "rgba(216,90,42,0.06)",
+                  borderLeft: "2px solid var(--accent)",
+                  borderRadius: 3,
+                  fontSize: 11.5,
+                  color: "var(--ink-soft)",
+                  fontWeight: 500,
+                  textAlign: "left",
+                  lineHeight: 1.5,
+                }}>
+                  📝 <b style={{ color: "var(--ink)" }}>업무일지:</b> "{myJournal.text.length > 80 ? myJournal.text.slice(0, 80) + "…" : myJournal.text}"
                 </div>
               )}
               <div className="biz-card-foot">
@@ -3708,14 +3763,20 @@ function MyPage() {
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
-            <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
+            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            {false && (
+              <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
+            )}
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
             <div className="id-field"><span className="id-field-label">수습</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 표현 {USER.wordsCollected}개 · 🔥 {USER.streak}</span></div>
           </div>
         </div>
         <div className="id-card-foot">
           <span>유효기간 · 2026.04.16 ~ 2026.05.15 (수습)</span>
-          <span><b>{USER.vacationDays}일</b> 휴가 보유</span>
+          {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+          {false && (
+            <span><b>{USER.vacationDays}일</b> 휴가 보유</span>
+          )}
         </div>
       </div>
 
@@ -3735,7 +3796,10 @@ function MyPage() {
           </div>
         </div>
         <div className="hr-row"><span className="hr-row-label">사수 · 매일 포스트잇</span><span className="hr-row-value">{CHARACTERS.mentor.name}</span></div>
-        <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
+        {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+        {false && (
+          <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
+        )}
       </div>
 
       {/* 구독 정보 (읽기), 가격/결제 정보는 정식 출시 후 노출 */}
@@ -3743,7 +3807,10 @@ function MyPage() {
         <div className="hr-section-head">구독 정보</div>
         <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value"><b>1일 1비즈니스</b> · 베타</span></div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
-        <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
+        {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+        {false && (
+          <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
+        )}
       </div>
 
       {/* 설정 (쓰기), 디스클로저 */}
@@ -3758,11 +3825,14 @@ function MyPage() {
         </button>
         {showSettings && (
           <>
-            <div className="hr-row">
-              <span className="hr-row-label">매일 단어 알림</span>
-              <button className={"toggle " + (notif ? "on" : "")} onClick={() => setNotif(!notif)}></button>
-            </div>
-            {notif && (
+            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            {false && (
+              <div className="hr-row">
+                <span className="hr-row-label">매일 단어 알림</span>
+                <button className={"toggle " + (notif ? "on" : "")} onClick={() => setNotif(!notif)}></button>
+              </div>
+            )}
+            {false && notif && (
               <div className="hr-row">
                 <span className="hr-row-label" style={{ paddingLeft: 14, fontSize: 12 }}>└ 알림 시간</span>
                 <select className="settings-select" value={notifTime} onChange={e => setNotifTime(e.target.value)}>
@@ -3776,10 +3846,13 @@ function MyPage() {
               <span className="hr-row-label">단어 발음 자동 재생</span>
               <button className={"toggle on"}></button>
             </div>
-            <div className="hr-row">
-              <span className="hr-row-label">사수 피드백 이메일 받기</span>
-              <button className={"toggle on"}></button>
-            </div>
+            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            {false && (
+              <div className="hr-row">
+                <span className="hr-row-label">사수 피드백 이메일 받기</span>
+                <button className={"toggle on"}></button>
+              </div>
+            )}
 
             {/* 휴직(일시중지), 한 단계 더 들어가야 보임 */}
             <button
@@ -3965,6 +4038,35 @@ function _classifyMentorFeedback(sentence, scenario) {
   const overall = isExample ? "neutral" : okCount >= checks.length - 1 ? "good" : "needs-work";
 
   return { checks, headline, overall, isExample };
+}
+
+// 업무일지(JournalActivity) 저장/조회 헬퍼
+// __OD_USER.dailyJournals[dayKey] = { text, day, savedAt }
+function _loadDailyJournal(day) {
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    return u?.dailyJournals?.[String(day)] || null;
+  } catch (e) { return null; }
+}
+function _saveDailyJournal(day, text) {
+  if (!text || !text.trim()) return false;
+  try {
+    const raw = localStorage.getItem("__OD_USER");
+    const u = raw ? JSON.parse(raw) : {};
+    u.dailyJournals = u.dailyJournals || {};
+    const dayKey = String(day);
+    u.dailyJournals[dayKey] = {
+      text: text.trim(),
+      day: day,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    // DB sync (실패해도 localStorage엔 살아있음)
+    if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
+      window.OD.updateProgress(u.email, { daily_journals: u.dailyJournals }).catch(() => {});
+    }
+    return true;
+  } catch (e) { console.warn("saveDailyJournal failed:", e); return false; }
 }
 
 // scenariosCompleted 저장/조회 헬퍼
@@ -5118,8 +5220,12 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
 function JournalActivity({ today, item, onClose, onComplete }) {
   const { CHARACTERS } = window.__SIM;
   const buddy = CHARACTERS.buddy;
-  const [text, setText] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+
+  // ★ 이전에 저장한 일지가 있으면 로드 (재진입 시 사라지지 않게)
+  const _existing = _loadDailyJournal(today.day);
+  const [text, setText] = useState(_existing?.text || "");
+  const [submitted, setSubmitted] = useState(!!_existing);
+  const [savedToast, setSavedToast] = useState(false);
 
   const buddyReply = useMemo(() => {
     const pool = [
@@ -5130,11 +5236,25 @@ function JournalActivity({ today, item, onClose, onComplete }) {
     return pool[(today.day - 1) % pool.length];
   }, [today.word, today.day]);
 
+  // 제출 = 저장 + submitted 표시
+  const handleSubmit = () => {
+    if (!text.trim()) return;
+    const ok = _saveDailyJournal(today.day, text);
+    setSubmitted(true);
+    if (ok) {
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 2500);
+    }
+  };
+
   return (
     <ActivityShell title="WORK JOURNAL · 업무일지 + 퇴근" onClose={onClose}>
       <span className="label-doc label-orange">▶ 17:00 · 오늘의 한 줄</span>
       <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
         오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b>, 진짜 어디서 쓸 수 있을 것 같아요? 한 줄만.
+        <span style={{ display: "block", marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>
+          📒 작성한 일지는 <b>업무노트 → 해당 날짜 카드</b>에서 다시 볼 수 있어요.
+        </span>
       </div>
       <textarea
         className="scene-input"
@@ -5147,10 +5267,15 @@ function JournalActivity({ today, item, onClose, onComplete }) {
       {!submitted ? (
         <div className="row" style={{ marginTop: 12, justifyContent: "space-between" }}>
           <button className="btn btn-ghost" onClick={() => setText(`다음 ${item?.context?.ctx || "회의"}에서 ${today.word} 한 번 써먹어보기.`)}>예시로 채우기</button>
-          <button className="btn btn-primary" onClick={() => setSubmitted(true)} disabled={!text.trim()}>일지 제출 →</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={!text.trim()}>일지 제출 →</button>
         </div>
       ) : (
         <>
+          {savedToast && (
+            <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(46,125,50,0.08)", border: "1px solid rgba(46,125,50,0.25)", borderRadius: 6, fontSize: 12, color: "var(--green, #2e7d32)", textAlign: "center", fontWeight: 700 }}>
+              ✓ 일지 저장됨 · 업무노트에서 다시 볼 수 있어요
+            </div>
+          )}
           <div style={{ marginTop: 16, padding: 16, background: "rgba(216,90,42,0.06)", border: "1px solid rgba(216,90,42,0.25)", borderRadius: 8 }}>
             <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
               <div className="buddy-avatar small" style={{ width: 32, height: 32, fontSize: 13 }}>{buddy.avatar}</div>
@@ -5174,7 +5299,8 @@ function JournalActivity({ today, item, onClose, onComplete }) {
               퇴근 · DAY {today.day} 완주
             </div>
           </div>
-          <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+          <div className="row" style={{ marginTop: 14, justifyContent: "space-between" }}>
+            <button className="btn btn-ghost" onClick={() => setSubmitted(false)}>✏️ 일지 수정하기</button>
             <button className="btn btn-primary" onClick={onComplete}>퇴근하기 ✓</button>
           </div>
         </>
@@ -5651,7 +5777,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
 
       const { data: dbUser, error } = await window.OD.client
         .from("users")
-        .select("scenarios_completed, saved_notes")
+        .select("scenarios_completed, saved_notes, daily_journals")
         .eq("email", local.email)
         .maybeSingle();
       if (error || !dbUser) return;
@@ -5687,19 +5813,38 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
         if (out.length) mergedNotes[d] = out;
       }
 
+      // daily_journals merge (day별 단일 객체, 최신 savedAt 우선)
+      const localJournals = local.dailyJournals || {};
+      const dbJournals = dbUser.daily_journals || {};
+      const mergedJournals = {};
+      const allJournalKeys = new Set([...Object.keys(localJournals), ...Object.keys(dbJournals)]);
+      for (const d of allJournalKeys) {
+        const a = localJournals[d];
+        const b = dbJournals[d];
+        if (!a) mergedJournals[d] = b;
+        else if (!b) mergedJournals[d] = a;
+        else {
+          // 둘 다 있으면 최신 savedAt
+          mergedJournals[d] = new Date(a.savedAt || 0) >= new Date(b.savedAt || 0) ? a : b;
+        }
+      }
+
       // 변화가 있을 때만 localStorage 갱신 + DB 동기화
       const changed =
         mergedCompleted.length !== localCompleted.length ||
-        JSON.stringify(mergedNotes) !== JSON.stringify(localNotes);
+        JSON.stringify(mergedNotes) !== JSON.stringify(localNotes) ||
+        JSON.stringify(mergedJournals) !== JSON.stringify(localJournals);
 
       local.scenariosCompleted = mergedCompleted;
       local.savedNotes = mergedNotes;
+      local.dailyJournals = mergedJournals;
       localStorage.setItem("__OD_USER", JSON.stringify(local));
 
       if (changed && window.OD.updateProgress) {
         window.OD.updateProgress(local.email, {
           scenarios_completed: mergedCompleted,
           saved_notes: mergedNotes,
+          daily_journals: mergedJournals,
         }).catch(() => {});
         console.log("[hydrate] DB와 localStorage 병합 완료. 다음 새로고침 시 반영.");
       } else {
