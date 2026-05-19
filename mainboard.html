@@ -1264,7 +1264,7 @@ body::before {
     /* iOS Safari 주소창 + 노치 영역까지 회피 */
     padding-top: max(70px, env(safe-area-inset-top));
     padding-bottom: max(12px, env(safe-area-inset-bottom));
-    align-items: flex-end;
+    align-items: center; /* 모달을 화면 중앙으로, 작은 모달이 하단에 안 붙게 */
     /* dvh가 지원되면 동적 viewport 기준 (iOS 주소창 제외) */
     height: 100vh;
   }
@@ -6396,11 +6396,14 @@ window.SimApp = App;
         const { submissions = [], notes = [], journals = [], notice_reads = [], task_progress = {} } = r.data;
 
         // submissions → scenariosCompleted
+        // ★ submittedAt에는 updated_at 사용. DB의 submitted_at은 첫 제출 시점이라
+        //   merge 비교에서 옛 거로 잘못 판단하는 버그가 있었음.
         const dbCompleted = submissions.map(s => ({
           day: s.day, word: s.word, scenarioId: s.scenario_id,
           sentence: s.answer_text, mcChoice: s.mc_choice,
           feedback: s.mentor_feedback || {},
-          submittedAt: s.submitted_at, status: s.status,
+          submittedAt: s.updated_at || s.submitted_at,
+          status: s.status,
         }));
         const localCompleted = local.scenariosCompleted || [];
         const byDay = new Map();
@@ -6608,7 +6611,7 @@ window.SimApp = App;
         sentence: s.answer_text,
         mcChoice: s.mc_choice,
         feedback: s.mentor_feedback || {},
-        submittedAt: s.submitted_at,
+        submittedAt: s.updated_at || s.submitted_at,
         status: s.status,
       }));
 
