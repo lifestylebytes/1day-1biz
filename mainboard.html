@@ -6332,8 +6332,154 @@ function App() {
 
 window.SimApp = App;
 
-/* --- 마운트 --- */
-ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
+/* --- 마운트, hydrate 완료 후에만. cross-device 동기화 보장 --- */
+(async function mountAfterHydrate() {
+  const MAX_WAIT_MS = 2500; // hydrate 최대 대기, 안 끝나도 그대로 마운트
+  const start = Date.now();
+
+  // 1) Supabase 헬퍼 준비 대기
+  while (!(window.OD && window.OD.enabled && window.OD.fetchUserFullData)) {
+    if (Date.now() - start > MAX_WAIT_MS) break;
+    await new Promise(r => setTimeout(r, 50));
+  }
+
+  // 2) localStorage가 비어있거나 stale이면 DB에서 동기로 가져와 채움.
+  // 변화 있으면 reload. _localUser/USER 객체가 이미 컴파일 시점에 만들어져있어 reload 없이는 화면 갱신 안 됨.
+  let beforeSnapshot = "";
+  try {
+    const raw = localStorage.getItem("__OD_USER");
+    const local = raw ? JSON.parse(raw) : null;
+    beforeSnapshot = raw || "";
+    if (local && local.email && window.OD?.fetchUserFullData) {
+      const r = await Promise.race([
+        window.OD.fetchUserFullData(local.email),
+        new Promise(res => setTimeout(() => res({ ok: false, timeout: true }), MAX_WAIT_MS - (Date.now() - start))),
+      ]);
+      if (r && r.ok && r.data) {
+        const { submissions = [], notes = [], journals = [], notice_reads = [], task_progress = {} } = r.data;
+
+        // submissions → scenariosCompleted
+        const dbCompleted = submissions.map(s => ({
+          day: s.day, word: s.word, scenarioId: s.scenario_id,
+          sentence: s.answer_text, mcChoice: s.mc_choice,
+          feedback: s.mentor_feedback || {},
+          submittedAt: s.submitted_at, status: s.status,
+        }));
+        const localCompleted = local.scenariosCompleted || [];
+        const byDay = new Map();
+        [...dbCompleted, ...localCompleted].forEach(s => {
+          if (!s || !s.day) return;
+          const prev = byDay.get(s.day);
+          if (!prev || new Date(s.submittedAt || 0) >= new Date(prev.submittedAt || 0)) {
+            byDay.set(s.day, s);
+          }
+        });
+        local.scenariosCompleted = [...byDay.values()].sort((a, b) => a.day - b.day);
+
+        // notes
+        const dbNotes = {};
+        notes.forEach(n => {
+          const k = String(n.day);
+          dbNotes[k] = dbNotes[k] || [];
+          dbNotes[k].push({ text: n.text, label: n.label, kind: n.kind, savedAt: n.created_at });
+        });
+        const localNotes = local.savedNotes || {};
+        const mergedNotes = {};
+        const allDayKeys = new Set([...Object.keys(localNotes), ...Object.keys(dbNotes)]);
+        for (const d of allDayKeys) {
+          const a = localNotes[d] || [];
+          const b = dbNotes[d] || [];
+          const seen = new Set();
+          const out = [];
+          [...b, ...a].forEach(n => {
+            if (n && n.text && !seen.has(n.text)) { seen.add(n.text); out.push(n); }
+          });
+          if (out.length) mergedNotes[d] = out;
+        }
+        local.savedNotes = mergedNotes;
+
+        // journals
+        const dbJournals = {};
+        journals.forEach(j => {
+          const k = String(j.day);
+          dbJournals[k] = { day: j.day, text: j.text, savedAt: j.saved_at };
+        });
+        const localJournals = local.dailyJournals || {};
+        const mergedJournals = {};
+        const allJournalKeys = new Set([...Object.keys(localJournals), ...Object.keys(dbJournals)]);
+        for (const d of allJournalKeys) {
+          const a = localJournals[d];
+          const b = dbJournals[d];
+          if (!a) mergedJournals[d] = b;
+          else if (!b) mergedJournals[d] = a;
+          else mergedJournals[d] = new Date(a.savedAt || 0) >= new Date(b.savedAt || 0) ? a : b;
+        }
+        local.dailyJournals = mergedJournals;
+
+        localStorage.setItem("__OD_USER", JSON.stringify(local));
+
+        // 공지 읽음 ID
+        try {
+          const READ_KEY = "__OD_NOTICE_READS_" + local.email;
+          const existing = JSON.parse(localStorage.getItem(READ_KEY) || "[]");
+          const union = Array.from(new Set([...existing, ...(notice_reads || [])]));
+          localStorage.setItem(READ_KEY, JSON.stringify(union));
+        } catch (e) {}
+
+        // 일정 체크 상태
+        try {
+          Object.keys(task_progress || {}).forEach(dayKey => {
+            const k = "__OD_TASKS_DAY_" + dayKey;
+            const existingT = JSON.parse(localStorage.getItem(k) || "{}");
+            const merged = { ...existingT };
+            Object.entries(task_progress[dayKey] || {}).forEach(([id, v]) => {
+              merged[id] = !!(merged[id] || v);
+            });
+            localStorage.setItem(k, JSON.stringify(merged));
+          });
+        } catch (e) {}
+
+        console.log("[boot-hydrate] 동기 hydrate 완료. submissions:", dbCompleted.length,
+          "notes:", notes.length, "journals:", journals.length);
+      }
+    }
+  } catch (e) {
+    console.warn("[boot-hydrate] failed:", e.message);
+  }
+
+  // 3) 변화 감지 (모든 OD 관련 localStorage 키 비교), 변화 있으면 reload.
+  // cooldown 3초로 무한 reload 방지.
+  function _odSnapshot() {
+    const parts = [];
+    try {
+      parts.push("U=" + (localStorage.getItem("__OD_USER") || ""));
+      const keys = Object.keys(localStorage)
+        .filter(k => k.startsWith("__OD_TASKS_DAY_") || k.startsWith("__OD_NOTICE_READS_"))
+        .sort();
+      keys.forEach(k => parts.push(k + "=" + localStorage.getItem(k)));
+    } catch (e) {}
+    return parts.join("||");
+  }
+  try {
+    const after = _odSnapshot();
+    // beforeSnapshot은 __OD_USER만 캡쳐했으므로, 부분 비교
+    const beforeUser = beforeSnapshot || "";
+    const afterUser = localStorage.getItem("__OD_USER") || "";
+    if (beforeUser !== afterUser) {
+      const KEY = "__OD_MOUNT_RELOAD_AT";
+      const lastReload = parseInt(sessionStorage.getItem(KEY) || "0", 10);
+      if (Date.now() - lastReload > 3000) {
+        sessionStorage.setItem(KEY, String(Date.now()));
+        console.log("[boot-hydrate] localStorage 갱신, reload로 화면 동기화");
+        location.reload();
+        return;
+      }
+    }
+  } catch (e) {}
+
+  // 4) 이제 마운트. USER 객체가 최신 localStorage 기반으로 만들어짐.
+  ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
+})();
 
 /* --- auto-day Supabase 동기화 (외부 사용자만), 새 RPC 경로 --- */
 (function syncDayToSupabase() {
