@@ -4855,18 +4855,19 @@ function _computeTooltipPos(rect, placement) {
   const TT_W = isNarrow ? Math.min(360, vw - 32) : 360;
   const TT_H = isNarrow ? 240 : 200;
 
-  // ── 모바일: placement 무시하고 가운데 정렬, 위/아래 중 공간 더 큰 쪽 ──
+  // ── 모바일: spotlight와 학습 영역 안 가리게, 화면 상/하단 고정 ──
+  // target이 화면 상반부면 툴팁은 하단, 하반부면 상단. 절대 spotlight 옆에 안 붙음.
   if (isNarrow) {
     const left = Math.max(PAD, (vw - TT_W) / 2);
-    const spaceBelow = vh - rect.bottom - PAD;
-    const spaceAbove = rect.top - PAD;
+    const targetMidY = rect.top + rect.height / 2;
+    const halfVh = vh / 2;
     let top;
-    if (spaceBelow >= TT_H) {
-      top = rect.bottom + PAD;
-    } else if (spaceAbove >= TT_H) {
-      top = rect.top - TT_H - PAD;
+    if (targetMidY < halfVh) {
+      // target이 상반부 → 툴팁 하단 fixed
+      top = vh - TT_H - PAD - 12;
     } else {
-      top = (vh - TT_H) / 2;  // 공간 부족 → 중앙
+      // target이 하반부 → 툴팁 상단 fixed (safe-area 고려)
+      top = PAD + 56;
     }
     top = Math.max(PAD, Math.min(vh - TT_H - PAD, top));
     return { left, top, placement: 'mobile' };
