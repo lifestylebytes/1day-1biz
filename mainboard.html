@@ -2073,6 +2073,8 @@ const USER = {
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
   empNumber: _localUser?.empNumber || "2026-04-15",
   currentDay: _resolvedDay,
+  realCurrentDay: _resolvedDay,        // 실제 오늘 (App 컴포넌트가 viewingDay로 override 시 보존)
+  isViewingPast: false,
   totalDays: 30,
   studiedDays: 0,  // 아래에서 자동 계산
   streak: Math.min(Math.max(0, _resolvedDay - 1), 30),
@@ -2344,7 +2346,7 @@ const BUDDY_ANSWERS = {
   ],
 };
 
-window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS, todayLabel: _todayLabel, getBuddyNudgeForDay: _getBuddyNudgeForDay };
+window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS, todayLabel: _todayLabel, getBuddyNudgeForDay: _getBuddyNudgeForDay, getScheduleForDay };
 
 </script>
 
@@ -2635,7 +2637,7 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ============================================================
 // 홈, 오늘의 책상
 // ============================================================
-function HomePage({ setActive, openScene, openMemo }) {
+function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
 
   // === 모든 hooks 먼저, Rules of Hooks (early return 전에 무조건 같은 순서로) ===
@@ -2758,13 +2760,15 @@ function HomePage({ setActive, openScene, openMemo }) {
     );
   }
 
-  // 출근부, 14일 그리드 (오늘 일정 다 끝내면 'stamped'). 주말 칸은 시각적 구분.
+  // 출근부 그리드. 기본 14일, "전체 보기" 토글하면 코스 전체 (30일).
   // ★ 실제로 학습 완료한 날만 done. 안 한 날은 missed (결근). 무조건 done 처리 금지.
   // 완료 판단 기준 (셋 중 하나라도 만족하면 출근 인정):
   //   1. scenariosCompleted 에 그날 entry 있음 (시추에이션 문장 제출)
   //   2. dailyJournals 에 그날 entry 있음 (업무일지 제출)
   //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
-  const ATTEND_DAYS = 14;
+  // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
+  const [showFullAttend, setShowFullAttend] = useState(false);
+  const ATTEND_DAYS = showFullAttend ? USER.totalDays : 14;
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
   const _completedDays = new Set();
   (USER.scenariosCompleted || []).forEach(s => { if (s && s.day) _completedDays.add(s.day); });
@@ -2929,19 +2933,55 @@ function HomePage({ setActive, openScene, openMemo }) {
               <span className="attendance-title">출근부 · 14일</span>
               <span className="attendance-num">{USER.streak}<small>일 연속</small></span>
             </div>
-            <div className="attendance-cells">
-              {cells.map(c => (
-                <div
-                  key={c.day}
-                  className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
-                  title={c.state === "missed" ? `Day ${c.day} 결근` : `Day ${c.day}`}
-                >
-                  {(c.state === "" || c.state === "missed") ? c.day : ""}
-                </div>
-              ))}
+            <div
+              className="attendance-cells"
+              style={showFullAttend ? { gridTemplateColumns: "repeat(10, 1fr)" } : null}
+            >
+              {cells.map(c => {
+                // 보안: 진짜 오늘(realCurrentDay)보다 이전 일자만 클릭 가능
+                const isClickable = c.day < USER.realCurrentDay && setViewingDay;
+                const handleClick = () => {
+                  if (!isClickable) return;
+                  // React state 갱신 → App 이 USER/SCENARIOS/TODAY_SCHEDULE mutate → 전체 리렌더
+                  // 새로고침 없음, URL 안 건드림
+                  setViewingDay(c.day);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                };
+                return (
+                  <div
+                    key={c.day}
+                    className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
+                    title={isClickable
+                      ? (c.state === "missed" ? `Day ${c.day}로 돌아가 학습하기` : `Day ${c.day} 다시 보기`)
+                      : `Day ${c.day}`}
+                    onClick={handleClick}
+                    style={{ cursor: isClickable ? "pointer" : "default" }}
+                  >
+                    {(c.state === "" || c.state === "missed") ? c.day : ""}
+                  </div>
+                );
+              })}
             </div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 10, lineHeight: 1.5 }}>
-              하루도 빠지지 않으면 30일차에 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 8 }}>
+              <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.5, flex: 1 }}>
+                {USER.isViewingPast
+                  ? <>지난 출근부 칸을 누르면 그날로 이동해요. 학습 완료하면 그대로 저장됩니다.</>
+                  : showFullAttend
+                    ? <>지나간 칸을 누르면 그날 학습으로 돌아갈 수 있어요.</>
+                    : <>하루도 빠지지 않으면 30일차에 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
+                }
+              </div>
+              <button
+                onClick={() => setShowFullAttend(v => !v)}
+                style={{
+                  fontSize: 11, padding: "4px 10px", fontWeight: 700,
+                  background: "transparent", color: "var(--ink-soft)",
+                  border: "1px solid var(--line)", borderRadius: 4,
+                  cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                }}
+              >
+                {showFullAttend ? "14일만 보기" : "📅 전체 보기"}
+              </button>
             </div>
           </div>
 
@@ -3587,6 +3627,32 @@ function TestPage() {
     }, 1200);
   }
 
+  // 영어 답변 문장에서 타깃 단어를 빈 칸으로 (활용형 포함)
+  // sampleAnswer에 정확한 단어가 없으면 활용형(ing/ed/s), 마지막엔 quote로 fallback
+  const _blankedAnswer = (() => {
+    const answer = (cur.sampleAnswer || "").trim();
+    const word = (cur.word || "").trim();
+    if (!answer || !word) return { text: cur.quote || "", source: "quote" };
+    const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // 1차: 단어 그대로 (case-insensitive)
+    const reExact = new RegExp("(^|[^a-z])(" + esc(word) + ")([^a-z]|$)", "i");
+    if (reExact.test(answer)) return { text: answer.replace(reExact, "$1___BLANK___$3"), source: "answer" };
+    // 2차: 동사 활용형 (loop in → looping in 등)
+    const tokens = word.split(/\s+/);
+    const forms = window._verbForms ? window._verbForms(tokens[0]) : [tokens[0]];
+    const tail = tokens.slice(1).map(esc).join("\\s+");
+    for (const f of forms) {
+      const head = esc(f);
+      const pat = tail
+        ? "(^|[^a-z])(" + head + "\\s+" + tail + ")([^a-z]|$)"
+        : "(^|[^a-z])(" + head + ")([^a-z]|$)";
+      const re = new RegExp(pat, "i");
+      if (re.test(answer)) return { text: answer.replace(re, "$1___BLANK___$3"), source: "answer" };
+    }
+    // Fallback: 그대로 보여줌
+    return { text: answer, source: "answer-nolimit" };
+  })();
+
   return (
     <div>
       <div className="desk-header">
@@ -3604,23 +3670,64 @@ function TestPage() {
           <div className="eval-progress">
             {cells.map((c, i) => <div key={i} className={"eval-progress-cell " + c}></div>)}
           </div>
-          <div className="eval-q-num">SITUATION</div>
+
+          {/* 1) SITUATION — 한글로 상황 설명 */}
+          <div className="eval-q-num">SITUATION · 상황</div>
           <div className="eval-q-scene">📍 {cur.scene}</div>
           <div className="scene-quote-row" style={{ marginTop: 14 }}>
             <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
             <div style={{ flex: 1 }}>
               <div className="scene-npc-name">{npc.name}</div>
-              <div className="scene-quote-bubble">
-                "{cur.quote.split(cur.word).map((p, i, arr) => (
-                  <React.Fragment key={i}>
-                    {p}
-                    {i < arr.length - 1 ? <span style={{ background: "var(--ink)", color: "var(--paper)", padding: "1px 16px", letterSpacing: "0.5em" }}>____</span> : null}
-                  </React.Fragment>
-                ))}"
-              </div>
+              <div className="scene-quote-bubble">"{cur.quote}"</div>
             </div>
           </div>
-          <div className="label-doc" style={{ marginTop: 22 }}>빈 칸에 들어갈 표현은?</div>
+
+          {/* 2) 한국어 가이드 — 어떻게 답해야 하나 */}
+          {cur.task && (cur.task.promptKo || cur.task.koSentence) && (
+            <div style={{
+              marginTop: 18, padding: "12px 14px",
+              background: "var(--paper-warm)",
+              borderLeft: "3px solid var(--accent)",
+              borderRadius: 4,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.1em", marginBottom: 6 }}>
+                📝 한국어로 답한다면
+              </div>
+              <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.65, fontWeight: 600 }}>
+                {cur.task.koSentence || cur.task.promptKo}
+              </div>
+            </div>
+          )}
+
+          {/* 3) 영어 답변 빈칸 채우기 */}
+          <div style={{
+            marginTop: 18, padding: "18px 20px",
+            background: "#FFE9A6",
+            border: "1px solid var(--line)",
+            borderRadius: 6,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#8C6510", letterSpacing: "0.12em", marginBottom: 10 }}>
+              ENGLISH · 영어로 한 줄
+            </div>
+            <div style={{ fontSize: 16, color: "var(--ink)", lineHeight: 1.65, fontWeight: 500 }}>
+              "{_blankedAnswer.text.split("___BLANK___").map((p, i, arr) => (
+                <React.Fragment key={i}>
+                  {p}
+                  {i < arr.length - 1 ? (
+                    <span style={{
+                      display: "inline-block",
+                      background: "var(--ink)", color: "var(--paper)",
+                      padding: "2px 18px", letterSpacing: "0.4em",
+                      borderRadius: 3, fontWeight: 800,
+                      verticalAlign: "baseline",
+                    }}>____</span>
+                  ) : null}
+                </React.Fragment>
+              ))}"
+            </div>
+          </div>
+
+          <div className="label-doc" style={{ marginTop: 22 }}>빈 칸에 들어갈 영어 표현은?</div>
           <div className="eval-options">
             {opts.map((o, i) => {
               let cls = "";
@@ -5698,7 +5805,35 @@ function App() {
   const [active, setActive] = useState("home");
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
-  const { USER } = window.__SIM;
+  // ★ 과거일 임시 보기. URL 안 건드림. React state 만 바꾸고 USER 등 mutate → 자식 자동 갱신.
+  const [viewingDay, setViewingDay] = useState(null);
+
+  const { USER, SCENARIOS } = window.__SIM;
+  // realCurrentDay = 자동 계산된 진짜 오늘. USER.currentDay 는 viewingDay 로 덮어쓸 수 있음.
+  const _realDay = USER.realCurrentDay || USER.currentDay;
+  const _effectiveDay = (viewingDay && viewingDay < _realDay) ? viewingDay : _realDay;
+
+  // 매 렌더마다 window.__SIM 동기 갱신. 자식 컴포넌트가 다음 render 에서 새 값 읽음.
+  USER.currentDay = _effectiveDay;
+  USER.realCurrentDay = _realDay;
+  USER.isViewingPast = _effectiveDay !== _realDay;
+  USER.workingDay = window._workingDayIndex ? window._workingDayIndex(_effectiveDay) : _effectiveDay;
+  USER.wordsCollected = window._wordsCollected ? window._wordsCollected(_effectiveDay) : _effectiveDay;
+
+  // SCENARIOS statuses 재계산 (위/안 본 단어 표시 + 출근부 셀 일관성)
+  SCENARIOS.forEach(s => {
+    if (s.day === USER.workingDay) s.status = "today";
+    else if (s.day < USER.wordsCollected) s.status = "studied";
+    else if (USER.workingDay === null && s.day === USER.wordsCollected) s.status = "studied";
+    else s.status = "locked";
+  });
+  USER.studiedDays = SCENARIOS.filter(s => s.status === "studied").length;
+
+  // TODAY_SCHEDULE 도 effective day 기준 재계산
+  if (window.__SIM.getScheduleForDay && USER.workingDay !== null) {
+    window.__SIM.TODAY_SCHEDULE = window.__SIM.getScheduleForDay(USER.workingDay);
+  }
+
 
   // 사내 메모 읽음 상태, localStorage에 사용자 단위로 저장
   const READ_KEY = "__OD_NOTICE_READS_" + (USER.email || "guest");
@@ -5711,44 +5846,63 @@ function App() {
     } catch { return new Set(); }
   });
 
-  // Supabase notices 테이블에서 운영자 발송 공지 가져오기 (mount 시 1회)
+  // Supabase notices 테이블에서 운영자 발송 공지 가져오기
+  // ★ window.OD 로딩 타이밍 문제 회피, 준비될 때까지 폴링
   React.useEffect(() => {
-    if (!window.OD || !window.OD.enabled || !window.OD.fetchNotices) return;
-    window.OD.fetchNotices(50).then(r => {
-      if (!r.ok || !r.notices) return;
-      const fromMap = {
-        "유버디 (Buddy)": "buddy", "유버디": "buddy", "Buddy": "buddy",
-        "인사팀": "hr", "HR": "hr",
-        "사수": "mentor", "차윤아": "mentor",
-        "팀장": "manager", "김 팀장": "manager",
-      };
-      const tagMap = {
-        "announcement": "공지", "event": "이벤트", "broadcast": "전사",
-        "ceo": "회장", "hr": "인사", "notice": "공지",
-      };
-      const converted = r.notices.map(n => {
-        const fromId = fromMap[n.from_name] || "buddy";
-        const dateStr = n.sent_at
-          ? new Date(n.sent_at).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
-          : "";
-        const body = n.body || "";
-        return {
-          id: "db-" + n.id,
-          from: fromId,
-          fromName: n.from_name,
-          to: "당신",
-          date: dateStr,
-          subject: n.title,
-          preview: body.slice(0, 80),
-          body: body,
-          unread: true,
-          tag: tagMap[n.type] || "공지",
-          showFromDay: 0,
-          isDb: true,
+    let cancelled = false;
+    let tries = 0;
+    const tick = () => {
+      if (cancelled) return;
+      if (!window.OD || !window.OD.enabled || !window.OD.fetchNotices) {
+        if (tries++ < 40) { setTimeout(tick, 200); }
+        else { console.warn("[notices] window.OD 준비 안 됨, 공지 fetch 포기"); }
+        return;
+      }
+      window.OD.fetchNotices(50).then(r => {
+        if (cancelled) return;
+        if (!r.ok || !r.notices) {
+          console.warn("[notices] fetch 실패:", r.error || "결과 없음");
+          return;
+        }
+        console.log("[notices] DB 공지", r.notices.length, "건 로드");
+        const fromMap = {
+          "유버디 (Buddy)": "buddy", "유버디": "buddy", "Buddy": "buddy",
+          "인사팀": "hr", "HR": "hr",
+          "사수": "mentor", "차윤아": "mentor",
+          "팀장": "manager", "김 팀장": "manager",
         };
+        const tagMap = {
+          "announcement": "공지", "event": "이벤트", "broadcast": "전사",
+          "ceo": "회장", "hr": "인사", "notice": "공지",
+        };
+        const converted = r.notices.map(n => {
+          const fromId = fromMap[n.from_name] || "buddy";
+          const dateStr = n.sent_at
+            ? new Date(n.sent_at).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
+            : "";
+          const body = n.body || "";
+          return {
+            id: "db-" + n.id,
+            from: fromId,
+            fromName: n.from_name || "유버디",
+            to: "전 직원",
+            date: dateStr,
+            subject: n.title || "(제목 없음)",
+            preview: body.slice(0, 80),
+            body: body,
+            unread: true,
+            tag: tagMap[n.type] || "공지",
+            showFromDay: 0,
+            isDb: true,
+          };
+        });
+        setDbNotices(converted);
+      }).catch(e => {
+        console.warn("[notices] fetch 에러:", e.message);
       });
-      setDbNotices(converted);
-    });
+    };
+    tick();
+    return () => { cancelled = true; };
   }, []);
 
   // DB 공지 + 하드코딩된 공지 병합 (DB 공지가 위로)
@@ -5957,14 +6111,45 @@ function App() {
   }
 
   return (
-    <div className="office">
+    <>
+      {USER.isViewingPast && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 300,
+          background: "#D85A2A",
+          color: "#FFFFFF",
+          padding: "12px 20px",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 14,
+          fontSize: 13.5, fontWeight: 800, flexWrap: "wrap",
+          boxShadow: "0 4px 14px rgba(216,90,42,0.35)",
+          borderBottom: "1px solid rgba(0,0,0,0.1)",
+        }}>
+          <span style={{ color: "#FFFFFF" }}>
+            📅 Day {USER.currentDay} (과거) 보고 있어요 · 학습은 그날 기준으로 저장
+          </span>
+          <button
+            onClick={() => setViewingDay(null)}
+            style={{
+              background: "#FFFFFF",
+              color: "#D85A2A",
+              padding: "6px 14px", borderRadius: 6,
+              border: "none",
+              fontSize: 12.5, fontWeight: 800, cursor: "pointer",
+              fontFamily: "inherit",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.12)",
+            }}
+          >
+            ↩ 오늘로 돌아가기 (Day {USER.realCurrentDay})
+          </button>
+        </div>
+      )}
+    <div className="office" style={USER.isViewingPast ? { paddingTop: 48 } : null}>
       <Locker active={active} setActive={setActive} user={USER} unread={unread} />
       <main className="desk">
         {active === "home" && (weekend
           ? <WeekendHomePage kind={weekend} setActive={setActive} openMemo={handleOpenMemo} />
-          : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} />
+          : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} setViewingDay={setViewingDay} />
         )}
-        {active === "library" && <LibraryPage openScene={setScene} />}
+        {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
         {active === "test" && <TestPage />}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "mypage" && <MyPage />}
@@ -6038,6 +6223,7 @@ function App() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
