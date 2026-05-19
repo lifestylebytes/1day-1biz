@@ -4239,22 +4239,27 @@ function _saveCompletion(entry) {
     // ★ 새 정규화 경로 (submissions + submissions_history append-only).
     // write-through verify, 실패 시 outbox 큐잉, Slack 미러로 외부 보험.
     if (window.OD && window.OD.enabled && window.OD.saveSubmission && u.email) {
-      const payload = {
-        word: entry.word || null,
-        scenario_id: entry.scenarioId || (String(entry.day) + ':' + (entry.word || '')),
-        answer_text: entry.userAnswer || entry.answer || entry.text || '',
-        mc_choice: entry.mcChoice || null,
-        mentor_feedback: entry.mentorFeedback || {},
-        meta: { submittedAt: entry.submittedAt || new Date().toISOString(), raw: entry },
-      };
-      window.OD.saveSubmission(u.email, entry.day, payload).then(r => {
-        if (!r || !r.ok || !r.verified) {
+      // 영작 본문 필드, mainboard 코드 흐름은 entry.sentence (4416번 라인의 _saveCompletion 호출 기준).
+      // 다른 호출자 호환 위해 sentence > userAnswer > answer > text 순서로.
+      const answerText = entry.sentence || entry.userAnswer || entry.answer || entry.text || '';
+      if (answerText.trim()) {
+        const payload = {
+          word: entry.word || null,
+          scenario_id: entry.scenarioId || (String(entry.day) + ':' + (entry.word || '')),
+          answer_text: answerText,
+          mc_choice: entry.mcChoice || null,
+          mentor_feedback: entry.feedback || entry.mentorFeedback || {},
+          meta: { submittedAt: entry.submittedAt || new Date().toISOString(), raw: entry },
+        };
+        window.OD.saveSubmission(u.email, entry.day, payload).then(r => {
+          if (!r || !r.ok || !r.verified) {
+            window.OD.pushOutbox && window.OD.pushOutbox({ type: 'submission', email: u.email, day: entry.day, payload });
+          }
+          window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'submission', email: u.email, day: entry.day, payload });
+        }).catch(() => {
           window.OD.pushOutbox && window.OD.pushOutbox({ type: 'submission', email: u.email, day: entry.day, payload });
-        }
-        window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'submission', email: u.email, day: entry.day, payload });
-      }).catch(() => {
-        window.OD.pushOutbox && window.OD.pushOutbox({ type: 'submission', email: u.email, day: entry.day, payload });
-      });
+        });
+      }
     }
   } catch (e) { console.warn("saveCompletion failed:", e); }
 }
