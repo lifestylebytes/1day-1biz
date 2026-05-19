@@ -6452,8 +6452,9 @@ window.SimApp = App;
           localStorage.setItem(READ_KEY, JSON.stringify(union));
         } catch (e) {}
 
-        // 일정 체크 상태
+        // 일정 체크 상태 (localStorage ↔ DB 양방향 sync)
         try {
+          // DB → localStorage (DB에 있는데 local에 없는 거 채움)
           Object.keys(task_progress || {}).forEach(dayKey => {
             const k = "__OD_TASKS_DAY_" + dayKey;
             const existingT = JSON.parse(localStorage.getItem(k) || "{}");
@@ -6463,6 +6464,43 @@ window.SimApp = App;
             });
             localStorage.setItem(k, JSON.stringify(merged));
           });
+
+          // ★ localStorage → DB (localStorage에 있는데 DB에 없는 거 push, 누락 복구)
+          const allTaskKeys = Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_"));
+          for (const k of allTaskKeys) {
+            const dayKey = k.replace("__OD_TASKS_DAY_", "");
+            const localTasks = JSON.parse(localStorage.getItem(k) || "{}");
+            const dbTasks = (task_progress && task_progress[dayKey]) || {};
+            const hasMore = Object.keys(localTasks).some(id => localTasks[id] && !dbTasks[id]);
+            if (hasMore && window.OD?.saveTaskProgress) {
+              try {
+                await window.OD.saveTaskProgress(local.email, Number(dayKey), localTasks);
+                console.log("[boot-hydrate] task sync up: day " + dayKey, localTasks);
+              } catch (e) {}
+            }
+          }
+        } catch (e) {}
+
+        // ★ scenariosCompleted도 localStorage → DB sync up (누락 복구)
+        try {
+          for (const s of local.scenariosCompleted || []) {
+            const inDb = dbCompleted.find(d => d.day === s.day && d.submittedAt >= s.submittedAt);
+            if (!inDb && s.sentence && s.sentence.trim() && window.OD?.saveSubmission) {
+              const payload = {
+                word: s.word || null,
+                scenario_id: s.scenarioId || (String(s.day) + ':' + (s.word || '')),
+                answer_text: s.sentence,
+                mc_choice: s.mcChoice || null,
+                mentor_feedback: s.feedback || {},
+                meta: { submittedAt: s.submittedAt, raw: s, syncUp: true },
+                status: 'submitted',
+              };
+              try {
+                await window.OD.saveSubmission(local.email, s.day, payload);
+                console.log("[boot-hydrate] submission sync up: day " + s.day);
+              } catch (e) {}
+            }
+          }
         } catch (e) {}
 
         console.log("[boot-hydrate] 동기 hydrate 완료. submissions:", dbCompleted.length,
