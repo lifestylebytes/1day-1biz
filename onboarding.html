@@ -829,8 +829,8 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
       </div>
       <div className="form-row">
-        <label>이메일 (입사 안내 받을 곳)</label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+        <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 이용권 구매하신 이메일로 작성해주세요</span></label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="구매하신 이메일 입력 (예: you@gmail.com)" />
       </div>
       <div className="form-row">
         <label>지원 동기 (한 줄, 선택)</label>
