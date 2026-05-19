@@ -6330,15 +6330,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
   setTimeout(tick, 500);
 })();
 
-/* --- ★ 데이터 손실 방지: mainboard 진입 시 DB → localStorage 동기화 ---
- * cross-device 사용 시 localStorage가 stale 상태에서 새 학습 저장하면 DB 덮어쓰는 버그 방지.
- * DB의 scenariosCompleted, savedNotes를 localStorage와 union merge.
- * 본인 답변·노트는 day별로 보존, 최신 submittedAt 우선.
+/* --- ★ 데이터 손실 방지: mainboard 진입 시 DB → localStorage 동기화 (2026-05-19 새 경로) ---
+ * 정규화 테이블 (submissions / notes / journals / notice_reads_v2)에서 RPC 한 번으로 가져옴.
+ * cross-device, 시크릿 모드, 캐시 클린, 신규 디바이스 모두 같은 경로로 복원.
+ * 다른 기기에서 학습한 내역이 즉시 화면에 보임.
  */
 (function hydrateFromDb() {
   let tries = 0;
   const tick = async () => {
-    if (!window.OD || !window.OD.enabled || !window.OD.client) {
+    if (!window.OD || !window.OD.enabled || !window.OD.fetchUserFullData) {
       if (tries++ < 20) setTimeout(tick, 250);
       return;
     }
@@ -6347,29 +6347,55 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
       const local = raw ? JSON.parse(raw) : null;
       if (!local || !local.email) return;
 
-      const { data: dbUser, error } = await window.OD.client
-        .from("users")
-        .select("scenarios_completed, saved_notes, daily_journals")
-        .eq("email", local.email)
-        .maybeSingle();
-      if (error || !dbUser) return;
+      const r = await window.OD.fetchUserFullData(local.email);
+      if (!r.ok || !r.data) return;
+      const { submissions = [], notes = [], journals = [], notice_reads = [] } = r.data;
 
-      // scenarios_completed merge (union by day, 최신 submittedAt 우선)
+      // submissions → scenariosCompleted (localStorage 옛 형식)
+      const dbCompleted = submissions.map(s => ({
+        day: s.day,
+        word: s.word,
+        scenarioId: s.scenario_id,
+        sentence: s.answer_text,
+        mcChoice: s.mc_choice,
+        feedback: s.mentor_feedback || {},
+        submittedAt: s.submitted_at,
+        status: s.status,
+      }));
+
+      // notes (DB rows) → savedNotes (day별 배열 객체)
+      const dbNotes = {};
+      notes.forEach(n => {
+        const k = String(n.day);
+        dbNotes[k] = dbNotes[k] || [];
+        dbNotes[k].push({
+          text: n.text,
+          label: n.label,
+          kind: n.kind,
+          savedAt: n.created_at,
+        });
+      });
+
+      // journals (DB rows) → dailyJournals (day별 단일 객체)
+      const dbJournals = {};
+      journals.forEach(j => {
+        const k = String(j.day);
+        dbJournals[k] = { day: j.day, text: j.text, savedAt: j.saved_at };
+      });
+
+      // local과 union merge (cross-device 안전, day별 최신 submittedAt 우선)
       const localCompleted = local.scenariosCompleted || [];
-      const dbCompleted = dbUser.scenarios_completed || [];
       const byDay = new Map();
       [...dbCompleted, ...localCompleted].forEach(s => {
         if (!s || !s.day) return;
         const prev = byDay.get(s.day);
-        if (!prev || new Date(s.submittedAt || 0) > new Date(prev.submittedAt || 0)) {
+        if (!prev || new Date(s.submittedAt || 0) >= new Date(prev.submittedAt || 0)) {
           byDay.set(s.day, s);
         }
       });
       const mergedCompleted = [...byDay.values()].sort((a, b) => a.day - b.day);
 
-      // saved_notes merge (day별 배열 union, 텍스트 중복 제거)
       const localNotes = local.savedNotes || {};
-      const dbNotes = dbUser.saved_notes || {};
       const mergedNotes = {};
       const allDayKeys = new Set([...Object.keys(localNotes), ...Object.keys(dbNotes)]);
       for (const d of allDayKeys) {
@@ -6378,16 +6404,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
         const seen = new Set();
         const out = [];
         [...b, ...a].forEach(n => {
-          if (n && n.text && !seen.has(n.text)) {
-            seen.add(n.text); out.push(n);
-          }
+          if (n && n.text && !seen.has(n.text)) { seen.add(n.text); out.push(n); }
         });
         if (out.length) mergedNotes[d] = out;
       }
 
-      // daily_journals merge (day별 단일 객체, 최신 savedAt 우선)
       const localJournals = local.dailyJournals || {};
-      const dbJournals = dbUser.daily_journals || {};
       const mergedJournals = {};
       const allJournalKeys = new Set([...Object.keys(localJournals), ...Object.keys(dbJournals)]);
       for (const d of allJournalKeys) {
@@ -6396,31 +6418,39 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
         if (!a) mergedJournals[d] = b;
         else if (!b) mergedJournals[d] = a;
         else {
-          // 둘 다 있으면 최신 savedAt
           mergedJournals[d] = new Date(a.savedAt || 0) >= new Date(b.savedAt || 0) ? a : b;
         }
       }
-
-      // 변화가 있을 때만 localStorage 갱신 + DB 동기화
-      const changed =
-        mergedCompleted.length !== localCompleted.length ||
-        JSON.stringify(mergedNotes) !== JSON.stringify(localNotes) ||
-        JSON.stringify(mergedJournals) !== JSON.stringify(localJournals);
 
       local.scenariosCompleted = mergedCompleted;
       local.savedNotes = mergedNotes;
       local.dailyJournals = mergedJournals;
       localStorage.setItem("__OD_USER", JSON.stringify(local));
 
-      if (changed && window.OD.updateProgress) {
-        window.OD.updateProgress(local.email, {
-          scenarios_completed: mergedCompleted,
-          saved_notes: mergedNotes,
-          daily_journals: mergedJournals,
-        }).catch(() => {});
-        console.log("[hydrate] DB와 localStorage 병합 완료. 다음 새로고침 시 반영.");
-      } else {
-        console.log("[hydrate] DB·localStorage 일치, 추가 동기화 없음.");
+      // 공지 읽음 ID도 localStorage에 hydrate (READ_KEY는 컴포넌트에서 사용)
+      try {
+        const READ_KEY = "__OD_NOTICE_READS_" + local.email;
+        const existing = JSON.parse(localStorage.getItem(READ_KEY) || "[]");
+        const union = Array.from(new Set([...existing, ...(notice_reads || [])]));
+        localStorage.setItem(READ_KEY, JSON.stringify(union));
+      } catch (e) {}
+
+      console.log("[hydrate] DB → localStorage 복원 완료.",
+        "submissions:", dbCompleted.length,
+        "notes:", notes.length,
+        "journals:", journals.length,
+        "notice_reads:", (notice_reads || []).length);
+
+      // 다른 기기에서 들어왔으면 다음 새로고침에 화면 반영. 부드러운 UX 위해 즉시 reload.
+      // 단, 로컬에 이미 다 있던 경우엔 reload 안 함 (무한 reload 방지).
+      const localHadData = localCompleted.length > 0 || Object.keys(localNotes).length > 0;
+      const dbHasMore = mergedCompleted.length > localCompleted.length
+        || Object.keys(mergedNotes).length > Object.keys(localNotes).length
+        || Object.keys(mergedJournals).length > Object.keys(localJournals).length;
+      if (!localHadData && dbHasMore) {
+        // 빈 디바이스에 DB 데이터 들어왔으면 한 번 reload해서 즉시 화면 반영
+        console.log("[hydrate] 빈 디바이스에 DB 데이터 복원, 새로고침으로 화면 반영");
+        setTimeout(() => location.reload(), 200);
       }
     } catch (e) {
       console.warn("[hydrate] DB sync failed:", e.message);
