@@ -2645,6 +2645,15 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [doneTasks, setDoneTasks] = useState(() => {
     try { return JSON.parse(localStorage.getItem(taskKey) || "{}"); } catch(e) { return {}; }
   });
+  // ★ 날짜 바뀌면 (viewingDay 변경) doneTasks 도 그날 키 기준으로 다시 로드.
+  // 이전 날짜의 state 가 다음 날짜 키에 잘못 저장되는 버그 방지.
+  React.useEffect(() => {
+    try {
+      setDoneTasks(JSON.parse(localStorage.getItem(taskKey) || "{}"));
+    } catch(e) { setDoneTasks({}); }
+    // 열려있던 활동 모달도 닫음 (이전 day 활동 잔재 방지)
+    setActiveItem(null);
+  }, [taskKey]);
   const [toast, setToast] = useState(null);
   const [activeItem, setActiveItem] = useState(null); // todo 클릭 → 어휘 활동 모달
   const showToast = (msg, ms) => {
