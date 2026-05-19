@@ -449,6 +449,10 @@ body::before {
   display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px;
   min-width: 0;
 }
+/* 30일 전체 보기, 데스크탑은 10열 */
+.attendance-cells.full {
+  grid-template-columns: repeat(10, 1fr);
+}
 .att-cell {
   aspect-ratio: 1;
   border: 1px solid var(--line);
@@ -650,6 +654,8 @@ body::before {
   background: rgba(42,31,20,0.55);
   display: grid; place-items: center;
   padding: 24px;
+  padding-top: max(24px, env(safe-area-inset-top));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 .modal-doc {
   background: var(--cream);
@@ -663,6 +669,7 @@ body::before {
   padding: 12px 18px;
   display: flex; justify-content: space-between; align-items: center;
   font-size: 11px; letter-spacing: 0.18em; font-weight: 800; text-transform: uppercase;
+  position: sticky; top: 0; z-index: 10;
 }
 .modal-doc-body { padding: 24px 28px; }
 
@@ -1111,11 +1118,15 @@ body::before {
 .m-tabbar { display: none; }
 
 /* ===== 모바일 ===== */
-/* 작은 폰 대응 (~430px 이하), 출근부 5열로 줄여 가로 넘침 방지 */
+/* 작은 폰 대응 (~430px 이하), 출근부 14일·30일 모드 모두 7열 강제 */
 @media (max-width: 430px) {
   .attendance { padding: 10px 12px; min-width: 0; overflow: hidden; }
-  .attendance-cells { grid-template-columns: repeat(5, 1fr); gap: 3px; min-width: 0; }
-  .att-cell { font-size: 9px; aspect-ratio: 4 / 3; }
+  .attendance-cells,
+  .attendance-cells.full {
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 3px; min-width: 0;
+  }
+  .att-cell { font-size: 9px; aspect-ratio: 1; }
   .att-cell.done::after { font-size: 10px; }
   body { overflow-x: hidden; }
 }
@@ -1175,9 +1186,13 @@ body::before {
   .schedule-status { font-size: 8.5px; padding: 2px 6px; }
   .schedule-head { padding: 9px 12px; font-size: 10px; }
 
-  /* 출근부 */
+  /* 출근부, 모바일에선 14일·30일 모두 7열 */
   .attendance { padding: 12px 14px; min-width: 0; overflow: hidden; }
-  .attendance-cells { grid-template-columns: repeat(7, 1fr); gap: 3px; min-width: 0; }
+  .attendance-cells,
+  .attendance-cells.full {
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 3px; min-width: 0;
+  }
   .attendance-num { font-size: 18px; }
   .att-cell { font-size: 9px; }
   .att-cell.done::after { font-size: 10px; }
@@ -1244,9 +1259,21 @@ body::before {
   .inbox-date { grid-column: 2; font-size: 9.5px; justify-self: flex-end; margin-top: 2px; }
 
   /* 모달 */
-  .modal-bg { padding: 12px; align-items: flex-end; }
-  .modal-doc { max-height: 92vh; box-shadow: 4px 4px 0 rgba(42,31,20,0.4); }
-  .modal-doc-head { padding: 10px 14px; font-size: 10px; }
+  .modal-bg {
+    padding: 12px;
+    padding-top: max(50px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    align-items: flex-end;
+  }
+  .modal-doc {
+    max-height: calc(100vh - max(50px, env(safe-area-inset-top)) - 12px);
+    box-shadow: 4px 4px 0 rgba(42,31,20,0.4);
+  }
+  .modal-doc-head {
+    padding: 10px 14px; font-size: 10px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .modal-doc-head button { padding: 4px 8px; min-width: 36px; min-height: 36px; }
   .modal-doc-body { padding: 18px 18px; }
 
   /* 버튼 */
@@ -2982,8 +3009,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               <span className="attendance-num">{USER.streak}<small>일 연속</small></span>
             </div>
             <div
-              className="attendance-cells"
-              style={showFullAttend ? { gridTemplateColumns: "repeat(10, 1fr)" } : null}
+              className={"attendance-cells" + (showFullAttend ? " full" : "")}
             >
               {cells.map(c => {
                 // 보안: 진짜 오늘(realCurrentDay)보다 이전 일자만 클릭 가능
