@@ -791,6 +791,20 @@ function LoginScreen({ onBack }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  // ★ rate limit cooldown, 마지막 발송 시점부터 60초간 재요청 막음
+  const [cooldownUntil, setCooldownUntil] = useState(() => {
+    try {
+      const v = parseInt(localStorage.getItem("__OD_MAGIC_COOLDOWN") || "0", 10);
+      return v > Date.now() ? v : 0;
+    } catch (e) { return 0; }
+  });
+  const [now, setNow] = useState(Date.now());
+  React.useEffect(() => {
+    if (!cooldownUntil) return;
+    const t = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [cooldownUntil]);
+  const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
 
   const handleLogin = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -801,6 +815,12 @@ function LoginScreen({ onBack }) {
 
     if (!window.OD || !window.OD.enabled) {
       setError("서버 연결이 필요한 기능입니다. 운영자에게 문의해주세요.");
+      return;
+    }
+
+    // ★ cooldown 중이면 거절
+    if (cooldownLeft > 0) {
+      setError(cooldownLeft + "초 후 다시 시도해주세요. 메일은 1-2분 안에 도착해요. 스팸함도 확인.");
       return;
     }
 
@@ -824,9 +844,24 @@ function LoginScreen({ onBack }) {
     const result = await window.OD.sendMagicLink(trimmed);
     setLoading(false);
     if (!result.ok) {
-      setError("로그인 메일 발송 실패: " + (result.error || "잠시 후 다시"));
+      // Supabase rate limit 에러 메시지 파싱, 남은 시간 추출
+      const msg = String(result.error || "");
+      const m = msg.match(/after\s+(\d+)\s+seconds/i);
+      if (m) {
+        const secs = parseInt(m[1], 10);
+        const until = Date.now() + secs * 1000;
+        setCooldownUntil(until);
+        try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
+        setError("아직 " + secs + "초 더 기다려주세요. 이미 보낸 메일이 곧 도착할 거예요. 스팸함도 확인.");
+      } else {
+        setError("로그인 메일 발송 실패: " + (result.error || "잠시 후 다시"));
+      }
       return;
     }
+    // 발송 성공, 60초 cooldown 시작
+    const until = Date.now() + 60 * 1000;
+    setCooldownUntil(until);
+    try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
     setSent(true);
   };
 
@@ -890,11 +925,19 @@ function LoginScreen({ onBack }) {
         <button
           className="btn"
           onClick={handleLogin}
-          disabled={loading || !email.trim()}
+          disabled={loading || !email.trim() || cooldownLeft > 0}
           style={{ justifyContent: "center" }}
         >
-          {loading ? "메일 보내는 중..." : "✉️ 로그인 메일 받기"}
+          {loading ? "메일 보내는 중..."
+            : cooldownLeft > 0 ? "잠시만요... " + cooldownLeft + "초"
+            : "✉️ 로그인 메일 받기"}
         </button>
+        {cooldownLeft > 0 && (
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.5 }}>
+            메일이 곧 도착해요. 받은편지함과 <strong>스팸함</strong>을 확인해주세요.<br/>
+            연속 클릭하시면 차단 시간이 늘어나니 잠시만 기다려주세요.
+          </div>
+        )}
         <a
           onClick={onBack}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
