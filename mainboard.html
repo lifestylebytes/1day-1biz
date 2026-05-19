@@ -6483,16 +6483,33 @@ ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
         "journals:", journals.length,
         "notice_reads:", (notice_reads || []).length);
 
-      // 다른 기기에서 들어왔으면 다음 새로고침에 화면 반영. 부드러운 UX 위해 즉시 reload.
-      // 단, 로컬에 이미 다 있던 경우엔 reload 안 함 (무한 reload 방지).
-      const localHadData = localCompleted.length > 0 || Object.keys(localNotes).length > 0;
-      const dbHasMore = mergedCompleted.length > localCompleted.length
-        || Object.keys(mergedNotes).length > Object.keys(localNotes).length
-        || Object.keys(mergedJournals).length > Object.keys(localJournals).length
-        || Object.keys(task_progress || {}).length > 0;
-      if (!localHadData && dbHasMore) {
-        // 빈 디바이스에 DB 데이터 들어왔으면 한 번 reload해서 즉시 화면 반영
-        console.log("[hydrate] 빈 디바이스에 DB 데이터 복원, 새로고침으로 화면 반영");
+      // ★ 화면 갱신 가드. 3초 cooldown 으로 무한 reload 방지하되,
+      // 새로고침/다른 기기 갱신 즉시 반영 가능하게.
+      const HYDRATE_KEY = "__OD_HYDRATED_AT";
+      const now = Date.now();
+      const lastReloadAt = parseInt(sessionStorage.getItem(HYDRATE_KEY) || "0", 10);
+      const cooldownOk = (now - lastReloadAt) > 3000;
+
+      const beforeKey = JSON.stringify({ c: localCompleted, n: localNotes, j: localJournals });
+      const afterKey  = JSON.stringify({ c: mergedCompleted, n: mergedNotes, j: mergedJournals });
+      const dataChanged = beforeKey !== afterKey;
+
+      // task_progress가 localStorage __OD_TASKS_DAY_* 와 다르면도 reload
+      let taskChanged = false;
+      try {
+        Object.keys(task_progress || {}).forEach(dayKey => {
+          const k = "__OD_TASKS_DAY_" + dayKey;
+          const existing = JSON.parse(localStorage.getItem(k) || "{}");
+          const incoming = task_progress[dayKey] || {};
+          for (const id of Object.keys(incoming)) {
+            if (incoming[id] && !existing[id]) { taskChanged = true; break; }
+          }
+        });
+      } catch (e) {}
+
+      if (cooldownOk && (dataChanged || taskChanged)) {
+        sessionStorage.setItem(HYDRATE_KEY, String(now));
+        console.log("[hydrate] DB와 차이 발견, 화면 갱신 위해 새로고침");
         setTimeout(() => location.reload(), 200);
       }
     } catch (e) {
