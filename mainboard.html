@@ -3949,7 +3949,7 @@ function MyPage() {
         <div className="id-card-clip"></div>
         <div className="id-card-strip">
           <span>YOUBUDDY KOREA · EMPLOYEE ID</span>
-          <b>NO. 2026-0416</b>
+          <b>NO. {USER.empNumber || "2026-0416"}</b>
         </div>
         <div className="id-card-body">
           <div className="id-card-photo">{USER.name[0]}</div>
