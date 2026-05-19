@@ -551,7 +551,137 @@ function StepBar({ idx, total }) {
 // ============================================================
 // 0. Welcome, 신규 가입 OR 로그인 선택
 // ============================================================
+// ============================================================
+// WelcomeScreen V2 — 정식 멤버십 출시용 (대기등록 제거 + 구매 버튼 + 지원서 작성)
+// 사용하려면 아래 USE_V2 를 true 로. 갈아끼우기 한 줄.
+// ============================================================
+const USE_V2 = false;
+const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
+
+function WelcomeScreenV2({ onNext }) {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const dismissIntro = () => setShowIntro(false);
+
+  if (showLogin) {
+    return <LoginScreen onBack={() => setShowLogin(false)} />;
+  }
+
+  return (
+    <>
+    {showIntro && (
+      <>
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9000,
+        }} />
+        <div style={{
+          position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "var(--paper)", border: "2px solid var(--accent)",
+          borderRadius: 14, padding: "30px 30px 22px",
+          maxWidth: 460, width: "calc(100% - 40px)",
+          boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+          zIndex: 9001,
+          textAlign: "left",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 4 }}>
+            ℹ️ 1일 1비란?
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 14 }}>
+            = 1일 1비즈니스 표현 배우기
+          </div>
+          <p style={{ fontSize: 15, color: "var(--ink)", lineHeight: 1.7, marginBottom: 18, fontWeight: 500 }}>
+            <strong>비즈니스 영어 표현</strong>이 매일 한 개씩 제공돼요.
+          </p>
+          <ul style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.85, marginBottom: 22, paddingLeft: 0, listStyle: "none" }}>
+            <li>· <strong>유버디가 외국계 6년 다니며 건진 표현들</strong> 위주</li>
+            <li>· <strong>실제 외국계 회사에서 일어나는 다양한 상황</strong> 제공 (유버디 전매특허!)</li>
+            <li>· 모은 표현으로 <strong>테스트 보기</strong> 가능</li>
+            <li>· <strong>월 구독제</strong>로 진행됩니다</li>
+          </ul>
+          <button
+            onClick={dismissIntro}
+            style={{
+              background: "var(--accent)", color: "white", border: "none",
+              padding: "12px 22px", borderRadius: 8,
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            알겠어요, 시작할게요 →
+          </button>
+        </div>
+      </>
+    )}
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
+      <h1>이 회사,<br/><em>30일만</em> 다녀볼까요?</h1>
+      <p className="lead">
+        유버디 코리아입니다.<br/>
+        한국에 지점을 둔 <strong>외국계 대기업</strong>이에요.
+        <br/><br/>
+        이번에 신입 사원을 뽑고 있습니다.
+        <br/><br/>
+        · 매일 짧은 출근 (약 <strong>5~10분</strong>)<br/>
+        · 1:1 사수가 비즈니스 표현·문화 코칭 (디지털 사수라 잠도 안 자고 24시간 대기, 답장도 빠릅니다)<br/>
+        · <strong>수습 30일 후 정규직 전환 기회</strong>가 있습니다. 승진 제도(사원·대리·과장·임원)도 운영 중이니 열심히 임해주시길 바랍니다<br/>
+        · <strong>유버디 컴퍼니 TIP</strong>: 회장님을 아직 뵌 사람이 없대요 (알려진 건, 임원으로 승진하면 볼 기회가 있다는 것 정도..?)
+        <br/><br/>
+        멤버십 구매 후 지원서를 작성하시면 사번이 즉시 부여되고, 오늘부터 출근 가능합니다.
+      </p>
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
+        {/* 1) 멤버십 구매 (Lapidi 로 이동) */}
+        <a
+          className="btn"
+          href={LATPEED_MEMBERSHIP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
+        >
+          🎟 멤버십 구매하기 →
+        </a>
+        {/* 2) 구매 후 지원서 작성 (기존 가입 흐름) */}
+        <button
+          className="btn btn-ghost"
+          onClick={onNext}
+          style={{ justifyContent: "center" }}
+        >
+          📝 (구매 후) 지원서 작성하기
+        </button>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginTop: -2, lineHeight: 1.55 }}>
+          구매 완료 메일에 발송된 코드를 지원서 작성 시 입력해주세요.
+        </div>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={() => setShowLogin(true)}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        구매 안 하셨으면 위 멤버십 구매하기로 · 이미 구매하셨으면 지원서 작성하기
+      </div>
+    </div>
+    </>
+  );
+}
+
+// ============================================================
+// WelcomeScreen 디스패처 (Rules of Hooks 보호 위해 별도 함수)
+// USE_V2 = true 로 바꾸면 정식 멤버십 출시용 V2 화면
+// ============================================================
 function WelcomeScreen({ onNext }) {
+  return USE_V2 ? <WelcomeScreenV2 onNext={onNext} /> : <WelcomeScreenV1 onNext={onNext} />;
+}
+
+// ============================================================
+// WelcomeScreen V1 (현행, 베타 기간 기본)
+// ============================================================
+function WelcomeScreenV1({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
   // 새로고침할 때마다 인트로 팝업 다시 노출 (localStorage 저장 X)
   const [showIntro, setShowIntro] = useState(true);

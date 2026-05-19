@@ -7,6 +7,11 @@
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<!-- ★ Supabase 클라이언트 + 통합 설정 (2026-05-19, mainboard에 누락돼있던 거 추가) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/integrations-config.js" onerror="console.warn('[1day1biz] integrations-config.js 없음, Slack 미러 비활성')"></script>
+<script src="lib/supabase-client.js"></script>
 <style>
 /* ============================================================
    1일1비, 신입 출근 시뮬레이터 스타일
@@ -1292,6 +1297,12 @@ body::before {
 })();
 </script>
 <div id="root"></div>
+
+<!-- ★ Outbox 저장 대기 배지, supabase-client.js에서 갱신 -->
+<div id="__od_outbox_badge" role="status" aria-live="polite"
+     style="display:none;position:fixed;top:10px;right:10px;background:#fef3c7;color:#92400e;
+            padding:6px 12px;border-radius:8px;font-size:12px;line-height:1.4;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);z-index:9999;font-family:system-ui,sans-serif"></div>
 
 <script>
 /* === sim/data.js (인라인) === */
@@ -4192,9 +4203,17 @@ function _saveDailyJournal(day, text) {
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem("__OD_USER", JSON.stringify(u));
-    // DB sync (실패해도 localStorage엔 살아있음)
-    if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
-      window.OD.updateProgress(u.email, { daily_journals: u.dailyJournals }).catch(() => {});
+    // ★ 새 RPC 경로 (1row=1journal). 실패 시 outbox로 큐잉, 60초마다 자동 재시도.
+    if (window.OD && window.OD.enabled && window.OD.saveJournalRow && u.email) {
+      const t = text.trim();
+      window.OD.saveJournalRow(u.email, day, t).then(r => {
+        if (!r || !r.ok) {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'journal', email: u.email, day: day, text: t });
+        }
+        window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'journal', email: u.email, day: day, text: t });
+      }).catch(() => {
+        window.OD.pushOutbox && window.OD.pushOutbox({ type: 'journal', email: u.email, day: day, text: t });
+      });
     }
     return true;
   } catch (e) { console.warn("saveDailyJournal failed:", e); return false; }
@@ -4217,12 +4236,25 @@ function _saveCompletion(entry) {
     else u.scenariosCompleted.push(entry);
     localStorage.setItem("__OD_USER", JSON.stringify(u));
 
-    // ★ atomic merge RPC 사용 (덮어쓰기 방지 + history 영구 기록)
-    if (window.OD && window.OD.enabled && window.OD.saveScenarioAtomic && u.email) {
-      window.OD.saveScenarioAtomic(u.email, entry).catch(() => {});
-    } else if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
-      // RPC 없으면 fallback (old client, 일시적)
-      window.OD.updateProgress(u.email, { scenarios_completed: u.scenariosCompleted }).catch(() => {});
+    // ★ 새 정규화 경로 (submissions + submissions_history append-only).
+    // write-through verify, 실패 시 outbox 큐잉, Slack 미러로 외부 보험.
+    if (window.OD && window.OD.enabled && window.OD.saveSubmission && u.email) {
+      const payload = {
+        word: entry.word || null,
+        scenario_id: entry.scenarioId || (String(entry.day) + ':' + (entry.word || '')),
+        answer_text: entry.userAnswer || entry.answer || entry.text || '',
+        mc_choice: entry.mcChoice || null,
+        mentor_feedback: entry.mentorFeedback || {},
+        meta: { submittedAt: entry.submittedAt || new Date().toISOString(), raw: entry },
+      };
+      window.OD.saveSubmission(u.email, entry.day, payload).then(r => {
+        if (!r || !r.ok || !r.verified) {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'submission', email: u.email, day: entry.day, payload });
+        }
+        window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'submission', email: u.email, day: entry.day, payload });
+      }).catch(() => {
+        window.OD.pushOutbox && window.OD.pushOutbox({ type: 'submission', email: u.email, day: entry.day, payload });
+      });
     }
   } catch (e) { console.warn("saveCompletion failed:", e); }
 }
@@ -4418,12 +4450,18 @@ function SceneModal({ scenario, onClose }) {
       });
       localStorage.setItem("__OD_USER", JSON.stringify(u));
 
-      // ★ atomic merge RPC (덮어쓰기 방지 + 중복 제거 + history 영구 기록)
+      // ★ 새 정규화 경로 (notes 테이블, 1row=1note). 실패 시 outbox 큐잉.
       const noteEntry = u.savedNotes[dayKey][u.savedNotes[dayKey].length - 1];
-      if (window.OD && window.OD.enabled && window.OD.saveNoteAtomic && u.email) {
-        window.OD.saveNoteAtomic(u.email, dayKey, noteEntry).catch(() => {});
-      } else if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
-        window.OD.updateProgress(u.email, { saved_notes: u.savedNotes }).catch(() => {});
+      if (window.OD && window.OD.enabled && window.OD.saveNoteRow && u.email) {
+        const dayInt = Number(dayKey);
+        window.OD.saveNoteRow(u.email, dayInt, noteEntry.text, noteEntry.label || null, noteEntry.kind || null).then(r => {
+          if (!r || !r.ok) {
+            window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day: dayInt, text: noteEntry.text, label: noteEntry.label, kind: noteEntry.kind });
+          }
+          window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'note', email: u.email, day: dayInt, text: noteEntry.text, kind: noteEntry.kind });
+        }).catch(() => {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day: dayInt, text: noteEntry.text, label: noteEntry.label, kind: noteEntry.kind });
+        });
       }
       return true;
     } catch (e) { return false; }
@@ -5948,8 +5986,16 @@ function App() {
         try { localStorage.setItem(READ_KEY, JSON.stringify([...next])); } catch {}
         return next;
       });
-      // (v1.5) Supabase events 로그, 추후 활성화
-      // window.OD?.logEvent?.(USER.id, "notice_read", { id: n.id });
+      // ★ DB 영속화 (notice_reads_v2). 실패 시 outbox 큐잉.
+      if (window.OD && window.OD.enabled && window.OD.markNoticeRead && USER.email) {
+        window.OD.markNoticeRead(USER.email, n.id).then(r => {
+          if (!r || !r.ok) {
+            window.OD.pushOutbox && window.OD.pushOutbox({ type: 'notice', email: USER.email, noticeKey: n.id });
+          }
+        }).catch(() => {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'notice', email: USER.email, noticeKey: n.id });
+        });
+      }
     }
   };
 
@@ -6256,14 +6302,21 @@ window.SimApp = App;
 /* --- 마운트 --- */
 ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
 
-/* --- auto-day Supabase 동기화 (외부 사용자만) --- */
+/* --- auto-day Supabase 동기화 (외부 사용자만), 새 RPC 경로 --- */
 (function syncDayToSupabase() {
   const pending = window.__OD_PENDING_DAY_SYNC;
   if (!pending) return;
   let tries = 0;
   const tick = () => {
-    if (window.OD && window.OD.enabled && window.OD.updateProgress) {
-      window.OD.updateProgress(pending.email, { day_in_company: pending.day }).catch(() => {});
+    if (window.OD && window.OD.enabled && window.OD.saveDayProgress) {
+      window.OD.saveDayProgress(pending.email, pending.day).then(r => {
+        if (!r || !r.ok) {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'day', email: pending.email, day: pending.day });
+        }
+        window.OD.sendSlackMirror && window.OD.sendSlackMirror({ type: 'day', email: pending.email, day: pending.day });
+      }).catch(() => {
+        window.OD.pushOutbox && window.OD.pushOutbox({ type: 'day', email: pending.email, day: pending.day });
+      });
       window.__OD_PENDING_DAY_SYNC = null;
     } else if (tries++ < 20) {
       setTimeout(tick, 250);

@@ -124,6 +124,153 @@ function genCode() {
   return 'PILOT-' + c;
 }
 
+// ============================================================
+// ★ 학습 데이터 조회 카드 (2026-05-19 추가, RLS 사고 대응)
+// 이메일·Day 입력하면 RPC로 즉시 답안·노트·일지·history 조회.
+// ============================================================
+function LearningQueryCard() {
+  const [email, setEmail] = React.useState('');
+  const [day, setDay] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [result, setResult] = React.useState(null);  // 전체 진도 (day 비웠을 때)
+  const [dayResult, setDayResult] = React.useState(null);  // 특정 day
+  const [health, setHealth] = React.useState(null);
+  const [error, setError] = React.useState('');
+
+  async function run() {
+    if (!email.trim()) { setError('이메일을 입력해주세요.'); return; }
+    setError(''); setLoading(true);
+    setResult(null); setDayResult(null); setHealth(null);
+    try {
+      const healthR = await window.OD.fetchUserHealth(email.trim());
+      if (healthR.ok) setHealth(healthR.health);
+
+      if (day && Number(day) > 0) {
+        const r = await window.OD.fetchUserDay(email.trim(), Number(day));
+        if (!r.ok) throw new Error(r.error || 'fetch 실패');
+        setDayResult(r.data);
+      } else {
+        const r = await window.OD.fetchUserProgress(email.trim());
+        if (!r.ok) throw new Error(r.error || 'fetch 실패');
+        setResult(r.rows);
+      }
+    } catch (e) {
+      setError(e.message || '조회 실패');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="section">
+      <div className="section-title">📚 학습 데이터 조회</div>
+      <div className="card" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="이메일 (예: rbxo4119@naver.com)"
+            style={{ flex: '1 1 280px', padding: '8px 10px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13 }}
+            onKeyDown={e => { if (e.key === 'Enter') run(); }}
+          />
+          <input
+            value={day}
+            onChange={e => setDay(e.target.value)}
+            placeholder="Day (비우면 전체)"
+            type="number" min="1" max="30"
+            style={{ width: 140, padding: '8px 10px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13 }}
+            onKeyDown={e => { if (e.key === 'Enter') run(); }}
+          />
+          <button className="btn" onClick={run} disabled={loading}>
+            {loading ? '조회 중…' : '조회'}
+          </button>
+        </div>
+
+        {error && <div style={{ marginTop: 10, color: '#B43A2A', fontSize: 12 }}>⚠ {error}</div>}
+
+        {health && (
+          <div style={{ marginTop: 12, fontSize: 12, color: '#5A4A38', background: '#FAF4E8', padding: 10, borderRadius: 6 }}>
+            <b>{health.email}</b> · submissions {health.submission_count}건 · history {health.history_count}건 · notes {health.notes_count}건 · journals {health.journals_count}건
+            {health.last_submission_at && <> · 마지막 영작 {new Date(health.last_submission_at).toLocaleString('ko-KR')}</>}
+          </div>
+        )}
+
+        {result && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>전체 진도</div>
+            {result.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#8A7964' }}>이 사용자의 영작 기록 없음.</div>
+            ) : (
+              <div style={{ display: 'grid', gap: 4 }}>
+                {result.map(r => (
+                  <div key={r.day} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 10px', background: '#FAF4E8', borderRadius: 4 }}>
+                    <b style={{ width: 60 }}>Day {r.day}</b>
+                    <span style={{ width: 80, color: '#5A4A38' }}>{r.word || '-'}</span>
+                    <span style={{ flex: 1 }}>{r.answer_preview || '(답안 없음)'}</span>
+                    <span style={{ color: '#8A7964' }}>
+                      {r.has_note ? '📒' : ''}{r.has_journal ? '📔' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {dayResult && (
+          <div style={{ marginTop: 14, display: 'grid', gap: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700 }}>Day {day} 상세</div>
+
+            <div className="card" style={{ padding: 12, background: '#FFF' }}>
+              <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 6 }}>📝 시나리오 영작</div>
+              {dayResult.submission ? (
+                <div>
+                  <div style={{ fontSize: 13, lineHeight: 1.6 }}>{dayResult.submission.answer_text}</div>
+                  <div style={{ fontSize: 11, color: '#8A7964', marginTop: 6 }}>
+                    word: {dayResult.submission.word || '-'} · mc: {dayResult.submission.mc_choice || '-'} · {new Date(dayResult.submission.submitted_at).toLocaleString('ko-KR')}
+                  </div>
+                </div>
+              ) : <div style={{ fontSize: 12, color: '#8A7964' }}>제출 없음</div>}
+            </div>
+
+            <div className="card" style={{ padding: 12, background: '#FFF' }}>
+              <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 6 }}>📒 단어 노트 ({dayResult.notes?.length || 0})</div>
+              {dayResult.notes && dayResult.notes.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
+                  {dayResult.notes.map(n => (
+                    <li key={n.id}><b>[{n.label || n.kind || 'note'}]</b> {n.text}</li>
+                  ))}
+                </ul>
+              ) : <div style={{ fontSize: 12, color: '#8A7964' }}>노트 없음</div>}
+            </div>
+
+            <div className="card" style={{ padding: 12, background: '#FFF' }}>
+              <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 6 }}>📔 업무일지</div>
+              {dayResult.journal ? (
+                <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{dayResult.journal.text}</div>
+              ) : <div style={{ fontSize: 12, color: '#8A7964' }}>일지 없음</div>}
+            </div>
+
+            {dayResult.history && dayResult.history.length > 1 && (
+              <div className="card" style={{ padding: 12, background: '#FFF' }}>
+                <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 6 }}>🕒 제출 이력 ({dayResult.history.length}회)</div>
+                <div style={{ display: 'grid', gap: 4, fontSize: 11 }}>
+                  {dayResult.history.map(h => (
+                    <div key={h.id} style={{ padding: '4px 0', borderBottom: '1px dashed #E6D9C0' }}>
+                      <div style={{ color: '#8A7964' }}>{new Date(h.created_at).toLocaleString('ko-KR')}</div>
+                      <div>{h.answer_text}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // ★ 운영자 가드 — 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
@@ -348,7 +495,10 @@ function App() {
             : "⚪ Supabase 미연결, lib/supabase-config.js 설정 필요. 지금은 이 기기 데이터만 보임."}
         </div>
 
-        {/* Supabase 전체 사용자, 가장 위에 배치 */}
+        {/* ★ 학습 데이터 조회 (2026-05-19 추가): 사용자별 N일차 영작·노트·일지 즉시 보기 */}
+        {supaEnabled && <LearningQueryCard />}
+
+        {/* Supabase 전체 사용자 */}
         {supaEnabled && (
           <div className="section">
             <div className="section-title">🌐 전체 사용자 (Supabase)
