@@ -441,8 +441,13 @@ body::before {
   font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--orange);
 }
 .attendance-num small { font-size: 11px; color: var(--ink-mute); margin-left: 4px; font-weight: 700; }
+.attendance {
+  min-width: 0; /* grid 자식이 부모 폭 넘지 않게 */
+  overflow: hidden;
+}
 .attendance-cells {
   display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px;
+  min-width: 0;
 }
 .att-cell {
   aspect-ratio: 1;
@@ -1106,6 +1111,15 @@ body::before {
 .m-tabbar { display: none; }
 
 /* ===== 모바일 ===== */
+/* 작은 폰 대응 (~430px 이하), 출근부 5열로 줄여 가로 넘침 방지 */
+@media (max-width: 430px) {
+  .attendance { padding: 10px 12px; min-width: 0; overflow: hidden; }
+  .attendance-cells { grid-template-columns: repeat(5, 1fr); gap: 3px; min-width: 0; }
+  .att-cell { font-size: 9px; aspect-ratio: 4 / 3; }
+  .att-cell.done::after { font-size: 10px; }
+  body { overflow-x: hidden; }
+}
+
 @media (max-width: 880px) {
   body { font-size: 13px; }
   .office {
@@ -1162,9 +1176,11 @@ body::before {
   .schedule-head { padding: 9px 12px; font-size: 10px; }
 
   /* 출근부 */
-  .attendance { padding: 12px 14px; }
-  .attendance-cells { grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .attendance { padding: 12px 14px; min-width: 0; overflow: hidden; }
+  .attendance-cells { grid-template-columns: repeat(7, 1fr); gap: 3px; min-width: 0; }
   .attendance-num { font-size: 18px; }
+  .att-cell { font-size: 9px; }
+  .att-cell.done::after { font-size: 10px; }
 
   /* 메모 박스 (홈) */
   .memo-row { grid-template-columns: 28px 1fr auto; padding: 9px 12px; font-size: 11.5px; gap: 8px; }
