@@ -125,9 +125,37 @@ function genCode() {
 }
 
 function App() {
+  // ★ 운영자 가드 — 운영자 아니면 즉시 차단 (localStorage 1차 검증)
+  const _initUser = load(KEY_USER, null);
+  if (!_initUser || !_initUser.isOperator) {
+    // 비운영자 또는 비로그인 → 홈으로 튕김
+    alert("운영자 전용 페이지입니다.");
+    window.location.replace("onboarding.html");
+    return null;
+  }
+
   const [invites, setInvites] = useState(() => load(KEY_INVITES, []));
-  const [currentUser, setCurrentUser] = useState(() => load(KEY_USER, null));
+  const [currentUser, setCurrentUser] = useState(() => _initUser);
   const [notices, setNotices] = useState(() => load(KEY_NOTICES, []));
+
+  // ★ 2차 검증 — DB의 is_operator 도 확인 (localStorage 위조 방지)
+  React.useEffect(() => {
+    let cancelled = false;
+    const verify = async () => {
+      let tries = 0;
+      while ((!window.OD || !window.OD.enabled) && tries++ < 30) {
+        await new Promise(r => setTimeout(r, 200));
+      }
+      if (cancelled || !window.OD || !window.OD.enabled) return;
+      const r = await window.OD.fetchByEmail(_initUser.email);
+      if (!r.ok || !r.user || !r.user.is_operator) {
+        alert("운영자 권한 검증 실패. 다시 로그인해주세요.");
+        window.location.replace("onboarding.html");
+      }
+    };
+    verify();
+    return () => { cancelled = true; };
+  }, []);
 
   const [newName, setNewName] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -409,6 +437,45 @@ function App() {
             </div>
             <div style={{ fontSize: 11, color: '#8A7964', marginTop: 10, lineHeight: 1.6 }}>
               실시간 데이터. 새 가입자는 30초마다 자동 ↻ 또는 위 버튼으로 갱신.
+            </div>
+
+            {/* 💬 지원 동기 (가입할 때 작성한 동기 모음) */}
+            <div className="section-title" style={{ marginTop: 36 }}>💬 지원 동기 (가입 시 작성)</div>
+            <div className="card" style={{ padding: 0 }}>
+              {(() => {
+                const withMotivation = supaUsers.filter(u => u.onboarding_motivation && u.onboarding_motivation.trim());
+                if (withMotivation.length === 0) {
+                  return <div className="empty">아직 지원 동기를 작성한 사용자가 없어요.</div>;
+                }
+                return withMotivation
+                  .sort((a, b) => new Date(b.signup_date || 0) - new Date(a.signup_date || 0))
+                  .map(u => (
+                    <div key={u.id} style={{ padding: '16px 18px', borderBottom: '1px solid #E8DFCB' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
+                        <div>
+                          <span style={{ fontWeight: 800, fontSize: 14 }}>{u.name}</span>
+                          <span style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginLeft: 10 }}>{u.email}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          {u.cohort === 'member' && <span className="status-pill" style={{ fontSize: 10, background: '#FFE9A6', color: '#8C6510' }}>정식</span>}
+                          {u.is_pilot_hire && u.cohort !== 'member' && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
+                          <span style={{ fontSize: 11, color: '#8A7964' }}>{u.signup_date ? new Date(u.signup_date).toLocaleDateString('ko-KR') : '-'}</span>
+                        </div>
+                      </div>
+                      <div style={{
+                        background: '#FAF6EB', padding: '12px 14px',
+                        borderLeft: '3px solid #D85A2A', borderRadius: 4,
+                        fontSize: 13, color: '#2A1F14', lineHeight: 1.65,
+                        whiteSpace: 'pre-wrap', wordBreak: 'keep-all',
+                      }}>
+                        {u.onboarding_motivation}
+                      </div>
+                    </div>
+                  ));
+              })()}
+            </div>
+            <div style={{ fontSize: 11, color: '#8A7964', marginTop: 8, lineHeight: 1.6 }}>
+              지원서 작성 시 입력한 동기가 표시됩니다. 비워둔 사용자는 목록에 안 나옴.
             </div>
           </div>
         )}

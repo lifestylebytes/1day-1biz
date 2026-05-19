@@ -352,11 +352,10 @@ function OnboardingApp() {
           setSubmitting(false);
           return;
         }
-        // 2) ★ 중복 가입 가드 — 같은 이메일이 이미 users 테이블에 있으면 차단
-        //    덮어쓰기로 기존 진도가 통째로 날라가는 사고 방지.
+        // 2) ★ 중복 가입 가드 — RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
         const emailTrimmed = (email || "").trim().toLowerCase();
-        const existing = await window.OD.fetchByEmail(emailTrimmed);
-        if (existing && existing.ok && existing.user) {
+        const existing = await window.OD.emailExists(emailTrimmed);
+        if (existing && existing.ok && existing.exists) {
           setSubmitError("이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
           setSubmitting(false);
           return;
@@ -676,14 +675,14 @@ function LoginScreen({ onBack }) {
     setLoading(true);
     setError("");
 
-    // 가입 기록 먼저 확인 (매직 링크 보내기 전)
-    const check = await window.OD.fetchByEmail(trimmed);
+    // 가입 기록 먼저 확인 (매직 링크 보내기 전) — RLS 우회 emailExists RPC 사용
+    const check = await window.OD.emailExists(trimmed);
     if (!check.ok) {
       setLoading(false);
       setError("연결 실패. 잠시 후 다시 시도해주세요.");
       return;
     }
-    if (!check.user) {
+    if (!check.exists) {
       setLoading(false);
       setError("가입 기록이 없어요. 처음이신 분은 지원서 작성하기로 이동해주세요.");
       return;
@@ -963,7 +962,7 @@ function OfferScreen({ name, dept, empNumber, stageIdx, totalStages, onNext }) {
   return (
     <div className="email-card">
       <div className="email-head">
-        <div className="from">From. <strong>유버디 (CEO)</strong> &lt;ceo@youbuddy.co.kr&gt;</div>
+        <div className="from">From. <strong>유버디 컴퍼니 인사팀</strong> &lt;hr@youbuddy.co.kr&gt;</div>
         <div>To. {name} &lt;you@example.com&gt;</div>
         <div className="subject">[유버디 컴퍼니] 최종 합격을 축하드립니다 🎉</div>
       </div>
@@ -973,19 +972,18 @@ function OfferScreen({ name, dept, empNumber, stageIdx, totalStages, onNext }) {
           유버디 컴퍼니에 지원해주셔서 감사합니다. 임원진 회의에서 만장일치로 <strong>최종 합격</strong>이 결정되었습니다.
         </p>
         <p>
-          {name}님께 부여된 사번은 <strong style={{ fontFamily: "JetBrains Mono, monospace" }}>{empNumber}</strong> 이며,
-          소속 부서는 <strong>{dept.name}</strong> ({dept.short})입니다.
+          {name}님께 부여된 사번은 <strong style={{ fontFamily: "JetBrains Mono, monospace" }}>{empNumber}</strong> 입니다.
         </p>
         <p>
-          첫 출근일은 <strong>오늘</strong>입니다. 다음 화면에서 사수 배정과 첫 업무를 안내드릴게요.
+          첫 출근일은 <strong>오늘</strong>입니다. 다음 화면에서 사수와 첫 업무를 안내드릴게요.
           처음 30일은 수습 기간이고, 매일 짧은 시나리오로 회사에 적응하시면 됩니다.
         </p>
         <p>
           <strong>오신 걸 환영합니다. 1일1비 컴퍼니에서 새로운 시작을!</strong>
         </p>
         <div className="signature">
-          <b>유버디</b>
-          <small>CEO · 유버디 컴퍼니 · YouBuddy Korea</small>
+          <b>유버디 컴퍼니 인사팀</b>
+          <small>YouBuddy Korea · People & Culture</small>
         </div>
       </div>
       <div style={{ padding: "16px 30px", background: "var(--paper-warm)", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "flex-end" }}>
@@ -1004,16 +1002,12 @@ function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNe
       <StepBar idx={stageIdx} total={totalStages} />
       <div className="eyebrow">STEP 4 · 배정 안내</div>
       <h1>당신의 <em>자리</em>가 준비됐어요.</h1>
-      <p className="lead">사수와 부서가 자동 배정됐어요. 첫 1년은 이 사람과 가장 많이 대화하게 될 거예요.</p>
+      <p className="lead">전담 사수가 배정됐어요. 첫 30일 수습 기간 동안 가장 많이 대화하게 될 거예요.</p>
 
       <div className="assign-grid">
-        <div className="assign-cell">
+        <div className="assign-cell full">
           <div className="lab">사번</div>
           <div className="val">{empNumber}</div>
-        </div>
-        <div className="assign-cell">
-          <div className="lab">부서</div>
-          <div className="val" style={{ fontFamily: "Noto Sans KR" }}>{dept.short}</div>
         </div>
         <div className="assign-cell full">
           <div className="lab">배정 사수 (Mentor)</div>
@@ -1022,35 +1016,6 @@ function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNe
             "{mentor.trait}"
           </div>
         </div>
-      </div>
-
-      {/* 부서 시스템 안내, 30일 무작위 → 이후 이동 신청 가능 */}
-      <div style={{
-        marginTop: 22, padding: "16px 18px",
-        background: "var(--paper-warm)",
-        border: "1px dashed var(--line)",
-        borderRadius: 8,
-        fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.75,
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: "0.08em", marginBottom: 8 }}>
-          📋 부서 배정 시스템
-        </div>
-        <p style={{ marginBottom: 10 }}>
-          신입은 <strong>처음 30일 동안 수습으로 무작위 배치</strong>돼요. 다양한 환경을 경험하라는 거예요, 수습 끝나면 본인 의지로 <strong>팀 이동/교체 신청</strong>할 수 있어요.
-        </p>
-        <p style={{ marginBottom: 10 }}>
-          현재 운영 중인 5개 부서:
-        </p>
-        <ul style={{ margin: "0 0 10px", paddingLeft: 16, fontSize: 12, listStyle: "none" }}>
-          <li>· <strong>Growth & Marketing</strong>, 마케팅</li>
-          <li>· <strong>Business Operations</strong>, 운영</li>
-          <li>· <strong>Business Development</strong>, BD</li>
-          <li>· <strong>Product</strong>, 프로덕트</li>
-          <li>· <strong>People & Culture</strong>, P&C (인사)</li>
-        </ul>
-        <p style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--line)" }}>
-          💡 회사 성장하면서 <strong>새 부서가 신설</strong>될 수도 있어요 (Design, Data, Legal …). 사내 공지에서 알려드릴게요.
-        </p>
       </div>
 
       <div className="btn-row">

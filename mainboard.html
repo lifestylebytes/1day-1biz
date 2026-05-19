@@ -3130,10 +3130,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 <button
                   onClick={() => isLast ? closeTour() : setTourStep(tourStep + 1)}
                   style={{
-                    background: "var(--accent)", color: "white", border: "none",
-                    padding: "10px 18px", borderRadius: 8,
-                    fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                    boxShadow: "0 4px 12px rgba(216,90,42,0.3)",
+                    background: "#D85A2A", color: "#FFFFFF", border: "none",
+                    padding: "12px 22px", borderRadius: 8,
+                    fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                    boxShadow: "0 4px 12px rgba(216,90,42,0.35)",
+                    letterSpacing: "0.01em",
                   }}
                 >
                   {isLast ? (step.cta || "시작하기 ✓") : "다음 →"}
@@ -3879,6 +3880,12 @@ function MyPage() {
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
+            {USER.email && (
+              <div className="id-field">
+                <span className="id-field-label">로그인</span>
+                <span className="id-field-value" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>{USER.email}</span>
+              </div>
+            )}
             {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
             {false && (
               <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
@@ -3918,10 +3925,25 @@ function MyPage() {
         )}
       </div>
 
-      {/* 구독 정보 (읽기), 가격/결제 정보는 정식 출시 후 노출 */}
+      {/* 구독 정보 (읽기) — cohort 별 플랜명 다르게 표시 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <div className="hr-section-head">구독 정보</div>
-        <div className="hr-row"><span className="hr-row-label">현재 플랜</span><span className="hr-row-value"><b>1일 1비즈니스</b> · 베타</span></div>
+        <div className="hr-row">
+          <span className="hr-row-label">현재 플랜</span>
+          <span className="hr-row-value">
+            {(() => {
+              const _u = (function() { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null"); } catch(e) { return null; } })();
+              const cohort = _u?.cohort || "";
+              if (cohort === "member" || cohort === "paid-m1" || cohort.startsWith("paid")) {
+                return <><b>1일1비 정식 멤버십</b></>;
+              }
+              if (cohort.startsWith("season") || cohort === "pilot" || _u?.isPilotHire) {
+                return <><b>1일 1비즈니스</b> · 베타</>;
+              }
+              return <><b>1일 1비즈니스</b></>;
+            })()}
+          </span>
+        </div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
         {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
         {false && (
@@ -3970,28 +3992,21 @@ function MyPage() {
               </div>
             )}
 
-            {/* 휴직(일시중지), 한 단계 더 들어가야 보임 */}
-            <button
-              className="hr-row danger-zone-toggle"
-              onClick={() => setShowPause(!showPause)}
-              style={{ width: "100%", textAlign: "left", cursor: "pointer", border: "none" }}
+            {/* 휴직(구독 해지) — 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
+            <a
+              href="https://mavrks.notion.site/faq-3"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hr-row"
+              style={{
+                width: "100%", textAlign: "left",
+                textDecoration: "none", display: "flex",
+                justifyContent: "space-between", alignItems: "center",
+              }}
             >
-              <span className="hr-row-label" style={{ color: "var(--stamp-red)", fontWeight: 800 }}>🚧 휴직 · 구독 일시중지</span>
-              <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>{showPause ? "닫기 ▲" : "열기 ▼"}</span>
-            </button>
-            {showPause && (
-              <div style={{ background: "rgba(178,58,44,0.04)", padding: "16px 18px", borderTop: "1px dashed var(--line)" }}>
-                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 12 }}>
-                  ⚠️ 휴직 신청 시 다음 결제일까지 단어 배달이 멈춰요. 출근부 스트릭은 보존되지만, 누적 학습 기록이 잠깐 비게 됩니다. 복귀 신청은 언제든 가능.
-                </div>
-                <div className="row">
-                  <button className="btn btn-sm btn-ghost" onClick={() => setPaused(!paused)} style={{ borderColor: "var(--stamp-red)", color: "var(--stamp-red)" }}>
-                    {paused ? "↻ 복귀하기 (재개)" : "⏸ 휴직 신청"}
-                  </button>
-                  {paused ? <span style={{ fontSize: 11.5, color: "var(--stamp-red)", fontWeight: 700 }}>● 현재 일시중지 상태</span> : null}
-                </div>
-              </div>
-            )}
+              <span className="hr-row-label" style={{ color: "var(--stamp-red)", fontWeight: 800 }}>🚧 휴직 · 구독 해지 안내</span>
+              <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>FAQ 열기 ↗</span>
+            </a>
 
             {/* 로그아웃, 설정 맨 아래 */}
             <div className="hr-row" style={{ borderTop: "1px dashed var(--line)", paddingTop: 14, marginTop: 6 }}>
