@@ -5149,7 +5149,23 @@ function MissionActivity({ today, item, onClose, onComplete }) {
             const ok = o.kind === "correct";
             const cls = "slack-reply-option" + (showResult && ok ? " picked-correct" : isPicked && !ok ? " picked-wrong" : "");
             return (
-              <button key={i} className={cls} onClick={() => pick === null && setPick(o.text)} disabled={pick !== null}>
+              <button key={i} className={cls} onClick={() => {
+                if (pick !== null) return;
+                setPick(o.text);
+                // ★ DB에 mc 선택 저장 (submissions.mc_choice)
+                try {
+                  if (window.OD?.enabled && window.OD.saveSubmission && USER.email) {
+                    window.OD.saveSubmission(USER.email, today.day, {
+                      word: today.word,
+                      scenario_id: String(today.day) + ':' + (today.word || ''),
+                      answer_text: '',
+                      mc_choice: o.kind || null,
+                      meta: { mcSelectedAt: new Date().toISOString(), mcText: o.text, isSlackStyle: true },
+                      status: 'draft',
+                    }).catch(() => {});
+                  }
+                } catch (e) {}
+              }} disabled={pick !== null}>
                 <span className="opt-letter">{String.fromCharCode(65 + i)}.</span>
                 {o.text}
                 {showResult ? <div className="opt-note">{o.note}</div> : null}
@@ -5191,7 +5207,23 @@ function MissionActivity({ today, item, onClose, onComplete }) {
           return (
             <button
               key={i}
-              onClick={() => pick === null && setPick(o.text)}
+              onClick={() => {
+                if (pick !== null) return;
+                setPick(o.text);
+                // ★ DB에 mc 선택 저장 (submissions.mc_choice)
+                try {
+                  if (window.OD?.enabled && window.OD.saveSubmission && USER.email) {
+                    window.OD.saveSubmission(USER.email, today.day, {
+                      word: today.word,
+                      scenario_id: String(today.day) + ':' + (today.word || ''),
+                      answer_text: '',
+                      mc_choice: o.kind || null,
+                      meta: { mcSelectedAt: new Date().toISOString(), mcText: o.text, isSlackStyle: false },
+                      status: 'draft',
+                    }).catch(() => {});
+                  }
+                } catch (e) {}
+              }}
               style={{
                 textAlign: "left", padding: "14px 16px", borderRadius: 8,
                 border: "1.5px solid " + (showResult && ok ? "var(--green)" : isPicked ? "var(--stamp-red)" : "var(--line)"),
@@ -6096,7 +6128,7 @@ function App() {
 
   // ── 만료/퇴직 체크 ──
   // 운영자/Dev는 통과. URL ?expired=1 로 강제 미리보기 가능 (운영자 디버깅용)
-  // 1) 베타 만료: PILOT 사용자가 7일 지나면
+  // 1) 베타 만료: PILOT 사용자가 14일 지나면 (정식 런칭 전까지 연장)
   // 2) 멤버십 만료: 정식 멤버가 membership_ends_at 지나면 (퇴직 완료)
   // 3) D-7 알림: 인수인계 기간 중 마지막 출근일 7일 이내
   const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
@@ -6113,7 +6145,7 @@ function App() {
   const _d7Warning = !_isInternalUser && _endsAt && _msUntilEnd > 0 && _msUntilEnd <= 7 * 86400000;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;
 
-  const _betaExpired = (_forceExpired && !_endsAt) || (_isPilot && !_isInternalUser && !_endsAt && USER.currentDay > 7);
+  const _betaExpired = (_forceExpired && !_endsAt) || (_isPilot && !_isInternalUser && !_endsAt && USER.currentDay > 14);
 
   // D-7 알림은 세션당 한 번만 (계속 떠서 짜증 안 나게)
   const [_d7Dismissed, _setD7Dismissed] = useState(() => {
@@ -6915,7 +6947,7 @@ window.SimApp = App;
       </div>
 
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
-        <div class="muted" style="margin-bottom:4px;">베타 만료 미리보기 (Day 8+ PILOT)</div>
+        <div class="muted" style="margin-bottom:4px;">베타 만료 미리보기 (Day 15+ PILOT)</div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr">
           <button class="dp-btn" data-act="preview-expired" style="background:${_expiredOn ? 'rgba(243,138,92,0.4)' : 'rgba(255,255,255,0.08)'}">${_expiredOn ? '✓ 만료 화면 ON' : '🔒 만료 화면 보기'}</button>
           <button class="dp-btn" data-act="exit-expired" ${!_expiredOn ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>↩ 정상 복귀</button>
@@ -6991,8 +7023,8 @@ window.SimApp = App;
         break;
       }
       case 'preview-expired': {
-        // 베타 만료 화면 강제 표시, Day 8로 점프 + ?expired=1 추가
-        u.dayInCompany = Math.max(8, u.dayInCompany || 8);
+        // 베타 만료 화면 강제 표시, Day 15로 점프 + ?expired=1 추가
+        u.dayInCompany = Math.max(15, u.dayInCompany || 15);
         save(u);
         const url = new URL(location.href);
         url.searchParams.set('expired', '1');
