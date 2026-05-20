@@ -1162,7 +1162,23 @@ body::before {
   .approval-cell:nth-child(-n+2) { border-bottom: 1px solid var(--ink); }
 
   /* 홈 그리드, 1열로 */
-  .desk-grid { grid-template-columns: 1fr; gap: 14px; }
+  /* 모바일: 1열로 쌓되, 두 col을 펼쳐서 출근부를 시추에이션 위로 끌어올림 */
+  .desk-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .desk-grid > .col {
+    display: contents;
+  }
+  .desk-grid .attendance { order: -1; }     /* 출근부 맨 위 */
+  .desk-grid .scene-card { order: 0; }       /* 시추에이션 그 다음 */
+  .desk-grid .schedule { order: 1; }         /* 일정 */
+  .desk-grid .empty-postit,
+  .desk-grid .appear-postit { order: 2; }    /* 사수 메모 */
+  .desk-grid .empty-buddy,
+  .desk-grid .appear-buddy { order: 3; }     /* Buddy */
+  .desk-grid .memo-box { order: 4; }          /* 사내 메모 */
 
   /* 시추에이션 카드 */
   .scene-card { box-shadow: 3px 3px 0 var(--ink); }
@@ -1430,7 +1446,7 @@ const CHARACTERS = {
 const SCENARIOS = [
   { day: 1, word: "stakeholder", pos: "n.", meaning: "이해관계자", phonetic: "/ˈsteɪkˌhoʊldər/",
     scene: "09:30, 입사 첫 회의실. 김 팀장이 화이트보드에 도식을 그리며.",
-    npc: "manager", quote: "이번 프로젝트 stakeholder map 부터 정리해보자. 누가 누구지?",
+    npc: "manager", quote: "OK team, let's start with the stakeholder map for this project. Who's who here?",
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지, 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
     sampleAnswer: "I'll map out the key stakeholders by tomorrow morning.", tags: ["meeting", "project"], status: "studied",
@@ -1450,9 +1466,9 @@ const SCENARIOS = [
         note: "공지문 톤이라 슬랙엔 어색해. 'in due course'는 \"적당한 때에\" 같은 모호한 표현, 슬랙은 구체성이 핵심이야.",
       },
       {
-        text: "I'll DM each stakeholder one by one when I get a chance.",
-        kind: "weak",
-        note: "단어는 들어갔지만 1:1 DM은 비효율적. 'when I get a chance'는 우선순위 낮은 톤이라 신뢰 떨어져, 그룹 채널에서 한 번에 looping이 정석.",
+        text: "I'll send updates with everyone after the meeting.",
+        kind: "missing",
+        note: "❌ 오늘 단어 stakeholder가 빠졌어. 슬랙 답이라도 미션 단어를 자연스럽게 살리는 게 핵심.",
       },
     ],
     buddyAnswers: {
@@ -1465,7 +1481,7 @@ const SCENARIOS = [
     } },
   { day: 2, word: "deadline", pos: "n.", meaning: "마감 기한", phonetic: "/ˈdedlaɪn/",
     scene: "18:40, 김 팀장이 자리로 와서.", npc: "manager",
-    quote: "Daniel한테 deadline 다시 한번 confirm 좀.",
+    quote: "Can you confirm the deadline with Daniel one more time?",
     youDo: "Daniel에게 슬랙으로 마감일 재확인 메시지를 보냈다.",
     mentorTip: "deadline은 진짜 '죽는 선'이라는 어원. due date보다 무거운 뉘앙스라 협상이 어려워.",
     sampleAnswer: "Just to confirm, the deadline for the draft is this Friday EOD?", tags: ["email", "schedule"], status: "studied",
@@ -1487,7 +1503,7 @@ const SCENARIOS = [
     } },
   { day: 3, word: "follow up", pos: "phr.", meaning: "후속 조치하다", phonetic: "/ˈfɑloʊ ʌp/",
     scene: "11:00, 사수가 지나가며.", npc: "mentor",
-    quote: "어제 미팅 follow up 메일 보냈어?",
+    quote: "Did you send the follow-up email from yesterday's meeting?",
     youDo: "회의 액션 아이템을 정리해 참석자 전원에게 메일을 보냈다.",
     mentorTip: "회의가 끝나면 24시간 내 follow up. 이거 한 번만 챙겨도 신뢰가 달라져.",
     sampleAnswer: "Following up on yesterday's call, here are the action items.", tags: ["email", "meeting"], status: "studied",
@@ -1553,7 +1569,7 @@ const SCENARIOS = [
     } },
   { day: 6, word: "loop in", pos: "phr.", meaning: "(메일/대화에) 포함시키다", phonetic: "/luːp ɪn/",
     scene: "10:00, 박 대리가 옆자리에서.", npc: "park",
-    quote: "이 건 디자인팀도 loop in 해야 할 것 같은데?",
+    quote: "We should loop the design team in on this too, right?",
     youDo: "디자인팀 리드를 cc에 추가해 메일을 다시 보냈다.",
     mentorTip: "정보 공유의 동사. cc보다 '동참시킨다'는 뉘앙스가 강해서 협업할 때 자주 써.",
     sampleAnswer: "Looping in @design-lead, could you weigh in on this?", tags: ["email", "team"], status: "studied",
@@ -1575,7 +1591,7 @@ const SCENARIOS = [
     } },
   { day: 7, word: "deliverable", pos: "n.", meaning: "산출물, 납품물", phonetic: "/dɪˈlɪvərəbl/",
     scene: "09:30, 분기 리뷰 회의.", npc: "manager",
-    quote: "이번 분기 핵심 deliverable 3개만 정리해보자.",
+    quote: "Let's narrow down to three core deliverables for this quarter.",
     youDo: "팀의 핵심 산출물을 노션에 정리해 공유했다.",
     mentorTip: "'결과물' 보다 '약속한 산출물' 의 무게가 있어. 계약/프로젝트에서 자주 봐.",
     sampleAnswer: "The three key deliverables for Q2 are the report, prototype, and rollout plan.", tags: ["project", "meeting"], status: "studied",
@@ -1597,7 +1613,7 @@ const SCENARIOS = [
     } },
   { day: 8, word: "ramp up", pos: "phr.", meaning: "(생산·활동을) 늘리다", phonetic: "/ræmp ʌp/",
     scene: "11:30, 채용 회의.", npc: "manager",
-    quote: "엔지니어링팀 ramp up 일정이 어떻게 돼?",
+    quote: "What's the engineering team's ramp-up timeline looking like?",
     youDo: "채용 일정과 온보딩 계획을 한 페이지로 정리해 공유했다.",
     mentorTip: "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
     sampleAnswer: "We're ramping up engineering hires from May through July.", tags: ["hr", "team"], status: "studied",
@@ -1641,7 +1657,7 @@ const SCENARIOS = [
     } },
   { day: 10, word: "touch base", pos: "phr.", meaning: "잠깐 얘기하다, 안부 묻다", phonetic: "/tʌtʃ beɪs/",
     scene: "17:00, 사수가 캘린더 초대를 보냄.", npc: "mentor",
-    quote: "월요일 15분만 touch base 하자. 진행 상황 듣고 싶어.",
+    quote: "Let's touch base for 15 minutes on Monday. I want to hear how things are going.",
     youDo: "월요일까지 진행 상황을 한 페이지로 정리해뒀다.",
     mentorTip: "야구의 '베이스 터치' 에서 옴. 가볍게 점검하는 짧은 미팅을 잡을 때 부담 없이 써.",
     sampleAnswer: "Sure, let's touch base Monday at 3, I'll have an update ready.", tags: ["meeting", "schedule"], status: "studied",
@@ -1663,7 +1679,7 @@ const SCENARIOS = [
     } },
   { day: 11, word: "due diligence", pos: "n.", meaning: "실사, 충분한 검토", phonetic: "/duː ˈdɪlɪdʒəns/",
     scene: "14:00, M&A 검토 회의.", npc: "manager",
-    quote: "due diligence 끝나기 전엔 사인 못 해. 이번 주 안에 마무리.",
+    quote: "We can't sign off until due diligence wraps. Let's get it done this week.",
     youDo: "재무·법무·운영 체크리스트를 만들어 분담했다.",
     mentorTip: "법률·재무 검토 전부. 이 한 단어가 며칠치 일을 함축해.",
     sampleAnswer: "Due diligence will wrap by Thursday, we'll review findings Friday.", tags: ["legal", "deal"], status: "studied",
@@ -1707,7 +1723,7 @@ const SCENARIOS = [
     } },
   { day: 13, word: "actionable", pos: "adj.", meaning: "실행 가능한, 바로 할 수 있는", phonetic: "/ˈækʃənəbl/",
     scene: "11:00, 사수가 초안 리뷰.", npc: "mentor",
-    quote: "피드백은 좋은데, 좀 더 actionable 하게 정리해줄래?",
+    quote: "The feedback is solid, but can you make it more actionable?",
     youDo: "추상적인 조언을 '담당자/기한/액션' 3열 표로 다시 썼다.",
     mentorTip: "'그래서 뭐 해?' 라는 질문에 답이 되면 actionable. 보고서의 마지막 페이지에 꼭 들어가야 해.",
     sampleAnswer: "Here are three actionable items, owner and deadline included.", tags: ["report", "feedback"], status: "studied",
@@ -1801,7 +1817,7 @@ const SCENARIOS = [
   { day: 17, word: "sync up", pos: "phr.", meaning: "(짧게) 동기화하다, 진행상황 맞추다", phonetic: "/sɪŋk ʌp/",
     scene: "09:30, 사수가 캘린더 초대를 보냄.",
     npc: "mentor",
-    quote: "내일 15분만 sync up 하자. 너 진행 상황 듣고 싶어.",
+    quote: "Let's sync up for 15 minutes tomorrow. I want to hear your progress.",
     youDo: null,
     mentorTip: "touch base의 짧은 버전. 격식 없이 쓰는 표현이라 사수·동기끼리 자주 써.",
     sampleAnswer: "Sounds good, I'll send a quick agenda before we sync up.",
@@ -1825,7 +1841,7 @@ const SCENARIOS = [
   { day: 18, word: "bandwidth", pos: "n.", meaning: "(업무) 처리 여력, 시간/에너지", phonetic: "/ˈbændwɪdθ/",
     scene: "11:00, 박 대리가 옆자리에서 부탁.",
     npc: "park",
-    quote: "이번 주 bandwidth 좀 있어? 디자인팀 자료 정리 같이 하면 좋을 것 같은데.",
+    quote: "Got any bandwidth this week? It'd be great to put the design team's materials together with you.",
     youDo: null,
     mentorTip: "'시간 있어?' 보다 자기 부담 인정하는 뉘앙스. 거절할 때 'I don't have the bandwidth'가 정중해.",
     sampleAnswer: "Honestly tight on bandwidth this week, can we sync up Monday?",
@@ -1849,7 +1865,7 @@ const SCENARIOS = [
   { day: 19, word: "scope", pos: "n./v.", meaning: "범위, 범위를 정하다", phonetic: "/skoʊp/",
     scene: "10:00, 김 팀장이 화이트보드 앞에서.",
     npc: "manager",
-    quote: "이번 프로젝트 scope 다시 정리하자. 너무 커지고 있어.",
+    quote: "Let's redefine the scope of this project. It's getting too big.",
     youDo: null,
     mentorTip: "프로젝트가 부풀어오를 때 (scope creep) 가장 중요한 단어. 'what's in / what's out' 명확히 적는 게 핵심.",
     sampleAnswer: "I'll scope down to the MVP features and circulate by EOD.",
@@ -1873,7 +1889,7 @@ const SCENARIOS = [
   { day: 20, word: "step up", pos: "phr.", meaning: "더 적극 나서다, 책임을 늘리다", phonetic: "/stɛp ʌp/",
     scene: "16:00, 사수와 분기 회고.",
     npc: "mentor",
-    quote: "이번 분기 너 진짜 step up 했어. 첫 단독 메일도, 첫 미팅 발언도. 다 너가 먼저 해본 거야.",
+    quote: "You've really stepped up this quarter. First solo email, first meeting input, you took the lead on all of it.",
     youDo: null,
     mentorTip: "'레벨업' 같은 뉘앙스. 본인 책임을 한 단계 늘렸을 때 칭찬으로 자주 들어. 사수가 신입한테 해주는 최고의 한 마디.",
     sampleAnswer: "Thanks, didn't realize I was stepping up at the time, scary but worth it.",
@@ -1897,7 +1913,7 @@ const SCENARIOS = [
   { day: 21, word: "heads up", pos: "phr.", meaning: "미리 알리는 말, 사전 공유", phonetic: "/hɛdz ʌp/",
     scene: "17:00, 박 대리가 비밀스럽게 슬랙 DM.",
     npc: "park",
-    quote: "Heads up, 부장님 내일 우리 팀 KPI 직접 본대. 자료 준비 미리 해.",
+    quote: "Heads up, the director is reviewing our team's KPIs tomorrow. Prep the materials in advance.",
     youDo: null,
     mentorTip: "warn보다 부드럽고, FYI보다 액션이 필요한 톤. 동료끼리 자주 주고받아.",
     sampleAnswer: "Thanks for the heads up, I'll have the deck ready by 9am.",
@@ -1921,7 +1937,7 @@ const SCENARIOS = [
   { day: 22, word: "take ownership", pos: "phr.", meaning: "주도권을 갖다, 책임지다", phonetic: "/teɪk ˈoʊnərʃɪp/",
     scene: "11:00, 김 팀장이 작은 프로젝트를 너에게.",
     npc: "manager",
-    quote: "이건 작지만 네가 take ownership 해봐. 끝까지 끌고 가는 경험이 필요해.",
+    quote: "It's small but I want you to take ownership of this. You need the experience of seeing something through.",
     youDo: null,
     mentorTip: "수습 단계에서 가장 중요한 표현. 'I'll handle it' 보다 책임감의 무게가 더해져.",
     sampleAnswer: "Got it, I'll take ownership and keep you posted weekly.",
@@ -1987,7 +2003,7 @@ const SCENARIOS = [
   { day: 25, word: "OOO", pos: "abbr.", meaning: "out of office, 부재 중, 휴가 중", phonetic: "/aʊt əv ˈɔːfɪs/",
     scene: "09:00, 사수가 단톡에 안내.",
     npc: "mentor",
-    quote: "다음 주 월·화 OOO야. 급한 거 있으면 박 대리한테.",
+    quote: "I'll be OOO Monday and Tuesday next week. Anything urgent, ping Mr. Park.",
     youDo: null,
     mentorTip: "메일 자동응답에 거의 항상 등장. OOO만 써도 다 알아들어. 한국식 '휴가입니다'보다 가벼워.",
     sampleAnswer: "Noted, while you're OOO I'll loop in 박 대리 for anything urgent.",
@@ -2029,7 +2045,7 @@ const SCENARIOS = [
   { day: 27, word: "pushback", pos: "n.", meaning: "반대 의견, 저항", phonetic: "/ˈpʊʃbæk/",
     scene: "16:00, 박 대리가 자리로 와서. 평소답지 않게.",
     npc: "park",
-    quote: "이직 결정했어. 부장님은 pushback 좀 있을 것 같은데, 정해서 말씀드리려고.",
+    quote: "I've decided to move on. Expecting some pushback from the director, but I'm sticking with my decision.",
     youDo: null,
     mentorTip: "'반대 부딪힘' 정도. resistance보다 비즈니스 톤이고, 협상·이직에서 자주 나와.",
     sampleAnswer: "There'll be some pushback, but if your mind's made up, just be clear and direct.",
@@ -2050,7 +2066,7 @@ const SCENARIOS = [
   { day: 28, word: "in the weeds", pos: "phr.", meaning: "지엽적인 디테일에 빠진 상태", phonetic: "/ɪn ðə wiːdz/",
     scene: "18:30, 사수가 너 책상 옆을 지나가며.",
     npc: "mentor",
-    quote: "너 너무 in the weeds 빠진 거 아냐? 큰 그림 한 번 보고 다시 와.",
+    quote: "Aren't you a bit too in the weeds? Take a step back, see the big picture, then come back.",
     youDo: null,
     mentorTip: "'잡초 속' = 디테일에 매몰. 사수가 신입한테 자주 해주는 말. step back 하라는 신호.",
     sampleAnswer: "Yeah, I was getting in the weeds with formatting, let me zoom out and revisit.",
@@ -2071,7 +2087,7 @@ const SCENARIOS = [
   { day: 29, word: "take a stab", pos: "phr.", meaning: "한 번 시도해보다", phonetic: "/teɪk ə stæb/",
     scene: "09:30, 김 팀장이 너에게.",
     npc: "manager",
-    quote: "내일 발표 슬라이드 한 번 take a stab 해볼래? 첫 시도라 부담 갖지 마.",
+    quote: "Can you take a stab at tomorrow's deck? It's your first try, no pressure.",
     youDo: null,
     mentorTip: "'한 번 찔러봐' = 완벽 안 해도 OK. 신입한테 부담 줄여주는 표현. 정말 자주 들어.",
     sampleAnswer: "Sure, I'll take a stab and share a draft by EOD.",
@@ -2092,7 +2108,7 @@ const SCENARIOS = [
   { day: 30, word: "milestone", pos: "n.", meaning: "수습 종료, 가장 큰 이정표 ⭐", phonetic: "/ˈmaɪlstoʊn/",
     scene: "14:00, 부장실 1대1. 김 팀장이 미소. 책상 위에 작은 손글씨 메모, '수고했어., 회장'",
     npc: "manager",
-    quote: "30일 milestone, 이제 수습 끝났어. 정규직 전환 + 다음 분기 부서 선택할 수 있어. 어디 가고 싶어?",
+    quote: "30-day milestone, your probation's done. Full-time conversion + you get to pick your team next quarter. Where do you want to go?",
     youDo: null,
     mentorTip: "수습 종료 = 가장 큰 milestone. 외국계는 부서 이동 자유로워서, 본인 의지로 다음 분기 결정 가능. 마음에 안 들면 다른 부서 갈 수 있어.",
     sampleAnswer: "Reaching this milestone means a lot. I'd like to stay in Marketing one more quarter, then explore BD.",
@@ -2710,6 +2726,26 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [doneTasks, setDoneTasks] = useState(() => {
     try { return JSON.parse(localStorage.getItem(taskKey) || "{}"); } catch(e) { return {}; }
   });
+
+  // ★ Day 2 진입 시 1일차 후기 설문 모달 표시 (한 사용자당 1회)
+  const [showSurvey, setShowSurvey] = useState(false);
+  React.useEffect(() => {
+    if (!USER.email) return;
+    if (USER.currentDay !== 2) return;
+    const SURVEY_KEY = "__OD_SURVEY_DAY1_DONE_" + USER.email;
+    try { if (localStorage.getItem(SURVEY_KEY) === "1") return; } catch(e) { return; }
+    // 페이지 로드 후 2.5초 정도 뒤에 표시 (화면 한번 본 후)
+    const t = setTimeout(() => setShowSurvey(true), 2500);
+    return () => clearTimeout(t);
+  }, [USER.email, USER.currentDay]);
+
+  const closeSurvey = () => {
+    setShowSurvey(false);
+    try {
+      const SURVEY_KEY = "__OD_SURVEY_DAY1_DONE_" + (USER.email || "");
+      localStorage.setItem(SURVEY_KEY, "1");
+    } catch(e) {}
+  };
   // ★ 날짜 바뀌면 (viewingDay 변경) doneTasks 도 그날 키 기준으로 다시 로드.
   // 이전 날짜의 state 가 다음 날짜 키에 잘못 저장되는 버그 방지.
   React.useEffect(() => {
@@ -3122,6 +3158,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           onComplete={completeActivity}
         />
       ) : null}
+
+      {/* ★ Day 2 진입 시 1일차 후기 설문 모달 (1회만 표시) */}
+      {showSurvey && USER.email && (
+        <SurveyModal email={USER.email} onClose={closeSurvey} />
+      )}
 
       {/* Day 1 투어, 인터랙티브 spotlight (실제 UI 요소를 가리키며 안내) */}
       {tourStep >= 0 && tourStep < TOUR_STEPS.length && (() => {
@@ -4992,6 +5033,150 @@ function ActivityShell({ title, children, onClose, footer, accent }) {
   );
 }
 
+// ============================================================
+// SurveyModal, Day 2 진입 시 1일차 후기 받기
+// ============================================================
+function SurveyModal({ email, onClose }) {
+  const [rating, setRating] = useState(0);
+  const [feeling, setFeeling] = useState("");
+  const [match, setMatch] = useState("");
+  const [improvement, setImprovement] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    const responses = {
+      rating, feeling, match, improvement,
+      submittedAt: new Date().toISOString(),
+    };
+    try {
+      if (window.OD?.saveSurveyResponse) {
+        await window.OD.saveSurveyResponse(email, "day1_feedback", responses);
+      }
+    } catch (e) {}
+    setSubmitted(true);
+    setTimeout(() => onClose(), 1500);
+  }
+
+  const hasInput = rating > 0 || feeling.trim() || match || improvement.trim();
+
+  if (submitted) {
+    return (
+      <div className="modal-bg" onClick={onClose}>
+        <div className="modal-doc" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-doc-body" style={{ textAlign: "center", padding: "36px 28px" }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>고마워요!</h3>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+              피드백 잘 받았어요.<br/>
+              앞으로 더 나은 출근 환경 만들게요.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-doc" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-doc-head">
+          <span>1일차 후기 · DAY 2 시작 전에</span>
+          <button onClick={onClose} style={{ color: "var(--paper)", fontSize: 16 }}>✕</button>
+        </div>
+        <div className="modal-doc-body">
+          <p style={{ fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
+            첫 출근 어떠셨어요?<br/>
+            잠깐 알려주시면 진짜 큰 도움 돼요. 강제는 아니니 편하게.
+          </p>
+
+          {/* 별점 */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>1일차 만족도</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[1,2,3,4,5].map(n => (
+                <button key={n} onClick={() => setRating(n)} style={{
+                  fontSize: 28, background: "transparent", border: "none",
+                  cursor: "pointer",
+                  filter: rating >= n ? "none" : "grayscale(1) opacity(0.35)",
+                  padding: 4, fontFamily: "inherit",
+                }}>⭐</button>
+              ))}
+            </div>
+          </div>
+
+          {/* 기대 일치 */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>기대한 거랑 비슷했어요?</div>
+            <div style={{ display: "grid", gap: 6 }}>
+              {[
+                { key: "better",  label: "✨ 예상보다 좋았어요" },
+                { key: "match",   label: "👍 딱 기대만큼" },
+                { key: "worse",   label: "😕 예상보다 별로" },
+                { key: "unsure",  label: "🤔 잘 모르겠어요" },
+              ].map(opt => (
+                <button key={opt.key} onClick={() => setMatch(opt.key)} style={{
+                  textAlign: "left", padding: "10px 14px",
+                  border: "1.5px solid " + (match === opt.key ? "var(--orange, #D85A2A)" : "var(--line)"),
+                  background: match === opt.key ? "rgba(216,90,42,0.08)" : "transparent",
+                  borderRadius: 6, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+                  color: "var(--ink)",
+                }}>{opt.label}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* 자유 입력: 느낌 */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+              실제 어떤 느낌이었어요? <span style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 400 }}>(선택)</span>
+            </div>
+            <textarea value={feeling} onChange={e => setFeeling(e.target.value)}
+              placeholder="예: 사수 피드백이 따뜻해서 좋았어요 / 영작이 어려웠어요 / 시간 짧아 좋아요"
+              rows={3}
+              style={{
+                width: "100%", padding: "10px 12px", fontSize: 13, lineHeight: 1.6,
+                border: "1px solid var(--line)", borderRadius: 6, fontFamily: "inherit",
+                resize: "vertical", boxSizing: "border-box",
+              }}/>
+          </div>
+
+          {/* 자유 입력: 개선 */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+              개선했으면 하는 점? <span style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 400 }}>(선택)</span>
+            </div>
+            <textarea value={improvement} onChange={e => setImprovement(e.target.value)}
+              placeholder="아직까진 괜찮아요 / 자유롭게"
+              rows={2}
+              style={{
+                width: "100%", padding: "10px 12px", fontSize: 13, lineHeight: 1.6,
+                border: "1px solid var(--line)", borderRadius: 6, fontFamily: "inherit",
+                resize: "vertical", boxSizing: "border-box",
+              }}/>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+            <button onClick={onClose} style={{
+              background: "transparent", border: "none", color: "var(--ink-mute)",
+              fontSize: 13, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline",
+            }}>건너뛰기</button>
+            <button onClick={handleSubmit} disabled={submitting || !hasInput}
+              className="btn btn-primary" style={{
+                padding: "10px 22px", fontSize: 14, fontWeight: 700,
+                opacity: (submitting || !hasInput) ? 0.45 : 1,
+                cursor: (submitting || !hasInput) ? "not-allowed" : "pointer",
+              }}>
+              {submitting ? "제출 중..." : "보내기 →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 작은 정답/오답 피드백 박스
 function FeedbackBox({ ok, correct, hint }) {
   return (
@@ -5137,7 +5322,7 @@ function MissionActivity({ today, item, onClose, onComplete }) {
               </div>
             </div>
             <div className="slack-replies-prompt">
-              💬 답장, 오늘 단어 <b>{today.word}</b> 을(를) 자연스럽게 써서 한 줄. 셋 중 가장 슬랙스러운 한 줄을 골라보세요.
+              💬 김 팀장 슬랙에 답할 차례. 오늘 단어 <b>{today.word}</b> 를(을) 살리면서, 짧고 액션이 명확한 답을 골라보세요. (단어가 빠지거나 톤이 안 맞는 건 탈락.)
             </div>
           </div>
         </div>
