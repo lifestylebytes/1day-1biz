@@ -2760,7 +2760,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       selector: ".attendance",
       placement: "left",
       title: "출근부 · 14일",
-      body: "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 14일 모이면 30일차에 완주 도장 ✨",
+      body: "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
     },
     {
       selector: ".schedule-row.now",
@@ -4025,6 +4025,27 @@ function MyPage() {
         {false && (
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
         )}
+      </div>
+
+      {/* 고객센터, 유버디 1:1 카카오 오픈채팅 */}
+      <div className="hr-section" style={{ marginTop: 16 }}>
+        <div className="hr-section-head">고객센터</div>
+        <a
+          href="https://open.kakao.com/me/youbuddy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hr-row"
+          style={{ textDecoration: "none", cursor: "pointer" }}
+        >
+          <span className="hr-row-label">💬 유버디 1:1 대화</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>카톡 채팅 열기 →</span>
+        </a>
+        <div className="hr-row" style={{ fontSize: 12 }}>
+          <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>이런 거 문의해요</span>
+          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>
+            학습 오류, 진도 안 보임, 결제, 기타 문의
+          </span>
+        </div>
       </div>
 
       {/* 설정 (쓰기), 디스클로저 */}
