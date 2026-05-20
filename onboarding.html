@@ -555,7 +555,7 @@ function StepBar({ idx, total }) {
 // WelcomeScreen V2 — 정식 멤버십 출시용 (대기등록 제거 + 구매 버튼 + 지원서 작성)
 // 사용하려면 아래 USE_V2 를 true 로. 갈아끼우기 한 줄.
 // ============================================================
-const USE_V2 = false;
+const USE_V2 = true;
 const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
 
 function WelcomeScreenV2({ onNext }) {
@@ -642,9 +642,15 @@ function WelcomeScreenV2({ onNext }) {
         </a>
         {/* 2) 구매 후 지원서 작성 (기존 가입 흐름) */}
         <button
-          className="btn btn-ghost"
+          className="btn"
           onClick={onNext}
-          style={{ justifyContent: "center" }}
+          style={{
+            justifyContent: "center",
+            background: "transparent",
+            border: "2px solid var(--orange, #D85A2A)",
+            color: "var(--orange, #D85A2A)",
+            fontWeight: 700,
+          }}
         >
           📝 (구매 후) 지원서 작성하기
         </button>
