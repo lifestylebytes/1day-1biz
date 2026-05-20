@@ -1360,9 +1360,10 @@ body::before {
       u.isDevMode  === true ||
       u.unlocked   === true
     ));
-    if (!allowed) location.replace('simulator.html');
+    // 정식 오픈 후, 미인증·미가입 사용자는 onboarding으로
+    if (!allowed) location.replace('onboarding.html');
   } catch(e) {
-    location.replace('simulator.html');
+    location.replace('onboarding.html');
   }
 })();
 </script>
