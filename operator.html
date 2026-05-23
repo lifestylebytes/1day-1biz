@@ -272,7 +272,7 @@ function LearningQueryCard() {
 }
 
 function App() {
-  // ★ 운영자 가드 — 운영자 아니면 즉시 차단 (localStorage 1차 검증)
+  // ★ 운영자 가드, 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
   if (!_initUser || !_initUser.isOperator) {
     // 비운영자 또는 비로그인 → 홈으로 튕김
@@ -285,7 +285,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(() => _initUser);
   const [notices, setNotices] = useState(() => load(KEY_NOTICES, []));
 
-  // ★ 2차 검증 — DB의 is_operator 도 확인 (localStorage 위조 방지)
+  // ★ 2차 검증, DB의 is_operator 도 확인 (localStorage 위조 방지)
   React.useEffect(() => {
     let cancelled = false;
     const verify = async () => {

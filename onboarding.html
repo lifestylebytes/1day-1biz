@@ -352,7 +352,7 @@ function OnboardingApp() {
           setSubmitting(false);
           return;
         }
-        // 2) ★ 중복 가입 가드 — RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
+        // 2) ★ 중복 가입 가드, RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
         const emailTrimmed = (email || "").trim().toLowerCase();
         const existing = await window.OD.emailExists(emailTrimmed);
         if (existing && existing.ok && existing.exists) {
@@ -552,7 +552,7 @@ function StepBar({ idx, total }) {
 // 0. Welcome, 신규 가입 OR 로그인 선택
 // ============================================================
 // ============================================================
-// WelcomeScreen V2 — 정식 멤버십 출시용 (대기등록 제거 + 구매 버튼 + 지원서 작성)
+// WelcomeScreen V2, 정식 멤버십 출시용 (대기등록 제거 + 구매 버튼 + 지원서 작성)
 // 사용하려면 아래 USE_V2 를 true 로. 갈아끼우기 한 줄.
 // ============================================================
 const USE_V2 = true;
@@ -833,7 +833,7 @@ function LoginScreen({ onBack }) {
     setLoading(true);
     setError("");
 
-    // 가입 기록 먼저 확인 (매직 링크 보내기 전) — RLS 우회 emailExists RPC 사용
+    // 가입 기록 먼저 확인 (매직 링크 보내기 전), RLS 우회 emailExists RPC 사용
     const check = await window.OD.emailExists(trimmed);
     if (!check.ok) {
       setLoading(false);

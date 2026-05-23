@@ -456,31 +456,52 @@ body::before {
 .att-cell {
   aspect-ratio: 1;
   border: 1px solid var(--line);
+  border-radius: 5px;
   display: grid; place-items: center;
-  font-size: 9px; font-weight: 700; color: var(--ink-mute);
-  background: var(--paper-warm);
+  font-size: 10px; font-weight: 700; color: var(--ink-mute);
+  background: var(--paper);
   position: relative;
 }
+/* 완료, 4개 일정 다 + 당일: 주황 채움 + 흰 체크 */
 .att-cell.done {
-  background: var(--cream);
-  color: var(--stamp-red);
+  background: var(--orange, #D85A2A);
+  border-color: var(--orange, #D85A2A);
+  color: #fff;
 }
 .att-cell.done::after {
   content: "✓"; position: absolute;
-  font-size: 11px; font-weight: 900; color: var(--stamp-red);
+  font-size: 13px; font-weight: 900; color: #fff;
 }
-/* 결근, 출근일은 지났지만 학습 완료 기록 없음, 시각적으로 비워둠 */
+/* 늦은 인증, 4개 다 했지만 해당일 이후: 황토색 채움 + 체크 */
+.att-cell.late {
+  background: #E0A93D;
+  border-color: #E0A93D;
+  color: #fff;
+}
+.att-cell.late::after {
+  content: "✓"; position: absolute;
+  font-size: 13px; font-weight: 900; color: #fff;
+}
+/* 놓침, 출근일 지났지만 미완성: 점선 빈칸 (채우고 싶게) */
 .att-cell.missed {
   background: transparent;
   color: var(--ink-mute);
   border-style: dashed;
   border-color: var(--line);
-  opacity: 0.55;
+  opacity: 0.7;
 }
+/* 미래, 아직 안 온 날: 연회색 빈칸 */
+.att-cell.future {
+  background: var(--paper-warm);
+  color: var(--ink-mute);
+  opacity: 0.5;
+}
+/* 오늘: 주황 굵은 테두리 강조 */
 .att-cell.today {
   border: 2px solid var(--orange);
   background: var(--highlight);
-  color: var(--ink);
+  color: var(--orange);
+  font-weight: 900;
 }
 .att-cell.today::after { content: "오늘"; font-size: 8px; color: var(--orange); font-weight: 800; }
 
@@ -2129,6 +2150,126 @@ const SCENARIOS = [
     } },
 ];
 
+// ============================================================
+// ★ day별 점심 대화 스크립트 (LunchActivity가 나오는 day: 2,6,10,14,18,22,26,30)
+// 자연스러운 대화 흐름 + 콩글리시/과격식 함정. kind: correct/konglish/formal
+// ============================================================
+const LUNCH_SCRIPTS = {
+  2: {
+    greet: `Lunch? I'm slammed with this Friday's deadline.`,
+    turn1: [
+      { text: `Oof, this Friday? Let's eat first, then I can help you hit that deadline.`, kind: "correct", note: `deadline을 자연스럽게 받으면서 '점심 먹고 도와줄게'까지 건넸어요. 동료가 마감 때문에 바쁘다고 할 때 공감하고 도움을 함께 제안하면, 관계도 좋아지고 표현도 자연스럽게 익혀진답니다!` },
+      { text: `Deadline fighting! Don't worry, time is enough.`, kind: "konglish", note: `'time is enough'는 콩글리시야. 'you've got time' 정도로.` },
+      { text: `I acknowledge your impending deadline with great concern.`, kind: "formal", note: `너무 격식이야. 동료끼리 안 그래.` },
+    ],
+    reply: `You're a lifesaver. Let's grab food.`,
+    turn2: [
+      { text: `No problem. Send me the list after lunch and we'll beat the deadline together.`, kind: "correct", note: `deadline을 한 번 더 쓰면서 '같이 끝내자'고 협업을 제안했어요. 실제 회사에서 'beat the deadline together' 같은 표현을 자주 쓰는데, 한 대화에서 단어를 두 번 자연스럽게 쓰면 진짜 입에 붙는답니다!` },
+      { text: `After eat, give me your work. We finish deadline.`, kind: "konglish", note: `'after eat', 'finish deadline' 둘 다 어색. 'after lunch', 'meet the deadline'.` },
+      { text: `Upon conclusion of our meal, kindly forward the materials.`, kind: "formal", note: `메일도 아니고 점심 약속에 너무 무거워.` },
+    ],
+  },
+  6: {
+    greet: `Lunch? Someone forgot to loop me in on that email thread, took me forever to catch up.`,
+    turn1: [
+      { text: `Ugh, that's annoying. Want me to loop you in on the thread now?`, kind: "correct", note: `loop you in으로 '메일 스레드에 넣어줄까?'를 자연스럽게 표현했어요. loop in은 '대화나 메일에 누군가를 포함시킨다'는 뜻인데, 실무에서 정말 자주 쓰는 표현이랍니다!` },
+      { text: `They forget loop in you? So bad manner.`, kind: "konglish", note: `'bad manner'는 콩글리시. 'that's not cool' 정도로.` },
+      { text: `I shall ensure you are duly looped into said correspondence.`, kind: "formal", note: `'duly', 'said correspondence'가 과해. 동료끼린 가볍게.` },
+    ],
+    reply: `Please do, thanks. Let's eat first though.`,
+    turn2: [
+      { text: `Got it. I'll loop you in on the next one too so you're not left out.`, kind: "correct", note: `다음엔 먼저 loop you in 하겠다고 배려까지 더했어요. 'loop you in'처럼 in을 뒤에 붙이는 어순이 핵심인데, 한 번 더 써보면 헷갈리지 않게 익혀진답니다!` },
+      { text: `Next time I loop in you first, no worry.`, kind: "konglish", note: `'loop in you'가 아니라 'loop you in'이야. 어순 주의.` },
+      { text: `Henceforth I shall include you in all pertinent threads.`, kind: "formal", note: `'Henceforth'는 법률 문서 톤. 'I'll keep you in the loop'가 자연스러워.` },
+    ],
+  },
+  10: {
+    greet: `Lunch? I just touched base with the lead, and the direction changed again.`,
+    turn1: [
+      { text: `Again? What changed when you touched base with them?`, kind: "correct", note: `touch base를 자연스럽게 받으면서 무슨 얘기였는지 물었어요. touch base는 '잠깐 얘기 나누다'는 뜻으로, 가벼운 진행 상황 공유에 딱 맞는 표현이랍니다!` },
+      { text: `Touch base then direction change? So confuse.`, kind: "konglish", note: `'so confuse'는 콩글리시. 'that's confusing' 정도로.` },
+      { text: `I see you touched base with management regarding the revised direction.`, kind: "formal", note: `동료끼리 'management'라고 거리 두는 게 어색.` },
+    ],
+    reply: `Tell you over lunch, it's a whole thing.`,
+    turn2: [
+      { text: `Can't wait. Let's touch base again after you've figured it out.`, kind: "correct", note: `touch base를 다시 쓰면서 '정리되면 또 얘기하자'고 자연스럽게 마무리했어요. 'let's touch base again'은 회의나 대화 끝에 정말 자주 들리는 표현이랍니다!` },
+      { text: `Later we touch base one more time, okay?`, kind: "konglish", note: `어순은 통하는데 'let's touch base again later'가 자연스러워.` },
+      { text: `Perhaps we might reconvene to touch base subsequently.`, kind: "formal", note: `'reconvene', 'subsequently'가 과해.` },
+    ],
+  },
+  14: {
+    greet: `Lunch? The lead wants a budget ballpark, but throwing out a number without exact figures feels risky.`,
+    turn1: [
+      { text: `A ballpark's fine for now, they just want a rough sense, not the exact number.`, kind: "correct", note: `ballpark의 핵심('정확한 숫자가 아닌 대략치')을 정확히 짚으면서 동료를 안심시켰어요. ballpark는 '대략적인 추정치'라는 뜻으로, 정확한 수치 전에 감을 줄 때 쓰는 표현이랍니다!` },
+      { text: `Ballpark number no problem, just throw throw.`, kind: "konglish", note: `'throw throw' 반복이 어색. 'just give a rough estimate'로.` },
+      { text: `A ballpark figure should suffice to satisfy their preliminary inquiry.`, kind: "formal", note: `'suffice', 'preliminary inquiry'가 과해.` },
+    ],
+    reply: `True. I'm overthinking it. Lunch first.`,
+    turn2: [
+      { text: `Yeah, just give a ballpark range and say you'll firm it up later.`, kind: "correct", note: `ballpark range를 주고 나중에 다듬으라는 실전 팁까지 건넸어요. 'give a ballpark and firm it up later'는 실무에서 정말 자주 쓰는 흐름이랍니다!` },
+      { text: `Give ballpark, later give real, okay?`, kind: "konglish", note: `어순이 급해. 'give a ballpark now, refine it later'로.` },
+      { text: `Provide an approximate ballpark and subsequently furnish precise figures.`, kind: "formal", note: `'furnish precise figures'가 과해.` },
+    ],
+  },
+  18: {
+    greet: `Lunch? I've got zero bandwidth this week, honestly.`,
+    turn1: [
+      { text: `I feel that. What's eating up all your bandwidth this week?`, kind: "correct", note: `bandwidth를 자연스럽게 받으면서 뭐 때문에 바쁜지 물었어요. bandwidth는 원래 통신 용어지만, 회사에선 '일을 처리할 시간이나 여력'을 뜻한답니다!` },
+      { text: `No bandwidth, too busy busy, help me.`, kind: "konglish", note: `'busy busy' 반복이 어색. 'so swamped' 정도로.` },
+      { text: `Your bandwidth appears to be entirely depleted at present.`, kind: "formal", note: `동료한테 'entirely depleted'는 딱딱해.` },
+    ],
+    reply: `Three launches at once. I'll explain over lunch.`,
+    turn2: [
+      { text: `Brutal. If you run out of bandwidth, hand a couple things to me.`, kind: "correct", note: `bandwidth가 부족하면 일을 넘기라고 도움을 제안했어요. 'if you run out of bandwidth'처럼 자연스럽게 쓰면 진짜 원어민 같은 표현이 된답니다!` },
+      { text: `No bandwidth then give me work, I do for you.`, kind: "konglish", note: `'give me work, I do'가 어색. 'pass some over to me'로.` },
+      { text: `Should your bandwidth prove insufficient, kindly delegate to me.`, kind: "formal", note: `'kindly delegate'가 과해. 'just pass it my way'로.` },
+    ],
+  },
+  22: {
+    greet: `Lunch? I'm taking ownership of this whole project, start to finish.`,
+    turn1: [
+      { text: `That's big. Taking ownership of a whole project, you ready for it?`, kind: "correct", note: `take ownership을 자연스럽게 받으면서 준비됐는지 물었어요. take ownership은 '주도권을 갖고 끝까지 책임진다'는 뜻으로, 신뢰를 보여주는 강한 표현이랍니다!` },
+      { text: `You take ownership all? Wow, big responsibility, fighting!`, kind: "konglish", note: `'fighting'은 콩글리시. 'that's a big responsibility'로.` },
+      { text: `Assuming ownership of the entire initiative is a considerable undertaking.`, kind: "formal", note: `동료한테 'considerable undertaking'은 과해.` },
+    ],
+    reply: `Ready enough. Bit scared though. Lunch first.`,
+    turn2: [
+      { text: `You've got this. Taking ownership is scary at first but it's how you grow.`, kind: "correct", note: `take ownership을 다시 쓰면서 '성장의 기회'라고 격려했어요. 'taking ownership is how you grow' 같은 표현은 동료를 응원할 때 정말 좋답니다!` },
+      { text: `Take ownership scary but okay, you can do, fighting!`, kind: "konglish", note: `'fighting' 반복. 'you've got this'로.` },
+      { text: `Embracing ownership, though daunting, is intrinsic to professional development.`, kind: "formal", note: `'intrinsic to professional development'가 과해.` },
+    ],
+  },
+  26: {
+    greet: `Lunch? Our team finally set 'user retention' as our north star.`,
+    turn1: [
+      { text: `That's a solid north star. Does the whole team agree on retention?`, kind: "correct", note: `north star를 자연스럽게 받으면서 팀 합의 여부를 물었어요. north star는 '가장 중요한 단 하나의 지향점'을 뜻하는데, 전략 회의에서 자주 등장하는 표현이랍니다!` },
+      { text: `North star retention? Good choice choice, clap clap.`, kind: "konglish", note: `'choice choice', 'clap clap'이 어색. 'great choice'로.` },
+      { text: `Retention constitutes a most judicious choice of north star metric.`, kind: "formal", note: `동료한테 'most judicious'는 과해.` },
+    ],
+    reply: `Mostly. Took a while to get there. I'll explain over lunch.`,
+    turn2: [
+      { text: `Good. Once everyone shares the same north star, decisions get way easier.`, kind: "correct", note: `north star를 다시 쓰면서 '같은 목표를 공유하면 결정이 쉬워진다'는 통찰을 더했어요. 실무에서 north star metric은 의사결정의 기준이 된답니다!` },
+      { text: `Same north star, then decide fast, no fight, good.`, kind: "konglish", note: `'no fight'와 단순함. 'decisions get easier'로.` },
+      { text: `A unified north star invariably facilitates expedited decision-making.`, kind: "formal", note: `'invariably facilitates expedited'가 과해.` },
+    ],
+  },
+  30: {
+    greet: `Lunch? Heard you hit your 30-day milestone today. Congrats on finishing probation!`,
+    turn1: [
+      { text: `Thanks! Honestly didn't think I'd hit this milestone so fast.`, kind: "correct", note: `milestone을 자연스럽게 받으면서 솔직한 소감을 전했어요. milestone은 '의미 있는 큰 분기점'을 뜻하는데, 30일 완주 같은 순간에 딱 맞는 단어랍니다!` },
+      { text: `Milestone 30 day! I am so happy happy, thank you thank you.`, kind: "konglish", note: `'happy happy', 'thank you thank you' 반복. 'I'm really happy, thanks'로.` },
+      { text: `I am most gratified to have attained this significant milestone.`, kind: "formal", note: `친구한테 'most gratified to have attained'는 과해.` },
+    ],
+    reply: `You earned it. Lunch is on me today.`,
+    turn2: [
+      { text: `Appreciate it. This milestone honestly feels like just the start.`, kind: "correct", note: `milestone을 다시 쓰면서 '이건 시작일 뿐'이라는 멋진 태도를 보여줬어요. 'feels like just the start'는 겸손하면서도 의욕적인 인상을 주는 표현이랍니다!` },
+      { text: `This milestone is start only, more fighting future!`, kind: "konglish", note: `'start only', 'fighting future'가 콩글리시. 'feels like just the beginning'으로.` },
+      { text: `This milestone represents merely the commencement of my journey.`, kind: "formal", note: `'commencement of my journey'가 과해.` },
+    ],
+  },
+};
+SCENARIOS.forEach(s => { if (LUNCH_SCRIPTS[s.day]) s.lunchScript = LUNCH_SCRIPTS[s.day]; });
+
 // 사용자 상태, localStorage 우선, 없으면 데모 기본값
 const _localUser = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
 
@@ -2881,29 +3022,52 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [showFullAttend, setShowFullAttend] = useState(false);
   const ATTEND_DAYS = showFullAttend ? USER.totalDays : 14;
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
-  const _completedDays = new Set();
-  (USER.scenariosCompleted || []).forEach(s => { if (s && s.day) _completedDays.add(s.day); });
-  Object.keys(USER.dailyJournals || {}).forEach(k => {
-    const d = parseInt(k, 10);
-    if (d) _completedDays.add(d);
+  // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
+  const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
+  const _dayDeadline = (day) => {
+    if (!_signupDate || isNaN(_signupDate.getTime())) return null;
+    const d = new Date(_signupDate); d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + day); // day N 다음날 자정 = 그날 마감
+    return d.getTime();
+  };
+  // day별 가장 늦은 완료 시각 (영작·일지 기준, 늦은 인증 판정용)
+  const _lastAt = {};
+  (USER.scenariosCompleted || []).forEach(s => {
+    if (s && s.day && s.submittedAt) {
+      const t = new Date(s.submittedAt).getTime();
+      if (!_lastAt[s.day] || t > _lastAt[s.day]) _lastAt[s.day] = t;
+    }
   });
-  for (let d = 1; d < USER.currentDay; d++) {
-    if (_completedDays.has(d)) continue;
+  Object.entries(USER.dailyJournals || {}).forEach(([k, j]) => {
+    const day = parseInt(k, 10);
+    if (day && j && j.savedAt) {
+      const t = new Date(j.savedAt).getTime();
+      if (!_lastAt[day] || t > _lastAt[day]) _lastAt[day] = t;
+    }
+  });
+  // 그날 4개 일정 모두 완료했는지
+  const _dayComplete = (day) => {
     try {
-      const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + d) || "{}");
-      const checkedCount = Object.values(tasks).filter(Boolean).length;
-      if (checkedCount >= 3) _completedDays.add(d);
-    } catch (e) {}
-  }
+      const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + day) || "{}");
+      return Object.values(tasks).filter(Boolean).length >= 4;
+    } catch (e) { return false; }
+  };
+  const _isLate = (day) => {
+    const at = _lastAt[day]; const dl = _dayDeadline(day);
+    return !!(at && dl && at > dl);
+  };
+  // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
+  const _realDay = USER.realCurrentDay || USER.currentDay;
+  const _realDayDone = (_realDay === USER.currentDay) ? allTodayDone : _dayComplete(_realDay);
   const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
     const day = i + 1;
     const isWk = _isWeekendDay(day);
-    if (day < USER.currentDay) {
-      const actuallyDone = _completedDays.has(day);
-      return { day, state: actuallyDone ? "done" : "missed", weekend: isWk };
+    if (day === _realDay) return { day, state: _realDayDone ? "stamped" : "today", weekend: isWk };
+    if (day < _realDay) {
+      if (_dayComplete(day)) return { day, state: _isLate(day) ? "late" : "done", weekend: isWk };
+      return { day, state: "missed", weekend: isWk };
     }
-    if (day === USER.currentDay) return { day, state: allTodayDone ? "stamped" : "today", weekend: isWk };
-    return { day, state: "", weekend: isWk };
+    return { day, state: "future", weekend: isWk };
   });
 
   // 마지막 항목 완료 토스트
@@ -3079,10 +3243,22 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                     onClick={handleClick}
                     style={{ cursor: isClickable ? "pointer" : "default" }}
                   >
-                    {(c.state === "" || c.state === "missed") ? c.day : ""}
+                    {(c.state === "missed" || c.state === "future") ? c.day : ""}
                   </div>
                 );
               })}
+            </div>
+            {/* ★ 범례, 한눈에 상태 구분 */}
+            <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-mute)", flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <i style={{ width: 12, height: 12, borderRadius: 3, background: "#D85A2A", display: "inline-block" }} />완료
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <i style={{ width: 12, height: 12, borderRadius: 3, background: "#E0A93D", display: "inline-block" }} />늦은 인증
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <i style={{ width: 12, height: 12, borderRadius: 3, border: "1.5px dashed var(--line)", display: "inline-block" }} />놓침
+              </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 8 }}>
               <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.5, flex: 1 }}>
@@ -3090,7 +3266,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   ? <>지난 출근부 칸을 누르면 그날로 이동해요. 학습 완료하면 그대로 저장됩니다.</>
                   : showFullAttend
                     ? <>지나간 칸을 누르면 그날 학습으로 돌아갈 수 있어요.</>
-                    : <>하루도 빠지지 않으면 30일차에 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
+                    : <>4개 일정 다 끝낸 날만 출근 완료, 30일 채우면 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
                 }
               </div>
               <button
@@ -3799,7 +3975,7 @@ function TestPage() {
             {cells.map((c, i) => <div key={i} className={"eval-progress-cell " + c}></div>)}
           </div>
 
-          {/* 1) SITUATION — 한글로 상황 설명 */}
+          {/* 1) SITUATION, 한글로 상황 설명 */}
           <div className="eval-q-num">SITUATION · 상황</div>
           <div className="eval-q-scene">📍 {cur.scene}</div>
           <div className="scene-quote-row" style={{ marginTop: 14 }}>
@@ -3810,7 +3986,7 @@ function TestPage() {
             </div>
           </div>
 
-          {/* 2) 한국어 가이드 — 어떻게 답해야 하나 */}
+          {/* 2) 한국어 가이드, 어떻게 답해야 하나 */}
           {cur.task && (cur.task.promptKo || cur.task.koSentence) && (
             <div style={{
               marginTop: 18, padding: "12px 14px",
@@ -4004,7 +4180,7 @@ function MyPage() {
                 <span className="id-field-value" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>{USER.email}</span>
               </div>
             )}
-            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
             {false && (
               <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             )}
@@ -4014,7 +4190,7 @@ function MyPage() {
         </div>
         <div className="id-card-foot">
           <span>유효기간 · 2026.04.16 ~ 2026.05.15 (수습)</span>
-          {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+          {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
           {false && (
             <span><b>{USER.vacationDays}일</b> 휴가 보유</span>
           )}
@@ -4037,13 +4213,13 @@ function MyPage() {
           </div>
         </div>
         <div className="hr-row"><span className="hr-row-label">사수 · 매일 포스트잇</span><span className="hr-row-value">{CHARACTERS.mentor.name}</span></div>
-        {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+        {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
         {false && (
           <div className="hr-row"><span className="hr-row-label">팀</span><span className="hr-row-value">Strategy · {CHARACTERS.manager.name} 팀장</span></div>
         )}
       </div>
 
-      {/* 구독 정보 (읽기) — cohort 별 플랜명 다르게 표시 */}
+      {/* 구독 정보 (읽기), cohort 별 플랜명 다르게 표시 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
         <div className="hr-section-head">구독 정보</div>
         <div className="hr-row">
@@ -4063,7 +4239,7 @@ function MyPage() {
           </span>
         </div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
-        {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+        {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
         {false && (
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
         )}
@@ -4102,7 +4278,7 @@ function MyPage() {
         </button>
         {showSettings && (
           <>
-            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
             {false && (
               <div className="hr-row">
                 <span className="hr-row-label">매일 단어 알림</span>
@@ -4119,11 +4295,14 @@ function MyPage() {
                 </select>
               </div>
             )}
+            {/* 단어 발음 자동 재생, 우선 숨김 (정식 출시 시 검토) */}
+            {false && (
             <div className="hr-row">
               <span className="hr-row-label">단어 발음 자동 재생</span>
               <button className={"toggle on"}></button>
             </div>
-            {/* TEMP DISABLED — 정식 출시 시 false → true 로 복원 */}
+            )}
+            {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
             {false && (
               <div className="hr-row">
                 <span className="hr-row-label">사수 피드백 이메일 받기</span>
@@ -4131,7 +4310,7 @@ function MyPage() {
               </div>
             )}
 
-            {/* 휴직(구독 해지) — 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
+            {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
             <a
               href="https://mavrks.notion.site/faq-3"
               target="_blank"
@@ -5440,20 +5619,22 @@ function MissionActivity({ today, item, onClose, onComplete }) {
 
 // === 3. ENGLISH_LUNCH, 점심 small talk (선택지 1-2턴) ===
 function LunchActivity({ today, item, onClose, onComplete }) {
-  const partner = item.context || { who: "동기", lead: "동기", greet: "Hey, lunch?" };
+  const script = today.lunchScript || null;  // ★ day별 맞춤 점심 대화 (있으면 우선)
+  const partner = item.context || { who: "동료", lead: "동료", greet: "Hey, lunch?" };
   const [turn, setTurn] = useState(0);
   const [pick, setPick] = useState(null);
-  const [log, setLog] = useState([{ from: "them", text: partner.greet }]);
+  const [log, setLog] = useState([{ from: "them", text: script?.greet || partner.greet }]);
 
-  // Turn 1 옵션, 오늘 단어 활용
-  const turn1Opts = useMemo(() => _shuf([
+  // Turn 1 옵션, day별 스크립트 우선, 없으면 기존 템플릿
+  const turn1Opts = useMemo(() => script?.turn1 ? _shuf(script.turn1.map(o => ({ ...o }))) : _shuf([
     {
-      text: `Sure! Quick question, can we ${today.word} on the project after?`,
+      text: `Sure, let's go. Mind catching me up on ${today.word} over lunch?`,
       kind: "correct",
       note: "단어 자연스럽게 + 점심 흐름 안 깸. 좋아.",
-      ko: `"좋아! 빠른 질문 하나, 끝나고 프로젝트 ${today.word} 얘기 좀 할 수 있어?"`,
+      ko: `"좋아, 가자. 점심 먹으면서 ${today.word} 좀 알려줄 수 있어?"`,
       vocab: [
         { w: "Quick question", m: "빠른 질문 (가볍게 끼어들 때 쓰는 표현)" },
+        { w: "walk me through", m: "차근차근 설명해주다" },
       ],
     },
     {
@@ -5476,17 +5657,17 @@ function LunchActivity({ today, item, onClose, onComplete }) {
     },
   ]), [today.word]);
 
-  // Turn 2 옵션, 단어 한 번 더 등장
-  const turn2Opts = useMemo(() => _shuf([
+  // Turn 2 옵션, day별 스크립트 우선, 없으면 기존 템플릿
+  const turn2Opts = useMemo(() => script?.turn2 ? _shuf(script.turn2.map(o => ({ ...o }))) : _shuf([
     {
-      text: `Good point, I'll keep the ${today.word} thing in mind for next standup.`,
+      text: `Sounds great. I'll try using ${today.word} at my next standup then.`,
       kind: "correct",
-      note: "오늘 단어 두 번째 사용. 진짜 익혀짐.",
-      ko: `"좋은 지적이야, 다음 스탠드업에서 ${today.word} 얘기 잊지 않을게."`,
+      note: "오늘 단어 두 번째 등장 + 점심 흐름 자연스럽게 받음. 진짜 익혀짐.",
+      ko: `"좋아. 그럼 다음 스탠드업에서 ${today.word} 한번 써볼게."`,
       vocab: [
-        { w: "Good point", m: "좋은 지적이야 (회의·대화에서 동의 표시)" },
+        { w: "Sounds great", m: "좋아, 괜찮네 (가볍게 동의)" },
         { w: "standup", m: "매일 아침 10분 정도 서서 진행하는 팀 미팅. 진행 상황 공유용" },
-        { w: "keep ... in mind", m: "기억해두다, 마음에 두다" },
+        { w: "work ... into", m: "~을 (자연스럽게) 끼워넣다, 써먹다" },
       ],
     },
     {
@@ -5520,7 +5701,7 @@ function LunchActivity({ today, item, onClose, onComplete }) {
     if (opt.kind === "correct" && turn === 0) {
       // turn 0 정답 → 상대 응답 + turn 1로
       setTimeout(() => {
-        const reply = `Oh nice, I had something similar last week. Let's grab lunch and I'll tell you.`;
+        const reply = script?.reply || `Oh nice, I had something similar last week. Let's grab lunch and I'll tell you.`;
         setLog(l => [...l, { from: "them", text: reply }]);
         setTurn(1);
         setPick(null);
@@ -5532,7 +5713,7 @@ function LunchActivity({ today, item, onClose, onComplete }) {
     <ActivityShell title={`ENGLISH LUNCH · ${partner.lead.toUpperCase()}`} onClose={onClose}>
       <span className="label-doc label-orange">▶ 12:30 · {partner.who}와 점심</span>
       <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
-        한영 믹스 small talk, 오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b> 한 번이라도 써보면 점수 +1.
+        동료와 영어 점심 수다. 오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b> 를 살려서, 맥락에 가장 자연스러운 답을 골라주세요. (콩글리시나 과한 격식은 탈락)
       </div>
 
       <div style={{ marginTop: 14, padding: 14, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -5555,7 +5736,7 @@ function LunchActivity({ today, item, onClose, onComplete }) {
       </div>
 
       {!picked || picked.kind !== "correct" || turn === 0 ? null : (
-        <FeedbackBox ok={true} hint={"단어 한 번 더 던져, '오늘 한 번' 보다 '두 번' 이 진짜 외움."} />
+        <FeedbackBox ok={true} hint={picked?.note || "오늘 단어를 한 번 더 써봤어요. '오늘 한 번'보다 '두 번' 쓰면 진짜 입에 붙는답니다!"} />
       )}
 
       {(!pick || picked?.kind !== "correct") && (
@@ -6444,44 +6625,44 @@ function App() {
                 padding: "5px 14px", borderRadius: 4, transform: "rotate(-4deg)",
                 marginBottom: 18,
               }}>
-                BETA EXPIRED
+                체험 완료
               </div>
               <h1 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.35, marginBottom: 14, color: "var(--ink)" }}>
-                7일 베타 기간이<br/><span style={{ color: "var(--accent)" }}>종료되었어요.</span>
+                14일 체험을<br/><span style={{ color: "var(--accent)" }}>완주하셨어요!</span>
               </h1>
               <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
-                바쁘신 와중에 1일1비 1기 베타에 참여해주셔서 정말 감사해요.<br/>
-                정식 출시 시 가장 먼저 입력하신 이메일로 안내드릴게요.
+                바쁘신 와중에 1일1비 체험에 함께해주셔서 정말 감사해요.<br/>
+                지금까지의 학습 기록은 그대로 남아있어요.<br/>
+                정식 멤버십으로 이어서 출근하시겠어요?
               </p>
               <div style={{
                 background: "var(--paper-warm)", border: "1px dashed var(--line)",
                 borderRadius: 8, padding: "12px 14px", fontSize: 12.5, color: "var(--ink)",
                 lineHeight: 1.65, fontWeight: 500, marginBottom: 18,
               }}>
-                💬 피드백 주신 분들 덕분에 지금 다음 버전 만들고 있어요.<br/>
-                <span style={{ color: "var(--ink-mute)" }}>단톡방은 1주일 더 열려있으니 못 다한 의견 편하게 주세요.</span>
+                💼 정식 멤버십으로 전환하면 그동안의 단어, 노트, 출근 기록이 그대로 이어져요.
               </div>
-              <a href="https://open.kakao.com/o/gwgtrZti" target="_blank" rel="noopener"
+              <a href={LATPEED_MEMBERSHIP_URL} target="_blank" rel="noopener"
                  style={{
-                   display: "inline-block", padding: "11px 22px",
-                   background: "var(--ink)", color: "var(--paper)",
+                   display: "block", padding: "13px 22px",
+                   background: "var(--accent, #D85A2A)", color: "#fff",
                    textDecoration: "none", borderRadius: 8,
-                   fontSize: 13, fontWeight: 700, marginRight: 8,
+                   fontSize: 14, fontWeight: 800, marginBottom: 10,
                  }}>
-                💬 피드백 톡방 가기
+                🎟 1일1비 구매하러 가기
               </a>
-              <a href="https://www.instagram.com/youbuddy_day/" target="_blank" rel="noopener"
+              <a href="https://open.kakao.com/me/youbuddy" target="_blank" rel="noopener"
                  style={{
-                   display: "inline-block", padding: "11px 22px",
+                   display: "inline-block", padding: "10px 20px",
                    background: "transparent", color: "var(--ink-soft)",
                    border: "1px solid var(--line)",
                    textDecoration: "none", borderRadius: 8,
                    fontSize: 13, fontWeight: 700,
                  }}>
-                @youbuddy_day
+                💬 유버디에게 문의하기
               </a>
               <div style={{ marginTop: 22, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: 11, color: "var(--ink-mute)" }}>
-               , 유버디 드림
+                유버디 드림
               </div>
             </div>
           </div>
