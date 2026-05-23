@@ -5988,30 +5988,65 @@ function RecapActivity({ today, item, onClose, onComplete }) {
   );
 }
 
+// 문장에서 단어(활용형 포함)를 빈칸으로 치환. ramp up -> ramping up, align -> aligned 등.
+function _blankWord(sentence, word) {
+  if (!sentence || !word) return sentence;
+  const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // 1) 단어 경계 기준 정확 매칭 (aligned 안의 align 부분 매칭 방지)
+  let re = new RegExp("\\b" + esc(word) + "\\b", "i");
+  if (re.test(sentence)) return sentence.replace(re, "_____");
+  // 2) 활용형 허용 매칭 (ing/ed/s/es/d + 자음 중복)
+  const toks = word.split(/\s+/);
+  const pat = toks.map((t, i) => {
+    const e = esc(t);
+    if (i === 0) {
+      const last = e.slice(-1);
+      return e + "(?:" + last + ")?(?:ing|ed|es|s|d)?";
+    }
+    return e;
+  }).join("\\s+");
+  re = new RegExp(pat, "i");
+  if (re.test(sentence)) return sentence.replace(re, "_____");
+  return sentence;
+}
+
 // === 5. OFFICE_TASK, 오후 업무 (메일 빈칸 채우기) ===
 function OfficeTaskActivity({ today, item, onClose, onComplete }) {
-  const action = item.action || "사수가 클라이언트 메일 초안 검토 부탁 ✉️";
+  const { CHARACTERS } = window.__SIM;
+  const npc = CHARACTERS[today.npc] || CHARACTERS.manager;
   const [pick, setPick] = useState(null);
 
-  // 메일 초안, 오늘 단어 빈칸
+  // 메일 초안, 오늘 단어(활용형 포함) 빈칸
   const draft = useMemo(() => {
     const s = today.sampleAnswer || `Let's ${today.word} on this and circle back.`;
-    return s.replace(new RegExp(today.word, "i"), "_____");
+    return _blankWord(s, today.word);
   }, [today.word, today.sampleAnswer]);
 
   const otherWords = useMemo(() => _pickWordObjects(today.word, 3).map(o => o.word), [today.word]);
   const opts = useMemo(() => _shuf([today.word, ...otherWords]), [today.word, otherWords]);
 
   return (
-    <ActivityShell title="AFTERNOON TASK · 메일 검토" onClose={onClose}>
+    <ActivityShell title="AFTERNOON TASK · 회신 초안" onClose={onClose}>
       <span className="label-doc label-orange">▶ 14:00 · 오후 업무</span>
-      <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>{action}</div>
+      <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        방금 받은 메시지에 회신 초안을 쓰는 중이에요. <b>빈 칸(_____)</b> 자리에 오늘 단어가 들어갑니다. 가장 자연스러운 표현을 고르세요.
+      </div>
 
-      <div style={{ marginTop: 18, padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 8, boxShadow: "2px 2px 0 var(--line)" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.12em", marginBottom: 10 }}>📧 DRAFT EMAIL · TO CLIENT</div>
+      {today.quote ? (
+        <div style={{ display: "flex", gap: 10, marginTop: 14, alignItems: "flex-start" }}>
+          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: npc.color, fontSize: 14 }}>{npc.avatar}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>{npc.name}</div>
+            <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.5, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 12px 12px 12px", padding: "8px 12px" }}>{today.quote}</div>
+          </div>
+        </div>
+      ) : null}
+
+      <div style={{ marginTop: 16, padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 8, boxShadow: "2px 2px 0 var(--line)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.12em", marginBottom: 10 }}>📝 내 회신 초안</div>
         <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.7 }}>
-          Hi team,<br/><br/>
-          Thanks for the call earlier. <span style={{ background: "var(--highlight)", padding: "1px 4px", fontWeight: 800 }}>{draft}</span><br/><br/>
+          Hi,<br/><br/>
+          <span style={{ background: "var(--highlight)", padding: "1px 4px", fontWeight: 800 }}>{draft}</span><br/><br/>
           Best,<br/>
           {window.__SIM.USER.name}
         </div>

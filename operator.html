@@ -437,17 +437,60 @@ function App() {
     showToast("사용자 리셋 완료");
   };
 
-  const addNotice = () => {
+  // DB(notices 테이블)에서 공지 목록 로드. 모든 사용자가 보는 실제 소스.
+  const loadNotices = async () => {
+    if (!window.OD || !window.OD.enabled || !window.OD.fetchNotices) return;
+    const r = await window.OD.fetchNotices(50);
+    if (r.ok && r.notices) {
+      const mapped = r.notices.map(n => ({
+        id: n.id, type: n.type, title: n.title, body: n.body,
+        from: n.from_name, at: n.sent_at,
+      }));
+      setNotices(mapped); save(KEY_NOTICES, mapped);
+    }
+  };
+
+  // 마운트 시 window.OD 준비되면 DB 공지 로드
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let tries = 0;
+      while ((!window.OD || !window.OD.enabled || !window.OD.fetchNotices) && tries++ < 30) {
+        await new Promise(r => setTimeout(r, 200));
+      }
+      if (!cancelled) loadNotices();
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const addNotice = async () => {
     if (!draftTitle.trim() || !draftBody.trim()) return;
-    const next = [{
-      id: Date.now(), type: draftType,
-      title: draftTitle.trim(), body: draftBody.trim(),
-      from: "유버디 (CEO)", at: new Date().toISOString(),
-      unread: true,
-    }, ...notices];
-    setNotices(next); save(KEY_NOTICES, next);
+    if (!window.OD || !window.OD.enabled || !window.OD.sendNotice) {
+      showToast("DB 연결 대기 중. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    const r = await window.OD.sendNotice({
+      type: draftType,
+      title: draftTitle.trim(),
+      body: draftBody.trim(),
+      fromName: "유버디 (Buddy)",
+    });
+    if (!r.ok) { showToast("발송 실패: " + (r.error || "알 수 없는 오류")); return; }
     setDraftTitle(""); setDraftBody("");
-    showToast("공지 발송됨");
+    showToast("모든 입사자에게 공지 발송됨 ✓");
+    loadNotices();
+  };
+
+  const removeNotice = async (id) => {
+    if (!window.confirm("이 공지를 삭제할까요? 모든 사용자 화면에서 사라집니다.")) return;
+    if (!window.OD || !window.OD.enabled || !window.OD.deleteNotice) {
+      showToast("DB 연결 대기 중. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    const r = await window.OD.deleteNotice(id);
+    if (!r.ok) { showToast("삭제 실패: " + (r.error || "알 수 없는 오류")); return; }
+    showToast("공지 삭제됨");
+    loadNotices();
   };
 
   const exportData = () => {
@@ -497,6 +540,50 @@ function App() {
 
         {/* ★ 학습 데이터 조회 (2026-05-19 추가): 사용자별 N일차 영작·노트·일지 즉시 보기 */}
         {supaEnabled && <LearningQueryCard />}
+
+        <div className="section">
+          <div className="section-title">📨 공지·이벤트 발송</div>
+          <div className="grid-2">
+            <div className="card">
+              <div className="form-row">
+                <label>유형</label>
+                <select value={draftType} onChange={e => setDraftType(e.target.value)}>
+                  <option value="notice">전사 공지</option>
+                  <option value="event">이벤트 안내</option>
+                  <option value="ceo">버디 톡 (유버디)</option>
+                  <option value="event-novelty">돌발 이벤트 (P3)</option>
+                </select>
+              </div>
+              <div className="form-row">
+                <label>제목</label>
+                <input value={draftTitle} onChange={e => setDraftTitle(e.target.value)} placeholder="예: [전사] 5월 워크샵" />
+              </div>
+              <div className="form-row">
+                <label>본문</label>
+                <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…" />
+              </div>
+              <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim()}>
+                📨 모든 입사자에게 발송
+              </button>
+            </div>
+            <div className="card">
+              <div className="title">발송한 공지 ({notices.length})</div>
+              {notices.length === 0 ? (
+                <div className="empty" style={{ padding: 16 }}>아직 공지 없음.</div>
+              ) : notices.slice(0, 6).map(n => (
+                <div key={n.id} className="notice-item" style={{ position: 'relative' }}>
+                  <div className="meta">[{n.type}] · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
+                  <strong>{n.title}</strong>
+                  <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{(n.body || '').slice(0, 100)}{(n.body || '').length > 100 ? "…" : ""}</div>
+                  <button
+                    onClick={() => removeNotice(n.id)}
+                    style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: '1px solid #D9C9A8', color: '#A8462F', borderRadius: 5, fontSize: 11, padding: '2px 8px', cursor: 'pointer' }}
+                  >삭제</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Supabase 전체 사용자 */}
         {supaEnabled && (
@@ -760,46 +847,6 @@ function App() {
                 이 기기엔 등록된 사용자가 없어요. <a href="onboarding.html" style={{ color: '#D85A2A' }}>온보딩</a>으로 직접 가입하거나, 위에서 코드 발급 후 그 코드로 가입.
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="section">
-          <div className="section-title">📨 공지·이벤트 발송</div>
-          <div className="grid-2">
-            <div className="card">
-              <div className="form-row">
-                <label>유형</label>
-                <select value={draftType} onChange={e => setDraftType(e.target.value)}>
-                  <option value="notice">전사 공지</option>
-                  <option value="event">이벤트 안내</option>
-                  <option value="ceo">버디 톡 (유버디)</option>
-                  <option value="event-novelty">돌발 이벤트 (P3)</option>
-                </select>
-              </div>
-              <div className="form-row">
-                <label>제목</label>
-                <input value={draftTitle} onChange={e => setDraftTitle(e.target.value)} placeholder="예: [전사] 5월 워크샵" />
-              </div>
-              <div className="form-row">
-                <label>본문</label>
-                <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…" />
-              </div>
-              <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim()}>
-                📨 모든 입사자에게 발송
-              </button>
-            </div>
-            <div className="card">
-              <div className="title">발송한 공지 ({notices.length})</div>
-              {notices.length === 0 ? (
-                <div className="empty" style={{ padding: 16 }}>아직 공지 없음.</div>
-              ) : notices.slice(0, 6).map(n => (
-                <div key={n.id} className="notice-item">
-                  <div className="meta">[{n.type}] · {new Date(n.at).toLocaleString('ko-KR')}</div>
-                  <strong>{n.title}</strong>
-                  <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{n.body.slice(0, 100)}{n.body.length > 100 ? "…" : ""}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 

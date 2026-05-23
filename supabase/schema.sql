@@ -261,6 +261,9 @@ CREATE POLICY notices_select ON notices FOR SELECT USING (true);
 DROP POLICY IF EXISTS notices_insert ON notices;
 CREATE POLICY notices_insert ON notices FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS notices_delete ON notices;
+CREATE POLICY notices_delete ON notices FOR DELETE USING (true);
+
 -- notice_reads, 모두
 DROP POLICY IF EXISTS notice_reads_all ON notice_reads;
 CREATE POLICY notice_reads_all ON notice_reads FOR ALL USING (true);
