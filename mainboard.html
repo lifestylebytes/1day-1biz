@@ -3080,9 +3080,18 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       return Object.values(tasks).filter(Boolean).length >= 4;
     } catch (e) { return false; }
   };
+  // 일정(task) 완료 시각 (영작·일지 외에 일정만 늦게 채운 경우도 잡음)
+  const _taskTs = (day) => {
+    try {
+      const v = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts");
+      return v ? new Date(v).getTime() : null;
+    } catch (e) { return null; }
+  };
   const _isLate = (day) => {
-    const at = _lastAt[day]; const dl = _dayDeadline(day);
-    return !!(at && dl && at > dl);
+    const dl = _dayDeadline(day);
+    if (!dl) return false;
+    const at = Math.max(_lastAt[day] || 0, _taskTs(day) || 0);
+    return !!(at && at > dl);
   };
   // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
   const _realDay = USER.realCurrentDay || USER.currentDay;
@@ -3126,7 +3135,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       // 시추에이션, 기존 SceneModal 유지. 클릭 즉시 done 처리.
       const next = { ...doneTasks, [item.id]: true };
       setDoneTasks(next);
-      try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
+      try { localStorage.setItem(taskKey, JSON.stringify(next)); localStorage.setItem(taskKey + "_ts", new Date().toISOString()); } catch(e) {}
       // ★ cross-device 동기화
       if (window.OD?.enabled && window.OD.saveTaskProgress && USER.email) {
         window.OD.saveTaskProgress(USER.email, USER.currentDay, next).catch(() => {
@@ -3149,7 +3158,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     if (!replay && !doneTasks[item.id]) {
       const next = { ...doneTasks, [item.id]: true };
       setDoneTasks(next);
-      try { localStorage.setItem(taskKey, JSON.stringify(next)); } catch(e) {}
+      try { localStorage.setItem(taskKey, JSON.stringify(next)); localStorage.setItem(taskKey + "_ts", new Date().toISOString()); } catch(e) {}
       // ★ cross-device 동기화
       if (window.OD?.enabled && window.OD.saveTaskProgress && USER.email) {
         window.OD.saveTaskProgress(USER.email, USER.currentDay, next).catch(() => {
@@ -5586,11 +5595,20 @@ function MissionActivity({ today, item, onClose, onComplete }) {
       <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 써먹기</span>
       <div style={{ marginTop: 12, padding: 16, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8 }}>
         <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 800, letterSpacing: "0.12em", marginBottom: 6 }}>📍 SITUATION</div>
-        <div style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.55 }}>{ctx.prompt}</div>
-        <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink)" }}>오늘 단어: <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b></div>
+        <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.55 }}>{today.scene ? today.scene + " " : ""}{ctx.prompt}</div>
+        {today.quote ? (
+          <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "flex-start" }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: npc.color, fontSize: 14 }}>{npc.avatar}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>{npc.name}</div>
+              <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.5, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 12px 12px 12px", padding: "8px 12px" }}>{today.quote}</div>
+            </div>
+          </div>
+        ) : null}
+        <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink)" }}>오늘 단어: <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b></div>
       </div>
       <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
-        가장 자연스러운 한 줄을 골라보세요.
+        {npc.name}에게 답할 차례. 오늘 단어 <b>{today.word}</b>를(을) 살리면서 가장 자연스러운 한 줄을 골라보세요.
       </div>
       <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
         {options.map((o, i) => {
