@@ -2270,6 +2270,34 @@ const LUNCH_SCRIPTS = {
 };
 SCENARIOS.forEach(s => { if (LUNCH_SCRIPTS[s.day]) s.lunchScript = LUNCH_SCRIPTS[s.day]; });
 
+// ============================================================
+// RECAP(10초 퀴즈) day별 빈칸 문장 + 해설
+// 누적 복습: 오늘 + 최근 2개 day 단어 출제. answer는 SCENARIOS[day].word
+// ============================================================
+const RECAP_DATA = {
+  1:  { blank: `Let's map out every _____ before we kick off.`, explain: `이 프로젝트에 영향을 주고받는 모든 사람을 정리하자는 맥락이에요. stakeholder는 주주뿐 아니라 임직원, 클라이언트까지 다 포함한답니다!` },
+  2:  { blank: `Can you confirm the _____ for the draft?`, explain: `초안 마감을 확인하는 상황이에요. deadline은 due date보다 무거운, 꼭 지켜야 하는 선이라는 뉘앙스랍니다!` },
+  3:  { blank: `I'll _____ on the action items by EOD.`, explain: `회의 후 액션 아이템을 챙기겠다는 맥락이에요. follow up on은 회의 끝나고 가장 많이 쓰는 표현이랍니다!` },
+  5:  { blank: `Let's _____ on this next week, we're short on time.`, explain: `시간이 부족해서 다음에 다시 논의하자는 상황이에요. circle back은 이건 다음에를 부드럽게 표현한답니다!` },
+  6:  { blank: `Please _____ the design team on this thread.`, explain: `디자인팀을 메일 스레드에 포함시키라는 맥락이에요. loop in은 대화나 메일에 누군가를 넣는다는 뜻이랍니다!` },
+  7:  { blank: `The first _____ is due this Friday.`, explain: `이번 주 금요일까지 낼 결과물 얘기예요. deliverable은 납품, 제출해야 하는 산출물을 뜻한답니다!` },
+  9:  { blank: `Let's knock out the _____ first.`, explain: `쉬운 것부터 처리하자는 맥락이에요. low-hanging fruit은 쉽게 얻을 수 있는 성과를 뜻한답니다!` },
+  10: { blank: `Let's _____ for 15 minutes tomorrow.`, explain: `잠깐 진행 상황을 맞춰보자는 상황이에요. touch base는 가볍게 얘기 나누다라는 표현이랍니다!` },
+  11: { blank: `We can't sign off until _____ is done.`, explain: `계약 전 충분한 검토가 끝나야 한다는 맥락이에요. due diligence는 실사, 꼼꼼한 사전 검토를 뜻한답니다!` },
+  13: { blank: `Can you make this feedback more _____?`, explain: `피드백을 바로 실행할 수 있게 만들라는 상황이에요. actionable은 실행 가능한, 구체적인이라는 뜻이랍니다!` },
+  14: { blank: `Just give me a _____ figure for now.`, explain: `정확한 숫자 말고 대략치를 달라는 맥락이에요. ballpark는 대략적인 추정치를 뜻한답니다!` },
+  15: { blank: `Let's _____ this discussion for now.`, explain: `이 논의를 일단 미루자는 상황이에요. table은 동사로 논의를 보류하다라는 뜻이랍니다!` },
+  17: { blank: `Let's _____ on progress this afternoon.`, explain: `진행 상황을 맞춰보자는 맥락이에요. sync up은 짧게 진행 상황을 동기화하다라는 표현이랍니다!` },
+  18: { blank: `I don't have the _____ for this right now.`, explain: `지금 처리할 여력이 없다는 상황이에요. bandwidth는 회사에서 일을 감당할 시간이나 에너지를 뜻한답니다!` },
+  19: { blank: `Let's lock down the _____ before it grows.`, explain: `프로젝트 범위가 커지기 전에 확정하자는 맥락이에요. scope는 일의 범위를 뜻한답니다!` },
+  21: { blank: `Thanks for the _____ on the schedule change.`, explain: `일정 변경을 미리 알려줘서 고맙다는 상황이에요. heads up은 사전에 미리 알리는 말이랍니다!` },
+  22: { blank: `I'll _____ of this project end to end.`, explain: `프로젝트를 처음부터 끝까지 책임지겠다는 맥락이에요. take ownership은 주도권을 갖고 책임진다는 뜻이랍니다!` },
+  23: { blank: `We need leadership _____ before we move on this.`, explain: `진행 전에 윗선의 동의가 필요하다는 상황이에요. buy-in은 지지, 동의 확보를 뜻한답니다!` },
+  25: { blank: `I'll be _____ next Monday and Tuesday.`, explain: `다음 주 월화에 자리를 비운다는 맥락이에요. OOO는 out of office, 부재 중을 뜻한답니다!` },
+  26: { blank: `User retention is our _____ this quarter.`, explain: `이번 분기 가장 중요한 지향점이 사용자 유지라는 상황이에요. north star는 핵심 지향점을 뜻한답니다!` },
+  27: { blank: `Expect some _____ from the client on pricing.`, explain: `가격에 대해 클라이언트가 반대할 수 있다는 맥락이에요. pushback은 반대 의견, 저항을 뜻한답니다!` },
+};
+
 // 사용자 상태, localStorage 우선, 없으면 데모 기본값
 const _localUser = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
 
@@ -2569,7 +2597,7 @@ const BUDDY_ANSWERS = {
   ],
 };
 
-window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS, todayLabel: _todayLabel, getBuddyNudgeForDay: _getBuddyNudgeForDay, getScheduleForDay };
+window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUDGES, BUDDY_ANSWERS, RECAP_DATA, todayLabel: _todayLabel, getBuddyNudgeForDay: _getBuddyNudgeForDay, getScheduleForDay };
 
 </script>
 
@@ -5826,39 +5854,29 @@ function RecapActivity({ today, item, onClose, onComplete }) {
   const [picks, setPicks] = useState([]);
   const [pick, setPick] = useState(null);
 
-  // Q1: KO 뜻 → EN 단어
-  // Q2: 빈칸 채우기 (예문에서 단어 빠진 거)
-  // Q3: 동의어 매칭
+  // 누적 복습: 오늘 + 최근 2개 day 단어로 빈칸 문제 (정답이 매번 달라 패턴 안 통함)
   const questions = useMemo(() => {
-    const otherWords = _pickWordObjects(today.word, 3);
-    const otherWordSyn = otherWords.map(o => (o.synonyms && o.synonyms[0]) || o.word).filter(Boolean);
-    return [
-      {
-        prompt: `한국어 뜻을 영어 단어로`,
-        target: today.meaning,
-        options: _shuf([today.word, ...otherWords.map(o => o.word)]),
-        correct: today.word,
-        hint: today.mentorTip,
-      },
-      {
-        prompt: `빈 칸에 들어갈 단어`,
-        target: (today.quote || today.sampleAnswer || "").replace(new RegExp(today.word, "gi"), "_____"),
-        options: _shuf([today.word, ...otherWords.map(o => o.word).slice(0, 3)]),
-        correct: today.word,
-        hint: `원문: "${today.quote || today.sampleAnswer}"`,
-      },
-      {
-        prompt: `비슷한 표현은?`,
-        target: today.word,
-        options: _shuf([
-          (today.synonyms && today.synonyms[0]) || today.meaning,
-          ...otherWordSyn.slice(0, 3),
-        ]).slice(0, 4),
-        correct: (today.synonyms && today.synonyms[0]) || today.meaning,
-        hint: today.synonyms ? `유사: ${(today.synonyms || []).join(" · ")}` : "",
-      },
-    ];
-  }, [today.word]);
+    const SCN = (window.__SIM && window.__SIM.SCENARIOS) || [];
+    const RD = (window.__SIM && window.__SIM.RECAP_DATA) || {};
+    const qDays = [];
+    for (let d = today.day; d >= 1 && qDays.length < 3; d--) {
+      if (RD[d]) qDays.push(d);
+    }
+    qDays.reverse();
+    const allWords = SCN.map(s => s.word).filter(Boolean);
+    return qDays.map(d => {
+      const sc = SCN.find(s => s.day === d);
+      const word = sc ? sc.word : "";
+      const distractors = _shuf(allWords.filter(w => w !== word)).slice(0, 3);
+      return {
+        prompt: `빈 칸에 들어갈 표현은?`,
+        target: RD[d].blank,
+        options: _shuf([word, ...distractors]),
+        correct: word,
+        hint: RD[d].explain,
+      };
+    });
+  }, [today.day]);
 
   const q = questions[qIdx];
   const lastQ = qIdx >= questions.length - 1;
@@ -5867,16 +5885,11 @@ function RecapActivity({ today, item, onClose, onComplete }) {
   const onPick = (opt) => {
     if (pick) return;
     setPick(opt);
-    const ok = opt === q.correct;
-    setTimeout(() => {
-      setPicks([...picks, { ok, q: q.target, opt }]);
-      if (lastQ) {
-        setQIdx(qIdx + 1);
-      } else {
-        setQIdx(qIdx + 1);
-        setPick(null);
-      }
-    }, 900);
+    setPicks(prev => [...prev, { ok: opt === q.correct, q: q.target, opt }]);
+  };
+  const goNext = () => {
+    setQIdx(qIdx + 1);
+    setPick(null);
   };
 
   if (qIdx >= questions.length) {
@@ -5911,6 +5924,9 @@ function RecapActivity({ today, item, onClose, onComplete }) {
   return (
     <ActivityShell title={`RECAP · 10초 퀴즈 · ${qIdx + 1} / ${questions.length}`} onClose={onClose}>
       <span className="label-doc label-orange">▶ 15:30 · 빠른 복습</span>
+      <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        오늘 단어 + 최근에 배운 단어를 섞어서 복습해요. 빈 칸에 들어갈 표현을 골라보세요.
+      </div>
       <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink-mute)", letterSpacing: "0.04em", fontWeight: 700 }}>{q.prompt}</div>
       <div style={{ marginTop: 8, padding: 18, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 18, fontWeight: 800, color: "var(--ink)", lineHeight: 1.45, letterSpacing: "-0.01em" }}>
         {q.target}
@@ -5941,6 +5957,13 @@ function RecapActivity({ today, item, onClose, onComplete }) {
       {pick && q.hint ? (
         <div style={{ marginTop: 12, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.55, padding: "10px 12px", background: "rgba(216,90,42,0.06)", borderRadius: 6 }}>
           💡 {q.hint}
+        </div>
+      ) : null}
+      {pick ? (
+        <div className="row" style={{ marginTop: 16, justifyContent: "flex-end" }}>
+          <button className="btn btn-primary" onClick={goNext}>
+            {lastQ ? "결과 보기 →" : "다음 문제 →"}
+          </button>
         </div>
       ) : null}
     </ActivityShell>
