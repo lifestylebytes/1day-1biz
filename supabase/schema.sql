@@ -183,6 +183,7 @@ CREATE TABLE IF NOT EXISTS notices (
   body TEXT NOT NULL,
   from_name TEXT DEFAULT '유버디 (Buddy)',
   audience TEXT DEFAULT 'all',  -- 'all' | 'level:probation' | 'cohort:xxx' 등
+  popup BOOLEAN DEFAULT false,  -- 사용자 입장 시 팝업으로 띄울지 여부
   sent_at TIMESTAMPTZ DEFAULT NOW(),
   created_by UUID REFERENCES users(id)
 );
@@ -263,6 +264,9 @@ CREATE POLICY notices_insert ON notices FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS notices_delete ON notices;
 CREATE POLICY notices_delete ON notices FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS notices_update ON notices;
+CREATE POLICY notices_update ON notices FOR UPDATE USING (true) WITH CHECK (true);
 
 -- notice_reads, 모두
 DROP POLICY IF EXISTS notice_reads_all ON notice_reads;

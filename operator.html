@@ -310,6 +310,9 @@ function App() {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftBody, setDraftBody] = useState("");
   const [draftType, setDraftType] = useState("notice");
+  const [draftPopup, setDraftPopup] = useState(false);
+  const [editingId, setEditingId] = useState(null);  // null이면 새 공지, 값 있으면 수정 중
+  const [readCounts, setReadCounts] = useState({});   // { 'db-<id>': 확인자수 }
 
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
@@ -444,9 +447,14 @@ function App() {
     if (r.ok && r.notices) {
       const mapped = r.notices.map(n => ({
         id: n.id, type: n.type, title: n.title, body: n.body,
-        from: n.from_name, at: n.sent_at,
+        from: n.from_name, at: n.sent_at, popup: !!n.popup,
       }));
       setNotices(mapped); save(KEY_NOTICES, mapped);
+    }
+    // 공지별 확인자 수 집계
+    if (window.OD.fetchNoticeReadCounts) {
+      const rc = await window.OD.fetchNoticeReadCounts();
+      if (rc.ok) setReadCounts(rc.counts || {});
     }
   };
 
@@ -463,21 +471,44 @@ function App() {
     return () => { cancelled = true; };
   }, []);
 
+  // 작성 폼 초기화 (새 공지 모드)
+  const resetDraft = () => {
+    setEditingId(null); setDraftType("notice");
+    setDraftTitle(""); setDraftBody(""); setDraftPopup(false);
+  };
+
+  // 발송 공지 클릭 → 폼에 로드해서 전체 확인 + 수정 모드 진입
+  const startEditNotice = (n) => {
+    setEditingId(n.id);
+    setDraftType(n.type || "notice");
+    setDraftTitle(n.title || "");
+    setDraftBody(n.body || "");
+    setDraftPopup(!!n.popup);
+    showToast("수정 모드, 내용을 확인하고 고친 뒤 저장하세요");
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
+  };
+
   const addNotice = async () => {
     if (!draftTitle.trim() || !draftBody.trim()) return;
     if (!window.OD || !window.OD.enabled || !window.OD.sendNotice) {
       showToast("DB 연결 대기 중. 잠시 후 다시 시도해주세요.");
       return;
     }
-    const r = await window.OD.sendNotice({
+    const payload = {
       type: draftType,
       title: draftTitle.trim(),
       body: draftBody.trim(),
-      fromName: "유버디 (Buddy)",
-    });
-    if (!r.ok) { showToast("발송 실패: " + (r.error || "알 수 없는 오류")); return; }
-    setDraftTitle(""); setDraftBody("");
-    showToast("모든 입사자에게 공지 발송됨 ✓");
+      popup: draftPopup,
+    };
+    let r;
+    if (editingId) {
+      r = await window.OD.updateNotice(editingId, payload);
+    } else {
+      r = await window.OD.sendNotice({ ...payload, fromName: "유버디 (Buddy)" });
+    }
+    if (!r.ok) { showToast((editingId ? "수정" : "발송") + " 실패: " + (r.error || "알 수 없는 오류")); return; }
+    showToast(editingId ? "공지 수정됨 ✓" : "모든 입사자에게 공지 발송됨 ✓");
+    resetDraft();
     loadNotices();
   };
 
@@ -490,6 +521,7 @@ function App() {
     const r = await window.OD.deleteNotice(id);
     if (!r.ok) { showToast("삭제 실패: " + (r.error || "알 수 없는 오류")); return; }
     showToast("공지 삭제됨");
+    if (editingId === id) resetDraft();
     loadNotices();
   };
 
@@ -545,6 +577,12 @@ function App() {
           <div className="section-title">📨 공지·이벤트 발송</div>
           <div className="grid-2">
             <div className="card">
+              {editingId ? (
+                <div style={{ background: '#FBEEDF', border: '1px solid #E7C9A3', borderRadius: 6, padding: '8px 12px', marginBottom: 12, fontSize: 12, color: '#8A5A2B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>✏️ 수정 모드, 기존 공지를 고치는 중</span>
+                  <button onClick={resetDraft} style={{ background: 'none', border: 'none', color: '#A8462F', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>새 공지 작성</button>
+                </div>
+              ) : null}
               <div className="form-row">
                 <label>유형</label>
                 <select value={draftType} onChange={e => setDraftType(e.target.value)}>
@@ -562,25 +600,39 @@ function App() {
                 <label>본문</label>
                 <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…" />
               </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#5C4A36', cursor: 'pointer', margin: '4px 0 12px' }}>
+                <input type="checkbox" checked={draftPopup} onChange={e => setDraftPopup(e.target.checked)} style={{ width: 16, height: 16 }} />
+                🔔 사용자 입장 시 팝업으로 띄우기
+              </label>
               <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim()}>
-                📨 모든 입사자에게 발송
+                {editingId ? "✏️ 수정 저장" : "📨 모든 입사자에게 발송"}
               </button>
             </div>
             <div className="card">
               <div className="title">발송한 공지 ({notices.length})</div>
+              <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 8 }}>공지를 클릭하면 전체 내용을 확인하고 수정할 수 있어요.</div>
               {notices.length === 0 ? (
                 <div className="empty" style={{ padding: 16 }}>아직 공지 없음.</div>
-              ) : notices.slice(0, 6).map(n => (
-                <div key={n.id} className="notice-item" style={{ position: 'relative' }}>
-                  <div className="meta">[{n.type}] · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
+              ) : notices.slice(0, 6).map(n => {
+                const reads = readCounts['db-' + n.id] || 0;
+                return (
+                <div
+                  key={n.id}
+                  className="notice-item"
+                  onClick={() => startEditNotice(n)}
+                  style={{ position: 'relative', cursor: 'pointer', outline: editingId === n.id ? '2px solid #D8923A' : 'none' }}
+                >
+                  <div className="meta">[{n.type}]{n.popup ? ' · 🔔팝업' : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
                   <strong>{n.title}</strong>
                   <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{(n.body || '').slice(0, 100)}{(n.body || '').length > 100 ? "…" : ""}</div>
+                  <div style={{ marginTop: 6, fontSize: 11, color: '#6E8A5C', fontWeight: 700 }}>👁 확인 {reads}명</div>
                   <button
-                    onClick={() => removeNotice(n.id)}
+                    onClick={(e) => { e.stopPropagation(); removeNotice(n.id); }}
                     style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: '1px solid #D9C9A8', color: '#A8462F', borderRadius: 5, fontSize: 11, padding: '2px 8px', cursor: 'pointer' }}
                   >삭제</button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

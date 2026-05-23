@@ -6523,6 +6523,7 @@ function App() {
             tag: tagMap[n.type] || "공지",
             showFromDay: 0,
             isDb: true,
+            popup: !!n.popup,
           };
         });
         setDbNotices(converted);
@@ -6565,6 +6566,22 @@ function App() {
       }
     }
   };
+
+  // ★ 입장 시 자동 팝업: popup=true 인 미확인 공지 중 가장 최근 1건을 모달로 띄움.
+  // 기기당 1회만 (localStorage __OD_AUTOPOP). 운영자가 공지 작성 시 팝업 옵션 켰을 때만.
+  const _autoPoppedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (_autoPoppedRef.current) return;
+    if (!dbNotices || dbNotices.length === 0) return;
+    const target = dbNotices.find(n => n.popup && !readIds.has(n.id));
+    if (!target) return;
+    let shown = [];
+    try { shown = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); } catch (e) {}
+    if (shown.includes(target.id)) return;
+    _autoPoppedRef.current = true;
+    try { shown.push(target.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
+    handleOpenMemo(target);
+  }, [dbNotices, readIds]);
 
   // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
   const weekend = _weekendKind();
