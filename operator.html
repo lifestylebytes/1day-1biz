@@ -313,6 +313,7 @@ function App() {
   const [draftPopup, setDraftPopup] = useState(false);
   const [editingId, setEditingId] = useState(null);  // null이면 새 공지, 값 있으면 수정 중
   const [readCounts, setReadCounts] = useState({});   // { 'db-<id>': 확인자수 }
+  const [previewNotice, setPreviewNotice] = useState(null);  // 사용자 팝업 미리보기
 
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
@@ -619,7 +620,7 @@ function App() {
                 <div
                   key={n.id}
                   className="notice-item"
-                  onClick={() => startEditNotice(n)}
+                  onClick={() => setPreviewNotice(n)}
                   style={{ position: 'relative', cursor: 'pointer', outline: editingId === n.id ? '2px solid #D8923A' : 'none' }}
                 >
                   <div className="meta">[{n.type}]{n.popup ? ' · 🔔팝업' : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
@@ -912,6 +913,47 @@ function App() {
           </div>
         </div>
       </div>
+
+      {previewNotice && (
+        <div
+          onClick={() => setPreviewNotice(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(40,30,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: '#F4EFE3', borderRadius: 12, maxWidth: 480, width: '100%', maxHeight: '85vh', overflow: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
+          >
+            <div style={{ background: '#2A2118', color: '#F4EFE3', padding: '12px 18px', borderRadius: '12px 12px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, letterSpacing: '0.14em', fontWeight: 800 }}>
+              <span>사용자 팝업 미리보기</span>
+              <button onClick={() => setPreviewNotice(null)} style={{ background: 'none', border: 'none', color: '#F4EFE3', fontSize: 16, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 22px' }}>
+              <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700 }}>
+                {{ notice: '공지', event: '이벤트', ceo: '버디 톡', 'event-novelty': '이벤트' }[previewNotice.type] || '공지'}
+                {previewNotice.popup ? ' · 🔔 입장 시 팝업' : ''}
+              </div>
+              <div style={{ fontSize: 21, fontWeight: 900, lineHeight: 1.3, marginTop: 6, color: '#2A2118' }}>{previewNotice.title}</div>
+              <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', paddingBottom: 14, borderBottom: '1px dashed #D9C9A8' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E8915C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🐥</div>
+                <div style={{ fontSize: 12, color: '#5C4A36' }}>
+                  <b>{previewNotice.from || '유버디 (Buddy)'}</b><br/>
+                  <span style={{ color: '#8A7964' }}>받는 사람: 전 직원</span>
+                </div>
+              </div>
+              <div style={{ marginTop: 16, fontSize: 14, lineHeight: 1.75, color: '#2A2118', whiteSpace: 'pre-wrap', wordBreak: 'keep-all' }}>
+                {previewNotice.body}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 22 }}>
+                <button
+                  className="btn primary"
+                  onClick={() => { startEditNotice(previewNotice); setPreviewNotice(null); }}
+                >✏️ 이 공지 수정하기</button>
+                <button className="btn btn-ghost" onClick={() => setPreviewNotice(null)}>닫기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <div className="copy-toast">{toast}</div>}
     </>
