@@ -677,9 +677,21 @@ function App() {
                 <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
               ) : supaUsers.map(u => {
                 const dLeft = daysUntilEnd(u.membership_ends_at);
-                const isExpired = dLeft !== null && dLeft <= 0;
-                const isCanceling = dLeft !== null && dLeft > 0;
                 const isPaidMember = u.cohort === 'member';
+                const isInternal = u.is_operator || u.is_dev_mode;
+                // PILOT 사용자: ends_at은 "연장" 의미. paid member에게만 ends_at = 퇴직 예약.
+                const isPilot = !!u.is_pilot_hire && !isPaidMember && !isInternal;
+                const isExpired   = !isPilot && dLeft !== null && dLeft <= 0;
+                const isCanceling = !isPilot && dLeft !== null && dLeft > 0;
+                const day = u.day_in_company || 1;
+                // PILOT 베타/연장 상태 (한눈에 보이게 배지로)
+                let pilotStatus = null;
+                if (isPilot) {
+                  if (u.membership_ends_at && dLeft > 0)        pilotStatus = { label: `🟢 연장 D-${dLeft}`,                  bg: '#DDEFD9', color: '#2D6E3A' };
+                  else if (u.membership_ends_at && dLeft <= 0)  pilotStatus = { label: '🔴 연장 만료',                          bg: '#FAEBE6', color: '#993C1D' };
+                  else if (!u.membership_ends_at && day > 14)   pilotStatus = { label: '🔴 베타 만료',                          bg: '#FAEBE6', color: '#993C1D' };
+                  else                                          pilotStatus = { label: `🟡 베타 D-${Math.max(0, 14 - day)}`,   bg: '#FFF3D6', color: '#B8431A' };
+                }
                 return (
                 <div key={u.id} className="user-row">
                   <div>
@@ -697,12 +709,13 @@ function App() {
                       {u.is_operator && <span className="status-pill active" style={{ fontSize: 10 }}>OP</span>}
                       {u.is_dev_mode && <span className="status-pill" style={{ fontSize: 10, background: '#FFF3D6', color: '#B8431A' }}>DEV</span>}
                       {isPaidMember && <span className="status-pill" style={{ fontSize: 10, background: '#FFE9A6', color: '#8C6510' }}>정식</span>}
-                      {u.is_pilot_hire && !isPaidMember && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
+                      {isPilot && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
+                      {pilotStatus && <span className="status-pill" style={{ fontSize: 10, background: pilotStatus.bg, color: pilotStatus.color, fontWeight: 800 }}>{pilotStatus.label}</span>}
                       {u.is_tester && <span className="status-pill" style={{ fontSize: 10 }}>TEST</span>}
                       {isExpired && <span className="status-pill" style={{ fontSize: 10, background: '#FAEBE6', color: '#993C1D', fontWeight: 800 }}>퇴직완료</span>}
                       {isCanceling && <span className="status-pill" style={{ fontSize: 10, background: '#FAEBE6', color: '#993C1D' }}>퇴직 D-{dLeft}</span>}
                     </div>
-                    {!u.is_operator && (
+                    {!u.is_operator && !isPilot && (
                       isCanceling || isExpired ? (
                         <button
                           onClick={() => restoreUserMembership(u)}
