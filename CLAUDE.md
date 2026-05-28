@@ -68,6 +68,28 @@ for fp in glob.glob('**/*.html', recursive=True) + glob.glob('**/*.jsx', recursi
 - Day 자동 진행: 가입일 기반 캘린더 계산 (KST 자정)
 - 7일 지난 PILOT 사용자에게 베타 만료 모달
 
+## 예정 작업 (지금 안 함, 시점만 정해지면 진행)
+
+### 로그인 방식 변경: Magic Link → 이메일 6자리 코드 (OTP)
+
+**현재 문제**: Supabase magic link로 보내고 "바로 입장하기" 버튼을 누르면 그 버튼이
+열린 브라우저에서만 세션이 생김. 모바일에서 메일 받고 PC에서 로그인하려는 사용자가
+불편함을 호소.
+
+**바꿀 방향**:
+1. Supabase Auth는 이미 OTP 모드 지원. 이메일 템플릿에서 `{{ .ConfirmationURL }}`
+   대신 `{{ .Token }}`를 쓰면 6자리 숫자 코드가 메일로 발송됨.
+2. 로그인 UI를 2단계로:
+   - Step 1: 이메일 입력 → "코드 받기" (`signInWithOtp({ email })`)
+   - Step 2: 받은 6자리 코드 입력 → "확인" (`verifyOtp({ email, token, type: 'email' })`)
+3. 코드 입력은 어느 기기에서 해도 동일하게 세션이 생김 → 모바일·PC 교차 사용 OK.
+
+**손볼 파일**: `onboarding.html` LoginScreen, Supabase Dashboard 이메일 템플릿.
+
+**사용자에게 보낼 안내 문구 (넛지 메일 예정 기능에 추가)**:
+- 📨 **이메일 코드로 로그인** (예정): 이메일로 받은 6자리 코드를 입력하는 방식으로 변경
+  예정이에요. 모바일에서 코드 받아 PC에서 입력 같은 교차 로그인이 가능해집니다.
+
 ## 시나리오 데이터 구조 (SCENARIOS in mainboard.html)
 
 ```js

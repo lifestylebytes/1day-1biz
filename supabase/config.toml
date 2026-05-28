@@ -1,0 +1,7 @@
+# Supabase 프로젝트 설정. 이 파일은 supabase CLI가 읽음.
+# Edge Function별 옵션 (JWT 검증 등) 명시.
+
+[functions.latpeed-webhook]
+# 래피드는 인증 헤더 없이 호출하므로 JWT 검증 끔.
+# 보안은 (a) URL 자체가 비밀 + (b) payload 형식 검증으로 확보.
+verify_jwt = false
