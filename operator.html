@@ -679,12 +679,33 @@ function App() {
                 const dLeft = daysUntilEnd(u.membership_ends_at);
                 const isPaidMember = u.cohort === 'member';
                 const isInternal = u.is_operator || u.is_dev_mode;
-                // PILOT 사용자: ends_at은 "연장" 의미. paid member에게만 ends_at = 퇴직 예약.
                 const isPilot = !!u.is_pilot_hire && !isPaidMember && !isInternal;
-                const isExpired   = !isPilot && dLeft !== null && dLeft <= 0;
-                const isCanceling = !isPilot && dLeft !== null && dLeft > 0;
+                const cancelReason = u.membership_cancel_reason || null;
                 const day = u.day_in_company || 1;
-                // PILOT 베타/연장 상태 (한눈에 보이게 배지로)
+
+                // 정식 회원 상태 (cancel_reason 으로 활성/취소/퇴직 구분)
+                // - 활성   : ends_at 없거나, ends_at 미래 + cancel_reason 없음 (래피드 자동 갱신 중)
+                // - 취소예정: ends_at 미래 + cancel_reason 있음 (래피드 취소 OR 운영자 퇴직 처리)
+                // - 만료   : ends_at 과거
+                const isPaidActive    = isPaidMember && (dLeft === null || (dLeft > 0 && !cancelReason));
+                const isPaidCanceling = isPaidMember && dLeft !== null && dLeft > 0 && !!cancelReason;
+                const isPaidExpired   = isPaidMember && dLeft !== null && dLeft <= 0;
+                const isLatpeedCancel = cancelReason && cancelReason.startsWith('latpeed_');
+
+                let paidStatus = null;
+                if (isPaidActive) {
+                  paidStatus = dLeft !== null
+                    ? { label: `🟢 활성 (다음 결제 D-${dLeft})`, bg: '#DDEFD9', color: '#2D6E3A' }
+                    : { label: '🟢 활성 (갱신일 미설정)',           bg: '#FFF3D6', color: '#B8431A' };
+                } else if (isPaidCanceling) {
+                  paidStatus = isLatpeedCancel
+                    ? { label: `🟡 취소 예정 D-${dLeft}`, bg: '#FFE9A6', color: '#8C6510' }
+                    : { label: `🟡 퇴직 D-${dLeft}`,      bg: '#FAEBE6', color: '#993C1D' };
+                } else if (isPaidExpired) {
+                  paidStatus = { label: '🔴 만료', bg: '#FAEBE6', color: '#993C1D' };
+                }
+
+                // PILOT 베타/연장 상태
                 let pilotStatus = null;
                 if (isPilot) {
                   if (u.membership_ends_at && dLeft > 0)        pilotStatus = { label: `🟢 연장 D-${dLeft}`,                  bg: '#DDEFD9', color: '#2D6E3A' };
@@ -709,14 +730,13 @@ function App() {
                       {u.is_operator && <span className="status-pill active" style={{ fontSize: 10 }}>OP</span>}
                       {u.is_dev_mode && <span className="status-pill" style={{ fontSize: 10, background: '#FFF3D6', color: '#B8431A' }}>DEV</span>}
                       {isPaidMember && <span className="status-pill" style={{ fontSize: 10, background: '#FFE9A6', color: '#8C6510' }}>정식</span>}
+                      {paidStatus && <span className="status-pill" style={{ fontSize: 10, background: paidStatus.bg, color: paidStatus.color, fontWeight: 800 }}>{paidStatus.label}</span>}
                       {isPilot && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
                       {pilotStatus && <span className="status-pill" style={{ fontSize: 10, background: pilotStatus.bg, color: pilotStatus.color, fontWeight: 800 }}>{pilotStatus.label}</span>}
                       {u.is_tester && <span className="status-pill" style={{ fontSize: 10 }}>TEST</span>}
-                      {isExpired && <span className="status-pill" style={{ fontSize: 10, background: '#FAEBE6', color: '#993C1D', fontWeight: 800 }}>퇴직완료</span>}
-                      {isCanceling && <span className="status-pill" style={{ fontSize: 10, background: '#FAEBE6', color: '#993C1D' }}>퇴직 D-{dLeft}</span>}
                     </div>
                     {!u.is_operator && !isPilot && (
-                      isCanceling || isExpired ? (
+                      isPaidCanceling || isPaidExpired ? (
                         <button
                           onClick={() => restoreUserMembership(u)}
                           style={{ fontSize: 10, padding: '4px 8px', background: 'transparent', color: '#2D8A3E', border: '1px solid #2D8A3E', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
