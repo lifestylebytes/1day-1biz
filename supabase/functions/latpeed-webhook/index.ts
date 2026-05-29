@@ -78,17 +78,43 @@ Deno.serve(async (req) => {
 
   try {
     // 2) 멤버십 결제 성공 → 31일 연장
+    //    + 재구독(만료 후 재결제) 케이스면 공백 일수만큼 signup_date를 뒤로 밀어서
+    //      Day 진도가 끊긴 시점부터 다시 이어지게 함.
     if (type === "MEMBERSHIP_PAYMENT" && status === "SUCCESS") {
+      // 기존 상태 조회 (gap 계산용)
+      const { data: existing } = await supabase
+        .from("users")
+        .select("email, signup_date, membership_ends_at")
+        .eq("email", email)
+        .maybeSingle();
+
+      let gapDays = 0;
+      const updates: Record<string, unknown> = {
+        cohort: "member",
+        membership_cancel_reason: null,
+      };
+
+      if (existing && existing.membership_ends_at && existing.signup_date) {
+        const prevEndsAt = new Date(existing.membership_ends_at);
+        // 이전 ends_at이 이번 결제 시점보다 과거면 = 만료 후 재결제
+        if (prevEndsAt < eventAt) {
+          const msGap = eventAt.getTime() - prevEndsAt.getTime();
+          gapDays = Math.floor(msGap / (1000 * 60 * 60 * 24));
+          if (gapDays > 0) {
+            const newSignupDate = new Date(existing.signup_date);
+            newSignupDate.setDate(newSignupDate.getDate() + gapDays);
+            updates.signup_date = newSignupDate.toISOString();
+          }
+        }
+      }
+
       const endsAt = new Date(eventAt);
       endsAt.setDate(endsAt.getDate() + MEMBERSHIP_DAYS);
+      updates.membership_ends_at = endsAt.toISOString();
 
       const { data, error } = await supabase
         .from("users")
-        .update({
-          cohort: "member",
-          membership_ends_at: endsAt.toISOString(),
-          membership_cancel_reason: null,
-        })
+        .update(updates)
         .eq("email", email)
         .select("email");
 
@@ -98,7 +124,9 @@ Deno.serve(async (req) => {
         applyNote = "user_not_found_yet (이메일이 아직 1day-1biz 가입 전. 가입하면 자동 노출.)";
       } else {
         applied = true;
-        applyNote = `extended_until_${endsAt.toISOString()}`;
+        applyNote = gapDays > 0
+          ? `extended_until_${endsAt.toISOString()}_resume_after_${gapDays}d_gap`
+          : `extended_until_${endsAt.toISOString()}`;
       }
     }
     // 3) 멤버십 환불 → 즉시 만료

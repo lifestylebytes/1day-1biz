@@ -271,6 +271,108 @@ function LearningQueryCard() {
   );
 }
 
+// 💬 피드백 모아보기 카드 (사용자가 mainboard 우상단 버튼으로 보낸 피드백 표시)
+function FeedbackInbox() {
+  const [items, setItems] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [showResolved, setShowResolved] = React.useState(false);
+
+  const load = async () => {
+    if (!window.OD || !window.OD.enabled || !window.OD.fetchFeedback) return;
+    setLoading(true);
+    const r = await window.OD.fetchFeedback(200);
+    if (r.ok) setItems(r.feedback || []);
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let tries = 0;
+      while ((!window.OD || !window.OD.enabled) && tries++ < 30) {
+        await new Promise(r => setTimeout(r, 200));
+      }
+      if (!cancelled) load();
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const visible = items.filter(it => showResolved || !it.resolved);
+  const unresolvedCount = items.filter(it => !it.resolved).length;
+
+  const toggleResolved = async (id, cur) => {
+    if (!window.OD?.setFeedbackResolved) return;
+    const r = await window.OD.setFeedbackResolved(id, !cur);
+    if (r.ok) load();
+  };
+  const remove = async (id) => {
+    if (!window.confirm("이 피드백을 삭제할까요?")) return;
+    if (!window.OD?.deleteFeedback) return;
+    const r = await window.OD.deleteFeedback(id);
+    if (r.ok) load();
+  };
+
+  const CAT_LABEL = {
+    bug: '🐛 버그', content: '📚 콘텐츠', suggestion: '💡 제안', general: '💬 일반',
+  };
+  const CAT_COLOR = {
+    bug: '#FAEBE6', content: '#FFE9A6', suggestion: '#DDEFD9', general: '#EFE7D6',
+  };
+
+  return (
+    <div className="section">
+      <div className="section-title">
+        💬 피드백 모아보기
+        <span style={{ marginLeft: 10, fontSize: 11, color: unresolvedCount > 0 ? '#A8462F' : '#8A7964', fontWeight: 800 }}>
+          {unresolvedCount > 0 ? `(미해결 ${unresolvedCount}건)` : '(모두 처리됨)'}
+        </span>
+        <button className="btn btn-ghost btn-mini" style={{ marginLeft: 12, padding: '2px 10px', fontSize: 11 }} onClick={load} disabled={loading}>
+          {loading ? '로딩…' : '↻ 새로고침'}
+        </button>
+        <label style={{ marginLeft: 12, fontSize: 11, color: '#8A7964', cursor: 'pointer', fontWeight: 500, textTransform: 'none', letterSpacing: 'normal' }}>
+          <input type="checkbox" checked={showResolved} onChange={e => setShowResolved(e.target.checked)} style={{ marginRight: 4 }} />
+          처리된 것도 보기
+        </label>
+      </div>
+      <div className="card" style={{ padding: 0 }}>
+        {visible.length === 0 ? (
+          <div className="empty" style={{ padding: 24 }}>{loading ? '로딩 중...' : '아직 들어온 피드백이 없어요.'}</div>
+        ) : visible.map(it => (
+          <div key={it.id} style={{
+            padding: '14px 18px', borderBottom: '1px solid #E8DFCB',
+            opacity: it.resolved ? 0.55 : 1,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ background: CAT_COLOR[it.category] || '#EFE7D6', padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                  {CAT_LABEL[it.category] || it.category}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700 }}>{it.name || '익명'}</span>
+                {it.email && <span style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{it.email}</span>}
+                {it.day && <span style={{ fontSize: 11, color: '#8A7964' }}>Day {it.day}</span>}
+                <span style={{ fontSize: 11, color: '#8A7964' }}>{new Date(it.created_at).toLocaleString('ko-KR')}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  onClick={() => toggleResolved(it.id, it.resolved)}
+                  style={{ fontSize: 11, padding: '3px 10px', background: it.resolved ? '#DDEFD9' : 'transparent', color: it.resolved ? '#2D6E3A' : '#5C4A36', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                >{it.resolved ? '✓ 처리됨' : '처리 완료로 표시'}</button>
+                <button
+                  onClick={() => remove(it.id)}
+                  style={{ fontSize: 11, padding: '3px 10px', background: 'transparent', color: '#A8462F', border: '1px solid #D9C9A8', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                >삭제</button>
+              </div>
+            </div>
+            <div style={{ fontSize: 13, color: '#2A1F14', lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'keep-all', background: '#FAF6EB', padding: '10px 14px', borderLeft: '3px solid #D85A2A', borderRadius: 4 }}>
+              {it.message}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // ★ 운영자 가드, 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
@@ -637,6 +739,9 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* 💬 피드백 모아보기 (사용자가 보낸 의견) */}
+        {supaEnabled && <FeedbackInbox />}
 
         {/* Supabase 전체 사용자 */}
         {supaEnabled && (

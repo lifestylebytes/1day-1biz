@@ -3048,7 +3048,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
   // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
   const [showFullAttend, setShowFullAttend] = useState(false);
-  const ATTEND_DAYS = showFullAttend ? USER.totalDays : 14;
+  // 기본은 14일, 단 현재 Day가 14를 넘으면 현재 Day까지 자동 확장 (진도 한눈에 보이게)
+  const _realCurrentDay = USER.realCurrentDay || USER.currentDay || 1;
+  const ATTEND_DAYS = showFullAttend
+    ? USER.totalDays
+    : Math.min(USER.totalDays, Math.max(14, _realCurrentDay));
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
   // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
   const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
@@ -6427,6 +6431,115 @@ function MemoModal({ memo, onClose }) {
   );
 }
 
+// 사용자 → 운영자 피드백 모달
+function FeedbackModal({ onClose }) {
+  const { USER } = window.__SIM;
+  const [category, setCategory] = useState("general");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sentOk, setSentOk] = useState(false);
+
+  const send = async () => {
+    const text = message.trim();
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      if (window.OD?.enabled && window.OD.submitFeedback) {
+        const r = await window.OD.submitFeedback({
+          email: USER.email || null,
+          name: USER.name || null,
+          day: USER.currentDay || null,
+          category,
+          message: text,
+          context: { page: location.pathname, ua: navigator.userAgent.slice(0, 200) },
+        });
+        if (!r.ok) throw new Error(r.error || "전송 실패");
+      }
+      setSentOk(true);
+      setTimeout(onClose, 1400);
+    } catch (e) {
+      alert("전송 실패: " + (e?.message || ""));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9000,
+        background: "rgba(20,15,8,0.55)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "var(--paper)", borderRadius: 12, maxWidth: 460, width: "100%",
+          maxHeight: "85vh", overflow: "auto", boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div style={{
+          background: "var(--ink)", color: "var(--paper)",
+          padding: "12px 18px", borderRadius: "12px 12px 0 0",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          fontSize: 12, letterSpacing: "0.14em", fontWeight: 800,
+        }}>
+          <span>💬 피드백 보내기</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--paper)", fontSize: 16, cursor: "pointer" }}>✕</button>
+        </div>
+        <div style={{ padding: "18px 22px" }}>
+          {sentOk ? (
+            <div style={{ textAlign: "center", padding: "24px 0", fontSize: 14, color: "var(--ink)" }}>
+              ✓ 피드백 전달됐어요. 빠르게 확인할게요!
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 14 }}>
+                학습하시면서 느낀 점, 버그, 제안 등 뭐든 편하게 보내주세요. 다음 업데이트에 반영합니다!
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.1em", marginBottom: 6 }}>유형</div>
+                <select
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", border: "1px solid var(--line)", borderRadius: 6, fontSize: 13, fontFamily: "inherit", background: "var(--cream)" }}
+                >
+                  <option value="general">일반 의견</option>
+                  <option value="bug">🐛 버그/오류</option>
+                  <option value="content">📚 학습 콘텐츠 (예문, 단어 등)</option>
+                  <option value="suggestion">💡 기능 제안</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.1em", marginBottom: 6 }}>내용</div>
+                <textarea
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  rows={6}
+                  placeholder="자유롭게 적어주세요. (예: Day 5 미니미션 답이 이상해요 / 출근부 색깔 헷갈려요 / 알람 기능 있었으면 좋겠어요)"
+                  style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 6, fontSize: 13, fontFamily: "inherit", background: "var(--cream)", resize: "vertical", lineHeight: 1.6 }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button className="btn btn-ghost" onClick={onClose}>취소</button>
+                <button
+                  className="btn btn-primary"
+                  onClick={send}
+                  disabled={!message.trim() || sending}
+                  style={{ opacity: (!message.trim() || sending) ? 0.5 : 1 }}
+                >{sending ? "보내는 중..." : "📤 보내기"}</button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // App Shell
 // ============================================================
@@ -6434,6 +6547,7 @@ function App() {
   const [active, setActive] = useState("home");
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   // ★ 과거일 임시 보기. URL 안 건드림. React state 만 바꾸고 USER 등 mutate → 자식 자동 갱신.
   const [viewingDay, setViewingDay] = useState(null);
 
@@ -6811,6 +6925,23 @@ function App() {
       <MobileTabbar active={active} setActive={setActive} unread={unread} />
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
       {memo ? <MemoModal memo={memo} onClose={() => setMemo(null)} /> : null}
+
+      {/* ── 우상단 피드백 버튼 (어디서든 열림) ── */}
+      <button
+        onClick={() => setFeedbackOpen(true)}
+        title="피드백 보내기"
+        style={{
+          position: "fixed", top: 14, right: 14, zIndex: 8000,
+          padding: "8px 14px", borderRadius: 22,
+          background: "var(--orange)", color: "var(--paper)",
+          border: "none", fontSize: 13, fontWeight: 800,
+          fontFamily: "inherit", cursor: "pointer",
+          boxShadow: "0 4px 12px rgba(216,90,42,0.35)",
+          letterSpacing: "0.02em",
+        }}
+      >💬 피드백</button>
+
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
       {_showD7Popup && (
