@@ -7101,6 +7101,36 @@ window.SimApp = App;
         }
         local.dailyJournals = mergedJournals;
 
+        // ★ 사용자 프로필 동기화 (membership_ends_at, cohort, 권한 플래그 등)
+        // 이걸 안 하면 운영자가 SQL로 ends_at 박아도 사용자 브라우저 localStorage엔
+        // 반영이 안 돼서 베타 연장 등이 안 보임. 베타 만료 화면 잘못 노출 사고 방지.
+        try {
+          if (window.OD?.fetchByEmail) {
+            const ur = await window.OD.fetchByEmail(local.email);
+            if (ur && ur.ok && ur.user) {
+              const u = ur.user;
+              // snake/camel 둘 다 채워서 어느 쪽 읽어도 OK
+              local.membership_ends_at = u.membership_ends_at;
+              local.membershipEndsAt = u.membership_ends_at;
+              local.membership_cancel_reason = u.membership_cancel_reason;
+              local.membershipCancelReason = u.membership_cancel_reason;
+              local.cohort = u.cohort;
+              local.isPilotHire = u.is_pilot_hire;
+              local.is_pilot_hire = u.is_pilot_hire;
+              local.unlocked = u.unlocked;
+              local.isOperator = u.is_operator;
+              local.is_operator = u.is_operator;
+              local.isDevMode = u.is_dev_mode;
+              local.is_dev_mode = u.is_dev_mode;
+              if (u.signup_date) { local.signupDate = u.signup_date; local.signup_date = u.signup_date; }
+              if (u.name) local.name = u.name;
+              if (u.day_in_company) local.dayInCompany = u.day_in_company;
+            }
+          }
+        } catch (e) {
+          console.warn("[boot-hydrate] user profile sync failed:", e.message);
+        }
+
         localStorage.setItem("__OD_USER", JSON.stringify(local));
 
         // 공지 읽음 ID
