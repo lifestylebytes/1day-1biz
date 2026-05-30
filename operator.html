@@ -44,7 +44,14 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .card.warn { background: #FFF7E8; border-color: #E8C99B; }
 .card .title { font-size: 13px; color: #8A7964; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-.user-row { display: grid; grid-template-columns: 1.2fr 1fr 90px 70px 100px 110px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row { display: grid; grid-template-columns: 1.4fr 130px 80px 200px 100px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row .col-progress { font-size: 12px; line-height: 1.5; }
+.user-row .col-progress .progress-day { font-weight: 800; color: #2A1F14; font-size: 13px; }
+.user-row .col-progress .progress-last { font-size: 11px; color: #8A7964; margin-top: 2px; }
+.user-row .col-type { display: flex; gap: 4px; flex-wrap: wrap; }
+.user-row .col-payment { font-size: 12px; line-height: 1.5; }
+.user-row .col-payment .pay-status { font-weight: 800; font-size: 12px; }
+.user-row .col-payment .pay-meta { font-size: 11px; color: #5C4A36; margin-top: 2px; }
 .user-row.head { font-weight: 700; font-size: 11px; color: #8A7964; text-transform: uppercase; letter-spacing: 0.06em; background: #FAF6EB; }
 .user-row .actions { display: flex; gap: 6px; }
 .empty { padding: 28px; text-align: center; color: #8A7964; font-size: 13px; }
@@ -98,8 +105,8 @@ label { display: block; font-size: 11px; font-weight: 700; color: #8A7964; text-
 
 @media (max-width: 800px) {
   .grid-2 { grid-template-columns: 1fr; }
-  .user-row { grid-template-columns: 1fr 90px; gap: 8px; padding: 10px 12px; }
-  .user-row > .col-2, .user-row > .col-3, .user-row > .col-5 { display: none; }
+  .user-row { grid-template-columns: 1fr 130px; gap: 8px; padding: 10px 12px; }
+  .user-row > .col-progress, .user-row > .col-type { display: none; }
 }
 </style>
 </head>
@@ -771,12 +778,11 @@ function App() {
             )}
             <div className="card" style={{ padding: 0 }}>
               <div className="user-row head">
-                <div>이름 / 이메일</div>
-                <div className="col-2">사번</div>
-                <div className="col-3">레벨</div>
-                <div>Day</div>
-                <div className="col-5">마지막 활동</div>
-                <div>플래그</div>
+                <div>사용자</div>
+                <div className="col-progress">학습 진도</div>
+                <div className="col-type">유형</div>
+                <div className="col-payment">결제 상태</div>
+                <div>작업</div>
               </div>
               {supaUsers.length === 0 ? (
                 <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
@@ -788,75 +794,105 @@ function App() {
                 const cancelReason = u.membership_cancel_reason || null;
                 const day = u.day_in_company || 1;
 
-                // 정식 회원 상태 (cancel_reason 으로 활성/취소/퇴직 구분)
-                // - 활성   : ends_at 없거나, ends_at 미래 + cancel_reason 없음 (래피드 자동 갱신 중)
-                // - 취소예정: ends_at 미래 + cancel_reason 있음 (래피드 취소 OR 운영자 퇴직 처리)
-                // - 만료   : ends_at 과거
+                // 정식 회원 상태
                 const isPaidActive    = isPaidMember && (dLeft === null || (dLeft > 0 && !cancelReason));
                 const isPaidCanceling = isPaidMember && dLeft !== null && dLeft > 0 && !!cancelReason;
                 const isPaidExpired   = isPaidMember && dLeft !== null && dLeft <= 0;
                 const isLatpeedCancel = cancelReason && cancelReason.startsWith('latpeed_');
 
-                let paidStatus = null;
-                if (isPaidActive) {
-                  paidStatus = dLeft !== null
-                    ? { label: `🟢 활성 (다음 결제 D-${dLeft})`, bg: '#DDEFD9', color: '#2D6E3A' }
-                    : { label: '🟢 활성 (갱신일 미설정)',           bg: '#FFF3D6', color: '#B8431A' };
+                // 날짜 포맷터 (M/D)
+                const fmtMD = (d) => d ? new Date(d).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '-';
+                const endsAtMD = fmtMD(u.membership_ends_at);
+                const lastActiveMD = fmtMD(u.last_active);
+
+                // 유형 배지 (한 명당 보통 1개)
+                const typeBadges = [];
+                if (u.is_operator)       typeBadges.push({ label: '운영자', bg: '#2A1F14', color: '#F4EFE3' });
+                else if (u.is_dev_mode)  typeBadges.push({ label: 'DEV',  bg: '#FFF3D6', color: '#B8431A' });
+                else if (isPaidMember)   typeBadges.push({ label: '정식',  bg: '#FFE9A6', color: '#8C6510' });
+                else if (isPilot)        typeBadges.push({ label: 'PILOT', bg: '#E7EAFC', color: '#3D4DA8' });
+                if (u.is_tester) typeBadges.push({ label: 'TEST', bg: '#EFE7D6', color: '#5C4A36' });
+
+                // 결제 상태 (status 라인 + 메타 라인 2줄 구조)
+                let payStatus = { line1: '-', line2: '', bg: '#F4EFE3', color: '#5C4A36' };
+
+                if (isInternal) {
+                  payStatus = { line1: '🔧 내부 사용자', line2: '결제 무관', bg: '#F4EFE3', color: '#5C4A36' };
+                } else if (isPaidActive) {
+                  if (dLeft !== null) {
+                    payStatus = {
+                      line1: '🟢 정상 활성',
+                      line2: `다음 결제 ${endsAtMD} (D-${dLeft})`,
+                      bg: '#DDEFD9', color: '#2D6E3A',
+                    };
+                  } else {
+                    payStatus = {
+                      line1: '🟢 활성',
+                      line2: '갱신일 미설정',
+                      bg: '#FFF3D6', color: '#B8431A',
+                    };
+                  }
                 } else if (isPaidCanceling) {
-                  paidStatus = isLatpeedCancel
-                    ? { label: `🟡 취소 예정 D-${dLeft}`, bg: '#FFE9A6', color: '#8C6510' }
-                    : { label: `🟡 퇴직 D-${dLeft}`,      bg: '#FAEBE6', color: '#993C1D' };
+                  payStatus = isLatpeedCancel
+                    ? { line1: '🟡 취소 예정', line2: `종료: ${endsAtMD} (D-${dLeft})`, bg: '#FFE9A6', color: '#8C6510' }
+                    : { line1: '🟡 퇴직 처리됨', line2: `종료: ${endsAtMD} (D-${dLeft})`, bg: '#FAEBE6', color: '#993C1D' };
                 } else if (isPaidExpired) {
-                  paidStatus = { label: '🔴 만료', bg: '#FAEBE6', color: '#993C1D' };
+                  payStatus = { line1: '🔴 만료', line2: `종료일 ${endsAtMD}`, bg: '#FAEBE6', color: '#993C1D' };
+                } else if (isPilot) {
+                  if (u.membership_ends_at && dLeft > 0) {
+                    payStatus = { line1: '🟢 베타 연장', line2: `~${endsAtMD} (D-${dLeft})`, bg: '#DDEFD9', color: '#2D6E3A' };
+                  } else if (u.membership_ends_at && dLeft <= 0) {
+                    payStatus = { line1: '🔴 연장 만료', line2: `종료일 ${endsAtMD}`, bg: '#FAEBE6', color: '#993C1D' };
+                  } else if (!u.membership_ends_at && day > 14) {
+                    payStatus = { line1: '🔴 베타 만료', line2: '14일 무료 종료', bg: '#FAEBE6', color: '#993C1D' };
+                  } else {
+                    payStatus = { line1: '🟡 베타 진행중', line2: `Day ${day} / 14`, bg: '#FFF3D6', color: '#B8431A' };
+                  }
                 }
 
-                // PILOT 베타/연장 상태
-                let pilotStatus = null;
-                if (isPilot) {
-                  if (u.membership_ends_at && dLeft > 0)        pilotStatus = { label: `🟢 연장 D-${dLeft}`,                  bg: '#DDEFD9', color: '#2D6E3A' };
-                  else if (u.membership_ends_at && dLeft <= 0)  pilotStatus = { label: '🔴 연장 만료',                          bg: '#FAEBE6', color: '#993C1D' };
-                  else if (!u.membership_ends_at && day > 14)   pilotStatus = { label: '🔴 베타 만료',                          bg: '#FAEBE6', color: '#993C1D' };
-                  else                                          pilotStatus = { label: `🟡 베타 D-${Math.max(0, 14 - day)}`,   bg: '#FFF3D6', color: '#B8431A' };
-                }
                 return (
                 <div key={u.id} className="user-row">
+                  {/* 사용자 */}
                   <div>
                     <div style={{ fontWeight: 700 }}>{u.name}</div>
-                    <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{u.email}</div>
+                    <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.email}</div>
+                    <div style={{ fontSize: 10, color: '#A8997F', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.emp_number || ''}</div>
                   </div>
-                  <div className="col-2" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>{u.emp_number || '-'}</div>
-                  <div className="col-3" style={{ fontSize: 12 }}>{u.level && (u.level.ko || '-')}</div>
-                  <div>Day {u.day_in_company || 1}</div>
-                  <div className="col-5" style={{ fontSize: 11, color: '#8A7964' }}>
-                    {u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR') : '-'}
+
+                  {/* 학습 진도 */}
+                  <div className="col-progress">
+                    <div className="progress-day">Day {day} / 30</div>
+                    <div className="progress-last">마지막 {lastActiveMD}</div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {u.is_operator && <span className="status-pill active" style={{ fontSize: 10 }}>OP</span>}
-                      {u.is_dev_mode && <span className="status-pill" style={{ fontSize: 10, background: '#FFF3D6', color: '#B8431A' }}>DEV</span>}
-                      {isPaidMember && <span className="status-pill" style={{ fontSize: 10, background: '#FFE9A6', color: '#8C6510' }}>정식</span>}
-                      {paidStatus && <span className="status-pill" style={{ fontSize: 10, background: paidStatus.bg, color: paidStatus.color, fontWeight: 800 }}>{paidStatus.label}</span>}
-                      {isPilot && <span className="status-pill" style={{ fontSize: 10 }}>PILOT</span>}
-                      {pilotStatus && <span className="status-pill" style={{ fontSize: 10, background: pilotStatus.bg, color: pilotStatus.color, fontWeight: 800 }}>{pilotStatus.label}</span>}
-                      {u.is_tester && <span className="status-pill" style={{ fontSize: 10 }}>TEST</span>}
-                    </div>
+
+                  {/* 유형 */}
+                  <div className="col-type">
+                    {typeBadges.map((b, i) => (
+                      <span key={i} className="status-pill" style={{ fontSize: 10, background: b.bg, color: b.color, fontWeight: 700 }}>{b.label}</span>
+                    ))}
+                  </div>
+
+                  {/* 결제 상태 */}
+                  <div className="col-payment" style={{ background: payStatus.bg, padding: '6px 10px', borderRadius: 6 }}>
+                    <div className="pay-status" style={{ color: payStatus.color }}>{payStatus.line1}</div>
+                    {payStatus.line2 && <div className="pay-meta">{payStatus.line2}</div>}
+                  </div>
+
+                  {/* 작업 */}
+                  <div>
                     {!u.is_operator && !isPilot && (
                       isPaidCanceling || isPaidExpired ? (
                         <button
                           onClick={() => restoreUserMembership(u)}
-                          style={{ fontSize: 10, padding: '4px 8px', background: 'transparent', color: '#2D8A3E', border: '1px solid #2D8A3E', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                          style={{ fontSize: 11, padding: '6px 10px', background: 'transparent', color: '#2D8A3E', border: '1px solid #2D8A3E', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, width: '100%' }}
                           title="복직 처리 (만료 해제)"
-                        >
-                          ↻ 복직
-                        </button>
+                        >↻ 복직</button>
                       ) : (
                         <button
                           onClick={() => cancelUserMembership(u)}
-                          style={{ fontSize: 10, padding: '4px 8px', background: 'transparent', color: '#993C1D', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                          style={{ fontSize: 11, padding: '6px 10px', background: 'transparent', color: '#993C1D', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, width: '100%' }}
                           title="퇴직 처리 예약 (30일 인수인계)"
-                        >
-                          퇴직 처리
-                        </button>
+                        >퇴직 처리</button>
                       )
                     )}
                   </div>
