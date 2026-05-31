@@ -6624,20 +6624,26 @@ function App() {
             ? new Date(n.sent_at).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
             : "";
           const body = n.body || "";
+          // target_emails 있으면 1:1 답장. 받는 사람을 본인 이름으로 표시.
+          const isTargeted = Array.isArray(n.target_emails) && n.target_emails.length > 0;
+          const recipient = isTargeted
+            ? `${USER.name || "본인"}님 (1:1)`
+            : "전 직원";
           return {
             id: "db-" + n.id,
             from: fromId,
             fromName: n.from_name || "유버디",
-            to: "전 직원",
+            to: recipient,
             date: dateStr,
             subject: n.title || "(제목 없음)",
             preview: body.slice(0, 80),
             body: body,
             unread: true,
-            tag: tagMap[n.type] || "공지",
+            tag: isTargeted ? "1:1 답장" : (tagMap[n.type] || "공지"),
             showFromDay: 0,
             isDb: true,
             popup: !!n.popup,
+            isDirect: isTargeted,
           };
         });
         setDbNotices(converted);
