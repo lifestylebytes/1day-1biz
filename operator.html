@@ -278,11 +278,20 @@ function LearningQueryCard() {
   );
 }
 
+// 피드백 카테고리 라벨/색깔 (FeedbackInbox + FeedbackReplyModal 공유)
+const CAT_LABEL = {
+  bug: '🐛 버그', content: '📚 콘텐츠', suggestion: '💡 제안', general: '💬 일반',
+};
+const CAT_COLOR = {
+  bug: '#FAEBE6', content: '#FFE9A6', suggestion: '#DDEFD9', general: '#EFE7D6',
+};
+
 // 💬 피드백 모아보기 카드 (사용자가 mainboard 우상단 버튼으로 보낸 피드백 표시)
 function FeedbackInbox() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [showResolved, setShowResolved] = React.useState(false);
+  const [replyTo, setReplyTo] = React.useState(null);  // 답장 모달 열림 상태
 
   const load = async () => {
     if (!window.OD || !window.OD.enabled || !window.OD.fetchFeedback) return;
@@ -306,6 +315,7 @@ function FeedbackInbox() {
 
   const visible = items.filter(it => showResolved || !it.resolved);
   const unresolvedCount = items.filter(it => !it.resolved).length;
+  const unrepliedCount  = items.filter(it => !it.resolved && !it.replied_at).length;
 
   const toggleResolved = async (id, cur) => {
     if (!window.OD?.setFeedbackResolved) return;
@@ -319,19 +329,17 @@ function FeedbackInbox() {
     if (r.ok) load();
   };
 
-  const CAT_LABEL = {
-    bug: '🐛 버그', content: '📚 콘텐츠', suggestion: '💡 제안', general: '💬 일반',
-  };
-  const CAT_COLOR = {
-    bug: '#FAEBE6', content: '#FFE9A6', suggestion: '#DDEFD9', general: '#EFE7D6',
-  };
-
   return (
     <div className="section">
       <div className="section-title">
         💬 피드백 모아보기
-        <span style={{ marginLeft: 10, fontSize: 11, color: unresolvedCount > 0 ? '#A8462F' : '#8A7964', fontWeight: 800 }}>
-          {unresolvedCount > 0 ? `(미해결 ${unresolvedCount}건)` : '(모두 처리됨)'}
+        <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800 }}>
+          {unrepliedCount > 0 && <span style={{ color: '#A8462F' }}>미답장 {unrepliedCount}건 </span>}
+          {unresolvedCount > 0 ? (
+            <span style={{ color: '#8A5A2B' }}>· 미해결 {unresolvedCount}건</span>
+          ) : (
+            <span style={{ color: '#2D6E3A' }}>· 전부 해결됨 ✓</span>
+          )}
         </span>
         <button className="btn btn-ghost btn-mini" style={{ marginLeft: 12, padding: '2px 10px', fontSize: 11 }} onClick={load} disabled={loading}>
           {loading ? '로딩…' : '↻ 새로고침'}
@@ -358,8 +366,19 @@ function FeedbackInbox() {
                 {it.email && <span style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{it.email}</span>}
                 {it.day && <span style={{ fontSize: 11, color: '#8A7964' }}>Day {it.day}</span>}
                 <span style={{ fontSize: 11, color: '#8A7964' }}>{new Date(it.created_at).toLocaleString('ko-KR')}</span>
+                {it.replied_at && (
+                  <span style={{ fontSize: 10, padding: '2px 8px', background: '#E7EAFC', color: '#3D4DA8', borderRadius: 10, fontWeight: 700 }}>
+                    ✉️ 답장 완료 {new Date(it.replied_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                  </span>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
+                {it.email && (
+                  <button
+                    onClick={() => setReplyTo(it)}
+                    style={{ fontSize: 11, padding: '3px 10px', background: it.replied_at ? 'transparent' : '#D85A2A', color: it.replied_at ? '#5C4A36' : '#F4EFE3', border: it.replied_at ? '1px solid #C9BBA0' : 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                  >{it.replied_at ? '💬 다시 답장' : '💬 답장하기'}</button>
+                )}
                 <button
                   onClick={() => toggleResolved(it.id, it.resolved)}
                   style={{ fontSize: 11, padding: '3px 10px', background: it.resolved ? '#DDEFD9' : 'transparent', color: it.resolved ? '#2D6E3A' : '#5C4A36', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
@@ -375,6 +394,148 @@ function FeedbackInbox() {
             </div>
           </div>
         ))}
+      </div>
+      {replyTo && (
+        <FeedbackReplyModal
+          target={replyTo}
+          allItems={items}
+          onClose={() => setReplyTo(null)}
+          onSent={() => { setReplyTo(null); load(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// 피드백 답장 모달: 해당 사용자의 모든 미해결 피드백을 함께 보여주고 한 번에 답장
+function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
+  const email = (target.email || '').toLowerCase();
+  const sameUserItems = allItems.filter(
+    it => !it.resolved && (it.email || '').toLowerCase() === email
+  );
+  const allIds = sameUserItems.map(it => it.id);
+
+  const defaultTitle = `${target.name || ''}님, 소중한 피드백 정말 감사드려요!`;
+  const defaultBody = (() => {
+    const name = target.name || '';
+    const greet = `${name}님, 안녕하세요! 유버디예요 :)\n\n소중한 피드백 정말정말 감사드려요. ${name}님이 학습하시면서 직접 발견하신 부분을 이렇게 자세히 적어주셔서 정말 큰 도움이 됐어요. 1일1비가 진짜 도움 되는 서비스로 자라려면 ${name}님 같은 분의 피드백이 정말 중요하거든요. 한 분 한 분 보내주시는 내용 다 정성껏 챙겨보고 있어요.\n\n${name}님이 보내주신 의견 정리해봤어요:`;
+    const list = sameUserItems
+      .map(it => `\n• (Day ${it.day || '-'}, ${CAT_LABEL[it.category] || it.category}) "${it.message}"`)
+      .join('');
+    const promise = `\n\n주신 내용 다음주 금요일(6/6)까지 반영해서 업데이트해두겠습니다. 학습 흐름에 영향 가는 부분이라 우선순위로 챙길게요!\n\n학습하시다가 또 어색하거나 막히는 부분, "이런 게 있으면 좋겠다" 싶은 거 있으면 언제든 우상단 💬 피드백 버튼으로 편하게 보내주세요. 작은 거라도 다 환영이에요 :)\n\n오늘도 한 단어, 한 줄 챙겨가는 하루 되세요!\n\n유버디 드림 💛`;
+    return greet + list + promise;
+  })();
+
+  const [title, setTitle] = React.useState(defaultTitle);
+  const [body, setBody] = React.useState(defaultBody);
+  const [sending, setSending] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+
+  const send = async () => {
+    if (!title.trim() || !body.trim() || sending) return;
+    if (!window.OD?.replyToFeedback) {
+      alert('OD.replyToFeedback 함수 없음 (배포 안 됨)');
+      return;
+    }
+    setSending(true);
+    const r = await window.OD.replyToFeedback({
+      feedbackIds: allIds,
+      recipientEmail: email,
+      title: title.trim(),
+      body: body.trim(),
+    });
+    setSending(false);
+    if (!r.ok) {
+      alert('답장 발송 실패: ' + (r.error || ''));
+      return;
+    }
+    alert(`${target.name || email} 님께 사내 메모 발송 + 피드백 ${r.count}건 처리 완료 ✓`);
+    onSent();
+  };
+
+  const copyEmail = async () => {
+    const text = `${title}\n\n${body}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(40,30,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#F4EFE3', borderRadius: 12, maxWidth: 640, width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
+      >
+        <div style={{ background: '#2A2118', color: '#F4EFE3', padding: '14px 20px', borderRadius: '12px 12px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: '0.12em', opacity: 0.7 }}>피드백 답장 작성</div>
+            <div style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}>
+              {target.name || '익명'} ({email}) · 미해결 피드백 {sameUserItems.length}건 한번에 처리
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#F4EFE3', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ padding: '18px 22px' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>받은 피드백 ({sameUserItems.length}건)</div>
+          <div style={{ background: '#FAF6EB', border: '1px solid #E8DFCB', borderRadius: 6, padding: '10px 14px', marginBottom: 14, maxHeight: 180, overflow: 'auto' }}>
+            {sameUserItems.map(it => (
+              <div key={it.id} style={{ fontSize: 12, color: '#2A1F14', lineHeight: 1.55, padding: '6px 0', borderBottom: '1px dashed #D9C9A8' }}>
+                <b>Day {it.day || '-'}</b> · {CAT_LABEL[it.category] || it.category}<br/>
+                {it.message}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>제목</div>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF', marginBottom: 12 }}
+          />
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>본문 (사내 메모 + 이메일 동일 내용)</div>
+          <textarea
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            rows={14}
+            style={{ width: '100%', padding: '12px 14px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF', lineHeight: 1.65, resize: 'vertical', marginBottom: 14 }}
+          />
+
+          <div style={{ background: '#FFF3D6', border: '1px solid #E7C9A3', borderRadius: 6, padding: '10px 14px', fontSize: 11, color: '#8A5A2B', lineHeight: 1.55, marginBottom: 14 }}>
+            💡 [사내 메모 보내기]를 누르면 <b>{email}</b> 한 명에게만 mainboard 메모함 + 입장 시 팝업으로 전달됩니다. 이 사람의 피드백 {sameUserItems.length}건에 ✉️ <b>"답장 완료"</b> 마크가 박혀요.
+            <br/>⚠️ <b>실제 버그 수정/기능 반영 후</b>엔 따로 각 피드백의 <b>[처리 완료로 표시]</b>를 눌러서 ✓ 해결됨으로 마킹해주세요. 답장과 해결은 다른 상태예요.
+            <br/>이메일로도 같은 내용 보내려면 [이메일용 복사]를 누르고 본인 메일에서 그 사람한테 보내세요.
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={copyEmail}
+              style={{ fontSize: 12 }}
+            >{copied ? '✓ 복사됨' : '📋 이메일용 복사'}</button>
+            <button
+              className="btn primary"
+              onClick={send}
+              disabled={!title.trim() || !body.trim() || sending}
+              style={{ fontSize: 12, opacity: (!title.trim() || !body.trim() || sending) ? 0.5 : 1 }}
+            >{sending ? '발송 중...' : '📨 사내 메모 보내기'}</button>
+          </div>
+        </div>
       </div>
     </div>
   );

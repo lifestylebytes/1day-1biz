@@ -6601,7 +6601,7 @@ function App() {
         else { console.warn("[notices] window.OD 준비 안 됨, 공지 fetch 포기"); }
         return;
       }
-      window.OD.fetchNotices(50).then(r => {
+      window.OD.fetchNotices(50, USER.email || null).then(r => {
         if (cancelled) return;
         if (!r.ok || !r.notices) {
           console.warn("[notices] fetch 실패:", r.error || "결과 없음");
