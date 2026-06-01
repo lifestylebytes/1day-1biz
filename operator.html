@@ -291,7 +291,8 @@ function FeedbackInbox() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [showResolved, setShowResolved] = React.useState(false);
-  const [replyTo, setReplyTo] = React.useState(null);  // 답장 모달 열림 상태
+  const [replyTo, setReplyTo] = React.useState(null);    // 답장 모달
+  const [completeTo, setCompleteTo] = React.useState(null);  // 작업 완료 모달
 
   const load = async () => {
     if (!window.OD || !window.OD.enabled || !window.OD.fetchFeedback) return;
@@ -327,6 +328,19 @@ function FeedbackInbox() {
     if (!window.OD?.deleteFeedback) return;
     const r = await window.OD.deleteFeedback(id);
     if (r.ok) load();
+  };
+  const updateDeadline = async (id, newDate) => {
+    if (!window.OD?.setFeedbackDeadline) return;
+    const r = await window.OD.setFeedbackDeadline(id, newDate);
+    if (r.ok) load();
+  };
+  // D-day 계산 (마감일 - 오늘)
+  const computeDday = (deadline) => {
+    if (!deadline) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(deadline + 'T00:00:00');
+    const diff = Math.round((d - today) / 86400000);
+    return diff;
   };
 
   return (
@@ -366,23 +380,56 @@ function FeedbackInbox() {
                 {it.email && <span style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace' }}>{it.email}</span>}
                 {it.day && <span style={{ fontSize: 11, color: '#8A7964' }}>Day {it.day}</span>}
                 <span style={{ fontSize: 11, color: '#8A7964' }}>{new Date(it.created_at).toLocaleString('ko-KR')}</span>
-                {it.replied_at && (
+                {it.replied_at && !it.resolved && (
                   <span style={{ fontSize: 10, padding: '2px 8px', background: '#E7EAFC', color: '#3D4DA8', borderRadius: 10, fontWeight: 700 }}>
                     ✉️ 답장 완료 {new Date(it.replied_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
                   </span>
                 )}
+                {it.deadline && !it.resolved && (() => {
+                  const d = computeDday(it.deadline);
+                  const isUrgent = d !== null && d <= 2;
+                  const isPast   = d !== null && d < 0;
+                  const bg = isPast ? '#FAEBE6' : (isUrgent ? '#FFE9A6' : '#DDEFD9');
+                  const fg = isPast ? '#993C1D' : (isUrgent ? '#8C6510' : '#2D6E3A');
+                  const label = isPast ? `⏰ D+${Math.abs(d)} 지남` : (d === 0 ? '⏰ 오늘 마감' : `⏰ D-${d}`);
+                  return (
+                    <span style={{ fontSize: 10, padding: '2px 8px', background: bg, color: fg, borderRadius: 10, fontWeight: 800 }}>
+                      {label} ({it.deadline.slice(5).replace('-', '/')})
+                    </span>
+                  );
+                })()}
+                {it.resolved && it.completed_at && (
+                  <span style={{ fontSize: 10, padding: '2px 8px', background: '#DDEFD9', color: '#2D6E3A', borderRadius: 10, fontWeight: 700 }}>
+                    ✅ 완료 알림 발송 {new Date(it.completed_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                  </span>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {it.email && (
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                {it.email && !it.resolved && (
                   <button
                     onClick={() => setReplyTo(it)}
                     style={{ fontSize: 11, padding: '3px 10px', background: it.replied_at ? 'transparent' : '#D85A2A', color: it.replied_at ? '#5C4A36' : '#F4EFE3', border: it.replied_at ? '1px solid #C9BBA0' : 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
                   >{it.replied_at ? '💬 다시 답장' : '💬 답장하기'}</button>
                 )}
+                {it.email && !it.resolved && it.replied_at && (
+                  <button
+                    onClick={() => setCompleteTo(it)}
+                    style={{ fontSize: 11, padding: '3px 10px', background: '#2D8A3E', color: '#F4EFE3', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+                  >✅ 작업 완료</button>
+                )}
+                {!it.resolved && (
+                  <input
+                    type="date"
+                    value={it.deadline || ''}
+                    onChange={e => updateDeadline(it.id, e.target.value || null)}
+                    title="마감일 수정"
+                    style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #C9BBA0', borderRadius: 4, background: 'transparent', color: '#5C4A36', fontFamily: 'inherit' }}
+                  />
+                )}
                 <button
                   onClick={() => toggleResolved(it.id, it.resolved)}
                   style={{ fontSize: 11, padding: '3px 10px', background: it.resolved ? '#DDEFD9' : 'transparent', color: it.resolved ? '#2D6E3A' : '#5C4A36', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
-                >{it.resolved ? '✓ 처리됨' : '처리 완료로 표시'}</button>
+                >{it.resolved ? '✓ 해결됨' : '수동 처리'}</button>
                 <button
                   onClick={() => remove(it.id)}
                   style={{ fontSize: 11, padding: '3px 10px', background: 'transparent', color: '#A8462F', border: '1px solid #D9C9A8', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
@@ -401,6 +448,14 @@ function FeedbackInbox() {
           allItems={items}
           onClose={() => setReplyTo(null)}
           onSent={() => { setReplyTo(null); load(); }}
+        />
+      )}
+      {completeTo && (
+        <FeedbackCompletionModal
+          target={completeTo}
+          allItems={items}
+          onClose={() => setCompleteTo(null)}
+          onSent={() => { setCompleteTo(null); load(); }}
         />
       )}
     </div>
@@ -428,6 +483,17 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
 
   const [title, setTitle] = React.useState(defaultTitle);
   const [body, setBody] = React.useState(defaultBody);
+  // 기본 마감일: 가장 가까운 다음주 금요일 (또는 기존 deadline 있으면 그거)
+  const _defaultDeadline = (() => {
+    const existing = sameUserItems.find(it => it.deadline)?.deadline;
+    if (existing) return existing;
+    const d = new Date();
+    const day = d.getDay();
+    const daysUntilFriday = ((5 - day + 7) % 7) || 7;
+    d.setDate(d.getDate() + daysUntilFriday);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [deadline, setDeadline] = React.useState(_defaultDeadline);
   const [sending, setSending] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
@@ -443,13 +509,14 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
       recipientEmail: email,
       title: title.trim(),
       body: body.trim(),
+      deadline: deadline || null,
     });
     setSending(false);
     if (!r.ok) {
       alert('답장 발송 실패: ' + (r.error || ''));
       return;
     }
-    alert(`${target.name || email} 님께 사내 메모 발송 + 피드백 ${r.count}건 처리 완료 ✓`);
+    alert(`${target.name || email} 님께 사내 메모 발송 + 피드백 ${r.count}건에 답장 기록 + 마감일 ${deadline || '미설정'} ✓`);
     onSent();
   };
 
@@ -516,6 +583,18 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
             style={{ width: '100%', padding: '12px 14px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF', lineHeight: 1.65, resize: 'vertical', marginBottom: 14 }}
           />
 
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>📅 마감일 (이번 작업을 언제까지 끝낼 건지)</div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14 }}>
+            <input
+              type="date"
+              value={deadline}
+              onChange={e => setDeadline(e.target.value)}
+              style={{ padding: '8px 10px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF' }}
+            />
+            <button onClick={() => setDeadline('')} style={{ fontSize: 11, padding: '6px 10px', background: 'transparent', color: '#8A7964', border: '1px solid #D6C7B0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit' }}>마감일 없음</button>
+            <span style={{ fontSize: 11, color: '#8A7964' }}>이 피드백 {sameUserItems.length}건 전체에 같은 마감일 적용됩니다. 모닝 브리핑에서 D-day로 표시됨.</span>
+          </div>
+
           <div style={{ background: '#FFF3D6', border: '1px solid #E7C9A3', borderRadius: 6, padding: '10px 14px', fontSize: 11, color: '#8A5A2B', lineHeight: 1.55, marginBottom: 14 }}>
             💡 [사내 메모 보내기]를 누르면 <b>{email}</b> 한 명에게만 mainboard 메모함 + 입장 시 팝업으로 전달됩니다. 이 사람의 피드백 {sameUserItems.length}건에 ✉️ <b>"답장 완료"</b> 마크가 박혀요.
             <br/>⚠️ <b>실제 버그 수정/기능 반영 후</b>엔 따로 각 피드백의 <b>[처리 완료로 표시]</b>를 눌러서 ✓ 해결됨으로 마킹해주세요. 답장과 해결은 다른 상태예요.
@@ -534,6 +613,129 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
               disabled={!title.trim() || !body.trim() || sending}
               style={{ fontSize: 12, opacity: (!title.trim() || !body.trim() || sending) ? 0.5 : 1 }}
             >{sending ? '발송 중...' : '📨 사내 메모 보내기'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ✅ 작업 완료 알림 모달: 약속한 작업이 끝났을 때 그분께 "반영됐어요!" 알림 발송 + resolved 마킹
+function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
+  const email = (target.email || '').toLowerCase();
+  const sameUserItems = allItems.filter(
+    it => !it.resolved && (it.email || '').toLowerCase() === email
+  );
+  const allIds = sameUserItems.map(it => it.id);
+
+  const defaultTitle = `${target.name || ''}님, 약속드린 부분 반영했어요! ✅`;
+  const defaultBody = (() => {
+    const name = target.name || '';
+    const greet = `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 반영해서 방금 업데이트 완료했어요. 약속 지킬 수 있어 다행이에요!\n\n반영된 내용:`;
+    const list = sameUserItems
+      .map(it => `\n• (Day ${it.day || '-'}, ${CAT_LABEL[it.category] || it.category}) "${it.message}"`)
+      .join('');
+    const action = `\n\n위 부분들 다 손봤어요. 페이지에서 한 번 새로고침(Mac은 Cmd+Shift+R) 해주시면 새 내용으로 보입니다!\n\n또 학습하시다가 어색하거나 막히는 부분, 새로 발견하신 게 있으면 언제든 우상단 💬 피드백 버튼으로 편하게 보내주세요. ${name}님 의견이 진짜 큰 도움 됩니다 :)\n\n오늘도 한 단어, 한 줄 챙겨가는 하루 되세요!\n\n유버디 드림 💛`;
+    return greet + list + action;
+  })();
+
+  const [title, setTitle] = React.useState(defaultTitle);
+  const [body, setBody] = React.useState(defaultBody);
+  const [sending, setSending] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+
+  const send = async () => {
+    if (!title.trim() || !body.trim() || sending) return;
+    if (!window.OD?.completeFeedback) {
+      alert('OD.completeFeedback 함수 없음 (배포 안 됨)');
+      return;
+    }
+    setSending(true);
+    const r = await window.OD.completeFeedback({
+      feedbackIds: allIds,
+      recipientEmail: email,
+      title: title.trim(),
+      body: body.trim(),
+    });
+    setSending(false);
+    if (!r.ok) {
+      alert('완료 알림 발송 실패: ' + (r.error || ''));
+      return;
+    }
+    alert(`${target.name || email} 님께 완료 알림 발송 + 피드백 ${r.count}건 해결됨 마킹 ✅`);
+    onSent();
+  };
+
+  const copyEmail = async () => {
+    const text = `${title}\n\n${body}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(40,30,20,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#F4EFE3', borderRadius: 12, maxWidth: 640, width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
+      >
+        <div style={{ background: '#2D8A3E', color: '#F4EFE3', padding: '14px 20px', borderRadius: '12px 12px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: '0.12em', opacity: 0.85 }}>작업 완료 알림</div>
+            <div style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}>
+              {target.name || '익명'} ({email}) · 피드백 {sameUserItems.length}건 해결됨으로 처리
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#F4EFE3', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ padding: '18px 22px' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>처리한 피드백 ({sameUserItems.length}건)</div>
+          <div style={{ background: '#FAF6EB', border: '1px solid #E8DFCB', borderRadius: 6, padding: '10px 14px', marginBottom: 14, maxHeight: 180, overflow: 'auto' }}>
+            {sameUserItems.map(it => (
+              <div key={it.id} style={{ fontSize: 12, color: '#2A1F14', lineHeight: 1.55, padding: '6px 0', borderBottom: '1px dashed #D9C9A8' }}>
+                <b>Day {it.day || '-'}</b> · {CAT_LABEL[it.category] || it.category}<br/>
+                {it.message}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>제목</div>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            style={{ width: '100%', padding: '10px 12px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF', marginBottom: 12 }}
+          />
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#8A7964', letterSpacing: '0.1em', marginBottom: 6 }}>본문 (사내 메모 + 이메일 동일 내용)</div>
+          <textarea
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            rows={12}
+            style={{ width: '100%', padding: '12px 14px', border: '1px solid #D6C7B0', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF', lineHeight: 1.65, resize: 'vertical', marginBottom: 14 }}
+          />
+
+          <div style={{ background: '#DDEFD9', border: '1px solid #B0D4B4', borderRadius: 6, padding: '10px 14px', fontSize: 11, color: '#2D6E3A', lineHeight: 1.55, marginBottom: 14 }}>
+            ✅ [완료 알림 보내기] 누르면 <b>{email}</b>께 사내 메모 + 입장 시 팝업 발송 + 피드백 {sameUserItems.length}건이 <b>해결됨</b>으로 마킹됩니다. 이번주 처리 완료 큐에 자동으로 들어가요.
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className="btn btn-ghost" onClick={copyEmail} style={{ fontSize: 12 }}>
+              {copied ? '✓ 복사됨' : '📋 이메일용 복사'}
+            </button>
+            <button
+              onClick={send}
+              disabled={!title.trim() || !body.trim() || sending}
+              style={{ fontSize: 12, padding: '8px 16px', background: '#2D8A3E', color: '#F4EFE3', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 800, fontFamily: 'inherit', opacity: (!title.trim() || !body.trim() || sending) ? 0.5 : 1 }}
+            >{sending ? '발송 중...' : '✅ 완료 알림 보내기'}</button>
           </div>
         </div>
       </div>
