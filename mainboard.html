@@ -1659,14 +1659,14 @@ const SCENARIOS = [
     scene: "15:00, 전략 워크숍.", npc: "daniel",
     quote: "Let's start with the low-hanging fruit before the heavy lifting.",
     youDo: "당장 실행 가능한 3개 액션을 따로 빼서 to-do 리스트로 만들었다.",
-    mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 숫자 붙여 셀 때는 'three low-hanging fruits' 처럼 복수형.",
-    sampleAnswer: "I've pulled out three low-hanging fruits we can deliver this week.", tags: ["strategy", "priority"], status: "studied",
+    mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 비즈니스 영어에서 관용표현이라 'three low-hanging fruit'처럼 숫자 붙어도 단수형으로 자주 써.",
+    sampleAnswer: "I've pulled out a few low-hanging fruit we can ship this week.", tags: ["strategy", "priority"], status: "studied",
     task: { to: "daniel", channel: "video-call",
-      promptKo: "전략 워크숍에서 Daniel 제안에 한 줄로 답. 구체적 숫자와 마감 시점을 명시하세요.",
-      koSentence: "이번 주 안에 바로 처리할 수 있는 low-hanging fruits 3개 뽑아뒀어요." },
+      promptKo: "전략 워크숍에서 Daniel 제안에 한 줄로 답. 마감 시점을 명시하세요. (힌트: IT 회의에서 '출시·완성하다' 의미로 자주 쓰는 동사가 들어가요.)",
+      koSentence: "이번 주 안에 ship할 수 있는 low-hanging fruit 몇 개 뽑아뒀어요." },
     mcOptions: [
-      { text: "Pulled out 3 low-hanging fruits we can deliver this week, owners noted.", kind: "correct",
-        note: "✓ 단어 + 구체적 숫자(3, 복수형 fruits) + 시점(this week) + owner 언급. 우선순위 회의의 모범 답." },
+      { text: "Pulled out a few low-hanging fruit we can ship this week, owners noted.", kind: "correct",
+        note: "✓ low-hanging fruit (관용표현, 단수) + 시점(this week) + owner 언급. ship은 IT·스타트업에서 '출시·배포·완성'의 표준 동사. 우선순위 회의의 모범 답." },
       { text: "There are some easy items we could potentially work on at some point.", kind: "weak",
         note: "단어 안 쓰고 'some easy items', 'at some point' = 미루기 톤. 우선순위 정하는 자리에서 가장 안 좋은 답." },
       { text: "I shall prioritize the more accessible objectives in the immediate term.", kind: "formal",
@@ -1674,7 +1674,7 @@ const SCENARIOS = [
     ],
     buddyAnswers: {
       nuance: "low-hanging fruit = '쉽게 따는 과일'. 우선순위 정할 때 '빨리 성과 낼 수 있는 거 먼저' 라는 뜻.\n\n비슷한 표현:\n• quick wins = 빠른 성과 (거의 동의어, 자주 같이 씀)\n• easy wins = 쉬운 승리\n• heavy lifting = 어렵고 시간 드는 일 (반대 개념)\n\n실전 패턴:\n\"Let's start with the low-hanging fruit, then tackle the heavy lifting.\" = '쉬운 거 먼저, 어려운 건 나중'\n\n주의: 너무 자주 쓰면 '편한 것만 골라하는 사람' 인상. quick wins로 다양화 추천.",
-      example: "🗣 워크숍: \"What's the low-hanging fruit we can knock out this sprint?\" (일반 개념 → 단수 가능)\n📧 메일: \"Three low-hanging fruits attached, let's review tomorrow.\" (숫자 셀 때 → 복수)\n💬 슬랙: \"Quick win idea, DMing you the details.\"\n\n자주 같이 쓰는 표현:\n• knock out the low-hanging fruit (일반 개념)\n• grab the low-hanging fruits (셀 때)\n• low-hanging fruit + heavy lifting (대비)\n\n📝 단수/복수 팁: 숫자 없이 개념으로 말할 땐 단수 (the low-hanging fruit), 숫자 붙여 셀 땐 복수 (three low-hanging fruits) 가 자연스러워요.",
+      example: "🗣 워크숍: \"What's the low-hanging fruit we can knock out this sprint?\"\n📧 메일: \"Three low-hanging fruit attached, let's review tomorrow.\"\n💬 슬랙: \"Quick win idea, DMing you the details.\"\n\n자주 같이 쓰는 표현:\n• knock out the low-hanging fruit\n• grab the low-hanging fruit\n• low-hanging fruit + heavy lifting (대비)\n• ship the low-hanging fruit = 빨리 배포 가능한 것\n\n📝 단수/복수 팁: 비즈니스 영어에선 관용 표현이라 숫자 붙어도 단수형으로 쓰는 게 더 흔해요 (three low-hanging fruit). 'fruits'도 문법적으론 맞지만 회의 자리에선 단수가 표준.\n\n📝 ship 팁: IT·스타트업에서 'ship'은 '출시·배포·완성'이라는 표준 동사예요 (물류 의미 X). 'we can ship this week' = 이번 주에 완성할 수 있다. 'ship the feature', 'ship by Friday' 등 매일 들리는 표현.",
       default: "low (낮은) + hanging (매달린) + fruit (과일). 가지에서 낮게 매달려 손만 뻗으면 따는 과일 = 쉬운 성과.\n\n외우기: 사다리 안 가져와도 따는 과일 = 노력 적게 들이고 얻는 성과.\n\n전략·기획 회의에서 거의 매번 등장. \"Let's grab the low-hanging fruit first\" 한 번만 자연스럽게 던지면 격이 올라.",
     } },
   { day: 10, word: "touch base", pos: "phr.", meaning: "잠깐 얘기하다, 안부 묻다", phonetic: "/tʌtʃ beɪs/",
@@ -7130,7 +7130,15 @@ window.SimApp = App;
               local.is_dev_mode = u.is_dev_mode;
               if (u.signup_date) { local.signupDate = u.signup_date; local.signup_date = u.signup_date; }
               if (u.name) local.name = u.name;
-              if (u.day_in_company) local.dayInCompany = u.day_in_company;
+              // dayInCompany 동기화: 운영자/Dev는 dev 패널로 자유롭게 day 점프하니까 DB로 덮어쓰면 안 됨.
+              // 일반 사용자는 DB와 localStorage 중 큰 값(자연 진행 또는 운영자 수동 연장 반영) 사용.
+              if (u.day_in_company) {
+                const isInternal = !!(u.is_operator || u.is_dev_mode);
+                if (!isInternal) {
+                  local.dayInCompany = Math.max(local.dayInCompany || 1, u.day_in_company);
+                }
+                // 운영자/Dev: local 값 유지. dev panel +1/+7/jump 자유롭게 동작.
+              }
             }
           }
         } catch (e) {

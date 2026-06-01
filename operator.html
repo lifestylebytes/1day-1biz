@@ -893,13 +893,17 @@ function App() {
 
   const opsJumpDay = (delta) => {
     if (!currentUser) { alert("이 기기에 등록된 사용자가 없어요."); return; }
-    const u = { ...currentUser, dayInCompany: Math.max(1, currentUser.dayInCompany + delta) };
+    // ★ dayInCompany 가 undefined/null/NaN 이면 1로 폴백. NaN + 7 = NaN → Math.max(1, NaN) = 1 버그 방지.
+    const cur = Number.isFinite(currentUser.dayInCompany) ? currentUser.dayInCompany : 1;
+    const newDay = Math.max(1, Math.min(365, cur + delta));
+    const u = { ...currentUser, dayInCompany: newDay };
     setCurrentUser(u); save(KEY_USER, u);
-    showToast(`Day ${u.dayInCompany}로 이동`);
+    showToast(`Day ${newDay}로 이동`);
   };
   const opsSetDay = () => {
     if (!currentUser) { alert("이 기기에 등록된 사용자가 없어요."); return; }
-    const v = prompt("이동할 Day (1-365):", String(currentUser.dayInCompany));
+    const cur = Number.isFinite(currentUser.dayInCompany) ? currentUser.dayInCompany : 1;
+    const v = prompt("이동할 Day (1-365):", String(cur));
     if (!v) return;
     const n = Math.max(1, Math.min(365, parseInt(v, 10) || 1));
     const u = { ...currentUser, dayInCompany: n };
