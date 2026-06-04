@@ -6713,7 +6713,10 @@ function App() {
   // 3) D-7 알림: 인수인계 기간 중 마지막 출근일 7일 이내
   const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
   const _localUserNow = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
-  const _isPilot = !!(_localUserNow?.unlocked || _localUserNow?.isPilotHire);
+  // ★ _isPilot 은 진짜 PILOT 코드로 가입한 베타 테스터만. 정식 결제 회원(cohort='member')은 unlocked=true여도 PILOT 아님.
+  //    이걸 'unlocked' 만으로 판단하면 정식 회원도 베타 만료로 잘못 튕김 (Day 15+).
+  const _isPaidMember = _localUserNow?.cohort === 'member';
+  const _isPilot = !!_localUserNow?.isPilotHire && !_isPaidMember;
   const _isInternalUser = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
   const _forceExpired = (() => { try { return new URLSearchParams(location.search).get('expired') === '1'; } catch(e){ return false; } })();
 
