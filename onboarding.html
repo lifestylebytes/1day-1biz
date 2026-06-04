@@ -793,11 +793,14 @@ function WelcomeScreenV1({ onNext }) {
 // 0b. Login, 다른 기기에서 다시 출근
 // ============================================================
 function LoginScreen({ onBack }) {
+  // step: 'email' (이메일 입력) → 'code' (6자리 코드 입력)
+  const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  // ★ rate limit cooldown, 마지막 발송 시점부터 60초간 재요청 막음
+
+  // ★ rate limit cooldown (60초)
   const [cooldownUntil, setCooldownUntil] = useState(() => {
     try {
       const v = parseInt(localStorage.getItem("__OD_MAGIC_COOLDOWN") || "0", 10);
@@ -812,7 +815,11 @@ function LoginScreen({ onBack }) {
   }, [cooldownUntil]);
   const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
 
-  const handleLogin = async () => {
+  // 코드 input ref (자동 포커스용)
+  const codeInputRef = React.useRef(null);
+
+  // === STEP 1: 이메일 입력 → 코드 발송 ===
+  const handleSendCode = async () => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
       setError("이메일을 정확히 입력해주세요.");
@@ -824,16 +831,15 @@ function LoginScreen({ onBack }) {
       return;
     }
 
-    // ★ cooldown 중이면 거절
     if (cooldownLeft > 0) {
-      setError(cooldownLeft + "초 후 다시 시도해주세요. 메일은 1-2분 안에 도착해요. 스팸함도 확인.");
+      setError(cooldownLeft + "초 후 다시 시도해주세요.");
       return;
     }
 
     setLoading(true);
     setError("");
 
-    // 가입 기록 먼저 확인 (매직 링크 보내기 전), RLS 우회 emailExists RPC 사용
+    // 가입 기록 확인 (코드 발송 전)
     const check = await window.OD.emailExists(trimmed);
     if (!check.ok) {
       setLoading(false);
@@ -846,11 +852,11 @@ function LoginScreen({ onBack }) {
       return;
     }
 
-    // 매직 링크 발송
+    // 코드 발송 (Supabase signInWithOtp가 매직링크 + 6자리 토큰 둘 다 보냄. 템플릿에서 토큰만 노출.)
     const result = await window.OD.sendMagicLink(trimmed);
     setLoading(false);
+
     if (!result.ok) {
-      // Supabase rate limit 에러 메시지 파싱, 남은 시간 추출
       const msg = String(result.error || "");
       const m = msg.match(/after\s+(\d+)\s+seconds/i);
       if (m) {
@@ -858,39 +864,139 @@ function LoginScreen({ onBack }) {
         const until = Date.now() + secs * 1000;
         setCooldownUntil(until);
         try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
-        setError("아직 " + secs + "초 더 기다려주세요. 이미 보낸 메일이 곧 도착할 거예요. 스팸함도 확인.");
+        setError("아직 " + secs + "초 더 기다려주세요. 이미 보낸 메일이 곧 도착할 거예요.");
       } else {
-        setError("로그인 메일 발송 실패: " + (result.error || "잠시 후 다시"));
+        setError("코드 발송 실패: " + (result.error || "잠시 후 다시"));
       }
       return;
     }
-    // 발송 성공, 60초 cooldown 시작
+
+    // 발송 성공, 60초 cooldown + 코드 입력 화면으로 이동
     const until = Date.now() + 60 * 1000;
     setCooldownUntil(until);
     try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
-    setSent(true);
+    setStep("code");
+    setCode("");
+    // 코드 입력 칸에 자동 포커스
+    setTimeout(() => { try { codeInputRef.current?.focus(); } catch (e) {} }, 100);
   };
 
-  // 매직 링크 발송 완료 화면
-  if (sent) {
+  // === STEP 2: 코드 검증 → 세션 생성 → mainboard 이동 ===
+  const handleVerifyCode = async (codeOverride) => {
+    const codeToVerify = (codeOverride || code).replace(/\D/g, "").trim();
+    if (codeToVerify.length !== 6) {
+      setError("6자리 숫자 코드를 입력해주세요.");
+      return;
+    }
+
+    if (!window.OD?.verifyOtpCode) {
+      setError("서버 연결 필요. 운영자에게 문의해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    const result = await window.OD.verifyOtpCode(email.trim().toLowerCase(), codeToVerify);
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error || "코드 확인 실패. 다시 시도해주세요.");
+      setCode("");
+      setTimeout(() => { try { codeInputRef.current?.focus(); } catch (e) {} }, 50);
+      return;
+    }
+
+    // 로그인 성공. 세션 박혔으니 mainboard로 이동.
+    // __OD_USER는 mainboard 진입 시 hydrate가 DB에서 채워줌.
+    window.location.href = "mainboard.html";
+  };
+
+  // 코드 입력 변화 처리 (숫자만 + 6자리 자동 제출)
+  const onCodeChange = (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setCode(v);
+    if (v.length === 6 && !loading) {
+      handleVerifyCode(v);
+    }
+  };
+
+  // === STEP 2 화면: 코드 입력 ===
+  if (step === "code") {
     return (
       <div className="card">
-        <div className="eyebrow">YOUBUDDY KOREA · 메일 확인</div>
-        <h1>✉️ 메일함을<br/><em>확인해주세요</em></h1>
+        <div className="eyebrow">YOUBUDDY KOREA · 출근 코드 입력</div>
+        <h1>✉️ 메일로 코드를<br/><em>보내드렸어요</em></h1>
         <p className="lead">
-          <strong>{email}</strong> 으로 로그인 링크를 보냈어요.<br/>
-          메일에 있는 버튼을 클릭하시면 30일 동안 자동 로그인 유지됩니다.
+          <strong>{email}</strong> 메일함을 확인하고 6자리 숫자 코드를 입력해주세요.<br/>
+          <strong>어느 기기에서든 OK!</strong> 모바일에서 코드 받고 PC에서 입력하셔도 됩니다.
         </p>
-        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginTop: 8 }}>
-          💡 메일이 안 보이시면:<br/>
-          · <strong>스팸함</strong>도 확인해보세요<br/>
-          · 메일 30분 안에 클릭해주세요 (그 후엔 만료)<br/>
-          · 같은 이메일로 다시 신청하면 새 링크 발송돼요
+
+        <div className="form-row" style={{ marginTop: 18 }}>
+          <label>출근 코드 (6자리 숫자)</label>
+          <input
+            ref={codeInputRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={onCodeChange}
+            placeholder="123456"
+            maxLength={6}
+            autoFocus
+            onKeyDown={e => e.key === "Enter" && code.length === 6 && !loading && handleVerifyCode()}
+            style={{
+              fontSize: 28,
+              letterSpacing: 10,
+              textAlign: "center",
+              fontFamily: "JetBrains Mono, monospace",
+              fontWeight: 800,
+              padding: "16px 12px",
+            }}
+          />
         </div>
-        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 8, marginTop: 18 }}>
-          <button className="btn btn-ghost" onClick={() => { setSent(false); setEmail(""); }} style={{ justifyContent: "center" }}>
-            다른 이메일로 다시 시도
+
+        {error && (
+          <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+            ⚠ {error}
+          </div>
+        )}
+
+        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+          <button
+            className="btn"
+            onClick={() => handleVerifyCode()}
+            disabled={loading || code.length !== 6}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "확인 중..." : "✓ 코드 확인 후 출근"}
           </button>
+
+          <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            💡 메일이 안 보이시면:<br/>
+            · <strong>스팸함</strong>도 확인해보세요<br/>
+            · 코드는 1시간 동안 유효해요<br/>
+            · 6자리 모두 입력하면 자동으로 확인됩니다
+          </div>
+
+          <div className="btn-row" style={{ gap: 8 }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => { setStep("email"); setCode(""); setError(""); }}
+              style={{ flex: 1, justifyContent: "center", fontSize: 13 }}
+            >
+              ← 이메일 다시 입력
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={handleSendCode}
+              disabled={cooldownLeft > 0 || loading}
+              style={{ flex: 1, justifyContent: "center", fontSize: 13 }}
+            >
+              {cooldownLeft > 0 ? `재발송 (${cooldownLeft}초)` : "코드 재발송"}
+            </button>
+          </div>
+
           <a onClick={onBack} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}>
             ← 처음 화면으로
           </a>
@@ -899,13 +1005,13 @@ function LoginScreen({ onBack }) {
     );
   }
 
+  // === STEP 1 화면: 이메일 입력 ===
   return (
     <div className="card">
       <div className="eyebrow">YOUBUDDY KOREA · 사번 인증</div>
       <h1>다시 만나서 반가워요.<br/><em>출근하시죠.</em></h1>
       <p className="lead">
-        가입할 때 입력한 이메일로 들어가시면 진도가 그대로 이어져요.
-        <br/>
+        가입할 때 입력한 이메일로 들어가시면 진도가 그대로 이어져요.<br/>
         <strong>새 기기에서도 동일하게 사용 가능.</strong>
       </p>
 
@@ -917,7 +1023,7 @@ function LoginScreen({ onBack }) {
           onChange={e => setEmail(e.target.value)}
           placeholder="you@example.com"
           autoFocus
-          onKeyDown={e => e.key === 'Enter' && !loading && handleLogin()}
+          onKeyDown={e => e.key === "Enter" && !loading && handleSendCode()}
         />
       </div>
 
@@ -930,13 +1036,13 @@ function LoginScreen({ onBack }) {
       <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
         <button
           className="btn"
-          onClick={handleLogin}
+          onClick={handleSendCode}
           disabled={loading || !email.trim() || cooldownLeft > 0}
           style={{ justifyContent: "center" }}
         >
-          {loading ? "메일 보내는 중..."
+          {loading ? "코드 발송 중..."
             : cooldownLeft > 0 ? "잠시만요... " + cooldownLeft + "초"
-            : "✉️ 로그인 메일 받기"}
+            : "✉️ 코드 받기"}
         </button>
         {cooldownLeft > 0 && (
           <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.5 }}>
@@ -953,7 +1059,7 @@ function LoginScreen({ onBack }) {
       </div>
 
       <div className="fine-print" style={{ marginTop: 12 }}>
-        비밀번호 없이 메일로 인증 · 자주 들어오시면 로그인 끊기지 않아요
+        비밀번호 없이 이메일 코드로 인증 · 모바일·PC 어느 기기에서든 OK
       </div>
     </div>
   );
