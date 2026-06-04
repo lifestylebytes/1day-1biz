@@ -897,18 +897,71 @@ function LoginScreen({ onBack }) {
     setLoading(true);
     setError("");
 
-    const result = await window.OD.verifyOtpCode(email.trim().toLowerCase(), codeToVerify);
-    setLoading(false);
+    const emailLower = email.trim().toLowerCase();
+    const result = await window.OD.verifyOtpCode(emailLower, codeToVerify);
 
     if (!result.ok) {
+      setLoading(false);
       setError(result.error || "코드 확인 실패. 다시 시도해주세요.");
       setCode("");
       setTimeout(() => { try { codeInputRef.current?.focus(); } catch (e) {} }, 50);
       return;
     }
 
-    // 로그인 성공. 세션 박혔으니 mainboard로 이동.
-    // __OD_USER는 mainboard 진입 시 hydrate가 DB에서 채워줌.
+    // ★ OTP 인증 성공 후 mainboard 진입 가드 통과 위해 __OD_USER 미리 채우기
+    // mainboard.html 진입 가드: isOperator || isDevMode || unlocked 셋 중 하나 true 필요.
+    // OTP는 Supabase 세션만 만들고 우리 USER 객체는 안 채워주므로 여기서 직접 fetch.
+    try {
+      if (window.OD?.fetchByEmail) {
+        const userRes = await window.OD.fetchByEmail(emailLower);
+        if (userRes.ok && userRes.user) {
+          const u = userRes.user;
+          // 기존 localStorage가 있으면 보존하면서 DB 값으로 보강 (학습 데이터 안 날아가게)
+          let existing = {};
+          try { existing = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+          const merged = {
+            ...existing,
+            email: u.email,
+            name: u.name || existing.name,
+            empNumber: u.emp_number || existing.empNumber,
+            department: u.department || existing.department,
+            mentor: u.mentor || existing.mentor,
+            level: u.level || existing.level,
+            signupDate: u.signup_date || existing.signupDate,
+            signup_date: u.signup_date,
+            agreedAt: u.agreed_at || existing.agreedAt,
+            dayInCompany: u.day_in_company || existing.dayInCompany || 1,
+            cohort: u.cohort,
+            unlocked: !!u.unlocked,
+            isOperator: !!u.is_operator,
+            isDevMode: !!u.is_dev_mode,
+            isPilotHire: !!u.is_pilot_hire,
+            isTester: !!u.is_tester,
+            membership_ends_at: u.membership_ends_at,
+            membershipEndsAt: u.membership_ends_at,
+            membership_cancel_reason: u.membership_cancel_reason,
+            membershipCancelReason: u.membership_cancel_reason,
+            lastActive: new Date().toISOString(),
+            // 학습 데이터는 hydrate가 DB에서 다시 채워주므로 기존 값 보존
+            scenariosCompleted: existing.scenariosCompleted || [],
+            savedNotes: existing.savedNotes || {},
+            dailyJournals: existing.dailyJournals || {},
+            wordsStudied: existing.wordsStudied || [],
+          };
+          localStorage.setItem("__OD_USER", JSON.stringify(merged));
+        } else {
+          // DB에서 사용자 못 찾음, 가입 안 된 이메일로 OTP 통과한 비정상 케이스
+          setLoading(false);
+          setError("가입 기록을 찾을 수 없어요. 운영자에게 문의해주세요.");
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[OTP] fetchByEmail 실패, mainboard 가드에 막힐 수 있음:", e);
+    }
+
+    setLoading(false);
+    // mainboard로 이동. 거기서 hydrate가 추가로 진도·노트 DB 동기화 수행.
     window.location.href = "mainboard.html";
   };
 
