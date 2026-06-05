@@ -411,11 +411,12 @@ function FeedbackInbox() {
                     style={{ fontSize: 11, padding: '3px 10px', background: it.replied_at ? 'transparent' : '#D85A2A', color: it.replied_at ? '#5C4A36' : '#F4EFE3', border: it.replied_at ? '1px solid #C9BBA0' : 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
                   >{it.replied_at ? '💬 다시 답장' : '💬 답장하기'}</button>
                 )}
-                {it.email && !it.resolved && it.replied_at && (
+                {it.email && !it.resolved && (
                   <button
                     onClick={() => setCompleteTo(it)}
+                    title={it.replied_at ? '약속한 작업 완료, 사용자에게 알림' : '답장 없이 바로 해결, 사용자에게 알림'}
                     style={{ fontSize: 11, padding: '3px 10px', background: '#2D8A3E', color: '#F4EFE3', border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
-                  >✅ 작업 완료</button>
+                  >{it.replied_at ? '✅ 작업 완료' : '✅ 바로 해결'}</button>
                 )}
                 {!it.resolved && (
                   <input
@@ -628,10 +629,16 @@ function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
   );
   const allIds = sameUserItems.map(it => it.id);
 
-  const defaultTitle = `${target.name || ''}님, 약속드린 부분 반영했어요! ✅`;
+  // 사전 답장 여부에 따라 톤 살짝 다르게 (약속 지킨 톤 vs 바로 해결 톤)
+  const _hasPriorReply = sameUserItems.some(it => it.replied_at);
+  const defaultTitle = _hasPriorReply
+    ? `${target.name || ''}님, 약속드린 부분 반영했어요! ✅`
+    : `${target.name || ''}님, 피드백 주신 부분 바로 반영했어요! ✅`;
   const defaultBody = (() => {
     const name = target.name || '';
-    const greet = `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 반영해서 방금 업데이트 완료했어요. 약속 지킬 수 있어 다행이에요!\n\n반영된 내용:`;
+    const greet = _hasPriorReply
+      ? `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 반영해서 방금 업데이트 완료했어요. 약속 지킬 수 있어 다행이에요!\n\n반영된 내용:`
+      : `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 보고 바로 손봐서 방금 업데이트 완료했어요! 빠르게 알려주신 덕분에 빨리 고칠 수 있었습니다 🙏\n\n반영된 내용:`;
     const list = sameUserItems
       .map(it => `\n• (Day ${it.day || '-'}, ${CAT_LABEL[it.category] || it.category}) "${it.message}"`)
       .join('');
