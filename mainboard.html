@@ -1138,6 +1138,61 @@ body::before {
 /* ===== 모바일 하단 탭바 (기본 숨김) ===== */
 .m-tabbar { display: none; }
 
+/* ===== 유버디 메신저 도크 (피드백 #23 박은실: 우하단 분리 + 긴 대화창) ===== */
+@keyframes dockUp {
+  from { transform: translateY(105%); opacity: 0.6; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.buddy-dock {
+  position: fixed; right: 18px; bottom: 18px; z-index: 9300;
+  width: 370px; height: min(72vh, 600px);
+  display: flex; flex-direction: column;
+  background: #FFF7E8;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px 12px 8px 8px;
+  box-shadow: 0 18px 50px -12px rgba(42,31,20,0.5);
+  animation: dockUp 0.28s cubic-bezier(.3,.8,.4,1);
+  overflow: hidden;
+}
+.buddy-dock-head {
+  display: flex; gap: 10px; align-items: center;
+  padding: 12px 14px;
+  background: var(--ink); color: var(--paper);
+  flex-shrink: 0;
+}
+.buddy-dock-head .buddy-name { color: var(--paper); font-size: 13.5px; }
+.buddy-dock-head .buddy-role { color: rgba(244,239,227,0.7); font-size: 11px; }
+.buddy-dock-close {
+  margin-left: auto; background: transparent; border: none;
+  color: var(--paper); font-size: 16px; cursor: pointer;
+  padding: 4px 6px; font-family: inherit;
+}
+.buddy-dock-log {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px;
+  background: var(--paper);
+}
+.buddy-dock-empty {
+  margin: auto; text-align: center;
+  font-size: 12.5px; color: var(--ink-mute); line-height: 1.7;
+}
+.buddy-dock-quick {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px dashed var(--line);
+  background: #FFF7E8;
+  flex-shrink: 0;
+}
+@media (max-width: 880px) {
+  .buddy-dock {
+    right: 0; left: 0; bottom: 0; width: auto;
+    height: 76vh;
+    border-radius: 14px 14px 0 0;
+    border-left: none; border-right: none; border-bottom: none;
+  }
+}
+
 /* ===== 모바일 ===== */
 /* 작은 폰 대응 (~430px 이하), 출근부 14일·30일 모드 모두 7열 강제 */
 @media (max-width: 430px) {
@@ -6019,6 +6074,13 @@ function SceneModal({ scenario, onClose }) {
   const [feedback, setFeedback] = useState(saved?.feedback || null);
   const [editing, setEditing] = useState(false);
   const [buddyMsgs, setBuddyMsgs] = useState([]);
+  // ★ 피드백 #23 (박은실): 버디 대화는 우하단 메신저 도크로 분리 (모달 속 스크롤 제거)
+  const [buddyDockOpen, setBuddyDockOpen] = useState(false);
+  const _dockLogRef = React.useRef(null);
+  React.useEffect(() => {
+    // 새 메시지마다 맨 아래로
+    if (_dockLogRef.current) _dockLogRef.current.scrollTop = _dockLogRef.current.scrollHeight;
+  }, [buddyMsgs, buddyDockOpen]);
 
   function handleSubmit() {
     const fb = _classifyMentorFeedback(draft, scenario);
@@ -6273,17 +6335,44 @@ function SceneModal({ scenario, onClose }) {
             )}
           </div>
 
-          {/* 버디한테 물어보기 채팅 박스 */}
+          {/* 버디한테 물어보기, 누르면 우하단 메신저 도크가 올라옴 (피드백 #23) */}
           <div className="buddy-chat">
             <div className="buddy-chat-head">
               <div className="buddy-avatar small">{buddy.avatar}</div>
               <div>
                 <div className="buddy-name">{buddy.name} <span className="buddy-online">● online</span></div>
-                <div className="buddy-role">모를 때 부담 없이 물어봐</div>
+                <div className="buddy-role">모를 때 부담 없이 물어봐 · 메신저 창으로 열려요</div>
               </div>
+              {buddyMsgs.length > 0 && (
+                <button className="quick-q" style={{ marginLeft: "auto" }} onClick={() => setBuddyDockOpen(true)}>
+                  💬 대화 {buddyMsgs.length}개 열기
+                </button>
+              )}
             </div>
-            {buddyMsgs.length > 0 && (
-              <div className="buddy-chat-log">
+            <div className="buddy-chat-quick">
+              <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("nuance"); }}>🗨️ 뉘앙스가 헷갈려요</button>
+              <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("example"); }}>📌 예문 더 주세요</button>
+              <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("default"); }}>💬 어떻게 외워요?</button>
+            </div>
+          </div>
+
+          {/* 유버디 메신저 도크 (우하단 고정, 하단에서 슬라이드 업) */}
+          {buddyDockOpen && (
+            <div className="buddy-dock" onClick={e => e.stopPropagation()}>
+              <div className="buddy-dock-head">
+                <div className="buddy-avatar small">{buddy.avatar}</div>
+                <div>
+                  <div className="buddy-name">{buddy.name} <span className="buddy-online">● online</span></div>
+                  <div className="buddy-role">{scenario.word} · 1:1 글로벌 코치</div>
+                </div>
+                <button className="buddy-dock-close" onClick={() => setBuddyDockOpen(false)} title="접기">⌄</button>
+              </div>
+              <div className="buddy-dock-log" ref={_dockLogRef}>
+                {buddyMsgs.length === 0 && (
+                  <div className="buddy-dock-empty">
+                    아래 버튼으로 물어보면<br/>여기에 대화가 쌓여요 💬
+                  </div>
+                )}
                 {buddyMsgs.map((m, i) => {
                   if (m.from === "me") {
                     return <div key={i} className="buddy-msg me">{m.text}</div>;
@@ -6309,13 +6398,13 @@ function SceneModal({ scenario, onClose }) {
                   );
                 })}
               </div>
-            )}
-            <div className="buddy-chat-quick">
-              <button className="quick-q" onClick={() => askBuddy("nuance")}>🗨️ 뉘앙스가 헷갈려요</button>
-              <button className="quick-q" onClick={() => askBuddy("example")}>📌 예문 더 주세요</button>
-              <button className="quick-q" onClick={() => askBuddy("default")}>💬 어떻게 외워요?</button>
+              <div className="buddy-dock-quick">
+                <button className="quick-q" onClick={() => askBuddy("nuance")}>🗨️ 뉘앙스가 헷갈려요</button>
+                <button className="quick-q" onClick={() => askBuddy("example")}>📌 예문 더 주세요</button>
+                <button className="quick-q" onClick={() => askBuddy("default")}>💬 어떻게 외워요?</button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 📝 내 업무일지, 이 날 작성한 한 줄 회고 (인라인 수정 가능) */}
           <JournalEditor day={scenario.day} />
