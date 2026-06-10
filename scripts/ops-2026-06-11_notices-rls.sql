@@ -1,38 +1,59 @@
 -- ============================================================
--- 1:1 공지 DB 원천 차단 (RLS)
--- 배경: 이수안님이 이정언님 1:1 답장을 본 사고. 클라이언트 수정만으론
---       구버전 캐시/빈 세션 클라이언트를 못 막아서 DB에서 차단.
--- ⚠️ 반드시 1번 SELECT 먼저 실행해서 기존 정책 이름을 확인하고,
---    2번의 DROP POLICY 줄에 그 이름을 넣어 실행하세요.
+-- notices RLS 정비 (2026-06-11)
+-- 1) 1:1 공지: 본인 + 운영자만 조회 (이수안 사고 원천 차단)
+-- 2) 수정/삭제: 운영자만 (현재 anon 누구나 가능한 상태, 심각)
+--
+-- ⚠️ 실행 전 필수 확인: 운영자 브라우저(operator.html 쓰는 그 브라우저)에서
+--    mainboard에 OTP 로그인이 돼 있어야 해요. 이 정책들은 "로그인된
+--    세션의 이메일"로 운영자인지 판별하기 때문에, 로그인 안 된 브라우저의
+--    operator.html은 적용 후 공지 관리가 막힙니다. (그때는 mainboard에서
+--    한 번 로그인하면 해결)
 -- ============================================================
 
--- 1) 기존 notices SELECT 정책 확인
-SELECT policyname, cmd, roles, qual
-FROM pg_policies
-WHERE tablename = 'notices';
+-- 운영자 판별 헬퍼 (정책 3곳에서 재사용)
+CREATE OR REPLACE FUNCTION is_op()
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM users u
+    WHERE lower(u.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+      AND (u.is_operator = true OR u.is_dev_mode = true)
+  );
+$$;
 
--- 2) 기존 SELECT 정책을 지우고, 본인/운영자만 1:1을 볼 수 있는 정책으로 교체
---    (아래 "기존_SELECT_정책명" 을 1번 결과의 이름으로 바꿔서 실행)
--- DROP POLICY IF EXISTS "기존_SELECT_정책명" ON notices;
-
-CREATE POLICY notices_select_targeted ON notices
+-- 1) SELECT: 전체 공지는 누구나, 1:1은 본인 + 운영자만
+DROP POLICY IF EXISTS notices_select ON notices;
+CREATE POLICY notices_select ON notices
 FOR SELECT
 USING (
-  -- 전체 공지는 누구나
   target_emails IS NULL
-  -- 1:1 공지는 로그인한 본인만
-  OR lower(coalesce(auth.jwt() ->> 'email', '')) = ANY (
-       SELECT lower(e) FROM unnest(target_emails) AS e
-     )
-  -- 운영자/Dev는 전부 (operator.html 공지 관리용)
   OR EXISTS (
-       SELECT 1 FROM users u
-       WHERE lower(u.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
-         AND (u.is_operator = true OR u.is_dev_mode = true)
+       SELECT 1 FROM unnest(target_emails) AS e
+       WHERE lower(e) = lower(coalesce(auth.jwt() ->> 'email', ''))
      )
+  OR is_op()
 );
 
--- 3) 확인: 익명(비로그인)으로는 1:1 공지가 안 보여야 정상
---    (적용 후 mainboard에서 본인 1:1이 잘 보이는지도 꼭 확인.
---     OTP 로그인 세션이 만료된 사용자는 재로그인 전까지 1:1이 안 보일 수 있는데,
---     이건 의도된 안전 동작입니다.)
+-- 2) UPDATE / DELETE: 운영자만
+DROP POLICY IF EXISTS notices_update ON notices;
+CREATE POLICY notices_update ON notices
+FOR UPDATE USING (is_op()) WITH CHECK (is_op());
+
+DROP POLICY IF EXISTS notices_delete ON notices;
+CREATE POLICY notices_delete ON notices
+FOR DELETE USING (is_op());
+
+-- 3) (선택, 추천) INSERT도 운영자만. 현재 public insert가 열려있으면
+--    아무나 가짜 공지를 만들 수 있어요. 운영자 로그인 확인 후 실행.
+-- DROP POLICY IF EXISTS notices_insert_op ON notices;
+-- CREATE POLICY notices_insert_op ON notices
+-- FOR INSERT WITH CHECK (is_op());
+
+-- ============================================================
+-- 적용 후 점검 체크리스트
+-- a. 운영자 브라우저: operator.html에서 공지 목록·발송·삭제 정상?
+-- b. 일반 계정: mainboard에서 본인 1:1 답장 보임?
+-- c. 시크릿 창(비로그인): 1:1 공지 안 보임? (전체 공지만 보여야 정상)
+-- 문제가 생기면 말해주세요. 정책 즉시 롤백 가능합니다.
+-- ============================================================
