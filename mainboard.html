@@ -3994,14 +3994,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
   // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
   const [showFullAttend, setShowFullAttend] = useState(false);
-  // ★ 시즌 2: 정직원 축하 카드 (닫기 전까지 홈 상단 노출)
+  // ★ 시즌 2: 정직원 마일스톤 카드 (닫기가 아니라 접기, 수시로 펼쳐볼 수 있음)
   const _S2_CARD_KEY = "__OD_S2_WELCOME_DISMISSED_" + (USER.email || "guest");
-  const [s2CardDismissed, setS2CardDismissed] = useState(() => {
+  const [s2CardCollapsed, setS2CardCollapsed] = useState(() => {
     try { return localStorage.getItem(_S2_CARD_KEY) === "1"; } catch (e) { return false; }
   });
-  const dismissS2Card = () => {
-    try { localStorage.setItem(_S2_CARD_KEY, "1"); } catch (e) {}
-    setS2CardDismissed(true);
+  const toggleS2Card = () => {
+    setS2CardCollapsed(v => {
+      try { localStorage.setItem(_S2_CARD_KEY, v ? "0" : "1"); } catch (e) {}
+      return !v;
+    });
   };
   // ★ 기본은 "최근 14일" 슬라이딩 창. Day가 늘어나도(시즌 2, 60일) 출근부 높이 고정.
   //   전체 보기 토글 시 코스 전체 (수습 30 / 정직원 60).
@@ -4191,8 +4193,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
 
         <div className="col">
-          {/* ★ 시즌 2: 정직원 축하 카드 (마일스톤 미리보기 + Day 60 면담 티저) */}
-          {USER.isFulltime && !s2CardDismissed && !USER.isViewingPast && (() => {
+          {/* ★ 시즌 2: 정직원 마일스톤 카드 (접기/펼치기, Day 60 면담 티저) */}
+          {USER.isFulltime && !USER.isViewingPast && (() => {
             const _rd = USER.realCurrentDay || USER.currentDay;
             const _pct = Math.max(3, Math.min(100, Math.round((_rd - 30) / 30 * 100)));
             const _dLeft = Math.max(0, 60 - _rd);
@@ -4202,17 +4204,39 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               { d: 51, icon: "🔥", label: "50일 달성" },
               { d: 60, icon: "🌟", label: "특별 면담" },
             ];
+            // ── 접힌 상태: 슬림 바 (탭하면 펼침) ──
+            if (s2CardCollapsed) {
+              return (
+                <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  background: "var(--cream)", border: "1px solid var(--orange)",
+                  borderRadius: 8, padding: "10px 14px", cursor: "pointer",
+                  fontFamily: "inherit", textAlign: "left",
+                }}>
+                  <span style={{ fontSize: 14 }}>👔</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>정직원 마일스톤</span>
+                  <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
+                    <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
+                  </span>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
+                    {_dLeft > 0 ? `면담 D-${_dLeft}` : "면담 D-day 🌟"}
+                  </span>
+                  <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
+                </button>
+              );
+            }
+            // ── 펼친 상태: 풀 카드 ──
             return (
               <div className="s2-welcome" style={{
                 background: "var(--cream)", border: "2px solid var(--orange)",
                 borderRadius: 10, padding: "16px 16px 14px", position: "relative",
                 boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
               }}>
-                <button onClick={dismissS2Card} title="닫기" style={{
+                <button onClick={toggleS2Card} title="접기" style={{
                   position: "absolute", top: 8, right: 10, background: "transparent",
-                  border: "none", fontSize: 14, color: "var(--ink-mute)",
+                  border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)",
                   cursor: "pointer", fontFamily: "inherit", padding: 4,
-                }}>✕</button>
+                }}>▲ 접기</button>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
                   <span style={{
                     fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
