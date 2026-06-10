@@ -8477,6 +8477,13 @@ function App() {
             const me = (USER.email || "").toLowerCase().trim();
             return !!me && n.target_emails.map(e => String(e).toLowerCase().trim()).includes(me);
           }
+          // ★ 전체 공지는 가입일 이후 발송분만 (신규 가입자에게 과거 공지 노이즈 차단)
+          // signupDate 없으면 안전하게 전부 표시.
+          try {
+            const lu = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+            const su = lu && lu.signupDate ? Date.parse(lu.signupDate) : null;
+            if (su && n.sent_at && Date.parse(n.sent_at) < su) return false;
+          } catch (e) {}
           return true;
         }).map(n => {
           const fromId = fromMap[n.from_name] || "buddy";
