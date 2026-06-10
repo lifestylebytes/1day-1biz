@@ -1680,8 +1680,8 @@ const SCENARIOS = [
       promptKo: "전략 워크숍에서 Daniel 제안에 한 줄로 답. 마감 시점을 명시하세요. (힌트: IT 회의에서 '출시·완성하다' 의미로 자주 쓰는 동사가 들어가요.)",
       koSentence: "이번 주 안에 ship할 수 있는 low-hanging fruit 몇 개 뽑아뒀어요." },
     mcOptions: [
-      { text: "Pulled out some low-hanging fruit we can ship this week, owners noted.", kind: "correct",
-        note: "✓ low-hanging fruit (셀 수 없는 관용표현, some으로 받기) + 시점(this week) + owner 언급. ship은 IT·스타트업에서 '출시·배포·완성'의 표준 동사. 우선순위 회의의 모범 답." },
+      { text: "I've pulled out some low-hanging fruit we can ship this week.", kind: "correct",
+        note: "✓ low-hanging fruit(셀 수 없는 관용표현, some으로 받기) + 시점(this week)까지 한 줄에. ship은 IT·스타트업에서 '출시·완성'의 표준 동사예요. 우선순위 회의의 모범 답." },
       { text: "There are some easy items we could potentially work on at some point.", kind: "weak",
         note: "단어 안 쓰고 'some easy items', 'at some point' = 미루기 톤. 우선순위 정하는 자리에서 가장 안 좋은 답." },
       { text: "I shall prioritize the more accessible objectives in the immediate term.", kind: "formal",
@@ -6663,6 +6663,29 @@ function CheckinActivity({ today, item, onClose, onComplete }) {
 }
 
 // === 2. MINI_MISSION, 컨텍스트 한 줄 미션 (3중 가장 자연스러운 거 고르기) ===
+// 보기 유형 뱃지 (정답 공개 후, 왜 정답/오답인지 한눈에 구분)
+function _mcKindBadge(kind) {
+  const map = {
+    correct:  { label: "✓ 자연스러운 답", color: "#2D7A3D" },
+    formal:   { label: "🎩 너무 격식",     color: "#8C6510" },
+    weak:     { label: "💤 힘 빠진 답",    color: "#993C1D" },
+    konglish: { label: "🗯 콩글리시",      color: "#993C1D" },
+    missing:  { label: "🚫 오늘 단어 없음", color: "#993C1D" },
+  };
+  const m = map[kind] || { label: kind, color: "var(--ink-mute)" };
+  return (
+    <b style={{ color: m.color, marginRight: 6, whiteSpace: "nowrap" }}>{m.label} ·</b>
+  );
+}
+// 고르기 전 보여줄 공통 기준 (피드백 #16 후속: '왜 정답인지' 기준을 사전에 명시)
+function _mcCriteriaLine() {
+  return (
+    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6 }}>
+      고르는 기준: ① 오늘 단어가 들어갔나 ② 동료에게 말하는 자연스러운 사내 톤인가 ③ 행동·시점이 보이나
+    </div>
+  );
+}
+
 function MissionActivity({ today, item, onClose, onComplete }) {
   const ctx = item.context || { ctx: "팀 슬랙", prompt: "팀 슬랙에 한 줄 던진다고 생각하고." };
   const { CHARACTERS } = window.__SIM;
@@ -6715,7 +6738,8 @@ function MissionActivity({ today, item, onClose, onComplete }) {
               </div>
             </div>
             <div className="slack-replies-prompt">
-              💬 김 팀장 슬랙에 답할 차례. 오늘 단어 <b>{today.word}</b> 를(을) 살리면서, 짧고 액션이 명확한 답을 골라보세요. (단어가 빠지거나 톤이 안 맞는 건 탈락.)
+              💬 {npc.name} 슬랙에 답할 차례. 오늘 단어 <b>{today.word}</b> 를(을) 살린 한 줄을 골라보세요.
+              {_mcCriteriaLine()}
             </div>
           </div>
         </div>
@@ -6746,7 +6770,7 @@ function MissionActivity({ today, item, onClose, onComplete }) {
               }} disabled={pick !== null}>
                 <span className="opt-letter">{String.fromCharCode(65 + i)}.</span>
                 {o.text}
-                {showResult ? <div className="opt-note">{o.note}</div> : null}
+                {showResult ? <div className="opt-note">{_mcKindBadge(o.kind)}{o.note}</div> : null}
               </button>
             );
           })}
@@ -6784,7 +6808,8 @@ function MissionActivity({ today, item, onClose, onComplete }) {
         <div style={{ marginTop: 12, fontSize: 13, color: "var(--ink)" }}>오늘 단어: <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b></div>
       </div>
       <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
-        {npc.name}에게 답할 차례. 오늘 단어 <b>{today.word}</b>를(을) 살리면서 가장 자연스러운 한 줄을 골라보세요.
+        {npc.name}에게 답할 차례. 오늘 단어 <b>{today.word}</b>를(을) 살린 한 줄을 골라보세요.
+        {_mcCriteriaLine()}
       </div>
       <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
         {options.map((o, i) => {
@@ -6821,7 +6846,7 @@ function MissionActivity({ today, item, onClose, onComplete }) {
               }}
             >
               {String.fromCharCode(65 + i)}. "{o.text}"
-              {showResult ? <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>{o.note}</div> : null}
+              {showResult ? <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55 }}>{_mcKindBadge(o.kind)}{o.note}</div> : null}
             </button>
           );
         })}
