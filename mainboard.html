@@ -2309,7 +2309,17 @@ const _signupKST = _localUser?.signupDate
   ? new Date(_localUser.signupDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
   : _todayKST;
 const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
-const _autoDay = Math.max(1, Math.min(30, _daysSince + 1));
+// ★ 시즌 2: 코스 전체 상한 60일 (Day 31-60 = 정직원)
+const _autoDay = Math.max(1, Math.min(60, _daysSince + 1));
+
+// ── 레벨 (수습 / 정직원) ──
+// users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
+const _userLevel = _localUser?.level || { id: "probation", ko: "수습", en: "Probation" };
+const _isFulltimeLevel = _userLevel.id && _userLevel.id !== "probation";
+window.__OD_LEVEL = _userLevel;
+window.__OD_IS_FULLTIME = _isFulltimeLevel;
+const LEVEL_FULLTIME = { id: "fulltime", ko: "정직원", en: "Full-time" };
+window.__OD_LEVEL_FULLTIME = LEVEL_FULLTIME;
 // 운영자/Dev만 dayInCompany 수동 override 가능, 일반 사용자는 자동 계산값 사용
 const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
 const _resolvedDay = _isInternal && _localUser?.dayInCompany
@@ -2318,19 +2328,25 @@ const _resolvedDay = _isInternal && _localUser?.dayInCompany
 
 const USER = {
   name: _localUser?.name || "김지원",
-  position: _localUser?.level?.ko ? (_localUser.level.ko + " 사원") : "수습 사원",
-  positionEn: _localUser?.level?.en || "Probation",
+  // 수습이면 "수습 사원", 정직원 이상이면 레벨명 그대로
+  position: _isFulltimeLevel ? _userLevel.ko : (_userLevel.ko ? (_userLevel.ko + " 사원") : "수습 사원"),
+  positionEn: _userLevel.en || "Probation",
+  levelId: _userLevel.id || "probation",
+  isFulltime: _isFulltimeLevel,
   team: _localUser?.department?.short ? (_localUser.department.short + " · 12F") : "Strategy Team · 12F",
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
   empNumber: _localUser?.empNumber || "2026-04-15",
   currentDay: _resolvedDay,
   realCurrentDay: _resolvedDay,        // 실제 오늘 (App 컴포넌트가 viewingDay로 override 시 보존)
   isViewingPast: false,
-  totalDays: 30,
+  // ★ 시즌 2: 정직원이면 60일 코스, 수습이면 30일 코스
+  totalDays: _isFulltimeLevel ? 60 : 30,
   studiedDays: 0,  // 아래에서 자동 계산
-  streak: Math.min(Math.max(0, _resolvedDay - 1), 30),
+  streak: Math.min(Math.max(0, _resolvedDay - 1), _isFulltimeLevel ? 60 : 30),
   vacationDays: 3,
-  badges: _localUser ? ["첫 출근"] : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
+  badges: _localUser
+    ? ["첫 출근"].concat(_localUser.levelupCompletedAt || _localUser.levelup_completed_at ? ["정직원 전환 🎉"] : [])
+    : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
   email: _localUser?.email || null,
   // ★ 출근부·업무노트가 정확히 표시되려면 USER에 학습/노트 데이터가 반영돼있어야 함
   scenariosCompleted: _localUser?.scenariosCompleted || [],
@@ -2458,7 +2474,9 @@ const _MISSION_CONTEXTS = [
 ];
 
 function getScheduleForDay(day) {
-  const isLastDay = day >= 30;
+  // ★ 시즌 2: Day 30 = 수습 평가, Day 60 = 특별 면담. 그 사이(31-59)는 일반 학습일.
+  const isLastDay = day === 30 || day >= 60;
+  const isDay60 = day >= 60;
   const lunch = _lunchForDay(day);
   const afternoonTask = _afternoonForDay(day);
   const morningTone = _MORNING_TONES[(day - 1) % _MORNING_TONES.length];
@@ -2520,7 +2538,7 @@ function getScheduleForDay(day) {
     variantItem,
     {
       id: "wrapup", time: "17:00", type: "journal",
-      title: isLastDay ? "수습 평가 + 업무일지 + 퇴근" : "업무일지 작성 + 퇴근",
+      title: isDay60 ? "특별 면담 + 업무일지 + 퇴근" : (isLastDay ? "수습 평가 + 업무일지 + 퇴근" : "업무일지 작성 + 퇴근"),
       note: "오늘 한 줄 + 유버디 응원",
       action: null,
       isLastDay,
@@ -4202,16 +4220,16 @@ function MyPage() {
         </div>
         <div className="desk-meta"><b>입사일</b><br/>{USER.joinDate}</div>
       </div>
-      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status="수습 진행 중" />
+      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.isFulltime ? "정직원 재직 중" : "수습 진행 중"} />
 
       <div className="id-card">
         <div className="id-card-clip"></div>
-        <div className="id-card-strip">
-          <span>YOUBUDDY KOREA · EMPLOYEE ID</span>
+        <div className="id-card-strip" style={USER.isFulltime ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
+          <span>YOUBUDDY KOREA · {USER.isFulltime ? "FULL-TIME EMPLOYEE" : "EMPLOYEE ID"}</span>
           <b>NO. {USER.empNumber || "2026-0416"}</b>
         </div>
         <div className="id-card-body">
-          <div className="id-card-photo">{USER.name[0]}</div>
+          <div className="id-card-photo" style={USER.isFulltime ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>{USER.isFulltime ? "👔" : USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
@@ -4226,11 +4244,22 @@ function MyPage() {
               <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             )}
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
-            <div className="id-field"><span className="id-field-label">수습</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 표현 {USER.wordsCollected}개 · 🔥 {USER.streak}</span></div>
+            <div className="id-field"><span className="id-field-label">{USER.isFulltime ? "근속" : "수습"}</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 표현 {USER.wordsCollected}개 · 🔥 {USER.streak}</span></div>
           </div>
         </div>
         <div className="id-card-foot">
-          <span>유효기간 · 2026.04.16 ~ 2026.05.15 (수습)</span>
+          <span>{(() => {
+            // 유효기간 = 입사일 ~ 코스 종료일 (수습 30일 / 정직원 60일)
+            try {
+              const sd = _localUser && _localUser.signupDate ? new Date(_localUser.signupDate) : null;
+              if (sd && !isNaN(sd.getTime())) {
+                const ed = new Date(sd.getTime() + (USER.totalDays - 1) * 86400000);
+                const f = (d) => d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+                return "유효기간 · " + f(sd) + " ~ " + f(ed) + (USER.isFulltime ? " (정직원)" : " (수습)");
+              }
+            } catch (e) {}
+            return "유효기간 · 2026.04.16 ~ 2026.05.15 (수습)";
+          })()}</span>
           {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
           {false && (
             <span><b>{USER.vacationDays}일</b> 휴가 보유</span>
@@ -6543,6 +6572,357 @@ function FeedbackModal({ onClose }) {
 // ============================================================
 // App Shell
 // ============================================================
+// ============================================================
+// ★ 시즌 2: Day 29 D-1 팝업 + Day 30 인사팀 상담 (승급 의례)
+// ============================================================
+
+// ── 통계 계산 헬퍼 (Day 60 면담에서도 재활용) ──
+function _statMasteredWords(u) {
+  return new Set((u.scenariosCompleted || []).map(s => s && s.word).filter(Boolean)).size;
+}
+function _statNotes(u) {
+  return Object.values(u.savedNotes || {}).reduce((a, arr) => a + (Array.isArray(arr) ? arr.length : 0), 0);
+}
+function _statJournals(u) {
+  return Object.keys(u.dailyJournals || {}).length;
+}
+function _statBestStreak(u) {
+  const days = new Set();
+  (u.scenariosCompleted || []).forEach(s => { if (s && s.day) days.add(Number(s.day)); });
+  Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_")).forEach(k => {
+      const t = JSON.parse(localStorage.getItem(k) || "{}");
+      if (Object.values(t).filter(Boolean).length >= 3) {
+        const n = Number(k.replace("__OD_TASKS_DAY_", ""));
+        if (n) days.add(n);
+      }
+    });
+  } catch (e) {}
+  const arr = [...days].filter(d => d >= 1).sort((a, b) => a - b);
+  let best = 0, cur = 0, prev = null;
+  arr.forEach(d => {
+    cur = (prev !== null && d === prev + 1) ? cur + 1 : 1;
+    if (cur > best) best = cur;
+    prev = d;
+  });
+  return best;
+}
+
+// ── 승급 영어 테스트 문제 생성 (Day 1-30 단어 풀, RECAP_DATA 재활용) ──
+function _buildLevelupQuestions(maxDay, count) {
+  const SCN = ((window.__SIM && window.__SIM.SCENARIOS) || []).filter(s => s.day <= maxDay);
+  const RD = (window.__SIM && window.__SIM.RECAP_DATA) || {};
+  const pool = Object.keys(RD).map(Number).filter(d => d <= maxDay && SCN.find(s => s.day === d));
+  const qDays = _shuf(pool).slice(0, count);
+  const allWords = SCN.map(s => s.word).filter(Boolean);
+  return qDays.map(d => {
+    const sc = SCN.find(s => s.day === d);
+    const word = sc ? sc.word : "";
+    const distractors = _shuf(allWords.filter(w => w !== word)).slice(0, 3);
+    return {
+      target: RD[d].blank,
+      options: _shuf([word, ...distractors]),
+      correct: word,
+      hint: RD[d].explain,
+      meaning: sc ? sc.meaning : "",
+    };
+  });
+}
+
+// ── 레벨업 영속화: localStorage 먼저 (데이터 안전) → DB. DB 실패 시 pending 큐. ──
+async function _persistLevelUp(score) {
+  const now = new Date().toISOString();
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem("__OD_USER") || "null"); } catch (e) {}
+  if (local) {
+    local.level = window.__OD_LEVEL_FULLTIME;
+    local.levelupCompletedAt = now;
+    local.levelup_completed_at = now;
+    local.levelupTestScore = score;
+    local.levelup_test_score = score;
+    try { localStorage.setItem("__OD_USER", JSON.stringify(local)); } catch (e) {}
+  }
+  const email = local && local.email;
+  if (!email) return { ok: true, localOnly: true };
+  const patch = { level: window.__OD_LEVEL_FULLTIME, levelup_completed_at: now, levelup_test_score: score };
+  try {
+    if (window.OD && window.OD.enabled && window.OD.updateProgress) {
+      const r = await window.OD.updateProgress(email, patch);
+      if (r && r.ok) {
+        try { localStorage.removeItem("__OD_PENDING_LEVELUP"); } catch (e) {}
+        return { ok: true };
+      }
+    }
+  } catch (e) {}
+  // DB 실패: 다음 부팅 때 재시도하도록 큐잉 (mountAfterHydrate에서 flush)
+  try { localStorage.setItem("__OD_PENDING_LEVELUP", JSON.stringify({ email, patch })); } catch (e) {}
+  return { ok: false, queued: true };
+}
+
+// ── Day 29: D-1 안내 팝업 ──
+function PromotionD1Popup({ onClose }) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9150,
+      background: "rgba(20,15,8,0.65)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20,
+    }} onClick={onClose}>
+      <div style={{
+        background: "var(--paper)", border: "1px solid var(--line)",
+        borderRadius: 12, maxWidth: 420, width: "100%",
+        padding: "28px 26px",
+        boxShadow: "0 30px 60px -20px rgba(58,40,18,0.45)",
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{
+          fontSize: 11, letterSpacing: "0.22em", fontWeight: 800,
+          color: "var(--orange)", textTransform: "uppercase", marginBottom: 12,
+        }}>
+          HR · 인사 발령 예고
+        </div>
+        <div style={{
+          fontSize: 19, fontWeight: 900, lineHeight: 1.45,
+          letterSpacing: "-0.01em", color: "var(--ink)", marginBottom: 14,
+        }}>
+          내일이 수습 마지막 날이에요.<br/>
+          <span style={{ color: "var(--orange)" }}>정직원 전환 면담</span>이 잡혔어요.
+        </div>
+        <div style={{
+          background: "var(--paper-warm)", borderLeft: "3px solid var(--orange)",
+          padding: "12px 14px", marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            일시: <b style={{ color: "var(--ink)" }}>내일 (Day 30) 14:00</b><br/>
+            장소: 12F 인사팀 상담실<br/>
+            내용: 30일 회고 + 간단한 영어 미니 테스트
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20 }}>
+          긴장 안 해도 돼요. 30일 동안 만난 단어들,<br/>
+          가볍게 한 번만 훑어보고 오면 충분해요.
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            display: "block", width: "100%", padding: "13px 0",
+            background: "var(--ink)", color: "var(--paper)",
+            border: "none", borderRadius: 8,
+            fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+          }}>
+          알겠어요, 내일 봬요
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Day 30: 인사팀 상담 (회고 → 통계 → 영어 테스트 → 승급) ──
+function PromotionCeremony({ realDay }) {
+  const [step, setStep] = useState(0);           // 0 인트로 / 1 회고·통계 / 2 테스트 / 3 결과
+  const [qIdx, setQIdx] = useState(0);
+  const [picks, setPicks] = useState([]);
+  const [pick, setPick] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const name = local.name || (window.__SIM && window.__SIM.USER && window.__SIM.USER.name) || "사원";
+  const isLate = realDay > 30;  // Day 31+에 뒤늦게 의례 진행하는 케이스
+
+  const stats = useMemo(() => ({
+    streak: _statBestStreak(local),
+    words: _statMasteredWords(local),
+    notes: _statNotes(local),
+    journals: _statJournals(local),
+  }), []);
+
+  const questions = useMemo(() => _buildLevelupQuestions(30, 10), []);
+  const q = questions[qIdx];
+  const score = questions.length ? Math.round(picks.filter(p => p.ok).length / questions.length * 100) : 100;
+
+  // 결과 화면 진입 즉시 저장 (사용자가 창 닫아도 승급은 유지)
+  React.useEffect(() => {
+    if (step === 3 && !saved) {
+      setSaved(true);
+      _persistLevelUp(score);
+    }
+  }, [step]);
+
+  const onPick = (opt) => {
+    if (pick) return;
+    setPick(opt);
+    setPicks(prev => [...prev, { ok: opt === q.correct, correct: q.correct, opt, hint: q.hint }]);
+  };
+  const goNext = () => {
+    if (qIdx >= questions.length - 1) { setStep(3); return; }
+    setQIdx(qIdx + 1);
+    setPick(null);
+  };
+
+  const scoreMent = score >= 90 ? "탁월하게 통과!"
+    : score >= 70 ? "여유롭게 통과!"
+    : score >= 50 ? "통과! 다시 한번 챙겨보면 좋은 단어들이 보이네요."
+    : "통과! 가끔 사원증 페이지의 단어 사전으로 복습해주세요.";
+  const wrongs = picks.filter(p => !p.ok);
+
+  const statCards = [
+    { icon: "🔥", label: "최장 연속 출근", value: stats.streak + "일" },
+    { icon: "📚", label: "마스터한 표현", value: stats.words + "개" },
+    { icon: "📒", label: "저장한 노트", value: stats.notes + "개" },
+    { icon: "✍️", label: "작성한 업무일지", value: stats.journals + "일" },
+  ];
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9200,
+      background: "rgba(42,31,20,0.82)", backdropFilter: "blur(5px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20, overflowY: "auto",
+    }}>
+      <div style={{
+        background: "var(--paper)", border: "1px solid var(--line)",
+        borderRadius: 14, maxWidth: 520, width: "100%",
+        padding: "32px 28px 28px", margin: "auto",
+        boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)",
+      }}>
+        <div style={{
+          fontSize: 11, letterSpacing: "0.22em", fontWeight: 800,
+          color: "var(--orange)", textTransform: "uppercase", marginBottom: 14,
+        }}>
+          HR · 12F 상담실 {step === 2 ? `· 미니 테스트 ${qIdx + 1}/${questions.length}` : ""}
+        </div>
+
+        {step === 0 && (
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.4, color: "var(--ink)", marginBottom: 14, letterSpacing: "-0.01em" }}>
+              {name}님,<br/>수습 30일이 끝났어요.
+            </h2>
+            <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 16 }}>
+              {isLate
+                ? "조금 늦게 불러서 미안해요. 그동안의 기록은 전부 그대로 남아있으니 걱정 마세요. 지금부터 정직원 전환 면담을 시작할게요."
+                : "오늘은 학습 대신 짧은 면담이에요. 30일을 같이 돌아보고, 가벼운 영어 미니 테스트 하나만 보면 끝나요."}
+            </p>
+            <div style={{
+              background: "var(--paper-warm)", border: "1px dashed var(--line)",
+              borderRadius: 8, padding: "12px 14px", fontSize: 12.5,
+              color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20,
+            }}>
+              순서: 30일 회고 → 영어 미니 테스트 (10문제) → 결과 발표<br/>
+              소요 시간: 약 3분
+            </div>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => setStep(1)}>
+              상담 시작하기 →
+            </button>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.4, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.01em" }}>
+              30일 회고
+            </h2>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
+              인사팀이 정리한 {name}님의 수습 기간 기록이에요.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+              {statCards.map(c => (
+                <div key={c.label} style={{
+                  background: "var(--paper-warm)", border: "1px solid var(--line)",
+                  borderRadius: 10, padding: "16px 14px", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>{c.icon}</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.02em" }}>{c.value}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 4 }}>{c.label}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
+              숫자보다 중요한 건, 30일 동안 매일 영어를 마주쳤다는 사실이에요.
+            </p>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => setStep(2)}>
+              영어 미니 테스트 시작 →
+            </button>
+          </div>
+        )}
+
+        {step === 2 && q && (
+          <div>
+            <div style={{
+              background: "var(--paper-warm)", border: "1px solid var(--line)",
+              borderRadius: 10, padding: "16px 16px", marginBottom: 14,
+              fontSize: 14.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600,
+            }}>
+              {q.target}
+            </div>
+            <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
+              {q.options.map(opt => {
+                const isPicked = pick === opt;
+                const isCorrect = opt === q.correct;
+                const show = !!pick;
+                return (
+                  <button key={opt} onClick={() => onPick(opt)}
+                    style={{
+                      textAlign: "left", padding: "11px 14px", borderRadius: 8,
+                      border: "1px solid " + (show && isCorrect ? "var(--orange)" : isPicked ? "#993C1D" : "var(--line)"),
+                      background: show && isCorrect ? "rgba(216,90,42,0.10)" : "var(--paper)",
+                      fontSize: 13.5, fontWeight: 600, color: "var(--ink)",
+                      cursor: pick ? "default" : "pointer", fontFamily: "inherit",
+                    }}>
+                    {opt} {show && isCorrect ? "✓" : (show && isPicked ? "✕" : "")}
+                  </button>
+                );
+              })}
+            </div>
+            {pick && (
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, background: "var(--paper-warm)", borderRadius: 8, padding: "10px 12px", marginBottom: 14 }}>
+                {q.hint}
+              </div>
+            )}
+            {pick && (
+              <button className="btn btn-primary" style={{ width: "100%" }} onClick={goNext}>
+                {qIdx >= questions.length - 1 ? "결과 보기 →" : "다음 문제 →"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div style={{ textAlign: "center" }}>
+            <div style={{
+              display: "inline-block",
+              fontSize: 13, letterSpacing: "0.18em", fontWeight: 900,
+              color: "var(--orange)", border: "3px solid var(--orange)",
+              padding: "10px 18px", transform: "rotate(-4deg)",
+              marginBottom: 18,
+            }}>
+              정직원 발령
+            </div>
+            <div style={{ fontSize: 46, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.04em", marginBottom: 8 }}>
+              {score}<span style={{ fontSize: 18, color: "var(--ink-mute)" }}>점</span>
+            </div>
+            <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink)", marginBottom: 14 }}>{scoreMent}</div>
+            {wrongs.length > 0 && (
+              <div style={{ textAlign: "left", background: "var(--paper-warm)", borderRadius: 8, padding: "12px 14px", marginBottom: 16 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ink-mute)", marginBottom: 6 }}>다시 챙겨볼 단어</div>
+                {wrongs.map((w, i) => (
+                  <div key={i} style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>· <b style={{ color: "var(--ink)" }}>{w.correct}</b></div>
+                ))}
+              </div>
+            )}
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 20 }}>
+              {name}님은 오늘부로 <b style={{ color: "var(--ink)" }}>정직원</b>이에요.<br/>
+              Day 60까지, 이제 회의를 주도하는 표현들을 만나요.
+            </p>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => location.reload()}>
+              👔 정직원으로 첫 출근하기 →
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [active, setActive] = useState("home");
   const [scene, setScene] = useState(null);
@@ -6740,6 +7120,22 @@ function App() {
     try { sessionStorage.setItem('__OD_D7_DISMISSED_' + (_localUserNow?.email || ''), '1'); } catch(e) {}
     _setD7Dismissed(true);
   };
+
+  // ── 시즌 2: 승급 의례 트리거 ──
+  // 1) Day 29 + 아직 수습: D-1 예고 팝업 (기기당 1회)
+  // 2) Day 30+ + 아직 수습: 인사팀 상담 강제 트리거 (Day 32+ 기존 사용자도 여기로 흡수)
+  const _levelIdNow = (_localUserNow?.level?.id) || 'probation';
+  const _isProbationNow = _levelIdNow === 'probation';
+  const _D1_KEY = '__OD_D1_SEEN_' + (_localUserNow?.email || 'guest');
+  const [_d1Dismissed, _setD1Dismissed] = useState(() => {
+    try { return localStorage.getItem(_D1_KEY) === '1'; } catch(e) { return false; }
+  });
+  const _dismissD1 = () => {
+    try { localStorage.setItem(_D1_KEY, '1'); } catch(e) {}
+    _setD1Dismissed(true);
+  };
+  const _showD1Popup = _isProbationNow && !!_localUserNow && _realDay === 29 && !_d1Dismissed;
+  const _showCeremony = _isProbationNow && !!_localUserNow && _realDay >= 30;
 
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
   if (_membershipExpired) {
@@ -6952,6 +7348,10 @@ function App() {
 
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
+      {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
+      {_showD1Popup && <PromotionD1Popup onClose={_dismissD1} />}
+      {_showCeremony && <PromotionCeremony realDay={_realDay} />}
+
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
       {_showD7Popup && (
         <div style={{
@@ -7033,6 +7433,18 @@ window.SimApp = App;
     if (Date.now() - start > MAX_WAIT_MS) break;
     await new Promise(r => setTimeout(r, 50));
   }
+
+  // 1.5) ★ 시즌 2: 승급 DB 반영이 실패해 큐잉돼있으면 재시도 (localStorage가 진실, DB 따라잡기)
+  try {
+    const _pendingLv = JSON.parse(localStorage.getItem("__OD_PENDING_LEVELUP") || "null");
+    if (_pendingLv && _pendingLv.email && _pendingLv.patch && window.OD?.updateProgress) {
+      const r = await window.OD.updateProgress(_pendingLv.email, _pendingLv.patch);
+      if (r && r.ok) {
+        localStorage.removeItem("__OD_PENDING_LEVELUP");
+        console.log("[levelup] 보류된 승급 DB 반영 완료");
+      }
+    }
+  } catch (e) {}
 
   // 2) localStorage가 비어있거나 stale이면 DB에서 동기로 가져와 채움.
   // 변화 있으면 reload. _localUser/USER 객체가 이미 컴파일 시점에 만들어져있어 reload 없이는 화면 갱신 안 됨.
@@ -7133,6 +7545,13 @@ window.SimApp = App;
               local.is_dev_mode = u.is_dev_mode;
               if (u.signup_date) { local.signupDate = u.signup_date; local.signup_date = u.signup_date; }
               if (u.name) local.name = u.name;
+              // ★ 시즌 2: 레벨·승급 기록 동기화 (다른 기기에서 승급한 경우 반영)
+              // 단, 승급 DB 반영이 아직 큐잉 중이면 stale한 DB level(수습)로 되돌리지 않음
+              const _lvPending = (() => { try { return !!localStorage.getItem("__OD_PENDING_LEVELUP"); } catch(e) { return false; } })();
+              if (u.level && !_lvPending) local.level = u.level;
+              if (u.levelup_completed_at) { local.levelupCompletedAt = u.levelup_completed_at; local.levelup_completed_at = u.levelup_completed_at; }
+              if (u.levelup_test_score != null) { local.levelupTestScore = u.levelup_test_score; local.levelup_test_score = u.levelup_test_score; }
+              if (u.day60_completed_at) { local.day60CompletedAt = u.day60_completed_at; local.day60_completed_at = u.day60_completed_at; }
               // dayInCompany 동기화: 운영자/Dev는 dev 패널로 자유롭게 day 점프하니까 DB로 덮어쓰면 안 됨.
               // 일반 사용자는 DB와 localStorage 중 큰 값(자연 진행 또는 운영자 수동 연장 반영) 사용.
               if (u.day_in_company) {
