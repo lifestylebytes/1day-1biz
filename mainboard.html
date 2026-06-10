@@ -8562,8 +8562,10 @@ window.SimApp = App;
               if (u.name) local.name = u.name;
               // ★ 시즌 2: 레벨·승급 기록 동기화 (다른 기기에서 승급한 경우 반영)
               // 단, 승급 DB 반영이 아직 큐잉 중이면 stale한 DB level(수습)로 되돌리지 않음
+              // 운영자/Dev는 dayInCompany처럼 level도 로컬 우선 (dev 패널로 수습↔정직원 자유 테스트)
               const _lvPending = (() => { try { return !!localStorage.getItem("__OD_PENDING_LEVELUP"); } catch(e) { return false; } })();
-              if (u.level && !_lvPending) local.level = u.level;
+              const _lvInternal = !!(u.is_operator || u.is_dev_mode);
+              if (u.level && !_lvPending && !(_lvInternal && local.level)) local.level = u.level;
               if (u.levelup_completed_at) { local.levelupCompletedAt = u.levelup_completed_at; local.levelup_completed_at = u.levelup_completed_at; }
               if (u.levelup_test_score != null) { local.levelupTestScore = u.levelup_test_score; local.levelup_test_score = u.levelup_test_score; }
               if (u.day60_completed_at) { local.day60CompletedAt = u.day60_completed_at; local.day60_completed_at = u.day60_completed_at; }
