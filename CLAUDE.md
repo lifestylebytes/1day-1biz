@@ -90,6 +90,18 @@ for fp in glob.glob('**/*.html', recursive=True) + glob.glob('**/*.jsx', recursi
 - 📨 **이메일 코드로 로그인** (예정): 이메일로 받은 6자리 코드를 입력하는 방식으로 변경
   예정이에요. 모바일에서 코드 받아 PC에서 입력 같은 교차 로그인이 가능해집니다.
 
+## 시즌 2 (Day 31-60) 구조 (2026-06-10 추가)
+
+- SCENARIOS는 Day 1-60. Day 31-60 = 정직원 (능동적 어휘: 회의 주도·의사결정)
+- 레벨: `users.level` (jsonb). 수습 `{id:"probation"}` → 정직원 `{id:"fulltime",ko:"정직원",en:"Full-time"}`
+- `USER.totalDays`는 레벨 기반: 수습 30 / 정직원 60. `_autoDay` 상한 60.
+- Day 29 D-1 팝업(`PromotionD1Popup`), Day 30+ 승급 의례(`PromotionCeremony`): level이 probation이고 realDay>=30이면 자동 트리거 (Day 32+ 기존 사용자 흡수)
+- 레벨업 저장: localStorage 먼저 → DB(`updateProgress`). 실패 시 `__OD_PENDING_LEVELUP` 큐 → mountAfterHydrate에서 재시도. hydrate는 pending 중엔 DB level로 되돌리지 않음.
+- DB 마이그레이션: `migrations/2026-06-10_season2_levelup.sql` (levelup_completed_at, levelup_test_score, day60_completed_at). **배포 전 Supabase SQL Editor에서 실행 필요.**
+- 검증: `node scripts/validate-season2.js` (day 1-60 전수, variant 정합성, off-by-one, em-dash)
+- Day 60 특별 면담은 Phase 4 (미구현, wrapup 라벨만 존재)
+- 마일스톤 day 37/44/51은 축하 톤 단어 (hit the ground running / momentum / go the extra mile)
+
 ## 시나리오 데이터 구조 (SCENARIOS in mainboard.html)
 
 ```js
