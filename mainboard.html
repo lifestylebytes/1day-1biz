@@ -1153,7 +1153,21 @@ body::before {
   box-shadow: 0 18px 50px -12px rgba(42,31,20,0.5);
   animation: dockUp 0.28s cubic-bezier(.3,.8,.4,1);
   overflow: hidden;
+  transition: width 0.25s ease, height 0.25s ease;
 }
+/* 확장 모드 (데스크탑): 더 크게 늘여서 보기 */
+.buddy-dock.wide {
+  width: min(620px, calc(100vw - 36px));
+  height: min(88vh, 820px);
+}
+.buddy-dock-expand {
+  background: transparent; border: none;
+  color: var(--paper); font-size: 14px; cursor: pointer;
+  padding: 4px 6px; font-family: inherit;
+  opacity: 0.85;
+}
+.buddy-dock-expand:hover { opacity: 1; }
+.buddy-dock.wide .buddy-msg { font-size: 13.5px; max-width: 80%; }
 .buddy-dock-head {
   display: flex; gap: 10px; align-items: center;
   padding: 12px 14px;
@@ -6076,6 +6090,7 @@ function SceneModal({ scenario, onClose }) {
   const [buddyMsgs, setBuddyMsgs] = useState([]);
   // ★ 피드백 #23 (박은실): 버디 대화는 우하단 메신저 도크로 분리 (모달 속 스크롤 제거)
   const [buddyDockOpen, setBuddyDockOpen] = useState(false);
+  const [buddyDockWide, setBuddyDockWide] = useState(false);  // 확장 모드 (늘였다 줄였다)
   const _dockLogRef = React.useRef(null);
   React.useEffect(() => {
     // 새 메시지마다 맨 아래로
@@ -6358,8 +6373,13 @@ function SceneModal({ scenario, onClose }) {
 
           {/* 유버디 메신저 도크 (우하단 고정, 하단에서 슬라이드 업) */}
           {buddyDockOpen && (
-            <div className="buddy-dock" onClick={e => e.stopPropagation()}>
+            <div className={"buddy-dock" + (buddyDockWide ? " wide" : "")} onClick={e => e.stopPropagation()}>
               <div className="buddy-dock-head">
+                <button
+                  className="buddy-dock-expand"
+                  onClick={() => setBuddyDockWide(v => !v)}
+                  title={buddyDockWide ? "작게 보기" : "크게 보기"}
+                >{buddyDockWide ? "⤡" : "⤢"}</button>
                 <div className="buddy-avatar small">{buddy.avatar}</div>
                 <div>
                   <div className="buddy-name">{buddy.name} <span className="buddy-online">● online</span></div>
