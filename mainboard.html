@@ -1674,14 +1674,14 @@ const SCENARIOS = [
     scene: "15:00, 전략 워크숍.", npc: "daniel",
     quote: "Let's start with the low-hanging fruit before the heavy lifting.",
     youDo: "당장 실행 가능한 3개 액션을 따로 빼서 to-do 리스트로 만들었다.",
-    mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 비즈니스 영어 관용표현이라 'a few low-hanging fruit', 'some low-hanging fruit'처럼 숫자나 양 표현이 붙어도 단수형으로 자주 써.",
-    sampleAnswer: "I've pulled out a few low-hanging fruit we can ship this week.", tags: ["strategy", "priority"], status: "studied",
+    mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 셀 수 없는 관용표현이라 'three low-hanging fruits'처럼 개수를 세면 어색해. 'some low-hanging fruit'으로 뭉뚱그리거나, 개수를 말하고 싶으면 'a few quick wins'로 바꿔 말해.",
+    sampleAnswer: "I've pulled out some low-hanging fruit we can ship this week.", tags: ["strategy", "priority"], status: "studied",
     task: { to: "daniel", channel: "video-call",
       promptKo: "전략 워크숍에서 Daniel 제안에 한 줄로 답. 마감 시점을 명시하세요. (힌트: IT 회의에서 '출시·완성하다' 의미로 자주 쓰는 동사가 들어가요.)",
       koSentence: "이번 주 안에 ship할 수 있는 low-hanging fruit 몇 개 뽑아뒀어요." },
     mcOptions: [
-      { text: "Pulled out a few low-hanging fruit we can ship this week, owners noted.", kind: "correct",
-        note: "✓ low-hanging fruit (관용표현, 단수) + 시점(this week) + owner 언급. ship은 IT·스타트업에서 '출시·배포·완성'의 표준 동사. 우선순위 회의의 모범 답." },
+      { text: "Pulled out some low-hanging fruit we can ship this week, owners noted.", kind: "correct",
+        note: "✓ low-hanging fruit (셀 수 없는 관용표현, some으로 받기) + 시점(this week) + owner 언급. ship은 IT·스타트업에서 '출시·배포·완성'의 표준 동사. 우선순위 회의의 모범 답." },
       { text: "There are some easy items we could potentially work on at some point.", kind: "weak",
         note: "단어 안 쓰고 'some easy items', 'at some point' = 미루기 톤. 우선순위 정하는 자리에서 가장 안 좋은 답." },
       { text: "I shall prioritize the more accessible objectives in the immediate term.", kind: "formal",
@@ -1689,7 +1689,7 @@ const SCENARIOS = [
     ],
     buddyAnswers: {
       nuance: "low-hanging fruit = '쉽게 따는 과일'. 우선순위 정할 때 '빨리 성과 낼 수 있는 거 먼저' 라는 뜻.\n\n비슷한 표현:\n• quick wins = 빠른 성과 (거의 동의어, 자주 같이 씀)\n• easy wins = 쉬운 승리\n• heavy lifting = 어렵고 시간 드는 일 (반대 개념)\n\n실전 패턴:\n\"Let's start with the low-hanging fruit, then tackle the heavy lifting.\" = '쉬운 거 먼저, 어려운 건 나중'\n\n주의: 너무 자주 쓰면 '편한 것만 골라하는 사람' 인상. quick wins로 다양화 추천.",
-      example: "🗣 워크숍: \"What's the low-hanging fruit we can knock out this sprint?\"\n📧 메일: \"Three low-hanging fruit attached, let's review tomorrow.\"\n💬 슬랙: \"Quick win idea, DMing you the details.\"\n\n자주 같이 쓰는 표현:\n• knock out the low-hanging fruit\n• grab the low-hanging fruit\n• low-hanging fruit + heavy lifting (대비)\n• ship the low-hanging fruit = 빨리 배포 가능한 것\n\n📝 단수/복수 팁: 비즈니스 영어에선 관용 표현이라 숫자 붙어도 단수형으로 쓰는 게 더 흔해요 (three low-hanging fruit). 'fruits'도 문법적으론 맞지만 회의 자리에선 단수가 표준.\n\n📝 ship 팁: IT·스타트업에서 'ship'은 '출시·배포·완성'이라는 표준 동사예요 (물류 의미 X). 'we can ship this week' = 이번 주에 완성할 수 있다. 'ship the feature', 'ship by Friday' 등 매일 들리는 표현.",
+      example: "🗣 워크숍: \"What's the low-hanging fruit we can knock out this sprint?\"\n📧 메일: \"Flagged some low-hanging fruit, let's review tomorrow.\"\n💬 슬랙: \"Quick win idea, DMing you the details.\"\n\n자주 같이 쓰는 표현:\n• knock out the low-hanging fruit\n• grab the low-hanging fruit\n• low-hanging fruit + heavy lifting (대비)\n• ship the low-hanging fruit = 빨리 배포 가능한 것\n\n📝 개수 팁: low-hanging fruit은 셀 수 없는 관용 표현이라 'three low-hanging fruit(s)'처럼 숫자를 붙이면 어색해요. 양을 말할 땐 'some/a lot of low-hanging fruit', 개수를 꼭 말하고 싶으면 'three quick wins'로 바꿔 말하는 게 자연스러워요.\n\n📝 ship 팁: IT·스타트업에서 'ship'은 '출시·배포·완성'이라는 표준 동사예요 (물류 의미 X). 'we can ship this week' = 이번 주에 완성할 수 있다. 'ship the feature', 'ship by Friday' 등 매일 들리는 표현.",
       default: "low (낮은) + hanging (매달린) + fruit (과일). 가지에서 낮게 매달려 손만 뻗으면 따는 과일 = 쉬운 성과.\n\n외우기: 사다리 안 가져와도 따는 과일 = 노력 적게 들이고 얻는 성과.\n\n전략·기획 회의에서 거의 매번 등장. \"Let's grab the low-hanging fruit first\" 한 번만 자연스럽게 던지면 격이 올라.",
     } },
   { day: 10, word: "touch base", pos: "phr.", meaning: "잠깐 얘기하다, 안부 묻다", phonetic: "/tʌtʃ beɪs/",
@@ -1968,7 +1968,7 @@ const SCENARIOS = [
     ],
     buddyAnswers: {
       nuance: "heads up = '머리 들어' = '미리 알아둬'. 동료끼리 비공식 정보 공유할 때 가장 자주 씀.\n\n알림 표현 강도:\n• FYI = 정보만 (액션 없음)\n• heads up = 미리 알림 + 액션 필요 신호 ← 가장 자주\n• warning = 경고 (위험 톤)\n• alert = 긴급 알림\n\nheads up vs warn:\n• warn = 부정적 (위험)\n• heads up = 중립적 (정보 + 준비)\n\n받았을 때 답하는 톤:\n• 'Thanks for the heads up' = 표준 답\n• + 즉시 액션 약속이 베스트\n\n주의: heads up 줬는데 무반응이면 다음부턴 정보 끊김.",
-      example: "💬 슬랙 DM: \"Heads up, client call moved to 9am tomorrow.\"\n📧 메일: \"Heads up: Q3 numbers will be discussed in tomorrow's all-hands.\"\n🗣 복도: \"Hey, heads up, 부장님 오늘 우리 팀 KPI 본대.\"\n\n자주 같이 쓰는 표현:\n• thanks for the heads up\n• give someone a heads up\n• just a heads up\n• heads-up call (사전 통화)",
+      example: "💬 슬랙 DM: \"Heads up, client call moved to 9am tomorrow.\"\n📧 메일: \"Heads up: Q3 numbers will be discussed in tomorrow's all-hands.\"\n🗣 복도: \"Hey, heads up, the director's reviewing our KPIs today.\"\n\n자주 같이 쓰는 표현:\n• thanks for the heads up\n• give someone a heads up\n• just a heads up\n• heads-up call (사전 통화)",
       default: "head + up = '머리 (위로) 들어'. 야구·아이스하키에서 공이 날아올 때 외치는 말 → 미리 대비.\n\n외우기: '공 날아온다, 머리 들어!' = 위험 미리 알리기. 직장에선 '회의 일정 변경됐다, 미리 알아둬' 같은 정보.\n\n실전: 신뢰는 'heads up' 주고받는 횟수에 비례. 본인도 동료한테 도움 될 정보 있으면 'heads up' 한 줄 보내기.",
     } },
   { day: 22, word: "take ownership", pos: "phr.", meaning: "주도권을 갖다, 책임지다", phonetic: "/teɪk ˈoʊnərʃɪp/",
@@ -2590,14 +2590,14 @@ const SCENARIOS = [
     quote: "You've earned a seat at the table. Join the quarterly planning from this cycle on.",
     youDo: null,
     mentorTip: "table은 결정이 내려지는 테이블. 거기 앉는다 = 듣는 사람에서 정하는 사람이 됐다는 뜻. 정직원 7주차에 받는 최고의 인정이야.",
-    sampleAnswer: "Honored to take the seat. I'll come with our team's top three priorities mapped out.",
+    sampleAnswer: "Honored to have a seat at the table. I'll come with our team's top three priorities mapped out.",
     tags: ["leadership", "milestone"], status: "locked",
     task: { to: "daniel", channel: "slack-dm",
       promptKo: "초대에 감사를 표하고, 첫 플래닝에 뭘 준비해 갈지 한 줄로 답하세요.",
       koSentence: "영광이에요. 우리 팀 우선순위 톱3 정리해서 들어갈게요." },
     mcOptions: [
-      { text: "Honored to take the seat. I'll bring our team's top three priorities mapped out.", kind: "correct",
-        note: "✓ 감사 + 기여 준비(top 3 priorities). 자리를 받았으면 '거기서 뭘 보탤지'로 답하는 게 자격 증명이야." },
+      { text: "Honored to have a seat at the table. I'll bring our team's top three priorities mapped out.", kind: "correct",
+        note: "✓ 감사 + 단어 사용(seat at the table) + 기여 준비(top 3 priorities). 자리를 받았으면 '거기서 뭘 보탤지'로 답하는 게 자격 증명이야." },
       { text: "I humbly accept this prestigious appointment to the executive assembly.", kind: "formal",
         note: "'prestigious appointment', 'executive assembly'는 취임사 톤. 슬랙 한 줄 초대엔 슬랙 한 줄 온도로." },
       { text: "Are you sure? I'll probably just sit quietly in the corner anyway.", kind: "weak",
@@ -2786,14 +2786,14 @@ const SCENARIOS = [
     quote: "Base target is 10% growth. Our stretch goal is 15. Plan for the base, aim for the stretch.",
     youDo: null,
     mentorTip: "stretch는 스트레칭의 그 stretch. 닿을 듯 안 닿는 높이까지 몸을 늘이는 목표야. 못 쳐도 벌점 없고, 치면 영웅.",
-    sampleAnswer: "Got it. I'll resource the plan for 10%, and line up two bets that could stretch us to 15.",
+    sampleAnswer: "Got it. I'll resource the base plan, and line up two bets to chase the stretch goal of 15.",
     tags: ["planning", "strategy"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "기본 목표와 스트레치 목표를 어떻게 다르게 준비할지 한 줄로 답하세요.",
       koSentence: "알겠습니다. 10%는 리소스로 확실히 깔고, 15%까지 늘려줄 베팅 두 개를 준비할게요." },
     mcOptions: [
-      { text: "I'll resource the plan for 10% and line up two bets that could stretch us to 15.", kind: "correct",
-        note: "✓ base는 계획으로, stretch는 베팅으로. 두 목표의 성격 차이를 정확히 이해한 답이야." },
+      { text: "I'll resource the base plan and line up two bets to chase the stretch goal of 15.", kind: "correct",
+        note: "✓ base는 계획으로, stretch goal은 베팅으로. 두 목표의 성격 차이를 정확히 이해한 답이야." },
       { text: "All objectives shall be pursued with maximal organizational vigor.", kind: "formal",
         note: "'maximal organizational vigor'는 구호지 계획이 아니야. base와 stretch를 구분 안 하면 결국 둘 다 놓쳐." },
       { text: "15%? That's impossible. Can we just promise 5% to be safe?", kind: "weak",
@@ -3870,6 +3870,14 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     } catch(e) { setDoneTasks({}); }
     // 열려있던 활동 모달도 닫음 (이전 day 활동 잔재 방지)
     setActiveItem(null);
+  }, [taskKey]);
+  // ★ 피드백 #15: SceneModal 등 외부에서 일정 완료가 바뀌면 즉시 다시 읽기 (재진입 불필요)
+  React.useEffect(() => {
+    const onChanged = () => {
+      try { setDoneTasks(JSON.parse(localStorage.getItem(taskKey) || "{}")); } catch(e) {}
+    };
+    window.addEventListener("od-tasks-changed", onChanged);
+    return () => window.removeEventListener("od-tasks-changed", onChanged);
   }, [taskKey]);
   const [toast, setToast] = useState(null);
   const [activeItem, setActiveItem] = useState(null); // todo 클릭 → 어휘 활동 모달
@@ -5584,6 +5592,7 @@ function _classifyMentorFeedback(sentence, scenario) {
   const tooFormal  = /\b(pursuant|kindly|hereby|aforementioned|herein|thereof|wherein)\b/i.test(sentence);
   const tooCasual  = /\byo\b|\bhey\b|\blol\b|\bomg\b|\bpls\b|\bthx\b/i.test(sentence);
   const hasAction  = /\bI'll\b|\bI will\b|\blet me\b|\bI'm\s+(?:going|gonna)\b|\bI can\b/i.test(sentence);
+  const hasTiming  = /\b(eod|cob|asap|today|tonight|tomorrow|monday|tuesday|wednesday|thursday|friday|next week|this week|by \w+)\b|\d/i.test(sentence);
   const tooShort   = wordCount < 5;
   const tooLong    = wordCount > 30;
   const isExample  = sentence.trim() === (scenario.sampleAnswer || "").trim();
@@ -5599,28 +5608,72 @@ function _classifyMentorFeedback(sentence, scenario) {
   else                checks.push({ ok: true,  label: "톤", note: "사내 메시지로 적절" });
 
   if (hasAction)      checks.push({ ok: true,  label: "Action", note: "주체·행동 명확함" });
+  if (hasTiming)      checks.push({ ok: true,  label: "구체성", note: "시점·숫자가 보여서 신뢰감 있음" });
 
   if (tooShort)       checks.push({ ok: false, label: "길이", note: "조금 더 풀어 써도 좋아" });
   else if (tooLong)   checks.push({ ok: false, label: "길이", note: "한 호흡 짧게, 슬랙은 짧을수록 좋아" });
 
-  // 헤드라인, 가장 중요한 한 마디 (우선순위)
+  // ── 헤드라인 풀: 같은 케이스라도 매번 다른 멘트 (피드백 #10, 반복 멘트 다양화) ──
+  // 같은 문장은 같은 멘트(저장·복원 일관성), 문장을 고치면 멘트도 바뀜.
+  const _pickV = (pool) => pool[(scenario.day + wordCount + sentence.length) % pool.length];
+  const W = scenario.word;
   let headline;
   if (isExample) {
-    headline = "예시 문장 그대로 제출하셨네. 본인 표현으로 한 번 써보면 더 늘어요.";
+    headline = _pickV([
+      "예시 문장 그대로 제출하셨네. 본인 표현으로 한 번 써보면 더 늘어요.",
+      "예문 참고는 좋아. 근데 한 단어라도 본인 상황으로 바꿔보면 기억에 세 배 오래 남아요.",
+      "모범 답안은 출발점이에요. 내일은 본인 문장으로 한 줄, 약속.",
+    ]);
   } else if (!hasWord) {
-    headline = `${scenario.word}이(가) 빠졌어요. 오늘 단어를 꼭 써봐야 입에 붙어요.`;
+    headline = _pickV([
+      `${W}이(가) 빠졌어요. 오늘 단어를 꼭 써봐야 입에 붙어요.`,
+      `문장은 자연스러운데 정작 ${W}이(가) 없네요. 오늘의 주인공을 살려주세요.`,
+      `${W} 없이도 말은 되지만, 오늘 미션의 핵심은 그 단어를 입에 붙이는 거예요.`,
+    ]);
   } else if (tooFormal) {
-    headline = "단어는 잘 살렸는데, 표현이 너무 무거워. 슬랙 한 줄 정도 가벼움이 좋아.";
+    headline = _pickV([
+      "단어는 잘 살렸는데, 표현이 너무 무거워. 슬랙 한 줄 정도 가벼움이 좋아.",
+      "계약서 번역투에 가까워. 동료한테 말하듯 풀면 같은 내용도 훨씬 잘 통해.",
+      "격식은 충분하니, 이제 힘을 빼보자. 비즈니스 영어의 고수는 쉬운 단어로 말해.",
+    ]);
   } else if (tooCasual) {
-    headline = `톤이 좀 가벼워. ${scenario.word}을(를) 잘 살렸으니, 사내 채널엔 무게 살짝만 더 줘.`;
+    headline = _pickV([
+      `톤이 좀 가벼워. ${W}을(를) 잘 살렸으니, 사내 채널엔 무게 살짝만 더 줘.`,
+      `친구한테 보내는 톤이야. ${W}은(는) 좋았으니 인사말만 사내용으로 바꿔보자.`,
+    ]);
   } else if (tooShort) {
-    headline = "한 줄로는 의도가 안 보일 수 있어. 누가/언제/뭘 한다 정도까지 풀어보자.";
+    headline = _pickV([
+      "한 줄로는 의도가 안 보일 수 있어. 누가/언제/뭘 한다 정도까지 풀어보자.",
+      "짧은 건 좋은데 정보가 부족해. 받은 사람이 되묻지 않게 한 조각만 더.",
+      "핵심은 있는데 살이 없어. 누가/언제까지 중 하나만 더 얹어보자.",
+    ]);
   } else if (tooLong) {
-    headline = "내용은 좋은데 길어. 한 호흡으로 끊으면 임팩트 더 살아.";
+    headline = _pickV([
+      "내용은 좋은데 길어. 한 호흡으로 끊으면 임팩트 더 살아.",
+      "정성은 보이는데 슬랙에선 긴 글부터 안 읽혀. 절반으로 줄여볼까?",
+      "좋은 내용이 길이에 묻혔어. 가장 중요한 문장 하나만 남겨보자.",
+    ]);
+  } else if (hasAction && hasTiming) {
+    headline = _pickV([
+      `완벽에 가까워. ${W} + 행동 + 시점까지, 사수가 더 볼 게 없는 문장이야.`,
+      "이 문장 그대로 보내도 돼. 단어, 행동, 시점 세 박자가 다 잡혔어.",
+      `오늘 건 노트에 저장해둬. ${W} 실전 활용의 교과서 같은 문장이야.`,
+    ]);
   } else if (hasAction) {
-    headline = `오늘 단어 자연스럽게 들어갔고, action까지 명확. 이대로면 회의에서도 통해요.`;
+    headline = _pickV([
+      "오늘 단어 자연스럽게 들어갔고, action까지 명확. 이대로면 회의에서도 통해요.",
+      `${W} 활용 정확하고 주체도 분명해. 끝에 by Friday 같은 시점 하나 박으면 만점.`,
+      "사수 입장에서 반가운 답이야. 뭘 하겠다는 게 보여. 언제까지인지만 더해보자.",
+      `이 정도면 Daniel한테 바로 보내도 부끄럽지 않아. ${W} 감 제대로 잡았네.`,
+    ]);
   } else {
-    headline = `${scenario.word} 잘 들어갔어. 다음엔 "I'll …" 같은 액션 동사 더해보면 더 프로페셔널해져.`;
+    headline = _pickV([
+      `${W} 잘 들어갔어. 다음엔 "I'll …" 같은 액션 동사 더해보면 더 프로페셔널해져.`,
+      `${W} 자연스러워. 여기에 '내가 언제까지 뭘 할게'까지 붙으면 사수가 안심해.`,
+      `좋아, ${W} 쓰임새 정확해. 욕심내자면 주어를 I로 세워서 다음 행동을 약속해봐.`,
+      `${W} 감 잡았네. 받은 공을 되돌려주는 한 마디(다음 행동)까지 붙이면 완성이야.`,
+      "깔끔하게 들어갔어. 끝에 EOD나 tomorrow 같은 시점 하나 박아봐, 신뢰도가 달라져.",
+    ]);
   }
 
   // 전체 통과 여부 (4개 이상 ok이면 우수)
@@ -5873,6 +5926,25 @@ function SceneModal({ scenario, onClose }) {
       feedback: fb,
       submittedAt: new Date().toISOString(),
     });
+    // ★ 피드백 #15: 홈 시추에이션 카드로 바로 들어와 제출한 경우에도
+    //   일정의 '오늘의 시추에이션' 항목을 완료 처리 (재진입 없이 다음 순서 진행)
+    try {
+      const taskKey = "__OD_TASKS_DAY_" + scenario.day;
+      const tasks = JSON.parse(localStorage.getItem(taskKey) || "{}");
+      if (!tasks.scenario) {
+        tasks.scenario = true;
+        localStorage.setItem(taskKey, JSON.stringify(tasks));
+        localStorage.setItem(taskKey + "_ts", new Date().toISOString());
+        const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+        if (window.OD?.enabled && window.OD.saveTaskProgress && u?.email) {
+          window.OD.saveTaskProgress(u.email, scenario.day, tasks).catch(() => {
+            window.OD.pushOutbox?.({ type: 'task', email: u.email, day: scenario.day, tasks });
+          });
+        }
+        // HomePage가 doneTasks를 다시 읽도록 알림
+        window.dispatchEvent(new CustomEvent("od-tasks-changed", { detail: { day: scenario.day } }));
+      }
+    } catch (e) {}
   }
 
   function askBuddy(kind) {
@@ -7093,12 +7165,15 @@ function RecapActivity({ today, item, onClose, onComplete }) {
 }
 
 // 문장에서 단어(활용형 포함)를 빈칸으로 치환. ramp up -> ramping up, align -> aligned 등.
-function _blankWord(sentence, word) {
-  if (!sentence || !word) return sentence;
+// ★ 빈칸 + 매칭된 표면형(활용형) 반환. 보기 어형을 문장과 맞추기 위해 surface가 필요.
+// (피드백 #8, #13: 정답이 ramping up/aligned인데 보기엔 ramp up/align만 보여 혼란)
+function _blankWordEx(sentence, word) {
+  if (!sentence || !word) return { text: sentence, surface: word };
   const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   // 1) 단어 경계 기준 정확 매칭 (aligned 안의 align 부분 매칭 방지)
   let re = new RegExp("\\b" + esc(word) + "\\b", "i");
-  if (re.test(sentence)) return sentence.replace(re, "_____");
+  let m = sentence.match(re);
+  if (m) return { text: sentence.replace(re, "_____"), surface: m[0] };
   // 2) 활용형 허용 매칭 (ing/ed/s/es/d + 자음 중복)
   const toks = word.split(/\s+/);
   const pat = toks.map((t, i) => {
@@ -7110,8 +7185,40 @@ function _blankWord(sentence, word) {
     return e;
   }).join("\\s+");
   re = new RegExp(pat, "i");
-  if (re.test(sentence)) return sentence.replace(re, "_____");
-  return sentence;
+  m = sentence.match(re);
+  if (m) return { text: sentence.replace(re, "_____"), surface: m[0] };
+  return { text: sentence, surface: word };
+}
+// 표면형의 어미 종류 판별 (원형 첫 토큰과 비교)
+function _suffixKindOf(word, surface) {
+  const b = word.split(/\s+/)[0].toLowerCase();
+  const s = surface.split(/\s+/)[0].toLowerCase();
+  if (s === b) return null;
+  if (/ing$/.test(s)) return "ing";
+  if (/(ed|d)$/.test(s)) return "ed";
+  if (/(es|s)$/.test(s)) return "s";
+  return null;
+}
+// 다른 단어(보기용)도 같은 어미로 활용해 보기 균형 맞추기
+function _inflectFirstToken(word, kind) {
+  if (!kind) return word;
+  const toks = word.split(/\s+/);
+  let t = toks[0];
+  if (kind === "ing") {
+    if (/e$/i.test(t) && !/(ee|ye|oe)$/i.test(t)) t = t.slice(0, -1) + "ing";
+    else if (/[^aeiou][aeiou][bdgklmnprtv]$/i.test(t)) t = t + t.slice(-1) + "ing";
+    else t = t + "ing";
+  } else if (kind === "ed") {
+    if (/e$/i.test(t)) t = t + "d";
+    else if (/[^aeiou]y$/i.test(t)) t = t.slice(0, -1) + "ied";
+    else if (/[^aeiou][aeiou][bdgklmnprtv]$/i.test(t)) t = t + t.slice(-1) + "ed";
+    else t = t + "ed";
+  } else if (kind === "s") {
+    if (/(s|sh|ch|x|z)$/i.test(t)) t = t + "es";
+    else if (/[^aeiou]y$/i.test(t)) t = t.slice(0, -1) + "ies";
+    else t = t + "s";
+  }
+  return [t, ...toks.slice(1)].join(" ");
 }
 
 // === 5. OFFICE_TASK, 오후 업무 (메일 빈칸 채우기) ===
@@ -7121,13 +7228,26 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
   const [pick, setPick] = useState(null);
 
   // 메일 초안, 오늘 단어(활용형 포함) 빈칸
-  const draft = useMemo(() => {
+  // ★ 정답 보기는 문장 속 표면형(ramping up, aligned 등) 그대로 사용 (피드백 #8, #13)
+  const blanked = useMemo(() => {
     const s = today.sampleAnswer || `Let's ${today.word} on this and circle back.`;
-    return _blankWord(s, today.word);
+    return _blankWordEx(s, today.word);
   }, [today.word, today.sampleAnswer]);
+  const draft = blanked.text;
+  const correctOpt = blanked.surface.toLowerCase();
+  const suffixKind = _suffixKindOf(today.word, blanked.surface);
 
-  const otherWords = useMemo(() => _pickWordObjects(today.word, 3).map(o => o.word), [today.word]);
-  const opts = useMemo(() => _shuf([today.word, ...otherWords]), [today.word, otherWords]);
+  const otherWords = useMemo(() => {
+    const pool = _pickWordObjects(today.word, 8);
+    // 활용형 빈칸이면 동사·구동사 위주로 골라 같은 어형으로 변형 (보기 균형)
+    const usable = suffixKind
+      ? pool.filter(o => /v\.|phr\./.test(o.pos || "")).map(o => _inflectFirstToken(o.word, suffixKind))
+      : pool.map(o => o.word);
+    const fallback = pool.map(o => suffixKind ? _inflectFirstToken(o.word, suffixKind) : o.word);
+    const merged = [...new Set([...usable, ...fallback])].filter(w => w !== correctOpt);
+    return merged.slice(0, 3);
+  }, [today.word, suffixKind, correctOpt]);
+  const opts = useMemo(() => _shuf([correctOpt, ...otherWords]), [correctOpt, otherWords]);
 
   return (
     <ActivityShell title="AFTERNOON TASK · 회신 초안" onClose={onClose}>
@@ -7163,7 +7283,7 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
         {opts.map((o, i) => {
           const isPicked = pick === o;
           const showResult = pick !== null;
-          const ok = o === today.word;
+          const ok = o === correctOpt;
           return (
             <button
               key={i}
@@ -7184,7 +7304,7 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
       </div>
       {pick !== null && (
         <>
-          <FeedbackBox ok={pick === today.word} correct={today.word} hint={`사수: "이 자리엔 ${today.word} 가 톤 잡기 딱 좋아." · ${today.mentorTip || ""}`} />
+          <FeedbackBox ok={pick === correctOpt} correct={correctOpt} hint={`사수: "이 자리엔 ${correctOpt} 가 톤 잡기 딱 좋아." · ${today.mentorTip || ""}`} />
           <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
             <button className="btn btn-primary" onClick={onComplete}>초안 회신 ✓</button>
           </div>
