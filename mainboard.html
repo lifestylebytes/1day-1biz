@@ -4296,7 +4296,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
       <div className="desk-grid">
         <div className="col">
-          <SceneCard scenario={today} npc={npc} onOpen={() => openScene(today)} />
+          <SceneCard
+            scenario={today}
+            npc={npc}
+            onOpen={() => openScene(today)}
+            checkinDone={!!doneTasks.checkin}
+            onStartDay={() => handleScheduleClick(scheduleWithStatus[0], 0)}
+          />
 
           <div className="schedule">
             <div className="schedule-head">
@@ -4783,7 +4789,10 @@ function ApplicationLine() {
 // ============================================================
 // 시추에이션 카드 (홈)
 // ============================================================
-function SceneCard({ scenario, npc, onOpen }) {
+function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay }) {
+  // ★ 피드백 #15 후속 (정주혜): 출근(단어 받기) 전엔 '오늘 일정 시작하기'로 안내.
+  //   하루의 첫 동선이 출근 → 단어 → 시추에이션 순서로 자연스럽게 잡히도록.
+  const needCheckin = checkinDone === false && typeof onStartDay === "function";
   return (
     <div className="scene-card">
       <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2 }}>
@@ -4816,8 +4825,17 @@ function SceneCard({ scenario, npc, onOpen }) {
             <b>{scenario.word}</b> 를 자연스럽게 써서, 위 상황에 한 마디 답하세요.
           </div>
           <div className="scene-actions">
-            <button className="btn btn-primary" onClick={onOpen}>📝 책상에서 작성하기 →</button>
-            <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>예상 소요 5분 · 사수 피드백 포함</span>
+            {needCheckin ? (
+              <>
+                <button className="btn btn-primary" onClick={onStartDay}>☀️ 오늘 일정 시작하기 →</button>
+                <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>출근 도장 + 오늘의 단어부터 받아요</span>
+              </>
+            ) : (
+              <>
+                <button className="btn btn-primary" onClick={onOpen}>📝 책상에서 작성하기 →</button>
+                <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>예상 소요 5분 · 사수 피드백 포함</span>
+              </>
+            )}
           </div>
         </div>
       </div>
