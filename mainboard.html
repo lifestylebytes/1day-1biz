@@ -8450,7 +8450,15 @@ function App() {
           "announcement": "공지", "event": "이벤트", "broadcast": "전사",
           "ceo": "회장", "hr": "인사", "notice": "공지",
         };
-        const converted = r.notices.map(n => {
+        const converted = r.notices.filter(n => {
+          // ★ 방어: 1:1 공지는 수신자 본인에게만 노출.
+          // (이메일 없는 세션이면 fetchNotices가 필터 없이 전체를 반환하는 구멍 차단)
+          if (Array.isArray(n.target_emails) && n.target_emails.length > 0) {
+            const me = (USER.email || "").toLowerCase().trim();
+            return !!me && n.target_emails.map(e => String(e).toLowerCase().trim()).includes(me);
+          }
+          return true;
+        }).map(n => {
           const fromId = fromMap[n.from_name] || "buddy";
           const dateStr = n.sent_at
             ? new Date(n.sent_at).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
