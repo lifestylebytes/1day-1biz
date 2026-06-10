@@ -1142,13 +1142,20 @@ body::before {
 /* 작은 폰 대응 (~430px 이하), 출근부 14일·30일 모드 모두 7열 강제 */
 @media (max-width: 430px) {
   .attendance { padding: 10px 12px; min-width: 0; overflow: hidden; }
-  .attendance-cells,
-  .attendance-cells.full {
+  .attendance-cells {
     grid-template-columns: repeat(7, 1fr) !important;
     gap: 3px; min-width: 0;
   }
+  /* 전체 보기(최대 60일)는 10열로 압축, 세로로 안 길어지게 */
+  .attendance-cells.full {
+    grid-template-columns: repeat(10, 1fr) !important;
+    gap: 2px; min-width: 0;
+  }
   .att-cell { font-size: 9px; aspect-ratio: 1; }
+  .attendance-cells.full .att-cell { font-size: 7.5px; border-radius: 3px; }
   .att-cell.done::after { font-size: 10px; }
+  .attendance-cells.full .att-cell.done::after,
+  .attendance-cells.full .att-cell.late::after { font-size: 8px; }
   body { overflow-x: hidden; }
 }
 
@@ -1192,6 +1199,7 @@ body::before {
   .desk-grid > .col {
     display: contents;
   }
+  .desk-grid .s2-welcome { order: -2; }      /* 정직원 축하 카드 최상단 */
   .desk-grid .attendance { order: -1; }     /* 출근부 맨 위 */
   .desk-grid .scene-card { order: 0; }       /* 시추에이션 그 다음 */
   .desk-grid .schedule { order: 1; }         /* 일정 */
@@ -1223,16 +1231,22 @@ body::before {
   .schedule-status { font-size: 8.5px; padding: 2px 6px; }
   .schedule-head { padding: 9px 12px; font-size: 10px; }
 
-  /* 출근부, 모바일에선 14일·30일 모두 7열 */
+  /* 출근부, 모바일: 기본(14일 창) 7열 / 전체 보기(최대 60일) 10열 압축 */
   .attendance { padding: 12px 14px; min-width: 0; overflow: hidden; }
-  .attendance-cells,
-  .attendance-cells.full {
+  .attendance-cells {
     grid-template-columns: repeat(7, 1fr) !important;
     gap: 3px; min-width: 0;
   }
+  .attendance-cells.full {
+    grid-template-columns: repeat(10, 1fr) !important;
+    gap: 2px; min-width: 0;
+  }
   .attendance-num { font-size: 18px; }
   .att-cell { font-size: 9px; }
+  .attendance-cells.full .att-cell { font-size: 8px; border-radius: 3px; }
   .att-cell.done::after { font-size: 10px; }
+  .attendance-cells.full .att-cell.done::after,
+  .attendance-cells.full .att-cell.late::after { font-size: 8px; }
 
   /* 메모 박스 (홈) */
   .memo-row { grid-template-columns: 28px 1fr auto; padding: 9px 12px; font-size: 11.5px; gap: 8px; }
@@ -3980,11 +3994,22 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
   // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
   const [showFullAttend, setShowFullAttend] = useState(false);
-  // 기본은 14일, 단 현재 Day가 14를 넘으면 현재 Day까지 자동 확장 (진도 한눈에 보이게)
+  // ★ 시즌 2: 정직원 축하 카드 (닫기 전까지 홈 상단 노출)
+  const _S2_CARD_KEY = "__OD_S2_WELCOME_DISMISSED_" + (USER.email || "guest");
+  const [s2CardDismissed, setS2CardDismissed] = useState(() => {
+    try { return localStorage.getItem(_S2_CARD_KEY) === "1"; } catch (e) { return false; }
+  });
+  const dismissS2Card = () => {
+    try { localStorage.setItem(_S2_CARD_KEY, "1"); } catch (e) {}
+    setS2CardDismissed(true);
+  };
+  // ★ 기본은 "최근 14일" 슬라이딩 창. Day가 늘어나도(시즌 2, 60일) 출근부 높이 고정.
+  //   전체 보기 토글 시 코스 전체 (수습 30 / 정직원 60).
   const _realCurrentDay = USER.realCurrentDay || USER.currentDay || 1;
-  const ATTEND_DAYS = showFullAttend
+  const _attendEnd = showFullAttend
     ? USER.totalDays
     : Math.min(USER.totalDays, Math.max(14, _realCurrentDay));
+  const _attendStart = showFullAttend ? 1 : Math.max(1, _attendEnd - 13);
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
   // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
   const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
@@ -4032,8 +4057,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
   const _realDay = USER.realCurrentDay || USER.currentDay;
   const _realDayDone = (_realDay === USER.currentDay) ? allTodayDone : _dayComplete(_realDay);
-  const cells = Array.from({ length: ATTEND_DAYS }, (_, i) => {
-    const day = i + 1;
+  const cells = Array.from({ length: _attendEnd - _attendStart + 1 }, (_, i) => {
+    const day = _attendStart + i;
     const isWk = _isWeekendDay(day);
     if (day === _realDay) return { day, state: _realDayDone ? "stamped" : "today", weekend: isWk };
     if (day < _realDay) {
@@ -4166,6 +4191,69 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
 
         <div className="col">
+          {/* ★ 시즌 2: 정직원 축하 카드 (마일스톤 미리보기 + Day 60 면담 티저) */}
+          {USER.isFulltime && !s2CardDismissed && !USER.isViewingPast && (() => {
+            const _rd = USER.realCurrentDay || USER.currentDay;
+            const _pct = Math.max(3, Math.min(100, Math.round((_rd - 30) / 30 * 100)));
+            const _dLeft = Math.max(0, 60 - _rd);
+            const MILESTONES = [
+              { d: 37, icon: "🌱", label: "첫 주 완주" },
+              { d: 44, icon: "⚡", label: "절반 돌파" },
+              { d: 51, icon: "🔥", label: "50일 달성" },
+              { d: 60, icon: "🌟", label: "특별 면담" },
+            ];
+            return (
+              <div className="s2-welcome" style={{
+                background: "var(--cream)", border: "2px solid var(--orange)",
+                borderRadius: 10, padding: "16px 16px 14px", position: "relative",
+                boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
+              }}>
+                <button onClick={dismissS2Card} title="닫기" style={{
+                  position: "absolute", top: 8, right: 10, background: "transparent",
+                  border: "none", fontSize: 14, color: "var(--ink-mute)",
+                  cursor: "pointer", fontFamily: "inherit", padding: 4,
+                }}>✕</button>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                  <span style={{
+                    fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
+                    color: "var(--orange)", border: "2px solid var(--orange)",
+                    padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
+                  }}>인사 발령</span>
+                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>정직원 승진을 축하합니다 🎉</b>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+                  이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
+                  30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
+                  60일 누적 통계 공개, 그리고 다음 레벨의 부서 평가까지.
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
+                  {MILESTONES.map(m => {
+                    const passed = _rd >= m.d;
+                    return (
+                      <div key={m.d} style={{
+                        textAlign: "center", borderRadius: 8, padding: "8px 2px 6px",
+                        background: passed ? "rgba(216,90,42,0.10)" : "var(--paper-warm)",
+                        border: passed ? "1px solid var(--orange)" : "1px dashed var(--line)",
+                      }}>
+                        <div style={{ fontSize: 15, filter: passed ? "none" : "grayscale(1) opacity(0.6)" }}>{m.icon}</div>
+                        <div style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2, color: passed ? "var(--orange)" : "var(--ink-mute)" }}>DAY {m.d}</div>
+                        <div style={{ fontSize: 9, color: "var(--ink-mute)" }}>{m.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ flex: 1, height: 6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
+                  </div>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
+                    {_dLeft > 0 ? `특별 면담까지 D-${_dLeft}` : "특별 면담 날이에요! 🌟"}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* 사수 포스트잇, 첫 todo (출근/단어 받기) 끝나면 책상에 떨어짐 */}
           {Object.keys(doneTasks).length >= 1 ? (
             <div key={"postit-" + USER.currentDay} className="appear-postit">
@@ -4190,7 +4278,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
           <div className="attendance">
             <div className="attendance-head">
-              <span className="attendance-title">출근부 · 14일</span>
+              <span className="attendance-title">
+                {showFullAttend
+                  ? `출근부 · 전체 ${USER.totalDays}일`
+                  : (_attendStart > 1 ? `출근부 · DAY ${_attendStart}-${_attendEnd}` : "출근부 · 14일")}
+              </span>
               <span className="attendance-num">{USER.streak}<small>일 연속</small></span>
             </div>
             <div
@@ -4239,7 +4331,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   ? <>지난 출근부 칸을 누르면 그날로 이동해요. 학습 완료하면 그대로 저장됩니다.</>
                   : showFullAttend
                     ? <>지나간 칸을 누르면 그날 학습으로 돌아갈 수 있어요.</>
-                    : <>4개 일정 다 끝낸 날만 출근 완료, 30일 채우면 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
+                    : <>4개 일정 다 끝낸 날만 출근 완료, {USER.totalDays}일 채우면 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
                 }
               </div>
               <button
@@ -4251,7 +4343,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
                 }}
               >
-                {showFullAttend ? "14일만 보기" : "📅 전체 보기"}
+                {showFullAttend ? "최근 14일만" : "📅 전체 보기"}
               </button>
             </div>
           </div>
@@ -7823,10 +7915,19 @@ function PromotionCeremony({ realDay }) {
                 ))}
               </div>
             )}
-            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 20 }}>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 14 }}>
               {name}님은 오늘부로 <b style={{ color: "var(--ink)" }}>정직원</b>이에요.<br/>
               Day 60까지, 이제 회의를 주도하는 표현들을 만나요.
             </p>
+            <div style={{
+              background: "var(--paper-warm)", border: "1px dashed var(--line)",
+              borderRadius: 8, padding: "12px 14px", fontSize: 12,
+              color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20, textAlign: "left",
+            }}>
+              <b style={{ color: "var(--ink)" }}>앞으로 30일, 이런 게 기다려요</b><br/>
+              🌱 Day 37 정직원 첫 주 완주 · ⚡ Day 44 절반 돌파<br/>
+              🔥 Day 51 50일 달성 · 🌟 Day 60 <b style={{ color: "var(--orange)" }}>특별 면담</b> (60일 누적 통계 + 다음 레벨 부서 평가)
+            </div>
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => location.reload()}>
               👔 정직원으로 첫 출근하기 →
             </button>
