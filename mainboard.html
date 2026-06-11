@@ -8350,7 +8350,7 @@ function PromotionD1Popup({ onClose }) {
           <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7 }}>
             일시: <b style={{ color: "var(--ink)" }}>내일 (Day 30) 14:00</b><br/>
             장소: 12F 인사팀 상담실<br/>
-            내용: 30일 회고 + 간단한 영어 미니 테스트
+            내용: 30일 회고 + 영어 미니 테스트 + 소감 한마디
           </div>
         </div>
         <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20 }}>
@@ -8374,11 +8374,15 @@ function PromotionD1Popup({ onClose }) {
 
 // ── Day 30: 인사팀 상담 (회고 → 통계 → 영어 테스트 → 승급) ──
 function PromotionCeremony({ realDay }) {
-  const [step, setStep] = useState(0);           // 0 인트로 / 1 회고·통계 / 2 테스트 / 3 결과
+  const [step, setStep] = useState(0);           // 0 인트로 / 1 회고·통계 / 2 테스트 / 3 소감 / 4 결과
   const [qIdx, setQIdx] = useState(0);
   const [picks, setPicks] = useState([]);
   const [pick, setPick] = useState(null);
   const [saved, setSaved] = useState(false);
+  // 회고 소감 (인사팀에 전달, 운영자 피드백함으로 수집)
+  const [reflectRating, setReflectRating] = useState(0);   // 1-5 만족도
+  const [reflectText, setReflectText] = useState("");
+  const [reflectSent, setReflectSent] = useState(false);
 
   const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
   const name = local.name || (window.__SIM && window.__SIM.USER && window.__SIM.USER.name) || "사원";
@@ -8395,9 +8399,9 @@ function PromotionCeremony({ realDay }) {
   const q = questions[qIdx];
   const score = questions.length ? Math.round(picks.filter(p => p.ok).length / questions.length * 100) : 100;
 
-  // 결과 화면 진입 즉시 저장 (사용자가 창 닫아도 승급은 유지)
+  // 결과 화면(step 4) 진입 즉시 승급 저장 (사용자가 창 닫아도 승급은 유지)
   React.useEffect(() => {
-    if (step === 3 && !saved) {
+    if (step === 4 && !saved) {
       setSaved(true);
       _persistLevelUp(score);
     }
@@ -8409,9 +8413,28 @@ function PromotionCeremony({ realDay }) {
     setPicks(prev => [...prev, { ok: opt === q.correct, correct: q.correct, opt, hint: q.hint }]);
   };
   const goNext = () => {
-    if (qIdx >= questions.length - 1) { setStep(3); return; }
+    if (qIdx >= questions.length - 1) { setStep(3); return; }  // 테스트 끝 → 소감
     setQIdx(qIdx + 1);
     setPick(null);
+  };
+
+  // 회고 소감 제출 → 운영자 피드백함으로 전송 후 결과 화면
+  const submitReflection = () => {
+    if (reflectSent) { setStep(4); return; }
+    setReflectSent(true);
+    const email = local.email;
+    if (email && (reflectText.trim() || reflectRating) && window.OD?.submitFeedback) {
+      const stars = reflectRating ? "★".repeat(reflectRating) + "☆".repeat(5 - reflectRating) : "(미선택)";
+      window.OD.submitFeedback({
+        email,
+        name,
+        day: realDay,
+        category: "graduation",
+        message: `[수습 30일 회고] 만족도 ${stars} (${reflectRating}/5)\n테스트 ${score}점\n\n${reflectText.trim() || "(소감 없음)"}`,
+        context: { type: "graduation_reflection", rating: reflectRating, score, streak: stats.streak, words: stats.words },
+      }).catch(() => {});
+    }
+    setStep(4);
   };
 
   const scoreMent = score >= 90 ? "탁월하게 통과!"
@@ -8444,7 +8467,7 @@ function PromotionCeremony({ realDay }) {
           fontSize: 11, letterSpacing: "0.22em", fontWeight: 800,
           color: "var(--orange)", textTransform: "uppercase", marginBottom: 14,
         }}>
-          HR · 12F 상담실 {step === 2 ? `· 미니 테스트 ${qIdx + 1}/${questions.length}` : ""}
+          HR · 12F 상담실 {step === 2 ? `· 미니 테스트 ${qIdx + 1}/${questions.length}` : step === 3 ? "· 회고 소감" : ""}
         </div>
 
         {step === 0 && (
@@ -8462,8 +8485,8 @@ function PromotionCeremony({ realDay }) {
               borderRadius: 8, padding: "12px 14px", fontSize: 12.5,
               color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20,
             }}>
-              순서: 30일 회고 → 영어 미니 테스트 (10문제) → 결과 발표<br/>
-              소요 시간: 약 3분
+              순서: 30일 회고 → 영어 미니 테스트 → 회고 소감 → 정직원 발령<br/>
+              소요 시간: 약 4분
             </div>
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => setStep(1)}>
               상담 시작하기 →
@@ -8535,13 +8558,69 @@ function PromotionCeremony({ realDay }) {
             )}
             {pick && (
               <button className="btn btn-primary" style={{ width: "100%" }} onClick={goNext}>
-                {qIdx >= questions.length - 1 ? "결과 보기 →" : "다음 문제 →"}
+                {qIdx >= questions.length - 1 ? "마지막, 회고 소감 →" : "다음 문제 →"}
               </button>
             )}
           </div>
         )}
 
         {step === 3 && (
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.4, color: "var(--ink)", marginBottom: 6, letterSpacing: "-0.01em" }}>
+              마지막으로, 회고 한마디
+            </h2>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 16 }}>
+              인사팀(유버디)에 직접 전달돼요. {name}님이 남긴 소감은 앞으로의 학습을 더 좋게 만드는 데 쓰여요.
+            </p>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>
+                지난 30일, 학습은 어땠나요?
+              </div>
+              <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button key={n} onClick={() => setReflectRating(n)}
+                    style={{
+                      background: "transparent", border: "none", cursor: "pointer",
+                      fontSize: 30, lineHeight: 1, padding: 2,
+                      filter: n <= reflectRating ? "none" : "grayscale(1) opacity(0.35)",
+                      transition: "filter 0.12s, transform 0.12s",
+                      transform: n <= reflectRating ? "scale(1.05)" : "scale(1)",
+                    }}
+                    title={["", "아쉬워요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"][n]}
+                  >⭐</button>
+                ))}
+              </div>
+              {reflectRating > 0 && (
+                <div style={{ textAlign: "center", fontSize: 12, color: "var(--orange)", fontWeight: 700, marginTop: 6 }}>
+                  {["", "아쉬워요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"][reflectRating]}
+                </div>
+              )}
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>
+              어떤 점이 좋았고, 뭐가 더 있으면 좋을까요? <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span>
+            </div>
+            <textarea
+              value={reflectText}
+              onChange={e => setReflectText(e.target.value)}
+              placeholder="예: 점심 대화가 제일 재밌었어요. 발음 듣기 기능도 있으면 좋겠어요."
+              style={{
+                width: "100%", minHeight: 90, padding: "12px 14px",
+                border: "1px solid var(--line)", borderRadius: 8,
+                fontSize: 13, lineHeight: 1.6, fontFamily: "inherit",
+                color: "var(--ink)", background: "var(--paper)",
+                resize: "vertical", boxSizing: "border-box", marginBottom: 16,
+              }}
+            />
+
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={submitReflection}>
+              {(reflectText.trim() || reflectRating) ? "소감 전달하고 발령받기 →" : "소감 없이 발령받기 →"}
+            </button>
+          </div>
+        )}
+
+        {step === 4 && (
           <div style={{ textAlign: "center" }}>
             <div style={{
               display: "inline-block",
@@ -8578,6 +8657,11 @@ function PromotionCeremony({ realDay }) {
               🌱 Day 37 정직원 첫 주 완주 · ⚡ Day 44 절반 돌파<br/>
               🔥 Day 51 50일 달성 · 🌟 Day 60 <b style={{ color: "var(--orange)" }}>특별 면담</b> (60일 누적 통계 + 다음 레벨 부서 평가)
             </div>
+            {reflectSent && (reflectText.trim() || reflectRating > 0) && (
+              <div style={{ fontSize: 12, color: "var(--orange)", fontWeight: 700, marginBottom: 14 }}>
+                💌 회고 잘 받았어요. 다음 학습에 꼭 반영할게요.
+              </div>
+            )}
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => location.reload()}>
               👔 정직원으로 첫 출근하기 →
             </button>
