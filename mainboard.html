@@ -8384,6 +8384,57 @@ function _statBestStreak(u) {
   return best;
 }
 
+// ── 실제 완주한 날 수 (달력 day가 아니라 진짜 출석한 일수). 마일스톤 트리거용. ──
+function _completedDayCount(u) {
+  const days = new Set();
+  (u.scenariosCompleted || []).forEach(s => { if (s && s.day) days.add(Number(s.day)); });
+  Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
+      const t = JSON.parse(localStorage.getItem(k) || "{}");
+      if (Object.values(t).filter(Boolean).length >= 3) {
+        const n = Number(k.replace("__OD_TASKS_DAY_", ""));
+        if (n) days.add(n);
+      }
+    });
+  } catch (e) {}
+  return [...days].filter(d => d >= 1).length;
+}
+
+// ── 수습 마일스톤 정의 (실제 완주 일수 기준 트리거) ──
+const _PROBATION_MILESTONES = [
+  { at: 7,  icon: "🌱", title: "1주 완주!", body: "벌써 7일 출근했어요. 작은 의식이 쌓여 습관이 됩니다. 이 페이스 그대로 가요." },
+  { at: 15, icon: "⚡", title: "절반 돌파!", body: "수습 30일의 절반을 넘었어요. 여기까지 온 사람은 끝까지 갑니다. 사원 전환이 보이기 시작해요." },
+  { at: 21, icon: "🔥", title: "3주 달성!", body: "21일이면 습관이 자리잡는다고 하죠. 이제 영어가 덜 어색하지 않나요? 사원까지 9일 남았어요." },
+];
+
+// ── 마일스톤 축하 팝업 ──
+function MilestonePopup({ milestone, onClose }) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9150,
+      background: "rgba(20,15,8,0.65)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }} onClick={onClose}>
+      <div style={{
+        background: "var(--paper)", border: "2px solid var(--orange)",
+        borderRadius: 14, maxWidth: 400, width: "100%", padding: "30px 26px 24px",
+        textAlign: "center", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.5)",
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 52, lineHeight: 1, marginBottom: 12 }}>{milestone.icon}</div>
+        <div style={{
+          display: "inline-block", fontSize: 11, letterSpacing: "0.18em", fontWeight: 900,
+          color: "var(--orange)", border: "2px solid var(--orange)",
+          padding: "4px 12px", transform: "rotate(-3deg)", marginBottom: 14,
+        }}>마일스톤 달성</div>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", marginBottom: 12, letterSpacing: "-0.01em" }}>{milestone.title}</h2>
+        <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 22 }}>{milestone.body}</p>
+        <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>계속 출근하기 →</button>
+      </div>
+    </div>
+  );
+}
+
 // ── 승급 영어 테스트 문제 생성 (Day 1-30 단어 풀, RECAP_DATA 재활용) ──
 function _buildLevelupQuestions(maxDay, count) {
   const SCN = ((window.__SIM && window.__SIM.SCENARIOS) || []).filter(s => s.day <= maxDay);
@@ -9021,6 +9072,26 @@ function App() {
   const _showD1Popup = _isProbationNow && !!_localUserNow && _realDay === 29 && !_d1Dismissed;
   const _showCeremony = _isProbationNow && !!_localUserNow && _realDay >= 30;
 
+  // ── 수습 마일스톤 팝업: 실제 완주 일수 기준 (달력 day 무관, 밀린 사용자도 따라잡으면 받음) ──
+  // 여러 개 한꺼번에 넘기면 아직 안 본 것 중 가장 높은 하나만 표시.
+  const [_milestonePopup, _setMilestonePopup] = useState(null);
+  React.useEffect(() => {
+    if (!_isProbationNow || !_localUserNow || _showCeremony) return;
+    let seen = [];
+    try { seen = JSON.parse(localStorage.getItem('__OD_MILESTONES_SEEN') || '[]'); } catch (e) {}
+    const done = _completedDayCount(_localUserNow);
+    // 달성했는데 아직 안 본 마일스톤 중 가장 높은 것
+    const reached = _PROBATION_MILESTONES.filter(m => done >= m.at && !seen.includes(m.at));
+    if (reached.length === 0) return;
+    const top = reached[reached.length - 1];
+    // 넘긴 모든 마일스톤을 본 것으로 기록 (한 번에 하나만 띄우되 나머지도 소진)
+    try {
+      const next = Array.from(new Set([...seen, ...reached.map(m => m.at)]));
+      localStorage.setItem('__OD_MILESTONES_SEEN', JSON.stringify(next));
+    } catch (e) {}
+    _setMilestonePopup(top);
+  }, []);
+
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
   if (_membershipExpired) {
     const endDateStr = _endsAt ? _endsAt.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
@@ -9236,6 +9307,9 @@ function App() {
       {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
       {_showD1Popup && <PromotionD1Popup onClose={_dismissD1} />}
       {_showCeremony && <PromotionCeremony realDay={_realDay} />}
+      {_milestonePopup && !_showCeremony && !_showD1Popup && (
+        <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
+      )}
 
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
       {_showD7Popup && (
@@ -9965,6 +10039,7 @@ window.SimApp = App;
           // 투어·마일스톤 카드 플래그 리셋 (다음 승급 때 다시 보이게, dev 테스트용)
           localStorage.removeItem('__OD_S2_TOUR_DONE_' + (u.email || 'guest'));
           localStorage.removeItem('__OD_S2_WELCOME_DISMISSED_' + (u.email || 'guest'));
+          localStorage.removeItem('__OD_MILESTONES_SEEN');  // 수습 마일스톤 팝업 다시 보이게
         } catch(e) {}
         reloadCleanUrl();
         break;
