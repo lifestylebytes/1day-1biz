@@ -1,7 +1,7 @@
 # 1일1비 (1day-1biz) - 작업 메모
 
 ## 📋 기획 백로그 (PLANNING.md) - 세션 넘어 기억할 것
-- **`PLANNING.md`가 살아있는 기획 백로그.** 매주 화요일 기획회의의 기준 문서.
+- **`PLANNING.md`가 살아있는 기획 백로그.** 매주 월요일 기획회의의 기준 문서.
 - 사용자가 새 아이디어·기능 요청을 말하거나, 사용자/이탈자 피드백 답장이 들어올 때마다
   **PLANNING.md에 안건을 추가하거나 기존 안건을 업데이트한다.** (배경/현재구조/장단점/열린질문/상태)
 - 완료된 안건은 상태를 ✅로 바꾸고, 새 요청은 안건으로 추가.
@@ -75,27 +75,15 @@ for fp in glob.glob('**/*.html', recursive=True) + glob.glob('**/*.jsx', recursi
 - Day 자동 진행: 가입일 기반 캘린더 계산 (KST 자정)
 - 7일 지난 PILOT 사용자에게 베타 만료 모달
 
-## 예정 작업 (지금 안 함, 시점만 정해지면 진행)
+## 로그인 방식: 이메일 6자리 코드 (OTP) ✅ 완료 (2026-06-12)
 
-### 로그인 방식 변경: Magic Link → 이메일 6자리 코드 (OTP)
-
-**현재 문제**: Supabase magic link로 보내고 "바로 입장하기" 버튼을 누르면 그 버튼이
-열린 브라우저에서만 세션이 생김. 모바일에서 메일 받고 PC에서 로그인하려는 사용자가
-불편함을 호소.
-
-**바꿀 방향**:
-1. Supabase Auth는 이미 OTP 모드 지원. 이메일 템플릿에서 `{{ .ConfirmationURL }}`
-   대신 `{{ .Token }}`를 쓰면 6자리 숫자 코드가 메일로 발송됨.
-2. 로그인 UI를 2단계로:
-   - Step 1: 이메일 입력 → "코드 받기" (`signInWithOtp({ email })`)
-   - Step 2: 받은 6자리 코드 입력 → "확인" (`verifyOtp({ email, token, type: 'email' })`)
-3. 코드 입력은 어느 기기에서 해도 동일하게 세션이 생김 → 모바일·PC 교차 사용 OK.
-
-**손볼 파일**: `onboarding.html` LoginScreen, Supabase Dashboard 이메일 템플릿.
-
-**사용자에게 보낼 안내 문구 (넛지 메일 예정 기능에 추가)**:
-- 📨 **이메일 코드로 로그인** (예정): 이메일로 받은 6자리 코드를 입력하는 방식으로 변경
-  예정이에요. 모바일에서 코드 받아 PC에서 입력 같은 교차 로그인이 가능해집니다.
+- Magic link → OTP 전환 완료. 이메일 템플릿 `{{ .Token }}` + 2단계 로그인 UI
+  (`signInWithOtp` → `verifyOtp({ type: 'email' })`).
+- 어느 기기에서 코드를 입력해도 세션 생성 → 모바일·PC 교차 로그인 OK.
+- 적용 파일: `onboarding.html` LoginScreen, Supabase Dashboard 이메일 템플릿.
+- 넛지 메일 안내 문구는 "변경 예정"이 아니라 "변경 완료" 톤으로 쓸 것:
+  - 📨 **이메일 코드로 로그인**: 이메일로 받은 6자리 코드를 입력하는 방식으로 바뀌었어요.
+    모바일에서 코드 받아 PC에서 입력 같은 교차 로그인이 가능합니다.
 
 ## 시즌 2 (Day 31-60) 구조 (2026-06-10 추가)
 
@@ -104,7 +92,7 @@ for fp in glob.glob('**/*.html', recursive=True) + glob.glob('**/*.jsx', recursi
 - `USER.totalDays`는 레벨 기반: 수습 30 / 정직원 60. `_autoDay` 상한 60.
 - Day 29 D-1 팝업(`PromotionD1Popup`), Day 30+ 승급 의례(`PromotionCeremony`): level이 probation이고 realDay>=30이면 자동 트리거 (Day 32+ 기존 사용자 흡수)
 - 레벨업 저장: localStorage 먼저 → DB(`updateProgress`). 실패 시 `__OD_PENDING_LEVELUP` 큐 → mountAfterHydrate에서 재시도. hydrate는 pending 중엔 DB level로 되돌리지 않음.
-- DB 마이그레이션: `migrations/2026-06-10_season2_levelup.sql` (levelup_completed_at, levelup_test_score, day60_completed_at). **배포 전 Supabase SQL Editor에서 실행 필요.**
+- DB 마이그레이션: `migrations/2026-06-10_season2_levelup.sql` (levelup_completed_at, levelup_test_score, day60_completed_at). ✅ Supabase SQL Editor에서 실행 완료 (2026-06-12 확인).
 - 검증: `node scripts/validate-season2.js` (day 1-60 전수, variant 정합성, off-by-one, em-dash)
 - Day 60 특별 면담은 Phase 4 (미구현, wrapup 라벨만 존재)
 - 마일스톤 day 37/44/51은 축하 톤 단어 (hit the ground running / momentum / go the extra mile)
