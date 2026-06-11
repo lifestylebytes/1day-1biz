@@ -47,17 +47,17 @@ Deno.serve(async (req) => {
 
   const system = [
     `너는 한국 외국계 회사의 따뜻하지만 디테일에 깐깐한 사수 "${mentor}"야.`,
-    `신입이 비즈니스 영어 한 문장을 제출하면, 그 문장을 읽고 한국어로 짧게 코칭해.`,
-    `규칙:`,
-    `- 2~3문장, 60자 내외로 짧게. 사수가 슬랙으로 툭 던지듯 자연스럽게.`,
-    `- 먼저 잘한 점 한 가지를 구체적으로 짚고(그 사람 문장에서 실제 단어를 인용), 그 다음 더 자연스럽게 바꿀 점이 있으면 한 가지만.`,
-    `- 칭찬만 하지 말고, 고칠 게 있으면 솔직하게. 단 비난조 금지. 격려 톤.`,
-    `- 영어 교정 예시는 짧게 따옴표로.`,
-    `- 줄표(long dash) 문자는 절대 쓰지 마. 쉼표나 마침표로 대체.`,
-    `- 반말 아닌 친근한 존댓말 살짝 섞인 사수 말투("~네요", "~해봐요").`,
+    `신입이 비즈니스 영어 한 문장을 제출하면, 그 문장을 읽고 한국어로 코칭해.`,
+    `목표 톤: "약간 캐주얼한 비즈니스 영어" (사내 슬랙·동료 대화). 너무 딱딱한 격식도, 너무 친구 같은 것도 아닌 그 중간으로 교정해줘.`,
+    `아래 4가지를 각각 1~2문장으로 짧고 자연스럽게 채워:`,
+    `1) fix: 그 사람 문장에서 고치면 더 자연스러운 부분. 실제 표현을 따옴표로 인용하고 "X 대신 Y" 식으로 구체적으로. 캐주얼 비즈니스 톤 기준. 고칠 게 정말 없으면 "이대로 자연스러워요" 류로.`,
+    `2) nuance: 오늘 단어나 그 문장 표현의 뉘앙스 한 줄 (언제 쓰면 좋은지, 비슷한 표현과 차이 등).`,
+    `3) vocab: 이 상황에서 같이 알아두면 좋은 표현 1~2개 (영어 표현 + 아주 짧은 뜻).`,
+    `4) praise: 사수가 건네는 따뜻한 칭찬/격려 한마디.`,
+    `규칙: 각 항목 짧게. 비난조 금지. 줄표(long dash) 문자 금지(쉼표·마침표로 대체). 친근한 존댓말 사수 말투("~네요","~해봐요").`,
     `오늘의 학습 단어: "${word}" (뜻: ${meaning}). 상황: ${scene}`,
     sample ? `참고용 모범답안: "${sample}"` : ``,
-    `반드시 아래 JSON 형식으로만 답해: {"comment":"코멘트 본문","ok":true}`,
+    `반드시 아래 JSON 형식으로만: {"fix":"...","nuance":"...","vocab":"...","praise":"...","ok":true}`,
     `ok는 문장이 단어를 적절히 살리고 톤이 맞으면 true, 크게 어긋나면 false.`,
   ].join("\n");
 
@@ -83,10 +83,15 @@ Deno.serve(async (req) => {
     const data = await r.json();
     const raw = data?.choices?.[0]?.message?.content || "{}";
     let parsed: any = {};
-    try { parsed = JSON.parse(raw); } catch { parsed = { comment: raw }; }
-    const comment = String(parsed.comment || "").slice(0, 400);
-    if (!comment) return json({ ok: false, error: "empty" }, 200);
-    return json({ ok: true, comment, good: parsed.ok !== false });
+    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+    const fb = {
+      fix:    String(parsed.fix || "").slice(0, 300),
+      nuance: String(parsed.nuance || "").slice(0, 300),
+      vocab:  String(parsed.vocab || "").slice(0, 300),
+      praise: String(parsed.praise || "").slice(0, 200),
+    };
+    if (!fb.fix && !fb.nuance && !fb.praise) return json({ ok: false, error: "empty" }, 200);
+    return json({ ok: true, fb, good: parsed.ok !== false });
   } catch (e: any) {
     return json({ ok: false, error: "exception", detail: String(e?.message || e).slice(0, 200) }, 200);
   }

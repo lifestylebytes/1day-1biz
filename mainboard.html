@@ -6399,8 +6399,8 @@ function SceneModal({ scenario, onClose }) {
   const [submitted, setSubmitted] = useState(!!saved);
   const [feedback, setFeedback] = useState(saved?.feedback || null);
   const [editing, setEditing] = useState(false);
-  // ★ AI 사수 코멘트 (저장된 것 복원, 없으면 제출 시 생성)
-  const [aiComment, setAiComment] = useState(saved?.feedback?.aiComment || null);
+  // ★ AI 사수 피드백 (4구획: fix/nuance/vocab/praise). 저장된 것 복원.
+  const [aiFb, setAiFb] = useState(saved?.feedback?.aiFb || null);
   const [aiLoading, setAiLoading] = useState(false);
   const [buddyMsgs, setBuddyMsgs] = useState([]);
   // ★ 피드백 #23 (박은실): 버디 대화는 우하단 메신저 도크로 분리 (모달 속 스크롤 제거)
@@ -6417,7 +6417,7 @@ function SceneModal({ scenario, onClose }) {
     setFeedback(fb);
     setSubmitted(true);
     setEditing(false);
-    setAiComment(null);
+    setAiFb(null);
     _saveCompletion({
       day: scenario.day,
       word: scenario.word,
@@ -6440,13 +6440,13 @@ function SceneModal({ scenario, onClose }) {
         mentorName: CHARACTERS.mentor.name,
       }).then(r => {
         setAiLoading(false);
-        if (r && r.ok && r.comment) {
-          setAiComment(r.comment);
-          // 저장된 피드백에도 AI 코멘트 합쳐서 영속화 (재진입 시 복원)
+        if (r && r.ok && r.fb) {
+          setAiFb(r.fb);
+          // 저장된 피드백에도 AI 4구획 합쳐서 영속화 (재진입 시 복원)
           try {
             const cur = _loadCompletion(scenario.day);
             if (cur && cur.sentence === _submittedDraft) {
-              cur.feedback = { ...(cur.feedback || {}), aiComment: r.comment };
+              cur.feedback = { ...(cur.feedback || {}), aiFb: r.fb };
               _saveCompletion(cur);
             }
           } catch (e) {}
@@ -6659,39 +6659,57 @@ function SceneModal({ scenario, onClose }) {
 
                   {feedback && (
                     <>
-                      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>
-                        {feedback.headline}
-                      </div>
-
-                      {/* ★ AI 사수 개인 코멘트 (내 문장에 대한 맞춤 코칭) */}
-                      {aiLoading && !aiComment && (
-                        <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-mute)", fontStyle: "italic" }}>
-                          ✍️ {CHARACTERS.mentor.name} 사수가 문장을 살펴보는 중...
-                        </div>
-                      )}
-                      {aiComment && (
-                        <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(255,255,255,0.6)", borderLeft: "3px solid var(--orange)", borderRadius: 4, fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
-                          {aiComment}
-                        </div>
-                      )}
-
-                      {feedback.checks && feedback.checks.length > 0 && (
-                        <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
-                          {feedback.checks.map((c, i) => (
-                            <div key={i} style={{ fontSize: 12, color: c.ok ? "#2D7A3D" : "#B8431A", fontWeight: 500, lineHeight: 1.5 }}>
-                              {c.ok ? "✓" : "⚠"} <b>{c.label}</b>, {c.note}
+                      {/* ★ AI 사수 피드백 (4구획). 있으면 이게 메인, 규칙기반은 숨김. */}
+                      {aiFb ? (
+                        <div style={{ display: "grid", gap: 10 }}>
+                          {aiFb.fix && (
+                            <div style={{ padding: "10px 12px", background: "rgba(255,255,255,0.6)", borderLeft: "3px solid var(--orange)", borderRadius: 4 }}>
+                              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--orange)", marginBottom: 4 }}>✏️ 이렇게 고쳐봐요</div>
+                              <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>{aiFb.fix}</div>
                             </div>
-                          ))}
+                          )}
+                          {aiFb.nuance && (
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", marginBottom: 3 }}>💡 뉘앙스</div>
+                              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>{aiFb.nuance}</div>
+                            </div>
+                          )}
+                          {aiFb.vocab && (
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", marginBottom: 3 }}>📚 같이 알아두면</div>
+                              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>{aiFb.vocab}</div>
+                            </div>
+                          )}
+                          {aiFb.praise && (
+                            <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600, lineHeight: 1.6 }}>{aiFb.praise}</div>
+                          )}
                         </div>
+                      ) : (
+                        <>
+                          {/* AI 로딩 중 또는 폴백: 규칙 기반 피드백 */}
+                          <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>
+                            {feedback.headline}
+                          </div>
+                          {aiLoading && (
+                            <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-mute)", fontStyle: "italic" }}>
+                              ✍️ {CHARACTERS.mentor.name} 사수가 문장을 살펴보는 중...
+                            </div>
+                          )}
+                          {feedback.checks && feedback.checks.length > 0 && (
+                            <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
+                              {feedback.checks.map((c, i) => (
+                                <div key={i} style={{ fontSize: 12, color: c.ok ? "#2D7A3D" : "#B8431A", fontWeight: 500, lineHeight: 1.5 }}>
+                                  {c.ok ? "✓" : "⚠"} <b>{c.label}</b>, {c.note}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
                       )}
 
                       <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(255,255,255,0.55)", borderRadius: 4 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>💡 사수 예시 답안 (참고용)</div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>"{scenario.sampleAnswer}"</div>
-                      </div>
-
-                      <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>
-                        {scenario.mentorTip}
                       </div>
                     </>
                   )}
