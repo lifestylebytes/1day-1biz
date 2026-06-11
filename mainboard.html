@@ -6399,6 +6399,9 @@ function SceneModal({ scenario, onClose }) {
   const [submitted, setSubmitted] = useState(!!saved);
   const [feedback, setFeedback] = useState(saved?.feedback || null);
   const [editing, setEditing] = useState(false);
+  // ★ AI 사수 코멘트 (저장된 것 복원, 없으면 제출 시 생성)
+  const [aiComment, setAiComment] = useState(saved?.feedback?.aiComment || null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [buddyMsgs, setBuddyMsgs] = useState([]);
   // ★ 피드백 #23 (박은실): 버디 대화는 우하단 메신저 도크로 분리 (모달 속 스크롤 제거)
   const [buddyDockOpen, setBuddyDockOpen] = useState(false);
@@ -6414,6 +6417,7 @@ function SceneModal({ scenario, onClose }) {
     setFeedback(fb);
     setSubmitted(true);
     setEditing(false);
+    setAiComment(null);
     _saveCompletion({
       day: scenario.day,
       word: scenario.word,
@@ -6421,6 +6425,34 @@ function SceneModal({ scenario, onClose }) {
       feedback: fb,
       submittedAt: new Date().toISOString(),
     });
+
+    // ★ AI 사수 코멘트 (실패/느리면 규칙 기반 피드백만 유지, 폴백)
+    //    예시 그대로 낸 경우엔 AI 호출 생략 (본인 문장 아니라 코칭 의미 없음)
+    if (!fb.isExample && draft.trim() && window.OD?.enabled && window.OD.getMentorAiFeedback) {
+      setAiLoading(true);
+      const _submittedDraft = draft;
+      window.OD.getMentorAiFeedback({
+        sentence: draft,
+        word: scenario.word,
+        meaning: scenario.meaning,
+        scene: scenario.scene,
+        sampleAnswer: scenario.sampleAnswer,
+        mentorName: CHARACTERS.mentor.name,
+      }).then(r => {
+        setAiLoading(false);
+        if (r && r.ok && r.comment) {
+          setAiComment(r.comment);
+          // 저장된 피드백에도 AI 코멘트 합쳐서 영속화 (재진입 시 복원)
+          try {
+            const cur = _loadCompletion(scenario.day);
+            if (cur && cur.sentence === _submittedDraft) {
+              cur.feedback = { ...(cur.feedback || {}), aiComment: r.comment };
+              _saveCompletion(cur);
+            }
+          } catch (e) {}
+        }
+      }).catch(() => setAiLoading(false));
+    }
     // ★ 피드백 #15: 홈 시추에이션 카드로 바로 들어와 제출한 경우에도
     //   일정의 '오늘의 시추에이션' 항목을 완료 처리 (재진입 없이 다음 순서 진행)
     try {
@@ -6630,6 +6662,18 @@ function SceneModal({ scenario, onClose }) {
                       <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>
                         {feedback.headline}
                       </div>
+
+                      {/* ★ AI 사수 개인 코멘트 (내 문장에 대한 맞춤 코칭) */}
+                      {aiLoading && !aiComment && (
+                        <div style={{ marginTop: 10, fontSize: 12.5, color: "var(--ink-mute)", fontStyle: "italic" }}>
+                          ✍️ {CHARACTERS.mentor.name} 사수가 문장을 살펴보는 중...
+                        </div>
+                      )}
+                      {aiComment && (
+                        <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(255,255,255,0.6)", borderLeft: "3px solid var(--orange)", borderRadius: 4, fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
+                          {aiComment}
+                        </div>
+                      )}
 
                       {feedback.checks && feedback.checks.length > 0 && (
                         <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
