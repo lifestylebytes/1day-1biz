@@ -3716,6 +3716,8 @@ function Locker({ active, setActive, user, unread }) {
   const items = [
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
+    // 정직원 보상: 나만의 노트 모아보기
+    ...(user.isFulltime ? [{ id: "mynotes", label: "나만의 노트", icon: "📒" }] : []),
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -3773,10 +3775,11 @@ function Locker({ active, setActive, user, unread }) {
 }
 
 // Mobile bottom tab bar
-function MobileTabbar({ active, setActive, unread }) {
+function MobileTabbar({ active, setActive, unread, isFulltime }) {
   const items = [
     { id: "home", label: "오늘", icon: "📋" },
     { id: "library", label: "노트", icon: "🗂️" },
+    ...(isFulltime ? [{ id: "mynotes", label: "내 노트", icon: "📒" }] : []),
     { id: "test", label: "평가", icon: "📝" },
     { id: "inbox", label: "메모", icon: "📨", badge: unread },
     { id: "mypage", label: "사원증", icon: "🪪" },
@@ -4076,6 +4079,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       placement: "right",
       title: "시즌 2 단어는 더 묵직해요",
       body: "지금까지가 '알아듣는' 단어였다면, 이제는 회의를 주도하고 의사결정에 쓰는 표현이에요. escalate, own the room 같은.",
+    },
+    {
+      selector: ".locker-link, .m-tab",
+      placement: "right",
+      title: "🎁 보상: 나만의 노트 모아보기",
+      body: "정직원이 되면 '나만의 노트' 탭이 열려요. 그동안 유버디한테 물어보고 저장한 답변들을 단어별로 모아서 검색하고 복습할 수 있어요. 수습 때 저장한 것도 전부 여기 모입니다.",
     },
     {
       selector: null,
@@ -4957,6 +4966,147 @@ window.BuddyCard = BuddyCard;
 // ============================================================
 // 업무 노트 = 라이브러리
 // ============================================================
+// ============================================================
+// 📒 나만의 노트 모아보기 (정직원 승급 보상, 피드백 #6 김원미)
+// 저장한 버디 답변(savedNotes)을 한 페이지에서 검색·필터·모아보기
+// ============================================================
+function MyNotesPage({ openScene }) {
+  const { SCENARIOS, USER } = window.__SIM;
+  const [kindFilter, setKindFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  // 정직원 잠금 화면 (수습은 미리보기 + 동기부여)
+  if (!USER.isFulltime) {
+    return (
+      <div>
+        <div className="desk-header">
+          <div>
+            <div className="desk-eyebrow">RECORDS · 나만의 노트 (잠김)</div>
+            <h1 className="desk-title"><em>정직원</em> 전용 보관함</h1>
+          </div>
+        </div>
+        <div style={{
+          marginTop: 24, padding: "40px 28px", textAlign: "center",
+          background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12,
+        }}>
+          <div style={{ fontSize: 42, marginBottom: 14, filter: "grayscale(0.3)" }}>🔒</div>
+          <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", marginBottom: 12, lineHeight: 1.4 }}>
+            저장한 노트를 한곳에 모아보는 기능,<br/>정직원이 되면 열려요
+          </h2>
+          <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 18, maxWidth: 420, margin: "0 auto 18px" }}>
+            유버디한테 물어보고 "📒 노트에 저장" 한 답변들을, 단어별로 묶어 검색하고 복습할 수 있는 나만의 보관함이에요.
+            수습 30일을 완주하고 정직원으로 승급하면 보상으로 열립니다.
+          </p>
+          <div style={{
+            display: "inline-block", background: "var(--paper-warm)", border: "1px solid var(--line)",
+            borderRadius: 8, padding: "10px 16px", fontSize: 12.5, color: "var(--ink-soft)",
+          }}>
+            지금까지 저장한 노트는 <b style={{ color: "var(--ink)" }}>안전하게 보관 중</b>이에요. 승급하면 전부 여기 모여요.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 전체 노트 평탄화
+  let allNotes = [];
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    const byDay = (u && u.savedNotes) || {};
+    Object.keys(byDay).forEach(dayKey => {
+      const sc = SCENARIOS.find(s => s.day === Number(dayKey));
+      (byDay[dayKey] || []).forEach(n => {
+        allNotes.push({
+          day: Number(dayKey),
+          word: sc ? sc.word : "",
+          meaning: sc ? sc.meaning : "",
+          npc: sc ? sc.npc : null,
+          kind: n.kind || "default",
+          label: n.label || "메모",
+          text: n.text || "",
+          savedAt: n.savedAt || null,
+        });
+      });
+    });
+  } catch (e) {}
+  allNotes.sort((a, b) => b.day - a.day);
+
+  const KIND_LABEL = { nuance: "뉘앙스", example: "예문", default: "외우는 팁" };
+  const kinds = [...new Set(allNotes.map(n => n.kind))];
+  const filtered = allNotes.filter(n => {
+    if (kindFilter !== "all" && n.kind !== kindFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (!n.text.toLowerCase().includes(q) && !n.word.toLowerCase().includes(q) && !(n.meaning || "").includes(search)) return false;
+    }
+    return true;
+  });
+
+  return (
+    <div>
+      <div className="desk-header">
+        <div>
+          <div className="desk-eyebrow">RECORDS · 나만의 노트 (My Notes)</div>
+          <h1 className="desk-title"><em>내가 저장한</em> 표현 모음</h1>
+        </div>
+        <div className="desk-meta"><b>{allNotes.length}</b>개 저장 · {new Set(allNotes.map(n => n.day)).size}개 단어</div>
+      </div>
+
+      <ApprovalLine doc="YB-MYNOTE-2026" applicant={USER.name} status={`${allNotes.length}개 보관`} />
+
+      {allNotes.length === 0 ? (
+        <div style={{ marginTop: 24, padding: "36px 24px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>📭</div>
+          <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            아직 저장한 노트가 없어요.<br/>
+            시추에이션에서 유버디한테 물어보고 <b style={{ color: "var(--ink)" }}>"📒 노트에 저장"</b>을 누르면 여기 모여요.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="filter-row">
+            <button className={"filter-chip " + (kindFilter === "all" ? "active" : "")} onClick={() => setKindFilter("all")}>전체 {allNotes.length}</button>
+            {kinds.map(k => (
+              <button key={k} className={"filter-chip " + (kindFilter === k ? "active" : "")} onClick={() => setKindFilter(k)}>
+                {KIND_LABEL[k] || k} {allNotes.filter(n => n.kind === k).length}
+              </button>
+            ))}
+            <input className="filter-search" placeholder="노트 / 단어 검색…" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+
+          <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+            {filtered.map((n, i) => (
+              <div key={i} style={{
+                background: "var(--paper)", border: "1px solid var(--line)",
+                borderRadius: 10, padding: "14px 16px",
+                borderLeft: "3px solid var(--accent)",
+              }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => { const sc = SCENARIOS.find(s => s.day === n.day); if (sc && openScene) openScene(sc); }}
+                    style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
+                    title="이 단어 시추에이션 다시 보기"
+                  >
+                    <b style={{ fontSize: 15, color: "var(--ink)" }}>{n.word}</b>
+                  </button>
+                  <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>{n.meaning}</span>
+                  <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--accent)", background: "rgba(216,90,42,0.08)", padding: "2px 8px", borderRadius: 10 }}>
+                    {KIND_LABEL[n.kind] || n.label} · DAY {n.day}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{n.text}</div>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div style={{ textAlign: "center", padding: 24, color: "var(--ink-mute)", fontSize: 13 }}>검색 결과가 없어요.</div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function LibraryPage({ openScene }) {
   const { SCENARIOS, CHARACTERS, USER } = window.__SIM;
   const [filter, setFilter] = useState("all");
@@ -8382,6 +8532,7 @@ function PromotionCeremony({ realDay }) {
               color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20, textAlign: "left",
             }}>
               <b style={{ color: "var(--ink)" }}>앞으로 30일, 이런 게 기다려요</b><br/>
+              📒 <b style={{ color: "var(--ink)" }}>나만의 노트 모아보기</b> 지금 열림<br/>
               🌱 Day 37 정직원 첫 주 완주 · ⚡ Day 44 절반 돌파<br/>
               🔥 Day 51 50일 달성 · 🌟 Day 60 <b style={{ color: "var(--orange)" }}>특별 면담</b> (60일 누적 통계 + 다음 레벨 부서 평가)
             </div>
@@ -8810,11 +8961,12 @@ function App() {
           : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} setViewingDay={setViewingDay} />
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
+        {active === "mynotes" && <MyNotesPage openScene={setScene} />}
         {active === "test" && <TestPage />}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "mypage" && <MyPage />}
       </main>
-      <MobileTabbar active={active} setActive={setActive} unread={unread} />
+      <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
       {memo ? <MemoModal memo={memo} onClose={() => setMemo(null)} /> : null}
 
