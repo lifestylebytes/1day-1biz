@@ -9174,17 +9174,16 @@ function App() {
   const _showD1Popup = _isProbationNow && !!_localUserNow && _realDay === 29 && !_d1Dismissed;
   const _showCeremony = _isProbationNow && !!_localUserNow && _realDay >= 30;
 
-  // ── 주간 펄스 설문 (1회). 공지와 짝. 다른 팝업과 안 겹치게 게이팅. ──
+  // ── 주간 펄스 설문 (1회). 공지를 읽고 닫으면 그 직후에 노출. ──
   const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_06W2";  // 새 설문 돌릴 땐 이 키만 변경
   const [_showSurvey, _setShowSurvey] = useState(false);
-  React.useEffect(() => {
-    if (!_localUserNow) return;
-    try { if (localStorage.getItem(PULSE_SURVEY_KEY)) return; } catch (e) { return; }
-    // 승급 의례·D-1 진행 중이면 양보 (다음 방문에 노출)
+  const _surveyDone = (() => { try { return !!localStorage.getItem(PULSE_SURVEY_KEY); } catch (e) { return true; } })();
+  // 공지(메모) 모달을 닫는 순간 설문 트리거. 설문 미완 + 다른 팝업 없을 때만.
+  const _maybeSurveyAfterMemo = () => {
+    if (_surveyDone || !_localUserNow) return;
     if (_showCeremony || _showD1Popup) return;
-    const t = setTimeout(() => _setShowSurvey(true), 1200);  // 진입 1.2초 후 부드럽게
-    return () => clearTimeout(t);
-  }, []);
+    setTimeout(() => _setShowSurvey(true), 350);  // 닫힘 애니메이션 후 부드럽게
+  };
 
   // ── 수습 마일스톤 팝업: 실제 완주 일수 기준 (달력 day 무관, 밀린 사용자도 따라잡으면 받음) ──
   // 여러 개 한꺼번에 넘기면 아직 안 본 것 중 가장 높은 하나만 표시.
@@ -9399,7 +9398,7 @@ function App() {
       </main>
       <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
-      {memo ? <MemoModal memo={memo} onClose={() => setMemo(null)} /> : null}
+      {memo ? <MemoModal memo={memo} onClose={() => { setMemo(null); _maybeSurveyAfterMemo(); }} /> : null}
 
       {/* ── 우상단 피드백 버튼 (어디서든 열림) ── */}
       <button
