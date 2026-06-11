@@ -5578,42 +5578,7 @@ function MyPage() {
     window.location.href = "onboarding.html";
   };
 
-  // 회원 탈퇴 (30일 유예 후 영구 삭제)
-  const [withdrawing, setWithdrawing] = useState(false);
-  const handleWithdraw = async () => {
-    const ok = confirm(
-      "정말 탈퇴하시겠어요?\n\n" +
-      "· 탈퇴 신청 후 30일 동안은 같은 이메일로 복구 요청 가능해요\n" +
-      "· 30일 후 모든 학습 데이터·노트가 영구 삭제됩니다\n" +
-      "· 이 작업은 되돌릴 수 없어요"
-    );
-    if (!ok) return;
-    const reconfirm = prompt("확인을 위해 '탈퇴'를 입력해주세요.");
-    if (reconfirm !== "탈퇴") {
-      alert("취소됐어요. 탈퇴를 원하시면 정확히 '탈퇴' 두 글자를 입력해주세요.");
-      return;
-    }
-    setWithdrawing(true);
-    try {
-      if (window.OD && window.OD.enabled && window.OD.client && USER.email) {
-        const { error } = await window.OD.client
-          .from("users")
-          .update({ withdrawn_at: new Date().toISOString() })
-          .eq("email", USER.email);
-        if (error) throw error;
-      }
-      // localStorage 비우고 안내 화면
-      for (let i = localStorage.length - 1; i >= 0; i--) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith("__OD_")) localStorage.removeItem(k);
-      }
-      alert("탈퇴가 정상 접수됐어요.\n30일 안에 같은 이메일로 가입하시면 복구 가능합니다.\n그 외엔 모든 데이터가 영구 삭제됩니다.\n그동안 함께해주셔서 감사해요.");
-      window.location.href = "onboarding.html";
-    } catch (e) {
-      alert("탈퇴 처리 중 오류가 발생했어요: " + (e.message || e));
-      setWithdrawing(false);
-    }
-  };
+  // 회원 탈퇴 기능은 데이터 보호를 위해 제거됨 (탈퇴 요청은 유버디 문의로 안내)
 
   return (
     <div>
@@ -5818,25 +5783,9 @@ function MyPage() {
               이 기기에서만 로그아웃돼요. 진도는 서버에 안전하게 저장, 같은 이메일로 다시 들어오면 그대로 이어져요.
             </div>
 
-            {/* 회원 탈퇴 (개인정보보호법 준수: 데이터 삭제 권리) */}
-            <div className="hr-row" style={{ borderTop: "1px dashed var(--line)", paddingTop: 14, marginTop: 6 }}>
-              <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>회원 탈퇴</span>
-              <button
-                onClick={handleWithdraw}
-                disabled={withdrawing}
-                style={{
-                  background: "transparent", border: "1px solid #B8431A",
-                  color: "#B8431A", padding: "6px 14px", borderRadius: 6,
-                  fontSize: 12, fontWeight: 600, cursor: withdrawing ? "wait" : "pointer",
-                  opacity: withdrawing ? 0.6 : 1,
-                }}
-              >
-                {withdrawing ? "처리 중..." : "🗑 탈퇴하기"}
-              </button>
-            </div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "4px 18px 14px", lineHeight: 1.5 }}>
-              탈퇴 신청 후 30일 유예 기간이 지나면 모든 학습 데이터·노트가 영구 삭제됩니다.
-              유예 기간 안에 같은 이메일로 재가입하시면 복구 가능해요.
+            {/* 회원 탈퇴는 데이터 보호를 위해 UI에서 제거. 탈퇴 요청은 유버디 문의로 안내. */}
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "12px 18px 14px", lineHeight: 1.6, borderTop: "1px dashed var(--line)", marginTop: 6 }}>
+              회원 탈퇴를 원하시면 <a href="https://open.kakao.com/me/youbuddy" target="_blank" rel="noopener" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>유버디 문의</a>로 알려주세요. 안전하게 처리해드려요.
               <br/>
               <a href="privacy.html" target="_blank" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>개인정보처리방침</a>
               {" · "}
@@ -9653,6 +9602,14 @@ window.SimApp = App;
       </div>
 
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
+        <div class="muted" style="margin-bottom:4px;">레벨 (현재: ${u.level && u.level.id === 'fulltime' ? '👔 정직원' : '👤 수습'})</div>
+        <div class="dp-row" style="grid-template-columns: 1fr 1fr">
+          <button class="dp-btn" data-act="level-probation" style="${(!u.level || u.level.id !== 'fulltime') ? 'background:rgba(243,138,92,0.4)' : ''}" title="수습으로 전환 (신입사원 화면 미리보기)">👤 수습</button>
+          <button class="dp-btn" data-act="level-fulltime" style="${(u.level && u.level.id === 'fulltime') ? 'background:rgba(243,138,92,0.4)' : ''}" title="정직원으로 전환">👔 정직원</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
         <div class="muted" style="margin-bottom:4px;">시뮬레이션</div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr">
           <button class="dp-btn" data-act="fill-learning" title="현재 Day까지의 단어를 예시 답안으로 자동 채움, 단어 사전 미리보기">📚 학습 채우기</button>
@@ -9700,6 +9657,22 @@ window.SimApp = App;
         u.dayInCompany = n; save(u); reloadCleanUrl();
         break;
       }
+      case 'level-probation':
+        u.level = { id: 'probation', ko: '수습', en: 'Probation' };
+        // 수습 미리보기를 위해 승급 기록도 제거 (안 그러면 정직원 뱃지·잔재 남음)
+        delete u.levelupCompletedAt; delete u.levelup_completed_at;
+        delete u.levelupTestScore; delete u.levelup_test_score;
+        save(u);
+        try { localStorage.removeItem('__OD_PENDING_LEVELUP'); } catch(e) {}
+        reloadCleanUrl();
+        break;
+      case 'level-fulltime':
+        u.level = { id: 'fulltime', ko: '정직원', en: 'Full-time' };
+        u.levelupCompletedAt = u.levelupCompletedAt || new Date().toISOString();
+        u.levelup_completed_at = u.levelupCompletedAt;
+        save(u);
+        reloadCleanUrl();
+        break;
       case 'reset':
         if (confirm('사용자 데이터를 모두 지울까요? 온보딩부터 다시 시작됨.')) {
           localStorage.removeItem(KEY_USER);
