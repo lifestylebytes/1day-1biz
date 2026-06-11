@@ -8435,6 +8435,108 @@ function MilestonePopup({ milestone, onClose }) {
   );
 }
 
+// ── 주간 펄스 설문 (별점 + 한줄평 + 기대 vs 실제). 운영자 피드함으로 수집. ──
+// surveyKey 단위로 1회만. 새 설문 돌릴 땐 키만 바꾸면 됨.
+function PulseSurveyModal({ surveyKey, onClose }) {
+  const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const name = local.name || "사원";
+  const [rating, setRating] = useState(0);
+  const [oneLiner, setOneLiner] = useState("");
+  const [expected, setExpected] = useState("");
+  const [reality, setReality] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const markDone = () => { try { localStorage.setItem(surveyKey, "1"); } catch (e) {} };
+  const close = () => { markDone(); onClose(); };
+
+  const submit = () => {
+    if (sent) { close(); return; }
+    setSent(true);
+    markDone();
+    const email = local.email;
+    if (email && window.OD?.submitFeedback && (rating || oneLiner.trim() || expected.trim() || reality.trim())) {
+      const stars = rating ? "★".repeat(rating) + "☆".repeat(5 - rating) + ` (${rating}/5)` : "(미선택)";
+      const msg =
+        `[주간 설문] 만족도 ${stars}\n` +
+        `한줄평: ${oneLiner.trim() || "(없음)"}\n` +
+        `기대했던 점: ${expected.trim() || "(없음)"}\n` +
+        `실제 / 아쉬운 점: ${reality.trim() || "(없음)"}`;
+      window.OD.submitFeedback({
+        email, name, day: local.dayInCompany || null,
+        category: "survey",
+        message: msg,
+        context: { type: "pulse_survey", key: surveyKey, rating },
+      }).catch(() => {});
+    }
+    setTimeout(close, 1200);
+  };
+
+  const RATE_LABEL = ["", "아쉬워요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"];
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9180,
+      background: "rgba(20,15,8,0.7)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto",
+    }} onClick={close}>
+      <div style={{
+        background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14,
+        maxWidth: 460, width: "100%", padding: "28px 26px 24px", margin: "auto",
+        boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)",
+      }} onClick={e => e.stopPropagation()}>
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>💌</div>
+            <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", marginBottom: 10 }}>고마워요, {name}님!</h2>
+            <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>남겨주신 의견, 하나도 빠짐없이 읽고<br/>다음 업데이트에 반영할게요.</p>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 11, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>
+              유버디 · 베타 설문
+            </div>
+            <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginBottom: 8, letterSpacing: "-0.01em" }}>
+              {name}님, 잠깐 1분만 빌릴게요 🙏
+            </h2>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
+              지금 50여 분이 매일 함께 출근하고 계세요. 더 좋게 만들고 싶어서, 솔직한 의견을 듣고 싶어요.
+            </p>
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>1일1비, 요즘 어떠세요?</div>
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 4 }}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button key={n} onClick={() => setRating(n)} title={RATE_LABEL[n]}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 30, lineHeight: 1, padding: 2,
+                    filter: n <= rating ? "none" : "grayscale(1) opacity(0.35)", transform: n <= rating ? "scale(1.05)" : "scale(1)", transition: "all 0.12s" }}>⭐</button>
+              ))}
+            </div>
+            {rating > 0 && <div style={{ textAlign: "center", fontSize: 12, color: "var(--orange)", fontWeight: 700, marginBottom: 14 }}>{RATE_LABEL[rating]}</div>}
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", margin: "10px 0 6px" }}>한줄평</div>
+            <input value={oneLiner} onChange={e => setOneLiner(e.target.value)} placeholder="예: 출근하는 느낌이 진짜라 재밌어요"
+              style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", boxSizing: "border-box", marginBottom: 14 }} />
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>시작 전 기대했던 점 <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span></div>
+            <textarea value={expected} onChange={e => setExpected(e.target.value)} placeholder="가입할 때 뭘 기대하셨나요?"
+              style={{ width: "100%", minHeight: 56, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box", marginBottom: 14 }} />
+
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>실제로 써보니, 아쉽거나 바라는 점 <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span></div>
+            <textarea value={reality} onChange={e => setReality(e.target.value)} placeholder="이런 게 있으면 더 좋겠다 싶은 것"
+              style={{ width: "100%", minHeight: 56, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box", marginBottom: 18 }} />
+
+            <button className="btn btn-primary" style={{ width: "100%", marginBottom: 8 }} onClick={submit}>
+              {(rating || oneLiner.trim() || expected.trim() || reality.trim()) ? "의견 보내기 →" : "그냥 닫기"}
+            </button>
+            <button onClick={close} style={{ display: "block", width: "100%", background: "transparent", border: "none", color: "var(--ink-mute)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              나중에 할게요
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── 승급 영어 테스트 문제 생성 (Day 1-30 단어 풀, RECAP_DATA 재활용) ──
 function _buildLevelupQuestions(maxDay, count) {
   const SCN = ((window.__SIM && window.__SIM.SCENARIOS) || []).filter(s => s.day <= maxDay);
@@ -9072,6 +9174,18 @@ function App() {
   const _showD1Popup = _isProbationNow && !!_localUserNow && _realDay === 29 && !_d1Dismissed;
   const _showCeremony = _isProbationNow && !!_localUserNow && _realDay >= 30;
 
+  // ── 주간 펄스 설문 (1회). 공지와 짝. 다른 팝업과 안 겹치게 게이팅. ──
+  const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_06W2";  // 새 설문 돌릴 땐 이 키만 변경
+  const [_showSurvey, _setShowSurvey] = useState(false);
+  React.useEffect(() => {
+    if (!_localUserNow) return;
+    try { if (localStorage.getItem(PULSE_SURVEY_KEY)) return; } catch (e) { return; }
+    // 승급 의례·D-1 진행 중이면 양보 (다음 방문에 노출)
+    if (_showCeremony || _showD1Popup) return;
+    const t = setTimeout(() => _setShowSurvey(true), 1200);  // 진입 1.2초 후 부드럽게
+    return () => clearTimeout(t);
+  }, []);
+
   // ── 수습 마일스톤 팝업: 실제 완주 일수 기준 (달력 day 무관, 밀린 사용자도 따라잡으면 받음) ──
   // 여러 개 한꺼번에 넘기면 아직 안 본 것 중 가장 높은 하나만 표시.
   const [_milestonePopup, _setMilestonePopup] = useState(null);
@@ -9309,6 +9423,9 @@ function App() {
       {_showCeremony && <PromotionCeremony realDay={_realDay} />}
       {_milestonePopup && !_showCeremony && !_showD1Popup && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
+      )}
+      {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && (
+        <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
 
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
@@ -10070,6 +10187,8 @@ window.SimApp = App;
           try {
             localStorage.removeItem(taskKey);
             localStorage.removeItem(tourKey);
+            // 설문 팝업도 다시 뜨게 (dev 테스트용)
+            localStorage.removeItem('__OD_SURVEY_2026_06W2');
           } catch (e) {}
           location.reload();
         }
