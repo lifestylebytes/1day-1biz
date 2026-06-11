@@ -3725,8 +3725,8 @@ function Locker({ active, setActive, user, unread }) {
   const items = [
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
-    // 정직원 보상: 나만의 노트 모아보기
-    ...(user.isFulltime ? [{ id: "mynotes", label: "나만의 노트", icon: "📒" }] : []),
+    // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
+    { id: "mynotes", label: "나만의 노트", icon: user.isFulltime ? "📒" : "🔒", locked: !user.isFulltime },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -3753,9 +3753,9 @@ function Locker({ active, setActive, user, unread }) {
       <div className="locker-section">
         <div className="locker-label">Records</div>
         {items.slice(1, 3).map(it => (
-          <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
+          <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.badge ? <span className="locker-badge">{it.badge}</span> : null}
+            {it.badge ? <span className="locker-badge">{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>사원 ☆</span> : null}
           </button>
         ))}
       </div>
@@ -9840,7 +9840,12 @@ window.SimApp = App;
         delete u.levelupCompletedAt; delete u.levelup_completed_at;
         delete u.levelupTestScore; delete u.levelup_test_score;
         save(u);
-        try { localStorage.removeItem('__OD_PENDING_LEVELUP'); } catch(e) {}
+        try {
+          localStorage.removeItem('__OD_PENDING_LEVELUP');
+          // 투어·마일스톤 카드 플래그 리셋 (다음 승급 때 다시 보이게, dev 테스트용)
+          localStorage.removeItem('__OD_S2_TOUR_DONE_' + (u.email || 'guest'));
+          localStorage.removeItem('__OD_S2_WELCOME_DISMISSED_' + (u.email || 'guest'));
+        } catch(e) {}
         reloadCleanUrl();
         break;
       case 'level-fulltime':
@@ -9848,6 +9853,11 @@ window.SimApp = App;
         u.levelupCompletedAt = u.levelupCompletedAt || new Date().toISOString();
         u.levelup_completed_at = u.levelupCompletedAt;
         save(u);
+        try {
+          // 사원 전환 시 온보딩 투어가 다시 뜨도록 완료 플래그 제거 (dev 테스트용)
+          localStorage.removeItem('__OD_S2_TOUR_DONE_' + (u.email || 'guest'));
+          localStorage.removeItem('__OD_S2_WELCOME_DISMISSED_' + (u.email || 'guest'));
+        } catch(e) {}
         reloadCleanUrl();
         break;
       case 'reset':

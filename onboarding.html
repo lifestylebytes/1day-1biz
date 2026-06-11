@@ -1416,6 +1416,22 @@ function ReadyScreen({ name, mentor, stageIdx, totalStages, onStart }) {
         <br/><br/>
         부담 갖지 말고, 진짜 회사처럼 천천히.
       </p>
+      <div style={{
+        background: "rgba(216,90,42,0.06)", border: "1px dashed rgba(216,90,42,0.4)",
+        borderRadius: 10, padding: "16px 18px", margin: "8px 0 20px", textAlign: "left",
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", color: "#C2410C", marginBottom: 10 }}>
+          🎁 승진하면 기능이 점차 열려요
+        </div>
+        <div style={{ display: "grid", gap: 8, fontSize: 13, lineHeight: 1.5, color: "#4A3C2E" }}>
+          <div><b>👤 수습 (Day 1-30)</b> · 매일 시추에이션, 미니 미션, 점심 대화</div>
+          <div><b>🎓 사원 전환 (Day 30)</b> · 30일 완주하면 정직원 발령</div>
+          <div><b>📒 사원 보상</b> · 저장한 표현을 모아보는 <b>나만의 노트</b>, 회의 주도 표현(Day 31-60), 네이비 새 사원증</div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "#8A7A66", marginTop: 10, lineHeight: 1.5 }}>
+          꾸준히 출근할수록 직급이 오르고, 새로운 기능과 콘텐츠가 하나씩 해제됩니다.
+        </div>
+      </div>
       <div className="btn-row">
         <button className="btn" onClick={onStart} style={{ fontSize: 15, padding: "14px 28px" }}>
           🏢 사옥으로 출근하기
