@@ -5067,6 +5067,64 @@ function MyNotesPage({ openScene }) {
   const { SCENARIOS, USER } = window.__SIM;
   const [kindFilter, setKindFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [editKey, setEditKey] = useState(null);   // "day:origText" 편집 중인 노트
+  const [editText, setEditText] = useState("");
+  const [tick, setTick] = useState(0);             // 편집 후 리렌더 트리거
+
+  // ★ 노트 수정 (학습·복습용): localStorage 즉시 반영 + DB best-effort 업서트
+  const updateNote = (day, origText, newText) => {
+    const t = (newText || "").trim();
+    if (!t) return;
+    try {
+      const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+      u.savedNotes = u.savedNotes || {};
+      const arr = u.savedNotes[String(day)] || [];
+      const idx = arr.findIndex(n => n.text === origText);
+      if (idx >= 0) {
+        arr[idx] = { ...arr[idx], text: t, editedAt: new Date().toISOString() };
+        u.savedNotes[String(day)] = arr;
+        localStorage.setItem("__OD_USER", JSON.stringify(u));
+        // DB에도 수정본 저장 (1row=1note, 텍스트 변경분 반영)
+        if (window.OD?.enabled && window.OD.saveNoteRow && u.email) {
+          window.OD.saveNoteRow(u.email, Number(day), t, arr[idx].label || null, arr[idx].kind || null).catch(() => {});
+        }
+      }
+    } catch (e) {}
+    setEditKey(null);
+    setTick(x => x + 1);
+  };
+
+  // ★ 인쇄 / PDF 저장: 깨끗한 새 창을 열어 노트만 출력 (한글 폰트 안전)
+  const printNotes = (notes) => {
+    const KIND = { nuance: "뉘앙스", example: "예문", default: "외우는 팁" };
+    const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const rows = notes.map(n => `
+      <div class="note">
+        <div class="head"><span class="word">${esc(n.word)}</span> <span class="mean">${esc(n.meaning)}</span> <span class="tag">${KIND[n.kind] || esc(n.label)} · DAY ${n.day}</span></div>
+        <div class="body">${esc(n.text).replace(/\n/g, "<br/>")}</div>
+      </div>`).join("");
+    const w = window.open("", "_blank");
+    if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
+    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>나만의 노트 · ${esc(USER.name)}</title>
+      <style>
+        body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        .sub { color: #8A7A66; font-size: 12px; margin-bottom: 20px; }
+        .note { border: 1px solid #E2D8C4; border-left: 3px solid #D85A2A; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; page-break-inside: avoid; }
+        .head { font-size: 13px; margin-bottom: 6px; }
+        .word { font-weight: 800; font-size: 15px; }
+        .mean { color: #8A7A66; }
+        .tag { float: right; font-size: 10px; color: #D85A2A; font-weight: 700; }
+        .body { font-size: 12.5px; color: #4A3C2E; white-space: pre-wrap; }
+        @media print { body { padding: 0; } }
+      </style></head><body>
+      <h1>📒 ${esc(USER.name)}님의 나만의 노트</h1>
+      <div class="sub">1일1비 · 저장한 표현 ${notes.length}개 · ${new Date().toLocaleDateString("ko-KR")}</div>
+      ${rows}
+      <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };<\/script>
+      </body></html>`);
+    w.document.close();
+  };
 
   // 정직원 잠금 화면 (수습은 미리보기 + 동기부여)
   if (!USER.isFulltime) {
@@ -5101,8 +5159,9 @@ function MyNotesPage({ openScene }) {
     );
   }
 
-  // 전체 노트 평탄화
+  // 전체 노트 평탄화 (tick 바뀌면 재계산)
   let allNotes = [];
+  void tick;
   try {
     const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
     const byDay = (u && u.savedNotes) || {};
@@ -5147,6 +5206,15 @@ function MyNotesPage({ openScene }) {
 
       <ApprovalLine doc="YB-MYNOTE-2026" applicant={USER.name} status={`${allNotes.length}개 보관`} />
 
+      {allNotes.length > 0 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+          <button onClick={() => printNotes(filtered)}
+            style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "var(--ink-soft)" }}>
+            🖨 인쇄 / PDF 저장 ({filtered.length}개)
+          </button>
+        </div>
+      )}
+
       {allNotes.length === 0 ? (
         <div style={{ marginTop: 24, padding: "36px 24px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>📭</div>
@@ -5187,7 +5255,25 @@ function MyNotesPage({ openScene }) {
                     {KIND_LABEL[n.kind] || n.label} · DAY {n.day}
                   </span>
                 </div>
-                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{n.text}</div>
+                {editKey === (n.day + ":" + n.text) ? (
+                  <div>
+                    <textarea value={editText} onChange={e => setEditText(e.target.value)}
+                      style={{ width: "100%", minHeight: 90, padding: "10px 12px", border: "1px solid var(--orange)", borderRadius: 8, fontSize: 12.5, lineHeight: 1.6, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box" }} />
+                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+                      <button onClick={() => setEditKey(null)} style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "5px 12px", fontSize: 12, cursor: "pointer", fontFamily: "inherit", color: "var(--ink-soft)" }}>취소</button>
+                      <button onClick={() => updateNote(n.day, n.text, editText)} disabled={!editText.trim()} style={{ background: "var(--orange)", border: "none", borderRadius: 6, padding: "5px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "#fff", opacity: editText.trim() ? 1 : 0.5 }}>저장</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ position: "relative" }}>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{n.text}</div>
+                    <button onClick={() => { setEditKey(n.day + ":" + n.text); setEditText(n.text); }}
+                      title="노트 수정"
+                      style={{ marginTop: 6, background: "transparent", border: "none", padding: 0, fontSize: 11, color: "var(--ink-mute)", cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
+                      ✏️ 수정
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
             {filtered.length === 0 && (
@@ -5673,6 +5759,17 @@ function MyPage() {
 
   // 회원 탈퇴 기능은 데이터 보호를 위해 제거됨 (탈퇴 요청은 유버디 문의로 안내)
 
+  // ★ 사원증 덱: 승급한 직급들을 카드로 넘겨보기 (승급의 재미)
+  // 항상 보유: 수습. 사원이면 사원 카드까지. 기본은 현재 직급 카드.
+  const _cardDeck = [{ id: "probation", ko: "수습", en: "Probation" }];
+  if (USER.isFulltime) _cardDeck.push({ id: "fulltime", ko: "사원", en: "Associate" });
+  const [cardIdx, setCardIdx] = useState(_cardDeck.length - 1); // 현재(가장 높은) 직급부터
+  const _cardSafeIdx = Math.min(cardIdx, _cardDeck.length - 1);
+  const card = _cardDeck[_cardSafeIdx];
+  const _cardIsFull = card.id === "fulltime";
+  const _cardDays = card.id === "fulltime" ? 60 : 30;
+  const _cardEarned = card.id === USER.levelId; // 현재 재직 중인 직급인가
+
   return (
     <div>
       <div className="desk-header">
@@ -5684,17 +5781,38 @@ function MyPage() {
       </div>
       <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.isFulltime ? "사원 재직 중" : "수습 진행 중"} />
 
+      {/* 덱 네비게이션 (사원 이상이면 노출) */}
+      {_cardDeck.length > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 12 }}>
+          <button onClick={() => setCardIdx(Math.max(0, _cardSafeIdx - 1))} disabled={_cardSafeIdx === 0}
+            style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "4px 10px", cursor: _cardSafeIdx === 0 ? "default" : "pointer", opacity: _cardSafeIdx === 0 ? 0.3 : 1, fontFamily: "inherit", fontSize: 13 }}>◀</button>
+          <div style={{ display: "flex", gap: 6 }}>
+            {_cardDeck.map((c, i) => (
+              <button key={c.id} onClick={() => setCardIdx(i)}
+                style={{
+                  fontSize: 11, fontWeight: 800, padding: "4px 12px", borderRadius: 14, cursor: "pointer", fontFamily: "inherit",
+                  border: "1px solid " + (i === _cardSafeIdx ? "var(--orange)" : "var(--line)"),
+                  background: i === _cardSafeIdx ? "var(--orange)" : "transparent",
+                  color: i === _cardSafeIdx ? "#fff" : "var(--ink-mute)",
+                }}>{c.ko}</button>
+            ))}
+          </div>
+          <button onClick={() => setCardIdx(Math.min(_cardDeck.length - 1, _cardSafeIdx + 1))} disabled={_cardSafeIdx === _cardDeck.length - 1}
+            style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "4px 10px", cursor: _cardSafeIdx === _cardDeck.length - 1 ? "default" : "pointer", opacity: _cardSafeIdx === _cardDeck.length - 1 ? 0.3 : 1, fontFamily: "inherit", fontSize: 13 }}>▶</button>
+        </div>
+      )}
+
       <div className="id-card">
         <div className="id-card-clip"></div>
-        <div className="id-card-strip" style={USER.isFulltime ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
-          <span>YOUBUDDY KOREA · {USER.isFulltime ? "ASSOCIATE" : "EMPLOYEE ID"}</span>
+        <div className="id-card-strip" style={_cardIsFull ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
+          <span>YOUBUDDY KOREA · {_cardIsFull ? "ASSOCIATE" : "EMPLOYEE ID"}</span>
           <b>NO. {USER.empNumber || "2026-0416"}</b>
         </div>
         <div className="id-card-body">
-          <div className="id-card-photo" style={USER.isFulltime ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>{USER.isFulltime ? "👔" : USER.name[0]}</div>
+          <div className="id-card-photo" style={_cardIsFull ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>{_cardIsFull ? "👔" : USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
-            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{USER.position} · {USER.positionEn}</span></div>
+            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : ""}</span></div>
             {USER.email && (
               <div className="id-field">
                 <span className="id-field-label">로그인</span>
@@ -5706,28 +5824,30 @@ function MyPage() {
               <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             )}
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
-            <div className="id-field"><span className="id-field-label">{USER.isFulltime ? "근속" : "수습"}</span><span className="id-field-value">DAY {USER.currentDay} / {USER.totalDays} · 표현 {USER.wordsCollected}개 · 🔥 {USER.streak}</span></div>
+            <div className="id-field"><span className="id-field-label">{_cardIsFull ? "근속" : "수습"}</span><span className="id-field-value">{_cardEarned ? `DAY ${USER.currentDay} / ${_cardDays} · 표현 ${USER.wordsCollected}개 · 🔥 ${USER.streak}` : `DAY ${_cardDays} / ${_cardDays} · 수료 ✓`}</span></div>
           </div>
         </div>
         <div className="id-card-foot">
           <span>{(() => {
-            // 유효기간 = 입사일 ~ 코스 종료일 (수습 30일 / 정직원 60일)
+            // 유효기간 = 입사일 ~ 코스 종료일 (수습 30일 / 사원 60일)
             try {
               const sd = _localUser && _localUser.signupDate ? new Date(_localUser.signupDate) : null;
               if (sd && !isNaN(sd.getTime())) {
-                const ed = new Date(sd.getTime() + (USER.totalDays - 1) * 86400000);
+                const ed = new Date(sd.getTime() + (_cardDays - 1) * 86400000);
                 const f = (d) => d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
-                return "유효기간 · " + f(sd) + " ~ " + f(ed) + (USER.isFulltime ? " (사원)" : " (수습)");
+                return "유효기간 · " + f(sd) + " ~ " + f(ed) + ` (${card.ko})`;
               }
             } catch (e) {}
             return "유효기간 · 2026.04.16 ~ 2026.05.15 (수습)";
           })()}</span>
-          {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
-          {false && (
-            <span><b>{USER.vacationDays}일</b> 휴가 보유</span>
-          )}
+          {!_cardEarned && <span style={{ fontWeight: 800, color: "var(--ink-mute)" }}>🎓 수료한 직급</span>}
         </div>
       </div>
+      {_cardDeck.length > 1 && (
+        <div style={{ textAlign: "center", fontSize: 11, color: "var(--ink-mute)", marginTop: 8 }}>
+          ◀ ▶ 로 지나온 직급의 사원증을 다시 볼 수 있어요
+        </div>
+      )}
 
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
