@@ -3344,13 +3344,22 @@ const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) /
 // ★ 시즌 2: 코스 전체 상한 60일 (Day 31-60 = 정직원)
 const _autoDay = Math.max(1, Math.min(60, _daysSince + 1));
 
-// ── 레벨 (수습 / 정직원) ──
+// ── 레벨 (수습 → 사원 → ...) ──
 // users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
-const _userLevel = _localUser?.level || { id: "probation", ko: "수습", en: "Probation" };
-const _isFulltimeLevel = _userLevel.id && _userLevel.id !== "probation";
+// 직급 이름은 항상 level.id 기준으로 계산 (기존 DB가 "정직원/Full-time"로 저장돼있어도
+// 화면엔 새 사다리 명칭으로 일관 표시. "정직원 전환"은 의례 명칭으로만 유지).
+const _LEVEL_LABELS = {
+  probation: { ko: "수습", en: "Probation" },
+  fulltime:  { ko: "사원", en: "Associate" },   // Day 31-60, 정직원 전환 후 첫 직급
+};
+function _levelLabel(id) { return _LEVEL_LABELS[id] || _LEVEL_LABELS.probation; }
+const _userLevel = _localUser?.level || { id: "probation" };
+const _levelId = _userLevel.id || "probation";
+const _isFulltimeLevel = _levelId !== "probation";
 window.__OD_LEVEL = _userLevel;
 window.__OD_IS_FULLTIME = _isFulltimeLevel;
-const LEVEL_FULLTIME = { id: "fulltime", ko: "정직원", en: "Full-time" };
+// id는 호환 위해 "fulltime" 유지, 표시 라벨만 사원/Associate
+const LEVEL_FULLTIME = { id: "fulltime", ko: "사원", en: "Associate" };
 window.__OD_LEVEL_FULLTIME = LEVEL_FULLTIME;
 // 운영자/Dev만 dayInCompany 수동 override 가능, 일반 사용자는 자동 계산값 사용
 const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
@@ -3360,10 +3369,10 @@ const _resolvedDay = _isInternal && _localUser?.dayInCompany
 
 const USER = {
   name: _localUser?.name || "김지원",
-  // 수습이면 "수습 사원", 정직원 이상이면 레벨명 그대로
-  position: _isFulltimeLevel ? _userLevel.ko : (_userLevel.ko ? (_userLevel.ko + " 사원") : "수습 사원"),
-  positionEn: _userLevel.en || "Probation",
-  levelId: _userLevel.id || "probation",
+  // 직급 표시: 수습 → "수습 사원", 사원(Associate) → "사원". 항상 id 기준.
+  position: _isFulltimeLevel ? _levelLabel(_levelId).ko : "수습 사원",
+  positionEn: _levelLabel(_levelId).en,
+  levelId: _levelId,
   isFulltime: _isFulltimeLevel,
   team: _localUser?.department?.short ? (_localUser.department.short + " · 12F") : "Strategy Team · 12F",
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
@@ -4059,13 +4068,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const TOUR_STEPS_S2 = [
     {
       selector: null,
-      title: "정직원 모드로 바뀌었어요 👔",
-      body: "승진 축하해요! 30초만 같이 둘러봐요. 책상이 어떻게 달라졌는지.",
+      title: "정직원 전환, 사원이 됐어요 👔",
+      body: "승진 축하해요! 수습 떼고 사원(Associate) 됐어요. 30초만 같이 둘러봐요, 책상이 어떻게 달라졌는지.",
     },
     {
       selector: ".s2-welcome",
       placement: "left",
-      title: "정직원 마일스톤 카드",
+      title: "사원 마일스톤 카드",
       body: "Day 60 특별 면담까지의 여정이 여기 담겨요. 🌱37 → ⚡44 → 🔥51 → 🌟60. 접어두면 슬림 바로 D-day만 보여요.",
     },
     {
@@ -4084,13 +4093,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       selector: ".locker-link, .m-tab",
       placement: "right",
       title: "🎁 보상: 나만의 노트 모아보기",
-      body: "정직원이 되면 '나만의 노트' 탭이 열려요. 그동안 유버디한테 물어보고 저장한 답변들을 단어별로 모아서 검색하고 복습할 수 있어요. 수습 때 저장한 것도 전부 여기 모입니다.",
+      body: "사원이 되면 '나만의 노트' 탭이 열려요. 그동안 유버디한테 물어보고 저장한 답변들을 단어별로 모아서 검색하고 복습할 수 있어요. 수습 때 저장한 것도 전부 여기 모입니다.",
     },
     {
       selector: null,
       title: "사원증도 새로 나왔어요 🪪",
-      body: "사원증 탭에 가면 네이비 정직원 사원증과 '정직원 전환 🎉' 뱃지가 기다려요. 그럼, 오늘 단어부터 시작할까요?",
-      cta: "정직원 첫 학습 시작 →",
+      body: "사원증 탭에 가면 네이비 사원(Associate) 사원증과 '정직원 전환 🎉' 뱃지가 기다려요. 그럼, 오늘 단어부터 시작할까요?",
+      cta: "사원 첫 학습 시작 →",
     },
   ];
   const TOUR_STEPS_DAY1 = [
@@ -4433,7 +4442,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   fontFamily: "inherit", textAlign: "left",
                 }}>
                   <span style={{ fontSize: 14 }}>👔</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>정직원 마일스톤</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>사원 마일스톤</span>
                   <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
                     <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
                   </span>
@@ -4462,12 +4471,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                     color: "var(--orange)", border: "2px solid var(--orange)",
                     padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
                   }}>인사 발령</span>
-                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>정직원 승진을 축하합니다 🎉</b>
+                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>정직원 전환, 사원(Associate) 발령 🎉</b>
                 </div>
                 <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
                   이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
                   30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
-                  60일 누적 통계 공개, 그리고 다음 레벨의 부서 평가까지.
+                  60일 누적 통계 공개, 그리고 다음 직급 <b style={{ color: "var(--ink)" }}>선임(Senior Associate)</b> 평가까지.
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
                   {MILESTONES.map(m => {
@@ -4982,7 +4991,7 @@ function MyNotesPage({ openScene }) {
         <div className="desk-header">
           <div>
             <div className="desk-eyebrow">RECORDS · 나만의 노트 (잠김)</div>
-            <h1 className="desk-title"><em>정직원</em> 전용 보관함</h1>
+            <h1 className="desk-title"><em>사원</em> 전용 보관함</h1>
           </div>
         </div>
         <div style={{
@@ -4991,11 +5000,11 @@ function MyNotesPage({ openScene }) {
         }}>
           <div style={{ fontSize: 42, marginBottom: 14, filter: "grayscale(0.3)" }}>🔒</div>
           <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", marginBottom: 12, lineHeight: 1.4 }}>
-            저장한 노트를 한곳에 모아보는 기능,<br/>정직원이 되면 열려요
+            저장한 노트를 한곳에 모아보는 기능,<br/>사원으로 승급하면 열려요
           </h2>
           <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 18, maxWidth: 420, margin: "0 auto 18px" }}>
             유버디한테 물어보고 "📒 노트에 저장" 한 답변들을, 단어별로 묶어 검색하고 복습할 수 있는 나만의 보관함이에요.
-            수습 30일을 완주하고 정직원으로 승급하면 보상으로 열립니다.
+            수습 30일을 완주하고 정직원 전환(사원)하면 보상으로 열립니다.
           </p>
           <div style={{
             display: "inline-block", background: "var(--paper-warm)", border: "1px solid var(--line)",
@@ -5589,12 +5598,12 @@ function MyPage() {
         </div>
         <div className="desk-meta"><b>입사일</b><br/>{USER.joinDate}</div>
       </div>
-      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.isFulltime ? "정직원 재직 중" : "수습 진행 중"} />
+      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.isFulltime ? "사원 재직 중" : "수습 진행 중"} />
 
       <div className="id-card">
         <div className="id-card-clip"></div>
         <div className="id-card-strip" style={USER.isFulltime ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
-          <span>YOUBUDDY KOREA · {USER.isFulltime ? "FULL-TIME EMPLOYEE" : "EMPLOYEE ID"}</span>
+          <span>YOUBUDDY KOREA · {USER.isFulltime ? "ASSOCIATE" : "EMPLOYEE ID"}</span>
           <b>NO. {USER.empNumber || "2026-0416"}</b>
         </div>
         <div className="id-card-body">
@@ -5624,7 +5633,7 @@ function MyPage() {
               if (sd && !isNaN(sd.getTime())) {
                 const ed = new Date(sd.getTime() + (USER.totalDays - 1) * 86400000);
                 const f = (d) => d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
-                return "유효기간 · " + f(sd) + " ~ " + f(ed) + (USER.isFulltime ? " (정직원)" : " (수습)");
+                return "유효기간 · " + f(sd) + " ~ " + f(ed) + (USER.isFulltime ? " (사원)" : " (수습)");
               }
             } catch (e) {}
             return "유효기간 · 2026.04.16 ~ 2026.05.15 (수습)";
@@ -8457,7 +8466,7 @@ function PromotionCeremony({ realDay }) {
               padding: "10px 18px", transform: "rotate(-4deg)",
               marginBottom: 18,
             }}>
-              정직원 발령
+              정직원 전환 · 사원 발령
             </div>
             <div style={{ fontSize: 46, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.04em", marginBottom: 8 }}>
               {score}<span style={{ fontSize: 18, color: "var(--ink-mute)" }}>점</span>
@@ -8472,7 +8481,7 @@ function PromotionCeremony({ realDay }) {
               </div>
             )}
             <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 14 }}>
-              {name}님은 오늘부로 <b style={{ color: "var(--ink)" }}>정직원</b>이에요.<br/>
+              {name}님은 오늘부로 정직원 전환, <b style={{ color: "var(--ink)" }}>사원(Associate)</b>이에요.<br/>
               Day 60까지, 이제 회의를 주도하는 표현들을 만나요.
             </p>
             <div style={{
@@ -9602,10 +9611,10 @@ window.SimApp = App;
       </div>
 
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
-        <div class="muted" style="margin-bottom:4px;">레벨 (현재: ${u.level && u.level.id === 'fulltime' ? '👔 정직원' : '👤 수습'})</div>
+        <div class="muted" style="margin-bottom:4px;">레벨 (현재: ${u.level && u.level.id === 'fulltime' ? '👔 사원' : '👤 수습'})</div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr">
           <button class="dp-btn" data-act="level-probation" style="${(!u.level || u.level.id !== 'fulltime') ? 'background:rgba(243,138,92,0.4)' : ''}" title="수습으로 전환 (신입사원 화면 미리보기)">👤 수습</button>
-          <button class="dp-btn" data-act="level-fulltime" style="${(u.level && u.level.id === 'fulltime') ? 'background:rgba(243,138,92,0.4)' : ''}" title="정직원으로 전환">👔 정직원</button>
+          <button class="dp-btn" data-act="level-fulltime" style="${(u.level && u.level.id === 'fulltime') ? 'background:rgba(243,138,92,0.4)' : ''}" title="사원으로 전환">👔 사원</button>
         </div>
       </div>
 
@@ -9667,7 +9676,7 @@ window.SimApp = App;
         reloadCleanUrl();
         break;
       case 'level-fulltime':
-        u.level = { id: 'fulltime', ko: '정직원', en: 'Full-time' };
+        u.level = { id: 'fulltime', ko: '사원', en: 'Associate' };
         u.levelupCompletedAt = u.levelupCompletedAt || new Date().toISOString();
         u.levelup_completed_at = u.levelupCompletedAt;
         save(u);
