@@ -1,11 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- 1일1비 브랜드 마크: 어두운 라운드 사각 + 크림색 1 (사원증·사옥 느낌) -->
-  <rect x="4" y="4" width="56" height="56" rx="13" fill="#2A1F14"/>
-  <rect x="4" y="4" width="56" height="56" rx="13" fill="none" stroke="#D85A2A" stroke-width="2.5" opacity="0.85"/>
-  <!-- 숫자 1 (geometric, bold) -->
-  <path d="M27 22 L38 17 L38 47"
-        fill="none" stroke="#F2EBDD" stroke-width="6.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- 1의 받침 (base serif) -->
-  <line x1="28" y1="47" x2="46" y2="47" stroke="#F2EBDD" stroke-width="6.5" stroke-linecap="round"/>
+  <!-- 1일1비 브랜드 마크: 픽셀 사옥 (외국계 회사 입사 시뮬레이션, 90년대 레트로 톤) -->
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="#2A1F14"/>
+  <!-- 옥상 안테나 -->
+  <rect x="30" y="13" width="4" height="9" fill="#D85A2A"/>
+  <!-- 건물 본체 -->
+  <rect x="21" y="21" width="22" height="33" fill="#F2EBDD"/>
+  <!-- 창문 (3행 2열) -->
+  <g fill="#2A1F14">
+    <rect x="25" y="25" width="5" height="5"/><rect x="34" y="25" width="5" height="5"/>
+    <rect x="25" y="33" width="5" height="5"/><rect x="34" y="33" width="5" height="5"/>
+    <rect x="25" y="41" width="5" height="5"/><rect x="34" y="41" width="5" height="5"/>
+  </g>
+  <!-- 출입구 -->
+  <rect x="29" y="45" width="6" height="9" fill="#D85A2A"/>
+  <!-- 지면 (사옥 앞 보도) -->
+  <rect x="18" y="54" width="28" height="4" fill="#F2EBDD"/>
 </svg>
