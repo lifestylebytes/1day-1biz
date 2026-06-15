@@ -1212,7 +1212,7 @@ function App() {
               </div>
               {supaUsers.length === 0 ? (
                 <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
-              ) : supaUsers.map(u => {
+              ) : [...supaUsers].sort((a, b) => new Date(b.last_active || 0) - new Date(a.last_active || 0)).map(u => {
                 const dLeft = daysUntilEnd(u.membership_ends_at);
                 const isPaidMember = u.cohort === 'member';
                 const isInternal = u.is_operator || u.is_dev_mode;
