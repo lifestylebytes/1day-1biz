@@ -1152,6 +1152,52 @@ function App() {
                 </div>
               </div>
             )}
+            {supaUsers.length > 0 && (
+              <details style={{ marginBottom: 16 }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 14, padding: '12px 16px', background: '#FFF3D6', color: '#8C6510', borderRadius: 8, userSelect: 'none' }}>
+                  🏆 학습 순위 / 최근 활동 (펼쳐보기)
+                </summary>
+                <div className="card" style={{ padding: 0, marginTop: 8 }}>
+                  {(() => {
+                    const now = new Date();
+                    const rel = (d) => {
+                      if (!d) return '활동 없음';
+                      const diff = Math.floor((now - new Date(d)) / 86400000);
+                      if (diff <= 0) return '오늘';
+                      if (diff === 1) return '어제';
+                      return diff + '일 전';
+                    };
+                    const learners = supaUsers
+                      .filter(u => !u.is_operator && !u.is_dev_mode)
+                      .map(u => ({ ...u, _day: u.day_in_company || 1 }))
+                      .sort((a, b) => (b._day - a._day) || (new Date(b.last_active || 0) - new Date(a.last_active || 0)))
+                      .slice(0, 12);
+                    if (learners.length === 0) return <div className="empty">학습자 데이터 없음</div>;
+                    return learners.map((u, i) => {
+                      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
+                      const days = Math.max(0, Math.floor((now - new Date(u.last_active || 0)) / 86400000));
+                      const stale = u.last_active && days >= 3;
+                      return (
+                        <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid #E8DFCB' }}>
+                          <div style={{ width: 26, textAlign: 'center', fontWeight: 800, fontSize: 14 }}>{medal}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700 }}>{u.name}</div>
+                            <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: 800, color: '#B8431A' }}>{u._day}일째 학습</div>
+                            <div style={{ fontSize: 11, color: stale ? '#993C1D' : '#8A7964' }}>마지막 {rel(u.last_active)}</div>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+                <div style={{ fontSize: 11, color: '#8A7964', marginTop: 8, lineHeight: 1.6 }}>
+                  학습일수(Day) 순. 마지막 활동이 3일 이상 지난 사람은 붉은색. 운영자·DEV 제외.
+                </div>
+              </details>
+            )}
             <div className="card" style={{ padding: 0 }}>
               <div className="user-row head">
                 <div>사용자</div>

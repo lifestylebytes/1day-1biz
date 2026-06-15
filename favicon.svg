@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- 1일1비 브랜드 마크: 픽셀 사옥 (외국계 회사 입사 시뮬레이션, 90년대 레트로 톤) -->
+  <!-- 1일1비 브랜드 마크: 사원증 (외국계 회사 입사 시뮬레이션) -->
   <rect x="2" y="2" width="60" height="60" rx="13" fill="#2A1F14"/>
-  <!-- 옥상 안테나 -->
-  <rect x="30" y="13" width="4" height="9" fill="#D85A2A"/>
-  <!-- 건물 본체 -->
-  <rect x="21" y="21" width="22" height="33" fill="#F2EBDD"/>
-  <!-- 창문 (3행 2열) -->
-  <g fill="#2A1F14">
-    <rect x="25" y="25" width="5" height="5"/><rect x="34" y="25" width="5" height="5"/>
-    <rect x="25" y="33" width="5" height="5"/><rect x="34" y="33" width="5" height="5"/>
-    <rect x="25" y="41" width="5" height="5"/><rect x="34" y="41" width="5" height="5"/>
-  </g>
-  <!-- 출입구 -->
-  <rect x="29" y="45" width="6" height="9" fill="#D85A2A"/>
-  <!-- 지면 (사옥 앞 보도) -->
-  <rect x="18" y="54" width="28" height="4" fill="#F2EBDD"/>
+  <!-- 목줄 클립 -->
+  <rect x="27" y="6" width="10" height="6" rx="2" fill="#C9BBA0"/>
+  <!-- 사원증 카드 -->
+  <rect x="15" y="11" width="34" height="44" rx="5" fill="#F2EBDD"/>
+  <!-- 목줄 구멍 (slot) -->
+  <rect x="28" y="15" width="8" height="3" rx="1.5" fill="#2A1F14"/>
+  <!-- 상단 오렌지 바 -->
+  <rect x="15" y="22" width="34" height="6" fill="#D85A2A"/>
+  <!-- 인물 사진 -->
+  <circle cx="25" cy="39" r="5" fill="#D85A2A"/>
+  <path d="M18 49 a7 6 0 0 1 14 0 z" fill="#D85A2A"/>
+  <!-- 정보 줄 -->
+  <rect x="35" y="36" width="10" height="3" rx="1.5" fill="#2A1F14"/>
+  <rect x="35" y="42" width="9" height="3" rx="1.5" fill="#A8997F"/>
 </svg>
