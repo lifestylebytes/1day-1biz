@@ -3735,7 +3735,18 @@ function Locker({ active, setActive, user, unread }) {
   return (
     <aside className="locker">
       <button className="locker-brand" onClick={() => setActive("home")} title="홈으로">
-        <div className="locker-brand-mark">1</div>
+        <div className="locker-brand-mark">
+          <svg viewBox="0 0 64 64" width="100%" height="100%" style={{ display: "block" }} aria-hidden="true">
+            <rect x="25" y="6" width="14" height="6" rx="2" fill="#C9BBA0"/>
+            <rect x="10" y="11" width="44" height="46" rx="6" fill="#F2EBDD"/>
+            <rect x="27" y="15" width="10" height="3" rx="1.5" fill="#2A1F14"/>
+            <rect x="10" y="22" width="44" height="7" fill="#D85A2A"/>
+            <circle cx="24" cy="41" r="6" fill="#D85A2A"/>
+            <path d="M14 53 a10 8 0 0 1 20 0 z" fill="#D85A2A"/>
+            <rect x="37" y="38" width="12" height="4" rx="2" fill="#2A1F14"/>
+            <rect x="37" y="45" width="10" height="4" rx="2" fill="#A8997F"/>
+          </svg>
+        </div>
         <div className="locker-brand-text">
           <b>1일1비</b>
           <small>YOUBUDDY KOREA</small>
@@ -3786,24 +3797,59 @@ function Locker({ active, setActive, user, unread }) {
 
 // Mobile bottom tab bar
 function MobileTabbar({ active, setActive, unread, isFulltime }) {
+  const [notesOpen, setNotesOpen] = useState(false);
+  // "노트" 탭 하나로 업무 노트 + 나만의 노트를 묶고, 누르면 선택 시트가 뜸.
+  // 나만의 노트는 정직원만 열림. 수습은 🔒 힌트로 보여줘 모바일에서도 잠금이 보이게.
   const items = [
     { id: "home", label: "오늘", icon: "📋" },
-    { id: "library", label: "노트", icon: "🗂️" },
-    ...(isFulltime ? [{ id: "mynotes", label: "내 노트", icon: "📒" }] : []),
+    { id: "notes", label: "노트", icon: "🗂️", isNotes: true },
     { id: "test", label: "평가", icon: "📝" },
     { id: "inbox", label: "메모", icon: "📨", badge: unread },
     { id: "mypage", label: "사원증", icon: "🪪" },
   ];
+  const notesActive = active === "library" || active === "mynotes";
+  const optionStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 16px", background: "transparent", border: "none", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "var(--ink)" };
   return (
-    <nav className="m-tabbar">
-      {items.map(it => (
-        <button key={it.id} className={"m-tab " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
-          <span className="m-tab-icon">{it.icon}</span>
-          <span className="m-tab-label">{it.label}</span>
-          {it.badge ? <span className="m-tab-badge">{it.badge}</span> : null}
-        </button>
-      ))}
-    </nav>
+    <>
+      {notesOpen && (
+        <>
+          <div onClick={() => setNotesOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 78, background: "rgba(42,31,20,0.12)" }} />
+          <div style={{ position: "fixed", left: 0, right: 0, bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", zIndex: 79, background: "var(--paper-warm)", borderTop: "1.5px solid var(--ink)", borderRadius: "16px 16px 0 0", boxShadow: "0 -6px 18px rgba(58,40,18,0.12)", overflow: "hidden" }}>
+            <button onClick={() => { setActive("library"); setNotesOpen(false); }} style={{ ...optionStyle, borderBottom: "1px solid var(--line)" }}>
+              <span style={{ fontSize: 20 }}>🗂️</span>
+              <span style={{ display: "grid" }}>
+                <b style={{ fontSize: 14 }}>업무 노트</b>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>매일 배운 표현 모음</small>
+              </span>
+            </button>
+            <button
+              onClick={() => { if (isFulltime) { setActive("mynotes"); setNotesOpen(false); } }}
+              disabled={!isFulltime}
+              style={{ ...optionStyle, cursor: isFulltime ? "pointer" : "not-allowed", opacity: isFulltime ? 1 : 0.65 }}
+            >
+              <span style={{ fontSize: 20 }}>{isFulltime ? "📒" : "🔒"}</span>
+              <span style={{ display: "grid" }}>
+                <b style={{ fontSize: 14 }}>나만의 노트</b>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{isFulltime ? "내가 저장한 표현, 메모" : "정직원 승급 후 열려요"}</small>
+              </span>
+            </button>
+          </div>
+        </>
+      )}
+      <nav className="m-tabbar">
+        {items.map(it => (
+          <button
+            key={it.id}
+            className={"m-tab " + ((it.isNotes ? notesActive : active === it.id) ? "active" : "")}
+            onClick={() => it.isNotes ? setNotesOpen(v => !v) : setActive(it.id)}
+          >
+            <span className="m-tab-icon">{it.icon}</span>
+            <span className="m-tab-label">{it.label}</span>
+            {it.badge ? <span className="m-tab-badge">{it.badge}</span> : null}
+          </button>
+        ))}
+      </nav>
+    </>
   );
 }
 
@@ -6465,6 +6511,8 @@ function SceneModal({ scenario, onClose }) {
         meaning: scenario.meaning,
         scene: scenario.scene,
         sampleAnswer: scenario.sampleAnswer,
+        koSentence: (scenario.task && scenario.task.koSentence) || "",
+        promptKo: (scenario.task && scenario.task.promptKo) || "",
         mentorName: CHARACTERS.mentor.name,
       }).then(r => {
         setAiLoading(false);
@@ -6699,16 +6747,6 @@ function SceneModal({ scenario, onClose }) {
               </div>
             ) : (
               <>
-                {/* 본인이 쓴 문장, 강조 표시 */}
-                <div style={{ marginTop: 14, padding: "12px 14px", background: "var(--paper-warm)", borderLeft: "3px solid var(--accent)", borderRadius: 4 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)", marginBottom: 4 }}>
-                    ✏️ 내가 쓴 한 줄
-                  </div>
-                  <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.55, fontWeight: 600, fontStyle: "italic" }}>
-                    "{draft}"
-                  </div>
-                </div>
-
                 {/* 사수 피드백, 헤드라인 + 체크 항목 + 예시 + 팁 */}
                 <div style={{ marginTop: 14, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)", position: "relative" }}>
                   <div className="postit-from" style={{ marginBottom: 8 }}>
@@ -6741,12 +6779,24 @@ function SceneModal({ scenario, onClose }) {
                                 const usingModel = !!(aiFb.segments && aiFb.segments.length);
                                 const segs = usingModel ? aiFb.segments : _odWordDiff(draft, aiFb.corrected);
                                 if (!segs || !segs.length) return aiFb.corrected;
-                                return segs.map((s, i) => {
-                                  const cc = ({ grammar: "#C0392B", vocab: "#1E6FA8", nuance: "#B8860B", tone: "#8E44AD" })[s.cat] || (s.type === "removed" ? "#C0392B" : s.type === "added" ? "#2D7A3D" : "var(--ink)");
-                                  if (s.type === "removed") return <span key={i} style={{ textDecoration: "line-through", textDecorationColor: cc, color: cc, opacity: 0.6, marginRight: 4 }}>{s.text}</span>;
-                                  if (s.type === "added")   return <span key={i} style={{ color: cc, fontWeight: 800 }}>{s.text}</span>;
-                                  return <span key={i}>{s.text}</span>;
+                                const colorOf = (cat, type) => ({ grammar: "#C0392B", vocab: "#1E6FA8", nuance: "#B8860B", tone: "#B8860B" })[cat] || (type === "removed" ? "#C0392B" : type === "added" ? "#2D7A3D" : "var(--ink)");
+                                const nodes = [];
+                                let prevEndsSpace = true; // 토큰 사이 한 칸 띄어쓰기 정규화 (모델 segments 붙음 방지)
+                                segs.forEach((s, i) => {
+                                  const t = (s.text || "").trim();
+                                  if (!t) return;
+                                  const cc = colorOf(s.cat, s.type);
+                                  const lead = prevEndsSpace ? "" : " ";
+                                  if (s.type === "removed") {
+                                    nodes.push(<span key={i}>{lead}<span style={{ textDecoration: "line-through", textDecorationColor: cc, color: cc, opacity: 0.6 }}>{t}</span></span>);
+                                  } else if (s.type === "added") {
+                                    nodes.push(<span key={i}>{lead}<span style={{ color: cc, fontWeight: 800 }}>{t}</span></span>);
+                                  } else {
+                                    nodes.push(<span key={i}>{lead}{t}</span>);
+                                  }
+                                  prevEndsSpace = false;
                                 });
+                                return nodes;
                               })()}
                             </div>
                             {(aiFb.segments && aiFb.segments.length > 0) ? (

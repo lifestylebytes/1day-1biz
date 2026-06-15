@@ -37,12 +37,14 @@ Deno.serve(async (req) => {
   let b: any;
   try { b = await req.json(); } catch { return json({ ok: false, error: "bad_json" }, 200); }
 
-  const sentence = String(b?.sentence || "").slice(0, 500).trim();
-  const word     = String(b?.word || "").slice(0, 60);
-  const meaning  = String(b?.meaning || "").slice(0, 120);
-  const scene    = String(b?.scene || "").slice(0, 300);
-  const sample   = String(b?.sampleAnswer || "").slice(0, 300);
-  const mentor   = String(b?.mentorName || "사수").slice(0, 20);
+  const sentence   = String(b?.sentence || "").slice(0, 500).trim();
+  const word       = String(b?.word || "").slice(0, 60);
+  const meaning    = String(b?.meaning || "").slice(0, 120);
+  const scene      = String(b?.scene || "").slice(0, 300);
+  const sample     = String(b?.sampleAnswer || "").slice(0, 300);
+  const koSentence = String(b?.koSentence || "").slice(0, 300).trim();
+  const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
+  const mentor     = String(b?.mentorName || "사수").slice(0, 20);
   if (!sentence || !word) return json({ ok: false, error: "missing" }, 200);
 
   const system = [
@@ -50,6 +52,9 @@ Deno.serve(async (req) => {
     `신입이 비즈니스 영어 한 문장을 제출하면, 진짜 네이티브 동료처럼 깔끔하고 논리적으로 코칭해.`,
     `목표 톤: 약간 캐주얼한 비즈니스 영어(사내 슬랙, 동료 대화). 너무 딱딱하지도 너무 가볍지도 않게.`,
     `핵심 원칙: 문장이 문법적으로 맞아도 반드시 더 자연스러운 네이티브 버전을 제시한다. "이대로 좋아요"로만 끝내지 마. 매일 "오 이건 몰랐는데" 하나를 주는 게 목표.`,
+    koSentence ? `★ 가장 중요: 이번 미션의 의도(한국어 뜻)는 "${koSentence}" 이다. corrected는 반드시 이 한국어 뜻 "전체"를 자연스러운 영어로 옮긴 문장이어야 한다(오늘 단어 살려서). 신입 문장을 이 의도와 비교해서 채점해.` : ``,
+    koSentence ? `의도와 비교 규칙: (a) 신입이 딴 얘기를 썼거나 단어만 끼워넣었으면 grammar에서 "의도한 뜻과 달라요"라고 분명히 짚고 ok=false. (b) 의도의 일부만 담기고 핵심 내용이 빠졌으면(예: "주간으로 진행 상황 공유" 같은 부분이 없으면) nuance에서 "빠진 내용: ~"이라고 알려주고, corrected에는 빠진 내용까지 채워 넣어. (c) 오늘 단어가 들어갔다고 의미가 부족한데 통과시키지 마.` : ``,
+    promptKo ? `미션 안내(참고): ${promptKo}` : ``,
     `아래 필드를 채워. corrected와 segments의 text만 영어, 나머지 설명은 한국어로, 짧고 명확하게(각 1~2문장).`,
     `1) corrected: 신입 문장을 네이티브 동료가 쓸 가장 자연스러운 "한 문장"으로 다시 쓴 영어 문장. 오늘 단어("${word}")는 반드시 살려. 영어 문장 하나만, 앞뒤 설명이나 따옴표 없이.`,
     `2) segments: corrected를 단어/구 단위로 쪼갠 배열. 각 원소는 {text, type, cat}. type은 keep(원문 그대로 유지), removed(원문에서 빠지거나 바뀐 부분), added(네이티브 버전에서 새로 쓰인 부분). cat은 removed/added에만 붙이고 grammar, vocab, nuance, tone 중 하나(왜 바꿨는지 기준). keep과 added를 순서대로 이으면 corrected 문장이 정확히 나와야 해. 바뀐 부분은 removed 바로 뒤에 added를 둬서 "원래 X였는데 Y로" 대조가 되게. 고칠 게 전혀 없으면 전부 keep 한 덩어리로.`,

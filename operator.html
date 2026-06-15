@@ -1099,7 +1099,9 @@ function App() {
               <div style={{ fontSize: 11, color: '#8A7964', marginBottom: 8 }}>공지를 클릭하면 전체 내용을 확인하고 수정할 수 있어요.</div>
               {notices.length === 0 ? (
                 <div className="empty" style={{ padding: 16 }}>아직 공지 없음.</div>
-              ) : notices.slice(0, 6).map(n => {
+              ) : (
+                <div style={{ maxHeight: 360, overflowY: 'auto', paddingRight: 4 }}>
+                {notices.map(n => {
                 const reads = readCounts['db-' + n.id] || 0;
                 return (
                 <div
@@ -1119,6 +1121,8 @@ function App() {
                 </div>
                 );
               })}
+                </div>
+              )}
             </div>
           </div>
         </div>
