@@ -9456,7 +9456,11 @@ function App() {
   const _d7Warning = !_isInternalUser && _endsAt && _msUntilEnd > 0 && _msUntilEnd <= 7 * 86400000;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;
 
-  const _betaExpired = (_forceExpired && !_endsAt) || (_isPilot && !_isInternalUser && !_endsAt && USER.currentDay > 14);
+  // 베타 전역 마감일. 이 날짜 전엔 PILOT을 만료로 튕기지 않는다.
+  // (DB엔 종료일이 있어도 로컬 동기화 전이라 잘못 만료 화면이 뜨는 사고 방지. 진여송 케이스)
+  const _BETA_OPEN_UNTIL = new Date('2026-07-10T23:59:59+09:00').getTime();
+  const _betaStillOpen = Date.now() < _BETA_OPEN_UNTIL;
+  const _betaExpired = (_forceExpired && !_endsAt) || (_isPilot && !_isInternalUser && !_endsAt && USER.currentDay > 14 && !_betaStillOpen);
 
   // D-7 알림은 세션당 한 번만 (계속 떠서 짜증 안 나게)
   const [_d7Dismissed, _setD7Dismissed] = useState(() => {
