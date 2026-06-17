@@ -1,0 +1,18 @@
+# GitHub Pages 빌드 설정
+# 목적: private 레포여도 Pages 사이트는 공개되므로, 웹 구동에 불필요한
+#       문서·운영·DB·스크립트(사용자 이메일, 내부 메모, 스키마 등)를 공개 URL에서 제외.
+# 주의: 아래 exclude 경로는 https://1day-1biz.youbuddy.co.kr/ 에서 더 이상 안 보임.
+#       사이트(HTML/CSS/JS/SVG)는 그대로 서빙됨. 배포 후 사이트 정상 로딩을 꼭 확인할 것.
+#       문제 생기면 이 _config.yml 만 지우면 원상복구됨.
+# (사이트가 실제로 쓰는 app/ sim/ data/ uploads/ 등은 안전을 위해 제외하지 않음)
+exclude:
+  - "*.md"
+  - "*.sql"
+  - "*.sh"
+  - scripts/
+  - supabase/
+  - migrations/
+
+# 커스텀 도메인 유지
+include:
+  - CNAME
