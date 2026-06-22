@@ -846,7 +846,7 @@ body::before {
   background: var(--cream);
   border: 1.5px solid var(--ink);
   width: 100%; max-width: 460px;
-  margin: 0 auto;
+  margin: 36px auto 0;
   position: relative;
   box-shadow: 6px 6px 0 var(--ink);
 }
@@ -2138,14 +2138,14 @@ const SCENARIOS = [
     quoteKo: "다음 주 월·화에 자리를 비워요. 급한 건 박 대리한테 연락하세요.",
     youDo: null,
     mentorTip: "메일 자동응답에 거의 항상 등장. OOO만 써도 다 알아들어. 한국식 '휴가입니다'보다 가벼워.",
-    sampleAnswer: "Noted, while you're OOO I'll loop in 박 대리 for anything urgent.",
+    sampleAnswer: "Noted, while you're OOO I'll loop in Mr. Park for anything urgent.",
     tags: ["schedule", "team"], status: "locked",
     task: { to: "mentor", channel: "slack-dm",
       promptKo: "사수의 OOO 공지에 응답.",
       koSentence: "알겠어요, 급한 일 생기면 박 대리님께 loop in 할게요." },
     mcOptions: [
-      { text: "Noted, I'll cover things while you're OOO and loop in 박 대리 for anything urgent.", kind: "correct", note: "✓ 'Noted' 한 단어로 확인 + 부재(OOO) 동안 내가 커버한다는 책임까지 명확. 사수 안심시키는 답." },
-      { text: "Acknowledged. I shall delegate urgent matters to 박 대리 in your absence.", kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
+      { text: "Noted, I'll cover things while you're OOO and loop in Mr. Park for anything urgent.", kind: "correct", note: "✓ 'Noted' 한 단어로 확인 + 부재(OOO) 동안 내가 커버한다는 책임까지 명확. 사수 안심시키는 답." },
+      { text: "Acknowledged. I shall delegate urgent matters to Mr. Park in your absence.", kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
       { text: "OK so you're gone, what should I do if something happens?", kind: "weak", note: "되묻기 = 준비 부족. 사수가 이미 박 대리 안내했는데 다시 물어보면 신뢰 깎임." },
     ],
     buddyAnswers: {
@@ -8219,6 +8219,36 @@ function JournalActivity({ today, item, onClose, onComplete }) {
   const [text, setText] = useState(_existing?.text || "");
   const [submitted, setSubmitted] = useState(!!_existing);
   const [savedToast, setSavedToast] = useState(false);
+  // 📝 회고 피드백: 버디가 "그 상황에 단어가 맞는지" 판단 + 추천 영어 문장 + 저장 (사용자 요청)
+  const [jFb, setJFb] = useState(null);
+  const [jLoading, setJLoading] = useState(false);
+  const [jSaved, setJSaved] = useState(false);
+
+  const fetchJournalFeedback = (reflection) => {
+    if (!reflection.trim() || !(window.OD?.enabled && window.OD.getMentorAiFeedback)) return;
+    setJLoading(true); setJFb(null); setJSaved(false);
+    window.OD.getMentorAiFeedback({
+      mode: "journal", sentence: reflection, word: today.word, meaning: today.meaning || "",
+    }).then(r => {
+      setJLoading(false);
+      if (r && r.ok && r.journal) setJFb(r.journal);
+    }).catch(() => setJLoading(false));
+  };
+
+  const saveRecommended = () => {
+    if (!jFb || !jFb.recommended) return;
+    try {
+      const raw = localStorage.getItem("__OD_USER"); const u = raw ? JSON.parse(raw) : {};
+      u.savedNotes = u.savedNotes || {}; const dk = String(today.day);
+      u.savedNotes[dk] = u.savedNotes[dk] || [];
+      if (!u.savedNotes[dk].some(n => n.text === jFb.recommended)) {
+        u.savedNotes[dk].push({ kind: "native", label: "네이티브 문장", text: jFb.recommended, savedAt: new Date().toISOString() });
+        localStorage.setItem("__OD_USER", JSON.stringify(u));
+        if (window.OD?.enabled && window.OD.saveNoteRow && u.email) window.OD.saveNoteRow(u.email, today.day, jFb.recommended, "네이티브 문장", "native").catch(() => {});
+      }
+      setJSaved(true);
+    } catch (e) {}
+  };
 
   const buddyReply = useMemo(() => {
     const pool = [
@@ -8234,6 +8264,7 @@ function JournalActivity({ today, item, onClose, onComplete }) {
     if (!text.trim()) return;
     const ok = _saveDailyJournal(today.day, text);
     setSubmitted(true);
+    fetchJournalFeedback(text);
     if (ok) {
       setSavedToast(true);
       setTimeout(() => setSavedToast(false), 2500);
@@ -8274,10 +8305,31 @@ function JournalActivity({ today, item, onClose, onComplete }) {
               <div className="buddy-avatar small" style={{ width: 32, height: 32, fontSize: 13 }}>{buddy.avatar}</div>
               <div>
                 <div className="buddy-name" style={{ fontSize: 13 }}>{buddy.name}</div>
-                <div className="buddy-role" style={{ fontSize: 11 }}>오늘의 응원 한 마디</div>
+                <div className="buddy-role" style={{ fontSize: 11 }}>{jLoading ? "회고 보는 중…" : (jFb ? "회고 코칭" : "오늘의 응원 한 마디")}</div>
               </div>
             </div>
-            <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.6 }}>{buddyReply}</div>
+            {jLoading ? (
+              <div style={{ fontSize: 13, color: "var(--ink-soft)", fontStyle: "italic" }}>✍️ 그 상황에 {today.word} 어울리는지 보는 중…</div>
+            ) : jFb ? (
+              <>
+                {jFb.fitMsg && (
+                  <div style={{ fontSize: 13.5, color: "var(--ink)", fontWeight: 700, lineHeight: 1.6 }}>
+                    {jFb.fit === "good" ? "👍 " : jFb.fit === "bad" ? "⚠️ " : "🤔 "}{jFb.fitMsg}
+                  </div>
+                )}
+                {jFb.reason && <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 4 }}>{jFb.reason}</div>}
+                {jFb.recommended && (
+                  <div style={{ marginTop: 12, padding: "10px 12px", background: "#fff", borderLeft: "3px solid #2D7A3D", borderRadius: 4 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#2D7A3D", marginBottom: 4 }}>💬 이렇게 써보세요</div>
+                    <div style={{ fontSize: 14, color: "var(--ink)", fontWeight: 700, lineHeight: 1.55 }}>{jFb.recommended}</div>
+                    {jFb.recommendedKo && <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 3 }}>{jFb.recommendedKo}</div>}
+                    <button className="btn btn-ghost" style={{ marginTop: 10, fontSize: 12, padding: "6px 12px" }} disabled={jSaved} onClick={saveRecommended}>{jSaved ? "✓ 노트에 저장됨" : "💾 이 문장 저장하기"}</button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.6 }}>{buddyReply}</div>
+            )}
           </div>
           <div style={{ marginTop: 16, textAlign: "center", padding: "20px 0", position: "relative" }}>
             <div style={{

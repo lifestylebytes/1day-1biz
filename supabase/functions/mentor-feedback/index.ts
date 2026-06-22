@@ -45,7 +45,50 @@ Deno.serve(async (req) => {
   const koSentence = String(b?.koSentence || "").slice(0, 300).trim();
   const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
   const mentor     = String(b?.mentorName || "사수").slice(0, 20);
+  const mode       = String(b?.mode || "").trim();
   if (!sentence || !word) return json({ ok: false, error: "missing" }, 200);
+
+  // ── 업무일지 회고 피드백 모드 ──
+  // 신입이 "어디서 써먹을지" 한국어 회고를 쓰면, 그 상황에 단어가 어울리는지 판단 + 추천 영어 문장.
+  if (mode === "journal") {
+    const jsys = [
+      `너는 따뜻한 영어 버디야. 신입이 오늘 배운 단어를 "어디서 써먹을지" 한국어로 한 줄 회고를 썼어.`,
+      `그 회고 속 상황에 이 단어가 어울리는지 친구처럼 판단하고(좋다/애매하다/잘 안 맞는다), 그 상황에서 실제로 쓸 수 있는 자연스러운 영어 문장 하나를 추천해.`,
+      `오늘 단어: "${word}" (뜻: ${meaning}).`,
+      `반드시 JSON으로만: {"fit":"good|ok|bad","fitMsg":"그 상황에 쓰기 어떤지 한 줄(예: 딱 좋은 상황이에요 / 살짝 애매해요 / 그 상황엔 잘 안 맞아요)","reason":"왜 그런지 한 줄","recommended":"그 상황에서 쓸 영어 문장 하나","recommendedKo":"그 문장의 한국어 뜻","ok":true}`,
+      `규칙: 따뜻한 반말 버디 톤. em-dash(U+2014) 문자 절대 금지(쉼표나 마침표로). fitMsg, reason, recommendedKo는 한국어, recommended만 영어.`,
+    ].join("\n");
+    try {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            { role: "system", content: jsys },
+            { role: "user", content: `신입의 회고: "${sentence}"` },
+          ],
+          temperature: 0.6, max_tokens: 320, response_format: { type: "json_object" },
+        }),
+      });
+      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
+      const data = await r.json();
+      let parsed: any = {};
+      try { parsed = JSON.parse(data?.choices?.[0]?.message?.content || "{}"); } catch { parsed = {}; }
+      const jclean = (s: any) => String(s || "").replace(/[\u2014\u2013]/g, ", ").trim();
+      const journal = {
+        fit: ["good", "ok", "bad"].includes(parsed.fit) ? parsed.fit : "ok",
+        fitMsg: jclean(parsed.fitMsg).slice(0, 200),
+        reason: jclean(parsed.reason).slice(0, 300),
+        recommended: jclean(parsed.recommended).slice(0, 300),
+        recommendedKo: jclean(parsed.recommendedKo).slice(0, 200),
+      };
+      if (!journal.fitMsg && !journal.recommended) return json({ ok: false, error: "empty" }, 200);
+      return json({ ok: true, journal });
+    } catch (_e) {
+      return json({ ok: false, error: "exception" }, 200);
+    }
+  }
 
   const system = [
     `너는 한국 외국계 회사의 따뜻하지만 디테일에 깐깐한 사수 "${mentor}"야.`,

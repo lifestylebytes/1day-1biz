@@ -1156,6 +1156,33 @@ function App() {
                 </div>
               </div>
             )}
+            {supaUsers.length > 0 && (() => {
+              const now = new Date();
+              const real = supaUsers.filter(u => !u.is_operator && !u.is_dev_mode && u.email !== 'youbuddy.co@gmail.com');
+              const ends = u => u.membership_ends_at ? new Date(u.membership_ends_at) : null;
+              const isMember = u => u.cohort === 'member';
+              const activePaid = real.filter(u => isMember(u) && !u.membership_cancel_reason && (ends(u) ? ends(u) > now : true));
+              const canceling  = real.filter(u => u.membership_cancel_reason && ends(u) && ends(u) > now);
+              const expired    = real.filter(u => isMember(u) && ends(u) && ends(u) <= now);
+              const beta       = real.filter(u => u.is_pilot_hire && !isMember(u) && (!ends(u) || ends(u) > now));
+              const cell = (label, n, color) => (
+                <div style={{ flex: '1 1 110px', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span></div>
+                </div>
+              );
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#8A7964', marginBottom: 8 }}>📊 멤버십 현황 (운영자·테스트 제외 {real.length}명)</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {cell('🟢 정상 활성', activePaid.length, '#2D6E3A')}
+                    {cell('🟡 취소 예정', canceling.length, '#B8431A')}
+                    {cell('🔴 만료·종료', expired.length, '#993C1D')}
+                    {cell('🧪 베타', beta.length, '#3D4DA8')}
+                  </div>
+                </div>
+              );
+            })()}
             {supaUsers.length > 0 && (
               <details style={{ marginBottom: 16 }}>
                 <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 14, padding: '12px 16px', background: '#FFF3D6', color: '#8C6510', borderRadius: 8, userSelect: 'none' }}>
