@@ -2390,7 +2390,7 @@ const SCENARIOS = [
     ],
     buddyAnswers: {
       nuance: "move the needle = 계기판 바늘을 움직이다 = 핵심 지표에 보이는 변화를 만들다.\n\n비슷한 표현 온도:\n• move the needle = 의미있는 변화 (지표 중심) ← 회의 단골\n• make an impact = 일반적 영향\n• game changer = 판을 바꿈 (더 큼)\n• incremental = 점진적 (needle 반대편 뉘앙스)\n\n부정형도 자주 들려: \"It won't move the needle\" = 해도 티 안 난다 = 우선순위 낮추자.",
-      example: "🗣 회의: \"Which feature actually moves the needle?\"\n📧 메일: \"This partnership could move the needle on Q4 revenue.\"\n💬 슬랙: \"Cool idea, but will it move the needle? ROI 먼저 보자.\"\n\n자주 같이 쓰는 표현:\n• move the needle on [지표]\n• actually/really move the needle\n• needle-moving initiatives",
+      example: "🗣 회의: \"Which feature actually moves the needle?\"\n📧 메일: \"This partnership could move the needle on Q4 revenue.\"\n💬 슬랙: \"Cool idea, but will it move the needle? Let's check the ROI first.\"\n\n자주 같이 쓰는 표현:\n• move the needle on [지표]\n• actually/really move the needle\n• needle-moving initiatives",
       default: "옛날 자동차 속도계 바늘(needle) 그림. 밟아도 바늘이 안 움직이면 헛바퀴.\n\n외우기: 바늘 = KPI. 바늘이 움직였나? = 지표가 변했나?\n\n답 공식: \"[한 가지] is moving the needle, [지표] is up [숫자].\" 하나 + 숫자, 이 조합이 정직원의 보고야.",
     } },
   { day: 36, word: "iterate", pos: "v.", meaning: "반복하며 개선하다", phonetic: "/ˈɪtəreɪt/",
@@ -6776,7 +6776,14 @@ function SceneModal({ scenario, onClose }) {
                             </div>
                             <div style={{ fontSize: 15, color: "var(--ink)", fontWeight: 700, lineHeight: 1.75, padding: "8px 10px", background: "rgba(45,122,61,0.07)", borderLeft: "3px solid #2D7A3D", borderRadius: 4 }}>
                               {(() => {
-                                const usingModel = !!(aiFb.segments && aiFb.segments.length);
+                                // 모델 segments 검증: keep+added를 이으면 corrected와 같아야 정상.
+                                // 다르면(취소선 엉뚱하게 들어감 등) 프론트 단어 diff로 폴백.
+                                const _norm = (s) => String(s || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+                                let usingModel = !!(aiFb.segments && aiFb.segments.length);
+                                if (usingModel) {
+                                  const recon = aiFb.segments.filter(s => s.type !== "removed").map(s => s.text).join("");
+                                  if (_norm(recon) !== _norm(aiFb.corrected)) usingModel = false;
+                                }
                                 const segs = usingModel ? aiFb.segments : _odWordDiff(draft, aiFb.corrected);
                                 if (!segs || !segs.length) return aiFb.corrected;
                                 const colorOf = (cat, type) => ({ grammar: "#C0392B", vocab: "#1E6FA8", nuance: "#B8860B", tone: "#B8860B" })[cat] || (type === "removed" ? "#C0392B" : type === "added" ? "#2D7A3D" : "var(--ink)");
@@ -9539,7 +9546,10 @@ function App() {
     _setD1Dismissed(true);
   };
   const _showD1Popup = _isProbationNow && !!_localUserNow && _realDay === 29 && !_d1Dismissed;
-  const _showCeremony = _isProbationNow && !!_localUserNow && _realDay >= 30;
+  // ★ 이미 정직원 회고/승급을 끝낸 사람(levelup_completed_at 있음)에겐 다시 안 띄움.
+  //   기기 바꿔도 hydrate가 DB의 levelup_completed_at을 로컬에 동기화하므로 재트리거 방지.
+  const _levelupDone = !!(_localUserNow?.levelupCompletedAt || _localUserNow?.levelup_completed_at);
+  const _showCeremony = _isProbationNow && !_levelupDone && !!_localUserNow && _realDay >= 30;
 
   // ── 주간 펄스 설문 (1회). 공지를 읽고 닫으면 그 직후에 노출. ──
   const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_06W2";  // 새 설문 돌릴 땐 이 키만 변경

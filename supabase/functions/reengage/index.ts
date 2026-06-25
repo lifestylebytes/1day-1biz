@@ -103,6 +103,22 @@ Deno.serve(async (req) => {
   const dry = new URL(req.url).searchParams.get("dry") === "1";
   const now = new Date();
 
+  // ── 테스트 모드: ?sampleto=이메일 ──
+  // 실제 사용자는 전혀 안 건드리고, 그 주소로만 comeback + renewal 샘플 2통을 보낸다.
+  // 넛지 메일이 실제로 어떻게 오는지 내 인박스에서 확인용.
+  const sampleTo = new URL(req.url).searchParams.get("sampleto");
+  if (sampleTo) {
+    const cb = comebackEmail("테스터", 3);
+    const rn = renewalEmail("테스터", 27, 26);
+    const ok1 = await sendEmail(sampleTo, "[샘플] " + cb.subject, cb.html);
+    const ok2 = await sendEmail(sampleTo, "[샘플] " + rn.subject, rn.html);
+    return new Response(JSON.stringify({
+      ok: true, sample: true, to: sampleTo,
+      comeback_sent: ok1, renewal_sent: ok2,
+      hint: ok1 && ok2 ? "두 통 다 발송됨. 인박스 확인." : "발송 실패. RESEND_API_KEY 설정/도메인 확인 필요.",
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  }
+
   // 발송 대상: 결제 회원 + 탈퇴 안 함 + 운영자/Dev 아님 + 멤버십 미만료 + 이메일 있음
   const { data: users, error } = await sb.from("users")
     .select("email, name, signup_date, last_active, day_in_company, membership_ends_at, withdrawn_at, cohort, is_operator, is_dev_mode")
