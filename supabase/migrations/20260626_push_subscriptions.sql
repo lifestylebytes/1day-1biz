@@ -40,3 +40,18 @@ end;
 $$;
 
 grant execute on function save_push_subscription(text, jsonb) to anon, authenticated;
+
+-- 구독 해제 (알림 끄기). endpoint로 해당 단말 구독 삭제.
+create or replace function delete_push_subscription(p_endpoint text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from push_subscriptions where endpoint = p_endpoint;
+  return jsonb_build_object('ok', true);
+end;
+$$;
+
+grant execute on function delete_push_subscription(text) to anon, authenticated;

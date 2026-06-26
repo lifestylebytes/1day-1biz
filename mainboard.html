@@ -3772,10 +3772,81 @@ async function odEnablePush(email) {
       });
     } catch (e) {}
     alert("알림이 켜졌어요! 방금 테스트 알림을 보냈어요.");
+    return true;
   } catch (e) {
     console.warn("[push] odEnablePush 실패:", e);
     alert("알림 켜기에 실패했어요: " + (e && e.message ? e.message : e));
+    return false;
   }
+}
+
+// 알림 끄기: 구독 해제 + 서버에서 삭제
+async function odDisablePush() {
+  try {
+    if (!("serviceWorker" in navigator)) return true;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      const endpoint = sub.endpoint;
+      try { await sub.unsubscribe(); } catch (e) {}
+      if (window.OD?.deletePushSubscription) {
+        try { await window.OD.deletePushSubscription(endpoint); } catch (e) {}
+      }
+    }
+    return true;
+  } catch (e) {
+    console.warn("[push] odDisablePush 실패:", e);
+    return false;
+  }
+}
+
+// 푸시 알림 켜기/끄기 토글 (설정 화면)
+function PushToggle({ email }) {
+  const [status, setStatus] = useState("checking"); // checking|on|off|unsupported
+  const [busy, setBusy] = useState(false);
+
+  const recheck = React.useCallback(async () => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setStatus("unsupported"); return;
+    }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      setStatus(sub && Notification.permission === "granted" ? "on" : "off");
+    } catch (e) { setStatus("off"); }
+  }, []);
+
+  useEffect(() => { recheck(); }, [recheck]);
+
+  const toggle = async () => {
+    if (busy) return;
+    setBusy(true);
+    if (status === "on") { await odDisablePush(); }
+    else { await odEnablePush(email); }
+    await recheck();
+    setBusy(false);
+  };
+
+  if (status === "unsupported") {
+    return <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>이 기기 미지원</span>;
+  }
+  const on = status === "on";
+  return (
+    <button
+      onClick={toggle}
+      disabled={busy || status === "checking"}
+      style={{
+        background: on ? "var(--accent)" : "transparent",
+        border: "1px solid var(--accent)",
+        color: on ? "#fff" : "var(--accent)",
+        padding: "6px 16px", borderRadius: 6, fontSize: 12, fontWeight: 700,
+        cursor: (busy || status === "checking") ? "default" : "pointer",
+        opacity: (busy || status === "checking") ? 0.6 : 1, minWidth: 84,
+      }}
+    >
+      {status === "checking" ? "확인 중" : busy ? "..." : on ? "🔔 켜짐 · 끄기" : "알림 켜기"}
+    </button>
+  );
 }
 
 // ============================================================
@@ -6071,19 +6142,10 @@ function MyPage() {
             {/* 푸시 알림 (PWA), 홈 화면에 추가한 앱에서 동작 */}
             <div className="hr-row">
               <span className="hr-row-label">🔔 푸시 알림</span>
-              <button
-                onClick={() => odEnablePush(USER.email)}
-                style={{
-                  background: "transparent", border: "1px solid var(--accent)",
-                  color: "var(--accent)", padding: "6px 14px", borderRadius: 6,
-                  fontSize: 12, fontWeight: 700, cursor: "pointer",
-                }}
-              >
-                알림 켜기
-              </button>
+              <PushToggle email={USER.email} />
             </div>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
-              켜면 바로 테스트 알림이 떠요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
+              새 단어·마감 알림을 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
             </div>
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}

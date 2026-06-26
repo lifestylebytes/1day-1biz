@@ -326,6 +326,7 @@ function OnboardingApp() {
   const [name, setName] = useState(matchedInvite ? matchedInvite.name : "");
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
+  const [signupPw, setSignupPw] = useState("");  // 가입 시 비밀번호 (선택)
 
   // 코드 검증, 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
   const [submitting, setSubmitting] = useState(false);
@@ -371,8 +372,22 @@ function OnboardingApp() {
         // 검증 정보 저장, finishOnboarding에서 사용
         setVerifiedCode(code);
         setVerifiedCohort(result.cohort || null);
+        // 이메일 인증 코드 발송 → verify 단계로 (진짜 메일인지 확인 + 비번 저장)
+        const sendRes = await window.OD.sendMagicLink(emailTrimmed);
+        if (!sendRes || !sendRes.ok) {
+          const msg = String(sendRes && sendRes.error || "");
+          const m = msg.match(/after\s+(\d+)\s+seconds/i);
+          setSubmitError(m
+            ? ("잠시 후 다시 시도해주세요 (" + m[1] + "초). 이미 보낸 메일이 곧 도착해요.")
+            : ("인증 코드 발송에 실패했어요: " + (sendRes && sendRes.error || "잠시 후 다시")));
+          setSubmitting(false);
+          return;
+        }
+        setSubmitting(false);
+        setStage("verify");
+        return;
       }
-      // 통과 → 다음 단계로
+      // 서버 비활성(로컬 전용 dev) 폴백: 인증 없이 진행
       setStage("reviewing");
     } catch (e) {
       setSubmitError("코드 확인에 실패했어요. 잠시 후 다시 시도해주세요.");
@@ -397,7 +412,7 @@ function OnboardingApp() {
   const dept = useMemo(() => pickRandom(DEPARTMENTS, seed), [seed]);
   const mentor = useMemo(() => pickRandom(MENTORS, seed >> 3), [seed]);
 
-  const stageOrder = ["welcome", "application", "reviewing", "offer", "assignment", "ceo", "ready"];
+  const stageOrder = ["welcome", "application", "verify", "reviewing", "offer", "assignment", "ceo", "ready"];
   const stageIdx = stageOrder.indexOf(stage);
 
   // reviewing → offer 자동 전환 (3초)
@@ -472,6 +487,7 @@ function OnboardingApp() {
         if (verifiedCode && window.OD.incrementCodeUsage) {
           try { await window.OD.incrementCodeUsage(verifiedCode); } catch (_) {}
         }
+        // 비밀번호는 verify 단계(SignupVerifyScreen)에서 이미 저장됨 (이메일 인증 세션으로).
       } catch (err) {
         console.error("[Supabase] 가입 동기화 예외:", err);
         alert("가입 중 네트워크 오류가 발생했어요. 새로고침 후 다시 시도해주세요.");
@@ -514,6 +530,7 @@ function OnboardingApp() {
         <ApplicationScreen
           name={name} setName={setName}
           email={email} setEmail={setEmail}
+          signupPw={signupPw} setSignupPw={setSignupPw}
           motivation={motivation} setMotivation={setMotivation}
           inviteCode={inviteCode} setInviteCode={setInviteCode}
           devMode={devMode} setDevMode={setDevMode}
@@ -523,6 +540,14 @@ function OnboardingApp() {
           stageIdx={stageIdx} totalStages={stageOrder.length}
           onSubmit={handleApplicationSubmit}
           onBack={() => setStage("welcome")}
+        />
+      )}
+      {stage === "verify" && (
+        <SignupVerifyScreen
+          email={email} password={signupPw}
+          stageIdx={stageIdx} totalStages={stageOrder.length}
+          onVerified={() => setStage("reviewing")}
+          onBack={() => setStage("application")}
         />
       )}
       {stage === "reviewing" && <ReviewingScreen name={name} stageIdx={stageIdx} totalStages={stageOrder.length} />}
@@ -1195,12 +1220,12 @@ function LoginScreen({ onBack }) {
       </div>
 
       <div className="form-row">
-        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 설정하셨다면 입력, 없으면 비워두세요</span></label>
+        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 없으면 비워두세요 (이메일 인증 후 비밀번호 설정으로 넘어가요)</span></label>
         <input
           type="password"
           value={pw}
           onChange={e => setPw(e.target.value)}
-          placeholder="비밀번호 (선택)"
+          placeholder="비밀번호"
           autoComplete="current-password"
           onKeyDown={e => e.key === "Enter" && !loading && (pw ? handlePasswordLogin() : handleSendCode())}
         />
@@ -1225,7 +1250,7 @@ function LoginScreen({ onBack }) {
         ) : (
           <button
             className="btn"
-            onClick={handleSendCode}
+            onClick={() => { setPwIntent(true); handleSendCode(); }}
             disabled={loading || !email.trim() || cooldownLeft > 0}
             style={{ justifyContent: "center" }}
           >
@@ -1240,12 +1265,6 @@ function LoginScreen({ onBack }) {
             연속 클릭하시면 차단 시간이 늘어나니 잠시만 기다려주세요.
           </div>
         )}
-        <a
-          onClick={() => { if (!loading && email.trim()) startPasswordSetup(); else setError("먼저 가입 이메일을 입력해주세요."); }}
-          style={{ fontSize: 13, color: "var(--accent)", cursor: "pointer", textAlign: "center", padding: "6px 0", fontWeight: 600 }}
-        >
-          🔑 비밀번호 설정 / 변경 / 찾기
-        </a>
         <a
           onClick={onBack}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
@@ -1262,9 +1281,113 @@ function LoginScreen({ onBack }) {
 }
 
 // ============================================================
+// 가입 이메일 인증 (코드 6자리) + 비밀번호 저장
+// 가입 폼 제출 직후 단계. 진짜 메일인지 확인 + 그 세션으로 비번 저장.
+// ============================================================
+function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, totalStages }) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [cooldownUntil, setCooldownUntil] = useState(Date.now() + 60000);
+  const [now, setNow] = useState(Date.now());
+  const codeRef = React.useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 500);
+    setTimeout(() => { try { codeRef.current?.focus(); } catch (e) {} }, 100);
+    return () => clearInterval(t);
+  }, []);
+  const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+
+  const verify = async (codeOverride) => {
+    const c = (codeOverride || code).replace(/\D/g, "").trim();
+    if (c.length !== 6) { setError("6자리 숫자 코드를 입력해주세요."); return; }
+    if (!window.OD?.verifyOtpCode) { setError("서버 연결이 필요해요."); return; }
+    setLoading(true); setError("");
+    const emailLower = (email || "").trim().toLowerCase();
+    const res = await window.OD.verifyOtpCode(emailLower, c);
+    if (!res.ok) {
+      setLoading(false);
+      setError(res.error || "코드가 일치하지 않아요. 메일을 다시 확인해주세요.");
+      setCode("");
+      setTimeout(() => { try { codeRef.current?.focus(); } catch (e) {} }, 50);
+      return;
+    }
+    // 인증 성공 → 이 세션으로 비밀번호 저장
+    if (password && window.OD?.setPassword) {
+      const pwRes = await window.OD.setPassword(password);
+      if (!pwRes.ok) console.warn("[가입] 비밀번호 저장 실패:", pwRes.error);
+    }
+    // 세션 정리 (가입 진행은 localStorage 게이트로, 기존 동작 유지)
+    try { if (window.OD?.signOut) await window.OD.signOut(); } catch (e) {}
+    setLoading(false);
+    onVerified();
+  };
+
+  const onCodeChange = (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setCode(v);
+    if (v.length === 6 && !loading) verify(v);
+  };
+
+  const resend = async () => {
+    if (cooldownLeft > 0 || loading || !window.OD?.sendMagicLink) return;
+    setLoading(true); setError("");
+    const r = await window.OD.sendMagicLink((email || "").trim().toLowerCase());
+    setLoading(false);
+    if (!r || !r.ok) { setError("재발송 실패: " + (r && r.error || "잠시 후 다시")); return; }
+    setCooldownUntil(Date.now() + 60000);
+  };
+
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 2 · 이메일 인증</div>
+      <h1>메일로 <em>코드</em>를 보냈어요.</h1>
+      <p className="lead">
+        <strong>{email}</strong> 로 6자리 코드를 보냈어요.<br/>
+        진짜 메일인지 확인하는 단계예요. 코드를 입력하면 비밀번호까지 저장돼요.
+      </p>
+
+      <div className="form-row" style={{ marginTop: 18 }}>
+        <label>인증 코드 (6자리 숫자)</label>
+        <input
+          ref={codeRef}
+          type="text" inputMode="numeric" autoComplete="one-time-code"
+          value={code} onChange={onCodeChange} placeholder="123456" maxLength={6} autoFocus
+          onKeyDown={e => e.key === "Enter" && code.length === 6 && !loading && verify()}
+          style={{ fontSize: 28, letterSpacing: 10, textAlign: "center", fontFamily: "JetBrains Mono, monospace", fontWeight: 800, padding: "16px 12px" }}
+        />
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>⚠ {error}</div>
+      )}
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+        <button className="btn" onClick={() => verify()} disabled={loading || code.length !== 6} style={{ justifyContent: "center" }}>
+          {loading ? "확인 중..." : "✓ 인증하고 계속"}
+        </button>
+        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+          💡 메일이 안 보이면 <strong>스팸함</strong>도 확인해주세요. 6자리 모두 입력하면 자동으로 확인돼요.
+        </div>
+        <div className="btn-row" style={{ gap: 8 }}>
+          <button className="btn btn-ghost" onClick={onBack} disabled={loading} style={{ flex: 1, justifyContent: "center", fontSize: 13 }}>
+            ← 정보 다시 입력
+          </button>
+          <button className="btn btn-ghost" onClick={resend} disabled={cooldownLeft > 0 || loading} style={{ flex: 1, justifyContent: "center", fontSize: 13 }}>
+            {cooldownLeft > 0 ? "재발송 (" + cooldownLeft + "초)" : "코드 재발송"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
   // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
   const [agreeAge, setAgreeAge] = React.useState(false);
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -1274,7 +1397,8 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
     const next = !allAgreed;
     setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
   };
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed;
+  const pwOk = (signupPw || "").length >= 8;  // 비번 필수, 8자 이상
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -1312,6 +1436,13 @@ function ApplicationScreen({ name, setName, email, setEmail, motivation, setMoti
       <div className="form-row">
         <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 이용권 구매하신 이메일로 작성해주세요</span></label>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="구매하신 이메일 입력 (예: you@gmail.com)" />
+      </div>
+      <div className="form-row">
+        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 8자 이상</span></label>
+        <input type="password" value={signupPw} onChange={e => setSignupPw(e.target.value)} placeholder="비밀번호 (8자 이상)" autoComplete="new-password" />
+        {signupPw && signupPw.length < 8 && (
+          <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>비밀번호는 8자 이상으로 정해주세요.</div>
+        )}
       </div>
       <div className="form-row">
         <label>지원 동기 (한 줄, 선택)</label>
