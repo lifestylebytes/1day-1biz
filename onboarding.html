@@ -272,6 +272,12 @@ const DEV_CODES = {
   "DEV-BUDDY": { dev: true,  cohort: null,             operator: true,  label: "운영자 (유버디)" },
 };
 
+// 내부 테스터 코드: 일반 유저처럼 보이되 Latpeed 결제 없이 입장.
+// dev 패널 X, 베타 만료 X, 통계 분리(isTester), cohort='staff'라 Latpeed 동기화가 안 건드림.
+const STAFF_CODES = {
+  "1DAY1BIZ365": { cohort: "staff", label: "내부 테스터" },
+};
+
 // ============================================================
 // 유틸, 사번 / 입사일 / 추정값 생성
 // ============================================================
@@ -347,19 +353,26 @@ function OnboardingApp() {
         return;
       }
       if (window.OD && window.OD.enabled) {
-        // 1) 코드 검증
-        const result = await window.OD.checkInviteCode(code);
-        if (!result || !result.valid) {
-          // 만료/소진/잘못된 코드 구분해서 안내
-          let msg = "유효하지 않은 초대 코드예요. 다시 확인해주세요.";
-          if (result && result.reason === 'expired') {
-            msg = "이 코드는 사용 기간이 끝났어요. 베타가 종료됐거나 코드가 만료된 거예요. 운영자에게 문의해주세요.";
-          } else if (result && result.reason === 'exhausted') {
-            msg = "이 코드는 사용 가능 횟수를 모두 채웠어요. 운영자에게 문의해주세요.";
+        // 1) 코드 검증 (내부 테스터 코드는 pilot_codes 서버 검증 생략)
+        const _isStaffCode = !!STAFF_CODES[code];
+        let _cohort = null;
+        if (!_isStaffCode) {
+          const result = await window.OD.checkInviteCode(code);
+          if (!result || !result.valid) {
+            // 만료/소진/잘못된 코드 구분해서 안내
+            let msg = "유효하지 않은 초대 코드예요. 다시 확인해주세요.";
+            if (result && result.reason === 'expired') {
+              msg = "이 코드는 사용 기간이 끝났어요. 베타가 종료됐거나 코드가 만료된 거예요. 운영자에게 문의해주세요.";
+            } else if (result && result.reason === 'exhausted') {
+              msg = "이 코드는 사용 가능 횟수를 모두 채웠어요. 운영자에게 문의해주세요.";
+            }
+            setSubmitError(msg);
+            setSubmitting(false);
+            return;
           }
-          setSubmitError(msg);
-          setSubmitting(false);
-          return;
+          _cohort = result.cohort || null;
+        } else {
+          _cohort = STAFF_CODES[code].cohort || 'staff';
         }
         // 2) ★ 중복 가입 가드, RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
         const emailTrimmed = (email || "").trim().toLowerCase();
@@ -371,7 +384,7 @@ function OnboardingApp() {
         }
         // 검증 정보 저장, finishOnboarding에서 사용
         setVerifiedCode(code);
-        setVerifiedCohort(result.cohort || null);
+        setVerifiedCohort(_cohort);
         // 이메일 인증 코드 발송 → verify 단계로 (진짜 메일인지 확인 + 비번 저장)
         const sendRes = await window.OD.sendMagicLink(emailTrimmed);
         if (!sendRes || !sendRes.ok) {
@@ -468,6 +481,14 @@ function OnboardingApp() {
       // 테스터 마킹 (운영자 뷰 통계에서 분리하기 위함)
       isTester: !!(matchedDevCode && !matchedDevCode.operator),
     };
+    // 내부 테스터 코드: 일반 유저처럼(dev 패널 X) 입장하되, 베타 만료 X + Latpeed 미간섭.
+    if (STAFF_CODES[(inviteCode || "").trim().toUpperCase()]) {
+      profile.isPilotHire = false;   // 베타 만료(_isPilot) 대상에서 제외 → 안 튕김
+      profile.isTester = true;        // 통계 분리 (UI엔 영향 없음, dev 패널과 무관)
+      profile.isDevMode = false;      // dev 패널 안 뜸
+      profile.isOperator = false;
+      profile.cohort = 'staff';       // Latpeed 동기화는 'member'만 건드려서 안전
+    }
     // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
     if (window.OD && window.OD.enabled) {
       try {
