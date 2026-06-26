@@ -801,10 +801,14 @@ function WelcomeScreenV1({ onNext }) {
 // 0b. Login, 다른 기기에서 다시 출근
 // ============================================================
 function LoginScreen({ onBack }) {
-  // step: 'email' (이메일 입력) → 'code' (6자리 코드 입력)
+  // step: 'email' (이메일/비번 입력) → 'code' (6자리 코드) → 'setpw' (비번 설정)
+  // 비밀번호가 있으면 email 화면에서 바로 로그인. 비번 잊으면 코드 인증 후 setpw로 재설정.
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [pw, setPw] = useState("");            // 비밀번호 (로그인 또는 설정)
+  const [pw2, setPw2] = useState("");          // 비밀번호 확인 (설정 시)
+  const [pwIntent, setPwIntent] = useState(false);  // true면 코드 인증 후 비번 설정 화면으로
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -825,6 +829,88 @@ function LoginScreen({ onBack }) {
 
   // 코드 input ref (자동 포커스용)
   const codeInputRef = React.useRef(null);
+
+  // === 인증 성공(코드/비번) 후 공통: DB 사용자 → __OD_USER 채우고 mainboard 이동 ===
+  const finishLogin = async (emailLower) => {
+    try {
+      if (window.OD?.fetchByEmail) {
+        const userRes = await window.OD.fetchByEmail(emailLower);
+        if (userRes.ok && userRes.user) {
+          const u = userRes.user;
+          let existing = {};
+          try { existing = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+          const merged = {
+            ...existing,
+            email: u.email,
+            name: u.name || existing.name,
+            empNumber: u.emp_number || existing.empNumber,
+            department: u.department || existing.department,
+            mentor: u.mentor || existing.mentor,
+            level: u.level || existing.level,
+            signupDate: u.signup_date || existing.signupDate,
+            signup_date: u.signup_date,
+            agreedAt: u.agreed_at || existing.agreedAt,
+            dayInCompany: u.day_in_company || existing.dayInCompany || 1,
+            cohort: u.cohort,
+            unlocked: !!u.unlocked,
+            isOperator: !!u.is_operator,
+            isDevMode: !!u.is_dev_mode,
+            isPilotHire: !!u.is_pilot_hire,
+            isTester: !!u.is_tester,
+            membership_ends_at: u.membership_ends_at,
+            membershipEndsAt: u.membership_ends_at,
+            membership_cancel_reason: u.membership_cancel_reason,
+            membershipCancelReason: u.membership_cancel_reason,
+            lastActive: new Date().toISOString(),
+            scenariosCompleted: existing.scenariosCompleted || [],
+            savedNotes: existing.savedNotes || {},
+            dailyJournals: existing.dailyJournals || {},
+            wordsStudied: existing.wordsStudied || [],
+          };
+          localStorage.setItem("__OD_USER", JSON.stringify(merged));
+        } else {
+          return { ok: false, error: "가입 기록을 찾을 수 없어요. 운영자에게 문의해주세요." };
+        }
+      }
+    } catch (e) {
+      console.warn("[login] finishLogin populate 실패:", e);
+    }
+    window.location.href = "mainboard.html";
+    return { ok: true };
+  };
+
+  // === 비밀번호로 로그인 ===
+  const handlePasswordLogin = async () => {
+    const emailLower = email.trim().toLowerCase();
+    if (!emailLower || !/\S+@\S+\.\S+/.test(emailLower)) { setError("이메일을 정확히 입력해주세요."); return; }
+    if (!pw) { setError("비밀번호를 입력해주세요."); return; }
+    if (!window.OD?.signInWithPassword) { setError("서버 연결이 필요해요. 운영자에게 문의해주세요."); return; }
+    setLoading(true); setError("");
+    const res = await window.OD.signInWithPassword(emailLower, pw);
+    if (!res.ok) { setLoading(false); setError(res.error || "로그인 실패"); return; }
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) { setLoading(false); setError(fin.error); }
+  };
+
+  // === 비밀번호 설정/변경/찾기 시작: 코드 발송 후 setpw 화면으로 유도 ===
+  const startPasswordSetup = async () => {
+    setPwIntent(true);
+    setPw(""); setPw2("");
+    await handleSendCode();  // 코드 발송 → step 'code'. 인증되면 pwIntent라서 setpw로.
+  };
+
+  // === 비밀번호 저장 (코드 인증으로 세션 만든 직후) ===
+  const handleSetPassword = async () => {
+    if (!pw || pw.length < 8) { setError("비밀번호는 8자 이상으로 정해주세요."); return; }
+    if (pw !== pw2) { setError("두 비밀번호가 일치하지 않아요."); return; }
+    if (!window.OD?.setPassword) { setError("서버 연결이 필요해요."); return; }
+    setLoading(true); setError("");
+    const res = await window.OD.setPassword(pw);
+    if (!res.ok) { setLoading(false); setError(res.error || "비밀번호 설정 실패"); return; }
+    const emailLower = email.trim().toLowerCase();
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) { setLoading(false); setError(fin.error); }
+  };
 
   // === STEP 1: 이메일 입력 → 코드 발송 ===
   const handleSendCode = async () => {
@@ -916,61 +1002,23 @@ function LoginScreen({ onBack }) {
       return;
     }
 
-    // ★ OTP 인증 성공 후 mainboard 진입 가드 통과 위해 __OD_USER 미리 채우기
-    // mainboard.html 진입 가드: isOperator || isDevMode || unlocked 셋 중 하나 true 필요.
-    // OTP는 Supabase 세션만 만들고 우리 USER 객체는 안 채워주므로 여기서 직접 fetch.
-    try {
-      if (window.OD?.fetchByEmail) {
-        const userRes = await window.OD.fetchByEmail(emailLower);
-        if (userRes.ok && userRes.user) {
-          const u = userRes.user;
-          // 기존 localStorage가 있으면 보존하면서 DB 값으로 보강 (학습 데이터 안 날아가게)
-          let existing = {};
-          try { existing = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
-          const merged = {
-            ...existing,
-            email: u.email,
-            name: u.name || existing.name,
-            empNumber: u.emp_number || existing.empNumber,
-            department: u.department || existing.department,
-            mentor: u.mentor || existing.mentor,
-            level: u.level || existing.level,
-            signupDate: u.signup_date || existing.signupDate,
-            signup_date: u.signup_date,
-            agreedAt: u.agreed_at || existing.agreedAt,
-            dayInCompany: u.day_in_company || existing.dayInCompany || 1,
-            cohort: u.cohort,
-            unlocked: !!u.unlocked,
-            isOperator: !!u.is_operator,
-            isDevMode: !!u.is_dev_mode,
-            isPilotHire: !!u.is_pilot_hire,
-            isTester: !!u.is_tester,
-            membership_ends_at: u.membership_ends_at,
-            membershipEndsAt: u.membership_ends_at,
-            membership_cancel_reason: u.membership_cancel_reason,
-            membershipCancelReason: u.membership_cancel_reason,
-            lastActive: new Date().toISOString(),
-            // 학습 데이터는 hydrate가 DB에서 다시 채워주므로 기존 값 보존
-            scenariosCompleted: existing.scenariosCompleted || [],
-            savedNotes: existing.savedNotes || {},
-            dailyJournals: existing.dailyJournals || {},
-            wordsStudied: existing.wordsStudied || [],
-          };
-          localStorage.setItem("__OD_USER", JSON.stringify(merged));
-        } else {
-          // DB에서 사용자 못 찾음, 가입 안 된 이메일로 OTP 통과한 비정상 케이스
-          setLoading(false);
-          setError("가입 기록을 찾을 수 없어요. 운영자에게 문의해주세요.");
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("[OTP] fetchByEmail 실패, mainboard 가드에 막힐 수 있음:", e);
+    // 코드 인증 성공. 비밀번호 설정/찾기 흐름이면 비번 정하는 화면으로 (세션은 이미 생김).
+    if (pwIntent) {
+      setLoading(false);
+      setStep("setpw");
+      setCode("");
+      setError("");
+      return;
     }
 
-    setLoading(false);
-    // mainboard로 이동. 거기서 hydrate가 추가로 진도·노트 DB 동기화 수행.
-    window.location.href = "mainboard.html";
+    // 일반 로그인: DB 사용자 채우고 mainboard 이동 (finishLogin 안에서 redirect).
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) {
+      setLoading(false);
+      setError(fin.error);
+      setCode("");
+      return;
+    }
   };
 
   // 코드 입력 변화 처리 (숫자만 + 6자리 자동 제출)
@@ -1030,7 +1078,7 @@ function LoginScreen({ onBack }) {
             disabled={loading || code.length !== 6}
             style={{ justifyContent: "center" }}
           >
-            {loading ? "확인 중..." : "✓ 코드 확인 후 출근"}
+            {loading ? "확인 중..." : pwIntent ? "✓ 코드 확인 후 비밀번호 설정" : "✓ 코드 확인 후 출근"}
           </button>
 
           <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
@@ -1043,7 +1091,7 @@ function LoginScreen({ onBack }) {
           <div className="btn-row" style={{ gap: 8 }}>
             <button
               className="btn btn-ghost"
-              onClick={() => { setStep("email"); setCode(""); setError(""); }}
+              onClick={() => { setStep("email"); setCode(""); setError(""); setPwIntent(false); }}
               style={{ flex: 1, justifyContent: "center", fontSize: 13 }}
             >
               ← 이메일 다시 입력
@@ -1066,14 +1114,71 @@ function LoginScreen({ onBack }) {
     );
   }
 
-  // === STEP 1 화면: 이메일 입력 ===
+  // === STEP 3 화면: 비밀번호 설정 (코드 인증 후) ===
+  if (step === "setpw") {
+    return (
+      <div className="card">
+        <div className="eyebrow">YOUBUDDY KOREA · 비밀번호 설정</div>
+        <h1>🔑 비밀번호를<br/><em>정해주세요</em></h1>
+        <p className="lead">
+          <strong>{email}</strong> 인증 완료!<br/>
+          이제 비밀번호를 정하면 다음부턴 코드 안 기다리고 바로 로그인할 수 있어요.
+        </p>
+
+        <div className="form-row" style={{ marginTop: 18 }}>
+          <label>새 비밀번호 (8자 이상)</label>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => setPw(e.target.value)}
+            placeholder="비밀번호 입력"
+            autoComplete="new-password"
+            autoFocus
+          />
+        </div>
+        <div className="form-row">
+          <label>비밀번호 확인</label>
+          <input
+            type="password"
+            value={pw2}
+            onChange={e => setPw2(e.target.value)}
+            placeholder="한 번 더 입력"
+            autoComplete="new-password"
+            onKeyDown={e => e.key === "Enter" && !loading && handleSetPassword()}
+          />
+        </div>
+
+        {error && (
+          <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+            ⚠ {error}
+          </div>
+        )}
+
+        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+          <button
+            className="btn"
+            onClick={handleSetPassword}
+            disabled={loading || !pw || !pw2}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "저장 중..." : "✓ 비밀번호 저장하고 출근"}
+          </button>
+          <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            💡 비밀번호를 잊어도 괜찮아요. 언제든 <strong>이메일 코드</strong>로 로그인해서 다시 정할 수 있어요.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === STEP 1 화면: 이메일 + 비밀번호 입력 ===
   return (
     <div className="card">
-      <div className="eyebrow">YOUBUDDY KOREA · 사번 인증</div>
+      <div className="eyebrow">YOUBUDDY KOREA · 로그인</div>
       <h1>다시 만나서 반가워요.<br/><em>출근하시죠.</em></h1>
       <p className="lead">
-        가입할 때 입력한 이메일로 들어가시면 진도가 그대로 이어져요.<br/>
-        <strong>새 기기에서도 동일하게 사용 가능.</strong>
+        가입 이메일로 들어가시면 진도가 그대로 이어져요.<br/>
+        <strong>비밀번호를 정해두면 다음부턴 바로 로그인</strong>할 수 있어요.
       </p>
 
       <div className="form-row" style={{ marginTop: 18 }}>
@@ -1083,8 +1188,21 @@ function LoginScreen({ onBack }) {
           value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="you@example.com"
+          autoComplete="username"
           autoFocus
-          onKeyDown={e => e.key === "Enter" && !loading && handleSendCode()}
+          onKeyDown={e => e.key === "Enter" && !loading && (pw ? handlePasswordLogin() : handleSendCode())}
+        />
+      </div>
+
+      <div className="form-row">
+        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 설정하셨다면 입력, 없으면 비워두세요</span></label>
+        <input
+          type="password"
+          value={pw}
+          onChange={e => setPw(e.target.value)}
+          placeholder="비밀번호 (선택)"
+          autoComplete="current-password"
+          onKeyDown={e => e.key === "Enter" && !loading && (pw ? handlePasswordLogin() : handleSendCode())}
         />
       </div>
 
@@ -1095,22 +1213,39 @@ function LoginScreen({ onBack }) {
       )}
 
       <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
-        <button
-          className="btn"
-          onClick={handleSendCode}
-          disabled={loading || !email.trim() || cooldownLeft > 0}
-          style={{ justifyContent: "center" }}
-        >
-          {loading ? "코드 발송 중..."
-            : cooldownLeft > 0 ? "잠시만요... " + cooldownLeft + "초"
-            : "✉️ 코드 받기"}
-        </button>
+        {pw ? (
+          <button
+            className="btn"
+            onClick={handlePasswordLogin}
+            disabled={loading || !email.trim()}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "로그인 중..." : "🔓 비밀번호로 로그인"}
+          </button>
+        ) : (
+          <button
+            className="btn"
+            onClick={handleSendCode}
+            disabled={loading || !email.trim() || cooldownLeft > 0}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "코드 발송 중..."
+              : cooldownLeft > 0 ? "잠시만요... " + cooldownLeft + "초"
+              : "✉️ 이메일 코드 받기"}
+          </button>
+        )}
         {cooldownLeft > 0 && (
           <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.5 }}>
             메일이 곧 도착해요. 받은편지함과 <strong>스팸함</strong>을 확인해주세요.<br/>
             연속 클릭하시면 차단 시간이 늘어나니 잠시만 기다려주세요.
           </div>
         )}
+        <a
+          onClick={() => { if (!loading && email.trim()) startPasswordSetup(); else setError("먼저 가입 이메일을 입력해주세요."); }}
+          style={{ fontSize: 13, color: "var(--accent)", cursor: "pointer", textAlign: "center", padding: "6px 0", fontWeight: 600 }}
+        >
+          🔑 비밀번호 설정 / 변경 / 찾기
+        </a>
         <a
           onClick={onBack}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
@@ -1120,7 +1255,7 @@ function LoginScreen({ onBack }) {
       </div>
 
       <div className="fine-print" style={{ marginTop: 12 }}>
-        비밀번호 없이 이메일 코드로 인증 · 모바일·PC 어느 기기에서든 OK
+        비밀번호를 잊어도 이메일 코드로 언제든 로그인 · 모바일·PC 어느 기기에서든 OK
       </div>
     </div>
   );

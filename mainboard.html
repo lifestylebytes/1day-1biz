@@ -3727,6 +3727,58 @@ window.__SIM = { CHARACTERS, SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, BUDDY_NUD
 const { useState, useMemo, useEffect } = React;
 
 // ============================================================
+// 웹 푸시 알림 (PWA). 알림 켜기 = 권한 요청 + 구독 + 서버 저장 + 테스트 알림.
+// ============================================================
+const OD_VAPID_PUBLIC = "BL4KFmie8q_076lmQdiCTifnM3Vn1eIwNtR74CYCE4xM0P1uCuGo5dB_Zz-Jg5RLIhrGkfbD5IfpWzt0CD0x8FI";
+
+function _odUrlB64ToUint8(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+async function odEnablePush(email) {
+  try {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      alert("이 기기/브라우저는 푸시 알림을 지원하지 않아요.\n아이폰은 홈 화면에 추가한 앱에서, iOS 16.4 이상이어야 해요.");
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") {
+      alert("알림 권한이 꺼져 있어요. 기기 설정에서 알림을 허용해주세요.");
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: _odUrlB64ToUint8(OD_VAPID_PUBLIC),
+      });
+    }
+    if (window.OD?.savePushSubscription) {
+      const r = await window.OD.savePushSubscription(email, sub.toJSON());
+      if (!r.ok) console.warn("[push] savePushSubscription 실패:", r.error);
+    }
+    // 바로 로컬 테스트 알림 (표시 경로 확인)
+    try {
+      await reg.showNotification("1일1비", {
+        body: "알림이 켜졌어요! 이제 새 단어가 나오면 알려드릴게요.",
+        icon: "icon-192.png",
+        badge: "icon-192.png",
+      });
+    } catch (e) {}
+    alert("알림이 켜졌어요! 방금 테스트 알림을 보냈어요.");
+  } catch (e) {
+    console.warn("[push] odEnablePush 실패:", e);
+    alert("알림 켜기에 실패했어요: " + (e && e.message ? e.message : e));
+  }
+}
+
+// ============================================================
 // Sidebar = 사물함
 // ============================================================
 function Locker({ active, setActive, user, unread }) {
@@ -6015,6 +6067,24 @@ function MyPage() {
                 <button className={"toggle on"}></button>
               </div>
             )}
+
+            {/* 푸시 알림 (PWA), 홈 화면에 추가한 앱에서 동작 */}
+            <div className="hr-row">
+              <span className="hr-row-label">🔔 푸시 알림</span>
+              <button
+                onClick={() => odEnablePush(USER.email)}
+                style={{
+                  background: "transparent", border: "1px solid var(--accent)",
+                  color: "var(--accent)", padding: "6px 14px", borderRadius: 6,
+                  fontSize: 12, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                알림 켜기
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
+              켜면 바로 테스트 알림이 떠요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
+            </div>
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
             <a
