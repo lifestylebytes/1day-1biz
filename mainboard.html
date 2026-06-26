@@ -4516,6 +4516,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
   const _realDay = USER.realCurrentDay || USER.currentDay;
   const _realDayDone = (_realDay === USER.currentDay) ? allTodayDone : _dayComplete(_realDay);
+  // 시추에이션 카드/모달 도장: 그날 일정 다 끝냈으면 DONE
+  const _sceneDone = (today && today.day === USER.currentDay) ? allTodayDone : _dayComplete(today ? today.day : 0);
   const cells = Array.from({ length: _attendEnd - _attendStart + 1 }, (_, i) => {
     const day = _attendStart + i;
     const isWk = _isWeekendDay(day);
@@ -4624,6 +4626,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             onOpen={() => openScene(today)}
             checkinDone={!!doneTasks.checkin}
             onStartDay={() => handleScheduleClick(scheduleWithStatus[0], 0)}
+            done={_sceneDone}
           />
 
           <div className="schedule">
@@ -5195,14 +5198,14 @@ function ApplicationLine() {
 // ============================================================
 // 시추에이션 카드 (홈)
 // ============================================================
-function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay }) {
+function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
   // ★ 피드백 #15 후속 (정주혜): 출근(단어 받기) 전엔 '오늘 일정 시작하기'로 안내.
   //   하루의 첫 동선이 출근 → 단어 → 시추에이션 순서로 자연스럽게 잡히도록.
   const needCheckin = checkinDone === false && typeof onStartDay === "function";
   return (
     <div className="scene-card">
       <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2 }}>
-        <div className="stamp small">미결</div>
+        <div className={"stamp small" + (done ? " blue" : "")} style={{ fontSize: done ? "10px" : "7px", letterSpacing: "0.02em" }}>{done ? "DONE" : "PENDING"}</div>
       </div>
       <div className="scene-card-tag">오늘의 시추에이션 · DAY {scenario.day}</div>
       <div className="scene-card-body">
@@ -6836,6 +6839,15 @@ function SceneModal({ scenario, onClose }) {
       <div className="modal-doc" onClick={e => e.stopPropagation()}>
         <div className="modal-doc-head">
           <span>SITUATION SHEET · DAY {scenario.day}</span>
+          <span style={{
+            marginLeft: "auto", marginRight: 10,
+            fontSize: 10, fontWeight: 800, letterSpacing: "0.08em",
+            padding: "3px 9px", borderRadius: 999,
+            border: "1.5px solid " + (submitted ? "#6FA84F" : "#C79233"),
+            color: submitted ? "#A6D886" : "#EBC06A",
+          }}>
+            {submitted ? "DONE" : "PENDING"}
+          </span>
           <button onClick={onClose} style={{ color: "var(--paper)", fontSize: 16 }}>✕</button>
         </div>
         <div className="modal-doc-body">
