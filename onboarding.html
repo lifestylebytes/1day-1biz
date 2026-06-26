@@ -404,7 +404,7 @@ function OnboardingApp() {
   const finishOnboarding = async () => {
     const profile = {
       // identity
-      email: email.trim(),
+      email: email.trim().toLowerCase(),  // ★ 항상 소문자로 저장 (대소문자 가입 불일치 방지)
       name: name.trim(),
       signupDate: new Date().toISOString(),
       // 법적 동의 기록 (PIPA 의무) - 가입 시점에 약관·개인정보·만 14세 모두 체크됨
@@ -479,7 +479,7 @@ function OnboardingApp() {
       if (matchedInvite) {
         const list = JSON.parse(localStorage.getItem('__OD_INVITES') || '[]');
         const updated = list.map(i => i.code === matchedInvite.code
-          ? { ...i, usedAt: new Date().toISOString(), usedBy: email.trim(), currentDay: 1, lastActive: new Date().toISOString() }
+          ? { ...i, usedAt: new Date().toISOString(), usedBy: email.trim().toLowerCase(), currentDay: 1, lastActive: new Date().toISOString() }
           : i);
         localStorage.setItem('__OD_INVITES', JSON.stringify(updated));
       }

@@ -56,40 +56,68 @@ async function sendEmail(to: string, subject: string, html: string) {
   return r.ok;
 }
 
-// ── 이메일 본문 ──
-function comebackEmail(name: string, dayN: number) {
-  const subject = `${name}님, 책상이 비어있어요`;
-  const html = `
+// ── 이메일 본문 (저세상 톤, 매번 랜덤 변형) ──
+function _pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// 본문 + CTA 버튼을 공통 껍데기로 감싼다.
+function _wrap(bodyHtml: string, ctaLabel: string, footerHtml: string) {
+  return `
     <div style="font-family:-apple-system,'Noto Sans KR',sans-serif;max-width:480px;margin:0 auto;color:#2A1F14;line-height:1.7">
-      <p>${name}님, 유버디예요.</p>
-      <p>며칠 안 보이셔서 책상이 좀 허전하더라고요. 일이 바쁘셨죠?</p>
-      <p>딱 5분이면 돼요. 오늘 단어 하나, 시추에이션 하나면 출근 도장 찍혀요.
-         스트릭 끊기기 전에 살짝 들러주실래요?</p>
+      ${bodyHtml}
       <p style="margin:24px 0">
-        <a href="${APP_URL}" style="background:#D85A2A;color:#fff;text-decoration:none;padding:13px 26px;border-radius:8px;font-weight:700">🏢 오늘 출근하기</a>
+        <a href="${APP_URL}" style="background:#D85A2A;color:#fff;text-decoration:none;padding:13px 26px;border-radius:8px;font-weight:700">${ctaLabel}</a>
       </p>
-      <p style="font-size:13px;color:#8A7A66">현재 Day ${dayN}. 30일 채우면 사원으로 승진해요. 거의 다 왔어요.</p>
+      <p style="font-size:13px;color:#8A7A66">${footerHtml}</p>
       <p style="font-size:13px;color:#8A7A66">유버디 드림</p>
     </div>`;
-  return { subject, html };
 }
 
+// 2~3일 안 들어온 사람용. 사옥 세계관 + 동료/사수 톤으로 매번 다르게.
+function comebackEmail(name: string, dayN: number) {
+  const pool = [
+    {
+      subject: `${name}님, 책상에 먼지 쌓이고 있어요`,
+      body: `<p>${name}님, 유버디예요.</p><p>며칠 안 보이셔서 책상에 먼지가 슬슬 쌓이고 있어요 ㅎㅎ. 오늘 5분이면 출근 도장 찍고 깨끗하게 다시 시작할 수 있어요. 단어 하나, 시추에이션 하나면 끝이에요.</p>`,
+    },
+    {
+      subject: `${name}님, 옆자리 동기가 찾던데요`,
+      body: `<p>${name}님, 유버디예요.</p><p>한도윤 씨가 "${name}님 요즘 통 안 보이네" 하더라고요 ㅎㅎ. 오늘 잠깐 들러서 단어 하나 같이 챙겨갈래요? 5분이면 돼요.</p>`,
+    },
+    {
+      subject: `김 사수: ${name}님, 잠깐 시간 돼요?`,
+      body: `<p>${name}님, 유버디예요.</p><p>사수가 같이 볼 게 있다는데 며칠 자리를 비우셨더라고요. 오늘 딱 5분만 출근해서 오늘 표현 하나 챙겨가요. 회의에서 바로 써먹을 거예요.</p>`,
+    },
+    {
+      subject: `${name}님, 스트릭 끊기기 직전이에요 🔥`,
+      body: `<p>${name}님, 유버디예요.</p><p>며칠 비우셨네요. 지금 살짝 들르면 스트릭 안 끊겨요. 여기까지 온 게 아까우니, 오늘 한 번만 출근 도장 찍고 가요.</p>`,
+    },
+    {
+      subject: `${name}님, 오늘 책상에 새 단어가 도착했어요`,
+      body: `<p>${name}님, 유버디예요.</p><p>오늘의 단어가 책상에 도착했어요. 회의에서 바로 써먹는 표현이라던데, 5분만 들어와서 확인해봐요. 안 보면 그냥 휘발돼요 ㅎㅎ.</p>`,
+    },
+  ];
+  const v = _pick(pool);
+  return { subject: v.subject, html: _wrap(v.body, "🏢 오늘 출근하기", `현재 Day ${dayN}. 30일 채우면 사원으로 승진해요. 거의 다 왔어요.`) };
+}
+
+// 갱신 직전(Day 25~29)용. 승진 코앞 가치 리마인드, 매번 다르게.
 function renewalEmail(name: string, dayN: number, words: number) {
-  const subject = `${name}님, 곧 정직원 전환이에요 🎓`;
-  const html = `
-    <div style="font-family:-apple-system,'Noto Sans KR',sans-serif;max-width:480px;margin:0 auto;color:#2A1F14;line-height:1.7">
-      <p>${name}님, 유버디예요.</p>
-      <p>벌써 Day ${dayN}이에요. 수습 30일이 코앞이네요!</p>
-      <p>그동안 <b>${words}개</b>의 비즈니스 표현을 모으셨어요.
-         30일을 채우면 인사팀 면담을 거쳐 <b>사원(Associate)으로 승진</b>하고,
-         회의를 주도하는 표현들(Day 31-60)과 <b>나만의 노트 보관함</b>이 열려요.</p>
-      <p style="margin:24px 0">
-        <a href="${APP_URL}" style="background:#D85A2A;color:#fff;text-decoration:none;padding:13px 26px;border-radius:8px;font-weight:700">🎓 마지막 며칠 마저 채우기</a>
-      </p>
-      <p style="font-size:13px;color:#8A7A66">여기까지 온 게 진짜 대단한 거예요. 조금만 더요.</p>
-      <p style="font-size:13px;color:#8A7A66">유버디 드림</p>
-    </div>`;
-  return { subject, html };
+  const pool = [
+    {
+      subject: `${name}님, 곧 정직원 전환이에요 🎓`,
+      body: `<p>${name}님, 유버디예요.</p><p>벌써 Day ${dayN}이에요. 수습 30일이 코앞이네요! 그동안 <b>${words}개</b>의 비즈니스 표현을 모으셨어요. 30일을 채우면 인사팀 면담을 거쳐 <b>사원(Associate)으로 승진</b>하고, 회의를 주도하는 표현들(Day 31-60)과 <b>나만의 노트 보관함</b>이 열려요.</p>`,
+    },
+    {
+      subject: `${name}님, 인사팀에서 면담이 잡혔어요`,
+      body: `<p>${name}님, 유버디예요.</p><p>Day ${dayN}, 정직원 면담이 코앞이에요. 며칠만 더 채우면 사원증 색이 바뀌고 회의 주도 표현들이 열려요. 그동안 <b>${words}개</b> 모으신 거, 여기서 멈추기엔 아깝잖아요.</p>`,
+    },
+    {
+      subject: `${name}님, 정직원까지 진짜 며칠 안 남았어요`,
+      body: `<p>${name}님, 유버디예요.</p><p>여기까지 온 게 진짜 대단한 거예요. <b>${words}개</b> 표현 쌓으셨고, 조금만 더 채우면 사원 승진 + 회의 주도 표현(Day 31-60)이 기다려요. 마지막 며칠, 같이 가요.</p>`,
+    },
+  ];
+  const v = _pick(pool);
+  return { subject: v.subject, html: _wrap(v.body, "🎓 마지막 며칠 마저 채우기", "여기까지 온 게 진짜 대단한 거예요. 조금만 더요.") };
 }
 
 async function alreadySent(email: string, kind: string, sinceISO: string): Promise<boolean> {
