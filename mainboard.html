@@ -3768,7 +3768,11 @@ async function odEnablePush(email) {
       await reg.showNotification("1일1비", {
         body: "알림이 켜졌어요! 출근 잊지 않게 리마인드 해드릴게요.",
         icon: "icon-192.png",
-        badge: "icon-192.png",
+        badge: "badge-72.png",
+        vibrate: [200, 100, 200],
+        requireInteraction: true,
+        tag: "1day1biz",
+        renotify: true,
       });
     } catch (e) {}
     alert("알림이 켜졌어요! 방금 테스트 알림을 보냈어요.");
@@ -9082,9 +9086,17 @@ async function _persistLevelUp(score) {
   }
   const email = local && local.email;
   if (!email) return { ok: true, localOnly: true };
-  const patch = { level: window.__OD_LEVEL_FULLTIME, levelup_completed_at: now, levelup_test_score: score };
   try {
-    if (window.OD && window.OD.enabled && window.OD.updateProgress) {
+    // ★ SECURITY DEFINER RPC로 저장 (세션/RLS 무관하게 확실히 기록). select-back 의존 제거.
+    if (window.OD && window.OD.enabled && window.OD.completeLevelup) {
+      const r = await window.OD.completeLevelup(email, score);
+      if (r && r.ok) {
+        try { localStorage.removeItem("__OD_PENDING_LEVELUP"); } catch (e) {}
+        return { ok: true };
+      }
+    } else if (window.OD && window.OD.enabled && window.OD.updateProgress) {
+      // 폴백 (구버전): 직접 UPDATE
+      const patch = { level: window.__OD_LEVEL_FULLTIME, levelup_completed_at: now, levelup_test_score: score };
       const r = await window.OD.updateProgress(email, patch);
       if (r && r.ok) {
         try { localStorage.removeItem("__OD_PENDING_LEVELUP"); } catch (e) {}
@@ -9093,7 +9105,7 @@ async function _persistLevelUp(score) {
     }
   } catch (e) {}
   // DB 실패: 다음 부팅 때 재시도하도록 큐잉 (mountAfterHydrate에서 flush)
-  try { localStorage.setItem("__OD_PENDING_LEVELUP", JSON.stringify({ email, patch })); } catch (e) {}
+  try { localStorage.setItem("__OD_PENDING_LEVELUP", JSON.stringify({ email, score })); } catch (e) {}
   return { ok: false, queued: true };
 }
 
@@ -10038,8 +10050,17 @@ window.SimApp = App;
   // 1.5) ★ 시즌 2: 승급 DB 반영이 실패해 큐잉돼있으면 재시도 (localStorage가 진실, DB 따라잡기)
   try {
     const _pendingLv = JSON.parse(localStorage.getItem("__OD_PENDING_LEVELUP") || "null");
-    if (_pendingLv && _pendingLv.email && _pendingLv.patch && window.OD?.updateProgress) {
-      const r = await window.OD.updateProgress(_pendingLv.email, _pendingLv.patch);
+    if (_pendingLv && _pendingLv.email) {
+      let r = null;
+      // 신규 방식: RPC. 구버전 큐({email,patch})도 score만 뽑아 RPC로 처리.
+      const _pScore = (_pendingLv.score != null) ? _pendingLv.score
+        : (_pendingLv.patch && _pendingLv.patch.levelup_test_score) != null ? _pendingLv.patch.levelup_test_score
+        : null;
+      if (window.OD?.completeLevelup) {
+        r = await window.OD.completeLevelup(_pendingLv.email, _pScore);
+      } else if (_pendingLv.patch && window.OD?.updateProgress) {
+        r = await window.OD.updateProgress(_pendingLv.email, _pendingLv.patch);
+      }
       if (r && r.ok) {
         localStorage.removeItem("__OD_PENDING_LEVELUP");
         console.log("[levelup] 보류된 승급 DB 반영 완료");

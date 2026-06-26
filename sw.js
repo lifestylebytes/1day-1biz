@@ -15,7 +15,11 @@ self.addEventListener('push', (e) => {
   const options = {
     body: data.body || '오늘도 5분 출근해요!',
     icon: 'icon-192.png',
-    badge: 'icon-192.png',
+    badge: 'badge-72.png',             // 안드로이드 상태바 단색 아이콘 (풀컬러 쓰면 흰 네모로 뜸)
+    vibrate: [200, 100, 200],          // 안드로이드 heads-up(화면 위 팝업) 유도
+    requireInteraction: true,          // 사용자가 누를 때까지 유지 (출근 리마인드 놓치지 않게)
+    tag: data.tag || '1day1biz',
+    renotify: true,
     data: { url: data.url || './index.html' },
   };
   e.waitUntil(self.registration.showNotification(title, options));

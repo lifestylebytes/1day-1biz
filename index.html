@@ -12,6 +12,9 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="1일1비" />
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
+<!-- 세션 복원용 Supabase (로그인 유지). __OD_USER 있으면 안 기다리고 바로 분기 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
 <style>
   body { font-family: -apple-system, sans-serif; background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%); margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; color: #2A1F14; }
   .loading { text-align: center; }
@@ -32,7 +35,8 @@
   // ?mode=operator → 운영자 뷰 (operator.html)
   // ?mode=reset    → 사용자 데이터 초기화 후 온보딩
   // 사용자 있음    → mainboard.html
-  // 사용자 없음    → onboarding.html
+  // 사용자 없음 + 세션 살아있음 → DB에서 복원 후 mainboard (로그인 유지)
+  // 사용자 없음 + 세션 없음 → onboarding.html
   // ============================================================
   (function() {
     const params = new URLSearchParams(location.search);
@@ -46,11 +50,7 @@
       return;
     }
 
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch (e) {}
-
-    if (user && user.email) {
-      // 운영자면 operator.html 직행
+    function routeUser(user) {
       if (user.isOperator) {
         location.replace('operator.html');
       } else if (user.isDevMode) {
@@ -58,9 +58,54 @@
       } else {
         location.replace('mainboard.html');
       }
-    } else {
-      location.replace('onboarding.html');
     }
+
+    // 1) localStorage에 사용자 있으면 즉시 분기 (빠른 경로, 세션 안 기다림)
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch (e) {}
+    if (user && user.email) { routeUser(user); return; }
+
+    // 2) __OD_USER 없음 → Supabase 세션이 살아있으면 DB에서 복원해 로그인 유지
+    (async function() {
+      try {
+        const cfg = window.__SUPABASE_CONFIG;
+        if (cfg && cfg.url && cfg.anonKey && !cfg.url.includes('xxxxxxxx')
+            && window.supabase && window.supabase.createClient) {
+          const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+          const sess = await client.auth.getSession();
+          const email = sess && sess.data && sess.data.session
+            && sess.data.session.user && sess.data.session.user.email;
+          if (email) {
+            const { data: u } = await client
+              .from('users').select('*')
+              .eq('email', String(email).toLowerCase().trim())
+              .maybeSingle();
+            if (u && u.email) {
+              const restored = {
+                email: u.email, name: u.name,
+                empNumber: u.emp_number, department: u.department, mentor: u.mentor,
+                level: u.level, signupDate: u.signup_date, signup_date: u.signup_date,
+                agreedAt: u.agreed_at, dayInCompany: u.day_in_company || 1, cohort: u.cohort,
+                unlocked: !!u.unlocked, isOperator: !!u.is_operator, isDevMode: !!u.is_dev_mode,
+                isPilotHire: !!u.is_pilot_hire, isTester: !!u.is_tester,
+                membership_ends_at: u.membership_ends_at, membershipEndsAt: u.membership_ends_at,
+                membership_cancel_reason: u.membership_cancel_reason, membershipCancelReason: u.membership_cancel_reason,
+                levelupCompletedAt: u.levelup_completed_at, levelup_completed_at: u.levelup_completed_at,
+                lastActive: new Date().toISOString(),
+                scenariosCompleted: [], savedNotes: {}, dailyJournals: {}, wordsStudied: [],
+              };
+              try { localStorage.setItem('__OD_USER', JSON.stringify(restored)); } catch (e) {}
+              routeUser(restored);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[router] 세션 복원 실패:', e && e.message);
+      }
+      // 3) 세션도 없음 → 온보딩
+      location.replace('onboarding.html');
+    })();
   })();
 </script>
 </body>
