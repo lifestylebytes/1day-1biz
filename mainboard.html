@@ -3661,7 +3661,7 @@ function getScheduleForDay(day) {
     variantItem,
     {
       id: "wrapup", time: "17:00", type: "journal",
-      title: isDay60 ? "특별 면담 + 업무일지 + 퇴근" : (isLastDay ? "수습 평가 + 업무일지 + 퇴근" : "업무일지 작성 + 퇴근"),
+      title: isDay60 ? "특별 면담 + 내 시추에이션 + 퇴근" : (isLastDay ? "수습 평가 + 내 시추에이션 + 퇴근" : "내 시추에이션 작성 + 퇴근"),
       note: "오늘 한 줄 + 유버디 응원",
       action: null,
       isLastDay,
@@ -4447,7 +4447,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 실제로 학습 완료한 날만 done. 안 한 날은 missed (결근). 무조건 done 처리 금지.
   // 완료 판단 기준 (셋 중 하나라도 만족하면 출근 인정):
   //   1. scenariosCompleted 에 그날 entry 있음 (시추에이션 문장 제출)
-  //   2. dailyJournals 에 그날 entry 있음 (업무일지 제출)
+  //   2. dailyJournals 에 그날 entry 있음 (내 시추에이션 제출)
   //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
   // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
   const [showFullAttend, setShowFullAttend] = useState(false);
@@ -5568,7 +5568,7 @@ function LibraryPage({ openScene }) {
         ))}
       </div>
 
-      {/* 저장된 노트 + 업무일지 로드 (전체 사용자 한 번에) */}
+      {/* 저장된 노트 + 내 시추에이션 로드 (전체 사용자 한 번에) */}
       {(() => {
         try {
           const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
@@ -5647,7 +5647,7 @@ function LibraryPage({ openScene }) {
                   textAlign: "left",
                   lineHeight: 1.5,
                 }}>
-                  📝 <b style={{ color: "var(--ink)" }}>업무일지:</b> "{myJournal.text.length > 80 ? myJournal.text.slice(0, 80) + "…" : myJournal.text}"
+                  📝 <b style={{ color: "var(--ink)" }}>내 시추에이션:</b> "{myJournal.text.length > 80 ? myJournal.text.slice(0, 80) + "…" : myJournal.text}"
                 </div>
               )}
               <div className="biz-card-foot">
@@ -6440,7 +6440,7 @@ function _odWordDiff(orig, corrected) {
   return out;
 }
 
-// 업무일지(JournalActivity) 저장/조회 헬퍼
+// 내 시추에이션(JournalActivity) 저장/조회 헬퍼
 // __OD_USER.dailyJournals[dayKey] = { text, day, savedAt }
 function _loadDailyJournal(day) {
   try {
@@ -6526,7 +6526,7 @@ function _saveCompletion(entry) {
 // Scene Modal, 시추에이션 상세 + 영어 답변 작성
 // ============================================================
 // ============================================================
-// 업무일지 인라인 에디터 (SceneModal 안에서 직접 수정 가능)
+// 내 시추에이션 인라인 에디터 (SceneModal 안에서 직접 수정 가능)
 // ============================================================
 function JournalEditor({ day }) {
   const [journal, setJournal] = useState(() => _loadDailyJournal(day));
@@ -6558,7 +6558,7 @@ function JournalEditor({ day }) {
         borderRadius: 8, textAlign: "center",
       }}>
         <div style={{ fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 10, fontWeight: 600 }}>
-          📝 이 날의 업무일지는 아직 비어있어요.
+          📝 이 날의 내 시추에이션은 아직 비어있어요.
         </div>
         <button onClick={startEdit} style={{
           padding: "8px 16px", fontSize: 12, fontWeight: 700,
@@ -6582,7 +6582,7 @@ function JournalEditor({ day }) {
         borderRadius: 8,
       }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 10 }}>
-          📝 내 업무일지 · DAY {day} {journal ? "(수정 중)" : "(새로 작성)"}
+          📝 내 시추에이션 · DAY {day} {journal ? "(수정 중)" : "(새로 작성)"}
         </div>
         <textarea
           value={draft}
@@ -6626,7 +6626,7 @@ function JournalEditor({ day }) {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)" }}>
-          📝 내 업무일지 · DAY {day}
+          📝 내 시추에이션 · DAY {day}
         </div>
         <button onClick={startEdit} style={{
           padding: "4px 10px", fontSize: 11, fontWeight: 700,
@@ -7241,9 +7241,7 @@ function SceneModal({ scenario, onClose }) {
             </div>
           )}
 
-          {/* 📝 내 업무일지, 이 날 작성한 한 줄 회고 (인라인 수정 가능) */}
-          <JournalEditor day={scenario.day} />
-
+          {/* 내 시추에이션은 17:00 '내 시추에이션 작성' 전용 활동에서 작성 (중복 제거, UI 혼동 방지) */}
 
           {/* 📒 내 업무 노트: 이 단어에 대해 저장한 버디 답변 모음 */}
           {(() => {
@@ -8438,7 +8436,7 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
   );
 }
 
-// === 6. JOURNAL, 업무일지 + 퇴근 (한 줄 회고 + 버디 응원) ===
+// === 6. JOURNAL, 내 시추에이션 + 퇴근 (한 줄 회고 + 버디 응원) ===
 function JournalActivity({ today, item, onClose, onComplete }) {
   const { CHARACTERS } = window.__SIM;
   const buddy = CHARACTERS.buddy;
@@ -8501,12 +8499,12 @@ function JournalActivity({ today, item, onClose, onComplete }) {
   };
 
   return (
-    <ActivityShell title="WORK JOURNAL · 업무일지 + 퇴근" onClose={onClose}>
+    <ActivityShell title="MY SITUATION · 내 시추에이션 + 퇴근" onClose={onClose}>
       <span className="label-doc label-orange">▶ 17:00 · 오늘의 한 줄</span>
       <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
         오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b>, 진짜 어디서 쓸 수 있을 것 같아요? 한 줄만.
         <span style={{ display: "block", marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>
-          📒 작성한 일지는 <b>업무노트 → 해당 날짜 카드</b>에서 다시 볼 수 있어요.
+          📒 작성한 내 시추에이션은 <b>업무노트 → 해당 날짜 카드</b>에서 다시 볼 수 있어요.
         </span>
       </div>
       <textarea
@@ -8520,13 +8518,13 @@ function JournalActivity({ today, item, onClose, onComplete }) {
       {!submitted ? (
         <div className="row" style={{ marginTop: 12, justifyContent: "space-between" }}>
           <button className="btn btn-ghost" onClick={() => setText(`다음 ${item?.context?.ctx || "회의"}에서 ${today.word} 한 번 써먹어보기.`)}>예시로 채우기</button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={!text.trim()}>일지 제출 →</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={!text.trim()}>제출 →</button>
         </div>
       ) : (
         <>
           {savedToast && (
             <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(46,125,50,0.08)", border: "1px solid rgba(46,125,50,0.25)", borderRadius: 6, fontSize: 12, color: "var(--green, #2e7d32)", textAlign: "center", fontWeight: 700 }}>
-              ✓ 일지 저장됨 · 업무노트에서 다시 볼 수 있어요
+              ✓ 내 시추에이션 저장됨 · 업무노트에서 다시 볼 수 있어요
             </div>
           )}
           <div style={{ marginTop: 16, padding: 16, background: "rgba(216,90,42,0.06)", border: "1px solid rgba(216,90,42,0.25)", borderRadius: 8 }}>
@@ -8574,7 +8572,7 @@ function JournalActivity({ today, item, onClose, onComplete }) {
             </div>
           </div>
           <div className="row" style={{ marginTop: 14, justifyContent: "space-between" }}>
-            <button className="btn btn-ghost" onClick={() => setSubmitted(false)}>✏️ 일지 수정하기</button>
+            <button className="btn btn-ghost" onClick={() => setSubmitted(false)}>✏️ 내 시추에이션 수정하기</button>
             <button className="btn btn-primary" onClick={onComplete}>퇴근하기 ✓</button>
           </div>
         </>
@@ -9320,7 +9318,7 @@ function PromotionCeremony({ realDay }) {
     { icon: "🔥", label: "최장 연속 출근", value: stats.streak + "일" },
     { icon: "📚", label: "마스터한 표현", value: stats.words + "개" },
     { icon: "📒", label: "저장한 노트", value: stats.notes + "개" },
-    { icon: "✍️", label: "작성한 업무일지", value: stats.journals + "일" },
+    { icon: "✍️", label: "작성한 내 시추에이션", value: stats.journals + "일" },
   ];
 
   return (
@@ -9847,7 +9845,7 @@ function App() {
               </h1>
               <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 24 }}>
                 {endDateStr}자로 퇴직 처리되었어요.<br/>
-                지금까지 작성하신 학습 기록과 일지는<br/>
+                지금까지 작성하신 학습 기록과 내 시추에이션은<br/>
                 <b style={{ color: "var(--ink)" }}>90일간 보관</b>됩니다.
               </p>
               <div style={{
