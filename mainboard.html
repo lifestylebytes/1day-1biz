@@ -7313,6 +7313,19 @@ function SceneModal({ scenario, onClose }) {
               );
             } catch(e) { return null; }
           })()}
+
+          {/* 맨 아래 완료 버튼 (닫기) */}
+          <button
+            onClick={onClose}
+            style={{
+              width: "100%", marginTop: 18, padding: "14px 0",
+              background: "var(--ink)", color: "var(--paper)",
+              border: "none", borderRadius: 8,
+              fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            ✓ 완료
+          </button>
         </div>
       </div>
     </div>
