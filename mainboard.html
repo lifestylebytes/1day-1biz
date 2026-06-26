@@ -3766,7 +3766,7 @@ async function odEnablePush(email) {
     // 바로 로컬 테스트 알림 (표시 경로 확인)
     try {
       await reg.showNotification("1일1비", {
-        body: "알림이 켜졌어요! 이제 새 단어가 나오면 알려드릴게요.",
+        body: "알림이 켜졌어요! 출근 잊지 않게 리마인드 해드릴게요.",
         icon: "icon-192.png",
         badge: "icon-192.png",
       });
@@ -6145,7 +6145,7 @@ function MyPage() {
               <PushToggle email={USER.email} />
             </div>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
-              새 단어·마감 알림을 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
+              출근 잊지 않게 리마인드를 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
             </div>
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
