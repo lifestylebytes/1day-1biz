@@ -1473,7 +1473,18 @@ body::before {
       u.unlocked   === true
     ));
     // 정식 오픈 후, 미인증·미가입 사용자는 onboarding으로
-    if (!allowed) location.replace('onboarding.html');
+    if (!allowed) {
+      location.replace('onboarding.html');
+    } else {
+      // 로그인 유지 보강: 최소 신원을 쿠키에도 (iOS 강제종료로 localStorage 날아가도 복구). 토큰·비번 안 넣음.
+      try {
+        var _idMin = { email: u.email, name: u.name, unlocked: u.unlocked,
+          isOperator: u.isOperator, isDevMode: u.isDevMode, isPilotHire: u.isPilotHire,
+          isTester: u.isTester, level: u.level, dayInCompany: u.dayInCompany, cohort: u.cohort };
+        document.cookie = '__od_id=' + encodeURIComponent(JSON.stringify(_idMin))
+          + '; Path=/; Max-Age=34560000; Secure; SameSite=Lax';
+      } catch(e) {}
+    }
   } catch(e) {
     location.replace('onboarding.html');
   }

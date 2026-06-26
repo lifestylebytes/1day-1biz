@@ -50,7 +50,32 @@
       return;
     }
 
+    // ── 로그인 유지 보강: 최소 신원을 쿠키에도 저장 ──
+    // iOS 홈 화면 앱은 강제 종료 시 localStorage를 비우지만 쿠키는 더 잘 살아남음.
+    // 토큰·비밀번호 등 민감정보는 절대 안 넣고, 게이트 통과용 최소 정보만.
+    function _odIdMin(u) {
+      return {
+        email: u.email, name: u.name,
+        unlocked: u.unlocked, isOperator: u.isOperator, isDevMode: u.isDevMode,
+        isPilotHire: u.isPilotHire, isTester: u.isTester,
+        level: u.level, dayInCompany: u.dayInCompany, cohort: u.cohort,
+      };
+    }
+    function _odSetIdCookie(u) {
+      try {
+        document.cookie = '__od_id=' + encodeURIComponent(JSON.stringify(_odIdMin(u)))
+          + '; Path=/; Max-Age=34560000; Secure; SameSite=Lax';
+      } catch (e) {}
+    }
+    function _odGetIdCookie() {
+      try {
+        var m = document.cookie.match(/(?:^|; )__od_id=([^;]*)/);
+        return m ? JSON.parse(decodeURIComponent(m[1])) : null;
+      } catch (e) { return null; }
+    }
+
     function routeUser(user) {
+      _odSetIdCookie(user);
       if (user.isOperator) {
         location.replace('operator.html');
       } else if (user.isDevMode) {
@@ -64,6 +89,19 @@
     let user = null;
     try { user = JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch (e) {}
     if (user && user.email) { routeUser(user); return; }
+
+    // 1.5) localStorage는 비었지만 쿠키에 신원 있으면 즉시 복원 (iOS 강제종료 대비)
+    var _ck = _odGetIdCookie();
+    if (_ck && _ck.email) {
+      try {
+        localStorage.setItem('__OD_USER', JSON.stringify(Object.assign({}, _ck, {
+          lastActive: new Date().toISOString(),
+          scenariosCompleted: [], savedNotes: {}, dailyJournals: {}, wordsStudied: [],
+        })));
+      } catch (e) {}
+      routeUser(_ck);
+      return;
+    }
 
     // 2) __OD_USER 없음 → Supabase 세션이 살아있으면 DB에서 복원해 로그인 유지
     (async function() {
