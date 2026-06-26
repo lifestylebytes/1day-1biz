@@ -19,6 +19,13 @@
   .btn { display:block; width:100%; text-align:center; padding:14px 0; border:none; border-radius:9px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:14px; }
   .btn-pay { background:var(--accent); color:#fff; }
   .btn-ghost { background:transparent; border:1px solid var(--ink-mute); color:var(--ink-soft); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .consent { margin-top:16px; background:var(--paper-warm); border:1px solid var(--line); border-radius:8px; padding:13px 14px; }
+  .consent-title { font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:9px; }
+  .ck { display:flex; gap:8px; font-size:12px; color:var(--ink); line-height:1.5; cursor:pointer; margin-bottom:9px; }
+  .ck:last-child { margin-bottom:0; }
+  .ck input { width:16px; height:16px; margin-top:1px; flex:0 0 auto; }
+  .ck b { color:var(--accent); }
   .note { font-size:11.5px; color:var(--ink-mute); line-height:1.6; margin-top:14px; background:var(--paper-warm); border:1px dashed var(--line); border-radius:8px; padding:12px 14px; }
   .result { font-size:13px; line-height:1.6; margin-top:14px; padding:12px 14px; border-radius:8px; display:none; }
   .result.ok { background:rgba(45,122,61,.08); border:1px solid rgba(45,122,61,.3); color:var(--green); }
@@ -35,7 +42,19 @@
   <label>가입 이메일 (이 이메일로 멤버십이 켜져요)</label>
   <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
 
-  <button class="btn btn-pay" id="payBtn">🌍 결제하기 (해외 테스트)</button>
+  <div class="consent">
+    <div class="consent-title">동의사항</div>
+    <label class="ck">
+      <input type="checkbox" id="ck1" />
+      <span><b>[필수]</b> 디지털 콘텐츠 즉시 이용 동의 : 결제 후 바로 이용이 시작되어, 단순 변심에 의한 환불이 제한될 수 있어요.</span>
+    </label>
+    <label class="ck">
+      <input type="checkbox" id="ck2" />
+      <span><b>[필수]</b> PC 사용 권장 : 모바일도 되지만, 효과적인 몰입을 위해 가능하면 PC로 학습 부탁드려요 :)</span>
+    </label>
+  </div>
+
+  <button class="btn btn-pay" id="payBtn" disabled>🌍 결제하기 (해외 테스트)</button>
   <button class="btn btn-ghost" id="checkBtn">내 멤버십 상태 확인</button>
 
   <div class="result" id="result"></div>
@@ -71,7 +90,16 @@
     }
   } catch (e) {}
 
+  // 동의 둘 다 체크해야 결제 버튼 활성화
+  function _updatePayGate(){
+    $("payBtn").disabled = !($("ck1").checked && $("ck2").checked);
+  }
+  $("ck1").onchange = _updatePayGate;
+  $("ck2").onchange = _updatePayGate;
+  _updatePayGate();
+
   $("payBtn").onclick = function(){
+    if (!($("ck1").checked && $("ck2").checked)) { alert("필수 동의사항에 체크해주세요."); return; }
     var email = ($("email").value || "").trim().toLowerCase();
     if (!email || !/\S+@\S+\.\S+/.test(email)) { alert("이메일을 정확히 입력해주세요."); return; }
     if (CHECKOUT_URL.indexOf("PASTE_") === 0) {

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>구독 해지 · 1일1비</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
+<style>
+  :root { --paper:#F4EFE3; --paper-warm:#EDE4D0; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8C7B63; --line:#D9CDB4; --accent:#D85A2A; --green:#2D7A3D; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; background:linear-gradient(180deg,#E8DFCB,#DBCFB4); margin:0; min-height:100vh; color:var(--ink); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; max-width:460px; width:100%; padding:28px 26px; box-shadow:0 24px 50px -20px rgba(58,40,18,.4); }
+  .eyebrow { font-size:11px; letter-spacing:.2em; font-weight:800; color:var(--accent); text-transform:uppercase; margin-bottom:10px; }
+  h1 { font-size:22px; font-weight:900; margin:0 0 6px; letter-spacing:-.01em; }
+  .lead { font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 18px; }
+  label { display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px; }
+  input, textarea { width:100%; padding:12px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff; color:var(--ink); font-family:inherit; }
+  textarea { resize:vertical; min-height:84px; line-height:1.5; }
+  .count { font-size:11px; color:var(--ink-mute); text-align:right; margin-top:4px; }
+  .count.ok { color:var(--green); }
+  .btn { display:block; width:100%; text-align:center; padding:14px 0; border:none; border-radius:9px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:16px; }
+  .btn-warn { background:#9A3B2A; color:#fff; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .guide { display:none; margin-top:8px; background:var(--paper-warm); border:1px solid var(--line); border-radius:10px; padding:18px 18px; }
+  .guide h2 { font-size:15px; margin:0 0 10px; }
+  .guide ol { margin:0; padding-left:20px; font-size:13px; color:var(--ink); line-height:1.7; }
+  .guide .muted { font-size:12px; color:var(--ink-mute); line-height:1.6; margin-top:12px; }
+  .guide a { color:var(--accent); font-weight:700; }
+  .saved { display:none; font-size:12.5px; color:var(--green); font-weight:700; margin-top:10px; }
+  .formwrap { transition:opacity .2s; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">SUBSCRIPTION · CANCEL</div>
+  <h1>구독 해지</h1>
+  <p class="lead">떠나신다니 아쉬워요. 더 나은 1일1비를 위해, 해지 이유를 한 줄만 남겨주시면 큰 도움이 돼요. (10자 이상)</p>
+
+  <div class="formwrap" id="formwrap">
+    <label>가입 이메일</label>
+    <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+    <label>해지하는 이유 (10자 이상)</label>
+    <textarea id="reason" placeholder="예: 너무 바빠서 매일 못 들어가요 / 원하던 내용이랑 달랐어요 / 가격이 부담돼요"></textarea>
+    <div class="count" id="count">0자</div>
+
+    <button class="btn btn-warn" id="submitBtn" disabled>해지 방법 안내받기 →</button>
+    <div class="saved" id="saved">✓ 이유 전해주셔서 감사해요. 꼭 반영할게요.</div>
+  </div>
+
+  <div class="guide" id="guide">
+    <h2>구독 해지 방법</h2>
+    <ol>
+      <li>결제 시 받은 <b>Lemon Squeezy 영수증 이메일</b>을 열어요.</li>
+      <li>이메일 안의 <b>"Manage your subscription"</b> 버튼을 눌러요.</li>
+      <li>고객 포털에서 <b>"Cancel subscription"</b>을 눌러요.</li>
+      <li>해지해도 <b>결제 기간 말일까지는 그대로 이용</b>할 수 있어요. 그 후 자동 만료돼요.</li>
+    </ol>
+    <div class="muted">
+      영수증 이메일을 못 찾거나 막히시면, 유버디 채널로 알려주세요. 바로 도와드릴게요.<br/>
+      💬 <a href="https://pf.kakao.com/_ExdxcGX" target="_blank" rel="noopener">유버디 카카오톡 채널 →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  var $ = function(id){ return document.getElementById(id); };
+
+  try {
+    var u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    if (u && u.email) $("email").value = u.email;
+  } catch (e) {}
+
+  var reason = $("reason"), count = $("count"), submitBtn = $("submitBtn");
+  function _update(){
+    var n = reason.value.trim().length;
+    count.textContent = n + "자";
+    count.className = "count" + (n >= 10 ? " ok" : "");
+    submitBtn.disabled = n < 10;
+  }
+  reason.oninput = _update;
+  _update();
+
+  submitBtn.onclick = async function(){
+    var email = ($("email").value || "").trim().toLowerCase();
+    var msg = reason.value.trim();
+    if (msg.length < 10) { alert("이유를 10자 이상 적어주세요."); return; }
+    submitBtn.disabled = true; submitBtn.textContent = "전송 중...";
+    try {
+      if (window.OD && window.OD.submitFeedback) {
+        await window.OD.submitFeedback({ email: email || null, category: "cancel", message: msg, context: "cancel-page" });
+      }
+    } catch (e) {}
+    // 저장 성공 여부와 무관하게 안내는 보여줌 (해지 막지 않기)
+    $("saved").style.display = "block";
+    $("formwrap").style.opacity = ".55";
+    submitBtn.style.display = "none";
+    $("guide").style.display = "block";
+    $("guide").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+</script>
+</body>
+</html>
