@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>해외결제 테스트 · 1일1비</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<style>
+  :root { --paper:#F4EFE3; --paper-warm:#EDE4D0; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8C7B63; --line:#D9CDB4; --accent:#D85A2A; --green:#2D7A3D; }
+  * { box-sizing: border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; background:linear-gradient(180deg,#E8DFCB,#DBCFB4); margin:0; min-height:100vh; color:var(--ink); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; max-width:440px; width:100%; padding:28px 26px; box-shadow:0 24px 50px -20px rgba(58,40,18,.4); }
+  .eyebrow { font-size:11px; letter-spacing:.2em; font-weight:800; color:var(--accent); text-transform:uppercase; margin-bottom:10px; }
+  h1 { font-size:22px; font-weight:900; margin:0 0 6px; letter-spacing:-.01em; }
+  .lead { font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 18px; }
+  label { display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px; }
+  input { width:100%; padding:12px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff; color:var(--ink); }
+  .btn { display:block; width:100%; text-align:center; padding:14px 0; border:none; border-radius:9px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:14px; }
+  .btn-pay { background:var(--accent); color:#fff; }
+  .btn-ghost { background:transparent; border:1px solid var(--ink-mute); color:var(--ink-soft); }
+  .note { font-size:11.5px; color:var(--ink-mute); line-height:1.6; margin-top:14px; background:var(--paper-warm); border:1px dashed var(--line); border-radius:8px; padding:12px 14px; }
+  .result { font-size:13px; line-height:1.6; margin-top:14px; padding:12px 14px; border-radius:8px; display:none; }
+  .result.ok { background:rgba(45,122,61,.08); border:1px solid rgba(45,122,61,.3); color:var(--green); }
+  .result.no { background:rgba(216,90,42,.08); border:1px solid rgba(216,90,42,.3); color:var(--accent); }
+  .badge { display:inline-block; font-size:10px; font-weight:800; letter-spacing:.08em; padding:3px 8px; border-radius:999px; border:1.5px solid var(--accent); color:var(--accent); margin-left:8px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">INTERNATIONAL PAYMENT · TEST</div>
+  <h1>해외결제 테스트 <span class="badge">LEMON SQUEEZY</span></h1>
+  <p class="lead">해외 카드로 결제하면, 결제 완료 시 자동으로 멤버십이 켜져요. (머천트 오브 레코드: 세금·정산은 LS가 처리)</p>
+
+  <label>가입 이메일 (이 이메일로 멤버십이 켜져요)</label>
+  <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+  <button class="btn btn-pay" id="payBtn">🌍 결제하기 (해외 테스트)</button>
+  <button class="btn btn-ghost" id="checkBtn">내 멤버십 상태 확인</button>
+
+  <div class="result" id="result"></div>
+
+  <div class="note" id="note">
+    테스트 카드(LS test mode): <b>4242 4242 4242 4242</b>, 만료 미래 날짜, CVC 아무거나.<br/>
+    결제 후 잠시(웹훅 처리) 뒤 "멤버십 상태 확인"을 눌러보세요.
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // ★ 여기에 Lemon Squeezy 체크아웃 링크를 붙여넣으세요.
+  //   LS 대시보드 → Products → 상품 → Share/Checkout URL 복사.
+  //   예: https://yourstore.lemonsqueezy.com/buy/xxxxxxxx-xxxx-...
+  // ============================================================
+  var CHECKOUT_URL = "PASTE_YOUR_LEMONSQUEEZY_CHECKOUT_URL_HERE";
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  // 가입 이메일 자동 채우기
+  try {
+    var u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    if (u && u.email) $("email").value = u.email;
+  } catch (e) {}
+
+  // ?success=1 로 돌아오면 안내
+  try {
+    if (new URLSearchParams(location.search).get("success") === "1") {
+      var r = $("result");
+      r.className = "result ok"; r.style.display = "block";
+      r.innerHTML = "✓ 결제 완료! 잠시 후 멤버십이 켜져요. 아래 '멤버십 상태 확인'으로 확인해보세요.";
+    }
+  } catch (e) {}
+
+  $("payBtn").onclick = function(){
+    var email = ($("email").value || "").trim().toLowerCase();
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { alert("이메일을 정확히 입력해주세요."); return; }
+    if (CHECKOUT_URL.indexOf("PASTE_") === 0) {
+      alert("아직 Lemon Squeezy 체크아웃 링크가 설정되지 않았어요. pay-test.html의 CHECKOUT_URL을 바꿔주세요.");
+      return;
+    }
+    // LS 체크아웃에 이메일 prefill + custom data(email)로 전달 → 웹훅이 이 이메일로 멤버십 켬
+    var sep = CHECKOUT_URL.indexOf("?") >= 0 ? "&" : "?";
+    var url = CHECKOUT_URL + sep
+      + "checkout[email]=" + encodeURIComponent(email)
+      + "&checkout[custom][email]=" + encodeURIComponent(email);
+    window.location.href = url;
+  };
+
+  $("checkBtn").onclick = async function(){
+    var email = ($("email").value || "").trim().toLowerCase();
+    var r = $("result");
+    if (!email) { alert("이메일을 입력해주세요."); return; }
+    var cfg = window.__SUPABASE_CONFIG;
+    if (!cfg || !window.supabase) { alert("서버 설정을 불러오지 못했어요."); return; }
+    var client = window.supabase.createClient(cfg.url, cfg.anonKey);
+    r.style.display = "block"; r.className = "result"; r.textContent = "확인 중...";
+    try {
+      var res = await client.rpc("get_membership_status", { p_email: email });
+      if (res.error) throw res.error;
+      var d = res.data || {};
+      if (d.active) {
+        r.className = "result ok";
+        r.innerHTML = "✓ 멤버십 활성! (cohort: " + d.cohort + ")<br/>만료: " + (d.membership_ends_at || "무기한");
+      } else if (d.found) {
+        r.className = "result no";
+        r.innerHTML = "아직 멤버십이 안 켜졌어요. (cohort: " + (d.cohort || "없음") + ")<br/>결제 직후면 웹훅 처리에 몇 초 걸려요. 잠시 후 다시 확인해보세요.";
+      } else {
+        r.className = "result no";
+        r.textContent = "이 이메일의 가입 기록이 없어요. 먼저 가입한 이메일로 확인해주세요.";
+      }
+    } catch (e) {
+      r.className = "result no";
+      r.textContent = "확인 실패: " + (e && e.message ? e.message : e);
+    }
+  };
+</script>
+</body>
+</html>
