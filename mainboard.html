@@ -10367,6 +10367,27 @@ window.SimApp = App;
     }
   } catch (e) {}
 
+  // 3.5) 콘텐츠 자동수정: 승인된 편집을 SCENARIOS에 덮어쓰기 (코드배포 없이 라이브 반영)
+  try {
+    if (window.OD && window.OD.getApprovedContentEdits) {
+      const _ce = await window.OD.getApprovedContentEdits();
+      const _scn = (window.__SIM && window.__SIM.SCENARIOS) || [];
+      if (_ce && _ce.ok && _ce.edits && _ce.edits.length) {
+        _ce.edits.forEach(function (e) {
+          try {
+            const sc = _scn.find(function (s) { return s.day === e.day; });
+            if (!sc) return;
+            const parts = String(e.field).split(".");
+            let obj = sc;
+            for (let i = 0; i < parts.length - 1; i++) { obj = obj[parts[i]]; if (!obj) return; }
+            obj[parts[parts.length - 1]] = e.new_value;
+          } catch (_) {}
+        });
+        console.log("[content-edits] 적용:", _ce.edits.length, "건");
+      }
+    }
+  } catch (e) {}
+
   // 4) 이제 마운트. USER 객체가 최신 localStorage 기반으로 만들어짐.
   ReactDOM.createRoot(document.getElementById("root")).render(<window.SimApp />);
 })();
