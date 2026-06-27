@@ -71,7 +71,8 @@
   //   LS 대시보드 → Products → 상품 → Share/Checkout URL 복사.
   //   예: https://yourstore.lemonsqueezy.com/buy/xxxxxxxx-xxxx-...
   // ============================================================
-  var CHECKOUT_URL = "PASTE_YOUR_LEMONSQUEEZY_CHECKOUT_URL_HERE";
+  // lib/supabase-config.js 의 __PAY_CONFIG.lemonCheckoutUrl 를 단일 소스로 사용
+  var CHECKOUT_URL = (window.__PAY_CONFIG && window.__PAY_CONFIG.lemonCheckoutUrl) || "PASTE_YOUR_LEMONSQUEEZY_CHECKOUT_URL_HERE";
 
   var $ = function(id){ return document.getElementById(id); };
 

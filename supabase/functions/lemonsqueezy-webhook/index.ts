@@ -124,6 +124,7 @@ Deno.serve(async (req) => {
       if (!orderUnpaid) {
         const { error } = await supa.from("users").update({
           cohort: "member",
+          unlocked: true,                 // 결제 회원은 사옥 입장 게이트 통과
           membership_ends_at: endsAt,
           membership_cancel_at: null,
           membership_cancel_reason: null,

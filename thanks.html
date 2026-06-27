@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>결제 완료 · 1일1비</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<style>
+  :root { --paper:#F4EFE3; --paper-warm:#EDE4D0; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8C7B63; --line:#D9CDB4; --accent:#D85A2A; --green:#2D7A3D; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; background:linear-gradient(180deg,#E8DFCB,#DBCFB4); margin:0; min-height:100vh; color:var(--ink); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; max-width:430px; width:100%; padding:30px 26px; box-shadow:0 24px 50px -20px rgba(58,40,18,.4); text-align:center; }
+  .seal { width:64px; height:64px; border-radius:50%; background:var(--green); color:#fff; font-size:32px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 20px -6px rgba(45,122,61,.5); }
+  h1 { font-size:23px; font-weight:900; margin:0 0 8px; letter-spacing:-.01em; }
+  .lead { font-size:13.5px; color:var(--ink-soft); line-height:1.7; margin:0 0 20px; }
+  .lead b { color:var(--ink); }
+  .btn { display:block; width:100%; text-align:center; padding:15px 0; border-radius:10px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; text-decoration:none; }
+  .btn-primary { background:var(--accent); color:#fff; border:none; }
+  .btn-ghost { background:transparent; border:1px solid var(--ink-mute); color:var(--ink-soft); margin-top:10px; }
+  .note { font-size:11.5px; color:var(--ink-mute); line-height:1.6; margin-top:16px; }
+  .check { font-size:12.5px; margin-top:14px; padding:10px 12px; border-radius:8px; display:none; line-height:1.6; }
+  .check.ok { background:rgba(45,122,61,.08); border:1px solid rgba(45,122,61,.3); color:var(--green); }
+  .check.no { background:rgba(216,90,42,.08); border:1px solid rgba(216,90,42,.3); color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="seal">✓</div>
+  <h1>결제가 완료됐어요!</h1>
+  <p class="lead">
+    1일1비에 오신 걸 환영해요 🎉<br/>
+    <b>결제하신 이메일</b>로 가입(또는 로그인)하면 바로 출근할 수 있어요.
+  </p>
+
+  <a class="btn btn-primary" href="onboarding.html">지원서 작성 / 로그인 하러 가기 →</a>
+  <button class="btn btn-ghost" id="checkBtn">멤버십 상태 확인</button>
+  <div class="check" id="check"></div>
+
+  <div class="note">
+    결제 직후엔 멤버십 반영에 몇 초 걸릴 수 있어요.<br/>
+    문제가 있으면 유버디 채널로 알려주세요.
+  </div>
+</div>
+
+<script>
+  var $ = function(id){ return document.getElementById(id); };
+  $("checkBtn").onclick = async function(){
+    var c = $("check");
+    var email = prompt("결제하신 이메일을 입력해주세요");
+    if (!email) return;
+    email = email.trim().toLowerCase();
+    var cfg = window.__SUPABASE_CONFIG;
+    if (!cfg || !window.supabase) { alert("서버 설정을 불러오지 못했어요."); return; }
+    var client = window.supabase.createClient(cfg.url, cfg.anonKey);
+    c.style.display = "block"; c.className = "check"; c.textContent = "확인 중...";
+    try {
+      var res = await client.rpc("get_membership_status", { p_email: email });
+      if (res.error) throw res.error;
+      var d = res.data || {};
+      if (d.active) { c.className = "check ok"; c.innerHTML = "✓ 멤버십 활성! 이제 그 이메일로 로그인하면 출근돼요."; }
+      else if (d.found) { c.className = "check no"; c.innerHTML = "아직 반영 전이에요. 몇 초 뒤 다시 눌러보세요."; }
+      else { c.className = "check no"; c.textContent = "그 이메일의 가입 기록이 아직 없어요. 가입 후 멤버십이 연결돼요."; }
+    } catch (e) { c.className = "check no"; c.textContent = "확인 실패: " + (e && e.message ? e.message : e); }
+  };
+</script>
+</body>
+</html>

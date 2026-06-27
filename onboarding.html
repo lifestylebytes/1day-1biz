@@ -152,84 +152,54 @@ textarea { resize: vertical; min-height: 70px; }
   .assign-grid { grid-template-columns: 1fr; }
 }
 
-/* ── 모바일 차단 팝업, "어허! 업무를 모바일로요?" ── */
-.mobile-block { display: none; position: fixed; inset: 0; z-index: 99999;
-  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
-  align-items: center; justify-content: center; padding: 22px;
+/* ── 모바일 권고 토스트 (유버디 메시지 톤). 막지 않고, 내용 먼저 보인 뒤 부드럽게 안내 ── */
+.mb-toast { display: none; position: fixed; left: 12px; right: 12px; bottom: 14px; z-index: 9998;
+  background: var(--ink); color: var(--paper); border-radius: 14px;
+  padding: 12px 13px; box-shadow: 0 14px 34px -8px rgba(0,0,0,0.45);
   font-family: 'Noto Sans KR', sans-serif;
+  transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  gap: 10px;
 }
-@media (max-width: 768px) {
-  .mobile-block:not(.dismissed) { display: flex; }
-  body.mb-locked { overflow: hidden; }
-}
-.mobile-block.dismissed { display: none !important; }
-
-.mb-card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
-  padding: 36px 26px 28px; max-width: 380px; width: 100%; text-align: center;
-  box-shadow: 0 30px 60px -10px rgba(58,40,18,0.32);
-  position: relative;
-  animation: mbPop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-@keyframes mbPop {
-  from { opacity: 0; transform: translateY(20px) scale(0.94); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.mb-stamp { display: inline-block; font-size: 30px; font-weight: 900; letter-spacing: 0.06em;
-  color: var(--accent); border: 3px solid var(--accent); padding: 8px 22px; border-radius: 6px;
-  transform: rotate(-6deg); margin-bottom: 22px; font-family: 'Noto Sans KR', sans-serif;
-}
-.mb-card h2 { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 14px; color: var(--ink); }
-.mb-lead { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 18px; word-break: keep-all; }
-.mb-lead b { color: var(--ink); }
-.mb-tip { background: var(--paper-warm); padding: 14px 16px; border-radius: 8px; border: 1px dashed var(--line);
-  font-size: 13px; color: var(--ink); line-height: 1.6; margin-bottom: 14px; font-weight: 600; text-align: left; }
-.mb-tip small { display: block; color: var(--ink-mute); font-weight: 400; font-size: 11.5px; margin-top: 4px; }
-.mb-postit { background: #FFE9A6; padding: 12px 14px; border-radius: 4px;
-  font-size: 12.5px; color: var(--ink); line-height: 1.55; margin-bottom: 18px;
-  transform: rotate(-1.5deg); box-shadow: 2px 3px 0 rgba(58,40,18,0.08);
-  text-align: left; font-weight: 500; word-break: keep-all;
-}
-.mb-postit b { color: var(--ink); font-weight: 800; }
-.mb-btn-ghost { background: transparent; border: none; color: var(--ink-mute); font-size: 12px;
-  text-decoration: underline; cursor: pointer; padding: 6px 12px; font-family: inherit; }
-.mb-btn-ghost:hover { color: var(--ink-soft); }
+@media (max-width: 768px) { .mb-toast { display: flex; } }
+.mb-toast.show { transform: translateY(0); }
+.mb-toast.dismissed { display: none !important; }
+.mb-toast-av { width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
+.mb-toast-body { flex: 1; }
+.mb-toast-name { font-size: 11px; font-weight: 800; color: #F3CBB5; margin-bottom: 2px; }
+.mb-toast-msg { font-size: 12.5px; line-height: 1.55; color: var(--paper); word-break: keep-all; }
+.mb-toast-msg b { color: #FFE9A6; }
+.mb-toast-x { background: transparent; border: none; color: rgba(244,239,227,0.6);
+  font-size: 15px; cursor: pointer; padding: 0 2px; flex: 0 0 auto; font-family: inherit; align-self: flex-start; }
 </style>
 </head>
 <body>
 
-<!-- 모바일 차단 팝업, "어허! 업무를 모바일로요?" -->
-<div id="mobile-block" class="mobile-block">
-  <div class="mb-card">
-    <div class="mb-stamp">어허-!</div>
-    <h2>업무를 누가 모바일로 하나요?</h2>
-    <p class="mb-lead">
-      여긴 <b>외국계 회사 입사 시뮬레이터</b>예요.<br/>
-      회의실 책상에서 메일 쓰고 미팅 들어가야 하는데… <b>그걸 폰으로요? 🤔</b>
-    </p>
-    <div class="mb-postit">
-      💼 <b>PC / 노트북 브라우저</b>로 다시 접속 추천이요.<br/>
-      <small>화면 좀 큰 데서 봐야 사무실 분위기 나요. 출근 도장도, 사수 포스트잇도, 슬랙 메시지도.</small>
-    </div>
-    <button id="mb-continue" class="mb-btn-ghost">그래도 모바일에서 볼래요 →</button>
+<!-- 모바일 권고 토스트 (유버디 메시지 톤, 막지 않음) -->
+<div id="mb-toast" class="mb-toast">
+  <div class="mb-toast-av">🤝</div>
+  <div class="mb-toast-body">
+    <div class="mb-toast-name">유버디</div>
+    <div class="mb-toast-msg">여긴 사무실로 "출근"하는 곳이라, <b>PC·노트북</b>에서 하면 훨씬 몰입돼요. 모바일도 되지만 가능하면 큰 화면을 추천해요 :)</div>
   </div>
+  <button id="mb-toast-x" class="mb-toast-x" aria-label="닫기">✕</button>
 </div>
 
 <script>
-  // 모바일 폭이면 body lock + 팝업 노출 (CSS가 처리, 여기선 스크롤만 잠금)
+  // 모바일이면 내용 먼저 보여준 뒤(1.4초) 유버디 토스트를 부드럽게 노출. 닫으면 세션 동안 다시 안 뜸.
   (function() {
-    function syncLock() {
-      const blockEl = document.getElementById('mobile-block');
-      if (!blockEl) return;
-      const isNarrow = window.matchMedia('(max-width: 768px)').matches;
-      const dismissed = blockEl.classList.contains('dismissed');
-      if (isNarrow && !dismissed) document.body.classList.add('mb-locked');
-      else document.body.classList.remove('mb-locked');
+    var toast = document.getElementById('mb-toast');
+    if (!toast) return;
+    var dismissed = false;
+    try { dismissed = sessionStorage.getItem('__OD_MB_TOAST') === '1'; } catch (e) {}
+    if (!dismissed && window.matchMedia('(max-width: 768px)').matches) {
+      setTimeout(function(){ toast.classList.add('show'); }, 1400);
     }
-    window.addEventListener('resize', syncLock);
-    syncLock();
-    document.getElementById('mb-continue')?.addEventListener('click', () => {
-      document.getElementById('mobile-block').classList.add('dismissed');
-      syncLock();
+    var x = document.getElementById('mb-toast-x');
+    if (x) x.addEventListener('click', function(){
+      toast.classList.remove('show');
+      toast.classList.add('dismissed');
+      try { sessionStorage.setItem('__OD_MB_TOAST', '1'); } catch (e) {}
     });
   })();
 </script>
@@ -276,6 +246,12 @@ const DEV_CODES = {
 // dev 패널 X, 베타 만료 X, 통계 분리(isTester), cohort='staff'라 Latpeed 동기화가 안 건드림.
 const STAFF_CODES = {
   "VIP-001": { cohort: "staff", label: "내부 테스터" },
+};
+
+// 유료 회원 코드: 결제 완료 안내 메시지로만 전달. 입력하면 진짜 멤버(통계 포함)로 입장.
+// 베타 만료 X. 결제 갱신/취소는 LS 웹훅이 이메일 기준으로 멤버십을 계속 동기화.
+const MEMBER_CODES = {
+  "1DAY1BIZ365": { label: "유료 회원" },
 };
 
 // ============================================================
@@ -353,10 +329,11 @@ function OnboardingApp() {
         return;
       }
       if (window.OD && window.OD.enabled) {
-        // 1) 코드 검증 (내부 테스터 코드는 pilot_codes 서버 검증 생략)
+        // 1) 코드 검증 (내부 테스터/유료 회원 코드는 pilot_codes 서버 검증 생략)
         const _isStaffCode = !!STAFF_CODES[code];
+        const _isMemberCode = !!MEMBER_CODES[code];
         let _cohort = null;
-        if (!_isStaffCode) {
+        if (!_isStaffCode && !_isMemberCode) {
           const result = await window.OD.checkInviteCode(code);
           if (!result || !result.valid) {
             // 만료/소진/잘못된 코드 구분해서 안내
@@ -371,8 +348,10 @@ function OnboardingApp() {
             return;
           }
           _cohort = result.cohort || null;
-        } else {
+        } else if (_isStaffCode) {
           _cohort = STAFF_CODES[code].cohort || 'staff';
+        } else {
+          _cohort = 'member';
         }
         // 2) ★ 중복 가입 가드, RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
         const emailTrimmed = (email || "").trim().toLowerCase();
@@ -488,6 +467,15 @@ function OnboardingApp() {
       profile.isDevMode = false;      // dev 패널 안 뜸
       profile.isOperator = false;
       profile.cohort = 'staff';       // Latpeed 동기화는 'member'만 건드려서 안전
+    }
+    // 유료 회원 코드: 진짜 멤버로 입장 (통계 포함, 베타 만료 X). 결제 갱신/취소는 LS 웹훅이 동기화.
+    if (MEMBER_CODES[(inviteCode || "").trim().toUpperCase()]) {
+      profile.isPilotHire = false;
+      profile.isTester = false;
+      profile.isDevMode = false;
+      profile.isOperator = false;
+      profile.cohort = 'member';
+      profile.unlocked = true;
     }
     // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
     if (window.OD && window.OD.enabled) {
@@ -614,8 +602,36 @@ const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa
 
 function WelcomeScreenV2({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showPay, setShowPay] = useState(false);
+  const _goDomestic = () => {
+    const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
+    window.open(url, "_blank", "noopener");
+  };
+  const _goIntl = () => {
+    const base = (window.__PAY_CONFIG && window.__PAY_CONFIG.lemonCheckoutUrl) || "";
+    if (!base) { alert("해외 결제는 준비 중이에요. 국내 카드를 이용해주세요."); return; }
+    // 로그인된 사용자면 이메일을 조용히 prefill (없으면 결제창에서 직접 입력)
+    let email = "";
+    try { email = ((JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}).email) || ""; } catch (e) {}
+    let url = base;
+    if (email) {
+      const sep = base.indexOf("?") >= 0 ? "&" : "?";
+      url = base + sep + "checkout[email]=" + encodeURIComponent(email) + "&checkout[custom][email]=" + encodeURIComponent(email);
+    }
+    window.open(url, "_blank", "noopener");
+  };
+  const INTRO_SNOOZE_KEY = "__OD_INTRO_SNOOZE";
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      const until = parseInt(localStorage.getItem(INTRO_SNOOZE_KEY) || "0", 10);
+      return !(until && until > Date.now());
+    } catch (e) { return true; }
+  });
   const dismissIntro = () => setShowIntro(false);
+  const dismissIntroFor7Days = () => {
+    try { localStorage.setItem(INTRO_SNOOZE_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000)); } catch (e) {}
+    setShowIntro(false);
+  };
 
   if (showLogin) {
     return <LoginScreen onBack={() => setShowLogin(false)} />;
@@ -625,75 +641,118 @@ function WelcomeScreenV2({ onNext }) {
     <>
     {showIntro && (
       <>
-        <div style={{
+        <div onClick={dismissIntro} style={{
           position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9000,
         }} />
         <div style={{
           position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
           background: "var(--paper)", border: "2px solid var(--accent)",
-          borderRadius: 14, padding: "30px 30px 22px",
-          maxWidth: 460, width: "calc(100% - 40px)",
+          borderRadius: 16, padding: "26px 24px 18px",
+          maxWidth: 384, width: "calc(100% - 36px)",
           boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
-          zIndex: 9001,
-          textAlign: "left",
+          zIndex: 9001, textAlign: "center",
         }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 4 }}>
-            ℹ️ 1일 1비란?
+          <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 8 }}>📨</div>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "var(--accent)", marginBottom: 6 }}>
+            1일 1비란?
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 14 }}>
-            = 1일 1비즈니스 표현 배우기
-          </div>
-          <p style={{ fontSize: 15, color: "var(--ink)", lineHeight: 1.7, marginBottom: 18, fontWeight: 500 }}>
-            <strong>비즈니스 영어 표현</strong>이 매일 한 개씩 제공돼요.
+          <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.35, margin: "0 0 10px", color: "var(--ink)", letterSpacing: "-0.01em" }}>
+            하루 한 단어,<br/>출근하며 배우는 비즈니스 영어
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "0 0 16px" }}>
+            외국계 회사로 매일 5분 출근. 실제 업무 상황에서 표현을 써보고, 사수가 바로 코칭해줘요.
           </p>
-          <ul style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.85, marginBottom: 22, paddingLeft: 0, listStyle: "none" }}>
-            <li>· <strong>유버디가 외국계 6년 다니며 건진 표현들</strong> 위주</li>
-            <li>· <strong>실제 외국계 회사에서 일어나는 다양한 상황</strong> 제공 (유버디 전매특허!)</li>
-            <li>· 모은 표현으로 <strong>테스트 보기</strong> 가능</li>
-            <li>· <strong>월 구독제</strong>로 진행됩니다</li>
-          </ul>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9, textAlign: "left", marginBottom: 18, background: "var(--paper-warm)", borderRadius: 10, padding: "13px 15px" }}>
+            {[["📩", "매일 비즈니스 영어 표현 1개"], ["💬", "외국계 실제 상황에서 써보기"], ["✍️", "1:1 사수가 바로 피드백"], ["📈", "30일 후 정직원 전환 · 월 구독제"]].map(function(it) {
+              return (
+                <div key={it[1]} style={{ display: "flex", gap: 9, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>
+                  <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
+                </div>
+              );
+            })}
+          </div>
           <button
             onClick={dismissIntro}
             style={{
               background: "var(--accent)", color: "white", border: "none",
-              padding: "12px 22px", borderRadius: 8,
-              fontSize: 14, fontWeight: 700, cursor: "pointer",
-              width: "100%",
+              padding: "13px 22px", borderRadius: 9,
+              fontSize: 14, fontWeight: 800, cursor: "pointer", width: "100%",
             }}
           >
             알겠어요, 시작할게요 →
           </button>
+          <a onClick={dismissIntroFor7Days} style={{ display: "inline-block", marginTop: 11, fontSize: 12, color: "var(--ink-mute)", cursor: "pointer", textDecoration: "underline" }}>
+            7일간 안 보기
+          </a>
         </div>
       </>
     )}
     <div className="card">
-      <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
-      <h1>이 회사,<br/><em>30일만</em> 다녀볼까요?</h1>
-      <p className="lead">
-        유버디 코리아입니다.<br/>
-        한국에 지점을 둔 <strong>외국계 대기업</strong>이에요.
-        <br/><br/>
-        이번에 신입 사원을 뽑고 있습니다.
-        <br/><br/>
-        · 매일 짧은 출근 (약 <strong>5~10분</strong>)<br/>
-        · 1:1 사수가 비즈니스 표현·문화 코칭 (디지털 사수라 잠도 안 자고 24시간 대기, 답장도 빠릅니다)<br/>
-        · <strong>수습 30일 후 정규직 전환 기회</strong>가 있습니다. 승진 제도(사원·대리·과장·임원)도 운영 중이니 열심히 임해주시길 바랍니다<br/>
-        · <strong>유버디 컴퍼니 TIP</strong>: 회장님을 아직 뵌 사람이 없대요 (알려진 건, 임원으로 승진하면 볼 기회가 있다는 것 정도..?)
-        <br/><br/>
-        멤버십 구매 후 지원서를 작성하시면 사번이 즉시 부여되고, 오늘부터 출근 가능합니다.
+      <div className="eyebrow">YOUBUDDY KOREA · 신입 채용 #2026</div>
+      <h1 style={{ lineHeight: 1.25 }}>하루 한 단어,<br/><em>출근하며</em> 배우는<br/>비즈니스 영어</h1>
+      <p className="lead" style={{ marginBottom: 16 }}>
+        외국계 회사로 매일 <strong>5분 출근</strong>. 그날의 표현을 <strong>진짜 업무 상황</strong>에서 써보고, <strong>1:1 사수</strong>가 바로 고쳐줘요.
       </p>
 
+      {/* 오늘의 단어 샘플 (한눈에 "뭘 받는지" 보이게) */}
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 13 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.16em", color: "var(--accent)", marginBottom: 7 }}>오늘의 단어 · DAY 1</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 25, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--ink)" }}>stakeholder</span>
+          <span style={{ fontSize: 13, color: "var(--ink-soft)", fontWeight: 700 }}>이해관계자</span>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 7, lineHeight: 1.5 }}>
+          📍 입사 첫 회의. 김 팀장: "Let's start with the <span style={{ color: "var(--ink-soft)", fontWeight: 700 }}>stakeholder</span> map."
+        </div>
+      </div>
+
+      {/* 3스텝 한 줄 요약 */}
+      <div style={{ display: "flex", gap: 7, marginBottom: 15 }}>
+        {[["📩", "매일 표현 1개"], ["💬", "상황에서 써보기"], ["✍️", "사수 피드백"]].map(function(s) {
+          return (
+            <div key={s[1]} style={{ flex: 1, textAlign: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 4px" }}>
+              <div style={{ fontSize: 19 }}>{s[0]}</div>
+              <div style={{ fontSize: 10, color: "var(--ink-soft)", fontWeight: 700, marginTop: 4, lineHeight: 1.25 }}>{s[1]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginBottom: 2, lineHeight: 1.5 }}>
+        매일 5분 · 30일 수습 후 <strong style={{ color: "var(--ink-soft)" }}>정직원 전환</strong> · 월 구독제
+      </div>
+
       <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
-        {/* 1) 멤버십 구매 (Lapidi 로 이동) */}
-        <a
+        {showPay && (
+          <div onClick={() => setShowPay(false)} style={{ position: "fixed", inset: 0, background: "rgba(42,31,20,0.6)", zIndex: 9200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 400, width: "100%", padding: "24px 22px", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.5)", textAlign: "left" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--accent, #D85A2A)", textTransform: "uppercase" }}>MEMBERSHIP</div>
+                <a onClick={() => setShowPay(false)} style={{ cursor: "pointer", color: "var(--ink-mute)", fontSize: 18, lineHeight: 1 }}>✕</a>
+              </div>
+              <h2 style={{ fontSize: 19, fontWeight: 900, margin: "0 0 6px" }}>멤버십 구매</h2>
+              <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "0 0 16px" }}>결제수단만 고르면 돼요. 결제 시 입력한 이메일로 멤버십이 켜져요.</p>
+              <button className="btn" onClick={_goDomestic} style={{ width: "100%", justifyContent: "center", marginTop: 2 }}>
+                🇰🇷 국내 카드로 결제
+              </button>
+              <button className="btn" onClick={_goIntl} style={{ width: "100%", justifyContent: "center", marginTop: 10, background: "transparent", border: "2px solid var(--accent, #D85A2A)", color: "var(--accent, #D85A2A)" }}>
+                🌍 해외 카드로 결제 (International)
+              </button>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginTop: 13, lineHeight: 1.6 }}>
+                해외 카드(Visa·Master 등)는 "해외 카드로 결제"를 눌러주세요.<br/>
+                결제 시 쓴 이메일로 가입 / 로그인하면 바로 출근돼요.
+              </div>
+            </div>
+          </div>
+        )}
+        {/* 1) 멤버십 구매 → 국내/해외 선택 모달 */}
+        <button
           className="btn"
-          href={LATPEED_MEMBERSHIP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
+          onClick={() => setShowPay(true)}
+          style={{ textAlign: "center", justifyContent: "center" }}
         >
           🎟 멤버십 구매하기 →
-        </a>
+        </button>
         {/* 2) 구매 후 지원서 작성 (기존 가입 흐름) */}
         <button
           className="btn"
