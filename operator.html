@@ -751,11 +751,33 @@ function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
   );
 }
 
+// 본문 미리보기 헬퍼: dot-path로 필드 값 꺼내기 + 신고 문장 빨간 박스 하이라이트
+function _odGetByPath(obj, path) {
+  try { return String(path).split('.').reduce(function (o, k) { return o ? o[k] : undefined; }, obj); }
+  catch (e) { return undefined; }
+}
+function _odHighlight(text, needle) {
+  const t = String(text == null ? '' : text);
+  if (!needle || t.indexOf(needle) < 0) return [<span key="t0">{t}</span>];
+  const parts = t.split(needle);
+  const out = [];
+  parts.forEach(function (p, i) {
+    if (i > 0) out.push(<mark key={'h' + i} style={{ background: '#FBD2C6', color: '#A8462F', border: '2px solid #D85A30', borderRadius: 3, padding: '0 3px', fontWeight: 800 }}>{needle}</mark>);
+    out.push(<span key={'t' + i}>{p}</span>);
+  });
+  return out;
+}
+
 // 🤖 AI 콘텐츠 제안 검토: 피드백 triage가 만든 content_edits(pending)을 운영자가 승인/거부.
 //   승인 → status=approved → 앱이 부팅 시 SCENARIOS에 덮어씀 (코드배포 없이 라이브 반영).
 function ContentEditsReview() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [scenarios, setScenarios] = React.useState(null);  // scenarios.json (본문 미리보기용)
+  const [openPrev, setOpenPrev] = React.useState({});      // edit.id -> 미리보기 펼침
+  React.useEffect(() => {
+    fetch('scenarios.json').then(function (r) { return r.json(); }).then(setScenarios).catch(function () {});
+  }, []);
   const opEmail = React.useMemo(() => {
     try { return (JSON.parse(localStorage.getItem('__OD_USER') || 'null') || {}).email || ''; } catch (e) { return ''; }
   }, []);
@@ -838,7 +860,31 @@ function ContentEditsReview() {
                   {sent[e.feedback_id] ? '✓ 신고자에게 알림 보냄' : '📨 신고자에게 반영 알림'}
                 </button>
               )}
+              <button className="btn btn-ghost" style={{ padding: '7px 14px', fontSize: 12.5 }} onClick={() => setOpenPrev(prev => Object.assign({}, prev, { [e.id]: !prev[e.id] }))}>
+                {openPrev[e.id] ? '🔍 미리보기 닫기' : '🔍 본문 미리보기'}
+              </button>
             </div>
+            {openPrev[e.id] && (
+              <div style={{ marginTop: 10, padding: '12px 14px', background: '#FFFDF6', border: '1px solid #E8DFCB', borderRadius: 8 }}>
+                {!scenarios ? (
+                  <div style={{ fontSize: 12, color: '#8A7964' }}>본문 데이터 로딩 중... (scenarios.json)</div>
+                ) : (() => {
+                  const sc = scenarios.find(function (s) { return s.day === e.day; });
+                  if (!sc) return <div style={{ fontSize: 12, color: '#A8462F' }}>Day {e.day} 본문을 못 찾았어요.</div>;
+                  const val = _odGetByPath(sc, e.field);
+                  return (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#8A5A2B', marginBottom: 6 }}>
+                        Day {sc.day} · {sc.word}{sc.meaning ? ' (' + sc.meaning + ')' : ''} · [{e.field}]
+                      </div>
+                      <div style={{ fontSize: 13, lineHeight: 1.7, color: '#2A1F14', whiteSpace: 'pre-wrap' }}>
+                        {val == null ? <span style={{ color: '#A8462F' }}>이 필드가 본문에 안 보여요 (필드명 확인 필요).</span> : _odHighlight(val, e.old_value)}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         ))}
       </div>
