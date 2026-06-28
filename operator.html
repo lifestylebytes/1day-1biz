@@ -751,6 +751,74 @@ function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
   );
 }
 
+// 🤖 AI 콘텐츠 제안 검토: 피드백 triage가 만든 content_edits(pending)을 운영자가 승인/거부.
+//   승인 → status=approved → 앱이 부팅 시 SCENARIOS에 덮어씀 (코드배포 없이 라이브 반영).
+function ContentEditsReview() {
+  const [items, setItems] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const opEmail = React.useMemo(() => {
+    try { return (JSON.parse(localStorage.getItem('__OD_USER') || 'null') || {}).email || ''; } catch (e) { return ''; }
+  }, []);
+
+  const refresh = React.useCallback(async () => {
+    if (!window.OD || !window.OD.getPendingContentEdits) return;
+    setLoading(true);
+    const r = await window.OD.getPendingContentEdits(opEmail);
+    setItems((r && r.ok) ? (r.edits || []) : []);
+    setLoading(false);
+  }, [opEmail]);
+
+  React.useEffect(() => { refresh(); }, [refresh]);
+
+  const decide = async (id, approve) => {
+    if (!approve && !window.confirm('이 제안을 거부할까요?')) return;
+    const r = await window.OD.decideContentEdit(id, opEmail, approve);
+    if (r && r.ok) setItems(prev => prev.filter(x => x.id !== id));
+    else alert('실패: ' + ((r && r.error) || ''));
+  };
+
+  return (
+    <div className="section">
+      <div className="section-title">
+        🤖 AI 콘텐츠 제안 (검사 대기)
+        <span style={{ marginLeft: 10, fontSize: 11, fontWeight: 800, color: items.length ? '#A8462F' : '#2D6E3A' }}>
+          {items.length ? ('대기 ' + items.length + '건') : '대기 없음 ✓'}
+        </span>
+        <button className="btn btn-ghost btn-mini" style={{ marginLeft: 12, padding: '2px 10px', fontSize: 11 }} onClick={refresh} disabled={loading}>
+          {loading ? '로딩…' : '↻ 새로고침'}
+        </button>
+      </div>
+      <div className="card" style={{ padding: 0 }}>
+        {items.length === 0 ? (
+          <div className="empty" style={{ padding: 24 }}>{loading ? '로딩 중...' : '검사할 AI 제안이 없어요. (피드백이 들어오면 자동 분석돼 여기 쌓여요)'}</div>
+        ) : items.map(e => (
+          <div key={e.id} style={{ padding: '14px 18px', borderBottom: '1px solid #E8DFCB' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+              <span style={{ background: '#EFE7D6', padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>Day {e.day}</span>
+              <span style={{ background: '#2A1F14', color: '#F4EFE3', padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>{e.field}</span>
+              <span style={{ fontSize: 11, color: '#8A7964' }}>{e.type} · {e.source}</span>
+            </div>
+            {e.reason && <div style={{ fontSize: 12.5, color: '#5C4A36', lineHeight: 1.5, marginBottom: 8 }}>💡 {e.reason}</div>}
+            {e.old_value && (
+              <div style={{ fontSize: 12.5, lineHeight: 1.5, marginBottom: 4 }}>
+                <span style={{ color: '#A8462F', fontWeight: 700 }}>이전</span>{' '}
+                <span style={{ textDecoration: 'line-through', color: '#8A7964' }}>{e.old_value}</span>
+              </div>
+            )}
+            <div style={{ fontSize: 13.5, lineHeight: 1.5, marginBottom: 10, padding: '8px 10px', background: 'rgba(45,110,58,0.07)', borderLeft: '3px solid #2D6E3A', borderRadius: 4 }}>
+              <span style={{ color: '#2D6E3A', fontWeight: 800, fontSize: 11 }}>제안 </span> <b>{e.new_value}</b>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ background: '#2D6E3A', color: '#fff', border: 'none', padding: '7px 16px', borderRadius: 6, fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => decide(e.id, true)}>✓ 승인 (라이브 반영)</button>
+              <button className="btn btn-ghost" style={{ padding: '7px 14px', fontSize: 12.5 }} onClick={() => decide(e.id, false)}>✕ 거부</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // ★ 운영자 가드, 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
@@ -1128,6 +1196,7 @@ function App() {
         </div>
 
         {/* 💬 피드백 모아보기 (사용자가 보낸 의견) */}
+        {supaEnabled && <ContentEditsReview />}
         {supaEnabled && <FeedbackInbox />}
 
         {/* Supabase 전체 사용자 */}
