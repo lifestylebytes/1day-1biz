@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
 
     const { data: rows, error } = await supa
       .from("feedback")
-      .select("id, day, category, message")
+      .select("id, day, category, message, name, email")
       .is("triaged_at", null)
       .order("created_at", { ascending: true })
       .limit(limit);
@@ -106,6 +106,10 @@ Deno.serve(async (req) => {
             type: String(a.type || "other"),
             source: "feedback",
             status: "pending",
+            feedback_id: fb.id,
+            reporter_email: fb.email || null,
+            reporter_name: fb.name || null,
+            original_message: String(fb.message || "").slice(0, 1000),
           });
           proposals++;
           note = "제안 생성: " + a.field + " (" + (a.type || "other") + ")";

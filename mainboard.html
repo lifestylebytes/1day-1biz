@@ -10380,7 +10380,17 @@ window.SimApp = App;
             const parts = String(e.field).split(".");
             let obj = sc;
             for (let i = 0; i < parts.length - 1; i++) { obj = obj[parts[i]]; if (!obj) return; }
-            obj[parts[parts.length - 1]] = e.new_value;
+            const key = parts[parts.length - 1];
+            const cur = obj[key];
+            if (e.old_value) {
+              // 부분 치환: 필드 안에서 old_value만 new_value로. 없으면 건드리지 않음(이미 수정됨/불일치 보호).
+              if (cur != null && String(cur).indexOf(e.old_value) >= 0) {
+                obj[key] = String(cur).split(e.old_value).join(e.new_value);
+              }
+            } else {
+              // old_value 없으면 필드 전체 교체 (의도된 전체 편집)
+              obj[key] = e.new_value;
+            }
           } catch (_) {}
         });
         console.log("[content-edits] 적용:", _ce.edits.length, "건");
