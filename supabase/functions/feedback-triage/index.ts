@@ -20,6 +20,13 @@ const cors = {
 const DASH = /[\u2014\u2013]/g;
 const clean = (s: string) => String(s || "").replace(DASH, ", ").trim();
 
+// \ubcf8\ubb38 \uac80\uc99d\uc6a9: dot-path \uac12 \uaebc\ub0b4\uae30 + \uac80\uc0c9 \ub300\uc0c1 \ud544\ub4dc\ub4e4
+function getByPath(obj: any, path: string): any {
+  try { return String(path).split(".").reduce((o, k) => (o ? o[k] : undefined), obj); }
+  catch (_) { return undefined; }
+}
+const VERIFY_FIELDS = ["quote", "sampleAnswer", "mentorTip", "meaning", "phonetic", "buddyAnswers.example", "buddyAnswers.nuance", "buddyAnswers.default"];
+
 const SYS = [
   "너는 한국인 대상 비즈니스 영어 학습앱의 콘텐츠 QA야.",
   "각 레슨(Day)에는 필드가 있어: word, meaning(한국어 뜻), quote(영어 NPC 대사), sampleAnswer(영어 모범답안), mentorTip(한국어 팁), buddyAnswers.example(예문, 이중언어), phonetic(발음기호).",
@@ -89,6 +96,13 @@ Deno.serve(async (req) => {
       .limit(limit);
     if (error) throw error;
 
+    // 본문 스냅샷 (제안 전에 "그 문장이 진짜 본문에 아직 있나" 검증용)
+    const scnMap: Record<number, any> = {};
+    try {
+      const sres = await fetch("https://1day-1biz.youbuddy.co.kr/scenarios.json");
+      if (sres.ok) { const arr = await sres.json(); for (const s of arr) scnMap[s.day] = s; }
+    } catch (_) {}
+
     let processed = 0, proposals = 0;
     const errors: string[] = [];
 
@@ -96,23 +110,44 @@ Deno.serve(async (req) => {
       let note = "";
       try {
         const a = await analyze(fb, apiKey);
-        if (a && a.actionable && a.field && a.new_value && (a.day || fb.day)) {
-          await supa.from("content_edits").insert({
-            day: Number(a.day || fb.day),
-            field: String(a.field),
-            old_value: a.old_value ? clean(a.old_value) : null,
-            new_value: clean(a.new_value),
-            reason: clean(a.reason || ""),
-            type: String(a.type || "other"),
-            source: "feedback",
-            status: "pending",
-            feedback_id: fb.id,
-            reporter_email: fb.email || null,
-            reporter_name: fb.name || null,
-            original_message: String(fb.message || "").slice(0, 1000),
-          });
-          proposals++;
-          note = "제안 생성: " + a.field + " (" + (a.type || "other") + ")";
+        if (a && a.actionable && a.new_value && a.old_value && (a.day || fb.day)) {
+          const day = Number(a.day || fb.day);
+          const sc = scnMap[day];
+          const oldv = String(a.old_value);
+          let field = String(a.field || "");
+          let found = false;
+          // 1) AI가 지목한 필드에 그 문장이 실제로 있나
+          if (sc && field) {
+            const v = getByPath(sc, field);
+            if (v != null && String(v).indexOf(oldv) >= 0) found = true;
+          }
+          // 2) 없으면 다른 필드들 검색 (필드 오지목 자동 교정)
+          if (!found && sc) {
+            for (const f of VERIFY_FIELDS) {
+              const v = getByPath(sc, f);
+              if (v != null && String(v).indexOf(oldv) >= 0) { field = f; found = true; break; }
+            }
+          }
+          if (found && field) {
+            await supa.from("content_edits").insert({
+              day, field,
+              old_value: clean(oldv),
+              new_value: clean(a.new_value),
+              reason: clean(a.reason || ""),
+              type: String(a.type || "other"),
+              source: "feedback",
+              status: "pending",
+              feedback_id: fb.id,
+              reporter_email: fb.email || null,
+              reporter_name: fb.name || null,
+              original_message: String(fb.message || "").slice(0, 1000),
+            });
+            proposals++;
+            note = "제안 생성: " + field + " (" + (a.type || "other") + ")";
+          } else {
+            // 본문에서 못 찾음 = 이미 수정됨 / 다른 곳(첨삭 등) / 오탐 → 제안 생략
+            note = "본문에서 해당 문장 못 찾음 (이미 수정됨 또는 오탐) - 제안 생략";
+          }
         } else {
           note = a?.summary ? clean(a.summary) : "콘텐츠 수정 대상 아님";
         }
