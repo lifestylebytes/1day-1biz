@@ -774,9 +774,11 @@ function ContentEditsReview() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [scenarios, setScenarios] = React.useState(null);  // scenarios.json (본문 미리보기용)
+  const [scnErr, setScnErr] = React.useState(false);
   const [openPrev, setOpenPrev] = React.useState({});      // edit.id -> 미리보기 펼침
   React.useEffect(() => {
-    fetch('scenarios.json').then(function (r) { return r.json(); }).then(setScenarios).catch(function () {});
+    fetch('scenarios.json').then(function (r) { if (!r.ok) throw new Error('404'); return r.json(); })
+      .then(setScenarios).catch(function () { setScnErr(true); });
   }, []);
   const opEmail = React.useMemo(() => {
     try { return (JSON.parse(localStorage.getItem('__OD_USER') || 'null') || {}).email || ''; } catch (e) { return ''; }
@@ -867,7 +869,9 @@ function ContentEditsReview() {
             {openPrev[e.id] && (
               <div style={{ marginTop: 10, padding: '12px 14px', background: '#FFFDF6', border: '1px solid #E8DFCB', borderRadius: 8 }}>
                 {!scenarios ? (
-                  <div style={{ fontSize: 12, color: '#8A7964' }}>본문 데이터 로딩 중... (scenarios.json)</div>
+                  <div style={{ fontSize: 12, color: scnErr ? '#A8462F' : '#8A7964' }}>
+                    {scnErr ? '본문 데이터를 못 불러왔어요. scenarios.json을 push했는지 + 라이브 주소(file:// 말고)에서 여는지 확인해주세요.' : '본문 데이터 로딩 중... (scenarios.json)'}
+                  </div>
                 ) : (() => {
                   const sc = scenarios.find(function (s) { return s.day === e.day; });
                   if (!sc) return <div style={{ fontSize: 12, color: '#A8462F' }}>Day {e.day} 본문을 못 찾았어요.</div>;
