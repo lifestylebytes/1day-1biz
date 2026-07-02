@@ -3425,7 +3425,10 @@ const LEVEL_FULLTIME = { id: "fulltime", ko: "사원", en: "Associate" };
 window.__OD_LEVEL_FULLTIME = LEVEL_FULLTIME;
 // 운영자/Dev만 dayInCompany 수동 override 가능, 일반 사용자는 자동 계산값 사용
 const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
-const _resolvedDay = _isInternal && _localUser?.dayInCompany
+// 운영자/Dev는 dev패널로 Day 2 이상으로 "명시적으로" 점프했을 때만 그 값을 override로 쓴다.
+// (로그인 코드가 dayInCompany를 항상 최소 1로 세팅해서, 예전엔 signup_date를 넣어도
+//  운영자 계정이 Day 1에 고정되는 버그가 있었음. 기본값 1은 무시하고 가입일 기준 auto-day 사용.)
+const _resolvedDay = (_isInternal && _localUser?.dayInCompany > 1)
   ? _localUser.dayInCompany
   : _autoDay;
 
