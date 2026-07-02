@@ -47,20 +47,24 @@ function daysBetweenKST(fromISO: string, toDate: Date): number {
   return Math.floor((td - fd) / 86400000);
 }
 
-async function sendEmail(to: string, subject: string, html: string) {
+async function sendEmail(to: string, subject: string, html: string): Promise<{ ok: boolean; status?: number; error?: string }> {
+  if (!RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY 미설정" };
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: FROM, to: [to], reply_to: REPLY_TO, subject, html }),
   });
-  return r.ok;
+  if (r.ok) return { ok: true };
+  let error = "";
+  try { error = JSON.stringify(await r.json()); } catch (_) { error = await r.text().catch(() => ""); }
+  return { ok: false, status: r.status, error: String(error).slice(0, 400) };
 }
 
 // ── 이메일 본문 (저세상 톤, 매번 랜덤 변형) ──
 function _pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // 본문 + CTA 버튼을 공통 껍데기로 감싼다.
-function _wrap(bodyHtml: string, ctaLabel: string, footerHtml: string) {
+function _wrap(bodyHtml: string, ctaLabel: string, footerHtml: string, signoff = "유버디 드림") {
   return `
     <div style="font-family:-apple-system,'Noto Sans KR',sans-serif;max-width:480px;margin:0 auto;color:#2A1F14;line-height:1.7">
       ${bodyHtml}
@@ -68,7 +72,7 @@ function _wrap(bodyHtml: string, ctaLabel: string, footerHtml: string) {
         <a href="${APP_URL}" style="background:#D85A2A;color:#fff;text-decoration:none;padding:13px 26px;border-radius:8px;font-weight:700">${ctaLabel}</a>
       </p>
       <p style="font-size:13px;color:#8A7A66">${footerHtml}</p>
-      <p style="font-size:13px;color:#8A7A66">유버디 드림</p>
+      <p style="font-size:13px;color:#8A7A66">${signoff}</p>
     </div>`;
 }
 
@@ -120,6 +124,31 @@ function renewalEmail(name: string, dayN: number, words: number) {
   return { subject: v.subject, html: _wrap(v.body, "🎓 마지막 며칠 마저 채우기", "여기까지 온 게 진짜 대단한 거예요. 조금만 더요.") };
 }
 
+// ── 업데이트 안내(푸시 알림 출시) 메일. 가입했던 전원(취소 포함) 컴백 + 기능 안내 톤 ──
+function pushUpdateEmail(name: string) {
+  const body = `
+    <p>${name}님, 오랜만이에요 :)</p>
+    <p>1일1비에 반가운 업데이트 두 가지, 소식 전해요.</p>
+
+    <p><b>🔑 이제 비밀번호로 로그인돼요</b><br/>
+    매번 이메일 코드 기다리지 마세요! 로그아웃 후 다시 로그인할 때 <b>이메일 인증 1회</b>만 하면 비밀번호를 정할 수 있어요. 다음부턴 <b>이메일 + 비밀번호</b>로 바로 출근. (비번을 잊어도 이메일 코드로 언제든 들어올 수 있으니 안심하세요.)</p>
+
+    <p><b>📲 푸시 알림도 받을 수 있어요</b><br/>
+    폰에서 1일1비를 <b>홈 화면에 추가</b>하면 앱처럼 깔리고, 매일 출근 리마인드 알림이 와요. 메일 안 열어봐도 까먹지 않게 챙겨드릴게요.</p>
+    <div style="background:#F4EFE3;border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.75;margin:16px 0">
+      <b>푸시 설정 방법 (1분)</b><br/>
+      · <b>아이폰(사파리)</b>: 1일1비 접속, 하단 공유 버튼, "홈 화면에 추가", 생긴 앱 열기, 사원증 탭, 설정, 알림 켜기<br/>
+      · <b>안드로이드(크롬)</b>: 1일1비 접속, 메뉴, "앱 설치", 설정, 알림 켜기
+    </div>
+
+    <p>그때 불편하셨던 로그인이랑 콘텐츠도 많이 다듬었어요.</p>
+    <p>오랜만에 다시 출근해보실래요? 책상은 그대로 두고 기다리고 있을게요 ☕</p>`;
+  return {
+    subject: `📲 ${name}님, 1일1비 이제 알림으로 챙겨드려요`,
+    html: _wrap(body, "🏢 1일1비 다시 가보기", "이 메일은 1일1비에 가입하신 분께 보내드렸어요. 그만 받고 싶으시면 회신 한 줄 주세요.", "1일1비 드림"),
+  };
+}
+
 async function alreadySent(email: string, kind: string, sinceISO: string): Promise<boolean> {
   const { data } = await sb.from("reengagement_log")
     .select("id").eq("email", email).eq("kind", kind)
@@ -138,12 +167,79 @@ Deno.serve(async (req) => {
   if (sampleTo) {
     const cb = comebackEmail("테스터", 3);
     const rn = renewalEmail("테스터", 27, 26);
-    const ok1 = await sendEmail(sampleTo, "[샘플] " + cb.subject, cb.html);
-    const ok2 = await sendEmail(sampleTo, "[샘플] " + rn.subject, rn.html);
+    const ok1 = (await sendEmail(sampleTo, "[샘플] " + cb.subject, cb.html)).ok;
+    const ok2 = (await sendEmail(sampleTo, "[샘플] " + rn.subject, rn.html)).ok;
     return new Response(JSON.stringify({
       ok: true, sample: true, to: sampleTo,
       comeback_sent: ok1, renewal_sent: ok2,
       hint: ok1 && ok2 ? "두 통 다 발송됨. 인박스 확인." : "발송 실패. RESEND_API_KEY 설정/도메인 확인 필요.",
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // ── 업데이트 안내 메일 테스트: ?announceto=이메일 (그 주소로만 1통, 실제 사용자 안 건드림) ──
+  const announceTo = new URL(req.url).searchParams.get("announceto");
+  if (announceTo) {
+    const nm = (new URL(req.url).searchParams.get("name") || "테스터").trim();
+    const m = pushUpdateEmail(nm);
+    const r = await sendEmail(announceTo, m.subject, m.html);
+    return new Response(JSON.stringify({
+      ok: r.ok, sample: true, to: announceTo, status: r.status, error: r.error,
+      from: FROM,
+      hint: r.ok ? "발송됨. 인박스(+스팸함) 확인." : "발송 실패. 위 error 메시지를 보세요. (도메인 미인증이면 Resend 계정 본인 메일로만 발송돼요.)",
+    }, null, 2), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // ── 업데이트 안내 전체 발송: ?announce=1 (가입한 전원, 취소 포함. 탈퇴/운영자/Dev 제외) ──
+  //   ?announce=1&dry=1 = 미리보기(발송 X). 이미 보낸 사람은 건너뜀(중복 방지). 한 번에 최대 80통.
+  const announceAll = new URL(req.url).searchParams.get("announce") === "1";
+  if (announceAll) {
+    const { data: allUsers, error: aerr } = await sb.from("users")
+      .select("email, name, withdrawn_at, is_operator, is_dev_mode");
+    if (aerr) return new Response(JSON.stringify({ ok: false, error: aerr.message }), { status: 200 });
+
+    const seen = new Set<string>();
+    const targets: { email: string; name: string }[] = [];
+    for (const u of allUsers || []) {
+      const em = String(u.email || "").toLowerCase().trim();
+      if (!em || u.withdrawn_at || u.is_operator || u.is_dev_mode) continue;
+      if (seen.has(em)) continue;
+      seen.add(em);
+      targets.push({ email: em, name: (u.name || "").trim() || "사원" });
+    }
+
+    // 이미 보낸 사람 (reengagement_log kind=push_update) 한 번에 조회
+    const { data: logs } = await sb.from("reengagement_log").select("email").eq("kind", "push_update");
+    const sentSet = new Set((logs || []).map((l: any) => String(l.email || "").toLowerCase()));
+    const pending = targets.filter((t) => !sentSet.has(t.email));
+
+    if (dry) {
+      return new Response(JSON.stringify({
+        ok: true, dry: true, total_targets: targets.length,
+        already_sent: sentSet.size, pending: pending.length,
+        sample: pending.slice(0, 10).map((t) => t.email),
+      }, null, 2), { headers: { "Content-Type": "application/json" } });
+    }
+
+    const LIMIT = 80;
+    let sent = 0, failed = 0;
+    let lastError = "";
+    for (const t of pending) {
+      if (sent + failed >= LIMIT) break;
+      const m = pushUpdateEmail(t.name);
+      const r = await sendEmail(t.email, m.subject, m.html);
+      if (r.ok) {
+        sent++;
+        await sb.from("reengagement_log").insert({ email: t.email, kind: "push_update", meta: {} }).then(() => {}).catch(() => {});
+      } else {
+        failed++;
+        lastError = r.error || ("status " + r.status);
+      }
+      await new Promise((res) => setTimeout(res, 300));  // Resend 레이트 리밋 보호
+    }
+    return new Response(JSON.stringify({
+      ok: true, total_targets: targets.length, pending_before: pending.length,
+      sent, failed, remaining: pending.length - sent, last_error: lastError || undefined,
+      hint: "남았으면(remaining>0) 같은 요청 다시 호출하면 이어서 발송돼요. 이미 보낸 사람은 자동 스킵.",
     }, null, 2), { headers: { "Content-Type": "application/json" } });
   }
 
@@ -190,7 +286,7 @@ Deno.serve(async (req) => {
   for (const p of picked) {
     const name = (p.name || "").trim() || "사원";
     const mail = p._kind === "comeback" ? comebackEmail(name, p.dayN) : renewalEmail(name, p.dayN, p.words);
-    const ok = await sendEmail(p.email, mail.subject, mail.html);
+    const ok = (await sendEmail(p.email, mail.subject, mail.html)).ok;
     if (ok) {
       sent++;
       await sb.from("reengagement_log").insert({ email: p.email, kind: p._kind, meta: { dayN: p.dayN } }).then(() => {}).catch(() => {});

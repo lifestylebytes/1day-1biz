@@ -9739,8 +9739,13 @@ function App() {
   const _endsAtRaw = _localUserNow?.membershipEndsAt || _localUserNow?.membership_ends_at || null;
   const _endsAt = _endsAtRaw ? new Date(_endsAtRaw) : null;
   const _msUntilEnd = _endsAt ? (_endsAt.getTime() - Date.now()) : null;
-  const _membershipExpired = !_isInternalUser && _endsAt && _msUntilEnd <= 0;
-  const _d7Warning = !_isInternalUser && _endsAt && _msUntilEnd > 0 && _msUntilEnd <= 7 * 86400000;
+  // fail-open (2026-07-02): 돈 낸 회원(cohort=member)은 만료일로 자동 차단하지 않는다.
+  // Latpeed 갱신이 DB에 늦게 동기화돼도(수동) 튕기지 않게. "돈 냈는데 입장 안 됨"을 원천 차단.
+  // 회수는 운영자가 명시적으로 unlocked=false 로 막을 때만. 시간 만료는 자동 차단 안 함.
+  const _accessRevoked = _localUserNow?.unlocked === false;   // 운영자 수동 회수 신호
+  const _membershipExpired = !_isInternalUser && (_forceExpired || (_isPaidMember && _accessRevoked));
+  // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
+  const _d7Warning = false;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;
 
   // 베타 전역 마감일. 이 날짜 전엔 PILOT을 만료로 튕기지 않는다.
