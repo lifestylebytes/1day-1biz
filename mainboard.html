@@ -3091,6 +3091,768 @@ const SCENARIOS = [
       example: "🗣 회의: \"This is getting deep, let's take it offline and report back.\"\n📧 메일: \"Taking the pricing discussion offline with finance, will share outcome.\"\n💬 슬랙: \"Let's take this thread offline ☕ call in 10?\"\n\n자주 같이 쓰는 표현:\n• take it/this offline\n• circle back after taking it offline\n• sidebar (회의 중 곁가지 대화, 비슷한 말)",
       default: "회의실 스피커에서 나와 복도 커피머신 앞으로 자리를 옮기는 그림.\n\n외우기: 오프라인 = 무대 밖 = 1:1.\n\nDay 60 완주 축하해. 🌟 60개의 표현이 이제 네 거야. 오후 4시, Daniel의 방에서 보자. 다음 챕터가 기다리고 있어.",
     } },
+
+  // ============================================================
+  // ★ 시즌 3 · Day 61-90 (대리 / Senior Associate)
+  // 주도하는 사람의 언어: 협상, 설득, 이해관계자 관리, 갈등 중재, 전략적 리더십
+  // Week 1 (61-67): 이해관계자 조율·설득
+  // ============================================================
+  { day: 61, word: "on the same page", pos: "phr.", meaning: "생각이 일치한, 합을 맞춘", phonetic: "/ɒn ðə seɪm peɪdʒ/",
+    scene: "09:30, 새 분기 킥오프. 시즌 3, 대리 승진 트랙이 시작됐다. 디자인과 개발이 우선순위를 다르게 보고 있다. 김 팀장이 너를 보며.",
+    npc: "manager",
+    quote: "Before we assign anything, I want the whole team on the same page about the goal. Can you frame it?",
+    quoteKo: "뭘 배정하기 전에, 팀 전체가 목표에 대해 같은 그림을 봤으면 해요. 정리해줄래요?",
+    youDo: null,
+    mentorTip: "on the same page는 '동의'가 아니라 '같은 이해'야. 사람들이 싸우는 건 대부분 목표가 달라서가 아니라 목표를 다르게 이해해서거든. 대리의 첫 일은 그림을 맞추는 것.",
+    sampleAnswer: "Sure. Let me restate the goal in one line so we're all on the same page before we split tasks.",
+    tags: ["leadership", "alignment"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "배정 전에 팀의 목표 이해를 맞추겠다고, 한 줄로 정리 제안을 하세요.",
+      koSentence: "네. 태스크 나누기 전에 목표를 한 줄로 다시 정리해서 다 같은 그림을 보게 할게요." },
+    mcOptions: [
+      { text: "Sure. Let me restate the goal in one line so we're all on the same page before we split tasks.", kind: "correct",
+        note: "✓ 수락 + 방법(restate in one line) + 타이밍(before we split). on the same page는 '언제, 어떻게' 맞출지가 같이 와야 실행이 돼." },
+      { text: "I shall endeavor to ensure unanimous conceptual alignment across all functions.", kind: "formal",
+        note: "'unanimous conceptual alignment'는 컨설팅 슬라이드 톤. 킥오프 즉답엔 무겁고 구체적 행동이 안 보여." },
+      { text: "I think everyone already gets it, so let's just start.", kind: "weak",
+        note: "'다들 알겠지'가 정렬이 깨지는 첫 신호야. 대리는 '아는 것 같다'를 '확인했다'로 바꾸는 사람이야." },
+    ],
+    buddyAnswers: {
+      nuance: "on the same page = 같은 페이지를 보고 있다 = 이해가 일치한다.\n\n헷갈리는 것과 구분:\n• on the same page = 이해가 같다 (동의까지는 아님)\n• in agreement = 동의한다 (결론이 같다)\n• aligned = 방향이 맞다 (조직 톤)\n\n대리가 자주 쓰는 자리: 회의 시작에 그림 맞출 때, 오해가 감지될 때 \"Let me make sure we're on the same page.\"",
+      example: "🗣 회의: \"Quick recap so we're all on the same page.\"\n📧 메일: \"Just to get everyone on the same page, here's the goal in one line.\"\n💬 슬랙: \"Are we on the same page on the deadline? 🙏\"\n\n자주 같이 쓰는 표현:\n• get everyone on the same page\n• make sure we're on the same page\n• get on the same page (합을 맞추다)",
+      default: "모두가 책의 '같은 페이지'를 펴고 있는 그림. 한 명만 다른 페이지면 대화가 어긋나.\n\n외우기: 같은 페이지 = 같은 이해.\n\n공식: \"Let me restate it so we're on the same page.\" 회의 초반 이 한 줄이면 뒤에 싸울 일이 반으로 줄어.",
+    } },
+  { day: 62, word: "make the case", pos: "phr.", meaning: "논거를 세워 설득하다", phonetic: "/meɪk ðə keɪs/",
+    scene: "11:00, Daniel과 화상. 추가 예산이 필요한데, Daniel은 숫자를 원한다.",
+    npc: "daniel",
+    quote: "I'm open to more budget, but you'll need to make the case. What's the return if I say yes?",
+    quoteKo: "예산 더 주는 건 열려 있어요. 근데 논거를 세워야 해요. 내가 승인하면 뭐가 돌아오죠?",
+    youDo: null,
+    mentorTip: "make the case는 '부탁'이 아니라 '증명'이야. 원하는 것 + 그걸 주면 생기는 결과를 숫자로 엮는 게 핵심. 감정이 아니라 근거로 미는 거지.",
+    sampleAnswer: "Fair. Let me make the case with numbers: this hire pays back in two quarters through faster delivery.",
+    tags: ["persuasion", "budget"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "예산 요청을 감정이 아닌 근거로, 결과를 숫자로 엮어 한 줄로 설득하세요.",
+      koSentence: "좋아요. 숫자로 논거를 세워볼게요. 이 인력은 납기를 당겨서 두 분기면 본전을 뽑아요." },
+    mcOptions: [
+      { text: "Fair. Let me make the case with numbers: this hire pays back in two quarters through faster delivery.", kind: "correct",
+        note: "✓ 수용 + make the case + 근거(숫자, payback 기간). Daniel이 'return'을 물었으니 답은 결과여야 해." },
+      { text: "I would humbly request your kind consideration of additional funds.", kind: "formal",
+        note: "'humbly request your kind consideration'은 탄원서 톤. 근거가 없어서 설득이 아니라 읍소로 들려." },
+      { text: "We really need it, the team is exhausted and it's just not fair.", kind: "weak",
+        note: "감정 호소만으론 예산이 안 나와. 힘든 건 사실이어도, make the case는 그걸 숫자와 결과로 번역하는 일이야." },
+    ],
+    buddyAnswers: {
+      nuance: "make the case = (재판에서) 변론하다 = 근거로 주장을 세우다.\n\n비슷한 말 톤 차이:\n• make the case = 근거로 설득 (비즈니스 단골)\n• pitch = 매력적으로 팔다 (아이디어)\n• justify = 정당화하다 (이미 한 일 방어)\n• advocate for = 대변하다 (사람/입장)\n\n공식: 원하는 것 + 그것의 결과(숫자) + 리스크 대비. 세 개가 case야.",
+      example: "🗣 회의: \"Let me make the case for hiring one more.\"\n📧 메일: \"Below I make the case for extending the timeline by two weeks.\"\n💬 슬랙: \"Can you make the case in 3 bullets before the call?\"\n\n자주 같이 쓰는 표현:\n• make the case for [무엇]\n• make a strong/compelling case\n• the business case (사업 논거)",
+      default: "변호사가 법정에서 증거를 하나씩 올리는 그림. 판사(결정권자)는 감정이 아니라 근거로 움직여.\n\n외우기: case = 사건 파일 = 근거 묶음.\n\n공식: \"Let me make the case: [원하는 것] returns [숫자] by [언제].\" 숫자가 들어가야 case가 완성돼.",
+    } },
+  { day: 63, word: "common ground", pos: "phr.", meaning: "공통분모, 서로 동의하는 지점", phonetic: "/ˈkɒmən ɡraʊnd/",
+    scene: "10:20, 마케팅과 개발이 일정으로 팽팽하다. 김 팀장이 너를 조용히 부르며.",
+    npc: "manager",
+    quote: "They're talking past each other. Jiwon, help them find some common ground before this stalls.",
+    quoteKo: "서로 딴소리만 하네요. 지원 씨, 교착되기 전에 공통분모 좀 찾게 도와줘요.",
+    youDo: null,
+    mentorTip: "common ground는 '누가 이기냐'를 '무엇에는 둘 다 동의하냐'로 바꾸는 스위치야. 싸움이 풀리는 건 대부분 이미 합의된 작은 지점 하나를 찾을 때부터거든.",
+    sampleAnswer: "On it. Let's start from common ground: both teams want a clean launch. I'll build the plan from there.",
+    tags: ["mediation", "negotiation"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "교착 상태를 풀도록, 두 팀의 공통분모부터 짚어 한 줄로 답하세요.",
+      koSentence: "제가 볼게요. 공통분모부터 시작할게요. 두 팀 다 깔끔한 런칭을 원하니까, 거기서부터 계획을 짜죠." },
+    mcOptions: [
+      { text: "On it. Let's start from common ground: both teams want a clean launch. I'll build from there.", kind: "correct",
+        note: "✓ common ground 사용 + 그 공통점 지목(clean launch) + 방향(build from there). 중재는 이긴 사람이 아니라 공통점을 먼저 찾는 사람이 해." },
+      { text: "One must identify the mutually agreeable parameters prior to any negotiation.", kind: "formal",
+        note: "'mutually agreeable parameters'는 논문 톤. 무엇이 공통점인지 안 짚어서 사람을 못 움직여." },
+      { text: "Let's just escalate it to the team lead. Not our problem to solve.", kind: "weak",
+        note: "바로 에스컬레이션은 대리의 첫 카드가 아니야. 공통분모 하나 찾는 시도도 없이 넘기면 조율 능력이 안 자라." },
+    ],
+    buddyAnswers: {
+      nuance: "common ground = 공통의 땅 = 양쪽이 같이 서 있는 지점.\n\n협상에서 위치:\n• common ground = 시작점 (여기서 출발)\n• middle ground = 절충점 (여기서 만남)\n• give and take = 주고받기 (거기로 가는 과정)\n\n대리의 기술: 대립이 세 보여도 \"우리 둘 다 X는 원하잖아\"로 시작하면 대화의 온도가 바로 내려가.",
+      example: "🗣 회의: \"Let's find some common ground before we dive into details.\"\n📧 메일: \"I think we have common ground on the goal, let's align on timing.\"\n💬 슬랙: \"We actually have more common ground than it looks 🙂\"\n\n자주 같이 쓰는 표현:\n• find/have common ground\n• start from common ground\n• common ground on [무엇]",
+      default: "두 사람이 각자 다른 땅에 서 있다가, 발밑에 겹치는 공통의 땅 한 조각을 발견하는 그림.\n\n외우기: common(공통) + ground(땅) = 같이 선 자리.\n\n공식: \"We both want [공통 목표], let's start from there.\" 대립을 공통점으로 리프레이밍하는 한 줄.",
+    } },
+  { day: 64, word: "concession", pos: "n.", meaning: "양보 (협상에서)", phonetic: "/kənˈseʃn/",
+    scene: "15:00, Sarah와 계약 협상. 가격은 못 낮추는데 뭔가는 줘야 하는 상황.",
+    npc: "sarah",
+    quote: "Your price is higher than we planned. I need to bring something back to my team. What can you offer?",
+    quoteKo: "가격이 저희 예상보다 높네요. 저희 팀에 가져갈 뭔가가 필요해요. 뭘 제안할 수 있죠?",
+    youDo: null,
+    mentorTip: "concession은 '지는 것'이 아니라 '전략적으로 내주는 것'. 큰 걸 지키려고 작은 걸 주는 카드야. 그냥 주지 말고 '대신 이건 확정'을 붙여.",
+    sampleAnswer: "I can't move on price, but as a concession I'll add onboarding support at no cost if we sign this week.",
+    tags: ["negotiation", "client"], status: "locked",
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "가격은 지키되, 조건을 붙인 양보를 하나 제안하세요.",
+      koSentence: "가격은 못 움직여요. 대신 이번 주에 계약하면 온보딩 지원을 무료로 더해드릴게요." },
+    mcOptions: [
+      { text: "I can't move on price, but as a concession I'll add onboarding support free if we sign this week.", kind: "correct",
+        note: "✓ 핵심 방어(price) + concession(무료 온보딩) + 조건(sign this week). 양보는 항상 '대신 이건'을 붙여야 카드가 돼." },
+      { text: "We are amenable to furnishing supplementary value-added deliverables henceforth.", kind: "formal",
+        note: "'supplementary value-added deliverables'는 제안서 붙임말 톤. 뭘 주는지 구체가 없어서 Sarah가 팀에 가져갈 게 없어." },
+      { text: "Okay fine, I'll drop the price by 15%. Whatever works for you.", kind: "weak",
+        note: "핵심(가격)을 조건 없이 바로 내주는 건 양보가 아니라 손실이야. concession은 작은 걸 주고 큰 걸 지키는 기술이야." },
+    ],
+    buddyAnswers: {
+      nuance: "concession = 내주다(concede)의 명사 = 협상에서 건네는 양보.\n\n협상 3종 세트:\n• concession = 내가 주는 양보\n• trade-off = 하나 주고 하나 받기\n• leverage = 내가 쥔 협상 카드\n\n철칙: concession엔 항상 조건을 붙여라. \"I'll give X, if you give Y.\" 그냥 주면 다음에 더 요구받아.",
+      example: "🗣 회의: \"As a concession, we can extend the trial.\"\n📧 메일: \"In exchange for an earlier signature, we're offering one concession below.\"\n💬 슬랙: \"Small concession to keep them happy, but we hold on price.\"\n\n자주 같이 쓰는 표현:\n• make a concession\n• as a concession\n• in exchange for (대신에)",
+      default: "협상 테이블에서 카드 한 장을 상대에게 밀어주는 그림. 단, 빈손으로 밀지 않고 '대신 이거'라고 말하며 민다.\n\n외우기: concede(내주다) + sion = 내준 것.\n\n공식: \"I can't move on [핵심], but as a concession I'll [작은 것] if [조건].\" 방어 + 양보 + 조건.",
+    } },
+  { day: 65, word: "trade-off", pos: "n.", meaning: "맞교환, 하나를 얻고 하나를 내줌", phonetic: "/ˈtreɪd ɒf/",
+    scene: "11:15, 김 팀장이 일정표를 짚으며. 기한을 당기려면 뭔가를 포기해야 한다.",
+    npc: "manager",
+    quote: "You want two more weeks, but launch is fixed. What's the trade-off if we hold the date?",
+    quoteKo: "2주 더 원하는 건 알겠는데 런칭 날짜는 고정이에요. 날짜를 지키면 뭘 맞바꿔야 하죠?",
+    youDo: null,
+    mentorTip: "trade-off는 '희생'이 아니라 '선택을 눈에 보이게 만드는 말'. 다 가질 수 없을 때, 뭘 얻고 뭘 내주는지 명확히 하는 게 대리의 판단이야.",
+    sampleAnswer: "The trade-off is scope: we hold the date, but ship three core features and defer the rest to v2.",
+    tags: ["strategy", "prioritization"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "날짜를 지키는 대신 무엇을 내줄지, 맞교환을 명확히 한 줄로 답하세요.",
+      koSentence: "맞바꿀 건 범위예요. 날짜는 지키되 핵심 기능 세 개만 내보내고 나머지는 v2로 미룰게요." },
+    mcOptions: [
+      { text: "The trade-off is scope: we hold the date but ship three core features and defer the rest to v2.", kind: "correct",
+        note: "✓ trade-off 지목(scope) + 지키는 것(date) + 내주는 것(rest to v2). 맞교환은 얻는 것과 내주는 것을 한 문장에 둘 다 넣어야 해." },
+      { text: "Optimal equilibrium necessitates a recalibration of deliverable parameters.", kind: "formal",
+        note: "'optimal equilibrium', 'recalibration'은 백서 톤. 무엇을 주고 무엇을 얻는지 안 보여서 결정에 못 써." },
+      { text: "Let's just try to do everything and hope it fits.", kind: "weak",
+        note: "'다 하고 잘 되길'은 trade-off의 정반대. 대리는 다 못 가진다는 걸 인정하고 선택을 눈에 보이게 만드는 사람이야." },
+    ],
+    buddyAnswers: {
+      nuance: "trade-off = 맞교환. 하나를 얻으려면 하나를 내주는 관계.\n\n자주 엮이는 삼각형:\n• 일정(time) / 범위(scope) / 품질(quality), 이 셋은 동시에 다 못 잡아.\n• 하나 당기면 하나는 내줘야 해, 그게 trade-off.\n\n대리의 언어: \"If we want X, the trade-off is Y.\" 결정을 감정이 아니라 교환으로 설명해.",
+      example: "🗣 회의: \"There's a trade-off between speed and polish.\"\n📧 메일: \"The trade-off of holding the date is a leaner v1.\"\n💬 슬랙: \"Fine trade-off imo, ship now, refine later.\"\n\n자주 같이 쓰는 표현:\n• trade-off between A and B\n• the trade-off is [무엇]\n• worth the trade-off (그럴 가치가 있다)",
+      default: "저울 그림. 한쪽 접시를 올리면 반대쪽은 내려가. 둘 다 위로 올릴 순 없어.\n\n외우기: trade(교환) + off = 서로 바꿔치기.\n\n공식: \"We hold [지킬 것], the trade-off is [내줄 것].\" 대리는 이 저울을 남들에게 보여주는 사람이야.",
+    } },
+  { day: 66, word: "win-win", pos: "adj./n.", meaning: "양쪽 다 이득인", phonetic: "/ˌwɪn ˈwɪn/",
+    scene: "16:00, Daniel과 화상. 다른 팀과 리소스를 나눠야 하는데 서로 손해라고 느낀다.",
+    npc: "daniel",
+    quote: "Both teams feel they're losing. Can you reframe this as a win-win before it turns political?",
+    quoteKo: "두 팀 다 손해라고 느껴요. 정치 싸움 되기 전에, 이걸 서로 이득인 그림으로 다시 짜볼래요?",
+    youDo: null,
+    mentorTip: "win-win은 '착한 척'이 아니라 '파이를 다시 그리는 것'. 나눠 먹는 싸움을 '같이 키우는' 문제로 바꾸면 둘 다 가져갈 게 생겨.",
+    sampleAnswer: "It's a win-win: they get our data pipeline, we get their design hours. Both ship faster this quarter.",
+    tags: ["negotiation", "collaboration"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "두 팀이 각자 무엇을 얻는지 짚어서, 서로 이득인 그림으로 한 줄로 제안하세요.",
+      koSentence: "서로 이득이에요. 저쪽은 우리 데이터 파이프라인을 얻고, 우리는 저쪽 디자인 시간을 얻어요. 둘 다 이번 분기에 더 빨리 내보내요." },
+    mcOptions: [
+      { text: "It's a win-win: they get our data pipeline, we get their design hours. Both ship faster.", kind: "correct",
+        note: "✓ win-win 선언 + 각자 얻는 것(pipeline / design hours) + 공동 이득(ship faster). 양쪽이 무엇을 가져가는지 둘 다 말해야 win-win이야." },
+      { text: "A mutually beneficial synergistic paradigm shall emerge in due course.", kind: "formal",
+        note: "'mutually beneficial synergistic paradigm'은 buzzword 범벅. 각자 뭘 얻는지 구체가 없어서 아무도 안 움직여." },
+      { text: "Let's just split it 50/50 and move on.", kind: "weak",
+        note: "반씩 나누기는 win-win이 아니라 둘 다 반만 손해야. win-win은 파이를 나누는 게 아니라 각자 다른 걸 얻게 재설계하는 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "win-win = 양쪽 다 이긴다. 제로섬(한쪽이 이기면 한쪽이 짐)의 반대말.\n\n구분:\n• win-win = 둘 다 이득\n• zero-sum = 내 이득 = 상대 손해\n• compromise = 둘 다 조금씩 양보(반만 만족)\n\n핵심: win-win은 같은 파이를 나누는 게 아니라, 서로 다른 걸 원한다는 걸 찾아 각자 원하는 걸 주는 거야.",
+      example: "🗣 회의: \"This is a win-win for both teams.\"\n📧 메일: \"Framing it as a win-win: you get X, we get Y.\"\n💬 슬랙: \"Honestly a win-win, let's lock it 🤝\"\n\n자주 같이 쓰는 표현:\n• a win-win (for both)\n• win-win situation/outcome\n• turn it into a win-win",
+      default: "두 사람이 서로 다른 상자를 하나씩 안고 웃는 그림. 같은 걸 뺏는 게 아니라 각자 원하던 걸 받았어.\n\n외우기: win + win = 둘 다 이김.\n\n공식: \"It's a win-win: you get X, we get Y.\" 각자 가져가는 걸 콕 집어 말하면 정치가 협업으로 바뀌어.",
+    } },
+  { day: 67, word: "bring to the table", pos: "phr.", meaning: "(협업에) 기여하다, 판에 내놓다", phonetic: "/brɪŋ tə ðə ˈteɪbl/",
+    scene: "09:00, 사수 차윤아가 노란 포스트잇을 붙이며. 일주일간 조율만 하느라 지친 너에게.",
+    npc: "mentor",
+    quote: "You've been mediating all week. Don't forget what you bring to the table, not just what others need.",
+    quoteKo: "이번 주 내내 중재만 했잖아. 남들이 뭘 필요로 하는지만 말고, 네가 판에 내놓는 게 뭔지도 잊지 마.",
+    youDo: null,
+    mentorTip: "🌱 Week 1 완주! bring to the table = 네가 그 자리에 더하는 고유한 가치야. 대리는 남을 조율하다 자기 강점을 잊기 쉬워. 네가 뭘 가져오는지 한 줄로 말할 수 있어야 해.",
+    sampleAnswer: "Thanks. What I bring to the table is turning messy debates into a clear plan people can act on.",
+    tags: ["milestone", "self-awareness"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "사수에게, 네가 판에 내놓는 고유한 강점 하나를 한 줄로 말하세요.",
+      koSentence: "고마워요. 제가 내놓는 건, 엉킨 논쟁을 사람들이 바로 움직일 수 있는 명확한 계획으로 바꾸는 거예요." },
+    mcOptions: [
+      { text: "Thanks. What I bring to the table is turning messy debates into a clear plan people can act on.", kind: "correct",
+        note: "✓ bring to the table + 구체적 강점(엉킨 논쟁 → 실행 계획). 막연한 '열심히'가 아니라 무엇을 더하는지 한 문장으로 말했어." },
+      { text: "I endeavor to contribute value-adding competencies to collective endeavors.", kind: "formal",
+        note: "'value-adding competencies'는 이력서 상투어. 무슨 강점인지 하나도 안 보여서 기억에 안 남아." },
+      { text: "Honestly? I'm not sure I bring anything special.", kind: "weak",
+        note: "겸손이 아니라 자기 가치를 못 짚은 거야. 대리는 자기가 판에 뭘 더하는지 아는 사람이어야 남도 조율할 수 있어." },
+    ],
+    buddyAnswers: {
+      nuance: "bring to the table = 테이블(협업의 자리)에 가져오다 = 내가 더하는 가치.\n\n비슷하지만 다른 것:\n• bring to the table = 내가 더하는 강점\n• seat at the table = 결정에 낄 자격 (Day 48)\n• on the table = 논의 중인 안건\n\n면접, 자기소개, 팀 배정에서 단골. \"What do you bring to the table?\"는 '너의 무기가 뭐냐'는 질문이야.",
+      example: "🗣 회의: \"Here's what each of us brings to the table.\"\n📧 메일: \"I bring deep client context to the table on this one.\"\n💬 슬랙: \"You bring the strategy, I bring the data 💪\"\n\n자주 같이 쓰는 표현:\n• bring [무엇] to the table\n• what you bring to the table\n• everyone brings something different",
+      default: "회의 테이블에 각자 접시를 하나씩 올리는 그림. 네 접시엔 뭐가 담겨 있어?\n\n외우기: 테이블에 내 것을 올린다 = 내 기여.\n\n공식: \"What I bring to the table is [구체적 강점].\" 🌱 Week 1 완주! 네 접시를 아는 대리에 한 걸음 다가섰어.",
+    } },
+
+  // Week 2 (68-74): 갈등·마찰 중재
+  { day: 68, word: "friction", pos: "n.", meaning: "마찰, (팀 사이) 긴장", phonetic: "/ˈfrɪkʃn/",
+    scene: "10:00, 김 팀장이 지나가며 낮은 목소리로. 디자인팀과 데이터팀 사이 기류가 심상찮다.",
+    npc: "manager",
+    quote: "There's friction between design and data lately. Before it grows, how would you smooth it out?",
+    quoteKo: "요즘 디자인팀이랑 데이터팀 사이에 마찰이 좀 있어요. 커지기 전에, 어떻게 풀어볼래요?",
+    youDo: null,
+    mentorTip: "friction은 '싸움'보다 앞 단계야. 아직 폭발 안 한 미세한 삐걱거림. 대리는 이걸 크기 전에 알아채고 이름 붙이는 사람이야. 작을 때 다뤄야 싸움이 안 돼.",
+    sampleAnswer: "I've noticed the friction too. Let me get both leads in a room and name the real blocker early.",
+    tags: ["conflict", "leadership"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "마찰이 커지기 전에, 양쪽 리드를 모아 원인을 짚겠다고 한 줄로 답하세요.",
+      koSentence: "저도 그 마찰 느꼈어요. 양쪽 리드를 한자리에 모아서 진짜 걸림돌을 일찍 짚어볼게요." },
+    mcOptions: [
+      { text: "I've noticed the friction too. Let me get both leads in a room and name the real blocker early.", kind: "correct",
+        note: "✓ 인지(noticed) + 행동(get leads in a room) + 목표(name the blocker). 마찰은 작을 때 이름을 붙여야 싸움으로 안 커져." },
+      { text: "Interpersonal frictional dynamics shall be duly ameliorated in short order.", kind: "formal",
+        note: "'frictional dynamics ameliorated'는 보고서 톤. 무엇을 어떻게 할지 없어서 팀장 걱정에 답이 안 됐어." },
+      { text: "It's not a big deal, they'll probably work it out themselves.", kind: "weak",
+        note: "'알아서 풀겠지'가 마찰이 싸움 되는 길이야. 대리는 작은 삐걱거림을 방치 안 하고 일찍 개입해." },
+    ],
+    buddyAnswers: {
+      nuance: "friction = 마찰. 물리에서 온 말로, 두 표면이 스칠 때 나는 저항이야.\n\n갈등의 온도 단계:\n• friction = 미세한 삐걱거림 (아직 안 터짐) ← 지금\n• tension = 팽팽한 긴장\n• conflict = 드러난 충돌\n\n대리의 타이밍: friction 단계에서 다루면 대화, conflict까지 가면 중재. 빠를수록 쉬워.",
+      example: "🗣 회의: \"I'm sensing some friction here, let's talk it out.\"\n📧 메일: \"To reduce friction between teams, here's a shared tracker.\"\n💬 슬랙: \"Bit of friction on handoffs, can we sync? 🙏\"\n\n자주 같이 쓰는 표현:\n• friction between A and B\n• reduce/smooth friction\n• friction point (마찰 지점)",
+      default: "두 톱니바퀴가 안 맞물려 삐걱대는 그림. 기름 한 방울(대화)이면 풀리는데, 방치하면 톱니가 갈려.\n\n외우기: 마찰 = 삐걱 = 아직 불은 안 났다.\n\n공식: \"I'm sensing some friction, let's name it.\" 작을 때 이름 붙이는 게 대리의 조기 개입.",
+    } },
+  { day: 69, word: "de-escalate", pos: "v.", meaning: "진정시키다, 상황을 누그러뜨리다", phonetic: "/diːˈeskəleɪt/",
+    scene: "14:30, Sarah와 긴급 화상. 두 번째 지연에 목소리가 날카롭다.",
+    npc: "sarah",
+    quote: "Honestly, I'm frustrated. This is the second delay. Why should I stay calm about this?",
+    quoteKo: "솔직히 화가 나요. 벌써 두 번째 지연이잖아요. 제가 왜 침착해야 하죠?",
+    youDo: null,
+    mentorTip: "de-escalate의 첫 수는 반박이 아니라 인정이야. 상대 감정을 먼저 받아주면 온도가 내려가. 변명부터 하면 불에 기름이야. 인정 다음에 계획을 줘.",
+    sampleAnswer: "You're right to be frustrated, and I won't downplay it. Here's exactly what I'm changing so it's the last.",
+    tags: ["conflict", "client"], status: "locked",
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "변명 대신 상대 감정을 먼저 인정하고, 재발 방지 계획을 한 줄로 이으세요.",
+      koSentence: "화나실 만해요, 축소하지 않을게요. 이게 마지막이 되도록 제가 뭘 바꿀지 바로 말씀드릴게요." },
+    mcOptions: [
+      { text: "You're right to be frustrated, and I won't downplay it. Here's exactly what I'm changing so it's the last.", kind: "correct",
+        note: "✓ 감정 인정(right to be frustrated) + 계획(what I'm changing). de-escalate는 인정 먼저, 그다음 행동. 순서가 생명이야." },
+      { text: "Please be advised that circumstances beyond our control precipitated the delay.", kind: "formal",
+        note: "'circumstances beyond our control'은 책임 회피 공문 톤. 화난 사람에게 변명부터 하면 불에 기름을 부어." },
+      { text: "Well, these things happen. Delays are pretty normal in this industry.", kind: "weak",
+        note: "'원래 그래요'는 상대 감정을 무시하는 답. de-escalate의 반대. 인정 없이 일반화하면 신뢰가 더 깎여." },
+    ],
+    buddyAnswers: {
+      nuance: "de-escalate = escalate(고조)의 반대 = 온도를 낮추다.\n\n순서가 핵심:\n1) acknowledge (감정 인정) ← 여기부터\n2) take responsibility (내 몫 인정)\n3) offer a plan (계획 제시)\n\n변명(3번을 1번 자리에)부터 하면 무조건 실패해. 사람은 이해받았다고 느껴야 침착해져.",
+      example: "🗣 통화: \"I hear you, let's de-escalate and fix this together.\"\n📧 메일: \"To de-escalate: you're right, and here's my plan.\"\n💬 슬랙: \"Let me de-escalate this thread before it spirals.\"\n\n자주 같이 쓰는 표현:\n• de-escalate a situation\n• acknowledge, then plan\n• I hear you (인정의 첫 문장)",
+      default: "끓어오르는 냄비의 불을 확 줄이는 그림. 뚜껑(변명)을 덮으면 넘치고, 불(감정)을 인정하면 가라앉아.\n\n외우기: de(내리다) + escalate(올리다) = 온도 다운.\n\n공식: \"You're right to be upset. Here's what I'll change.\" 인정 한 문장 + 계획 한 문장.",
+    } },
+  { day: 70, word: "air concerns", pos: "phr.", meaning: "우려를 터놓고 말하다", phonetic: "/eər kənˈsɜːnz/",
+    scene: "16:00, 팀 회고. 다들 '괜찮다'고만 하는데 표정은 안 괜찮다. 김 팀장이 너에게 눈짓.",
+    npc: "manager",
+    quote: "Everyone's saying it's fine, but it clearly isn't. Can you get them to air their concerns?",
+    quoteKo: "다들 괜찮다는데 딱 봐도 아니에요. 사람들이 속에 있는 걸 터놓게 해줄래요?",
+    youDo: null,
+    mentorTip: "air concerns는 '불만 받기'가 아니라 '숨은 리스크 꺼내기'야. 사람들이 말 안 하는 건 안 위험해서가 아니라 말해도 되는지 몰라서야. 먼저 안전하다고 신호를 줘.",
+    sampleAnswer: "Let's make it safe to air concerns. No wrong answers here, what's the one thing we're all avoiding?",
+    tags: ["facilitation", "psychological-safety"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "사람들이 우려를 안전하게 꺼내도록, 회고에서 던질 한 줄을 말하세요.",
+      koSentence: "우려를 편하게 꺼내도 되는 자리로 만들게요. 정답 없어요, 우리가 다 같이 피하고 있는 한 가지가 뭘까요?" },
+    mcOptions: [
+      { text: "Let's make it safe to air concerns. No wrong answers here, what's the one thing we're all avoiding?", kind: "correct",
+        note: "✓ 안전 신호(safe, no wrong answers) + 구체적 질문(one thing we're avoiding). air concerns는 '말해도 된다'는 판을 먼저 깔아야 열려." },
+      { text: "Kindly enumerate any and all reservations you may harbor at this juncture.", kind: "formal",
+        note: "'reservations you may harbor'는 심문 톤. 이렇게 물으면 사람들이 더 입을 닫아. 안전한 분위기가 안 생겨." },
+      { text: "So, any problems? No? Great, moving on then.", kind: "weak",
+        note: "'문제 없죠? 넘어가요'는 우려를 묻는 척 닫는 거야. air concerns의 정반대. 침묵을 동의로 오해하면 리스크가 숨어." },
+    ],
+    buddyAnswers: {
+      nuance: "air = 공기에 내놓다 = 밖으로 꺼내다. air concerns = 속에 담아둔 걱정을 말로 꺼내다.\n\n비슷한 표현:\n• air concerns = 우려를 꺼내다 (중립적, 건강한 톤)\n• voice objections = 반대를 내다 (더 강함)\n• raise a flag = 위험 신호 올리다 (예방)\n\n리더의 기술: 침묵 = 동의가 아니야. 대리는 안 나온 말을 꺼내주는 사람이야.",
+      example: "🗣 회의: \"This is the time to air any concerns.\"\n📧 메일: \"Please air concerns before we lock the plan Friday.\"\n💬 슬랙: \"Safe space, air concerns freely 🙌\"\n\n자주 같이 쓰는 표현:\n• air concerns/grievances\n• make it safe to air concerns\n• air it out (터놓고 얘기하다)",
+      default: "닫힌 방의 창문을 열어 묵은 공기를 내보내는 그림. 걱정도 꺼내야 환기가 돼.\n\n외우기: air(환기) + concerns(우려) = 걱정을 밖으로.\n\n공식: \"Let's make it safe to air concerns, what are we avoiding?\" 안전 신호 + 구체 질문.",
+    } },
+  { day: 71, word: "hash out", pos: "phr.", meaning: "끝까지 논의해 정리하다", phonetic: "/hæʃ aʊt/",
+    scene: "11:30, Daniel과 화상. 두 방안이 며칠째 제자리를 맴돈다.",
+    npc: "daniel",
+    quote: "We keep going in circles on this. Can you hash it out with the leads and come back with one answer?",
+    quoteKo: "이 건이 계속 제자리만 맴돌아요. 리드들이랑 끝까지 정리해서 하나의 답으로 가져와줄래요?",
+    youDo: null,
+    mentorTip: "hash out은 '대충 합의'가 아니라 '엉킨 걸 끝까지 풀어 하나로 만드는 것'. 결론과 담당과 기한까지 나와야 hash out이 끝난 거야. 열어만 두면 다음에 또 맴돌아.",
+    sampleAnswer: "On it. I'll hash it out with the leads today and come back with one decision, owner, and date.",
+    tags: ["decision", "facilitation"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "리드들과 끝까지 정리해 하나의 결정으로 돌아오겠다고, 결론·담당·기한까지 넣어 한 줄로 답하세요.",
+      koSentence: "제가 할게요. 오늘 리드들이랑 끝까지 정리해서 결정·담당·기한 하나로 정해서 돌아올게요." },
+    mcOptions: [
+      { text: "On it. I'll hash it out with the leads today and come back with one decision, owner, and date.", kind: "correct",
+        note: "✓ hash out + 산출물 3종(decision, owner, date). 끝까지 정리했다는 증거는 '누가 언제 뭘'이 나오는 거야." },
+      { text: "The matter shall be deliberated exhaustively and a resolution proffered thereafter.", kind: "formal",
+        note: "'deliberated exhaustively', 'proffered'는 회의록 톤. 언제 무엇이 나오는지 없어서 또 맴돌 것 같아." },
+      { text: "I'll bring everyone together and we'll keep talking until we agree.", kind: "weak",
+        note: "'동의할 때까지 계속 얘기'는 끝이 없어. hash out은 결론과 기한을 박는 것. 열린 논의로 두면 순환만 반복돼." },
+    ],
+    buddyAnswers: {
+      nuance: "hash out = 해시(잘게 다지다)처럼 엉킨 걸 잘게 풀어 정리하다.\n\n논의 표현 강도:\n• touch base = 가볍게 확인 (Day 10)\n• hash out = 끝까지 파서 결론내기 ← 지금\n• thrash out = hash out과 거의 동의어 (영국식)\n\n완료 기준: hash out은 '얘기 많이 함'이 아니라 '하나의 결정 + 담당 + 기한'이 나와야 끝.",
+      example: "🗣 회의: \"Let's hash out the details offline.\"\n📧 메일: \"We hashed it out, decision and owner below.\"\n💬 슬랙: \"Can we hash this out on a quick call? 15 min?\"\n\n자주 같이 쓰는 표현:\n• hash out the details\n• hash it out with [사람]\n• come back with one answer",
+      default: "엉킨 실뭉치를 끝까지 풀어 한 가닥으로 감는 그림. 반쯤 풀고 놓으면 또 엉켜.\n\n외우기: hash(잘게 다지다) + out(끝까지) = 엉킨 걸 끝장 정리.\n\n공식: \"I'll hash it out and come back with a decision, owner, and date.\" 결론 3종이 나와야 완료.",
+    } },
+  { day: 72, word: "give and take", pos: "phr.", meaning: "주고받기, 서로 양보하며 맞추기", phonetic: "/ɡɪv ən ˈteɪk/",
+    scene: "15:30, Sarah와 계약 막바지. 거의 다 왔는데 마지막 조건 몇 개가 남았다.",
+    npc: "sarah",
+    quote: "We're close. But this only works with some give and take. What are you flexible on?",
+    quoteKo: "거의 다 왔어요. 근데 이건 서로 주고받아야 되는 거예요. 어디는 유연하게 갈 수 있죠?",
+    youDo: null,
+    mentorTip: "give and take는 '반씩 손해'가 아니라 '나에게 싼 걸 주고, 나에게 비싼 걸 지키는 것'. 내가 뭘 쉽게 내줄 수 있는지 미리 알아두면 협상이 부드러워져.",
+    sampleAnswer: "Happy for some give and take. I can flex on the timeline if you can commit to a two-year term.",
+    tags: ["negotiation", "client"], status: "locked",
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "내가 유연할 수 있는 것과 대신 원하는 것을 짝지어, 주고받기를 한 줄로 제안하세요.",
+      koSentence: "주고받기 좋아요. 2년 계약으로 가주시면, 저는 일정은 유연하게 맞출 수 있어요." },
+    mcOptions: [
+      { text: "Happy for some give and take. I can flex on the timeline if you can commit to a two-year term.", kind: "correct",
+        note: "✓ give and take 수용 + 내가 주는 것(timeline) + 받는 것(2-year term). 주고받기는 give와 take를 한 문장에 짝지어야 해." },
+      { text: "A reciprocal exchange of positional flexibilities may prove mutually expedient.", kind: "formal",
+        note: "'reciprocal exchange of positional flexibilities'는 조약 톤. 무엇을 주고 받는지 없어서 Sarah가 결정할 게 없어." },
+      { text: "Sure, I'll be flexible on whatever you need. Just tell me.", kind: "weak",
+        note: "'뭐든 유연하게'는 give만 있고 take가 없어. 다 내주면 협상이 아니라 항복이야. 받을 것을 반드시 짝지어." },
+    ],
+    buddyAnswers: {
+      nuance: "give and take = 주고(give) 받고(take) = 서로 양보하며 맞추는 과정.\n\n협상 지도에서 위치:\n• common ground = 시작점\n• give and take = 거래하는 과정 ← 지금\n• meet in the middle = 도착한 절충점 (Day 52)\n\n고수의 준비: '내겐 싼데 상대껜 비싼 것'을 미리 리스트업. 그걸 먼저 give하면 take가 커져.",
+      example: "🗣 회의: \"There has to be some give and take here.\"\n📧 메일: \"In the spirit of give and take, we can flex on X for Y.\"\n💬 슬랙: \"Bit of give and take and we're done 🤝\"\n\n자주 같이 쓰는 표현:\n• some give and take\n• flex on X for Y (X를 양보하고 Y를 받다)\n• in the spirit of give and take",
+      default: "두 사람이 물건을 하나씩 건네며 맞바꾸는 그림. 한 손만 내밀면 거래가 안 돼.\n\n외우기: give(주고) + take(받고) = 양손 거래.\n\n공식: \"I can flex on X if you can commit to Y.\" give와 take를 한 문장에 짝지으면 협상이 완성돼.",
+    } },
+  { day: 73, word: "push for", pos: "phr.", meaning: "강하게 요구·추진하다", phonetic: "/pʊʃ fɔːr/",
+    scene: "10:15, Daniel과 1:1. 네가 필요한 걸 자꾸 돌려 말하자, Daniel이 짚는다.",
+    npc: "daniel",
+    quote: "If you believe the extra week matters, don't just hint at it. Push for it. What's your actual ask?",
+    quoteKo: "1주가 정말 중요하다고 믿으면, 돌려 말하지 말고 강하게 밀어요. 진짜 원하는 게 뭐죠?",
+    youDo: null,
+    mentorTip: "push for는 '떼쓰기'가 아니라 '근거를 갖고 분명히 요구하기'야. 대리는 돌려 말하다 원하는 걸 못 얻는 실수를 줄여야 해. 요구는 근거 + 분명한 액션으로.",
+    sampleAnswer: "Then I'll push for one more week. With it, we ship tested; without it, we risk a hotfix on launch day.",
+    tags: ["assertiveness", "communication"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "돌려 말하지 말고, 근거를 붙여 원하는 것을 분명히 요구하세요.",
+      koSentence: "그럼 1주 더 강하게 요청할게요. 있으면 테스트까지 끝내서 내보내고, 없으면 런칭 당일 급한 수정 리스크가 있어요." },
+    mcOptions: [
+      { text: "Then I'll push for one more week. With it, we ship tested; without it, we risk a hotfix on launch day.", kind: "correct",
+        note: "✓ 분명한 요구(one more week) + 근거 대비(with it / without it). push for는 원하는 것 + 안 주면 생기는 리스크를 붙여야 힘이 실려." },
+      { text: "I would perhaps tentatively suggest a modest extension might conceivably help.", kind: "formal",
+        note: "'perhaps tentatively', 'might conceivably'는 확신 없는 톤. Daniel이 돌려 말하지 말랬는데 더 흐릿해졌어." },
+      { text: "It'd be nice to have more time, but it's okay if not, no worries.", kind: "weak",
+        note: "'있으면 좋고 아님 말고'는 요구가 아니야. push for의 정반대. 스스로 물러서면 아무도 안 줘." },
+    ],
+    buddyAnswers: {
+      nuance: "push for = ~을 강하게 밀어붙이다 = 분명히 요구하다.\n\n요구의 강도:\n• hint at = 넌지시 흘리다 (약함)\n• ask for = 요청하다 (중립)\n• push for = 근거 갖고 밀다 ← 지금\n• insist on = 고집하다 (더 강함, 때론 무리)\n\n포인트: push for는 세게 말하는 게 아니라 분명하게 말하는 거야. 근거가 세기를 만들어.",
+      example: "🗣 회의: \"I'm going to push for a proper QA window.\"\n📧 메일: \"I'd like to push for an earlier kickoff, here's why.\"\n💬 슬랙: \"Pushing for one more reviewer on this 🙏\"\n\n자주 같이 쓰는 표현:\n• push for [무엇]\n• push back (반대로 밀다, Day 27)\n• make a clear ask (분명한 요구)",
+      default: "무거운 문을 어깨로 분명하게 미는 그림. 살짝 건드리면 안 열리고, 근거를 실어 밀면 열려.\n\n외우기: push(밀다) + for(~을 위해) = 원하는 걸 향해 밀다.\n\n공식: \"I'll push for X. With it [이득]; without it [리스크].\" 요구 + 근거 대비.",
+    } },
+  { day: 74, word: "hold the line", pos: "phr.", meaning: "선을 지키다, 양보하지 않다", phonetic: "/hoʊld ðə laɪn/",
+    scene: "09:00, 사수 차윤아가 커피를 건네며. 다들 품질 리뷰를 건너뛰자고 압박하던 참이다.",
+    npc: "mentor",
+    quote: "They'll pressure you to skip the review to hit the date. Sometimes you hold the line. Know which lines are yours.",
+    quoteKo: "날짜 맞추려고 리뷰 건너뛰자고 압박할 거야. 어떤 때는 선을 지켜야 해. 어떤 선이 네 선인지 알아둬.",
+    youDo: null,
+    mentorTip: "⚡ Week 2 완주! hold the line은 '고집'이 아니라 '타협하면 안 되는 것을 지키는 것'. 다 양보할 순 없어. 품질, 안전, 신뢰 같은 선은 대리가 지켜야 팀이 무너지지 않아.",
+    sampleAnswer: "I hear the pressure, but I'll hold the line on the security review. We can cut scope, not that check.",
+    tags: ["milestone", "integrity"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "압박을 인정하되, 타협할 수 없는 선 하나는 지키겠다고 한 줄로 말하세요.",
+      koSentence: "압박은 이해해요. 근데 보안 리뷰만큼은 선을 지킬게요. 범위는 줄여도 그 점검은 못 빼요." },
+    mcOptions: [
+      { text: "I hear the pressure, but I'll hold the line on the security review. We can cut scope, not that check.", kind: "correct",
+        note: "✓ 압박 인정(I hear it) + 지킬 선 명시(security review) + 대안(cut scope instead). hold the line은 '뭘 대신 양보할지'가 같이 와야 고집이 아니야." },
+      { text: "One must remain steadfastly immovable irrespective of prevailing exigencies.", kind: "formal",
+        note: "'steadfastly immovable'은 선언문 톤. 어떤 선을 왜 지키는지 구체가 없어서 그냥 고집으로 들려." },
+      { text: "Fine, if everyone wants to skip it, I guess we can skip it this once.", kind: "weak",
+        note: "핵심 품질선을 압박에 바로 내주는 답. hold the line의 정반대. 한 번의 예외가 기준을 무너뜨려." },
+    ],
+    buddyAnswers: {
+      nuance: "hold the line = 전선(line)을 지키다 = 압박에도 물러서지 않다.\n\n중요한 짝 개념:\n• give and take = 양보해도 되는 것 (Day 72)\n• hold the line = 양보하면 안 되는 것 ← 지금\n\n고수는 둘을 구분해. 다 지키려 하면 융통성 없고, 다 양보하면 원칙이 없어. 어떤 선이 '내 선'인지 아는 게 대리의 성숙함이야.",
+      example: "🗣 회의: \"We can flex on timing, but we hold the line on quality.\"\n📧 메일: \"Holding the line on the security check, here's why.\"\n💬 슬랙: \"Gotta hold the line on this one 🛡\"\n\n자주 같이 쓰는 표현:\n• hold the line on [무엇]\n• draw the line (선을 긋다)\n• cut scope, not corners (범위는 줄여도 품질은 안 깎다)",
+      default: "밀려드는 파도 앞에서 딱 한 줄만은 넘기지 않고 버티는 그림. 나머지 모래밭은 내줘도 그 선은 지켜.\n\n외우기: hold(지키다) + the line(선) = 이 선만은.\n\n공식: \"We can cut X, but I'll hold the line on Y.\" ⚡ Week 2 완주! 지킬 선을 아는 대리에 가까워지고 있어.",
+    } },
+
+  // Week 3 (75-81): 이해관계자·상사 관리·지지 확보
+  { day: 75, word: "manage up", pos: "phr.", meaning: "상사를 (거꾸로) 관리하다", phonetic: "/ˈmænɪdʒ ʌp/",
+    scene: "09:00, 사수 차윤아가 포스트잇을 붙이며. 네 성과가 팀장에게 늦게 전달되는 걸 짚는다.",
+    npc: "mentor",
+    quote: "Your work is strong, but your manager hears about it too late. Learn to manage up, no surprises for her.",
+    quoteKo: "일은 잘하는데, 팀장이 그걸 너무 늦게 알아. 상사를 관리하는 법을 배워, 팀장이 놀랄 일이 없게.",
+    youDo: null,
+    mentorTip: "manage up은 '아부'가 아니라 '윗사람이 잘 판단하게 돕는 것'. 상사가 필요한 정보를 먼저, 짧게, 놀랄 일 없이 주는 거야. 대리의 핵심 생존 기술이지.",
+    sampleAnswer: "Got it. I'll manage up with a two-line Friday update so she's never surprised in a meeting.",
+    tags: ["stakeholder", "communication"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "상사가 놀랄 일이 없도록, 먼저 짧게 공유하는 습관을 한 줄로 말하세요.",
+      koSentence: "알겠어요. 금요일마다 두 줄짜리 업데이트로 상사 관리 할게요. 회의에서 팀장이 놀랄 일 없게요." },
+    mcOptions: [
+      { text: "Got it. I'll manage up with a two-line Friday update so she's never surprised in a meeting.", kind: "correct",
+        note: "✓ manage up + 구체적 방법(two-line Friday update) + 목적(never surprised). 상사 관리는 '먼저, 짧게, 놀람 없이'가 핵심이야." },
+      { text: "I shall cultivate enhanced upward stakeholder engagement synergies.", kind: "formal",
+        note: "'upward stakeholder engagement synergies'는 컨설팅 표어. 무엇을 언제 할지 없어서 실천이 안 보여." },
+      { text: "I'll just work harder and hope she notices my results eventually.", kind: "weak",
+        note: "'열심히 하면 알아주겠지'가 성과가 묻히는 이유야. manage up은 알아주길 기다리는 게 아니라 먼저 보이게 하는 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "manage up = 위(up)를 관리하다 = 상사가 잘 판단하도록 돕다.\n\n오해 풀기:\n• manage up ≠ 아부. 정보를 먼저 주는 것.\n• manage down = 팀원 관리 (아래로)\n• manage across = 동료 부서 조율 (옆으로)\n\n핵심 3원칙: 먼저(proactive) / 짧게(concise) / 놀람 없이(no surprises). 이걸 하면 신뢰가 쌓여.",
+      example: "🗣 회의: \"Quick heads-up so you're not blindsided later.\"\n📧 메일: \"Friday update, three lines, so you're always current.\"\n💬 슬랙: \"Managing up: FYI the client call moved to Thu 🙂\"\n\n자주 같이 쓰는 표현:\n• manage up/down\n• no surprises (놀랄 일 없이)\n• keep someone in the loop (Day 6)",
+      default: "부하가 상사에게 손전등을 비춰 앞길을 미리 보여주는 그림. 상사가 어둠 속에서 놀라지 않게.\n\n외우기: 위를 관리 = 상사가 먼저 알게.\n\n공식: \"I'll manage up with a short weekly update, no surprises.\" 먼저 + 짧게 + 놀람 없이.",
+    } },
+  { day: 76, word: "champion", pos: "v.", meaning: "적극 지지하다, 밀어주다", phonetic: "/ˈtʃæmpiən/",
+    scene: "14:00, Daniel과 화상. 신입의 좋은 아이디어가 묻히고 있다.",
+    npc: "daniel",
+    quote: "The junior's idea is getting buried. If you believe in it, will you champion it to the committee?",
+    quoteKo: "신입 아이디어가 묻히고 있어요. 정말 좋다고 믿으면, 위원회에서 그걸 밀어줄래요?",
+    youDo: null,
+    mentorTip: "champion은 '칭찬'이 아니라 '내 신뢰를 걸고 밀어주는 것'. 대리가 되면 남의 좋은 아이디어를 위로 올려주는 힘이 생겨. 그 힘을 쓰는 사람이 진짜 리더야.",
+    sampleAnswer: "I will. I'll champion her idea at the committee and frame the impact so it gets a fair hearing.",
+    tags: ["stakeholder", "leadership"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "신입의 아이디어를 위원회에서 직접 밀어주겠다고, 방법까지 넣어 한 줄로 답하세요.",
+      koSentence: "할게요. 위원회에서 그 아이디어를 밀어주고, 임팩트를 정리해서 제대로 검토받게 할게요." },
+    mcOptions: [
+      { text: "I will. I'll champion her idea at the committee and frame the impact so it gets a fair hearing.", kind: "correct",
+        note: "✓ 지지 선언(champion) + 무대(committee) + 방법(frame the impact). champion은 '좋다'가 아니라 '내가 올려주겠다'는 행동이야." },
+      { text: "I shall lend my advocacy to said proposal in the appropriate forum.", kind: "formal",
+        note: "'lend my advocacy to said proposal'은 문서 톤. 어디서 어떻게 밀지 구체가 흐려서 힘이 안 실려." },
+      { text: "It's a good idea, I hope someone brings it up sometime.", kind: "weak",
+        note: "'누가 꺼내주면 좋겠다'는 champion이 아니야. 대리는 좋은 아이디어를 직접 위로 올려주는 사람이야." },
+    ],
+    buddyAnswers: {
+      nuance: "champion = 챔피언(투사)처럼 누군가/무언가를 위해 싸우다 = 적극 지지하다.\n\n지지의 강도:\n• support = 지지한다 (수동적일 수 있음)\n• champion = 내 신뢰를 걸고 밀어준다 ← 지금\n• sponsor = 자원/권한까지 대준다 (더 위)\n\n대리의 특권: 이제 남의 아이디어를 위로 올려줄 위치가 됐어. 그걸 쓰는 게 좋은 리더의 시작이야.",
+      example: "🗣 회의: \"I want to champion this idea from the team.\"\n📧 메일: \"I'm championing Mina's proposal, impact summary below.\"\n💬 슬랙: \"Championing your idea in the review 💪 nice work\"\n\n자주 같이 쓰는 표현:\n• champion an idea/person\n• be a champion for [무엇]\n• get behind (뒤에서 밀어주다)",
+      default: "기수가 남의 깃발을 높이 들고 앞장서 달리는 그림. 내 것이 아니어도, 좋으면 내가 든다.\n\n외우기: 챔피언이 되어 대신 싸워준다.\n\n공식: \"I'll champion it at [무대] and frame [임팩트].\" 지지 선언 + 무대 + 방법.",
+    } },
+  { day: 77, word: "socialize an idea", pos: "phr.", meaning: "(결정 전) 미리 의견을 돌리다", phonetic: "/ˈsoʊʃəlaɪz ən aɪˈdɪə/",
+    scene: "11:00, 김 팀장이 다음 주 큰 제안을 앞두고 조언한다.",
+    npc: "manager",
+    quote: "Don't drop this cold in the big meeting. Socialize it with the key people first, then present.",
+    quoteKo: "큰 회의에서 갑자기 던지지 말아요. 핵심 인물들에게 미리 의견을 돌린 다음에 발표해요.",
+    youDo: null,
+    mentorTip: "socialize an idea는 '비밀 작업'이 아니라 '반대를 미리 만나 다듬는 것'. 회의에서 처음 듣는 사람은 방어부터 해. 미리 돌리면 회의는 확인 도장만 찍는 자리가 돼.",
+    sampleAnswer: "Good call. I'll socialize it with finance and design one-on-one first, then the meeting is just a yes.",
+    tags: ["stakeholder", "influence"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "큰 회의 전에 핵심 인물들에게 먼저 의견을 돌리겠다고, 이유까지 넣어 한 줄로 답하세요.",
+      koSentence: "좋은 지적이에요. 재무팀이랑 디자인팀에 1:1로 먼저 의견 돌릴게요. 그럼 회의는 승인만 받으면 돼요." },
+    mcOptions: [
+      { text: "Good call. I'll socialize it with finance and design one-on-one first, then the meeting is just a yes.", kind: "correct",
+        note: "✓ socialize + 대상(finance, design) + 형태(one-on-one) + 효과(meeting is just a yes). 미리 돌리면 회의가 확인 자리로 바뀌어." },
+      { text: "I shall disseminate the conceptual framework to pertinent constituents beforehand.", kind: "formal",
+        note: "'disseminate to pertinent constituents'는 공람 문서 톤. 사람 냄새가 없어서 사전 조율의 목적이 안 살아." },
+      { text: "I'll just present it to everyone at once, it's more efficient.", kind: "weak",
+        note: "'한 번에 다 발표'가 반대를 부르는 방식이야. socialize an idea는 회의 전에 반대를 미리 만나 다듬는 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "socialize an idea = 아이디어를 사람들 사이에 미리 돌리다 = 사전 조율하다.\n\n왜 필요하냐:\n• 처음 듣는 사람은 방어부터 함 (놀라서)\n• 미리 들은 사람은 이미 생각을 정리함\n• 회의 = 반대의 장 → 확인의 장 으로 바뀜\n\n대리의 정치 감각: 큰 결정일수록 회의 밖에서 승부가 나. 회의는 도장 찍는 자리.",
+      example: "🗣 회의: \"I've socialized this with the leads already.\"\n📧 메일: \"Socializing this ahead of Thursday, thoughts welcome.\"\n💬 슬랙: \"Quick DM to socialize an idea before I pitch it 🙂\"\n\n자주 같이 쓰는 표현:\n• socialize an idea/proposal\n• pre-wire a meeting (회의를 미리 깔다)\n• get buy-in early (Day 23)",
+      default: "발표 전에 핵심 인물들에게 아이디어를 한 명씩 미리 보여주고 고개를 끄덕이게 하는 그림.\n\n외우기: 아이디어를 미리 '사교'시킨다 = 얼굴을 익혀둔다.\n\n공식: \"I'll socialize it with [핵심 인물] first, then present.\" 사전 조율 → 회의는 확인.",
+    } },
+  { day: 78, word: "sign-off", pos: "n.", meaning: "최종 승인, 결재", phonetic: "/ˈsaɪn ɒf/",
+    scene: "16:30, Daniel과 화상. 런칭 직전, 마지막 관문이 남았다.",
+    npc: "daniel",
+    quote: "Looks ready to me. But get sign-off from legal and finance before you ship. No surprises after launch.",
+    quoteKo: "제가 보기엔 준비됐어요. 근데 내보내기 전에 법무랑 재무 최종 승인을 받아요. 런칭 후에 놀랄 일 없게.",
+    youDo: null,
+    mentorTip: "sign-off는 '형식 절차'가 아니라 '책임을 나눠 갖는 도장'이야. 관련 부서 승인을 미리 받아두면, 문제가 생겨도 '나 혼자 밀어붙인 것'이 안 돼. 대리의 안전벨트지.",
+    sampleAnswer: "Will do. I'll get written sign-off from legal and finance by Thursday and log it before we ship.",
+    tags: ["process", "stakeholder"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "런칭 전에 관련 부서의 최종 승인을 언제까지 받겠다고, 형태까지 넣어 한 줄로 답하세요.",
+      koSentence: "그럴게요. 목요일까지 법무랑 재무한테 서면 최종 승인 받고, 내보내기 전에 기록해둘게요." },
+    mcOptions: [
+      { text: "Will do. I'll get written sign-off from legal and finance by Thursday and log it before we ship.", kind: "correct",
+        note: "✓ sign-off + 대상(legal, finance) + 형태(written) + 기한(Thursday). 승인은 '누구에게, 언제, 어떤 형태로'가 나와야 안전벨트가 돼." },
+      { text: "Requisite authorizations shall be procured from relevant departments in due course.", kind: "formal",
+        note: "'requisite authorizations procured in due course'는 계약서 톤. 언제 누구에게인지 없어서 실제로 안 챙길 위험이 커." },
+      { text: "I'm pretty sure they'd approve, so let's just ship and tell them after.", kind: "weak",
+        note: "'승인할 거니까 먼저 내보내자'가 사고의 시작이야. sign-off는 문제 났을 때 책임을 나눠 갖는 도장이라 미리 받아야 해." },
+    ],
+    buddyAnswers: {
+      nuance: "sign-off = 서명하고(sign) 넘기다(off) = 최종 승인/결재.\n\n승인 단계 구분:\n• approval = 승인 (일반)\n• sign-off = 공식 최종 결재 (책임 확정) ← 지금\n• green light = 진행 허가 (캐주얼)\n\n대리의 안전: 관련 부서 sign-off를 미리 받으면, 사고가 나도 '혼자 밀어붙인 일'이 안 돼. 책임이 공유돼.",
+      example: "🗣 회의: \"We're just waiting on legal's sign-off.\"\n📧 메일: \"Please reply with your sign-off by EOD Thursday.\"\n💬 슬랙: \"Got finance sign-off ✅ clear to ship\"\n\n자주 같이 쓰는 표현:\n• get/give sign-off\n• sign off on [무엇] (동사로도 씀)\n• final sign-off",
+      default: "서류 맨 아래 결재란에 관련 부서들이 하나씩 서명하는 그림. 도장이 다 찍혀야 문이 열려.\n\n외우기: sign(서명) + off(넘김) = 결재 완료.\n\n공식: \"I'll get written sign-off from [부서] by [기한].\" 대상 + 형태 + 기한.",
+    } },
+  { day: 79, word: "manage expectations", pos: "phr.", meaning: "기대치를 (현실적으로) 조율하다", phonetic: "/ˈmænɪdʒ ɪkspekˈteɪʃnz/",
+    scene: "15:00, Sarah와 화상. 경영진이 무리한 일정을 기대하고 있다.",
+    npc: "sarah",
+    quote: "My exec expects all of this delivered by Q3. Between us, is that realistic? I don't want to overpromise.",
+    quoteKo: "저희 경영진은 이걸 다 Q3까지 받길 기대해요. 우리끼리 얘긴데, 현실적인가요? 과한 약속은 하기 싫어요.",
+    youDo: null,
+    mentorTip: "manage expectations는 '초 치기'가 아니라 '나중의 실망을 지금의 솔직함으로 막는 것'. 안 되는 걸 된다고 하면 신뢰가 한 번에 무너져. 지금 현실을 주면 오래 간다.",
+    sampleAnswer: "Let me manage expectations honestly: two of the three by Q3 is solid; the third is realistic for Q4.",
+    tags: ["client", "communication"], status: "locked",
+    task: { to: "sarah", channel: "video-call",
+      promptKo: "무리한 기대에 솔직하게, 무엇이 언제 가능한지 현실적으로 한 줄로 조율하세요.",
+      koSentence: "솔직하게 기대치를 맞춰드릴게요. 셋 중 둘은 Q3에 확실하고, 나머지 하나는 Q4가 현실적이에요." },
+    mcOptions: [
+      { text: "Let me manage expectations honestly: two of the three by Q3 is solid; the third is realistic for Q4.", kind: "correct",
+        note: "✓ 솔직한 조율 + 구체적 분할(two by Q3, third by Q4). manage expectations는 '안 돼요'가 아니라 '이건 언제 돼요'로 현실을 주는 거야." },
+      { text: "Anticipated deliverable timelines are subject to prevailing capacity constraints.", kind: "formal",
+        note: "'subject to prevailing capacity constraints'는 면피 문구 톤. 무엇이 언제 되는지 안 줘서 Sarah가 경영진에 못 가져가." },
+      { text: "Sure, Q3 for everything should be totally fine, we'll make it work.", kind: "weak",
+        note: "안 되는 걸 된다고 하는 과잉 약속. manage expectations의 정반대. 지금의 편한 'yes'가 나중의 큰 실망이 돼." },
+    ],
+    buddyAnswers: {
+      nuance: "manage expectations = 기대치를 (미리) 관리하다 = 현실과 기대의 간격을 좁히다.\n\n타이밍이 전부:\n• 미리 조율 = manage expectations (신뢰 쌓임) ← 지금\n• 나중에 사과 = damage control (신뢰 깎임)\n\n공식은 부정이 아니라 재배치: \"이건 언제, 저건 언제.\" 못 한다가 아니라 순서를 준다.",
+      example: "🗣 회의: \"Let me manage expectations on the timeline.\"\n📧 메일: \"To manage expectations: phase 1 by Q3, phase 2 by Q4.\"\n💬 슬랙: \"Managing expectations early, this may slip a week 🙏\"\n\n자주 같이 쓰는 표현:\n• manage expectations (early/upfront)\n• under-promise, over-deliver\n• set realistic expectations",
+      default: "너무 높이 뜬 풍선(기대)을 손에 닿는 높이로 살짝 내려주는 그림. 터뜨리는 게 아니라 잡을 수 있게.\n\n외우기: 기대를 관리한다 = 현실 높이로 맞춘다.\n\n공식: \"X by Q3 is solid; Y is realistic for Q4.\" 부정이 아니라 순서를 주는 것.",
+    } },
+  { day: 80, word: "red flag", pos: "n.", meaning: "경고 신호, 위험 징후", phonetic: "/red flæɡ/",
+    scene: "10:30, 김 팀장이 외주 업체 진행 상황을 물으며. 뭔가 미묘하게 어긋나는 게 보인다.",
+    npc: "manager",
+    quote: "If you spot a red flag with the vendor, I want to hear it early, not on launch day. What's your read?",
+    quoteKo: "외주 업체에서 경고 신호가 보이면, 런칭 당일 말고 일찍 알려줘요. 어떻게 보여요?",
+    youDo: null,
+    mentorTip: "red flag는 '증명된 문제'가 아니라 '아직 근거는 약하지만 느낌이 오는 위험'이야. 대리는 확신이 설 때까지 기다리지 않고, 신호 단계에서 올려. 늦게 올리면 이미 사고야.",
+    sampleAnswer: "One red flag: their replies got slower this week. Not proof yet, but I'll verify the timeline by Friday.",
+    tags: ["risk", "judgment"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "아직 확실치 않아도, 감지한 경고 신호 하나와 확인 계획을 한 줄로 보고하세요.",
+      koSentence: "경고 신호 하나요. 이번 주 답장이 느려졌어요. 아직 확증은 아닌데, 금요일까지 일정 확인해볼게요." },
+    mcOptions: [
+      { text: "One red flag: their replies got slower this week. Not proof yet, but I'll verify the timeline by Friday.", kind: "correct",
+        note: "✓ red flag 지목(replies slower) + 정직함(not proof yet) + 확인 계획(verify by Friday). 신호는 확증 전에 올리되, 확인 계획을 붙이면 완벽해." },
+      { text: "Certain anomalous indicators may potentially warrant heightened vigilance henceforth.", kind: "formal",
+        note: "'anomalous indicators warrant vigilance'는 보안 브리핑 톤. 무슨 신호인지 구체가 없어서 팀장이 판단할 수 없어." },
+      { text: "Everything's fine, I'll let you know if something actually breaks.", kind: "weak",
+        note: "'터지면 말할게요'는 red flag를 무시하는 답. 대리는 사고가 나기 전 신호 단계에서 올리는 사람이야." },
+    ],
+    buddyAnswers: {
+      nuance: "red flag = 빨간 깃발 = 멈추라는 위험 신호.\n\n위험 인지 단계:\n• red flag = 아직 근거 약한 경고 신호 ← 지금\n• risk = 식별된 리스크 (Day 33 de-risk)\n• blocker = 이미 막힌 것\n\n타이밍의 지혜: 확신이 설 때까지 기다리면 늦어. 대리는 '느낌' 단계에서 올리되 '확인하겠다'를 붙여.",
+      example: "🗣 회의: \"That's a red flag, let's dig in.\"\n📧 메일: \"Flagging one red flag on the vendor timeline.\"\n💬 슬랙: \"🚩 red flag: their staffing just changed\"\n\n자주 같이 쓰는 표현:\n• spot/raise a red flag\n• that's a red flag\n• flag it early (일찍 올리다)",
+      default: "해변에서 위험할 때 올라가는 빨간 깃발 그림. 파도가 삼키기 전에, 깃발 보면 멈춰.\n\n외우기: 빨간 깃발 = 멈춰, 위험.\n\n공식: \"One red flag: [징후]. Not proof yet, but I'll verify by [기한].\" 신호 + 정직함 + 확인.",
+    } },
+  { day: 81, word: "rally", pos: "v.", meaning: "결집시키다, 사기를 끌어올리다", phonetic: "/ˈræli/",
+    scene: "09:00, 사수 차윤아가 조용히. 지연 이후 팀 사기가 눈에 띄게 가라앉았다.",
+    npc: "mentor",
+    quote: "Morale dipped after the delay. Before the final push, can you rally the team? They listen to you now.",
+    quoteKo: "지연 이후로 사기가 확 죽었어. 마지막 스퍼트 전에, 팀을 결집시킬 수 있겠어? 이제 사람들이 널 따르잖아.",
+    youDo: null,
+    mentorTip: "🔥 Week 3 완주! rally는 '억지 응원'이 아니라 '흩어진 에너지를 하나의 목표로 다시 모으는 것'. 힘든 걸 인정하고, 남은 목표를 작게 보여주면 사람은 다시 움직여.",
+    sampleAnswer: "Let me rally them. I'll name what was hard, then show the finish line is closer than it feels.",
+    tags: ["milestone", "leadership"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "가라앉은 팀을 결집시키도록, 힘듦을 인정하고 목표를 다시 보여주는 한 줄을 말하세요.",
+      koSentence: "제가 결집시켜볼게요. 뭐가 힘들었는지 먼저 인정하고, 결승선이 생각보다 가깝다는 걸 보여줄게요." },
+    mcOptions: [
+      { text: "Let me rally them. I'll name what was hard, then show the finish line is closer than it feels.", kind: "correct",
+        note: "✓ rally + 방법(힘듦 인정 → 목표 재조명). 결집은 '힘내자'가 아니라 '인정 + 남은 거리'를 보여줘야 진짜 움직여." },
+      { text: "I shall galvanize the collective toward optimal performance outcomes.", kind: "formal",
+        note: "'galvanize the collective'는 연설문 톤. 어떻게 결집시킬지 없어서 구호로만 들리고 마음이 안 움직여." },
+      { text: "I'll just tell everyone to push harder, we don't have time for feelings.", kind: "weak",
+        note: "'감정 챙길 시간 없다, 더 하라'는 사기를 더 떨어뜨려. rally는 힘듦을 무시하는 게 아니라 인정한 뒤 목표로 모으는 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "rally = 흩어진 사람들을 다시 한 깃발 아래 모으다 = 결집시키다.\n\n비슷한 말 차이:\n• motivate = 동기를 주다 (개인)\n• rally = 흩어진 팀을 다시 모으다 (집단, 위기 후) ← 지금\n• cheer on = 응원하다 (가벼움)\n\n결집 공식: 1) 힘들었던 걸 인정 2) 이룬 걸 짚기 3) 남은 목표를 작게. 인정이 빠지면 공허해.",
+      example: "🗣 회의: \"Let me rally everyone before the last sprint.\"\n📧 메일: \"Quick note to rally the team, we're closer than it feels.\"\n💬 슬랙: \"Team rally in 10 min, 5 minutes, no slides 💪\"\n\n자주 같이 쓰는 표현:\n• rally the team/troops\n• rally around [목표/사람]\n• final push (마지막 스퍼트)",
+      default: "흩어졌던 사람들이 한 깃발 아래로 다시 모여드는 그림. 억지로 끄는 게 아니라, 이유를 보여주면 모여.\n\n외우기: rally = 다시 모으다.\n\n공식: \"I'll name what was hard, then show the finish line.\" 🔥 Week 3 완주! 사람을 모으는 대리에 가까워지고 있어.",
+    } },
+
+  // Week 4 (82-90): 전략적 리더십·마무리
+  { day: 82, word: "double down", pos: "phr.", meaning: "더 강하게 밀어붙이다, 배팅을 키우다", phonetic: "/ˈdʌbl daʊn/",
+    scene: "11:00, Daniel과 화상. 파일럿이 예상보다 잘 나온다. 더 밀지, 안전하게 갈지.",
+    npc: "daniel",
+    quote: "The pilot is working better than expected. Do we double down and scale, or play it safe for now?",
+    quoteKo: "파일럿이 예상보다 잘 나와요. 더 밀어붙여서 확대할까요, 아니면 일단 안전하게 갈까요?",
+    youDo: null,
+    mentorTip: "double down은 '무모한 올인'이 아니라 '증거가 나온 곳에 자원을 더 붓는 것'. 잘 되는 신호가 있을 때 망설이면 기회를 놓쳐. 단, 근거를 짚고 밀어야 도박이 아니야.",
+    sampleAnswer: "The numbers back it, so let's double down: shift two people onto it and scale to the next segment.",
+    tags: ["strategy", "decision"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "잘 나온 근거를 짚고, 자원을 더 투입해 밀어붙이자고 한 줄로 제안하세요.",
+      koSentence: "숫자가 받쳐주니까 더 밀어붙이죠. 두 명 더 붙이고 다음 세그먼트로 확대할게요." },
+    mcOptions: [
+      { text: "The numbers back it, so let's double down: shift two people onto it and scale to the next segment.", kind: "correct",
+        note: "✓ 근거(numbers back it) + double down + 구체 행동(shift two people, scale). 밀어붙이기는 '느낌'이 아니라 '증거 + 자원 이동'으로 말해야 도박이 아니야." },
+      { text: "We ought to substantially augment our commitment to this strategic initiative.", kind: "formal",
+        note: "'augment our commitment'은 IR 자료 톤. 얼마나 어떻게 미는지 없어서 결정에 못 써." },
+      { text: "Let's just throw everything at it and see what happens.", kind: "weak",
+        note: "'다 걸고 보자'는 double down이 아니라 도박이야. 근거 없이 자원만 키우면 잘 되던 것도 무너져." },
+    ],
+    buddyAnswers: {
+      nuance: "double down = (블랙잭에서) 판돈을 두 배로 = 잘 되는 곳에 배팅을 키우다.\n\n헷갈리는 것:\n• double down = 증거 있는 곳에 더 투자 ← 지금\n• all-in = 전부 걸기 (더 위험)\n• stay the course = 원래대로 유지 (안 늘림)\n\n조건: double down은 신호가 나온 뒤에 해야 전략이야. 신호 전에 하면 그냥 도박.",
+      example: "🗣 회의: \"Let's double down on what's working.\"\n📧 메일: \"Given the pilot results, we're doubling down on segment B.\"\n💬 슬랙: \"Numbers look great, time to double down 📈\"\n\n자주 같이 쓰는 표현:\n• double down on [무엇]\n• lean into (비슷하게 더 기울이다)\n• scale what works",
+      default: "카드 게임에서 좋은 패가 왔을 때 칩을 두 배로 올리는 그림. 아무 때나가 아니라, 패를 보고 올려.\n\n외우기: double(두 배) + down(내려놓다) = 배팅 키우기.\n\n공식: \"The numbers back it, let's double down: [자원 이동].\" 증거 + 행동.",
+    } },
+  { day: 83, word: "scope creep", pos: "n.", meaning: "범위가 슬금슬금 늘어남", phonetic: "/skoʊp kriːp/",
+    scene: "14:00, 김 팀장이 요구사항 목록을 보며 한숨. 처음보다 두 배로 불었다.",
+    npc: "manager",
+    quote: "This project keeps growing. Every week there's one more thing. How do we stop the scope creep?",
+    quoteKo: "이 프로젝트가 계속 커져요. 매주 하나씩 늘어나. 이 범위 확장을 어떻게 막죠?",
+    youDo: null,
+    mentorTip: "scope creep은 큰 결정이 아니라 '작은 예스들이 쌓여서' 생겨. 하나하나는 사소해 보이지만 합치면 기한이 무너지지. 대리는 새 요청마다 '무엇을 뺄지'를 같이 묻는 사람이야.",
+    sampleAnswer: "Let's stop the scope creep with a simple rule: any new ask has to replace something, not just add.",
+    tags: ["project", "prioritization"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "범위 확장을 막을 구체적 규칙 하나를 한 줄로 제안하세요.",
+      koSentence: "간단한 규칙으로 범위 확장을 막죠. 새 요청은 뭔가를 더하는 게 아니라 반드시 뭔가를 대체해야 한다는 규칙이요." },
+    mcOptions: [
+      { text: "Let's stop the scope creep with a simple rule: any new ask has to replace something, not just add.", kind: "correct",
+        note: "✓ scope creep + 구체적 규칙(replace, not add). 범위 확장은 '안 돼'가 아니라 '더하려면 빼라'는 규칙으로 막아야 팀이 납득해." },
+      { text: "Uncontrolled requirement proliferation must be systematically curtailed forthwith.", kind: "formal",
+        note: "'requirement proliferation curtailed'는 감사 보고서 톤. 어떻게 막을지 규칙이 없어서 실제론 안 멈춰." },
+      { text: "We should just try to fit it all in, saying no feels bad.", kind: "weak",
+        note: "'다 넣자'가 바로 scope creep의 원인이야. 착한 예스가 쌓이면 기한이 무너져. 대리는 더할 때 뺄 걸 같이 묻는 사람이야." },
+    ],
+    buddyAnswers: {
+      nuance: "scope creep = 범위(scope)가 슬금슬금 기어(creep)든다 = 조금씩 불어나는 요구.\n\n왜 무섭냐:\n• 하나하나는 '이 정도쯤이야' (작아 보임)\n• 합치면 기한과 품질이 무너짐\n• 아무도 결정한 적 없는데 커져 있음\n\n대리의 방어: 새 요청마다 \"그럼 뭘 뺄까요?\"를 붙이면 무한 추가가 멈춰.",
+      example: "🗣 회의: \"That's scope creep, let's park it for v2.\"\n📧 메일: \"To avoid scope creep, new asks replace, not add.\"\n💬 슬랙: \"Careful, scope creep alert 🐌\"\n\n자주 같이 쓰는 표현:\n• scope creep\n• guard against scope creep\n• replace, don't add",
+      default: "작은 덩굴이 조금씩 벽을 타고 올라 어느새 집을 뒤덮는 그림. 한 가닥일 땐 몰라.\n\n외우기: scope(범위) + creep(기어들다) = 슬금슬금 확장.\n\n공식: \"New asks have to replace something, not just add.\" 더하려면 빼라, 이 규칙 하나.",
+    } },
+  { day: 84, word: "sunset", pos: "v.", meaning: "(제품/기능을) 단계적으로 종료하다", phonetic: "/ˈsʌnset/",
+    scene: "16:00, Daniel과 화상. 오래된 대시보드가 수익보다 유지비가 크다.",
+    npc: "daniel",
+    quote: "The old dashboard costs more than it earns. How would you sunset it without upsetting the users still on it?",
+    quoteKo: "옛 대시보드가 버는 것보다 유지비가 더 들어요. 아직 쓰는 사용자를 화나게 안 하면서 어떻게 종료할래요?",
+    youDo: null,
+    mentorTip: "sunset은 '갑자기 끄기'가 아니라 '해가 지듯 단계적으로 내리는 것'. 미리 알리고, 대안을 주고, 날짜를 박는 3단계가 핵심이야. 잘 끝내는 것도 대리의 능력이지.",
+    sampleAnswer: "We sunset it in stages: announce now, give a migration path, and set a hard end date three months out.",
+    tags: ["strategy", "product"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "사용자를 배려하며 단계적으로 종료하는 계획을, 예고·대안·기한 3단계로 한 줄로 답하세요.",
+      koSentence: "단계적으로 종료할게요. 지금 예고하고, 이전 경로를 주고, 3개월 뒤로 확실한 종료일을 박는 식으로요." },
+    mcOptions: [
+      { text: "We sunset it in stages: announce now, give a migration path, and set a hard end date three months out.", kind: "correct",
+        note: "✓ sunset + 3단계(announce, migration path, end date). 잘 끝내기는 '언제, 어디로, 어떻게'를 사용자에게 주는 거야." },
+      { text: "The legacy asset shall be decommissioned upon cessation of its utility.", kind: "formal",
+        note: "'decommissioned upon cessation of utility'는 시스템 폐기 공지 톤. 사용자 배려나 단계가 없어서 반발을 부를 답이야." },
+      { text: "Let's just switch it off next week, people will adapt.", kind: "weak",
+        note: "'다음 주에 그냥 꺼요'는 sunset이 아니라 급정지야. 예고·대안 없이 끄면 신뢰가 무너져." },
+    ],
+    buddyAnswers: {
+      nuance: "sunset = 해가 지다 = (제품/기능을) 서서히 종료하다. IT/비즈니스에서 동사로 자주 써.\n\n종료의 방식:\n• sunset = 예고하고 단계적으로 내림 ← 지금\n• deprecate = 더 이상 권장 안 함 (아직 작동)\n• kill = 즉시 중단 (거칠다)\n\n잘 끝내기 3단계: 예고(announce) → 대안(migration path) → 종료일(end date). 시작만큼 마무리도 실력이야.",
+      example: "🗣 회의: \"Let's sunset the legacy feature by Q4.\"\n📧 메일: \"We're sunsetting the old app, migration guide inside.\"\n💬 슬랙: \"Sunsetting this tool 🌇 new one launches Monday\"\n\n자주 같이 쓰는 표현:\n• sunset a product/feature\n• migration path (이전 경로)\n• sunset date (종료 예정일)",
+      default: "해가 수평선 아래로 천천히 지는 그림. 뚝 꺼지는 게 아니라 물들며 저물어.\n\n외우기: sunset(일몰) = 서서히 마무리.\n\n공식: \"Announce, give a migration path, set an end date.\" 예고 + 대안 + 기한.",
+    } },
+  { day: 85, word: "delegate", pos: "v.", meaning: "(일을) 위임하다, 맡기다", phonetic: "/ˈdelɪɡeɪt/",
+    scene: "09:00, 사수 차윤아가 네 밀린 일감을 보며. 혼자 세 사람 몫을 지고 있다.",
+    npc: "mentor",
+    quote: "You're doing three people's work. A senior associate delegates. What can you hand off today, not someday?",
+    quoteKo: "너 지금 세 사람 몫을 하고 있어. 대리는 위임할 줄 알아야 해. 언젠가 말고, 오늘 넘길 수 있는 게 뭐야?",
+    youDo: null,
+    mentorTip: "delegate는 '떠넘기기'가 아니라 '남을 키우면서 내 시간을 큰 일에 쓰는 것'. 잘하는 사람일수록 다 안고 병목이 돼. 맥락과 기준을 같이 주면 위임은 성장이 돼.",
+    sampleAnswer: "You're right. I'll delegate the weekly report to Minho with a clear template and a Friday check-in.",
+    tags: ["leadership", "delegation"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "오늘 넘길 일 하나를, 누구에게 어떤 기준으로 맡길지까지 넣어 한 줄로 말하세요.",
+      koSentence: "맞아요. 주간 리포트를 민호한테 넘길게요. 명확한 템플릿이랑 금요일 체크인까지 같이요." },
+    mcOptions: [
+      { text: "You're right. I'll delegate the weekly report to Minho with a clear template and a Friday check-in.", kind: "correct",
+        note: "✓ delegate + 대상(Minho) + 성공 조건(template, check-in). 위임은 '너 해'가 아니라 '맥락 + 기준'을 같이 줘야 성장이 돼." },
+      { text: "I shall apportion select responsibilities to subordinate personnel accordingly.", kind: "formal",
+        note: "'apportion to subordinate personnel'은 조직도 톤. 무엇을 누구에게 어떻게인지 없어서 실제 위임이 안 일어나." },
+      { text: "It's faster if I just do it myself, teaching takes too long.", kind: "weak",
+        note: "'내가 하는 게 빨라'가 병목의 시작이야. delegate의 정반대. 지금 안 가르치면 계속 혼자 다 지게 돼." },
+    ],
+    buddyAnswers: {
+      nuance: "delegate = 권한을 아래로 넘기다 = 일을 맡기다.\n\n넘김의 종류:\n• delegate = 일 + 판단을 맡김 (키움) ← 지금\n• assign = 일을 배정 (판단은 내가)\n• offload = 그냥 덜어내기 (성장 요소 약함)\n\n잘 위임하는 법: 맥락(왜) + 기준(어디까지) + 체크인(언제 확인). 던지고 사라지면 위임이 아니라 방치야.",
+      example: "🗣 회의: \"I'll delegate this to Mina, she's ready.\"\n📧 메일: \"Delegating the report, template and deadline attached.\"\n💬 슬랙: \"Delegating this to you 🙌 ping me if stuck\"\n\n자주 같이 쓰는 표현:\n• delegate [일] to [사람]\n• hand off (넘기다)\n• don't be the bottleneck (병목 되지 마)",
+      default: "혼자 짐을 산더미처럼 진 사람이, 한 상자씩 옆 사람에게 건네며 둘 다 걷기 편해지는 그림.\n\n외우기: delegate = 맡겨서 같이 큰다.\n\n공식: \"I'll delegate X to [사람] with a template and a check-in.\" 맥락 + 기준 + 확인.",
+    } },
+  { day: 86, word: "empower", pos: "v.", meaning: "권한을 주다, 스스로 결정하게 하다", phonetic: "/ɪmˈpaʊər/",
+    scene: "11:30, Daniel과 화상. 작은 결정까지 다 네게 몰려 네가 병목이 됐다.",
+    npc: "daniel",
+    quote: "Every small decision waits on you. Stop being the bottleneck, empower your team. What can you push down?",
+    quoteKo: "작은 결정까지 다 당신을 기다려요. 병목이 되지 말고, 팀에 권한을 줘요. 어떤 결정을 아래로 내릴 수 있죠?",
+    youDo: null,
+    mentorTip: "empower는 delegate에서 한 걸음 더 나아간 거야. 일을 맡기는 게 delegate라면, '네가 직접 정해도 돼'라고 결정권을 주는 게 empower. 기준선만 정해주면 팀이 알아서 달려.",
+    sampleAnswer: "I'll empower the team: any spend under 500 dollars, they decide without me. I only weigh in above that.",
+    tags: ["leadership", "autonomy"], status: "locked",
+    task: { to: "daniel", channel: "video-call",
+      promptKo: "팀이 스스로 결정하도록, 어디까지는 자율인지 기준선을 정해 한 줄로 답하세요.",
+      koSentence: "팀에 권한을 줄게요. 500달러 미만 지출은 저 없이 결정해요. 그 이상만 제가 볼게요." },
+    mcOptions: [
+      { text: "I'll empower the team: any spend under 500 dollars, they decide without me. I only weigh in above that.", kind: "correct",
+        note: "✓ empower + 명확한 자율 범위(under 500 결정권). 권한 위임은 '알아서 해'가 아니라 '어디까지는 네 결정'이라는 선을 그어야 작동해." },
+      { text: "I intend to facilitate augmented decisional autonomy across the team structure.", kind: "formal",
+        note: "'augmented decisional autonomy'는 조직개발 슬라이드 톤. 어디까지 자율인지 선이 없어서 팀이 여전히 눈치를 봐." },
+      { text: "I'll let them decide, but they should still check with me first, just in case.", kind: "weak",
+        note: "'결정하되 나한테 먼저 확인'은 권한을 준 게 아니야. 병목이 그대로야. empower는 선 안에서는 안 물어봐도 되게 하는 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "empower = 힘(power)을 안에 넣어주다(em-) = 스스로 결정할 권한을 주다.\n\ndelegate와의 차이:\n• delegate = 일을 맡김 (Day 85)\n• empower = 결정권까지 줌 ← 한 단계 위\n\n핵심: empower는 '자유'가 아니라 '선이 있는 자유'. \"이 선 안에선 네가 정해\"라고 범위를 줘야 팀이 안심하고 달려.",
+      example: "🗣 회의: \"I want to empower the leads to make the call.\"\n📧 메일: \"Empowering the team: decisions under X are yours.\"\n💬 슬랙: \"You're empowered to decide this one 💪 go for it\"\n\n자주 같이 쓰는 표현:\n• empower someone to [동사]\n• push decisions down (결정을 아래로)\n• within these guardrails (이 기준선 안에서)",
+      default: "리더가 자기 손의 열쇠를 팀원 손에 쥐여주는 그림. 단, '이 방들은 네 거야'라고 범위를 정해주며.\n\n외우기: em(안에) + power(힘) = 힘을 넣어주다.\n\n공식: \"You're empowered to decide anything under [기준선].\" 결정권 + 명확한 범위.",
+    } },
+  { day: 87, word: "connect the dots", pos: "phr.", meaning: "흩어진 정보를 이어 맥락을 만들다", phonetic: "/kəˈnekt ðə dɒts/",
+    scene: "10:00, 김 팀장이 여러 팀의 단편 보고를 앞에 두고. 각자 조각만 알고 전체를 못 본다.",
+    npc: "manager",
+    quote: "Everyone has a piece, but no one sees the whole picture. Can you connect the dots for the room?",
+    quoteKo: "다들 조각 하나씩만 쥐고 있고, 아무도 전체 그림을 못 봐요. 사람들한테 이 점들을 이어줄 수 있어요?",
+    youDo: null,
+    mentorTip: "connect the dots는 '정보 요약'이 아니라 '조각들 사이의 관계를 보여주는 것'. 대리는 각 팀의 단편을 하나의 이야기로 엮어, 다들 '아, 그래서 이게 이거구나' 하게 만드는 사람이야.",
+    sampleAnswer: "Let me connect the dots: design's delay feeds data's gap, which is why sales missed. One root cause.",
+    tags: ["strategy", "communication"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "흩어진 조각들을 하나의 맥락으로 이어, 무엇이 무엇과 연결되는지 한 줄로 정리하세요.",
+      koSentence: "점들을 이어볼게요. 디자인 지연이 데이터 공백으로 이어지고, 그래서 영업이 놓친 거예요. 뿌리는 하나예요." },
+    mcOptions: [
+      { text: "Let me connect the dots: design's delay feeds data's gap, which is why sales missed. One root cause.", kind: "correct",
+        note: "✓ connect the dots + 조각들의 인과 연결(delay → gap → miss) + 결론(one root cause). 점 잇기는 관계와 뿌리를 보여주는 거야." },
+      { text: "A holistic synthesis of disparate data points shall elucidate the overarching narrative.", kind: "formal",
+        note: "'holistic synthesis of disparate data points'는 컨설팅 표지 톤. 정작 무엇이 무엇과 연결되는지 안 보여줘서 그림이 안 그려져." },
+      { text: "Here's each team's update, one by one, in order.", kind: "weak",
+        note: "조각을 나열만 하는 건 connect the dots가 아니야. 관계를 안 이으면 방 안 사람들은 여전히 전체를 못 봐." },
+    ],
+    buddyAnswers: {
+      nuance: "connect the dots = 점(dots)을 이어 그림을 만들다 = 흩어진 정보에서 맥락을 뽑다.\n\n비슷하지만 다른 것:\n• summarize = 줄여서 정리 (조각 그대로)\n• connect the dots = 조각 사이 관계를 보여줌 ← 지금\n• big picture = 그렇게 나온 전체 그림\n\n대리의 가치: 정보가 아니라 '연결'을 줘. \"A 때문에 B, 그래서 C\"로 엮으면 방 전체가 같은 그림을 봐.",
+      example: "🗣 회의: \"Let me connect the dots between these reports.\"\n📧 메일: \"Connecting the dots: here's how the three issues link.\"\n💬 슬랙: \"Trying to connect the dots on this 🧩\"\n\n자주 같이 쓰는 표현:\n• connect the dots (between A and B)\n• the bigger picture (Day 55 30,000 foot view)\n• root cause (근본 원인)",
+      default: "종이에 흩어진 점들을 선으로 이으니 하나의 그림이 드러나는 그림. 점만 보면 몰라, 이어야 보여.\n\n외우기: 점을 잇다 = 관계를 보여주다.\n\n공식: \"A feeds B, which is why C. One root cause.\" 조각들의 인과를 한 줄로 엮기.",
+    } },
+  { day: 88, word: "set the tone", pos: "phr.", meaning: "분위기·기준을 정하다", phonetic: "/set ðə toʊn/",
+    scene: "09:00, 사수 차윤아가 조용히. 이제 사람들이 너를 보고 움직이기 시작했다.",
+    npc: "mentor",
+    quote: "People follow you now. You set the tone, whether you mean to or not. What tone do you want to set?",
+    quoteKo: "이제 사람들이 널 따라. 의도하든 아니든, 네가 분위기를 정하는 거야. 어떤 분위기를 만들고 싶어?",
+    youDo: null,
+    mentorTip: "set the tone은 '연설'이 아니라 '네가 매일 하는 행동이 곧 기준이 된다'는 뜻이야. 대리가 침착하면 팀이 침착하고, 대리가 대충하면 팀이 대충해. 톤은 말이 아니라 태도로 정해져.",
+    sampleAnswer: "I want to set the tone of calm ownership: no blame when things break, just who fixes what by when.",
+    tags: ["leadership", "culture"], status: "locked",
+    task: { to: "mentor", channel: "face",
+      promptKo: "네가 팀에 정하고 싶은 분위기 하나를, 구체적 행동으로 한 줄로 말하세요.",
+      koSentence: "차분한 오너십의 분위기를 만들고 싶어요. 문제가 터져도 탓하지 않고, 누가 뭘 언제까지 고칠지만 정하는 거요." },
+    mcOptions: [
+      { text: "I want to set the tone of calm ownership: no blame when things break, just who fixes what by when.", kind: "correct",
+        note: "✓ set the tone + 구체적 분위기(calm ownership) + 행동 정의(no blame, who fixes what). 톤은 추상어가 아니라 '이럴 땐 이렇게'로 보여줘야 전해져." },
+      { text: "I shall endeavor to cultivate an optimal cultural ethos within the team.", kind: "formal",
+        note: "'optimal cultural ethos'는 사훈 액자 톤. 어떤 분위기인지 구체가 없어서 팀이 뭘 따라야 할지 몰라." },
+      { text: "I don't really set any tone, I just do my own work quietly.", kind: "weak",
+        note: "'난 분위기 안 정해'는 착각이야. 사람들이 따르는 순간 너는 이미 톤을 정하고 있어. 안 정하는 것도 하나의 톤이야." },
+    ],
+    buddyAnswers: {
+      nuance: "set the tone = (음악의) 음조를 잡다 = 분위기·기준을 정하다.\n\n핵심 진실:\n• 리더는 톤을 '정할지 말지'를 못 골라. 이미 정하고 있어.\n• 말이 아니라 행동이 톤을 만듦 (Day 89 lead by example로 이어짐)\n• 침착 → 침착, 조급 → 조급이 팀에 복사돼\n\n대리의 자각: 네 태도가 곧 팀의 기본값이야.",
+      example: "🗣 회의: \"Let me set the tone for how we handle bugs.\"\n📧 메일: \"To set the tone: we celebrate flags, not hide them.\"\n💬 슬랙: \"Setting the tone early, questions are always welcome 🙂\"\n\n자주 같이 쓰는 표현:\n• set the tone (for [무엇])\n• lead by example (Day 89)\n• tone from the top (윗선이 정하는 분위기)",
+      default: "합주 시작 전 첫 음을 잡아주는 지휘자 그림. 그 음에 나머지 악기가 맞춰.\n\n외우기: 첫 음(tone)을 정하면 나머지가 따라온다.\n\n공식: \"I want to set the tone of [분위기]: [구체적 행동].\" 추상어가 아니라 행동으로.",
+    } },
+  { day: 89, word: "lead by example", pos: "phr.", meaning: "솔선수범하다, 행동으로 이끌다", phonetic: "/liːd baɪ ɪɡˈzæmpl/",
+    scene: "14:00, 김 팀장이 마감 스퍼트를 앞두고. 팀은 말보다 행동을 본다.",
+    npc: "manager",
+    quote: "The team copies what you do, not what you say. On this final stretch, how will you lead by example?",
+    quoteKo: "팀은 당신이 말하는 게 아니라 하는 걸 따라 해요. 이 마지막 스퍼트에서, 어떻게 솔선수범할래요?",
+    youDo: null,
+    mentorTip: "lead by example은 '더 오래 일하기'가 아니라 '내가 바라는 기준을 내가 먼저 지키는 것'. 정시 퇴근을 원하면 내가 먼저 퇴근하고, 꼼꼼함을 원하면 내 문서부터 깔끔해야 해.",
+    sampleAnswer: "I'll lead by example: I ship my part first, reviewed and clean, and I log off on time so the team can too.",
+    tags: ["leadership", "integrity"], status: "locked",
+    task: { to: "manager", channel: "face",
+      promptKo: "말이 아니라 행동으로, 네가 먼저 지킬 기준 하나를 한 줄로 말하세요.",
+      koSentence: "행동으로 보일게요. 제 파트를 먼저 검토까지 끝내 깔끔하게 내고, 정시에 로그오프해서 팀도 그렇게 하게요." },
+    mcOptions: [
+      { text: "I'll lead by example: I ship my part first, reviewed and clean, and I log off on time so the team can too.", kind: "correct",
+        note: "✓ lead by example + 내가 먼저 하는 구체 행동(ship first, clean, log off on time). 솔선수범은 바라는 기준을 내가 먼저 시연하는 거야." },
+      { text: "I shall exemplify the requisite behavioral standards for the collective to emulate.", kind: "formal",
+        note: "'exemplify requisite behavioral standards'는 강령 톤. 무슨 행동을 먼저 할지 없어서 시범이 안 보여." },
+      { text: "I'll just tell them to work hard and stay late until it's done.", kind: "weak",
+        note: "'너희가 늦게까지 하라'는 말로만 이끄는 거야. lead by example의 정반대. 팀은 네 말이 아니라 네 행동을 복사해." },
+    ],
+    buddyAnswers: {
+      nuance: "lead by example = 본보기(example)로 이끌다 = 행동으로 앞장서다.\n\nset the tone과의 연결:\n• set the tone = 어떤 기준을 원하는지 (Day 88)\n• lead by example = 그 기준을 내가 먼저 행동으로 보임 ← 지금\n\n함정: 말과 행동이 다르면 팀은 100% 행동을 따라. '정시 퇴근하라'며 내가 밤샘하면 아무도 안 믿어.",
+      example: "🗣 회의: \"I'll lead by example on code reviews.\"\n📧 메일: \"Leading by example, my section is done and reviewed.\"\n💬 슬랙: \"Logging off on time today, lead by example 🙂\"\n\n자주 같이 쓰는 표현:\n• lead by example\n• walk the talk (말한 대로 행동하다)\n• practice what you preach",
+      default: "리더가 대열 맨 앞에서 같은 짐을 지고 먼저 걷는 그림. 뒤에서 소리치는 게 아니라, 앞에서 보여줘.\n\n외우기: 예시(example)가 되어 이끈다.\n\n공식: \"I ship first, clean, and log off on time so the team can too.\" 내가 먼저 시연.",
+    } },
+  { day: 90, word: "pay it forward", pos: "phr.", meaning: "받은 것을 다음 사람에게 갚다", phonetic: "/peɪ ɪt ˈfɔːrwərd/",
+    scene: "16:00, Day 90. Daniel의 방. 90일 전 너처럼 긴장한 신입이 옆 자리에 왔다.",
+    npc: "daniel",
+    quote: "Ninety days ago, you needed a buddy. Now someone else does. Pay it forward, will you mentor them?",
+    quoteKo: "90일 전, 당신에겐 버디가 필요했죠. 이제 다른 누군가가 그래요. 받은 걸 물려줘요, 그 친구의 사수가 돼줄래요?",
+    youDo: null,
+    mentorTip: "🌟 Day 90 완주! pay it forward = 내가 받은 도움을 준 사람이 아니라 '다음 사람'에게 갚는 것. 90개의 표현을 쌓은 너는 이제 누군가의 버디가 될 수 있어. 배움은 나눌 때 완성돼.",
+    sampleAnswer: "I'd be honored to pay it forward. I'll be their buddy, the one I needed on day one.",
+    tags: ["milestone", "finale"], status: "locked",
+    task: { to: "daniel", channel: "face",
+      promptKo: "받은 도움을 다음 사람에게 물려주겠다고, 신입의 사수가 되겠다고 한 줄로 답하세요.",
+      koSentence: "받은 걸 물려주는 거, 영광이에요. 그 친구의 버디가 될게요. 제가 첫날 필요했던 그런 사람이요." },
+    mcOptions: [
+      { text: "I'd be honored to pay it forward. I'll be their buddy, the one I needed on day one.", kind: "correct",
+        note: "✓ pay it forward 수용 + 구체적 다짐(be their buddy) + 진심(the one I needed). 받은 걸 다음 사람에게 갚겠다는 90일의 마무리다운 답이야." },
+      { text: "I shall reciprocate the institutional investment in my professional development.", kind: "formal",
+        note: "'reciprocate institutional investment'는 사직서 톤. 사람 냄새가 없어서 90일의 여정을 담기엔 너무 차가워." },
+      { text: "I'm too busy to mentor anyone, I have my own work to do.", kind: "weak",
+        note: "'내 일 하기도 바빠'는 pay it forward의 정반대. 90일 전 누군가 그랬다면 너는 지금 여기 없었을 거야." },
+    ],
+    buddyAnswers: {
+      nuance: "pay it forward = 앞으로(forward) 갚다 = 받은 은혜를 준 사람이 아니라 다음 사람에게 전하다.\n\n비슷한 말과 차이:\n• pay back = 준 사람에게 되갚다 (되돌림)\n• pay it forward = 다음 사람에게 전하다 (이어감) ← 지금\n\n90일의 의미: 이 단어가 마지막인 이유. 배움은 쥐고 있을 때가 아니라 물려줄 때 완성돼. 이제 네가 누군가의 버디야.",
+      example: "🗣 회의: \"She helped me once, so I'm paying it forward.\"\n📧 메일: \"Paying it forward, happy to mentor the new hire.\"\n💬 슬랙: \"Someone did this for me, paying it forward 🙏\"\n\n자주 같이 쓰는 표현:\n• pay it forward\n• give back (돌려주다)\n• be someone's buddy (누군가의 버디가 되다)",
+      default: "누군가에게 받은 등불을, 나에게 준 사람이 아니라 뒤에 오는 사람에게 다시 건네는 그림. 그렇게 불이 이어져.\n\n외우기: 되갚기가 아니라 '앞으로' 전하기.\n\n🌟 Day 90 완주. 90개의 표현이 이제 네 것이고, 너는 누군가의 버디가 됐어. 여기까지 온 너, 진심으로 축하해. 이제 네 차례야.",
+    } },
 ];
 
 // ============================================================
@@ -3336,6 +4098,135 @@ const LUNCH_SCRIPTS = {
       { text: `Remedial workload redistribution shall be implemented subsequently.`, kind: "formal", note: `'remedial redistribution'은 구조조정 공문 톤이야. 사람 얘기는 사람 말로.` },
     ],
   },
+  // ── 시즌 3 (Day 61-90, 대리 트랙 점심): (day-1)%4===1 → 62,66,70,74,78,82,86,90 ──
+  62: {
+    greet: `Lunch? The lead shot down my budget request, said I didn't really make the case.`,
+    greetKo: `점심? 리드가 내 예산 요청 깠어. 논거를 제대로 안 세웠다고.`,
+    turn1: [
+      { text: `Ah, so make the case with numbers next time, what's the return if they say yes?`, kind: "correct", note: `make the case의 핵심(근거+결과 숫자)을 바로 짚어줬어요. 예산 설득은 '필요해요'가 아니라 '주면 이만큼 돌아와요'로 가야 통한답니다!` },
+      { text: `They rejected? So sad. You fighting!`, kind: "konglish", note: `'you fighting'은 콩글리시. 'you'll get it next time' 정도로.` },
+      { text: `One must construct a compelling evidentiary basis for such petitions.`, kind: "formal", note: `'evidentiary basis', 'petitions'는 법정 톤. 점심 수다엔 가볍게.` },
+    ],
+    reply: `Right, numbers. I was too vague. Let's eat, I'll rework it after.`,
+    replyKo: `맞아, 숫자. 내가 너무 두루뭉술했어. 밥 먹자, 이따 다시 짤게.`,
+    turn2: [
+      { text: `Yeah, make the case in three lines: the ask, the payback, the risk. Hard to say no to that.`, kind: "correct", note: `make the case를 한 번 더 쓰면서 실전 공식(요청+회수+리스크)까지 줬어요. 세 줄 구조는 어디서든 통하는 설득 골격이랍니다!` },
+      { text: `Just make case strong and push strong, okay?`, kind: "konglish", note: `'make case', 'push strong' 어순·관사 어색. 'make a strong case'로.` },
+      { text: `Kindly delineate the fiscal ramifications in your subsequent submission.`, kind: "formal", note: `'delineate', 'fiscal ramifications'가 과해. 동료 점심 자리엔 안 어울려요.` },
+    ],
+  },
+  66: {
+    greet: `Lunch? Design and I are fighting over the same two engineers. Feels like someone has to lose.`,
+    greetKo: `점심? 디자인팀이랑 개발자 두 명 두고 싸우는 중이야. 누군가는 져야 되는 분위기.`,
+    turn1: [
+      { text: `Maybe it's a win-win if you frame it right, what does each side actually need?`, kind: "correct", note: `win-win의 핵심('각자 다른 걸 원한다')을 짚었어요. 파이 뺏기 싸움을 각자 원하는 걸 주는 문제로 바꾸는 게 win-win이랍니다!` },
+      { text: `Fighting fighting, so tired. Just half half divide.`, kind: "konglish", note: `'fighting fighting', 'half half'는 콩글리시. 'just split it' 정도로.` },
+      { text: `Perhaps a mutually advantageous equilibrium could be architected.`, kind: "formal", note: `'mutually advantageous equilibrium'은 컨설팅 슬라이드 톤. 점심엔 가볍게.` },
+    ],
+    reply: `Hm, what each side needs. Hadn't thought that way. Food first.`,
+    replyKo: `흠, 각자 뭐가 필요한지라. 그렇게는 생각 못했네. 일단 밥.`,
+    turn2: [
+      { text: `Yeah, find the win-win: they get the design polish, you get delivery speed. Both ship faster.`, kind: "correct", note: `win-win을 한 번 더 쓰면서 각자 얻는 걸 콕 집었어요. 양쪽이 무엇을 가져가는지 둘 다 말해야 진짜 win-win이랍니다!` },
+      { text: `Win-win is best, everybody happy, no fight.`, kind: "weak", note: `자연스럽지만 '누가 뭘 얻는지'가 없어서 공허해요. win-win은 구체적 교환을 짚어야 힘이 생겨요.` },
+      { text: `A synergistic outcome shall render both parties duly satisfied.`, kind: "formal", note: `'synergistic outcome', 'duly satisfied'가 과해요.` },
+    ],
+  },
+  70: {
+    greet: `Lunch? Everyone nodded in the meeting, but I can tell nobody actually agrees.`,
+    greetKo: `점심? 회의에서 다들 끄덕였는데, 아무도 진짜 동의 안 한 게 느껴져.`,
+    turn1: [
+      { text: `Yeah, give them a safe space to air concerns, silence isn't agreement.`, kind: "correct", note: `air concerns의 포인트(안전한 분위기 + 침묵은 동의가 아님)를 짚었어요. 사람들은 말해도 되는지 몰라서 입을 닫는답니다!` },
+      { text: `They say yes but heart say no, so confuse.`, kind: "konglish", note: `'heart say no', 'so confuse'는 콩글리시. 'they said yes but don't mean it'으로.` },
+      { text: `One ought to solicit their reservations in a formal setting.`, kind: "formal", note: `'solicit reservations', 'formal setting'은 딱딱해. 동료끼린 가볍게.` },
+    ],
+    reply: `True. I'll ask them directly next time. Let's grab lunch.`,
+    replyKo: `맞아. 다음엔 직접 물어봐야겠어. 점심 먹자.`,
+    turn2: [
+      { text: `Just open with "no wrong answers here" and let them air concerns, you'll hear the real blockers.`, kind: "correct", note: `air concerns를 한 번 더 쓰면서 실전 오프닝까지 줬어요. '정답 없어요'로 판을 깔면 숨은 우려가 나온답니다!` },
+      { text: `Make them speak worry, then you know problem, right?`, kind: "konglish", note: `'speak worry'가 어색. 'get them to voice their worries'로.` },
+      { text: `Endeavor to elicit their apprehensions henceforth.`, kind: "formal", note: `'elicit apprehensions', 'henceforth'는 논문 톤이에요.` },
+    ],
+  },
+  74: {
+    greet: `Lunch? They want me to skip the QA pass to hit the date. I'm scared I'll just cave.`,
+    greetKo: `점심? 날짜 맞추려고 QA를 건너뛰래. 그냥 접을까 봐 겁나.`,
+    turn1: [
+      { text: `On the quality check? Hold the line. You can cut scope, but not that.`, kind: "correct", note: `hold the line의 핵심(양보할 것과 지킬 것 구분)을 짚었어요. 어떤 선은 지켜야 팀이 안 무너진답니다!` },
+      { text: `Don't give up! Fighting! Keep your line strong.`, kind: "konglish", note: `'fighting', 'keep your line'은 어색. 'stand your ground' 정도로.` },
+      { text: `You must remain resolutely immovable on matters of quality assurance.`, kind: "formal", note: `'resolutely immovable'은 선언문 톤. 점심 수다엔 무거워요.` },
+    ],
+    reply: `Yeah, cut scope not corners. Okay, I feel better. Food.`,
+    replyKo: `그래, 범위를 줄이지 품질을 깎진 말자. 좀 낫네. 밥.`,
+    turn2: [
+      { text: `Exactly. Say "we can trim features, but I'll hold the line on the security check." Clear and fair.`, kind: "correct", note: `hold the line을 한 번 더 쓰면서 '대신 뭘 양보할지'까지 붙였어요. 그래야 고집이 아니라 판단으로 들린답니다!` },
+      { text: `Just hold line and no skip, boss will understand maybe.`, kind: "konglish", note: `'hold line', 'no skip' 관사·어순 어색. 'hold the line and don't skip it'으로.` },
+      { text: `Kindly convey your steadfast refusal to compromise standards.`, kind: "formal", note: `'steadfast refusal to compromise'가 과해요.` },
+    ],
+  },
+  78: {
+    greet: `Lunch? I'm ready to ship, was just gonna push it and tell legal after.`,
+    greetKo: `점심? 배포 준비 다 됐어. 그냥 내보내고 법무엔 나중에 말하려고.`,
+    turn1: [
+      { text: `Get their sign-off first, that way it's not just you on the hook if something breaks.`, kind: "correct", note: `sign-off의 진짜 이유(책임 공유)를 짚었어요. 사고 나도 '혼자 밀어붙인 일'이 안 되게 하는 안전벨트랍니다!` },
+      { text: `Just ship first, ask permission later, more fast.`, kind: "weak", note: `자연스럽지만 승인 없이 배포는 위험해요. sign-off를 먼저 받는 습관을 권해요.` },
+      { text: `One should procure requisite authorizations antecedent to deployment.`, kind: "formal", note: `'procure requisite authorizations'는 계약서 톤. 점심엔 가볍게.` },
+    ],
+    reply: `Yeah, you're right. Not worth the risk. Let's eat, I'll get it after.`,
+    replyKo: `그래, 네 말이 맞아. 리스크 감수할 거 없지. 밥 먹고 받을게.`,
+    turn2: [
+      { text: `Just get written sign-off from legal and finance by EOD, then ship clean.`, kind: "correct", note: `sign-off를 한 번 더 쓰면서 '누구에게, 언제, 어떤 형태로'까지 줬어요. 서면 승인이 진짜 안전벨트랍니다!` },
+      { text: `Get sign from legal fast, then no problem, okay?`, kind: "konglish", note: `'get sign'이 아니라 'get sign-off' 또는 'get their sign-off'예요.` },
+      { text: `Kindly obtain the pertinent parties' formal endorsement forthwith.`, kind: "formal", note: `'formal endorsement forthwith'가 과해요.` },
+    ],
+  },
+  82: {
+    greet: `Lunch? The pilot's doing way better than expected. Not sure if I should scale it or play safe.`,
+    greetKo: `점심? 파일럿이 예상보다 훨씬 잘 나와. 확대할지 안전하게 갈지 모르겠어.`,
+    turn1: [
+      { text: `If the numbers back it, double down, don't sit on a winner.`, kind: "correct", note: `double down의 조건(증거가 나왔을 때)을 짚었어요. 잘 되는 신호가 있을 때 망설이면 기회를 놓친답니다!` },
+      { text: `It works good? Then more more! Push hard hard.`, kind: "konglish", note: `'good', 'more more', 'hard hard' 반복이 어색. 'then go all in on it' 정도로.` },
+      { text: `Given favorable metrics, one might substantially augment the commitment.`, kind: "formal", note: `'substantially augment the commitment'은 IR 자료 톤이에요.` },
+    ],
+    reply: `The numbers are solid, actually. Okay, maybe I'm overthinking. Lunch.`,
+    replyKo: `숫자는 진짜 탄탄해. 그래, 내가 너무 재나 봐. 점심.`,
+    turn2: [
+      { text: `Then double down: shift two people onto it and take it to the next segment.`, kind: "correct", note: `double down을 한 번 더 쓰면서 구체적 행동(자원 이동+확대)까지 줬어요. 밀어붙이기는 '증거+자원'으로 말해야 도박이 아니랍니다!` },
+      { text: `Double down means all in, so just throw everything, no?`, kind: "weak", note: `double down은 '전부 걸기(all in)'와 달라요. 증거 나온 곳에 더 붓는 거지 무모한 올인이 아니에요.` },
+      { text: `Proceed to escalate resource allocation to the aforementioned initiative.`, kind: "formal", note: `'escalate resource allocation'이 딱딱해요.` },
+    ],
+  },
+  86: {
+    greet: `Lunch? Every tiny decision waits on me now. I can't even go to lunch without three pings.`,
+    greetKo: `점심? 이제 사소한 결정까지 다 나 기다려. 점심 가는데도 핑이 세 개 와.`,
+    turn1: [
+      { text: `Sounds like you're the bottleneck, empower them, let them decide the small stuff.`, kind: "correct", note: `empower의 핵심(병목 탈출, 결정권 넘기기)을 짚었어요. 권한을 줘야 팀이 달린답니다!` },
+      { text: `You are too busy, give them power, then you free.`, kind: "konglish", note: `'give them power', 'you free' 어순·관사 어색. 'give them the authority to decide'로.` },
+      { text: `One must delegate decisional latitude to one's subordinates.`, kind: "formal", note: `'decisional latitude', 'subordinates'는 조직도 톤. 점심엔 가볍게.` },
+    ],
+    reply: `Yeah, I need to let go a bit. Okay, let's actually eat.`,
+    replyKo: `그래, 좀 놓아야겠어. 자, 진짜 밥 먹자.`,
+    turn2: [
+      { text: `Just empower them with a clear line, "anything under X, you decide." Then no more lunch pings.`, kind: "correct", note: `empower를 한 번 더 쓰면서 '선을 그어주는' 실전 팁까지 줬어요. 자유엔 범위가 있어야 팀이 안심하고 결정한답니다!` },
+      { text: `Empower is good, just tell them do everything self.`, kind: "weak", note: `'알아서 다 해'는 empower가 아니에요. 어디까지 자율인지 선을 줘야 작동해요.` },
+      { text: `Kindly apportion autonomous decision-making within defined parameters.`, kind: "formal", note: `'apportion autonomous decision-making'이 과해요.` },
+    ],
+  },
+  90: {
+    greet: `Lunch? Crazy, 90 days already. There's a new hire who looks exactly like us on day one.`,
+    greetKo: `점심? 미쳤다, 벌써 90일이야. 우리 첫날이랑 똑같이 생긴 신입이 하나 왔더라.`,
+    turn1: [
+      { text: `Ha, then let's pay it forward, be the buddy we needed back then.`, kind: "correct", note: `pay it forward의 뜻(받은 걸 다음 사람에게)을 딱 짚었어요. 90일 여정의 마무리다운 표현이랍니다!` },
+      { text: `New guy? We are senior now, so we teach teach.`, kind: "konglish", note: `'teach teach' 반복이 어색. 'we can show them the ropes'로.` },
+      { text: `We ought to reciprocate the mentorship we once received.`, kind: "formal", note: `'reciprocate the mentorship'은 격식체. 점심 수다엔 가볍게.` },
+    ],
+    reply: `Right? Someone did it for us. Let's grab lunch, then go say hi.`,
+    replyKo: `그치? 누가 우리한테 해줬잖아. 밥 먹고 인사하러 가자.`,
+    turn2: [
+      { text: `Let's pay it forward properly, I'll walk them through day one like our buddy did for us.`, kind: "correct", note: `pay it forward를 한 번 더 쓰면서 구체적 행동까지 더했어요. 배움은 물려줄 때 완성된답니다. 90일 완주 축하해요!` },
+      { text: `We pay forward the favor, teach him our know-how, fighting!`, kind: "konglish", note: `'pay forward'가 아니라 'pay it forward', 'fighting'도 콩글리시예요.` },
+      { text: `Let us duly impart our accumulated wisdom to the newcomer.`, kind: "formal", note: `'duly impart accumulated wisdom'이 과해요. 따뜻하게 가볍게.` },
+    ],
+  },
 };
 SCENARIOS.forEach(s => { if (LUNCH_SCRIPTS[s.day]) s.lunchScript = LUNCH_SCRIPTS[s.day]; });
 
@@ -3390,6 +4281,37 @@ const RECAP_DATA = {
   57: { blank: `Numbers pass, but do a quick _____ before we ship.`, explain: `데이터 말고 직감으로도 마지막 점검을 하자는 맥락이에요. gut check는 결정 직전 직감에게 묻는 관문이랍니다!` },
   58: { blank: `Quick _____ on the team before crunch week starts.`, explain: `마감 주간 전에 팀 상태를 가볍게 점검하자는 상황이에요. pulse check는 맥박 재듯 짧게 상태를 확인하는 것이랍니다!` },
   59: { blank: `Two days left, it's _____. Clear your calendars.`, explain: `마감 직전 총력전 구간이라는 맥락이에요. crunch time은 모든 게 압축되는 마지막 스퍼트 구간이랍니다!` },
+  // ── 시즌 3 (Day 61-90, 대리 트랙) ──
+  61: { blank: `Quick recap so we're all _____ before we split tasks.`, explain: `팀의 목표 이해를 맞추는 맥락이에요. on the same page는 동의가 아니라 같은 이해를 뜻한답니다!` },
+  62: { blank: `You'll need to _____ with numbers to get more budget.`, explain: `근거로 설득하는 상황이에요. make the case는 원하는 것과 그 결과를 숫자로 엮는 거랍니다!` },
+  63: { blank: `Let's start from some _____, we both want the launch to succeed.`, explain: `공통분모부터 시작하는 맥락이에요. common ground는 양쪽이 같이 선 지점이랍니다!` },
+  64: { blank: `As a _____, I'll add onboarding support if you sign this week.`, explain: `협상에서 양보 카드를 내미는 상황이에요. concession엔 항상 조건을 붙인답니다!` },
+  65: { blank: `The _____ is scope: we hold the date but ship fewer features.`, explain: `하나 얻고 하나 내주는 맥락이에요. trade-off는 얻는 것과 내주는 것을 함께 말한답니다!` },
+  66: { blank: `It's a _____: they get design hours, we get faster delivery.`, explain: `양쪽 다 이득인 그림이에요. win-win은 각자 다른 걸 얻게 재설계하는 거랍니다!` },
+  67: { blank: `Here's what each of us can _____ on this project.`, explain: `각자의 기여를 말하는 맥락이에요. bring to the table은 내가 더하는 고유한 가치랍니다!` },
+  68: { blank: `There's some _____ between design and data lately.`, explain: `팀 간 미묘한 긴장이에요. friction은 싸움 전 단계의 삐걱거림이랍니다!` },
+  69: { blank: `Let me _____ this before it turns into a real fight.`, explain: `상황을 진정시키는 맥락이에요. de-escalate는 인정 먼저, 그다음 계획이랍니다!` },
+  70: { blank: `This is the time to _____ if anyone has doubts.`, explain: `우려를 꺼내게 하는 상황이에요. air concerns, 침묵은 동의가 아니랍니다!` },
+  71: { blank: `Can you _____ the details and come back with one answer?`, explain: `끝까지 논의해 정리하는 맥락이에요. hash out은 결론과 담당과 기한이 나와야 끝이랍니다!` },
+  72: { blank: `There has to be some _____ here, what are you flexible on?`, explain: `서로 양보하며 맞추는 상황이에요. give and take는 주고받기랍니다!` },
+  73: { blank: `If it matters, don't just hint, _____ it with a clear ask.`, explain: `분명히 요구하는 맥락이에요. push for는 근거를 실어 미는 거랍니다!` },
+  74: { blank: `We can cut scope, but I'll _____ on the security review.`, explain: `지킬 선을 지키는 상황이에요. hold the line은 양보 못 할 것을 지키는 거랍니다!` },
+  75: { blank: `I'll _____ with a short weekly update so she's never surprised.`, explain: `상사를 먼저 챙기는 맥락이에요. manage up은 먼저, 짧게, 놀람 없이랍니다!` },
+  76: { blank: `If you believe in her idea, will you _____ it to the committee?`, explain: `남의 좋은 아이디어를 밀어주는 상황이에요. champion은 내 신뢰를 걸고 올려주는 거랍니다!` },
+  77: { blank: `Let me _____ with the key people before the big meeting.`, explain: `회의 전 사전 조율이에요. socialize an idea, 큰 결정은 회의 밖에서 승부난답니다!` },
+  78: { blank: `Get _____ from legal and finance before we ship.`, explain: `최종 승인을 받는 맥락이에요. sign-off는 책임을 나눠 갖는 도장이랍니다!` },
+  79: { blank: `Let me _____ honestly: two by Q3, the third by Q4.`, explain: `기대치를 현실에 맞추는 상황이에요. manage expectations, 나중의 실망을 지금의 솔직함으로 막는답니다!` },
+  80: { blank: `If you spot a _____ on the vendor, tell me early.`, explain: `경고 신호를 일찍 올리는 맥락이에요. red flag는 확증 전에 올리되 확인 계획을 붙인답니다!` },
+  81: { blank: `Let me _____ the team before the final push.`, explain: `가라앉은 팀을 결집시키는 상황이에요. rally는 힘듦 인정과 남은 거리 보여주기랍니다!` },
+  82: { blank: `The numbers back it, so let's _____ and scale.`, explain: `증거 나온 곳에 더 붓는 맥락이에요. double down은 도박이 아니라 근거와 자원이랍니다!` },
+  83: { blank: `New asks have to replace something, or it's just _____.`, explain: `범위가 슬금슬금 느는 상황이에요. scope creep는 작은 예스들이 쌓여 생긴답니다!` },
+  84: { blank: `Let's _____ the old dashboard: announce, migrate, set an end date.`, explain: `단계적으로 종료하는 맥락이에요. sunset은 급정지가 아니라 예고와 대안과 기한이랍니다!` },
+  85: { blank: `I'll _____ the weekly report to Minho with a clear template.`, explain: `일을 맡기며 키우는 상황이에요. delegate는 맥락과 기준을 같이 준답니다!` },
+  86: { blank: `Stop being the bottleneck and _____ the team to decide.`, explain: `결정권을 넘기는 맥락이에요. empower는 선을 그어준 자유랍니다!` },
+  87: { blank: `Let me _____ so everyone sees the whole picture.`, explain: `흩어진 정보를 잇는 상황이에요. connect the dots는 조각들의 관계를 보여주는 거랍니다!` },
+  88: { blank: `People follow you now, so you _____ whether you mean to or not.`, explain: `분위기를 정하는 맥락이에요. set the tone, 톤은 말이 아니라 행동으로 정해진답니다!` },
+  89: { blank: `The team copies what you do, so _____ on this deadline.`, explain: `행동으로 앞장서는 상황이에요. lead by example은 내가 먼저 시연하는 거랍니다!` },
+  90: { blank: `Someone helped me once, so I'm going to _____.`, explain: `받은 걸 다음 사람에게 전하는 맥락이에요. pay it forward, 배움은 물려줄 때 완성된답니다!` },
 };
 
 // 사용자 상태, localStorage 우선, 없으면 데모 기본값
@@ -3403,8 +4325,8 @@ const _signupKST = _localUser?.signupDate
   ? new Date(_localUser.signupDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
   : _todayKST;
 const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
-// ★ 시즌 2: 코스 전체 상한 60일 (Day 31-60 = 정직원)
-const _autoDay = Math.max(1, Math.min(60, _daysSince + 1));
+// ★ 시즌 3: 코스 전체 상한 90일 (Day 1-30 수습 / 31-60 사원 / 61-90 대리)
+const _autoDay = Math.max(1, Math.min(90, _daysSince + 1));
 
 // ── 레벨 (수습 → 사원 → ...) ──
 // users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
@@ -3413,6 +4335,7 @@ const _autoDay = Math.max(1, Math.min(60, _daysSince + 1));
 const _LEVEL_LABELS = {
   probation: { ko: "수습", en: "Probation" },
   fulltime:  { ko: "사원", en: "Associate" },   // Day 31-60, 정직원 전환 후 첫 직급
+  senior:    { ko: "대리", en: "Senior Associate" },  // Day 61-90, 시즌 3
 };
 function _levelLabel(id) { return _LEVEL_LABELS[id] || _LEVEL_LABELS.probation; }
 const _userLevel = _localUser?.level || { id: "probation" };
@@ -3432,12 +4355,34 @@ const _resolvedDay = (_isInternal && _localUser?.dayInCompany > 1)
   ? _localUser.dayInCompany
   : _autoDay;
 
+// ── 시즌/직급 단계 (day 기준) ──
+// 진도 분모는 단계마다 바뀜: 수습 1-30(/30), 사원 31-60(/60), 대리 트랙 61-90(/90).
+// 랭크: 수습(1-30) → 사원(31-89) → Day 90 완주 시 대리 승진.
+const _phaseCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : 90);
+const _rankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime" : "probation");
+
+// 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
+const _odCompletedDays = (u) => {
+  if (!u) return 0;
+  const days = new Set();
+  (u.scenariosCompleted || []).forEach(s => { if (s && s.day) days.add(Number(s.day)); });
+  Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
+      const t = JSON.parse(localStorage.getItem(k) || "{}");
+      if (Object.values(t).filter(Boolean).length >= 3) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
+    });
+  } catch (e) {}
+  return [...days].filter(d => d >= 1).length;
+};
+
 const USER = {
   name: _localUser?.name || "김지원",
-  // 직급 표시: 수습 → "수습 사원", 사원(Associate) → "사원". 항상 id 기준.
-  position: _isFulltimeLevel ? _levelLabel(_levelId).ko : "수습 사원",
-  positionEn: _levelLabel(_levelId).en,
+  // 직급 표시: day 기준 랭크 (수습 사원 / 사원 / 대리). 대리는 Day 61+에 자연 승격.
+  position: _rankId === "probation" ? "수습 사원" : _levelLabel(_rankId).ko,
+  positionEn: _levelLabel(_rankId).en,
   levelId: _levelId,
+  rankId: _rankId,
   isFulltime: _isFulltimeLevel,
   team: _localUser?.department?.short ? (_localUser.department.short + " · 12F") : "Strategy Team · 12F",
   joinDate: _localUser?.signupDate ? new Date(_localUser.signupDate).toISOString().slice(0,10).replace(/-/g, '.') : "2026.04.16",
@@ -3445,10 +4390,10 @@ const USER = {
   currentDay: _resolvedDay,
   realCurrentDay: _resolvedDay,        // 실제 오늘 (App 컴포넌트가 viewingDay로 override 시 보존)
   isViewingPast: false,
-  // ★ 시즌 2: 정직원이면 60일 코스, 수습이면 30일 코스
-  totalDays: _isFulltimeLevel ? 60 : 30,
+  // ★ 시즌 3: 코스 길이는 현재 단계 기준 (수습 30 / 사원 60 / 대리 90)
+  totalDays: _phaseCap,
   studiedDays: 0,  // 아래에서 자동 계산
-  streak: Math.min(Math.max(0, _resolvedDay - 1), _isFulltimeLevel ? 60 : 30),
+  streak: _odCompletedDays(_localUser),  // 완주(출근 도장)한 날 수 (경과일 아님)
   vacationDays: 3,
   badges: _localUser
     ? ["첫 출근"].concat(_localUser.levelupCompletedAt || _localUser.levelup_completed_at ? ["정직원 전환 🎉"] : [])
@@ -3574,6 +4519,13 @@ const _AFTERNOON_TASKS = {
   56: "Q3 목표 시트 작성, base와 stretch 두 줄로 분리 🎯",
   59: "크런치 모드, 최종 QA 패스 진행 중 🔥",
   60: "특별 면담 직전, 60일 기록 돌아보며 마음 정리 🌟",
+  64: "재계약 협상 후속, 양보 카드와 조건 문서화 🤝",
+  68: "팀 간 마찰 조율 미팅 어젠다 정리 🧯",
+  72: "협상 마무리, 주고받은 조건 합의문 작성 🔄",
+  76: "신입 아이디어 위원회 상정 자료 준비 📣",
+  80: "외주 리스크 점검, 경고 신호 리포트 정리 🚩",
+  84: "레거시 기능 종료 계획, 마이그레이션 안내 초안 🌇",
+  88: "팀 운영 원칙 한 장 정리, 분위기 기준 공유 🧭",
 };
 function _afternoonForDay(day) {
   if (_AFTERNOON_TASKS[day]) return _AFTERNOON_TASKS[day];
@@ -3742,6 +4694,37 @@ const _BUDDY_NUDGE_BY_DAY = {
   58: { tone: "tip",     text: "pulse check는 측정-조치-재측정이 한 세트. 노란불 발견했으면 업무 덜고 목요일에 다시 재기." },
   59: { tone: "tip",     text: "crunch time 생존법: 캘린더 비우기 + 블로커 즉시 공유 + 범위 동결. 그리고 끝나면 제대로 쉬기." },
   60: { tone: "cheer",   text: "Day 60 완주! 🌟 take it offline, 회의를 끊을 줄 아는 사람이 회의를 이끄는 사람. 오후 4시 면담에서 봐." },
+  // ── 시즌 3 (Day 61-90, 대리) ──
+  61: { tone: "morning", text: "시즌 3 시작, 대리 승진 트랙! on the same page는 '동의'가 아니라 '같은 이해'. 회의 시작에 목표 한 줄만 맞춰도 뒤에 싸울 일이 반으로 줄어." },
+  62: { tone: "tip",     text: "make the case = 부탁이 아니라 증명. 원하는 것 + 숫자로 된 결과를 엮어야 예산이 나와." },
+  63: { tone: "tip",     text: "common ground는 '누가 이기냐'를 '둘 다 뭘 원하냐'로 바꾸는 스위치. \"We both want X\"로 시작해봐." },
+  64: { tone: "tip",     text: "concession엔 항상 조건을 붙여. \"I'll give X, if you give Y.\" 그냥 주면 다음에 더 요구받아." },
+  65: { tone: "tip",     text: "trade-off는 얻는 것과 내주는 것을 한 문장에. \"We hold X, the trade-off is Y.\" 저울을 보여주는 게 대리야." },
+  66: { tone: "tip",     text: "win-win은 파이를 나누는 게 아니라 각자 다른 걸 얻게 재설계. \"You get X, we get Y.\"" },
+  67: { tone: "cheer",   text: "🌱 시즌 3 첫 주 완주! bring to the table, 네가 판에 내놓는 강점 한 줄로 말할 수 있어? 그게 대리의 시작이야." },
+  68: { tone: "tip",     text: "friction은 싸움 전 단계. 작을 때 이름 붙이면 대화, 방치하면 중재. \"I'm sensing some friction.\"" },
+  69: { tone: "tip",     text: "de-escalate 1번은 반박이 아니라 인정. \"You're right to be upset\" 먼저, 그다음 계획. 변명부터 하면 불에 기름." },
+  70: { tone: "tip",     text: "air concerns는 '말해도 된다'는 판을 먼저 깔아야 열려. 침묵은 동의가 아니야." },
+  71: { tone: "tip",     text: "hash out은 '얘기 많이 함'이 아니라 결정+담당+기한이 나와야 끝. 열어두면 또 맴돌아." },
+  72: { tone: "tip",     text: "give and take는 '내겐 싼데 상대껜 비싼 것'을 먼저 줘. \"I can flex on X if you commit to Y.\"" },
+  73: { tone: "tip",     text: "push for는 세게가 아니라 분명하게. 원하는 것 + 안 주면 생기는 리스크를 붙이면 힘이 실려." },
+  74: { tone: "cheer",   text: "⚡ 시즌 3 절반! hold the line, 다 양보할 순 없어. 어떤 선이 '네 선'인지 아는 게 대리의 성숙함이야." },
+  75: { tone: "tip",     text: "manage up은 아부가 아니라 '상사가 놀랄 일 없게'. 먼저, 짧게, 놀람 없이. 두 줄 업데이트면 충분." },
+  76: { tone: "tip",     text: "champion은 '좋다'가 아니라 '내가 위로 올려주겠다'는 행동. 남의 좋은 아이디어를 밀어주는 힘, 이제 너한테 있어." },
+  77: { tone: "tip",     text: "socialize an idea: 큰 결정은 회의 밖에서 승부나. 핵심 인물에게 미리 돌리면 회의는 도장만 찍는 자리가 돼." },
+  78: { tone: "tip",     text: "sign-off는 책임을 나눠 갖는 도장. 관련 부서 승인 미리 받으면 사고 나도 '혼자 밀어붙인 일'이 안 돼." },
+  79: { tone: "tip",     text: "manage expectations는 초 치기가 아니라 나중의 실망을 지금의 솔직함으로 막기. \"X by Q3, Y by Q4.\"" },
+  80: { tone: "tip",     text: "red flag는 확증 전에 올리되 '확인하겠다'를 붙여. 확신 설 때까지 기다리면 이미 사고야." },
+  81: { tone: "cheer",   text: "🔥 시즌 3 3주! rally는 억지 응원이 아니라 힘듦 인정 + 남은 거리 보여주기. 이제 사람들이 널 따라." },
+  82: { tone: "tip",     text: "double down은 도박이 아니라 '증거 나온 곳에 자원 더 붓기'. 잘 되는 신호 있을 때 망설이면 기회를 놓쳐." },
+  83: { tone: "tip",     text: "scope creep는 작은 예스들이 쌓여서 생겨. 새 요청마다 \"그럼 뭘 뺄까요?\"를 붙이면 멈춰." },
+  84: { tone: "tip",     text: "sunset은 급정지가 아니라 예고 + 대안 + 종료일. 잘 끝내는 것도 대리의 실력이야." },
+  85: { tone: "tip",     text: "delegate는 떠넘기기가 아니라 맥락+기준을 같이 주는 것. '내가 하는 게 빨라'가 병목의 시작이야." },
+  86: { tone: "tip",     text: "empower는 delegate에서 한 걸음 더. \"이 선 안에선 네가 정해\"라고 결정권을 줘. 자유엔 범위가 있어야 안심하고 달려." },
+  87: { tone: "tip",     text: "connect the dots는 요약이 아니라 관계 보여주기. \"A 때문에 B, 그래서 C.\" 그럼 방 전체가 같은 그림을 봐." },
+  88: { tone: "tip",     text: "set the tone: 리더는 톤을 정할지 말지를 못 골라, 이미 정하고 있어. 말이 아니라 행동이 톤을 만들어." },
+  89: { tone: "tip",     text: "lead by example: 팀은 네 말이 아니라 네 행동을 복사해. 정시 퇴근 원하면 내가 먼저 로그오프." },
+  90: { tone: "cheer",   text: "🌟 Day 90 완주! pay it forward, 받은 걸 다음 사람에게. 90개의 표현이 네 것이고, 이제 너는 누군가의 버디야. 진심으로 축하해." },
 };
 // 폴백 (Day 61+ 또는 정의 안 된 day), 일반 격려·팁 풀
 const BUDDY_NUDGES = [
@@ -3980,7 +4963,7 @@ function Locker({ active, setActive, user, unread }) {
             <div className="locker-card-pos">{user.position}</div>
           </div>
         </div>
-        <div className="locker-card-day">DAY <b>{user.currentDay}</b> / {user.totalDays} · 🔥 {user.streak}일</div>
+        <div className="locker-card-day">DAY <b>{user.currentDay}</b> / {user.totalDays} · 🔥 출근 {user.streak}일</div>
       </div>
     </aside>
   );
@@ -4456,13 +5439,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [showFullAttend, setShowFullAttend] = useState(false);
   // ★ 시즌 2: 정직원 마일스톤 카드 (닫기가 아니라 접기, 수시로 펼쳐볼 수 있음)
   const _S2_CARD_KEY = "__OD_S2_WELCOME_DISMISSED_" + (USER.email || "guest");
+  // 접힘은 '그날 하루'만 유지. 새 day엔 다시 펼쳐서 로드맵(마일스톤)이 자주 보이게.
+  const _s2Today = String(USER.realCurrentDay || USER.currentDay || 1);
   const [s2CardCollapsed, setS2CardCollapsed] = useState(() => {
-    try { return localStorage.getItem(_S2_CARD_KEY) === "1"; } catch (e) { return false; }
+    try { return localStorage.getItem(_S2_CARD_KEY) === _s2Today; } catch (e) { return false; }
   });
   const toggleS2Card = () => {
     setS2CardCollapsed(v => {
-      try { localStorage.setItem(_S2_CARD_KEY, v ? "0" : "1"); } catch (e) {}
-      return !v;
+      const nv = !v;
+      try { localStorage.setItem(_S2_CARD_KEY, nv ? _s2Today : "0"); } catch (e) {}
+      return nv;
     });
   };
   // ★ 기본은 "최근 14일" 슬라이딩 창. Day가 늘어나도(시즌 2, 60일) 출근부 높이 고정.
@@ -4746,12 +5732,20 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             );
           })()}
 
-          {/* ★ 시즌 2: 정직원 마일스톤 카드 (접기/펼치기, Day 60 면담 티저) */}
+          {/* ★ 시즌 2/3: 사원 마일스톤 카드 (접기/펼치기). Day 31-60 면담 티저 / Day 61-90 대리 승진 로드맵 */}
           {USER.isFulltime && !USER.isViewingPast && (() => {
             const _rd = USER.realCurrentDay || USER.currentDay;
-            const _pct = Math.max(3, Math.min(100, Math.round((_rd - 30) / 30 * 100)));
-            const _dLeft = Math.max(0, 60 - _rd);
-            const MILESTONES = [
+            const _s3 = _rd > 60;   // 시즌 3 (Day 61-90, 대리 승진 트랙)
+            const _target = _s3 ? 90 : 60;
+            const _base = _s3 ? 60 : 30;
+            const _pct = Math.max(3, Math.min(100, Math.round((_rd - _base) / 30 * 100)));
+            const _dLeft = Math.max(0, _target - _rd);
+            const MILESTONES = _s3 ? [
+              { d: 67, icon: "🌱", label: "첫 주 완주" },
+              { d: 74, icon: "⚡", label: "절반 돌파" },
+              { d: 81, icon: "🔥", label: "80일 달성" },
+              { d: 90, icon: "🎖️", label: "대리 승진" },
+            ] : [
               { d: 37, icon: "🌱", label: "첫 주 완주" },
               { d: 44, icon: "⚡", label: "절반 돌파" },
               { d: 51, icon: "🔥", label: "50일 달성" },
@@ -4766,13 +5760,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   borderRadius: 8, padding: "10px 14px", cursor: "pointer",
                   fontFamily: "inherit", textAlign: "left",
                 }}>
-                  <span style={{ fontSize: 14 }}>👔</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>사원 마일스톤</span>
+                  <span style={{ fontSize: 14 }}>{_s3 ? "🎖️" : "👔"}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>{_s3 ? "대리 승진 트랙" : "사원 마일스톤"}</span>
                   <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
                     <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
                   </span>
                   <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? `면담 D-${_dLeft}` : "면담 D-day 🌟"}
+                    {_dLeft > 0 ? (_s3 ? `대리 승진 D-${_dLeft}` : `면담 D-${_dLeft}`) : (_s3 ? "대리 승진 D-day 🎖️" : "면담 D-day 🌟")}
                   </span>
                   <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
                 </button>
@@ -4795,13 +5789,18 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                     fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
                     color: "var(--orange)", border: "2px solid var(--orange)",
                     padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
-                  }}>인사 발령</span>
-                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>정직원 전환, 사원(Associate) 발령 🎉</b>
+                  }}>{_s3 ? "대리 승진 트랙" : "인사 발령"}</span>
+                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>{_s3 ? "시즌 3, 대리 승진 트랙 🎖️" : "정직원 전환, 사원(Associate) 발령 🎉"}</b>
                 </div>
                 <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
-                  이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
-                  30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
-                  60일 누적 통계 공개, 그리고 다음 직급 <b style={{ color: "var(--ink)" }}>선임(Senior Associate)</b> 평가까지.
+                  {_s3 ? (
+                    <>이제 <b style={{ color: "var(--ink)" }}>주도하는 사람의 언어</b>예요. 협상, 설득, 이해관계자 관리, 갈등 중재.
+                    Day 90을 완주하면 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b>로 승진해요.</>
+                  ) : (
+                    <>이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
+                    30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
+                    그리고 Day 90엔 다음 직급 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b> 승진까지.</>
+                  )}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
                   {MILESTONES.map(m => {
@@ -4824,7 +5823,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                     <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
                   </div>
                   <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? `특별 면담까지 D-${_dLeft}` : "특별 면담 날이에요! 🌟"}
+                    {_dLeft > 0 ? (_s3 ? `대리 승진까지 D-${_dLeft}` : `특별 면담까지 D-${_dLeft}`) : (_s3 ? "오늘 대리 승진! 🎖️" : "특별 면담 날이에요! 🌟")}
                   </span>
                 </div>
               </div>
@@ -4860,7 +5859,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                   ? `출근부 · 전체 ${USER.totalDays}일`
                   : (_attendStart > 1 ? `출근부 · DAY ${_attendStart}-${_attendEnd}` : "출근부 · 14일")}
               </span>
-              <span className="attendance-num">{USER.streak}<small>일 연속</small></span>
+              <span className="attendance-num">{USER.streak}<small> / {USER.totalDays} 완주</small></span>
             </div>
             <div
               className={"attendance-cells" + (showFullAttend ? " full" : "")}
@@ -6002,14 +7001,16 @@ function MyPage() {
 
   // ★ 사원증 덱: 승급한 직급들을 카드로 넘겨보기 (승급의 재미)
   // 항상 보유: 수습. 사원이면 사원 카드까지. 기본은 현재 직급 카드.
-  const _cardDeck = [{ id: "probation", ko: "수습", en: "Probation" }];
-  if (USER.isFulltime) _cardDeck.push({ id: "fulltime", ko: "사원", en: "Associate" });
+  const _cardDeck = [{ id: "probation", ko: "수습", en: "Probation", cap: 30 }];
+  if (USER.isFulltime) _cardDeck.push({ id: "fulltime", ko: "사원", en: "Associate", cap: 60 });
+  if (USER.rankId === "senior") _cardDeck.push({ id: "senior", ko: "대리", en: "Senior Associate", cap: 90 });
   const [cardIdx, setCardIdx] = useState(_cardDeck.length - 1); // 현재(가장 높은) 직급부터
   const _cardSafeIdx = Math.min(cardIdx, _cardDeck.length - 1);
   const card = _cardDeck[_cardSafeIdx];
-  const _cardIsFull = card.id === "fulltime";
-  const _cardDays = card.id === "fulltime" ? 60 : 30;
-  const _cardEarned = card.id === USER.levelId; // 현재 재직 중인 직급인가
+  const _cardIsFull = card.id !== "probation";
+  // ★ 현재 재직 카드는 day 기반 랭크(rankId)로 판정. 분모: 현재 카드 = 코스 총일(phaseCap 30/60/90), 지난 카드 = 그 직급 종료일.
+  const _cardEarned = card.id === USER.rankId;
+  const _cardDays = _cardEarned ? USER.totalDays : card.cap;
 
   return (
     <div>
@@ -6046,7 +7047,7 @@ function MyPage() {
       <div className="id-card">
         <div className="id-card-clip"></div>
         <div className="id-card-strip" style={_cardIsFull ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
-          <span>YOUBUDDY KOREA · {_cardIsFull ? "ASSOCIATE" : "EMPLOYEE ID"}</span>
+          <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}</span>
           <b>NO. {USER.empNumber || "2026-0416"}</b>
         </div>
         <div className="id-card-body">
@@ -9028,6 +10029,127 @@ function MilestonePopup({ milestone, onClose }) {
   );
 }
 
+// ── 시즌 3 체크포인트: Day 61 첫 로그인 시 1회. 60일 완주 축하 + 대리(시즌3) 소개 + 마일스톤 예고. ──
+// ── Day 60 체크포인트: 60일 완주 축하 + "30일 더 = 대리 승진" 동기부여 + 업계 설문(향후 맞춤 큐레이션 시드) ──
+function Day60Checkpoint({ onClose }) {
+  const [useCase, setUseCase] = useState(null);
+  const [industry, setIndustry] = useState(null);
+  const [goal, setGoal] = useState("");
+  const [sent, setSent] = useState(false);
+  const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const name = local.name || "사원";
+  const USE_CASES = ["해외 클라이언트 미팅", "외국인 상사·본사 보고", "글로벌 팀 협업", "이직·면접", "투자자·파트너 미팅", "컨퍼런스·발표"];
+  const INDUSTRIES = ["IT·소프트웨어", "제조·하드웨어", "금융", "커머스·리테일", "헬스케어·바이오", "교육", "스타트업", "기타"];
+  const chip = (v, sel, set) => (
+    <button key={v} onClick={() => set(v)} style={{
+      padding: "7px 12px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit",
+      border: "1px solid " + (sel === v ? "var(--orange)" : "var(--line)"),
+      background: sel === v ? "rgba(216,90,42,0.12)" : "var(--paper)",
+      color: sel === v ? "var(--orange)" : "var(--ink-soft)", fontWeight: 700, fontSize: 12,
+    }}>{v}</button>
+  );
+  const finish = () => {
+    if (!sent) {
+      setSent(true);
+      const email = local.email;
+      if (email && window.OD?.submitFeedback) {
+        window.OD.submitFeedback({
+          email, name, day: 60, category: "senior_survey",
+          message: `[Day60 대리 트랙 설문]\n영어가 절실한 순간: ${useCase || "(미선택)"}\n업종: ${industry || "(미선택)"}\n대리가 되면 하고 싶은 것: ${goal.trim() || "(미작성)"}`,
+          context: { type: "senior_survey", useCase, industry, goal: goal.trim() },
+        }).catch(() => {});
+      }
+      try { local.seniorSurvey = { useCase, industry, goal: goal.trim(), at: new Date().toISOString() }; localStorage.setItem("__OD_USER", JSON.stringify(local)); } catch (e) {}
+    }
+    onClose();
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9160, background: "rgba(20,15,8,0.72)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+      <div style={{ background: "var(--paper)", border: "2px solid var(--orange)", borderRadius: 14, maxWidth: 440, width: "100%", padding: "28px 26px 24px", margin: "auto", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.5)" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 44, marginBottom: 8 }}>🎉</div>
+          <h2 style={{ fontSize: 21, fontWeight: 900, color: "var(--ink)", marginBottom: 8, letterSpacing: "-0.01em" }}>{name}님, 60일 완주!</h2>
+          <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 18 }}>
+            여기까지 온 사람은 끝까지 가요. <b>30일만 더</b> 채우면 Day 90, <b>대리 승진</b>이에요. 마지막 30일은 협상·설득·이해관계자 관리, 주도하는 사람의 언어예요.
+          </p>
+        </div>
+        <div style={{ borderTop: "1px dashed var(--line)", paddingTop: 16 }}>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>실무에서 영어가 제일 절실한 순간은?</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>{USE_CASES.map(v => chip(v, useCase, setUseCase))}</div>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>어떤 업종이세요? <span style={{ fontWeight: 400, color: "var(--ink-mute)" }}>(선택)</span></p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{INDUSTRIES.map(v => chip(v, industry, setIndustry))}</div>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", margin: "16px 0 8px" }}>대리가 되면 영어로 꼭 해내고 싶은 게 있다면? <span style={{ fontWeight: 400, color: "var(--ink-mute)" }}>(자유롭게)</span></p>
+          <textarea value={goal} onChange={e => setGoal(e.target.value)} rows={3}
+            placeholder="예: 다음 분기 해외 클라이언트 미팅을 통역 없이 직접 리드하고 싶어요."
+            style={{ width: "100%", borderRadius: 8, border: "1px solid var(--line)", padding: "10px 12px", fontSize: 12.5, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box" }} />
+          <p style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 10, marginBottom: 16 }}>답변은 앞으로 업종별 맞춤 학습을 준비하는 데만 쓰여요.</p>
+        </div>
+        <button className="btn btn-primary" style={{ width: "100%" }} onClick={finish}>대리까지 이어서 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Day 90 대리 승진 시험: 사원 90일 완주 → 미니 시험(Day 61-90 풀) → 대리 승진 축하 ──
+function Season3Checkpoint({ onClose }) {
+  const [step, setStep] = useState(0);   // 0 인트로 / 1 시험 / 2 결과·승진
+  const [qIdx, setQIdx] = useState(0);
+  const [pick, setPick] = useState(null);
+  const [picks, setPicks] = useState([]);
+  const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const name = local.name || "사원";
+  const questions = useMemo(() => _buildLevelupQuestions(90, 10, 61), []);
+  const q = questions[qIdx];
+  const score = questions.length ? Math.round(picks.filter(p => p.ok).length / questions.length * 100) : 100;
+  const scoreMent = score >= 90 ? "탁월하게 통과!" : score >= 70 ? "여유롭게 통과!" : score >= 50 ? "통과!" : "통과! 복습이 필요한 단어가 보여요.";
+  const onPick = (opt) => { if (pick) return; setPick(opt); setPicks(prev => [...prev, { ok: opt === q.correct }]); };
+  const goNext = () => { if (qIdx >= questions.length - 1) { setStep(2); return; } setQIdx(qIdx + 1); setPick(null); };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9200, background: "rgba(42,31,20,0.82)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 480, width: "100%", padding: "30px 26px 26px", margin: "auto", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)" }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 14 }}>
+          대리 승진 심사 {step === 1 ? `· 시험 ${qIdx + 1}/${questions.length}` : ""}
+        </div>
+        {step === 0 && (
+          <div>
+            <div style={{ fontSize: 46, marginBottom: 10 }}>🎖️</div>
+            <h2 style={{ fontSize: 21, fontWeight: 900, lineHeight: 1.4, color: "var(--ink)", marginBottom: 12 }}>{name}님, 사원 90일 완주!</h2>
+            <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 16 }}>
+              마지막 관문이에요. Day 61-90에서 쌓은 표현으로 대리 승진 시험(10문항)을 보고, 통과하면 <b>대리 (Senior Associate)</b>로 승진해요.
+            </p>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => setStep(1)}>승진 시험 시작 →</button>
+          </div>
+        )}
+        {step === 1 && q && (
+          <div>
+            <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "16px", marginBottom: 14, fontSize: 14.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>{q.target}</div>
+            <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
+              {q.options.map(opt => { const show = !!pick, isC = opt === q.correct, isP = pick === opt; return (
+                <button key={opt} onClick={() => onPick(opt)} style={{ textAlign: "left", padding: "11px 14px", borderRadius: 8, border: "1px solid " + (show && isC ? "var(--orange)" : isP ? "#993C1D" : "var(--line)"), background: show && isC ? "rgba(216,90,42,0.10)" : "var(--paper)", fontSize: 13.5, fontWeight: 600, color: "var(--ink)", cursor: pick ? "default" : "pointer", fontFamily: "inherit" }}>
+                  {opt} {show && isC ? "✓" : (show && isP ? "✕" : "")}
+                </button> ); })}
+            </div>
+            {pick && <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, background: "var(--paper-warm)", borderRadius: 8, padding: "10px 12px", marginBottom: 14 }}>{q.hint}</div>}
+            {pick && <button className="btn btn-primary" style={{ width: "100%" }} onClick={goNext}>{qIdx >= questions.length - 1 ? "결과 보기 →" : "다음 문제 →"}</button>}
+          </div>
+        )}
+        {step === 2 && (
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 52, marginBottom: 10 }}>🎖️</div>
+            <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.18em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "4px 12px", transform: "rotate(-3deg)", marginBottom: 12 }}>대리 승진</div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", marginBottom: 8 }}>대리로 승진했어요</h2>
+            <p style={{ fontSize: 15, color: "var(--orange)", fontWeight: 800, marginBottom: 12 }}>시험 {score}점 · {scoreMent}</p>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 20 }}>
+              수습 30일, 사원 60일, 그리고 오늘. 협상·설득·이해관계자 관리까지 주도하는 사람의 언어를 다 쌓았어요. 이제 누군가의 버디가 될 차례예요.<br/>🌱 67 · ⚡ 74 · 🔥 81 · 🎖️ 90
+            </p>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>축하 받기 🎉</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── 주간 펄스 설문 (별점 + 한줄평 + 기대 vs 실제). 운영자 피드함으로 수집. ──
 // surveyKey 단위로 1회만. 새 설문 돌릴 땐 키만 바꾸면 됨.
 function PulseSurveyModal({ surveyKey, onClose }) {
@@ -9131,12 +10253,14 @@ function PulseSurveyModal({ surveyKey, onClose }) {
 }
 
 // ── 승급 영어 테스트 문제 생성 (Day 1-30 단어 풀, RECAP_DATA 재활용) ──
-function _buildLevelupQuestions(maxDay, count) {
-  const SCN = ((window.__SIM && window.__SIM.SCENARIOS) || []).filter(s => s.day <= maxDay);
+function _buildLevelupQuestions(maxDay, count, minDay) {
+  minDay = minDay || 1;
+  const ALL = ((window.__SIM && window.__SIM.SCENARIOS) || []);
+  const SCN = ALL.filter(s => s.day >= minDay && s.day <= maxDay);
   const RD = (window.__SIM && window.__SIM.RECAP_DATA) || {};
-  const pool = Object.keys(RD).map(Number).filter(d => d <= maxDay && SCN.find(s => s.day === d));
+  const pool = Object.keys(RD).map(Number).filter(d => d >= minDay && d <= maxDay && SCN.find(s => s.day === d));
   const qDays = _shuf(pool).slice(0, count);
-  const allWords = SCN.map(s => s.word).filter(Boolean);
+  const allWords = ALL.map(s => s.word).filter(Boolean);
   return qDays.map(d => {
     const sc = SCN.find(s => s.day === d);
     const word = sc ? sc.word : "";
@@ -9787,6 +10911,28 @@ function App() {
   const _levelupDone = !!(_localUserNow?.levelupCompletedAt || _localUserNow?.levelup_completed_at);
   const _showCeremony = _isProbationNow && !_levelupDone && !!_localUserNow && _realDay >= 30;
 
+  // ── 대리 승진: Day 90 완주 시 1회 (90일 완주 → 대리 승진) ──
+  const _S3_KEY = '__OD_S3_SEEN_v2_' + (_localUserNow?.email || 'guest');   // v2: 시험 포함 버전으로 갱신 (이전 닫음 무시)
+  const [_s3Seen, _setS3Seen] = useState(() => {
+    try { return localStorage.getItem(_S3_KEY) === '1'; } catch (e) { return false; }
+  });
+  const _dismissS3 = () => {
+    try { localStorage.setItem(_S3_KEY, '1'); } catch (e) {}
+    _setS3Seen(true);
+  };
+  const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && !_s3Seen && !_showCeremony && !_showD1Popup;
+
+  // ── Day 60 체크포인트: 60일 완주 축하 + 대리 트랙 안내 + 업계 설문 (Day 60-89 1회) ──
+  const _DAY60_KEY = '__OD_DAY60_SEEN_' + (_localUserNow?.email || 'guest');
+  const [_day60Seen, _setDay60Seen] = useState(() => {
+    try { return localStorage.getItem(_DAY60_KEY) === '1'; } catch (e) { return false; }
+  });
+  const _dismissDay60 = () => {
+    try { localStorage.setItem(_DAY60_KEY, '1'); } catch (e) {}
+    _setDay60Seen(true);
+  };
+  const _showDay60 = !!_localUserNow && _realDay >= 60 && _realDay < 90 && !_day60Seen && !_showCeremony && !_showD1Popup && !_showS3Checkpoint;
+
   // ── 주간 펄스 설문 (1회). 공지를 읽고 닫으면 그 직후에 노출. ──
   const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_06W2";  // 새 설문 돌릴 땐 이 키만 변경
   const [_showSurvey, _setShowSurvey] = useState(false);
@@ -10043,7 +11189,9 @@ function App() {
       {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
       {_showD1Popup && <PromotionD1Popup onClose={_dismissD1} />}
       {_showCeremony && <PromotionCeremony realDay={_realDay} />}
-      {_milestonePopup && !_showCeremony && !_showD1Popup && (
+      {_showS3Checkpoint && <Season3Checkpoint onClose={_dismissS3} />}
+      {_showDay60 && <Day60Checkpoint onClose={_dismissDay60} />}
+      {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
       )}
       {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && (
