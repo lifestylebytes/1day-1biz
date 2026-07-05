@@ -5413,7 +5413,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   }, [tourStep]);
 
   // === 모든 hooks 끝난 후, 데이터 lookup + 안전장치 early return ===
-  const today = SCENARIOS.find(s => s.day === USER.workingDay);
+  // Day 91+ (코스 완주 이후, 주로 운영자 테스트)엔 시나리오가 없어 undefined 방지: 마지막 Day 90으로 폴백.
+  const today = SCENARIOS.find(s => s.day === USER.workingDay) || SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
   const npc = today ? CHARACTERS[today.npc] : null;
 
   if (!today) {
@@ -7011,6 +7012,14 @@ function MyPage() {
   // ★ 현재 재직 카드는 day 기반 랭크(rankId)로 판정. 분모: 현재 카드 = 코스 총일(phaseCap 30/60/90), 지난 카드 = 그 직급 종료일.
   const _cardEarned = card.id === USER.rankId;
   const _cardDays = _cardEarned ? USER.totalDays : card.cap;
+  // 카드별 색: 수습=기본, 사원=네이비, 대리=레드
+  const _cardStripStyle = card.id === "senior" ? { background: "#A6402E", color: "#F7EDE4" }
+    : card.id === "fulltime" ? { background: "#3A4A5C", color: "#F2EBDD" } : null;
+  // 사번 통일: 카드·직급 무관 동일. 날짜는 입사일(signupDate) 기준, 4자리는 기존 사번 접미사(없으면 이메일 해시).
+  const _empSuffix = (USER.empNumber && String(USER.empNumber).includes("-")) ? String(USER.empNumber).split("-").pop()
+    : String(Math.abs([...(USER.email || "guest")].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7)) % 10000).padStart(4, "0");
+  const _empJoinYmd = (() => { try { const sd = _localUser && _localUser.signupDate ? new Date(_localUser.signupDate) : null; if (sd && !isNaN(sd.getTime())) return sd.getFullYear() + String(sd.getMonth() + 1).padStart(2, "0") + String(sd.getDate()).padStart(2, "0"); } catch (e) {} return "20260416"; })();
+  const _empNo = _empJoinYmd + "-" + _empSuffix;
 
   return (
     <div>
@@ -7046,12 +7055,12 @@ function MyPage() {
 
       <div className="id-card">
         <div className="id-card-clip"></div>
-        <div className="id-card-strip" style={_cardIsFull ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>
+        <div className="id-card-strip" style={_cardStripStyle}>
           <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}</span>
-          <b>NO. {USER.empNumber || "2026-0416"}</b>
+          <b>NO. {_empNo}</b>
         </div>
         <div className="id-card-body">
-          <div className="id-card-photo" style={_cardIsFull ? { background: "#3A4A5C", color: "#F2EBDD" } : null}>{_cardIsFull ? "👔" : USER.name[0]}</div>
+          <div className="id-card-photo" style={_cardStripStyle}>{_cardIsFull ? "👔" : USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
             <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : ""}</span></div>
@@ -10069,9 +10078,12 @@ function Day60Checkpoint({ onClose }) {
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 44, marginBottom: 8 }}>🎉</div>
           <h2 style={{ fontSize: 21, fontWeight: 900, color: "var(--ink)", marginBottom: 8, letterSpacing: "-0.01em" }}>{name}님, 60일 완주!</h2>
-          <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 18 }}>
+          <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 14 }}>
             여기까지 온 사람은 끝까지 가요. <b>30일만 더</b> 채우면 Day 90, <b>대리 승진</b>이에요. 마지막 30일은 협상·설득·이해관계자 관리, 주도하는 사람의 언어예요.
           </p>
+          <div style={{ background: "rgba(216,90,42,0.08)", border: "1px solid rgba(216,90,42,0.3)", borderRadius: 8, padding: "9px 12px", fontSize: 12, color: "var(--orange)", fontWeight: 700, lineHeight: 1.6, marginBottom: 18, textAlign: "left" }}>
+            단, 대리 승진 시험은 <b>60일 이상 학습</b>해야 볼 수 있어요. 꾸준히 출근 도장 찍어주세요!
+          </div>
         </div>
         <div style={{ borderTop: "1px dashed var(--line)", paddingTop: 16 }}>
           <p style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>실무에서 영어가 제일 절실한 순간은?</p>
@@ -10920,7 +10932,10 @@ function App() {
     try { localStorage.setItem(_S3_KEY, '1'); } catch (e) {}
     _setS3Seen(true);
   };
-  const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && !_s3Seen && !_showCeremony && !_showD1Popup;
+  // 대리 시험은 실제로 60일 이상 학습(완주)한 사람만. 운영자/Dev는 테스트용 통과.
+  const _isInternalTester = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
+  const _studiedEnough = USER.streak >= 60 || _isInternalTester;
+  const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen && !_showCeremony && !_showD1Popup;
 
   // ── Day 60 체크포인트: 60일 완주 축하 + 대리 트랙 안내 + 업계 설문 (Day 60-89 1회) ──
   const _DAY60_KEY = '__OD_DAY60_SEEN_' + (_localUserNow?.email || 'guest');
