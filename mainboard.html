@@ -7030,7 +7030,7 @@ function MyPage() {
         </div>
         <div className="desk-meta"><b>입사일</b><br/>{USER.joinDate}</div>
       </div>
-      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.isFulltime ? "사원 재직 중" : "수습 진행 중"} />
+      <ApprovalLine doc="YB-HR-001" applicant={USER.name} status={USER.rankId === "probation" ? "수습 진행 중" : USER.position + " 재직 중"} />
 
       {/* 덱 네비게이션 (사원 이상이면 노출) */}
       {_cardDeck.length > 1 && (
