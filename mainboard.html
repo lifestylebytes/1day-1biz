@@ -10061,9 +10061,9 @@ function Day60Checkpoint({ onClose }) {
     if (!sent) {
       setSent(true);
       const email = local.email;
-      if (email && window.OD?.submitFeedback) {
-        window.OD.submitFeedback({
-          email, name, day: 60, category: "senior_survey",
+      if (email && window.OD?.submitSeniorSurvey) {
+        window.OD.submitSeniorSurvey({
+          email, name,
           message: `[Day60 대리 트랙 설문]\n영어가 절실한 순간: ${useCase || "(미선택)"}\n업종: ${industry || "(미선택)"}\n대리가 되면 하고 싶은 것: ${goal.trim() || "(미작성)"}`,
           context: { type: "senior_survey", useCase, industry, goal: goal.trim() },
         }).catch(() => {});
