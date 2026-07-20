@@ -6523,6 +6523,38 @@ function MyNotesPage({ openScene }) {
           </div>
         </>
       )}
+
+      {/* ── ✍️ 내 시추에이션 일지 아카이브: "어떤 상황에 쓸까?"에 적은 예문 전체 다시보기 (피드백 반영) ── */}
+      {(() => {
+        const journals = Object.entries(USER.dailyJournals || {})
+          .map(([k, j]) => ({ day: Number(k), text: (j && (j.text || j.reflection || j.note)) || (typeof j === "string" ? j : ""), savedAt: j && j.savedAt }))
+          .filter(j => j.day && j.text)
+          .sort((a, b) => b.day - a.day);
+        if (journals.length === 0) return null;
+        return (
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, borderBottom: "2px solid var(--ink)", paddingBottom: 6, marginBottom: 12 }}>
+              <b style={{ fontSize: 15, color: "var(--ink)" }}>✍️ 내 시추에이션 일지</b>
+              <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>"어떤 상황에 쓸까?"에 남긴 기록 {journals.length}일치, 전체 보기</span>
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {journals.map(j => {
+                const sc = SCENARIOS.find(s => s.day === j.day);
+                return (
+                  <div key={j.day} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderLeft: "3px solid var(--green, #4A7C59)", borderRadius: 8, padding: "10px 14px" }}>
+                    <div style={{ fontSize: 11.5, marginBottom: 4 }}>
+                      <b style={{ color: "var(--orange)" }}>DAY {j.day}</b>
+                      {sc && <span style={{ fontWeight: 800, color: "var(--ink)", marginLeft: 6 }}>{sc.word}</span>}
+                      {sc && <span style={{ color: "var(--ink-mute)", marginLeft: 6 }}>{sc.meaning}</span>}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{j.text}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -7718,6 +7750,10 @@ function SceneModal({ scenario, onClose }) {
     if (!fb.isExample && draft.trim() && window.OD?.enabled && window.OD.getMentorAiFeedback) {
       setAiLoading(true);
       const _submittedDraft = draft;
+      // 직전 AI 추천 문장 전달: 추천을 그대로 반영해 재제출하면 또 딴 버전으로 안 되돌리게 (왔다갔다 버그 방지)
+      const _prevAiCorrected = (() => {
+        try { const c = _loadCompletion(scenario.day); return (c && c.feedback && c.feedback.aiFb && c.feedback.aiFb.corrected) || ""; } catch (e) { return ""; }
+      })();
       window.OD.getMentorAiFeedback({
         sentence: draft,
         word: scenario.word,
@@ -7727,6 +7763,7 @@ function SceneModal({ scenario, onClose }) {
         koSentence: (scenario.task && scenario.task.koSentence) || "",
         promptKo: (scenario.task && scenario.task.promptKo) || "",
         mentorName: CHARACTERS.mentor.name,
+        prevCorrected: _prevAiCorrected,
       }).then(r => {
         setAiLoading(false);
         if (r && r.ok && r.fb) {
@@ -9177,12 +9214,40 @@ function LunchActivity({ today, item, onClose, onComplete }) {
 }
 
 // === 4. RECAP, 10초 퀴즈 (3문제 빠른 4지선다) ===
+// ── 복습 빈칸 후보 풀: 기본 RECAP 문장 + 유버디 예문·모범답안에서 파생 ──
+// (피드백: 같은 예문만 반복 출제 + 문장이 답을 노출. 후보를 늘려 랜덤 출제하면 둘 다 완화)
+function _recapCandidates(sc, RD) {
+  const out = [];
+  if (sc && RD && RD[sc.day] && RD[sc.day].blank) out.push(RD[sc.day].blank);
+  if (!sc) return out;
+  const ex = (sc.buddyAnswers && sc.buddyAnswers.example) || "";
+  (ex.match(/"[^"]{8,140}"/g) || []).forEach(q => {
+    const s = q.slice(1, -1);
+    if (/[A-Za-z]{3,}/.test(s)) {
+      const b = _blankWordEx(s, sc.word);
+      if (b && b.text !== s) out.push(b.text);   // 단어가 실제로 들어있어 빈칸이 뚫린 문장만
+    }
+  });
+  if (sc.sampleAnswer) {
+    const b = _blankWordEx(sc.sampleAnswer, sc.word);
+    if (b && b.text !== sc.sampleAnswer) out.push(b.text);
+  }
+  return out;
+}
+function _recapPickTarget(sc, RD) {
+  const cands = _recapCandidates(sc, RD);
+  if (cands.length === 0) return (RD && sc && RD[sc.day] && RD[sc.day].blank) || "";
+  return cands[Math.floor(Math.random() * cands.length)];
+}
+window._recapPickTarget = _recapPickTarget;
+
 function RecapActivity({ today, item, onClose, onComplete }) {
   const [qIdx, setQIdx] = useState(0);
   const [picks, setPicks] = useState([]);
   const [pick, setPick] = useState(null);
 
   // 누적 복습: 오늘 + 최근 2개 day 단어로 빈칸 문제 (정답이 매번 달라 패턴 안 통함)
+  // 문장은 기본+예문 파생 풀에서 랜덤 (같은 예문 반복 방지)
   const questions = useMemo(() => {
     const SCN = (window.__SIM && window.__SIM.SCENARIOS) || [];
     const RD = (window.__SIM && window.__SIM.RECAP_DATA) || {};
@@ -9198,7 +9263,7 @@ function RecapActivity({ today, item, onClose, onComplete }) {
       const distractors = _shuf(allWords.filter(w => w !== word)).slice(0, 3);
       return {
         prompt: `빈 칸에 들어갈 표현은?`,
-        target: RD[d].blank,
+        target: _recapPickTarget(sc, RD) || RD[d].blank,
         options: _shuf([word, ...distractors]),
         correct: word,
         hint: RD[d].explain,
@@ -10277,8 +10342,10 @@ function _buildLevelupQuestions(maxDay, count, minDay) {
     const sc = SCN.find(s => s.day === d);
     const word = sc ? sc.word : "";
     const distractors = _shuf(allWords.filter(w => w !== word)).slice(0, 3);
+    // 시험 문장도 기본+예문 파생 풀에서 랜덤 (매번 같은 예문 안 나오게, 피드백 반영)
+    const target = (window._recapPickTarget && sc) ? (window._recapPickTarget(sc, RD) || RD[d].blank) : RD[d].blank;
     return {
-      target: RD[d].blank,
+      target,
       options: _shuf([word, ...distractors]),
       correct: word,
       hint: RD[d].explain,
@@ -10878,11 +10945,13 @@ function App() {
   const _endsAtRaw = _localUserNow?.membershipEndsAt || _localUserNow?.membership_ends_at || null;
   const _endsAt = _endsAtRaw ? new Date(_endsAtRaw) : null;
   const _msUntilEnd = _endsAt ? (_endsAt.getTime() - Date.now()) : null;
-  // fail-open (2026-07-02): 돈 낸 회원(cohort=member)은 만료일로 자동 차단하지 않는다.
-  // Latpeed 갱신이 DB에 늦게 동기화돼도(수동) 튕기지 않게. "돈 냈는데 입장 안 됨"을 원천 차단.
-  // 회수는 운영자가 명시적으로 unlocked=false 로 막을 때만. 시간 만료는 자동 차단 안 함.
+  // fail-open은 "유료 회원(cohort=member)"에게만 (2026-07-20 정교화):
+  //  · member: Latpeed 갱신 수동 동기화 지연에도 안 튕김. 회수는 운영자가 unlocked=false 로만.
+  //  · 그 외(시즌/파일럿 등 비유료): membership_ends_at 지나면 차단 + 구매 안내.
+  //    (7/2 fail-open이 전원에게 적용돼 시즌 만료자가 계속 학습 가능했던 구멍 수정. 정주혜 케이스)
   const _accessRevoked = _localUserNow?.unlocked === false;   // 운영자 수동 회수 신호
-  const _membershipExpired = !_isInternalUser && (_forceExpired || (_isPaidMember && _accessRevoked));
+  const _membershipExpired = !_isInternalUser && (_forceExpired
+    || (_isPaidMember ? _accessRevoked : (_endsAt && _msUntilEnd <= 0)));
   // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
   const _d7Warning = false;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;

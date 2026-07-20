@@ -46,7 +46,12 @@ Deno.serve(async (req) => {
   const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
   const mentor     = String(b?.mentorName || "사수").slice(0, 20);
   const mode       = String(b?.mode || "").trim();
+  const prevCorrected = String(b?.prevCorrected || "").slice(0, 300).trim();  // 직전에 사수가 추천했던 문장 (재제출 시 왔다갔다 방지)
   if (!sentence || !word) return json({ ok: false, error: "missing" }, 200);
+
+  // 문장 비교용 정규화: 공백·끝 구두점·대소문자 무시
+  const norm = (s: string) => s.toLowerCase().replace(/[\s]+/g, " ").replace(/[.!?,;:'"]+$/g, "").trim();
+  const resubmittedOwn = !!prevCorrected && norm(sentence) === norm(prevCorrected);
 
   // ── 업무일지 회고 피드백 모드 ──
   // 신입이 "어디서 써먹을지" 한국어 회고를 쓰면, 그 상황에 단어가 어울리는지 판단 + 추천 영어 문장.
@@ -94,7 +99,9 @@ Deno.serve(async (req) => {
     `너는 한국 외국계 회사의 따뜻하지만 디테일에 깐깐한 사수 "${mentor}"야.`,
     `신입이 비즈니스 영어 한 문장을 제출하면, 진짜 네이티브 동료처럼 깔끔하고 논리적으로 코칭해.`,
     `목표 톤: 약간 캐주얼한 비즈니스 영어(사내 슬랙, 동료 대화). 너무 딱딱하지도 너무 가볍지도 않게.`,
-    `핵심 원칙: 문장이 문법적으로 맞아도 반드시 더 자연스러운 네이티브 버전을 제시한다. "이대로 좋아요"로만 끝내지 마. 매일 "오 이건 몰랐는데" 하나를 주는 게 목표.`,
+    `핵심 원칙: 실제로 고칠 게 있을 때만 고친다. 신입 문장이 이미 자연스러운 네이티브 문장이면 corrected는 제출 문장을 "글자 하나도 바꾸지 말고 그대로" 넣고, segments는 전부 keep 한 덩어리로, grammar는 "문법은 정확해요"로 시작해. 대신 nuance나 vocab에서 "오 이건 몰랐는데" 할 팁 하나를 줘. 억지로 다른 버전을 만들어내는 것 금지(사소한 취향 차이로 바꾸지 마).`,
+    `일관성 원칙: 한 번 추천한 문장을 신입이 받아들여 다시 제출하면, 그 문장을 다시 다른 버전으로 되돌리지 마라. 추천이 왔다갔다 하면 신뢰를 잃는다.`,
+    prevCorrected ? `★ 직전에 네가 추천했던 문장: "${prevCorrected}". 신입이 이 추천을 그대로(또는 거의 그대로) 반영해 제출했다면 절대 예전 문장이나 다른 변형으로 바꾸지 말고, corrected에 제출 문장을 그대로 두고 칭찬해.` : ``,
     koSentence ? `★ 가장 중요: 이번 미션의 의도(한국어 뜻)는 "${koSentence}" 이다. corrected는 반드시 이 한국어 뜻 "전체"를 자연스러운 영어로 옮긴 문장이어야 한다(오늘 단어 살려서). 신입 문장을 이 의도와 비교해서 채점해.` : ``,
     koSentence ? `의도와 비교 규칙: (a) 신입이 딴 얘기를 썼거나 단어만 끼워넣었으면 grammar에서 "의도한 뜻과 달라요"라고 분명히 짚고 ok=false. (b) 의도의 일부만 담기고 핵심 내용이 빠졌으면(예: "주간으로 진행 상황 공유" 같은 부분이 없으면) nuance에서 "빠진 내용: ~"이라고 알려주고, corrected에는 빠진 내용까지 채워 넣어. (c) 오늘 단어가 들어갔다고 의미가 부족한데 통과시키지 마.` : ``,
     promptKo ? `미션 안내(참고): ${promptKo}` : ``,
@@ -125,7 +132,7 @@ Deno.serve(async (req) => {
           { role: "system", content: system },
           { role: "user", content: `신입이 제출한 문장: "${sentence}"` },
         ],
-        temperature: 0.6,
+        temperature: 0.25,   // 재제출 시 답이 흔들리지 않게 (왔다갔다 방지)
         max_tokens: 700,
         response_format: { type: "json_object" },
       }),
@@ -164,6 +171,13 @@ Deno.serve(async (req) => {
       vsSample:  clean(parsed.vsSample).slice(0, 300),
       praise:    clean(parsed.praise).slice(0, 200),
     };
+    // ★ 결정적 가드: 직전 추천을 그대로 반영해 재제출했는데 모델이 또 딴 버전을 내면,
+    //   코드 레벨에서 강제로 "그대로 인정" 처리 (A→B→A 왔다갔다 원천 차단).
+    if (resubmittedOwn && fb.corrected && norm(fb.corrected) !== norm(sentence)) {
+      fb.corrected = sentence;
+      fb.segments = [{ text: sentence, type: "keep" }];
+      if (!/^문법은 정확/.test(fb.grammar)) fb.grammar = "문법은 정확해요. 지난번 추천을 그대로 소화했네요, 이 문장 그대로 쓰면 돼요.";
+    }
     if (!fb.corrected && !fb.grammar && !fb.nuance) return json({ ok: false, error: "empty" }, 200);
     return json({ ok: true, fb, good: parsed.ok !== false });
   } catch (e: any) {
