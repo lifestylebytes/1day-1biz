@@ -10950,8 +10950,13 @@ function App() {
   //  · 그 외(시즌/파일럿 등 비유료): membership_ends_at 지나면 차단 + 구매 안내.
   //    (7/2 fail-open이 전원에게 적용돼 시즌 만료자가 계속 학습 가능했던 구멍 수정. 정주혜 케이스)
   const _accessRevoked = _localUserNow?.unlocked === false;   // 운영자 수동 회수 신호
+  // member 유예기간: 만료일 +5일까지는 통과 (Latpeed 갱신 동기화 지연 보호),
+  // 그 뒤엔 휴직 화면 (해지자 무기한 이용 방지, 2026-08-02 이수안·박은실 케이스)
+  const _GRACE_MS = 5 * 86400000;
   const _membershipExpired = !_isInternalUser && (_forceExpired
-    || (_isPaidMember ? _accessRevoked : (_endsAt && _msUntilEnd <= 0)));
+    || (_isPaidMember
+        ? (_accessRevoked || (_endsAt && _msUntilEnd <= -_GRACE_MS))
+        : (_endsAt && _msUntilEnd <= 0)));
   // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
   const _d7Warning = false;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;
