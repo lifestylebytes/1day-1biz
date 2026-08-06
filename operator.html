@@ -133,6 +133,148 @@ function genCode() {
 }
 
 // ============================================================
+// ★ 📥 Latpeed CSV 동기화 (2026-08-06 추가)
+// Latpeed가 자동갱신 결제엔 웹훅을 안 쏘므로, 월 1회 CSV 붙여넣기로 동기화.
+// 구독 중 → 다음 결제일로 연장 + 해지마커 해제 / 구독 취소·종료 → 종료일 + 해지마커.
+// 미리보기에서 체크 해제 가능 (재량 연장해준 분은 해제하고 반영).
+// ============================================================
+function CsvSyncPanel({ supaUsers, onDone }) {
+  const [raw, setRaw] = useState("");
+  const [plan, setPlan] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState("");
+
+  const kdate = (s) => {
+    s = (s || "").trim();
+    if (!s || s === "-") return null;
+    const p = s.split(".").map(x => x.trim()).filter(Boolean);
+    if (p.length < 3) return null;
+    return "20" + p[0] + "-" + p[1].padStart(2, "0") + "-" + p[2].padStart(2, "0");
+  };
+
+  const build = () => {
+    setResult("");
+    const lines = raw.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { setResult("CSV 내용이 비어있어요. 헤더 포함 전체를 붙여넣어 주세요."); setPlan(null); return; }
+    // 따옴표 감싼 CSV("김재희","...")와 일반 CSV 둘 다 지원
+    const split = (l) => l.split(",").map(x => x.trim().replace(/^"+|"+$/g, "").trim());
+    const hdr = split(lines[0]);
+    const idx = (name) => hdr.findIndex(h => h.replace(/\s+/g, "").includes(name));
+    const iName = idx("이름"), iEmail = idx("이메일"), iState = idx("상태"),
+          iNext = idx("다음결제일"), iCancel = idx("취소예정일"), iEnd = idx("종료일");
+    if (iEmail < 0 || iState < 0) { setResult("헤더에서 이메일/상태 컬럼을 못 찾았어요. Latpeed CSV를 그대로 붙여넣었는지 확인해주세요."); setPlan(null); return; }
+    const byEmail = {};
+    (supaUsers || []).forEach(u => { if (u.email) byEmail[String(u.email).toLowerCase().trim()] = u; });
+    const out = [];
+    for (let li = 1; li < lines.length; li++) {
+      const c = split(lines[li]);
+      const email = (c[iEmail] || "").toLowerCase().trim();
+      if (!email || email.indexOf("@") < 0) continue;
+      if (email === "youbuddy.co@gmail.com") continue;
+      const name = c[iName] || email;
+      const st = c[iState] || "";
+      const u = byEmail[email];
+      if (!u) {
+        if (st === "구독 중") out.push({ email, name, st, noAccount: true });
+        continue;
+      }
+      if (u.is_operator || u.is_dev_mode) continue;
+      const dbEnd = (u.membership_ends_at || "").slice(0, 10);
+      const hasCancel = !!u.membership_cancel_at;
+      if (st === "구독 중") {
+        const want = kdate(c[iNext]);
+        if (!want) continue;
+        if (dbEnd !== want || u.cohort !== "member" || u.unlocked === false || hasCancel) {
+          out.push({ email, name, st,
+            detail: "만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null },
+            checked: true });
+        }
+      } else if (st === "구독 취소" || st === "구독 종료") {
+        const want = kdate(c[iEnd]) || kdate(c[iCancel]);
+        if (!want) continue;
+        if (dbEnd !== want || !hasCancel) {
+          const patch = { membership_ends_at: want + "T23:59:59+09:00", cohort: "member" };
+          if (!hasCancel) patch.membership_cancel_at = new Date().toISOString();
+          out.push({ email, name, st,
+            detail: "종료일 " + want + (hasCancel ? "" : " · 해지마커 세팅") + (dbEnd && dbEnd !== want ? " (DB " + dbEnd + ")" : ""),
+            patch, checked: true });
+        }
+      }
+    }
+    setPlan(out);
+    if (out.filter(x => !x.noAccount).length === 0) setResult("변경할 게 없어요. DB가 이미 Latpeed와 일치해요 ✓");
+  };
+
+  const toggle = (i) => setPlan(p => p.map((x, j) => j === i ? { ...x, checked: !x.checked } : x));
+
+  const apply = async () => {
+    const targets = (plan || []).filter(x => x.checked && x.patch);
+    if (targets.length === 0) return;
+    if (!confirm(targets.length + "명의 멤버십 상태를 반영할까요?\n(구독 중 → 연장 / 취소·종료 → 종료일 + 해지마커)")) return;
+    setBusy(true);
+    let ok = 0; const fails = [];
+    for (const t of targets) {
+      const r = await window.OD.syncMembership(t.email, t.patch);
+      if (r && r.ok) ok++; else fails.push(t.name + "(" + (r && r.error || "?") + ")");
+    }
+    setBusy(false);
+    setResult("✅ " + ok + "건 반영 완료" + (fails.length ? " · 실패 " + fails.length + "건: " + fails.join(", ") : ""));
+    setPlan(null); setRaw("");
+    if (onDone) onDone();
+  };
+
+  const noAcc = (plan || []).filter(x => x.noAccount);
+  const changes = (plan || []).filter(x => !x.noAccount);
+
+  return (
+    <details style={{ marginBottom: 16 }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 14, padding: '12px 16px', background: '#E4EEF7', color: '#1E4B7A', borderRadius: 8, userSelect: 'none' }}>
+        📥 Latpeed CSV 동기화 (월 1회, 갱신 웹훅 미지원 보완)
+      </summary>
+      <div className="card" style={{ marginTop: 8, padding: 16 }}>
+        <div style={{ fontSize: 12, color: '#8A7964', lineHeight: 1.6, marginBottom: 8 }}>
+          Latpeed 관리자에서 멤버 CSV를 내려받아 <b>전체 내용을 그대로 붙여넣고</b> [대조하기]를 누르세요.<br/>
+          재량으로 기간을 늘려준 분은 미리보기에서 <b>체크를 해제</b>한 뒤 반영하세요.
+        </div>
+        <textarea value={raw} onChange={e => setRaw(e.target.value)} rows={5}
+          placeholder={"이름,이메일,전화번호,...,상태,결제일시,다음 결제일,취소 예정일,종료일\n김OO,ab@cd.com,...,구독 중,26.08.20 21:20,26.09.20,-,-"}
+          style={{ width: '100%', boxSizing: 'border-box', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', border: '1px solid #E8DFCB', borderRadius: 8, padding: 10, background: '#FFFDF7' }} />
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <button className="btn" onClick={build} disabled={busy}>🔍 대조하기</button>
+          {changes.length > 0 && (
+            <button className="btn btn-primary" onClick={apply} disabled={busy}>
+              {busy ? "반영 중..." : "✅ 선택 " + changes.filter(x => x.checked).length + "명 반영"}
+            </button>
+          )}
+        </div>
+        {result && <div style={{ marginTop: 10, fontSize: 12.5, fontWeight: 700, color: '#2D6E3A' }}>{result}</div>}
+        {changes.length > 0 && (
+          <div style={{ marginTop: 12, display: 'grid', gap: 6 }}>
+            {changes.map((x, i) => (
+              <label key={x.email} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 12, background: x.checked ? '#F3F8F0' : '#F7F3EA', border: '1px solid #E8DFCB', borderRadius: 6, padding: '7px 10px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={!!x.checked} onChange={() => toggle(plan.indexOf(x))} style={{ marginTop: 2 }} />
+                <span>
+                  <b>{x.name}</b> <span style={{ color: '#A8997F' }}>{x.email}</span>
+                  <span style={{ marginLeft: 6, fontWeight: 700, color: x.st === '구독 중' ? '#2D6E3A' : '#993C1D' }}>{x.st}</span>
+                  <br/><span style={{ color: '#6B5B45' }}>{x.detail}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+        {noAcc.length > 0 && (
+          <div style={{ marginTop: 12, fontSize: 12, color: '#8A7964', background: '#FFF3D6', borderRadius: 6, padding: '8px 12px', lineHeight: 1.6 }}>
+            💳 <b>결제 중인데 아직 미가입 ({noAcc.length}명)</b>: {noAcc.map(x => x.name).join(', ')}<br/>
+            가입 코드 1DAY1BIZ365 안내가 필요해요. (가입하면 자동으로 잡혀요)
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+// ============================================================
 // ★ 학습 데이터 조회 카드 (2026-05-19 추가, RLS 사고 대응)
 // 이메일·Day 입력하면 RPC로 즉시 답안·노트·일지·history 조회.
 // ============================================================
@@ -1329,6 +1471,7 @@ function App() {
                 </div>
               );
             })()}
+            {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && (
               <details style={{ marginBottom: 16 }}>
                 <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 14, padding: '12px 16px', background: '#FFF3D6', color: '#8C6510', borderRadius: 8, userSelect: 'none' }}>
