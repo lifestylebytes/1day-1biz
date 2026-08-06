@@ -10950,12 +10950,22 @@ function App() {
   //  · 그 외(시즌/파일럿 등 비유료): membership_ends_at 지나면 차단 + 구매 안내.
   //    (7/2 fail-open이 전원에게 적용돼 시즌 만료자가 계속 학습 가능했던 구멍 수정. 정주혜 케이스)
   const _accessRevoked = _localUserNow?.unlocked === false;   // 운영자 수동 회수 신호
-  // member 유예기간: 만료일 +5일까지는 통과 (Latpeed 갱신 동기화 지연 보호),
-  // 그 뒤엔 휴직 화면 (해지자 무기한 이용 방지, 2026-08-02 이수안·박은실 케이스)
-  const _GRACE_MS = 5 * 86400000;
+  // ★ 원칙 (2026-08-03 확정): 해지 안 한 유료회원(member)은 "절대" 날짜로 자동 차단하지 않는다.
+  //   Latpeed 갱신은 웹훅이 안 와서 DB 날짜가 매달 뒤처질 수 있음. 날짜 기반 차단은 오차단 사고를 낳음(서주희 PC 케이스).
+  //   member 차단은 딱 두 경우: (a) 운영자 수동 회수(unlocked=false),
+  //   (b) 퇴직 처리됨(membership_cancel_at 존재, Latpeed 구독종료 확인 후 운영자가 하루 기다렸다 누름) + 만료일 경과.
+  //   비유료(시즌/파일럿)는 만료일 지나면 차단.
+  const _cancelAtRaw = _localUserNow?.membershipCancelAt || _localUserNow?.membership_cancel_at || null;
+  // ★ member 정책 (2026-08-03 확정): 만료일 후 2일은 기다린다(재결제 동기화 유예).
+  //   2일 안에 재결제가 DB에 반영 안 되면 자동 차단(휴직 화면).
+  //   퇴직 처리(membership_cancel_at)된 경우엔 유예 없이 만료일에 차단.
+  //   ⚠ 갱신 웹훅이 없으므로 결제일 후 2일 내 동기화(CSV/웹훅) 필수. 안 하면 유료회원이 막힘.
+  const _GRACE_MS = 2 * 86400000;
   const _membershipExpired = !_isInternalUser && (_forceExpired
     || (_isPaidMember
-        ? (_accessRevoked || (_endsAt && _msUntilEnd <= -_GRACE_MS))
+        ? (_accessRevoked
+           || (_endsAt && _msUntilEnd <= -_GRACE_MS)
+           || (!!_cancelAtRaw && _endsAt && _msUntilEnd <= 0))
         : (_endsAt && _msUntilEnd <= 0)));
   // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
   const _d7Warning = false;
@@ -11479,6 +11489,8 @@ window.SimApp = App;
               local.membershipEndsAt = u.membership_ends_at;
               local.membership_cancel_reason = u.membership_cancel_reason;
               local.membershipCancelReason = u.membership_cancel_reason;
+              local.membership_cancel_at = u.membership_cancel_at || null;
+              local.membershipCancelAt = u.membership_cancel_at || null;
               local.cohort = u.cohort;
               local.isPilotHire = u.is_pilot_hire;
               local.is_pilot_hire = u.is_pilot_hire;
