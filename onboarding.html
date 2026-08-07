@@ -260,7 +260,8 @@ const STAFF_CODES = {
 // 유료 회원 코드: 결제 완료 안내 메시지로만 전달. 입력하면 진짜 멤버(통계 포함)로 입장.
 // 베타 만료 X. 결제 갱신/취소는 LS 웹훅이 이메일 기준으로 멤버십을 계속 동기화.
 const MEMBER_CODES = {
-  "1DAY1BIZ365": { label: "유료 회원" },
+  "1DAY1BIZ365": { label: "유료 회원", plan: "part1" },
+  "1DAY1BIZ365-2": { label: "유료 회원 (Part 2)", plan: "part2" },   // 13,900원 신규 멤버십 (2026-08)
 };
 
 // ============================================================
@@ -485,6 +486,9 @@ function OnboardingApp() {
       profile.isOperator = false;
       profile.cohort = 'member';
       profile.unlocked = true;
+      // 멤버십 티어 구분 (part1 = 9,900 / part2 = 13,900). cohort는 게이트 때문에 'member' 유지, 구분은 preferences.plan
+      const _mplan = MEMBER_CODES[(inviteCode || "").trim().toUpperCase()].plan;
+      if (_mplan) profile.preferences = { ...(profile.preferences || {}), plan: _mplan };
     }
     // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
     if (window.OD && window.OD.enabled) {
