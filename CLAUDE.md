@@ -5,6 +5,12 @@
   (페이지 ID: 3cb910a8-ed7a-45d3-b3d9-f460f083d71c, "관련 메모" 섹션에 `### YYYY-MM-DD 개발·운영 변경 로그` 형식으로 추가)
 - 사소한 수정은 생략, 사용자·운영에 영향 가는 것만. 개인 식별 정보(고객 실명+이메일)는 쓰지 않는다.
 
+## 🚀 배포 (Claude 직접 push 가능)
+- **Claude가 커밋+push를 직접 한다** (원격 URL에 fine-grained 토큰 저장됨, 2026-08 설정. 이 레포 contents:write 한정).
+- 세션 시작 후 첫 git 작업 시 `.git/index.lock` 삭제 권한 승인이 필요할 수 있음 (allow_cowork_file_delete).
+- push 전 필수: em-dash 0 확인 + esbuild JSX 파싱. push 후 배포 1-2분, 확인은 하드 리프레시.
+- Edge Function 배포(`supabase functions deploy`)와 SQL 마이그레이션은 여전히 사용자가 수동.
+
 ## 📋 기획 백로그 (PLANNING.md) - 세션 넘어 기억할 것
 - **`PLANNING.md`가 살아있는 기획 백로그.** 매주 월요일 기획회의의 기준 문서.
 - 사용자가 새 아이디어·기능 요청을 말하거나, 사용자/이탈자 피드백 답장이 들어올 때마다
