@@ -817,6 +817,22 @@ function WelcomeScreenV3({ onNext }) {
   const [done, setDone] = useState({});            // 완료된 일정 {0:true,...}
   const [pick, setPick] = useState(null);          // 퀴즈 선택
   const [journal, setJournal] = useState("");
+  const [jrLoading, setJrLoading] = useState(false);
+  const [jrFb, setJrFb] = useState(null);          // 일지 AI 피드백 (실제 mentor-feedback 함수 호출)
+
+  const askJournalAi = async () => {
+    if (jrLoading) return;
+    setJrLoading(true);
+    try { if (window.gtag) window.gtag("event", "demo_journal_ai"); } catch (e) {}
+    const FALLBACK = { fitMsg: "딱 좋은 상황이에요!", reason: "미래 계획을 말하는 자리라면 down the line이 자연스럽게 어울려요.", recommended: "We can revisit this down the line.", recommendedKo: "이건 나중에 다시 논의하면 돼요." };
+    try {
+      const r = window.OD && window.OD.enabled && window.OD.getMentorAiFeedback
+        ? await window.OD.getMentorAiFeedback({ mode: "journal", sentence: journal.trim(), word: "down the line", meaning: "나중에, 시간이 좀 지나서" })
+        : null;
+      setJrFb(r && r.ok && r.journal && (r.journal.fitMsg || r.journal.recommended) ? r.journal : FALLBACK);
+    } catch (e) { setJrFb(FALLBACK); }
+    setJrLoading(false);
+  };
 
   const track = (n, p) => { try { if (window.gtag) window.gtag("event", n, p || {}); } catch (e) {} };
   const _goDomestic = () => {
@@ -880,14 +896,14 @@ function WelcomeScreenV3({ onNext }) {
 
   const CTAButtons = (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <button className="btn" onClick={() => setShowPay(true)} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
-      <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 지원서 작성하기</button>
+      <button className="btn" onClick={_goDomestic} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
+      <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 코드 받았어요! 지원서 작성하기</button>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>구매 완료 메일의 코드를 지원서에 입력하면 Day 1이 시작돼요.</div>
     </div>
   );
 
-  // 아코디언 한 줄
-  const Row = ({ i, time, title, children }) => {
+  // 아코디언 한 줄 (★ 컴포넌트가 아니라 렌더 함수: 리마운트로 textarea 포커스 날아가는 버그 방지)
+  const renderRow = (i, time, title, body) => {
     const unlocked = i === 0 || done[i - 1] || done[i];
     const isOpen = openIdx === i;
     return (
@@ -899,7 +915,7 @@ function WelcomeScreenV3({ onNext }) {
             {done[i] ? "✓ 완료" : (unlocked ? (isOpen ? "▲" : "👉 눌러보기") : "🔒")}
           </span>
         </div>
-        {isOpen && <div className="od-rise" style={{ padding: "2px 14px 16px", borderTop: "1px dashed var(--line)" }}>{children}</div>}
+        {isOpen && <div className="od-rise" style={{ padding: "2px 14px 16px", borderTop: "1px dashed var(--line)" }}>{body}</div>}
       </div>
     );
   };
@@ -911,21 +927,6 @@ function WelcomeScreenV3({ onNext }) {
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
     `}</style>
-    {showPay && (
-      <div onClick={() => setShowPay(false)} style={{ position: "fixed", inset: 0, background: "rgba(42,31,20,0.6)", zIndex: 9200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 400, width: "100%", padding: "24px 22px", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.5)", textAlign: "left" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--accent, #D85A2A)" }}>MEMBERSHIP</div>
-            <a onClick={() => setShowPay(false)} style={{ cursor: "pointer", color: "var(--ink-mute)", fontSize: 18, lineHeight: 1 }}>✕</a>
-          </div>
-          <h2 style={{ fontSize: 19, fontWeight: 900, margin: "0 0 6px" }}>멤버십 구매</h2>
-          <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "0 0 16px" }}>결제수단만 고르면 돼요. 결제 시 입력한 이메일로 멤버십이 켜져요.</p>
-          <button className="btn" onClick={_goDomestic} style={{ width: "100%", justifyContent: "center" }}>🇰🇷 국내 카드로 결제</button>
-          <button className="btn" onClick={_goIntl} style={{ width: "100%", justifyContent: "center", marginTop: 10, background: "transparent", border: "2px solid var(--accent, #D85A2A)", color: "var(--accent, #D85A2A)" }}>🌍 해외 카드로 결제</button>
-          <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginTop: 13, lineHeight: 1.6 }}>결제 시 쓴 이메일로 가입하면 바로 출근돼요.</div>
-        </div>
-      </div>
-    )}
     <div className="card">
 
       {/* ── 1. 히어로 ── */}
@@ -950,7 +951,7 @@ function WelcomeScreenV3({ onNext }) {
         </div>
         <div style={{ display: "grid", gap: 8 }}>
 
-          <Row i={0} time="09:00" title="출근 + 오늘의 단어 받기">
+          {renderRow(0, "09:00", "출근 + 오늘의 단어 받기", <>
             <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0" }}>사수 <strong>차윤아</strong>님이 자리에 노란 포스트잇을 붙여놨어요.</p>
             <div style={{ background: "#F6E27C", borderRadius: 4, padding: "16px 15px 13px", boxShadow: "2px 4px 10px rgba(58,40,18,0.18)", transform: "rotate(-1.5deg)", maxWidth: 300, margin: "0 auto 12px" }}>
               <div style={{ fontSize: 10.5, fontWeight: 800, color: "#8A6D1A", letterSpacing: "0.1em", marginBottom: 5 }}>오늘의 단어</div>
@@ -964,9 +965,9 @@ function WelcomeScreenV3({ onNext }) {
               <span style={{ color: "var(--ink-mute)" }}>(나중에 사람을 더 뽑을 수 있어요.)</span>
             </div>
             <button className="btn" onClick={() => markDone(0)} style={{ width: "100%", justifyContent: "center" }}>단어 접수! 다음 일정 →</button>
-          </Row>
+          </>)}
 
-          <Row i={1} time="10:00" title="오늘의 시추에이션 (회의)">
+          {renderRow(1, "10:00", "오늘의 시추에이션 (회의)", <>
             <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0 4px" }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#3A4A5C", color: "#fff", fontWeight: 800, fontSize: 13 }}>김</div>
               <div>
@@ -996,9 +997,9 @@ function WelcomeScreenV3({ onNext }) {
               })}
             </div>
             {pick && <button className="btn od-rise" onClick={() => markDone(1)} style={{ width: "100%", justifyContent: "center", marginTop: 10 }}>{picked && picked.kind === "correct" ? "🎉 정답! 다음 일정 →" : "그럴 수 있어요! 다음 일정 →"}</button>}
-          </Row>
+          </>)}
 
-          <Row i={2} time="14:00" title="사수 1:1 피드백 (슬랙 DM)">
+          {renderRow(2, "14:00", "사수 1:1 피드백 (슬랙 DM)", <>
             <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0" }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
               <div style={{ flex: 1 }}>
@@ -1013,15 +1014,32 @@ function WelcomeScreenV3({ onNext }) {
               실제 서비스에선 <strong>내가 쓴 영어 문장</strong>을 AI 사수가 이렇게 1:1로 고쳐주고, 왜 그런지 이유까지 설명해줘요.
             </div>
             <button className="btn" onClick={() => markDone(2)} style={{ width: "100%", justifyContent: "center" }}>확인했어요! 마지막 일정 →</button>
-          </Row>
+          </>)}
 
-          <Row i={3} time="17:00" title="퇴근 전 일지 (어디서 써먹지?)">
-            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 8px" }}>오늘 배운 표현, 내 일상 어디서 써먹을지 한 줄만 적어봐요. (안 적고 넘어가도 돼요!)</p>
+          {renderRow(3, "17:00", "퇴근 전 일지 (어디서 써먹지?)", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 8px" }}>오늘 배운 표현, 어디서 써먹을지 한 줄 적으면 <strong style={{ color: "var(--ink)" }}>AI 사수가 진짜로 피드백</strong>해줘요.</p>
             <textarea value={journal} onChange={e => setJournal(e.target.value)} rows={2}
               placeholder="예: 다음 주 팀 미팅에서 채용 계획 얘기할 때 써봐야지"
               style={{ width: "100%", boxSizing: "border-box", borderRadius: 9, border: "1px solid var(--line)", padding: "10px 12px", fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", background: "var(--paper)", color: "var(--ink)", resize: "none", marginBottom: 10 }} />
-            <button className="btn" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>일지 저장하고 퇴근하기 →</button>
-          </Row>
+            {jrFb && (
+              <div className="od-rise" style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+                <div style={{ flex: 1, fontSize: 13, color: "var(--ink)", lineHeight: 1.65, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "11px 13px" }}>
+                  <strong>{jrFb.fitMsg}</strong> {jrFb.reason}<br/><br/>
+                  이 문장 그대로 써봐요 👇<br/>
+                  <em style={{ color: "var(--accent)" }}>"{jrFb.recommended}"</em><br/>
+                  <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>{jrFb.recommendedKo}</span>
+                </div>
+              </div>
+            )}
+            {!jrFb ? (
+              <button className="btn" onClick={askJournalAi} disabled={jrLoading || !journal.trim()} style={{ width: "100%", justifyContent: "center", opacity: (jrLoading || !journal.trim()) ? 0.6 : 1 }}>
+                {jrLoading ? "사수가 읽는 중..." : "✍️ AI 사수에게 보여주기"}
+              </button>
+            ) : (
+              <button className="btn od-rise" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>일지 저장하고 퇴근하기 →</button>
+            )}
+          </>)}
         </div>
 
         {allDone && (
@@ -1037,7 +1055,7 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 3. 어떻게 진행되나 ── */}
-      <SectionTitle eyebrow="HOW IT WORKS" title="90일, 게임처럼 승진해요" sub="매일 쌓이는 출근 도장이 직급이 됩니다." />
+      <SectionTitle eyebrow="HOW IT WORKS" title="게임처럼 승진해요" sub="출근 도장이 쌓이면 직급이 올라요. 그리고 90일이 끝이 아니에요." />
       <div style={{ display: "flex", alignItems: "stretch", gap: 7, marginBottom: 12 }}>
         {[["🌱", "수습", "Day 1-30", "기본 표현 30개"], ["👔", "사원", "Day 31-60", "회의를 주도하는 표현"], ["🎖️", "대리", "Day 90 승진", "협상·설득의 표현"]].map(s => (
           <div key={s[1]} style={{ flex: 1, textAlign: "center", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 6px" }}>
@@ -1048,8 +1066,12 @@ function WelcomeScreenV3({ onNext }) {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px" }}>
-        Day 30엔 <strong>정직원 전환 시험</strong>, Day 90엔 <strong>대리 승진 시험</strong>이 있어요. 사원증도 직급 따라 바뀌고요. 회사 다니는 게임이라 생각하면, 어제 배운 표현이 다음 날 회의에서 그냥 튀어나와요.
+      <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px", marginBottom: 10 }}>
+        Day 30엔 <strong>정직원 전환 시험</strong>, Day 90엔 <strong>대리 승진 시험</strong>. 통과할 때마다 사원증이 바뀌어요. 회사 다니는 게임이라, 어제 배운 표현이 다음 날 회의에서 그냥 튀어나와요.
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.75, background: "rgba(42,31,20,0.04)", border: "1px dashed var(--line)", borderRadius: 10, padding: "13px 15px" }}>
+        🚪 그리고 대리 위로는 과장, 부장, 임원실이 이어져요.<br/>
+        맨 꼭대기엔 <strong>사장실</strong>이 있는데... <strong>누가 사장인지는 승진한 사람만 볼 수 있어요.</strong>
       </div>
 
       <Divider />
@@ -1058,8 +1080,8 @@ function WelcomeScreenV3({ onNext }) {
       <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" />
       <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
         {[
-          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있어서 좋았고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · 만족도 ★★★★☆"],
-          ["\"간단하고 쉽게 접근할 수 있는 게 제일 좋아요. 하루 5분이라 부담이 없어서 계속하게 돼요.\"", "베타 테스터 · 10일 체험 후기"],
+          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있어서 좋았고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"간단하고 쉽게 접근할 수 있는 게 제일 좋아요. 하루 5분이라 부담이 없어서 계속하게 돼요.\"", "베타 테스터 · 10일 체험 · ★★★★★"],
         ].map(r => (
           <div key={r[1]} style={{ borderLeft: "3px solid var(--accent)", padding: "4px 2px 4px 13px" }}>
             <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, fontStyle: "italic" }}>{r[0]}</div>
