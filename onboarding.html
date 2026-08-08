@@ -958,7 +958,7 @@ function WelcomeScreenV3({ onNext }) {
     );
   };
 
-  const TICKER = "YOUBUDDY KOREA\u2003 NOW HIRING\u2003·\u2003신입 공채 접수 중\u2003·\u2003하루 5분 출근\u2003·\u20031:1 사수 코칭\u2003·\u2003Day 90 대리 승진\u2003·\u2003";
+  const TICKER = "YOUBUDDY KOREA\u2003 NOW HIRING\u2003·\u2003신입 공채 접수 중\u2003·\u2003하루 5분 출근\u2003·\u20031:1 사수 코칭\u2003·\u2003Day 90 대리 승진\u2003·\u2003PHASE 2 · 입사 조건 변동 예정\u2003·\u2003";
 
   return (
     <>
@@ -1269,6 +1269,24 @@ function WelcomeScreenV3({ onNext }) {
           </div>
         ))}
       </div>
+      {/* ── 5.5 Phase 안내: 지금이 가장 싼 시점 ── */}
+      <div style={{ border: "1.5px solid var(--ink)", borderRadius: 12, padding: "16px 17px", marginBottom: 16, background: "var(--paper)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+          <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.16em", color: "var(--paper)", background: "var(--ink)", padding: "3px 8px", borderRadius: 3 }}>PHASE 2</span>
+          <span style={{ fontSize: 11.5, color: "var(--ink-mute)", fontWeight: 700 }}>사옥 확장 공사 중</span>
+        </div>
+        <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.45, marginBottom: 8 }}>
+          이 회사는 계속 커지고 있어요.
+        </div>
+        <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 12 }}>
+          층은 계속 올라가고, 곧 <strong style={{ color: "var(--ink)" }}>내 업무에 맞춘 AI 맞춤 커리큘럼</strong>도 들어와요. 여러분이 남긴 피드백 하나하나가 다음 층을 만들고 있고요.
+        </div>
+        <div style={{ background: "var(--paper-warm)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+          회사가 커질수록 <strong style={{ color: "var(--ink)" }}>입사 조건도 함께 올라가요.</strong> 다만 <strong style={{ color: "var(--accent)" }}>먼저 입사한 분은 입사 당시 조건 그대로</strong> 계속 다닐 수 있어요.<br/>
+          <span style={{ color: "var(--ink-mute)" }}>지금이 가장 낮은 조건으로 입사할 수 있는 시점이에요.</span>
+        </div>
+      </div>
+
       {CTAButtons}
 
       <Divider />
