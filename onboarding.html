@@ -824,12 +824,27 @@ function WelcomeScreenV3({ onNext }) {
     if (jrLoading) return;
     setJrLoading(true);
     try { if (window.gtag) window.gtag("event", "demo_journal_ai"); } catch (e) {}
-    const FALLBACK = { fitMsg: "딱 좋은 상황이에요!", reason: "미래 계획을 말하는 자리라면 down the line이 자연스럽게 어울려요.", recommended: "We can revisit this down the line.", recommendedKo: "이건 나중에 다시 논의하면 돼요." };
+    // 실제 서비스와 동일한 풀 첨삭 (교정문 + 문법 + 어휘 + 뉘앙스 + 칭찬)
+    const FALLBACK = {
+      corrected: "Understood. Let’s go with the current team and add designers down the line.",
+      grammar: "문법은 정확해요. 어순도 자연스럽습니다.",
+      vocab: { from: "", to: "go with", reason: "\"~로 진행하다\"를 가장 캐주얼하게 말하는 네이티브 표현이에요.", similar: ["proceed with", "stick with"] },
+      nuance: "회의 직후 슬랙 답장이라 가볍고 빠른 톤이 딱 맞아요.",
+      praise: "첫날인데 오늘 단어를 문장에 바로 살렸네요. 감 좋아요!",
+    };
     try {
       const r = window.OD && window.OD.enabled && window.OD.getMentorAiFeedback
-        ? await window.OD.getMentorAiFeedback({ mode: "journal", sentence: journal.trim(), word: "down the line", meaning: "나중에, 시간이 좀 지나서" })
+        ? await window.OD.getMentorAiFeedback({
+            sentence: journal.trim(),
+            word: "down the line", meaning: "나중에, 시간이 좀 지나서",
+            scene: "회의 직후, 김 팀장에게 슬랙으로 한 줄 답장하는 상황",
+            sampleAnswer: "Understood. Let’s go with the current team and add designers down the line.",
+            koSentence: "알겠습니다. 지금은 있는 인원으로 진행하고, 나중에 디자이너를 충원하시죠.",
+            promptKo: "김 팀장의 말을 받아서, 오늘 단어를 살려 한 줄로 답장하세요.",
+            mentorName: "차윤아",
+          })
         : null;
-      setJrFb(r && r.ok && r.journal && (r.journal.fitMsg || r.journal.recommended) ? r.journal : FALLBACK);
+      setJrFb(r && r.ok && r.fb && (r.fb.corrected || r.fb.grammar) ? r.fb : FALLBACK);
     } catch (e) { setJrFb(FALLBACK); }
     setJrLoading(false);
   };
@@ -1063,28 +1078,52 @@ function WelcomeScreenV3({ onNext }) {
             <button className="btn" onClick={() => markDone(2)} style={{ width: "100%", justifyContent: "center" }}>확인했어요! 마지막 일정 →</button>
           </>)}
 
-          {renderRow(3, "17:00", "퇴근 전 일지 (어디서 써먹지?)", <>
-            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 8px" }}>오늘 배운 표현, 어디서 써먹을지 한 줄 적으면 <strong style={{ color: "var(--ink)" }}>AI 사수가 진짜로 피드백</strong>해줘요.</p>
+          {renderRow(3, "17:00", "오늘의 영작 미션 (AI 사수 첨삭)", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 6px" }}>퇴근 전 마지막 미션! 김 팀장에게 <strong style={{ color: "var(--ink)" }}>오늘 단어를 살려 한 줄 답장</strong>을 영어로 써보세요.</p>
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", background: "var(--paper)", border: "1px dashed var(--line)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.55, marginBottom: 8 }}>
+              💡 이런 뜻으로: "알겠습니다. 지금은 있는 인원으로 진행하고, 나중에 디자이너를 충원하시죠."
+            </div>
             <textarea value={journal} onChange={e => setJournal(e.target.value)} rows={2}
-              placeholder="예: 다음 주 팀 미팅에서 채용 계획 얘기할 때 써봐야지"
+              placeholder="예: Got it. Let's start now and hire designers down the line."
               style={{ width: "100%", boxSizing: "border-box", borderRadius: 9, border: "1px solid var(--line)", padding: "10px 12px", fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", background: "var(--paper)", color: "var(--ink)", resize: "none", marginBottom: 10 }} />
             {jrFb && (
-              <div className="od-rise" style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
-                <div style={{ flex: 1, fontSize: 13, color: "var(--ink)", lineHeight: 1.65, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "11px 13px" }}>
-                  <strong>{jrFb.fitMsg}</strong> {jrFb.reason}<br/><br/>
-                  이 문장 그대로 써봐요 👇<br/>
-                  <em style={{ color: "var(--accent)" }}>"{jrFb.recommended}"</em><br/>
-                  <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>{jrFb.recommendedKo}</span>
+              <div className="od-rise" style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+                  <div style={{ flex: 1, fontSize: 13, color: "var(--ink)", lineHeight: 1.6, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "10px 13px" }}>
+                    {jrFb.praise || "좋아요, 바로 첨삭 들어갈게요!"}
+                  </div>
                 </div>
+                <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ background: "rgba(74,124,89,0.08)", borderBottom: "1px solid var(--line)", padding: "10px 13px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "#4A7C59", marginBottom: 4 }}>NATIVE VERSION · 사수의 한 문장</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.55 }}>"{jrFb.corrected}"</div>
+                  </div>
+                  {jrFb.grammar && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📐 문법</strong> · {jrFb.grammar}
+                    </div>
+                  )}
+                  {jrFb.vocab && (jrFb.vocab.to || jrFb.vocab.reason) && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📚 어휘</strong> · {jrFb.vocab.from ? <span><em>{jrFb.vocab.from}</em> 대신 <em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span> : <span><em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span>}{jrFb.vocab.reason}
+                    </div>
+                  )}
+                  {jrFb.nuance && (
+                    <div style={{ padding: "9px 13px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>🎯 뉘앙스</strong> · {jrFb.nuance}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 7, textAlign: "center" }}>매일 이렇게 4구획 첨삭을 받아요. 이게 1일1비의 핵심이에요.</div>
               </div>
             )}
             {!jrFb ? (
               <button className="btn" onClick={askJournalAi} disabled={jrLoading || !journal.trim()} style={{ width: "100%", justifyContent: "center", opacity: (jrLoading || !journal.trim()) ? 0.6 : 1 }}>
-                {jrLoading ? "사수가 읽는 중..." : "✍️ AI 사수에게 보여주기"}
+                {jrLoading ? "사수가 첨삭 중..." : "✍️ 사수에게 제출하기"}
               </button>
             ) : (
-              <button className="btn od-rise" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>일지 저장하고 퇴근하기 →</button>
+              <button className="btn od-rise" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>미션 완료, 퇴근하기 →</button>
             )}
           </>)}
         </div>
@@ -1124,11 +1163,19 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 4. 후기 ── */}
-      <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" />
+      <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문과 30일 수료 회고에서 그대로 가져왔어요. 별점은 실제 제출된 만족도예요." />
       <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
         {[
-          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있어서 좋았고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · ★★★★★"],
-          ["\"간단하고 쉽게 접근할 수 있는 게 제일 좋아요. 하루 5분이라 부담이 없어서 계속하게 돼요.\"", "베타 테스터 · 10일 체험 · ★★★★★"],
+          ["\"간단하게 부담 없이 하루에 하나씩 할 수 있어서 좋고, 진짜 비즈니스 영어라 도움 돼요.\"", "Day 40 멤버 · 주간 설문 ★★★★★"],
+          ["\"매일 하기는 어려웠는데 롤플레잉을 하니까 단어가 더 잘 외워졌어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있었고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · 수료 시험 100점"],
+          ["\"문장 피드백 해주는 방식이 중간에 더 상세해져서 좋았어요.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"이렇게 사용하는구나 싶은 것들이 많은 것 같아요.\"", "Day 33 멤버 · 주간 설문 ★★★★★"],
+          ["\"유저 피드백이 빨리 반영되고 개선되는 점이 좋았습니다.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"쉽고 빨라요. 유비챌보다 간단하고 쉽게 접근할 수 있는 것 같아요.\"", "베타 테스터 · 10일 체험"],
+          ["\"오늘의 한줄에 AI 피드백 생긴 거 넘 좋아요~ 감사합니다 :)\"", "Day 52 멤버"],
+          ["\"해놓으신 단어들이나 만들어놓으신 건 정말 너무 좋았어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"점심 대화가 랜덤 말고 매일 있으면 좋겠어요.\"", "30일 완주 멤버 · ★★★★★ (더 달라는 요청이 최고의 후기죠)"],
         ].map(r => (
           <div key={r[1]} style={{ borderLeft: "3px solid var(--accent)", padding: "4px 2px 4px 13px" }}>
             <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, fontStyle: "italic" }}>{r[0]}</div>
