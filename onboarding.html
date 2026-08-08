@@ -1129,10 +1129,36 @@ function WelcomeScreenV3({ onNext }) {
         </div>
 
         {allDone && (
-          <div className="od-rise" style={{ textAlign: "center", padding: "18px 0 8px" }}>
-            <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(-8deg)" }}>DAY 1 완료</div>
-            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "12px 0 0" }}>
-              방금 그게 1일1비의 하루예요. <strong style={{ color: "var(--ink)" }}>딱 5분.</strong><br/>내일은 Day 2 단어가 도착해요.
+          <div className="od-rise" style={{ padding: "18px 0 8px" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(-8deg)" }}>DAY 1 완료</div>
+              <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "12px 0 4px" }}>
+                방금 그게 1일1비의 하루예요. <strong style={{ color: "var(--ink)" }}>딱 5분.</strong>
+              </p>
+              <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--accent)", margin: "0 0 14px" }}>
+                그리고... 이게 다가 아니에요. 오늘 건 맛보기예요 👀
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              {[
+                ["🍱", "English Lunch", "동료와 영어 점심 수다 (콩글리시 함정 주의)"],
+                ["🎲", "매일 바뀌는 활동", "미니미션 퀴즈, 복습, 메일 빈칸까지 순환"],
+                ["🎓", "Day 30 승진 시험", "통과하면 정직원 발령 + 네이비 사원증"],
+                ["📒", "나만의 표현 노트", "30일 완주 보상. 내가 모은 표현 사전이 생겨요"],
+                ["🌟", "Day 60 특별 면담", "런던 본사 Director와 1:1, 뭘 듣게 될까요"],
+                ["🎖️", "Day 90 대리 승진", "승진 시험 통과하면 레드 사원증"],
+                ["🔔", "저녁 출근 리마인드", "까먹지 않게 푸시가 살짝 찔러줘요"],
+                ["🚪", "그리고 그 위는...", "승진한 사람만 알 수 있어요"],
+              ].map(f => (
+                <div key={f[1]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 11px" }}>
+                  <div style={{ fontSize: 16 }}>{f[0]}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginTop: 3 }}>{f[1]}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2, lineHeight: 1.45 }}>{f[2]}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 0", lineHeight: 1.6 }}>
+              내일 아침, Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>내일부터 진짜 시작.</strong>
             </p>
           </div>
         )}
