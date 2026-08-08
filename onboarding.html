@@ -1271,6 +1271,28 @@ function WelcomeScreenV3({ onNext }) {
       </div>
       {CTAButtons}
 
+      <Divider />
+
+      {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
+      <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="목적과 구조가 달라서 내용이 겹치지 않아요." />
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <div style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--ink-mute)", marginBottom: 6 }}>PROGRAM</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>20일 집중 챌린지</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>정해진 기간 안에 비즈니스 어휘 60개를 <strong style={{ color: "var(--ink)" }}>루틴으로 완성</strong>하도록 환경을 세팅해드려요.</div>
+        </div>
+        <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>매달 이어지는 멤버십</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>혼자서도 매일 꾸준히, 실제 업무 상황으로 <strong style={{ color: "var(--ink)" }}>표현을 받아보는</strong> 출근 시뮬레이션이에요.</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px" }}>
+        👉 <strong style={{ color: "var(--ink)" }}>유비챌로 루틴을 세팅하고, 1일1비로 꾸준히 이어가는 흐름</strong>이에요. 목적이 달라서 함께 하셔도 좋고, 지금 유비챌 중이시라면 1일1비를 가볍게 먼저 경험해보셔도 좋아요.
+      </div>
+
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
         <a onClick={() => setShowLogin(true)} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}>이미 입사하셨어요? <strong>다시 출근하기 →</strong></a>
       </div>
