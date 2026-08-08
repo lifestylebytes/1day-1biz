@@ -958,13 +958,38 @@ function WelcomeScreenV3({ onNext }) {
     );
   };
 
+  const TICKER = "📢 YOUBUDDY KOREA 지금 신입 채용 중 \u2003\u2726\u2003 🕘 출근은 하루 단 5분 \u2003\u2726\u2003 ✍️ 4대보험 대신 AI 사수 1:1 첨삭 \u2003\u2726\u2003 🎖️ 90일 뒤엔 대리 승진 \u2003\u2726\u2003 🍱 점심시간 영어 수다 제공 \u2003\u2726\u2003 🚪 사장이 누군지는 비밀 \u2003\u2726\u2003 ";
+
   return (
     <>
     <style>{`
       @keyframes odStampIn { 0% { transform: scale(2.2) rotate(-18deg); opacity: 0; } 60% { transform: scale(0.94) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
+      @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 22s linear infinite; will-change: transform; }
     `}</style>
+
+    {/* ── 상단 고정: 흐르는 사내 전광판 + 바로 입사 바 ── */}
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 8000 }}>
+      <div style={{ background: "var(--ink, #2A1F14)", color: "var(--paper, #F5EEDD)", overflow: "hidden", fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", padding: "7px 0" }}>
+        <div className="od-ticker-track">
+          <span>{TICKER}</span>
+          <span aria-hidden="true">{TICKER}</span>
+        </div>
+      </div>
+      <div style={{ background: "var(--paper, #F5EEDD)", borderBottom: "1.5px solid var(--line, #E2D8C4)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 14px", boxShadow: "0 6px 18px -12px rgba(58,40,18,0.35)" }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          🏢 1일1비 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 입사 접수 중</span>
+        </div>
+        <button onClick={() => { track("cta_purchase_click", { channel: "sticky" }); _goDomestic(); }}
+          style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+          🎟 오늘 입사하기 →
+        </button>
+      </div>
+    </div>
+    <div style={{ height: 86 }} />
+
     <div className="card">
 
       {/* ── 1. 히어로 ── */}
