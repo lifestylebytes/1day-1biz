@@ -264,6 +264,12 @@ const MEMBER_CODES = {
   "1DAY1BIZ365-2": { label: "유료 회원 (Part 2)", plan: "part2" },   // 13,900원 신규 멤버십 (2026-08)
 };
 
+// 체험 코드: 가입 시점부터 N일 무료, 만료되면 자동으로 휴직 화면(복직=결제 안내).
+// 유비챌 7기 후기 이벤트 (2026-08). 코드 추가는 여기 한 줄이면 됨.
+const TRIAL_CODES = {
+  "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7" },
+};
+
 // ============================================================
 // 유틸, 사번 / 입사일 / 추정값 생성
 // ============================================================
@@ -342,8 +348,9 @@ function OnboardingApp() {
         // 1) 코드 검증 (내부 테스터/유료 회원 코드는 pilot_codes 서버 검증 생략)
         const _isStaffCode = !!STAFF_CODES[code];
         const _isMemberCode = !!MEMBER_CODES[code];
+        const _isTrialCode = !!TRIAL_CODES[code];
         let _cohort = null;
-        if (!_isStaffCode && !_isMemberCode) {
+        if (!_isStaffCode && !_isMemberCode && !_isTrialCode) {
           const result = await window.OD.checkInviteCode(code);
           if (!result || !result.valid) {
             // 만료/소진/잘못된 코드 구분해서 안내
@@ -360,6 +367,8 @@ function OnboardingApp() {
           _cohort = result.cohort || null;
         } else if (_isStaffCode) {
           _cohort = STAFF_CODES[code].cohort || 'staff';
+        } else if (_isTrialCode) {
+          _cohort = TRIAL_CODES[code].cohort || 'trial';
         } else {
           _cohort = 'member';
         }
@@ -489,6 +498,20 @@ function OnboardingApp() {
       // 멤버십 티어 구분 (part1 = 9,900 / part2 = 13,900). cohort는 게이트 때문에 'member' 유지, 구분은 preferences.plan
       const _mplan = MEMBER_CODES[(inviteCode || "").trim().toUpperCase()].plan;
       if (_mplan) profile.preferences = { ...(profile.preferences || {}), plan: _mplan };
+    }
+    // 체험 코드: N일 뒤 만료일을 박아서 자동 종료 (비유료 게이트가 만료일 기준으로 차단 → 휴직 화면 → 결제 유도)
+    const _trialDef = TRIAL_CODES[(inviteCode || "").trim().toUpperCase()];
+    if (_trialDef) {
+      profile.isPilotHire = false;
+      profile.isTester = false;
+      profile.isDevMode = false;
+      profile.isOperator = false;
+      profile.cohort = _trialDef.cohort || 'trial';
+      profile.unlocked = true;
+      const _tEnd = new Date(Date.now() + (_trialDef.days || 7) * 86400000);
+      _tEnd.setHours(23, 59, 59, 0);
+      profile.membershipEndsAt = _tEnd.toISOString();
+      profile.membership_ends_at = _tEnd.toISOString();
     }
     // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
     if (window.OD && window.OD.enabled) {
