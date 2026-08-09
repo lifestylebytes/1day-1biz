@@ -51,11 +51,21 @@
     const params = new URLSearchParams(location.search);
     const mode = params.get('mode');
 
+    // UTM 등 유입 파라미터를 다음 페이지로 넘겨줌 (mode는 라우팅용이라 제외).
+    function _odKeepQuery() {
+      try {
+        const q = new URLSearchParams(location.search);
+        q.delete('mode');
+        const s = q.toString();
+        return s ? ('?' + s) : '';
+      } catch (e) { return ''; }
+    }
+
     if (mode === 'dev') { location.replace('dev.html'); return; }
     if (mode === 'operator') { location.replace('operator.html'); return; }
     if (mode === 'reset') {
       localStorage.removeItem('__OD_USER');
-      location.replace('onboarding.html');
+      location.replace('onboarding.html' + _odKeepQuery());
       return;
     }
 
@@ -151,7 +161,7 @@
         console.warn('[router] 세션 복원 실패:', e && e.message);
       }
       // 3) 세션도 없음 → 온보딩
-      location.replace('onboarding.html');
+      location.replace('onboarding.html' + _odKeepQuery());
     })();
   })();
 </script>
