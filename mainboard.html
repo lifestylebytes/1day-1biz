@@ -10236,43 +10236,55 @@ function Season3Checkpoint({ onClose }) {
   );
 }
 
-// ── 주간 펄스 설문 (별점 + 한줄평 + 기대 vs 실제). 운영자 피드함으로 수집. ──
+// -- 의견 설문 (별점 + 한마디 정의 + 이탈 이유 + 계속 쓸 조건). 운영자 피드함으로 수집. --
 // surveyKey 단위로 1회만. 새 설문 돌릴 땐 키만 바꾸면 됨.
 function PulseSurveyModal({ surveyKey, onClose }) {
   const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
   const name = local.name || "사원";
   const [rating, setRating] = useState(0);
   const [oneLiner, setOneLiner] = useState("");
-  const [expected, setExpected] = useState("");
-  const [reality, setReality] = useState("");
+  const [quit, setQuit] = useState("");
+  const [keep, setKeep] = useState("");
   const [sent, setSent] = useState(false);
+
+  const QUIT_OPTIONS = [
+    "시간이 없어서",
+    "생각보다 안 느는 것 같아서",
+    "혼자 하니 동기부여가 안 돼서",
+    "내 업무 상황이랑 안 맞아서",
+    "가격이 부담돼서",
+    "그만둘 생각 없어요",
+  ];
 
   const markDone = () => { try { localStorage.setItem(surveyKey, "1"); } catch (e) {} };
   const close = () => { markDone(); onClose(); };
+  const hasAny = () => !!(rating || oneLiner.trim() || quit || keep.trim());
 
   const submit = () => {
     if (sent) { close(); return; }
     setSent(true);
     markDone();
     const email = local.email;
-    if (email && window.OD?.submitFeedback && (rating || oneLiner.trim() || expected.trim() || reality.trim())) {
+    if (email && window.OD?.submitFeedback && hasAny()) {
       const stars = rating ? "★".repeat(rating) + "☆".repeat(5 - rating) + ` (${rating}/5)` : "(미선택)";
       const msg =
-        `[주간 설문] 만족도 ${stars}\n` +
-        `한줄평: ${oneLiner.trim() || "(없음)"}\n` +
-        `기대했던 점: ${expected.trim() || "(없음)"}\n` +
-        `실제 / 아쉬운 점: ${reality.trim() || "(없음)"}`;
+        `[의견 설문] 만족도 ${stars}\n` +
+        `한마디로 정의: ${oneLiner.trim() || "(없음)"}\n` +
+        `그만둔다면 이유: ${quit || "(미선택)"}\n` +
+        `있으면 계속 쓸 것: ${keep.trim() || "(없음)"}`;
       window.OD.submitFeedback({
         email, name, day: local.dayInCompany || null,
         category: "survey",
         message: msg,
-        context: { type: "pulse_survey", key: surveyKey, rating },
+        context: { type: "pulse_survey", key: surveyKey, rating, quit },
       }).catch(() => {});
     }
     setTimeout(close, 1200);
   };
 
   const RATE_LABEL = ["", "아쉬워요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"];
+  const LABEL_ST = { fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 6 };
+  const INPUT_ST = { width: "100%", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", boxSizing: "border-box" };
 
   return (
     <div style={{
@@ -10294,16 +10306,17 @@ function PulseSurveyModal({ surveyKey, onClose }) {
         ) : (
           <>
             <div style={{ fontSize: 11, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>
-              유버디 · 베타 설문
+              사원 의견함
             </div>
             <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginBottom: 8, letterSpacing: "-0.01em" }}>
-              {name}님, 잠깐 1분만 빌릴게요 🙏
+              {name}님, 딱 1분만 빌릴게요 🙏
             </h2>
             <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
-              지금 50여 분이 매일 함께 출근하고 계세요. 더 좋게 만들고 싶어서, 솔직한 의견을 듣고 싶어요.
+              좋은 말 안 해주셔도 돼요. 솔직한 게 제일 도움이 됩니다.<br/>
+              한 문제만 답하고 닫으셔도 괜찮아요.
             </p>
 
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>1일1비, 요즘 어떠세요?</div>
+            <div style={{ ...LABEL_ST, marginBottom: 8 }}>1일1비, 요즘 어떠세요?</div>
             <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 4 }}>
               {[1, 2, 3, 4, 5].map(n => (
                 <button key={n} onClick={() => setRating(n)} title={RATE_LABEL[n]}
@@ -10313,20 +10326,31 @@ function PulseSurveyModal({ surveyKey, onClose }) {
             </div>
             {rating > 0 && <div style={{ textAlign: "center", fontSize: 12, color: "var(--orange)", fontWeight: 700, marginBottom: 14 }}>{RATE_LABEL[rating]}</div>}
 
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", margin: "10px 0 6px" }}>한줄평</div>
-            <input value={oneLiner} onChange={e => setOneLiner(e.target.value)} placeholder="예: 출근하는 느낌이 진짜라 재밌어요"
-              style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", boxSizing: "border-box", marginBottom: 14 }} />
+            <div style={{ ...LABEL_ST, marginTop: 14 }}>친구한테 1일1비를 한마디로 설명한다면?</div>
+            <input value={oneLiner} onChange={e => setOneLiner(e.target.value)} placeholder="예: 영어로 회사 다니는 시늉하는 앱"
+              style={{ ...INPUT_ST, marginBottom: 16 }} />
 
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>시작 전 기대했던 점 <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span></div>
-            <textarea value={expected} onChange={e => setExpected(e.target.value)} placeholder="가입할 때 뭘 기대하셨나요?"
-              style={{ width: "100%", minHeight: 56, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box", marginBottom: 14 }} />
+            <div style={LABEL_ST}>만약 내일 그만둔다면, 이유는 뭘까요?</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              {QUIT_OPTIONS.map(opt => (
+                <button key={opt} onClick={() => setQuit(quit === opt ? "" : opt)}
+                  style={{
+                    padding: "7px 12px", borderRadius: 18, fontSize: 12.5, fontFamily: "inherit", cursor: "pointer",
+                    fontWeight: quit === opt ? 800 : 600,
+                    border: quit === opt ? "1.5px solid var(--orange)" : "1px solid var(--line)",
+                    background: quit === opt ? "rgba(216,90,42,0.10)" : "var(--paper)",
+                    color: quit === opt ? "var(--orange)" : "var(--ink-soft)",
+                    transition: "all 0.12s",
+                  }}>{opt}</button>
+              ))}
+            </div>
 
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>실제로 써보니, 아쉽거나 바라는 점 <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span></div>
-            <textarea value={reality} onChange={e => setReality(e.target.value)} placeholder="이런 게 있으면 더 좋겠다 싶은 것"
-              style={{ width: "100%", minHeight: 56, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", color: "var(--ink)", background: "var(--paper)", resize: "vertical", boxSizing: "border-box", marginBottom: 18 }} />
+            <div style={LABEL_ST}>이것만 있으면 계속 쓰겠다, 싶은 게 있나요? <span style={{ color: "var(--ink-mute)", fontWeight: 500 }}>(선택)</span></div>
+            <textarea value={keep} onChange={e => setKeep(e.target.value)} placeholder="아무거나 편하게 적어주세요"
+              style={{ ...INPUT_ST, minHeight: 56, lineHeight: 1.5, resize: "vertical", marginBottom: 18 }} />
 
             <button className="btn btn-primary" style={{ width: "100%", marginBottom: 8 }} onClick={submit}>
-              {(rating || oneLiner.trim() || expected.trim() || reality.trim()) ? "의견 보내기 →" : "그냥 닫기"}
+              {hasAny() ? "의견 보내기 →" : "그냥 닫기"}
             </button>
             <button onClick={close} style={{ display: "block", width: "100%", background: "transparent", border: "none", color: "var(--ink-mute)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               나중에 할게요
@@ -11041,15 +11065,21 @@ function App() {
   };
   const _showDay60 = !!_localUserNow && _realDay >= 60 && _realDay < 90 && !_day60Seen && !_showCeremony && !_showD1Popup && !_showS3Checkpoint;
 
-  // ── 주간 펄스 설문 (1회). 공지를 읽고 닫으면 그 직후에 노출. ──
-  const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_06W2";  // 새 설문 돌릴 땐 이 키만 변경
+  // ── 의견 설문 (사용자당 1회). 접속 3초 뒤 자동 노출. ──
+  const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_08";  // 새 설문 돌릴 땐 이 키만 변경
   const [_showSurvey, _setShowSurvey] = useState(false);
   const _surveyDone = (() => { try { return !!localStorage.getItem(PULSE_SURVEY_KEY); } catch (e) { return true; } })();
-  // 공지(메모) 모달을 닫는 순간 설문 트리거. 설문 미완 + 다른 팝업 없을 때만.
+  // 접속 후 3초 뒤 자동 노출. 승급 의례 등 다른 팝업이 떠 있으면 렌더 가드에서 걸러짐.
+  React.useEffect(() => {
+    if (_surveyDone || !_localUserNow) return;
+    const _t = setTimeout(() => _setShowSurvey(true), 3000);
+    return () => clearTimeout(_t);
+  }, [_surveyDone, !!_localUserNow]);
+  // 공지(메모)를 먼저 닫는 경우엔 그 직후에 바로 노출.
   const _maybeSurveyAfterMemo = () => {
     if (_surveyDone || !_localUserNow) return;
     if (_showCeremony || _showD1Popup) return;
-    setTimeout(() => _setShowSurvey(true), 350);  // 닫힘 애니메이션 후 부드럽게
+    setTimeout(() => _setShowSurvey(true), 350);
   };
 
   // ── 수습 마일스톤 팝업: 실제 완주 일수 기준 (달력 day 무관, 밀린 사용자도 따라잡으면 받음) ──
@@ -11302,7 +11332,7 @@ function App() {
       {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
       )}
-      {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && (
+      {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
 

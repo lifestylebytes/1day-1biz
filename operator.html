@@ -423,11 +423,55 @@ function LearningQueryCard() {
 
 // 피드백 카테고리 라벨/색깔 (FeedbackInbox + FeedbackReplyModal 공유)
 const CAT_LABEL = {
-  bug: '🐛 버그', content: '📚 콘텐츠', suggestion: '💡 제안', general: '💬 일반', graduation: '🎓 수습 회고', survey: '📋 주간 설문',
+  bug: '🐛 버그', content: '📚 콘텐츠', suggestion: '💡 제안', general: '💬 일반', graduation: '🎓 수습 회고', survey: '📋 의견 설문',
 };
 const CAT_COLOR = {
   bug: '#FAEBE6', content: '#FFE9A6', suggestion: '#DDEFD9', general: '#EFE7D6', graduation: '#E7EAFC', survey: '#FCE7F3',
 };
+
+// 📋 의견 설문 집계 (category=survey 응답을 한눈에)
+function SurveySummary({ items }) {
+  const rows = (items || []).filter(it => it.category === 'survey');
+  if (!rows.length) return null;
+  const ratings = [];
+  const quitCount = {};
+  rows.forEach(it => {
+    const m = /\((\d)\/5\)/.exec(it.message || '');
+    if (m) ratings.push(Number(m[1]));
+    const q = /그만둔다면 이유:\s*(.+)/.exec(it.message || '');
+    const val = q ? q[1].trim() : '';
+    if (val && val !== '(미선택)') quitCount[val] = (quitCount[val] || 0) + 1;
+  });
+  const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
+  const quitSorted = Object.entries(quitCount).sort((a, b) => b[1] - a[1]);
+  const maxQ = quitSorted.length ? quitSorted[0][1] : 1;
+  return (
+    <div className="card" style={{ padding: '16px 18px', marginBottom: 12, background: '#FFF7FB', border: '1px solid #F3D3E4' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap', marginBottom: quitSorted.length ? 14 : 0 }}>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', color: '#B03A78' }}>의견 설문 집계</span>
+        <span style={{ fontSize: 13, fontWeight: 700 }}>응답 {rows.length}명</span>
+        {ratings.length > 0 && (
+          <span style={{ fontSize: 13, fontWeight: 700 }}>
+            평균 만족도 <span style={{ fontSize: 17, color: '#B03A78' }}>{avg.toFixed(1)}</span>
+            <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 500 }}> / 5 ({ratings.length}명 응답)</span>
+          </span>
+        )}
+      </div>
+      {quitSorted.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 7 }}>그만둔다면 이유</div>
+          {quitSorted.map(([label, n]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+              <span style={{ fontSize: 12, width: 165, flex: 'none' }}>{label}</span>
+              <span style={{ height: 8, borderRadius: 4, background: label === '그만둘 생각 없어요' ? '#5BAE7C' : '#E285B4', width: Math.max(6, Math.round((n / maxQ) * 190)) }} />
+              <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 700 }}>{n}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // 💬 피드백 모아보기 카드 (사용자가 mainboard 우상단 버튼으로 보낸 피드백 표시)
 function FeedbackInbox() {
@@ -506,6 +550,7 @@ function FeedbackInbox() {
           처리된 것도 보기
         </label>
       </div>
+      <SurveySummary items={items} />
       <div className="card" style={{ padding: 0 }}>
         {visible.length === 0 ? (
           <div className="empty" style={{ padding: 24 }}>{loading ? '로딩 중...' : '아직 들어온 피드백이 없어요.'}</div>
