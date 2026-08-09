@@ -430,24 +430,56 @@ const CAT_COLOR = {
 };
 
 // 📋 의견 설문 집계 (category=survey 응답을 한눈에)
+// 설문 메시지 1건 파싱: 별점 / 한마디 정의 / 그만둘 이유 / 계속 쓸 조건
+function parseSurveyRow(it) {
+  const msg = it.message || '';
+  const grab = (label) => {
+    const re = new RegExp(label + ':\\s*([\\s\\S]*?)(?=\\n[^\\n:]{2,20}:|$)');
+    const m = re.exec(msg);
+    const v = m ? m[1].trim() : '';
+    return (!v || v === '(없음)' || v === '(미선택)') ? '' : v;
+  };
+  const r = /\((\d)\/5\)/.exec(msg);
+  return {
+    id: it.id,
+    who: it.name || '익명',
+    email: it.email || '',
+    day: it.day || null,
+    at: it.created_at,
+    rating: r ? Number(r[1]) : null,
+    oneLiner: grab('한마디로 정의'),
+    quit: grab('그만둔다면 이유'),
+    keep: grab('있으면 계속 쓸 것'),
+  };
+}
+
 function SurveySummary({ items }) {
-  const rows = (items || []).filter(it => it.category === 'survey');
+  const [open, setOpen] = React.useState(true);
+  const rows = (items || []).filter(it => it.category === 'survey').map(parseSurveyRow);
   if (!rows.length) return null;
-  const ratings = [];
-  const quitCount = {};
-  rows.forEach(it => {
-    const m = /\((\d)\/5\)/.exec(it.message || '');
-    if (m) ratings.push(Number(m[1]));
-    const q = /그만둔다면 이유:\s*(.+)/.exec(it.message || '');
-    const val = q ? q[1].trim() : '';
-    if (val && val !== '(미선택)') quitCount[val] = (quitCount[val] || 0) + 1;
-  });
+
+  const ratings = rows.map(r => r.rating).filter(n => n);
   const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : 0;
+  const dist = [5, 4, 3, 2, 1].map(n => [n, ratings.filter(x => x === n).length]);
+  const maxD = Math.max(1, ...dist.map(d => d[1]));
+
+  const quitCount = {};
+  rows.forEach(r => { if (r.quit) quitCount[r.quit] = (quitCount[r.quit] || 0) + 1; });
   const quitSorted = Object.entries(quitCount).sort((a, b) => b[1] - a[1]);
   const maxQ = quitSorted.length ? quitSorted[0][1] : 1;
+
+  const oneLiners = rows.filter(r => r.oneLiner);
+  const keeps = rows.filter(r => r.keep);
+
+  const H = { fontSize: 11, color: '#8A7964', fontWeight: 800, marginBottom: 8, letterSpacing: '0.04em' };
+  const BOX = { background: '#FFFFFF', border: '1px solid #F0DCE8', borderRadius: 8, padding: '10px 12px', marginBottom: 7 };
+  const WHO = { fontSize: 10.5, color: '#B03A78', fontWeight: 800, marginBottom: 3 };
+  const TXT = { fontSize: 13, color: '#2A1F14', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'keep-all' };
+  const fmtWho = (r) => `${r.who}${r.day ? ` · Day ${r.day}` : ''}${r.rating ? ` · ★${r.rating}` : ''}`;
+
   return (
     <div className="card" style={{ padding: '16px 18px', marginBottom: 12, background: '#FFF7FB', border: '1px solid #F3D3E4' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap', marginBottom: quitSorted.length ? 14 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', color: '#B03A78' }}>의견 설문 집계</span>
         <span style={{ fontSize: 13, fontWeight: 700 }}>응답 {rows.length}명</span>
         {ratings.length > 0 && (
@@ -456,17 +488,63 @@ function SurveySummary({ items }) {
             <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 500 }}> / 5 ({ratings.length}명 응답)</span>
           </span>
         )}
+        <button
+          onClick={() => setOpen(!open)}
+          style={{ marginLeft: 'auto', fontSize: 11, padding: '3px 10px', background: 'transparent', border: '1px solid #E2BFD4', color: '#B03A78', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+        >{open ? '접기 ▲' : `내용 보기 ▼`}</button>
       </div>
-      {quitSorted.length > 0 && (
-        <div>
-          <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 7 }}>그만둔다면 이유</div>
-          {quitSorted.map(([label, n]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-              <span style={{ fontSize: 12, width: 165, flex: 'none' }}>{label}</span>
-              <span style={{ height: 8, borderRadius: 4, background: label === '그만둘 생각 없어요' ? '#5BAE7C' : '#E285B4', width: Math.max(6, Math.round((n / maxQ) * 190)) }} />
-              <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 700 }}>{n}</span>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          {ratings.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={H}>만족도 분포</div>
+              {dist.map(([star, n]) => (
+                <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, width: 34, flex: 'none', fontWeight: 700 }}>★{star}</span>
+                  <span style={{ height: 8, borderRadius: 4, background: n ? '#E285B4' : '#F2E4EC', width: Math.max(4, Math.round((n / maxD) * 190)) }} />
+                  <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 700 }}>{n}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {quitSorted.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={H}>그만둔다면 이유</div>
+              {quitSorted.map(([label, n]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <span style={{ fontSize: 12, width: 165, flex: 'none' }}>{label}</span>
+                  <span style={{ height: 8, borderRadius: 4, background: label === '그만둘 생각 없어요' ? '#5BAE7C' : '#E285B4', width: Math.max(6, Math.round((n / maxQ) * 190)) }} />
+                  <span style={{ fontSize: 11, color: '#8A7964', fontWeight: 700 }}>{n}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ marginBottom: 16 }}>
+            <div style={H}>한마디로 정의하면 ({oneLiners.length}명)</div>
+            {oneLiners.length === 0
+              ? <div style={{ fontSize: 12, color: '#A89880' }}>아직 답변이 없어요.</div>
+              : oneLiners.map(r => (
+                  <div key={'o' + r.id} style={BOX}>
+                    <div style={WHO}>{fmtWho(r)}</div>
+                    <div style={TXT}>{r.oneLiner}</div>
+                  </div>
+                ))}
+          </div>
+
+          <div>
+            <div style={H}>이것만 있으면 계속 쓸 것 ({keeps.length}명)</div>
+            {keeps.length === 0
+              ? <div style={{ fontSize: 12, color: '#A89880' }}>아직 답변이 없어요.</div>
+              : keeps.map(r => (
+                  <div key={'k' + r.id} style={BOX}>
+                    <div style={WHO}>{fmtWho(r)}</div>
+                    <div style={TXT}>{r.keep}</div>
+                  </div>
+                ))}
+          </div>
         </div>
       )}
     </div>
