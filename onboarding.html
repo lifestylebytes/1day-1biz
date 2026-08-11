@@ -873,15 +873,29 @@ function WelcomeScreenV3({ onNext }) {
   };
 
   const track = (n, p) => { try { if (window.gtag) window.gtag("event", n, p || {}); } catch (e) {} };
-  const _goDomestic = () => {
+  // 클릭 시점의 스크롤 깊이(%)와 데모 진행도를 같이 실어 보냄. "어디쯤에서 눌렀나" 측정용.
+  const _scrollPct = () => {
+    try {
+      const el = document.documentElement;
+      const top = el.scrollTop || document.body.scrollTop || 0;
+      const max = (el.scrollHeight - el.clientHeight) || 1;
+      return Math.max(0, Math.min(100, Math.round((top / max) * 100)));
+    } catch (e) { return -1; }
+  };
+  const _payParams = (channel) => ({
+    channel: channel,
+    scroll_pct: _scrollPct(),
+    demo_done: [0, 1, 2, 3].filter(i => done[i]).length,
+  });
+  const _goDomestic = (channel) => {
     const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
-    track("cta_purchase_click", { channel: "domestic" });
+    track("cta_purchase_click", _payParams(channel || "domestic"));
     window.open(url, "_blank", "noopener");
   };
-  const _goIntl = () => {
+  const _goIntl = (channel) => {
     const base = (window.__PAY_CONFIG && window.__PAY_CONFIG.lemonCheckoutUrl) || "";
     if (!base) { alert("해외 결제는 준비 중이에요. 국내 카드를 이용해주세요."); return; }
-    track("cta_purchase_click", { channel: "intl" });
+    track("cta_purchase_click", _payParams(channel || "intl"));
     window.open(base, "_blank", "noopener");
   };
 
@@ -934,7 +948,7 @@ function WelcomeScreenV3({ onNext }) {
 
   const CTAButtons = (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <button className="btn" onClick={_goDomestic} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
+      <button className="btn" onClick={() => _goDomestic("bottom")} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
       <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 코드 받았어요! 지원서 작성하기</button>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>구매 완료 메일의 코드를 지원서에 입력하면 Day 1이 시작돼요.</div>
     </div>
@@ -982,7 +996,7 @@ function WelcomeScreenV3({ onNext }) {
         <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           1일1비 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
         </div>
-        <button onClick={() => { track("cta_purchase_click", { channel: "sticky" }); _goDomestic(); }}
+        <button onClick={() => _goDomestic("sticky")}
           style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
           입사 지원하기 →
         </button>
