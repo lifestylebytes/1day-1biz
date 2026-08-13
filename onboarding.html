@@ -1287,17 +1287,34 @@ function WelcomeScreenV3({ onNext }) {
           </div>
         ))}
       </div>
-      {/* ── 5.5 Phase 안내: 지금이 가장 싼 시점 ── */}
+      {/* ── 5.5 Phase 안내: 공채 기수 프레임 + 가격 사다리 ── */}
       <div style={{ border: "1.5px solid var(--ink)", borderRadius: 12, padding: "16px 17px", marginBottom: 16, background: "var(--paper)" }}>
-        <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.45, marginBottom: 8 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.45, marginBottom: 10 }}>
           1일1비는 계속 커지고 있어요.
         </div>
-        <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 12 }}>
-          커리큘럼은 계속 늘어나고, 곧 <strong style={{ color: "var(--ink)" }}>내 업무에 맞춘 AI 맞춤 학습</strong>도 들어와요. 멤버분들이 남긴 피드백 하나하나가 다음 업데이트가 되고 있고요.
+
+        {/* 공채 타임라인 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>1차 공채</span>
+            <span style={{ fontSize: 12, color: "var(--ink-soft)", textDecoration: "line-through" }}>월 9,900원</span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px solid var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>모집 마감</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: "var(--paper)", border: "1.5px solid var(--accent)", borderRadius: 9 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--accent)", flexShrink: 0 }}>2차 공채</span>
+            <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)" }}>월 13,900원</span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--accent)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>지금 접수 중</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>3차 공채</span>
+            <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>AI 맞춤 학습 탑재 후, 인상 예정</span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px dashed var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>준비 중</span>
+          </div>
         </div>
+
         <div style={{ background: "var(--paper-warm)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
-          기능이 늘어날수록 <strong style={{ color: "var(--ink)" }}>구독료도 함께 올라가요.</strong> 다만 <strong style={{ color: "var(--accent)" }}>먼저 시작한 분은 시작 당시 가격 그대로</strong> 계속 이용할 수 있어요.<br/>
-          <span style={{ color: "var(--ink-mute)" }}>지금이 가장 저렴하게 시작할 수 있는 시점이에요.</span>
+          1차 공채 가격은 다시 안 열려요. 대신 <strong style={{ color: "var(--accent)" }}>지금 입사한 분은 지금 가격 그대로</strong> 계속 이용해요.<br/>
+          <span style={{ color: "var(--ink-mute)" }}>커리큘럼과 기능이 늘어날수록 다음 공채 가격은 올라갑니다.</span>
         </div>
       </div>
 
