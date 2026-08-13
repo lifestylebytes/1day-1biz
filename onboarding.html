@@ -177,6 +177,10 @@ textarea { resize: vertical; min-height: 70px; }
 .mb-toast-body { flex: 1; }
 .mb-toast-name { font-size: 11px; font-weight: 800; color: #F3CBB5; margin-bottom: 2px; }
 .mb-toast-msg { font-size: 12.5px; line-height: 1.55; color: var(--paper); word-break: keep-all; }
+
+/* 한글은 기본값이 글자 단위 줄바꿈이라 "가져왔어/요" 처럼 끝 글자가 떨어진다.
+   어절 단위로 끊고, 긴 영문/URL 만 예외적으로 강제 개행. */
+body { word-break: keep-all; overflow-wrap: break-word; }
 .mb-toast-msg b { color: #FFE9A6; }
 .mb-toast-x { background: transparent; border: none; color: rgba(244,239,227,0.6);
   font-size: 15px; cursor: pointer; padding: 0 2px; flex: 0 0 auto; font-family: inherit; align-self: flex-start; }
@@ -981,12 +985,12 @@ function WelcomeScreenV3({ onNext }) {
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-      .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 34s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
+      .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
     `}</style>
 
     {/* ── 상단 고정: 흐르는 사내 전광판 + 바로 입사 바 ── */}
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 8000 }}>
-      <div style={{ background: "var(--ink, #2A1F14)", color: "var(--paper, #F5EEDD)", overflow: "hidden", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", padding: "7px 0", opacity: 0.95 }}>
+      <div style={{ background: "var(--ink, #2A1F14)", color: "var(--paper, #F5EEDD)", overflow: "hidden", fontSize: 9, fontWeight: 500, letterSpacing: "0.08em", padding: "5px 0", opacity: 0.82 }}>
         <div className="od-ticker-track">
           <span>{TICKER}</span>
           <span aria-hidden="true">{TICKER}</span>
@@ -1015,7 +1019,7 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 1.5 실제 화면 재현: 매일 받는 책상 (Day 88 그대로) ── */}
-      <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일 아침, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 Day 88 화면, 그대로 가져왔어요." />
+      <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일 아침, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 화면 그대로예요." />
       <div style={{ border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "0 14px 34px -14px rgba(58,40,18,0.25)", marginBottom: 10 }}>
         <div style={{ background: "var(--paper-warm)", padding: "8px 14px", display: "flex", gap: 6, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
           <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#E8968B" }} />
@@ -1024,7 +1028,7 @@ function WelcomeScreenV3({ onNext }) {
           <span style={{ fontSize: 10.5, color: "var(--ink-mute)", marginLeft: 8, fontFamily: "JetBrains Mono, monospace" }}>1day-1biz.youbuddy.co.kr</span>
         </div>
         <div style={{ background: "var(--paper)", padding: "16px 16px 18px" }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 5, fontFamily: "JetBrains Mono, monospace" }}>2026.08.08 · DAY 18 / 90 · <span style={{ color: "var(--accent)" }}>수집 표현 18</span></div>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 5, fontFamily: "JetBrains Mono, monospace" }}>2026.08.08 · DAY 18 / 90 · <span style={{ color: "var(--accent)" }}>수집 표현 18</span></div>
           <div style={{ fontSize: 21, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 12 }}><span style={{ color: "var(--accent)" }}>오늘의</span> 책상 위</div>
           <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 8, overflow: "hidden", marginBottom: 12, fontSize: 10.5 }}>
             <div style={{ flex: 1.3, padding: "8px 11px", borderRight: "1px solid var(--line)" }}>
@@ -1046,7 +1050,7 @@ function WelcomeScreenV3({ onNext }) {
                 <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13 }}>한</div>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>한도윤 · 동기 / Marketing</div>
-                  <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.6, background: "var(--paper-warm)", borderRadius: "2px 12px 12px 12px", padding: "10px 13px" }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, background: "var(--paper-warm)", borderRadius: "2px 12px 12px 12px", padding: "9px 12px" }}>
                     "Got any <span style={{ background: "#F6E27C", padding: "1px 5px", borderRadius: 3 }}>bandwidth</span> this week? It'd be great to put the design team's materials together with you."
                   </div>
                 </div>
@@ -1060,7 +1064,7 @@ function WelcomeScreenV3({ onNext }) {
         <span style={{ color: "var(--ink-mute)" }}>물론 Day 1은 훨씬 쉬운 것부터 시작해요. 직접 볼까요?</span>
       </div>
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 4, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
-        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong> (가입 없이 30초)
+        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
       </div>
 
       <Divider />
