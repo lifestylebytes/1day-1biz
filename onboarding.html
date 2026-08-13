@@ -1308,12 +1308,16 @@ function WelcomeScreenV3({ onNext }) {
       {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
       <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="목적과 구조가 달라서 내용이 겹치지 않아요." />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <div style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup"
+           target="_blank" rel="noopener"
+           onClick={() => track("lineup_ubc_click")}
+           style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px", textDecoration: "none", display: "block" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--ink-mute)", marginBottom: 6 }}>PROGRAM</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>↗</span></div>
           <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>20일 집중 챌린지</div>
           <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>정해진 기간 안에 비즈니스 어휘 60개를 <strong style={{ color: "var(--ink)" }}>루틴으로 완성</strong>하도록 환경을 세팅해드려요.</div>
-        </div>
+          <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 800, marginTop: 8 }}>유비챌 보러가기 →</div>
+        </a>
         <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
