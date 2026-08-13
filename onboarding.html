@@ -1018,6 +1018,30 @@ function WelcomeScreenV3({ onNext }) {
       </p>
       <Divider />
 
+      {/* ── 1.2 페인 체크: 타깃 3명의 순간 (지원 동기) ── */}
+      <SectionTitle eyebrow="지원 동기" title="혹시 이런 순간 있으셨어요?" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["📮", "메일 보내기 전, 번역기로 두 번 검사해요", "표현은 아는데 이게 자연스러운지 확신이 없어서요. 외국계 다니면서도 그래요."],
+          ["🎤", "회의에서 할 말이 있었는데, 정리하다 화제가 넘어갔어요", "어휘가 부족한 게 아니라, 그 상황에서 말해본 적이 없어서요."],
+          ["🧳", "갑자기 영어 쓰는 자리로 가게 됐어요", "보직이 바뀌었거나, 외국계로 옮기고 싶은데 영어로 일하는 감이 없어서 막막해요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 19, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.75, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        셋 다 원인은 같아요. <strong>몰라서가 아니라, 써본 적이 없어서.</strong><br/>
+        그래서 1일1비는 표현 대신 <strong style={{ color: "var(--accent)" }}>매일 써볼 자리</strong>를 드려요. 아래가 그 자리예요.
+      </div>
+
+      <Divider />
+
       {/* ── 1.5 실제 화면 재현: 매일 받는 책상 (Day 88 그대로) ── */}
       <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일 아침, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 화면 그대로예요." />
       <div style={{ border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "0 14px 34px -14px rgba(58,40,18,0.25)", marginBottom: 10 }}>
@@ -1070,7 +1094,7 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 2. 인터랙티브 체험: 실제 인트라넷 오늘 일정 ── */}
-      <SectionTitle eyebrow="LIVE DEMO" title="입사하면 매일 아침, 이 화면을 받아요" sub="실제 1일1비 인트라넷과 같은 구조예요. 위에서부터 하나씩 눌러보세요." />
+      <SectionTitle eyebrow="LIVE DEMO" title="구경 말고, 직접 출근해보세요" sub="Day 1을 가입 없이 그대로 해봅니다. 마지막엔 진짜 AI 사수가 첨삭해줘요." />
 
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 12px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 10px" }}>
@@ -1223,9 +1247,13 @@ function WelcomeScreenV3({ onNext }) {
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 0", lineHeight: 1.6 }}>
-              내일 아침, Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>내일부터 진짜 시작.</strong>
+            <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 12px", lineHeight: 1.6 }}>
+              내일 아침, Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
             </p>
+            <button className="btn od-rise" onClick={() => _goDomestic("demo_complete")} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
+              🎟 이대로 입사하기 → <span style={{ fontWeight: 600, fontSize: 12, opacity: 0.9 }}>월 13,900원</span>
+            </button>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", textAlign: "center", marginTop: 7 }}>언제든 해지 · 기록은 그대로 보관돼요</div>
           </div>
         )}
       </div>
@@ -1278,8 +1306,27 @@ function WelcomeScreenV3({ onNext }) {
 
       <Divider />
 
+      {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
+      <SectionTitle eyebrow="FAQ" title="사기 전에 다들 물어보는 것" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
+        {[
+          ["영어 왕초보인데 할 수 있나요?", "Day 1-30은 기본 표현부터 시작하고, 모든 영어 문장에 한국어 해석이 붙어요. 위 데모의 난이도가 실제 Day 1 난이도예요."],
+          ["하루 놓치면 어떻게 되나요?", "잘리지 않아요. 밀린 날은 출근부에 남아 있어서 언제든 몰아서 따라잡을 수 있어요."],
+          ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 와요. 지원서에 코드를 넣으면 사번이 즉시 발급되고, 오늘부터 Day 1이 시작돼요."],
+          ["해지하면 기록은 사라지나요?", "아니요. 해지는 결제 페이지에서 언제든 되고, 표현 노트와 진도는 그대로 보관돼요. 재구독하면 하던 Day부터 이어져요."],
+          ["누구한테 잘 맞나요?", "슬랙, 메일, 회의에서 영어를 실제로 써야 하는 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스예요."],
+        ].map(q => (
+          <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
+            <summary style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, padding: "0 14px 13px" }}>{q[1]}</div>
+          </details>
+        ))}
+      </div>
+
+      <Divider />
+
       {/* ── 5. 구성 + CTA ── */}
-      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 커피 두 잔 값" sub="월 구독제 · 언제든 해지 · 기록은 그대로 보관" />
+      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
         {[["📩", "매일 아침 새로운 Day 도착 (90일 커리큘럼)"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
           <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
