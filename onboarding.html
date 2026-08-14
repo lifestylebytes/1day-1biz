@@ -1022,7 +1022,7 @@ function WelcomeScreenV3({ onNext }) {
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 10 }}>매일 이렇게 굴러가요</div>
         {[
-          ["1", "아침에 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디"],
+          ["1", "저녁 7시, 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디. 퇴근하고 딱 좋은 시간에요"],
           ["2", "답장을 영어로 직접 써봐요", "읽고 끝이 아니라 내 손으로. 하루 5분이면 충분해요"],
           ["3", "AI 사수가 그 자리에서 고쳐줘요", "사수 = 나를 가르쳐주는 선배. 문법만이 아니라 \"원어민 동료라면 이렇게 써요\"까지"],
         ].map(st => (
@@ -1062,7 +1062,7 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 1.5 실제 화면 재현: 매일 받는 책상 (Day 88 그대로) ── */}
-      <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일 아침, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 화면 그대로예요." />
+      <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일 저녁 7시, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 화면 그대로예요." />
       <div style={{ border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "0 14px 34px -14px rgba(58,40,18,0.25)", marginBottom: 10 }}>
         <div style={{ background: "var(--paper-warm)", padding: "8px 14px", display: "flex", gap: 6, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
           <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#E8968B" }} />
@@ -1268,7 +1268,7 @@ function WelcomeScreenV3({ onNext }) {
             </div>
             <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 12px", lineHeight: 1.6 }}>
               90일 완주가 목표가 아니에요. <strong style={{ color: "var(--ink)" }}>내일 회의에서 쓸 한 문장</strong>이 목표예요. 그건 Day 1부터 돼요.<br/>
-              내일 아침, Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
+              내일 저녁 7시, Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
             </p>
             <button className="btn od-rise" onClick={() => _goDomestic("demo_complete")} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
               🎟 이대로 입사하기 → <span style={{ fontWeight: 600, fontSize: 12, opacity: 0.9 }}>월 13,900원</span>
@@ -1326,6 +1326,32 @@ function WelcomeScreenV3({ onNext }) {
 
       <Divider />
 
+      {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
+      <SectionTitle eyebrow="FROM YOUBUDDY" title="외국계 현업자가 퇴근하고 이걸 만드는 이유" />
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
+        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
+          안녕하세요, 유버디예요. 외국계에서 6년째 일하고 있어요.<br/><br/>
+          "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
+          저는 이 말을 그만 듣고 싶어요.<br/><br/>
+          우리가 실력이 없어서가 아니잖아요.
+          그 상황에서 <strong>말해본 적이 없어서</strong>지.
+          저도 그랬어요. 할 말을 정리하는 사이에 화제는 넘어가 있고,
+          메일 하나 보내면서 번역기를 두 번 돌리고.<br/><br/>
+          그래서 퇴근하고 이걸 만들어요.
+          한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어서요.<br/>
+          <strong style={{ color: "var(--accent)" }}>하루 5분씩, 같이 목소리를 냅시다.</strong>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, paddingTop: 13, borderTop: "1px dashed var(--line)" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>버디 드림</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 6년차</div>
+          </div>
+        </div>
+      </div>
+
+      <Divider />
+
       {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
       <SectionTitle eyebrow="FAQ" title="사기 전에 다들 물어보는 것" />
       <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
@@ -1348,7 +1374,7 @@ function WelcomeScreenV3({ onNext }) {
       {/* ── 5. 구성 + CTA ── */}
       <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
-        {[["📩", "매일 아침 새로운 Day 도착 (90일 커리큘럼)"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
+        {[["📩", "매일 저녁 7시 새로운 Day 도착 (90일 커리큘럼)"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
           <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
             <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
           </div>
