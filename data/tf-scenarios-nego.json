@@ -8,577 +8,1303 @@
     "daniel": "Daniel Park · 런던 본사 Director",
     "yoona": "차윤아 · 동료 (전 사수)"
   },
-  "quizTypes": { "1": "reply", "2": "blank", "3": "tone", "0": "spot" },
+  "quizTypes": {
+    "1": "reply",
+    "2": "blank",
+    "3": "tone",
+    "0": "spot"
+  },
   "scenarios": [
     {
-      "tfDay": 1, "word": "deal-breaker", "pos": "n.", "meaning": "이건 절대 안 되는 조건", "quizType": "reply",
+      "tfDay": 1,
+      "word": "deal-breaker",
+      "pos": "n.",
+      "meaning": "이건 절대 안 되는 조건",
+      "quizType": "reply",
       "scene": "09:30. 협상 TF 첫날. 김 팀장이 Nexa 계약 갱신 딜 파일을 건넨다.",
-      "npc": "manager", "quote": "Welcome to the deal. First things first: what's our deal-breaker? Know it before they test it.",
+      "npc": "manager",
+      "quote": "Welcome to the deal. First things first: what's our deal-breaker? Know it before they test it.",
       "quoteKo": "딜에 온 걸 환영해. 먼저 할 일: 우리의 deal-breaker가 뭔지 알아둬. 상대가 건드리기 전에.",
-      "task": { "promptKo": "우리 쪽에서 양보 못 하는 조건 하나를 팀장에게 보고하세요.", "koSentence": "데이터 소유권은 우리가 양보할 수 없는 조건입니다." },
-      "sampleAnswers": ["Data ownership is our deal-breaker. Everything else is flexible.", "For us, giving up data ownership would be a deal-breaker."],
+      "task": {
+        "promptKo": "우리 쪽에서 양보 못 하는 조건 하나를 팀장에게 보고하세요.",
+        "koSentence": "데이터 소유권은 우리가 양보할 수 없는 조건입니다."
+      },
+      "sampleAnswers": [
+        "Data ownership is our deal-breaker. Everything else is flexible.",
+        "For us, giving up data ownership would be a deal-breaker."
+      ],
       "mentorTip": "deal-breaker는 '깨는 조건'. 협상 시작 전에 내 deal-breaker를 알면 나머지는 전부 카드가 돼.",
       "mcOptions": [
-        { "text": "Data ownership is our deal-breaker. The rest is open.", "kind": "correct", "note": "정답. 못 내주는 것 하나 + 나머지는 열려 있다는 신호까지. 협상의 기본 자세야." },
-        { "text": "We hereby declare data ownership non-transferable under all circumstances.", "kind": "formal", "note": "계약서 문장이야. 첫 미팅 전 내부 보고에서 이러면 로봇." },
-        { "text": "We don't like giving up data.", "kind": "weak", "note": "'싫다'는 감정이지 조건이 아니야. deal-breaker는 명사로 못 박아야 해." }
+        {
+          "text": "Is remote work a deal-breaker for you, or just a nice-to-have?",
+          "kind": "correct",
+          "note": "정답. deal-breaker인지 선호인지 구분하게 해주는 질문. 결정을 돕는 어른의 답."
+        },
+        {
+          "text": "Just take it. A job is a job.",
+          "kind": "weak",
+          "note": "고민의 핵심(deal-breaker 여부)을 안 듣고 결론부터. 대화가 끝나버려."
+        },
+        {
+          "text": "You must undertake a holistic assessment of the employment proposition.",
+          "kind": "formal",
+          "note": "동기 슬랙에 holistic assessment... 친구를 잃는 영어야."
+        }
       ],
       "buddyAnswers": {
         "nuance": "deal-breaker = 이거 하나 때문에 딜 전체가 깨지는 조건.\n\n연애에도 써: \"Smoking is a deal-breaker for me.\"\n비즈니스에선 계약, 채용, 파트너십 어디든.",
         "example": "• \"The price isn't a deal-breaker, but the timeline might be.\"\n• \"Is remote work a deal-breaker for you?\" (면접에서도!)",
         "default": "deal(거래)을 break(깨는) 것. 내 deal-breaker를 아는 게 협상 준비의 1번."
-      }
+      },
+      "quizPrompt": "옆 팀 동기가 슬랙으로: \"이직 오퍼 받았는데 풀재택이 안 된대... 고민돼.\" 뭐라고 답할까?"
     },
     {
-      "tfDay": 2, "word": "non-negotiable", "pos": "adj./n.", "meaning": "협상 불가 항목", "quizType": "blank",
+      "tfDay": 2,
+      "word": "non-negotiable",
+      "pos": "adj./n.",
+      "meaning": "협상 불가 항목",
+      "quizType": "blank",
       "scene": "10:00. 딜 준비 회의. 차윤아가 조건 리스트를 화면에 띄운다.",
-      "npc": "yoona", "quote": "Let's sort these into two piles: negotiables and non-negotiables. Keep the second pile small.",
+      "npc": "yoona",
+      "quote": "Let's sort these into two piles: negotiables and non-negotiables. Keep the second pile small.",
       "quoteKo": "조건을 두 더미로 나누자. 협상 가능한 것, 불가능한 것. 두 번째 더미는 작게 유지해.",
-      "task": { "promptKo": "빈칸 채우기: 보안 요건은 협상 불가라고 말하세요.", "koSentence": "보안 요건은 협상 불가입니다. 거기서 시작하시죠." },
-      "sampleAnswers": ["The security requirements are non-negotiable. Let's start from there.", "Security is non-negotiable for us, everything else we can discuss."],
+      "task": {
+        "promptKo": "빈칸 채우기: 보안 요건은 협상 불가라고 말하세요.",
+        "koSentence": "보안 요건은 협상 불가입니다. 거기서 시작하시죠."
+      },
+      "sampleAnswers": [
+        "The security requirements are non-negotiable. Let's start from there.",
+        "Security is non-negotiable for us, everything else we can discuss."
+      ],
       "mentorTip": "non-negotiable을 남발하면 협상 자체가 안 돼. 딱 1-2개만. 그래서 차윤아가 '두 번째 더미는 작게'라고 한 거야.",
       "mcOptions": [
-        { "text": "The security requirements are ___. Let's start from there. → non-negotiable", "kind": "correct", "note": "정답. '여긴 못 움직여, 나머지로 얘기하자'가 프로의 화법." },
-        { "text": "→ impossible", "kind": "weak", "note": "impossible은 '불가능'. 조건이 아니라 포기처럼 들려." },
-        { "text": "→ not for negotiation purposes", "kind": "formal", "note": "뜻은 통하는데 이렇게 길게 안 써. non-negotiable 한 단어가 있잖아." }
+        {
+          "text": "For me, the 30-minute lunch walk is non-negotiable. → non-negotiable",
+          "kind": "correct",
+          "note": "정답. 일상에서도 '양보 불가'를 이렇게 써. 귀엽지만 단호하지."
+        },
+        {
+          "text": "→ unnecessary",
+          "kind": "weak",
+          "note": "뜻이 반대가 돼버려. 산책을 지키려는 문장이잖아."
+        },
+        {
+          "text": "→ not for negotiating",
+          "kind": "weak",
+          "note": "문법은 되는데 원어민은 non-negotiable 한 단어로 끝내."
+        }
       ],
       "buddyAnswers": {
         "nuance": "negotiable(협상 가능)에 non-을 붙인 것.\n\n명사로도 써: \"That's a non-negotiable.\"\n채용 공고에서 non-negotiable requirements = 필수 요건.",
         "example": "• \"My salary floor is non-negotiable.\"\n• \"Work-life balance is a non-negotiable for me.\"",
         "default": "deal-breaker(어제)가 '깨지는 결과'라면 non-negotiable은 '안 움직이는 항목'. 세트로 외워."
-      }
+      },
+      "quizPrompt": "빈칸: 팀 문화 소개 중 \"저에게 점심 산책 30분은 ___이에요.\""
     },
     {
-      "tfDay": 3, "word": "counteroffer", "pos": "n./v.", "meaning": "역제안", "quizType": "tone",
+      "tfDay": 3,
+      "word": "counteroffer",
+      "pos": "n./v.",
+      "meaning": "역제안",
+      "quizType": "tone",
       "scene": "14:00. Nexa의 첫 제안서가 도착했다. 예상보다 20% 낮은 금액. 김 팀장이 어깨를 두드린다.",
-      "npc": "manager", "quote": "Don't panic, and never accept the first offer. Draft a counteroffer by Thursday.",
+      "npc": "manager",
+      "quote": "Don't panic, and never accept the first offer. Draft a counteroffer by Thursday.",
       "quoteKo": "당황하지 마, 그리고 첫 제안은 절대 그대로 받지 마. 목요일까지 역제안 초안 만들어줘.",
-      "task": { "promptKo": "역제안을 준비하겠다고 팀장에게 답하세요.", "koSentence": "목요일까지 근거를 붙여서 역제안을 준비하겠습니다." },
-      "sampleAnswers": ["I'll prepare a counteroffer with our reasoning by Thursday.", "Got it. I'll draft a counteroffer backed by numbers by Thursday."],
+      "task": {
+        "promptKo": "역제안을 준비하겠다고 팀장에게 답하세요.",
+        "koSentence": "목요일까지 근거를 붙여서 역제안을 준비하겠습니다."
+      },
+      "sampleAnswers": [
+        "I'll prepare a counteroffer with our reasoning by Thursday.",
+        "Got it. I'll draft a counteroffer backed by numbers by Thursday."
+      ],
       "mentorTip": "counteroffer는 숫자만 바꾸는 게 아니라 '근거'를 붙이는 거야. 근거 없는 역제안은 흥정, 근거 있는 역제안은 협상.",
       "mcOptions": [
-        { "text": "I'll prepare a counteroffer with our reasoning by Thursday.", "kind": "correct", "note": "정답. 톤이 침착하고, 숫자+근거+기한까지. 팀장이 원한 그대로." },
-        { "text": "I shall submit a formal counterproposal document for internal ratification.", "kind": "formal", "note": "사내 보고에 ratification(비준)까지? 유엔이냐." },
-        { "text": "Their offer is insulting. Let's just say no.", "kind": "weak", "note": "감정 실린 거절은 협상을 닫아버려. counteroffer는 대화를 이어가는 기술이야." }
+        {
+          "text": "Thank you for the offer. Based on my research, I'd like to counter with 72.",
+          "kind": "correct",
+          "note": "정답. 감사 + 근거 + 역제안 숫자. 연봉 협상의 교과서 톤."
+        },
+        {
+          "text": "That's way too low. I'm disappointed in this company.",
+          "kind": "weak",
+          "note": "감정 노출은 협상력을 태워. 실망은 숫자로 표현하는 거야."
+        },
+        {
+          "text": "I hereby tender a counterproposal pursuant to prevailing market valuations.",
+          "kind": "formal",
+          "note": "리크루터가 도망가. 사람 말로 counter하면 돼."
+        }
       ],
       "buddyAnswers": {
         "nuance": "counter(맞받아치는) + offer(제안).\n\n동사로도: \"They offered 50K, we countered with 65K.\"\n연봉 협상에서 제일 많이 쓰는 단어.",
         "example": "• \"We received their counteroffer this morning.\"\n• \"Should we counter, or accept as is?\"",
         "default": "테니스처럼 공을 되받아치는 그림. 첫 제안을 그대로 받는 순간 게임 끝. 항상 counter."
-      }
+      },
+      "quizPrompt": "연봉 협상 상황. 시장가보다 낮은 오퍼를 받았다. 어떤 톤이 맞을까?"
     },
     {
-      "tfDay": 4, "word": "lowball", "pos": "v./adj.", "meaning": "터무니없이 낮게 부르다", "quizType": "spot",
+      "tfDay": 4,
+      "word": "lowball",
+      "pos": "v./adj.",
+      "meaning": "터무니없이 낮게 부르다",
+      "quizType": "spot",
       "scene": "11:00. 역제안 초안 리뷰. 차윤아가 Nexa의 첫 제안을 가리키며 웃는다.",
-      "npc": "yoona", "quote": "Classic move. They lowballed us to see how we react. Your counteroffer just became more important.",
+      "npc": "yoona",
+      "quote": "Classic move. They lowballed us to see how we react. Your counteroffer just became more important.",
       "quoteKo": "고전적인 수법이야. 우리 반응 보려고 일부러 낮게 부른 거지. 네 역제안이 더 중요해졌네.",
-      "task": { "promptKo": "낮게 부른 것 같다는 의견을 팀장에게 한 줄로 전하세요.", "koSentence": "첫 제안은 일부러 낮게 부른 것 같습니다. 반응을 보려는 거죠." },
-      "sampleAnswers": ["I think they lowballed us on purpose, just to test our reaction.", "The first offer looks like a lowball. They're testing us."],
+      "task": {
+        "promptKo": "낮게 부른 것 같다는 의견을 팀장에게 한 줄로 전하세요.",
+        "koSentence": "첫 제안은 일부러 낮게 부른 것 같습니다. 반응을 보려는 거죠."
+      },
+      "sampleAnswers": [
+        "I think they lowballed us on purpose, just to test our reaction.",
+        "The first offer looks like a lowball. They're testing us."
+      ],
       "mentorTip": "lowball을 당했다고 화내면 지는 거야. '아 lowball이네' 하고 알아보는 순간, 그건 정보가 돼. 상대가 급하지 않다는 정보.",
       "mcOptions": [
-        { "text": "I think they lowballed us on purpose, just to test our reaction.", "kind": "correct", "note": "정답. 상황을 정확히 읽고 감정 없이 보고. 이게 협상가의 문장." },
-        { "text": "I think they lowballed us on purpose, for testing our reaction respectfully.", "kind": "weak", "note": "어색한 곳: respectfully가 왜 붙었지? 공손함이 필요 없는 자리에 붙이면 문장이 이상해져." },
-        { "text": "They gave us a low ball in the offer game.", "kind": "weak", "note": "lowball은 한 단어 동사야. low ball로 떼어 쓰면 야구 얘기가 돼." }
+        {
+          "text": "The buyer lowballed me, so I didn't even reply.",
+          "kind": "correct",
+          "note": "정답. lowball은 이렇게 타동사로 깔끔하게."
+        },
+        {
+          "text": "The buyer lowballed me down, so I didn't even reply.",
+          "kind": "weak",
+          "note": "어색한 곳: down이 군더더기야. lowball 자체에 '낮게'가 들어 있어."
+        },
+        {
+          "text": "The buyer threw me a low ball, so I didn't even reply.",
+          "kind": "weak",
+          "note": "떼어 쓰면 진짜 공 던진 얘기가 돼. 한 단어 동사로."
+        }
       ],
       "buddyAnswers": {
         "nuance": "야구의 낮은 공에서 온 말.\n\n\"Don't lowball me\" = 후려치지 마.\n중고거래, 연봉, 견적 어디서든 쓰는 실전 단어.",
         "example": "• \"The buyer lowballed us at half the asking price.\"\n• \"That's a lowball offer, we can't take it seriously.\"",
         "default": "상대가 lowball하면? 화내지 말고 counteroffer(어제 단어)로 받아쳐. 어제-오늘 단어가 실전 콤보야."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 중고차를 팔았던 경험담. 자연스러운 문장은?"
     },
     {
-      "tfDay": 5, "word": "sweeten the deal", "pos": "phr.", "meaning": "조건을 더 얹어주다", "quizType": "reply",
+      "tfDay": 5,
+      "word": "sweeten the deal",
+      "pos": "phr.",
+      "meaning": "조건을 더 얹어주다",
+      "quizType": "reply",
       "scene": "16:00. Alex Chen과 첫 화상 미팅. 가격 얘기가 평행선이다. Alex가 웃으며 말한다.",
-      "npc": "alex", "quote": "We can't move on price. But what if we sweeten the deal with a longer support window?",
+      "npc": "alex",
+      "quote": "We can't move on price. But what if we sweeten the deal with a longer support window?",
       "quoteKo": "가격은 못 움직여요. 대신 지원 기간을 늘려서 조건을 달게 만들면 어때요?",
-      "task": { "promptKo": "제안은 긍정적으로 받되, 내부 검토가 필요하다고 답하세요.", "koSentence": "흥미로운 제안이네요. 내부적으로 검토하고 이번 주 안에 답드릴게요." },
-      "sampleAnswers": ["That could sweeten the deal. Let me run it by my team and get back to you this week.", "Interesting. That does sweeten the deal, let me check internally and come back by Friday."],
+      "task": {
+        "promptKo": "제안은 긍정적으로 받되, 내부 검토가 필요하다고 답하세요.",
+        "koSentence": "흥미로운 제안이네요. 내부적으로 검토하고 이번 주 안에 답드릴게요."
+      },
+      "sampleAnswers": [
+        "That could sweeten the deal. Let me run it by my team and get back to you this week.",
+        "Interesting. That does sweeten the deal, let me check internally and come back by Friday."
+      ],
       "mentorTip": "상대가 sweeten the deal을 제안하면 즉답하지 마. '달콤한 것'이 내 deal-breaker(1일차)를 가리는 설탕일 수 있거든.",
       "mcOptions": [
-        { "text": "That could sweeten the deal. Let me run it by my team first.", "kind": "correct", "note": "정답. 긍정 신호는 주되 약속은 안 함. 검토 시간을 버는 프로의 답." },
-        { "text": "Your proposition shall be deliberated by our committee in due course.", "kind": "formal", "note": "화상 미팅 즉답으로는 너무 관공서. 상대가 벽 느껴." },
-        { "text": "Sweet! Deal!", "kind": "weak", "note": "sweeten the deal을 진짜 '달다'로 받으면 큰일. 이 자리에서 수락한 거나 다름없어." }
+        {
+          "text": "If you commit to a year, we'll sweeten the deal with a free month.",
+          "kind": "correct",
+          "note": "정답. 조건(1년) + 스위트너(1달 무료). 구조가 정석이야."
+        },
+        {
+          "text": "Please just sign, we really need this.",
+          "kind": "weak",
+          "note": "절박함은 스위트너가 아니야. 상대에게 얹어줄 것을 제시해야지."
+        },
+        {
+          "text": "Upon annual commitment, supplementary benefits shall be conferred.",
+          "kind": "formal",
+          "note": "conferred... 훈장 수여식이니. 미팅에선 사람 말로."
+        }
       ],
       "buddyAnswers": {
         "nuance": "거래에 설탕을 친다는 그림.\n\n가격 대신 부가 혜택으로 매력도를 올리는 것.\n딜 뿐 아니라 제안 전반에 써.",
         "example": "• \"They sweetened the deal with free onboarding.\"\n• \"To sweeten the deal, we'll throw in two extra licenses.\"",
         "default": "가격이 안 움직일 때 나오는 카드가 sweetener야. 받을 땐 좋지만, 뭘 가리려는 설탕인지 꼭 봐."
-      }
+      },
+      "quizPrompt": "고객사 재계약 미팅. 1년 약정을 망설이는 고객에게 뭐라고 제안할까?"
     },
     {
-      "tfDay": 6, "word": "drive a hard bargain", "pos": "phr.", "meaning": "호락호락하지 않게 협상하다", "quizType": "blank",
+      "tfDay": 6,
+      "word": "drive a hard bargain",
+      "pos": "phr.",
+      "meaning": "호락호락하지 않게 협상하다",
+      "quizType": "blank",
       "scene": "10:30. 미팅 복기. 김 팀장이 어제 회의록을 넘겨보며 씩 웃는다.",
-      "npc": "manager", "quote": "Alex drives a hard bargain. Good. So do we. Hold our line on the license terms.",
+      "npc": "manager",
+      "quote": "Alex drives a hard bargain. Good. So do we. Hold our line on the license terms.",
       "quoteKo": "Alex는 만만치 않은 협상가야. 좋아. 우리도 그래. 라이선스 조건은 지켜.",
-      "task": { "promptKo": "빈칸 채우기: 상대가 만만치 않다고 동료에게 말하세요.", "koSentence": "Alex는 정말 만만치 않게 협상하더라." },
-      "sampleAnswers": ["Alex really drives a hard bargain.", "They drive a hard bargain, but that means they're serious."],
+      "task": {
+        "promptKo": "빈칸 채우기: 상대가 만만치 않다고 동료에게 말하세요.",
+        "koSentence": "Alex는 정말 만만치 않게 협상하더라."
+      },
+      "sampleAnswers": [
+        "Alex really drives a hard bargain.",
+        "They drive a hard bargain, but that means they're serious."
+      ],
       "mentorTip": "drive a hard bargain은 욕이 아니라 존중이야. '상대할 맛 나는 프로'라는 뜻. 네가 이 말을 들으면 칭찬으로 받아.",
       "mcOptions": [
-        { "text": "Alex really ___ a hard bargain. → drives", "kind": "correct", "note": "정답. drive를 쓰는 게 포인트. 흥정을 '몰아붙이는' 그림이야." },
-        { "text": "→ makes", "kind": "weak", "note": "make a bargain은 '거래를 하다'. hard bargain을 '몰고 가는' 건 drive만 돼." },
-        { "text": "→ negotiates", "kind": "weak", "note": "negotiate a hard bargain이라고는 안 써. 관용구는 통째로." }
+        {
+          "text": "My grandma really drives a hard bargain at the market. → drives",
+          "kind": "correct",
+          "note": "정답. 협상 관용구는 시장 흥정에도 그대로 살아 있어."
+        },
+        {
+          "text": "→ pushes",
+          "kind": "weak",
+          "note": "push a bargain은 없는 조합. 몰아붙이는 건 drive."
+        },
+        {
+          "text": "→ does",
+          "kind": "weak",
+          "note": "do a hard bargain도 안 써. 관용구는 통째로 외우는 게 답."
+        }
       ],
       "buddyAnswers": {
         "nuance": "bargain(흥정)을 hard하게 drive(몰다).\n\n지독하지만 정당하게 자기 몫을 챙기는 사람에게 써.\n비하가 아니라 살짝 감탄이 섞인 표현.",
         "example": "• \"She drives a hard bargain, we barely got a discount.\"\n• \"You drive a hard bargain! Fine, 10% off.\"",
         "default": "시장에서 1원도 안 깎아주는 사장님 그림. 상대가 이러면? 나도 이러면 돼. 협상은 원래 서로 hard."
-      }
+      },
+      "quizPrompt": "빈칸: 시장에서 만난 할머니 이야기. \"우리 할머니는 정말 ___ a hard bargain.\""
     },
     {
-      "tfDay": 7, "word": "walk away", "pos": "phr.", "meaning": "(협상을) 접고 나올 수 있다", "quizType": "tone",
+      "tfDay": 7,
+      "word": "walk away",
+      "pos": "phr.",
+      "meaning": "(협상을) 접고 나올 수 있다",
+      "quizType": "tone",
       "scene": "17:30. 첫 주 마감. Daniel이 런던에서 짧은 DM을 보냈다.",
-      "npc": "daniel", "quote": "One week in. Remember: the side that can walk away holds the power. Can we?",
+      "npc": "daniel",
+      "quote": "One week in. Remember: the side that can walk away holds the power. Can we?",
       "quoteKo": "일주일 지났네. 기억해. 걸어나올 수 있는 쪽이 힘을 쥔다. 우리는 걸어나올 수 있나?",
-      "task": { "promptKo": "대안이 있어서 나올 수 있다고 Daniel에게 답하세요.", "koSentence": "네, 대안 벤더가 두 곳 있어서 필요하면 나올 수 있습니다." },
-      "sampleAnswers": ["Yes. We have two backup vendors, so we can walk away if we need to.", "We can. Two alternatives are lined up, so walking away is a real option."],
+      "task": {
+        "promptKo": "대안이 있어서 나올 수 있다고 Daniel에게 답하세요.",
+        "koSentence": "네, 대안 벤더가 두 곳 있어서 필요하면 나올 수 있습니다."
+      },
+      "sampleAnswers": [
+        "Yes. We have two backup vendors, so we can walk away if we need to.",
+        "We can. Two alternatives are lined up, so walking away is a real option."
+      ],
       "mentorTip": "walk away는 협상 최강의 카드야. 진짜 나가는 게 아니라 '나갈 수 있는 상태'를 만드는 것. 대안이 있으면 목소리가 달라져.",
       "mcOptions": [
-        { "text": "Yes. We have two backup vendors, so we can walk away if we need to.", "kind": "correct", "note": "정답. Director의 질문에 근거(대안 2곳)+결론. 이 톤이 임원 보고의 정석." },
-        { "text": "Yeah we can totally bounce whenever lol", "kind": "weak", "note": "bounce, lol... 친구 카톡이야. 런던 Director에게는 톤 조절." },
-        { "text": "Affirmative. Withdrawal from negotiations remains a viable strategic contingency.", "kind": "formal", "note": "군대 작전 보고서 같아. DM 답장은 사람 말로." }
+        {
+          "text": "The numbers don't work anymore. Let's be ready to walk away.",
+          "kind": "correct",
+          "note": "정답. 감정 없이 기준(numbers)으로 판단하고 떠날 준비. 협상의 왕도."
+        },
+        {
+          "text": "Let's storm out right now and slam the door!!",
+          "kind": "weak",
+          "note": "박차고 나가는 건 walk away가 아니라 드라마야. 조용히 떠날 수 있는 게 힘이야."
+        },
+        {
+          "text": "We shall commence withdrawal procedures from this transaction.",
+          "kind": "formal",
+          "note": "집 보러 와서 withdrawal procedures... 친구가 무서워해."
+        }
       ],
       "buddyAnswers": {
         "nuance": "말 그대로 '걸어서 떠나다'.\n\n협상학의 BATNA(최선의 대안) 개념이 이 한마디에 들어 있어.\nwalk-away point = 이 선 넘으면 나간다는 기준선.",
         "example": "• \"Know your walk-away point before you enter the room.\"\n• \"We walked away from the deal last year, and they came back with better terms.\"",
         "default": "1주차 총정리: deal-breaker를 알고, non-negotiable은 작게, lowball엔 counter, 그리고 언제든 walk away 할 수 있게. 이게 협상 준비 끝."
-      }
+      },
+      "quizPrompt": "부동산 계약 상황. 집주인이 계속 가격을 올린다. 동행한 친구에게 하는 말로 자연스러운 톤은?"
     },
     {
-      "tfDay": 8, "word": "bargaining chip", "pos": "n.", "meaning": "협상 카드", "quizType": "spot",
+      "tfDay": 8,
+      "word": "bargaining chip",
+      "pos": "n.",
+      "meaning": "협상 카드",
+      "quizType": "spot",
       "scene": "09:30. 2주차 시작. 차윤아가 화이트보드에 우리가 가진 것들을 적는다.",
-      "npc": "yoona", "quote": "Our case study went viral in their industry. That's a bargaining chip, use it.",
+      "npc": "yoona",
+      "quote": "Our case study went viral in their industry. That's a bargaining chip, use it.",
       "quoteKo": "우리 사례 연구가 그쪽 업계에서 화제가 됐잖아. 그거 협상 카드야, 써먹어.",
-      "task": { "promptKo": "레퍼런스 공개를 카드로 쓰자고 제안하세요.", "koSentence": "공개 레퍼런스 허락을 협상 카드로 쓸 수 있습니다." },
-      "sampleAnswers": ["We can use the public reference as a bargaining chip.", "Their logo on our case study is a bargaining chip we haven't played yet."],
+      "task": {
+        "promptKo": "레퍼런스 공개를 카드로 쓰자고 제안하세요.",
+        "koSentence": "공개 레퍼런스 허락을 협상 카드로 쓸 수 있습니다."
+      },
+      "sampleAnswers": [
+        "We can use the public reference as a bargaining chip.",
+        "Their logo on our case study is a bargaining chip we haven't played yet."
+      ],
       "mentorTip": "돈만 카드가 아니야. 레퍼런스, 기간, 독점, 소개. 협상 잘하는 사람은 지갑 말고 칩을 늘려.",
       "mcOptions": [
-        { "text": "We can use the public reference as a bargaining chip.", "kind": "correct", "note": "정답. 자연스러운 한 문장." },
-        { "text": "We can use the public reference as a bargaining coin.", "kind": "weak", "note": "어색한 곳: coin이 아니라 chip. 포커 칩에서 온 말이라 chip 고정이야." },
-        { "text": "We can use the public reference like bargaining chips style.", "kind": "weak", "note": "like ~ style은 콩글리시 구조. as a bargaining chip으로 딱." }
+        {
+          "text": "Mention it politely. A competing offer is your best bargaining chip.",
+          "kind": "correct",
+          "note": "정답. 경쟁 오퍼 = 칩. 쓰라고 있는 거야, 단 politely."
+        },
+        {
+          "text": "Hide it. Companies hate that.",
+          "kind": "weak",
+          "note": "칩을 숨기면 칩이 아니야. 존재를 알려야 카드가 돼."
+        },
+        {
+          "text": "Deploy said competing offer as strategic leverage instrumentation.",
+          "kind": "formal",
+          "note": "instrumentation... 후배 상담이잖아. 사람 말로 조언해."
+        }
       ],
       "buddyAnswers": {
         "nuance": "포커 칩에서 온 말.\n\n협상 테이블에 올릴 수 있는 '교환 가능한 가치' 전부.\n정보도, 시간도, 관계도 칩이 될 수 있어.",
         "example": "• \"Don't give away your bargaining chips for free.\"\n• \"The early payment option is our biggest chip.\"",
         "default": "협상 전에 내 칩 목록부터 적어봐. 칩이 많을수록 walk away(7일차)가 쉬워지고, 협상이 게임이 돼."
-      }
+      },
+      "quizPrompt": "후배가 이직 상담: \"경쟁사 오퍼가 하나 더 있는데, 말해도 될까요?\" 조언은?"
     },
     {
-      "tfDay": 9, "word": "sticking point", "pos": "n.", "meaning": "협상이 막히는 지점", "quizType": "reply",
+      "tfDay": 9,
+      "word": "sticking point",
+      "pos": "n.",
+      "meaning": "협상이 막히는 지점",
+      "quizType": "reply",
       "scene": "15:00. 2차 미팅 직후. 김 팀장이 요약을 요청한다.",
-      "npc": "manager", "quote": "Two hours and no handshake. So, what's the real sticking point here?",
+      "npc": "manager",
+      "quote": "Two hours and no handshake. So, what's the real sticking point here?",
       "quoteKo": "두 시간 했는데 악수가 없네. 그래서, 진짜 막히는 지점이 뭐야?",
-      "task": { "promptKo": "막히는 지점이 위약금 조항이라고 보고하세요.", "koSentence": "막히는 지점은 위약금 조항입니다. 가격이 아니라요." },
-      "sampleAnswers": ["The sticking point is the penalty clause, not the price.", "It's the termination penalty. That's the real sticking point."],
+      "task": {
+        "promptKo": "막히는 지점이 위약금 조항이라고 보고하세요.",
+        "koSentence": "막히는 지점은 위약금 조항입니다. 가격이 아니라요."
+      },
+      "sampleAnswers": [
+        "The sticking point is the penalty clause, not the price.",
+        "It's the termination penalty. That's the real sticking point."
+      ],
       "mentorTip": "sticking point를 정확히 짚는 게 협상의 절반이야. 겉으로는 가격 싸움처럼 보여도 진짜 막힌 곳은 따로 있는 경우가 많아.",
       "mcOptions": [
-        { "text": "The sticking point is the penalty clause, not the price.", "kind": "correct", "note": "정답. '가격이 아니라'까지 짚어서 논점을 옮겨줌. 팀장이 원한 진단." },
-        { "text": "The matter under contention pertains to Article 12.", "kind": "formal", "note": "법무팀 메모야. 구두 보고는 사람 말로." },
-        { "text": "Everything is a problem honestly.", "kind": "weak", "note": "전부 문제면 아무것도 진단 못 한 거야. 하나를 짚어야 풀 수 있어." }
+        {
+          "text": "Parking became the sticking point in the office move. → sticking point",
+          "kind": "correct",
+          "note": "정답. 큰 돈 문제가 아니라 의외의 지점에서 막히는 게 현실 협상이야."
+        },
+        {
+          "text": "→ stopping point",
+          "kind": "weak",
+          "note": "stopping point는 '멈추는 지점(휴게소)'. 막히는 논점은 sticking point."
+        },
+        {
+          "text": "→ sticky point",
+          "kind": "weak",
+          "note": "끈적한 점... 아까워. sticking으로 굳은 관용구야."
+        }
       ],
       "buddyAnswers": {
         "nuance": "stick(들러붙어 안 움직임) + point.\n\n논의가 '걸려서 안 넘어가는' 그 한 지점.\n협상, 계약, 회의 어디서든.",
         "example": "• \"Salary wasn't the sticking point, the relocation was.\"\n• \"Let's isolate the sticking points and park the rest.\"",
         "default": "체한 것처럼 '여기서 딱 걸렸다' 하는 그 부분. 찾으면 이름 붙여 불러. 이름 붙는 순간 풀 수 있는 문제가 돼."
-      }
+      },
+      "quizPrompt": "빈칸: 사무실 이전 회의 후기. \"의외로 주차 공간이 ___이 됐어.\""
     },
     {
-      "tfDay": 10, "word": "fine print", "pos": "n.", "meaning": "작은 글씨, 세부 조항", "quizType": "blank",
+      "tfDay": 10,
+      "word": "fine print",
+      "pos": "n.",
+      "meaning": "작은 글씨, 세부 조항",
+      "quizType": "blank",
       "scene": "11:00. Nexa가 보낸 수정 계약서 v2. 차윤아가 모니터를 가리킨다.",
-      "npc": "yoona", "quote": "The headline terms look great. Now read the fine print, that's where deals go to die.",
+      "npc": "yoona",
+      "quote": "The headline terms look great. Now read the fine print, that's where deals go to die.",
       "quoteKo": "헤드라인 조건은 좋아 보여. 이제 작은 글씨를 읽어. 딜은 거기서 죽거든.",
-      "task": { "promptKo": "빈칸 채우기: 세부 조항 검토 후 회신하겠다고 하세요.", "koSentence": "세부 조항까지 검토한 뒤 내일 회신드릴게요." },
-      "sampleAnswers": ["Let me review the fine print and get back to you tomorrow.", "I'll go through the fine print tonight and reply by tomorrow."],
+      "task": {
+        "promptKo": "빈칸 채우기: 세부 조항 검토 후 회신하겠다고 하세요.",
+        "koSentence": "세부 조항까지 검토한 뒤 내일 회신드릴게요."
+      },
+      "sampleAnswers": [
+        "Let me review the fine print and get back to you tomorrow.",
+        "I'll go through the fine print tonight and reply by tomorrow."
+      ],
       "mentorTip": "fine print엔 자동 갱신, 위약금, 독점 조항이 숨어 살아. '좋아 보이는 딜'일수록 작은 글씨부터.",
       "mcOptions": [
-        { "text": "Let me review the ___ and get back to you tomorrow. → fine print", "kind": "correct", "note": "정답. 관용구 통째로. 검토 시간 확보는 협상가의 기본기." },
-        { "text": "→ small letters", "kind": "weak", "note": "small letters는 소문자. 세부 조항은 fine print야." },
-        { "text": "→ tiny writings", "kind": "weak", "note": "직역 콩글리시. 원어민 귀엔 '조그만 글쓰기들'로 들려." }
+        {
+          "text": "Always read the fine print before you subscribe.",
+          "kind": "correct",
+          "note": "정답. fine print는 단수, 관사 the와 함께."
+        },
+        {
+          "text": "Always read the fine prints before you subscribe.",
+          "kind": "weak",
+          "note": "어색한 곳: fine print는 셀 수 없어. prints라고 하면 판화가 돼."
+        },
+        {
+          "text": "Always read the tiny letter papers before you subscribe.",
+          "kind": "weak",
+          "note": "직역 조합. 원어민 귀엔 '작은 편지 종이들'이야."
+        }
       ],
       "buddyAnswers": {
         "nuance": "계약서 맨 아래 깨알 글씨에서 온 말.\n\n\"Read the fine print\" = 꼼꼼히 따져봐.\n일상에서도 조건 확인 전반에 써.",
         "example": "• \"The discount was real, but the fine print said 'first month only'.\"\n• \"Always read the fine print before you sign.\"",
         "default": "어제 sticking point를 찾았다면, 오늘은 상대가 숨긴 sticking point를 찾는 날. 그게 fine print 안에 있어."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 구독 서비스 가입 조언. 자연스러운 문장은?"
     },
     {
-      "tfDay": 11, "word": "play hardball", "pos": "phr.", "meaning": "강경하게 나가다", "quizType": "tone",
+      "tfDay": 11,
+      "word": "play hardball",
+      "pos": "phr.",
+      "meaning": "강경하게 나가다",
+      "quizType": "tone",
       "scene": "14:30. Nexa가 갑자기 '다른 벤더와도 얘기 중'이라는 메일을 보냈다. 김 팀장의 반응.",
-      "npc": "manager", "quote": "They're playing hardball now. Fine. Two can play that game. Draft a firm reply.",
+      "npc": "manager",
+      "quote": "They're playing hardball now. Fine. Two can play that game. Draft a firm reply.",
       "quoteKo": "이제 강수를 두네. 좋아. 그 게임은 우리도 할 수 있지. 단호한 답장 초안 잡아줘.",
-      "task": { "promptKo": "우리도 다른 옵션이 있다는 걸 정중하지만 단호하게 전하세요.", "koSentence": "저희도 다른 파트너 옵션을 열어두고 있습니다. 다만 Nexa와 먼저 마무리하고 싶습니다." },
-      "sampleAnswers": ["We're also keeping other partner options open, but our preference is to close this with Nexa first.", "To be transparent, we have other options on the table too. That said, Nexa remains our first choice."],
+      "task": {
+        "promptKo": "우리도 다른 옵션이 있다는 걸 정중하지만 단호하게 전하세요.",
+        "koSentence": "저희도 다른 파트너 옵션을 열어두고 있습니다. 다만 Nexa와 먼저 마무리하고 싶습니다."
+      },
+      "sampleAnswers": [
+        "We're also keeping other partner options open, but our preference is to close this with Nexa first.",
+        "To be transparent, we have other options on the table too. That said, Nexa remains our first choice."
+      ],
       "mentorTip": "hardball에 hardball로 받되, 문은 열어둬. '우리도 대안 있음 + 그래도 너희가 1순위'. 이 조합이 단호함과 존중을 동시에 전달해.",
       "mcOptions": [
-        { "text": "We're also keeping other options open, but our preference is to close with Nexa first.", "kind": "correct", "note": "정답. 단호한데 상대를 세워줌. hardball의 모범 답안." },
-        { "text": "Oh no, please don't leave us, we really need this deal.", "kind": "weak", "note": "애원하는 순간 upper hand(19일차 예고)를 통째로 넘겨주는 거야." },
-        { "text": "Go ahead and talk to them. We don't care.", "kind": "weak", "note": "don't care는 단호가 아니라 무례. 문을 쾅 닫으면 돌아올 길도 없어." }
+        {
+          "text": "If the landlord plays hardball, we bring up the repairs he's been ignoring.",
+          "kind": "correct",
+          "note": "정답. hardball엔 카드로 응수. 감정이 아니라 재료로 받아치는 거야."
+        },
+        {
+          "text": "If the landlord plays hardball, let's just cry and beg.",
+          "kind": "weak",
+          "note": "동정에 기대는 순간 협상은 끝나. 칩을 찾아."
+        },
+        {
+          "text": "Should the lessor adopt an adversarial posture, countermeasures will be initiated.",
+          "kind": "formal",
+          "note": "lessor, countermeasures... 룸메이트가 이사 가고 싶어져."
+        }
       ],
       "buddyAnswers": {
         "nuance": "야구의 강속구(hardball)에서.\n\n반대말은 softball(살살 하기).\n\"They went hardball on us\" 처럼 동사구로.",
         "example": "• \"HR played hardball on the salary, so I used my competing offer.\"\n• \"If they play hardball, we walk.\" (7일차 콤보!)",
         "default": "hardball의 핵심은 목소리 크기가 아니라 대안의 존재야. 칩(8일차) 없이 hardball 치면 그냥 허세."
-      }
+      },
+      "quizPrompt": "월세 재계약 시즌. 집주인이 강경하게 인상을 요구한다. 룸메이트에게 하는 말은?"
     },
     {
-      "tfDay": 12, "word": "stand firm", "pos": "phr.", "meaning": "입장을 굽히지 않다", "quizType": "spot",
+      "tfDay": 12,
+      "word": "stand firm",
+      "pos": "phr.",
+      "meaning": "입장을 굽히지 않다",
+      "quizType": "spot",
       "scene": "10:00. 어제 보낸 단호한 답장에 Nexa가 가격 재조정을 슬쩍 요구해왔다. Daniel의 DM.",
-      "npc": "daniel", "quote": "This is the squeeze. Stand firm on the core terms, flexible on the edges.",
+      "npc": "daniel",
+      "quote": "This is the squeeze. Stand firm on the core terms, flexible on the edges.",
       "quoteKo": "지금이 쥐어짜는 구간이야. 핵심 조건은 버티고, 가장자리는 유연하게.",
-      "task": { "promptKo": "핵심 조건은 유지하겠다고 팀에 공유하세요.", "koSentence": "가격과 데이터 조건은 그대로 유지합니다. 부가 조건만 조정 여지를 둡니다." },
-      "sampleAnswers": ["We're standing firm on price and data terms. Only the add-ons have room to move.", "Let's stand firm on the core and stay flexible on the extras."],
+      "task": {
+        "promptKo": "핵심 조건은 유지하겠다고 팀에 공유하세요.",
+        "koSentence": "가격과 데이터 조건은 그대로 유지합니다. 부가 조건만 조정 여지를 둡니다."
+      },
+      "sampleAnswers": [
+        "We're standing firm on price and data terms. Only the add-ons have room to move.",
+        "Let's stand firm on the core and stay flexible on the extras."
+      ],
       "mentorTip": "stand firm은 고집이 아니야. '어디서 버틸지'를 정해놓고 버티는 것. 전부 버티면 결렬, 전부 양보하면 호구. 핵심만 firm.",
       "mcOptions": [
-        { "text": "We're standing firm on price and data terms.", "kind": "correct", "note": "정답. stand firm on + 항목. 어디서 버티는지가 명확해." },
-        { "text": "We're standing firmly on price and data terms.", "kind": "weak", "note": "어색한 곳: firmly(부사)가 아니라 firm(형용사). stand firm이 관용구로 굳은 형태야." },
-        { "text": "We're standing hard on price and data terms.", "kind": "weak", "note": "stand hard는 없는 표현. 굳게 서는 건 firm." }
+        {
+          "text": "Despite three rounds of pressure, she stood firm on the deadline. → stood",
+          "kind": "correct",
+          "note": "정답. stand firm의 과거형. 버틴 사람의 서사엔 stood firm."
+        },
+        {
+          "text": "→ stayed",
+          "kind": "weak",
+          "note": "stay firm도 아주 틀리진 않지만 관용구의 정석은 stand firm이야."
+        },
+        {
+          "text": "→ kept",
+          "kind": "weak",
+          "note": "keep firm은 어색해. hold firm이나 stand firm."
+        }
       ],
       "buddyAnswers": {
         "nuance": "바람에도 안 흔들리고 firm(굳게) 서 있는 그림.\n\nhold the line과 비슷한데 stand firm이 더 격식 있는 자리에도 어울려.",
         "example": "• \"She stood firm despite the pressure from the board.\"\n• \"We stand firm on our principles.\"",
         "default": "11일차 hardball이 상대의 공격이라면, stand firm은 나의 수비. 공수 세트로 기억해."
-      }
+      },
+      "quizPrompt": "빈칸: 마감 연장 압박을 세 번 받은 PM 이야기. \"그래도 그녀는 ___ firm.\""
     },
     {
-      "tfDay": 13, "word": "split the difference", "pos": "phr.", "meaning": "중간에서 절충하다", "quizType": "reply",
+      "tfDay": 13,
+      "word": "split the difference",
+      "pos": "phr.",
+      "meaning": "중간에서 절충하다",
+      "quizType": "reply",
       "scene": "16:00. 가격 격차가 8%까지 좁혀졌다. Alex가 웃으며 제안한다.",
-      "npc": "alex", "quote": "We're 8 percent apart. Classic move would be to split the difference. What do you say?",
+      "npc": "alex",
+      "quote": "We're 8 percent apart. Classic move would be to split the difference. What do you say?",
       "quoteKo": "8% 차이네요. 고전적인 방법은 중간에서 만나는 거죠. 어때요?",
-      "task": { "promptKo": "절충은 가능하지만 조건을 하나 붙여서 답하세요.", "koSentence": "중간에서 만날 수 있습니다. 대신 계약 기간을 2년으로 하시죠." },
-      "sampleAnswers": ["We can split the difference, if we make it a two-year term.", "Happy to split the difference, provided we lock in a two-year contract."],
+      "task": {
+        "promptKo": "절충은 가능하지만 조건을 하나 붙여서 답하세요.",
+        "koSentence": "중간에서 만날 수 있습니다. 대신 계약 기간을 2년으로 하시죠."
+      },
+      "sampleAnswers": [
+        "We can split the difference, if we make it a two-year term.",
+        "Happy to split the difference, provided we lock in a two-year contract."
+      ],
       "mentorTip": "split the difference를 공짜로 해주지 마. '반씩 양보'도 양보야. 받아줄 땐 반드시 뭔가를 얹어서 받아. 그게 if 한 마디의 힘이야.",
       "mcOptions": [
-        { "text": "We can split the difference, if we make it a two-year term.", "kind": "correct", "note": "정답. 수락 + 조건 교환. 양보를 칩(8일차)으로 바꾸는 기술." },
-        { "text": "Sure, whatever works for you guys.", "kind": "weak", "note": "협상 테이블에서 whatever는 백기야. 아무것도 안 받고 다 준 셈." },
-        { "text": "The bisection of the differential is acceptable to our organization.", "kind": "formal", "note": "수학 논문이냐. split the difference라는 좋은 말을 놔두고." }
+        {
+          "text": "You want five nights, I want three. Let's split the difference at four.",
+          "kind": "correct",
+          "note": "정답. 일상 협상에도 그대로. 숫자 명시가 포인트야."
+        },
+        {
+          "text": "Fine, five nights, whatever you want.",
+          "kind": "weak",
+          "note": "져주는 건 절충이 아니야. 다음 여행에서도 계속 지게 돼."
+        },
+        {
+          "text": "I propose we bisect the numerical disparity in lodging duration.",
+          "kind": "formal",
+          "note": "bisect... 수학여행이니. split the difference면 끝."
+        }
       ],
       "buddyAnswers": {
         "nuance": "차이(difference)를 반으로 쪼개기(split).\n\n50:50 절충의 관용구.\n가격, 일정, 뭐든 '중간에서 만나자'는 뜻.",
         "example": "• \"You want 10, I want 6. Let's split the difference at 8.\"\n• \"They offered to split the difference on the timeline.\"",
         "default": "meet in the middle(기존 Day 52)의 숫자 버전. 중간이 늘 공정해 보이지만, 시작점을 누가 정했는지 꼭 봐. lowball(4일차) 뒤의 중간은 중간이 아니야."
-      }
+      },
+      "quizPrompt": "친구와 여행 계획. 너는 3박, 친구는 5박을 원한다. 자연스러운 제안은?"
     },
     {
-      "tfDay": 14, "word": "win over", "pos": "phr.", "meaning": "마음을 돌려놓다", "quizType": "blank",
+      "tfDay": 14,
+      "word": "win over",
+      "pos": "phr.",
+      "meaning": "마음을 돌려놓다",
+      "quizType": "blank",
       "scene": "11:30. Nexa 실무진은 긍정적인데 그쪽 CFO가 회의적이라는 소식. 차윤아의 조언.",
-      "npc": "yoona", "quote": "Alex is already on our side. The CFO isn't. Figure out what wins her over, numbers, not words.",
+      "npc": "yoona",
+      "quote": "Alex is already on our side. The CFO isn't. Figure out what wins her over, numbers, not words.",
       "quoteKo": "Alex는 이미 우리 편이야. CFO가 아니지. 뭐가 그분 마음을 돌릴지 찾아. 말 말고 숫자로.",
-      "task": { "promptKo": "빈칸 채우기: ROI 자료로 CFO를 설득해보겠다고 하세요.", "koSentence": "ROI 시뮬레이션으로 CFO를 설득해보겠습니다." },
-      "sampleAnswers": ["I'll try to win her over with an ROI simulation.", "Let me build an ROI case to win over their CFO."],
+      "task": {
+        "promptKo": "빈칸 채우기: ROI 자료로 CFO를 설득해보겠다고 하세요.",
+        "koSentence": "ROI 시뮬레이션으로 CFO를 설득해보겠습니다."
+      },
+      "sampleAnswers": [
+        "I'll try to win her over with an ROI simulation.",
+        "Let me build an ROI case to win over their CFO."
+      ],
       "mentorTip": "win over는 논쟁에서 이기는(win) 게 아니라 상대를 내 편으로 데려오는(over) 거야. 이긴 논쟁, 잃은 딜만큼 허무한 게 없어.",
       "mcOptions": [
-        { "text": "I'll try to ___ her ___ with an ROI simulation. → win / over", "kind": "correct", "note": "정답. win someone over, 사이에 사람이 들어가." },
-        { "text": "→ win / out", "kind": "weak", "note": "win out은 '결국 이기다'. 사람 마음을 얻는 건 win over." },
-        { "text": "→ beat / over", "kind": "weak", "note": "beat her over...는 때리는 그림이 돼버려. 큰일 나." }
+        {
+          "text": "The pilot program won over even the most skeptical managers.",
+          "kind": "correct",
+          "note": "정답. win over + 사람. 어순도 자연스러워."
+        },
+        {
+          "text": "The pilot program winned over even the most skeptical managers.",
+          "kind": "weak",
+          "note": "어색한 곳: win의 과거형은 won. winned는 없는 말이야."
+        },
+        {
+          "text": "The pilot program won the most skeptical managers over us.",
+          "kind": "weak",
+          "note": "over us가 붙으면 '우리 머리 위로 이겼다'는 이상한 그림이 돼."
+        }
       ],
       "buddyAnswers": {
         "nuance": "win(이기다)이 아니라 '넘어오게 만들다'.\n\n반대하던 사람이 고개를 끄덕이게 되는 과정.\n청중, 투자자, 면접관에게도 써.",
         "example": "• \"The demo won over even the skeptics.\"\n• \"It took three meetings to win him over.\"",
         "default": "협상 상대 뒤에는 항상 '진짜 결정권자'가 있어. 테이블 건너편이 아니라 그 뒤의 사람을 win over 하는 게 진짜 게임."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 파일럿 프로그램 후기. 자연스러운 문장은?"
     },
     {
-      "tfDay": 15, "word": "back out", "pos": "phr.", "meaning": "(합의에서) 발을 빼다", "quizType": "tone",
+      "tfDay": 15,
+      "word": "back out",
+      "pos": "phr.",
+      "meaning": "(합의에서) 발을 빼다",
+      "quizType": "tone",
       "scene": "17:00. 충격. Nexa가 합의 직전이던 부가 조건 하나를 없던 일로 하자고 한다. 김 팀장에게 보고해야 한다.",
-      "npc": "manager", "quote": "They did what? Walk me through it. Which part are they backing out of?",
+      "npc": "manager",
+      "quote": "They did what? Walk me through it. Which part are they backing out of?",
       "quoteKo": "뭘 했다고? 차근차근 말해봐. 어느 부분에서 발을 빼겠다는 거야?",
-      "task": { "promptKo": "무상 교육 조건에서 발을 뺐다고 침착하게 보고하세요.", "koSentence": "무상 교육 조건에서 발을 뺐습니다. 서면 합의 전이라 법적 문제는 없지만, 신뢰 문제로 짚고 넘어가야 합니다." },
-      "sampleAnswers": ["They're backing out of the free training clause. It wasn't in writing yet, but I think we should flag the trust issue.", "They backed out of the training commitment. Legally fine, but worth calling out."],
+      "task": {
+        "promptKo": "무상 교육 조건에서 발을 뺐다고 침착하게 보고하세요.",
+        "koSentence": "무상 교육 조건에서 발을 뺐습니다. 서면 합의 전이라 법적 문제는 없지만, 신뢰 문제로 짚고 넘어가야 합니다."
+      },
+      "sampleAnswers": [
+        "They're backing out of the free training clause. It wasn't in writing yet, but I think we should flag the trust issue.",
+        "They backed out of the training commitment. Legally fine, but worth calling out."
+      ],
       "mentorTip": "상대가 back out 하면 화보다 기록이 먼저야. '언제 합의했고 언제 뒤집었는지'. put it in writing(문서 TF 예고)이 왜 중요한지 몸으로 배우는 날.",
       "mcOptions": [
-        { "text": "They're backing out of the free training clause. It wasn't in writing yet, but we should flag it.", "kind": "correct", "note": "정답. 사실 + 법적 상태 + 다음 액션. 침착한 보고의 3요소." },
-        { "text": "They betrayed us!! This is unbelievable!!", "kind": "weak", "note": "느낌표 두 개는 협상가의 언어가 아니야. 화는 팀장 몫으로 남겨둬." },
-        { "text": "A unilateral rescission of the aforementioned provision has occurred.", "kind": "formal", "note": "누가 죽었니. 구두 보고는 산 사람의 언어로." }
+        {
+          "text": "The caterer just backed out. I'm getting two backup quotes within the hour.",
+          "kind": "correct",
+          "note": "정답. 사실 + 즉각 대응. back out 당했을 때 프로의 첫 마디."
+        },
+        {
+          "text": "The caterer BETRAYED us!! What do we do!!",
+          "kind": "weak",
+          "note": "패닉은 전염돼. 팀 슬랙의 첫 메시지는 온도 조절 장치야."
+        },
+        {
+          "text": "The vendor has effectuated a unilateral withdrawal from contractual obligations.",
+          "kind": "formal",
+          "note": "effectuated... 행사가 내일이야. 빨리 사람 말로."
+        }
       ],
       "buddyAnswers": {
         "nuance": "뒷걸음질(back)로 빠져나가는(out) 그림.\n\n약속, 계약, 계획에서 발 빼는 것 전부.\nback out of + 명사 형태로.",
         "example": "• \"The investor backed out at the last minute.\"\n• \"You can't back out now, we shook on it.\"",
         "default": "2주차 마무리. 상대가 back out 해도 당황하지 마. walk away(7일차) 카드가 있는 한, 발 빼는 쪽이 아쉬워지는 게 협상이야."
-      }
+      },
+      "quizPrompt": "행사 전날, 케이터링 업체가 갑자기 취소를 통보했다. 팀 슬랙에 올릴 첫 메시지 톤은?"
     },
     {
-      "tfDay": 16, "word": "hammer out", "pos": "phr.", "meaning": "(합의를) 두들겨 만들어내다", "quizType": "spot",
+      "tfDay": 16,
+      "word": "hammer out",
+      "pos": "phr.",
+      "meaning": "(합의를) 두들겨 만들어내다",
+      "quizType": "spot",
       "scene": "09:30. 3주차. 김 팀장이 전원 소집. 이번 주 안에 큰 틀을 끝내겠다는 의지.",
-      "npc": "manager", "quote": "Enough back and forth. We lock the room Thursday and hammer out the remaining terms in one sitting.",
+      "npc": "manager",
+      "quote": "Enough back and forth. We lock the room Thursday and hammer out the remaining terms in one sitting.",
       "quoteKo": "핑퐁은 충분히 했어. 목요일에 방 잡고 한 번에 남은 조건 다 두들겨서 끝낸다.",
-      "task": { "promptKo": "목요일 집중 협상에서 남은 조건을 끝내자고 Alex에게 제안하세요.", "koSentence": "목요일에 만나서 남은 조건을 한 번에 정리합시다." },
-      "sampleAnswers": ["Let's meet Thursday and hammer out the remaining terms in one session.", "Can we block Thursday afternoon to hammer out what's left?"],
+      "task": {
+        "promptKo": "목요일 집중 협상에서 남은 조건을 끝내자고 Alex에게 제안하세요.",
+        "koSentence": "목요일에 만나서 남은 조건을 한 번에 정리합시다."
+      },
+      "sampleAnswers": [
+        "Let's meet Thursday and hammer out the remaining terms in one session.",
+        "Can we block Thursday afternoon to hammer out what's left?"
+      ],
       "mentorTip": "hammer out은 대장간에서 쇠 두들기듯, 이견을 '수고스럽게 때려서' 합의로 만드는 그림. 이 단어를 쓰는 순간 '이제 끝내자'는 신호가 전달돼.",
       "mcOptions": [
-        { "text": "Let's meet Thursday and hammer out the remaining terms.", "kind": "correct", "note": "정답. 마무리 국면의 정석 표현." },
-        { "text": "Let's meet Thursday and hammer down the remaining terms.", "kind": "weak", "note": "어색한 곳: hammer down이 아니라 hammer out. 두들겨서 '꺼내는' 거야." },
-        { "text": "Let's meet Thursday and hit the remaining terms with hammer.", "kind": "weak", "note": "진짜 망치가 등장해버렸네. 관용구는 분해하면 무기가 돼." }
+        {
+          "text": "The union and management hammered out an agreement overnight. → hammered",
+          "kind": "correct",
+          "note": "정답. 뉴스에서 제일 많이 보는 hammer out 용례야."
+        },
+        {
+          "text": "→ ironed",
+          "kind": "weak",
+          "note": "iron out은 잔주름 펴기. 밤새 만든 큰 합의는 hammer out."
+        },
+        {
+          "text": "→ nailed",
+          "kind": "weak",
+          "note": "nail out은 없는 말. nail down(확정)과 헷갈리지 마."
+        }
       ],
       "buddyAnswers": {
         "nuance": "대장장이가 쇳덩이를 두들겨 모양을 내는 그림.\n\n쉽지 않은 합의를 '노력으로 만들어낸다'는 뉘앙스가 핵심.",
         "example": "• \"The two sides hammered out a deal at 2 a.m.\"\n• \"We still need to hammer out the details.\"",
         "default": "iron out(내일)과 형제 표현. hammer out은 큰 틀을 만들 때, iron out은 주름을 펼 때. 순서도 hammer 먼저, iron 나중."
-      }
+      },
+      "quizPrompt": "빈칸: 밤샘 협상 뉴스 요약. \"노사가 밤새 합의안을 ___ out했다.\""
     },
     {
-      "tfDay": 17, "word": "iron out", "pos": "phr.", "meaning": "(남은 문제를) 매끄럽게 정리하다", "quizType": "reply",
+      "tfDay": 17,
+      "word": "iron out",
+      "pos": "phr.",
+      "meaning": "(남은 문제를) 매끄럽게 정리하다",
+      "quizType": "reply",
       "scene": "18:00. 목요일 마라톤 협상 종료. 큰 틀 합의! 남은 건 자잘한 것들. Alex가 악수하며.",
-      "npc": "alex", "quote": "Great session. Let's have the teams iron out the small stuff by early next week.",
+      "npc": "alex",
+      "quote": "Great session. Let's have the teams iron out the small stuff by early next week.",
       "quoteKo": "좋은 세션이었어요. 자잘한 건 실무진끼리 다음 주 초까지 다듬죠.",
-      "task": { "promptKo": "다음 주 화요일까지 세부 사항을 정리하자고 화답하세요.", "koSentence": "좋습니다. 화요일까지 남은 세부 사항을 정리하시죠." },
-      "sampleAnswers": ["Sounds good. Let's iron out the remaining details by Tuesday.", "Agreed. We'll iron out the specifics on our side by Tuesday."],
+      "task": {
+        "promptKo": "다음 주 화요일까지 세부 사항을 정리하자고 화답하세요.",
+        "koSentence": "좋습니다. 화요일까지 남은 세부 사항을 정리하시죠."
+      },
+      "sampleAnswers": [
+        "Sounds good. Let's iron out the remaining details by Tuesday.",
+        "Agreed. We'll iron out the specifics on our side by Tuesday."
+      ],
       "mentorTip": "합의 직후가 제일 위험한 구간이야. '자잘한 것'이라며 미룬 것들이 fine print(10일차)가 되어 돌아오거든. iron out에도 기한을 박아.",
       "mcOptions": [
-        { "text": "Sounds good. Let's iron out the remaining details by Tuesday.", "kind": "correct", "note": "정답. 화답 + 기한. 여운 없이 깔끔한 마무리." },
-        { "text": "Yes. The residual particulars shall be finalized in due course.", "kind": "formal", "note": "in due course(적절한 시기에)는 기한 없다는 말과 같아. 협상에선 금물." },
-        { "text": "Ya we'll figure the rest out somehow.", "kind": "weak", "note": "somehow로 끝나는 합의는 합의가 아니야. 누가, 언제까지가 빠졌잖아." }
+        {
+          "text": "The structure is solid. Let's iron out the wording tomorrow morning.",
+          "kind": "correct",
+          "note": "정답. 큰 틀 OK + 잔손질 예약. iron out의 정확한 사용처야."
+        },
+        {
+          "text": "It's all wrong. Let's rewrite everything from scratch.",
+          "kind": "weak",
+          "note": "다 뒤집는 건 iron out이 아니야. 그건 hammer out부터 다시."
+        },
+        {
+          "text": "Residual lexical refinements shall be administered subsequently.",
+          "kind": "formal",
+          "note": "administered... 문서가 약이니. 내일 아침에 다듬자고 하면 돼."
+        }
       ],
       "buddyAnswers": {
         "nuance": "다리미(iron)로 주름을 펴는 그림.\n\n큰 문제가 아니라 '남은 잔주름'을 정리할 때.\niron out differences/details/kinks 조합이 단골.",
         "example": "• \"We ironed out the last few issues over coffee.\"\n• \"A few kinks left to iron out before launch.\"",
         "default": "어제 hammer out(큰 틀), 오늘 iron out(잔주름). 이 순서 그대로 실전에서 굴러가. 대장간에서 다림질까지, 협상은 공예야."
-      }
+      },
+      "quizPrompt": "신규 입사자 온보딩 가이드 초안이 거의 완성됐다. 동료에게 뭐라고 할까?"
     },
     {
-      "tfDay": 18, "word": "nail down", "pos": "phr.", "meaning": "확실하게 못 박다", "quizType": "blank",
+      "tfDay": 18,
+      "word": "nail down",
+      "pos": "phr.",
+      "meaning": "확실하게 못 박다",
+      "quizType": "blank",
       "scene": "10:30. 세부 정리 중. 지원 기간이 '약 12개월'이라고 적혀 있다. 차윤아가 고개를 젓는다.",
-      "npc": "yoona", "quote": "'Approximately twelve months'? No. Nail down the exact dates, 'about' is where disputes are born.",
+      "npc": "yoona",
+      "quote": "'Approximately twelve months'? No. Nail down the exact dates, 'about' is where disputes are born.",
       "quoteKo": "'약 12개월'? 안 돼. 정확한 날짜로 못 박아. '약'에서 분쟁이 태어나.",
-      "task": { "promptKo": "빈칸 채우기: 지원 기간 날짜를 확정하자고 요청하세요.", "koSentence": "지원 기간의 시작일과 종료일을 확정합시다." },
-      "sampleAnswers": ["Let's nail down the exact start and end dates for the support period.", "Before signing, we need to nail down the support dates."],
+      "task": {
+        "promptKo": "빈칸 채우기: 지원 기간 날짜를 확정하자고 요청하세요.",
+        "koSentence": "지원 기간의 시작일과 종료일을 확정합시다."
+      },
+      "sampleAnswers": [
+        "Let's nail down the exact start and end dates for the support period.",
+        "Before signing, we need to nail down the support dates."
+      ],
       "mentorTip": "협상 후반의 적은 상대가 아니라 모호함이야. about, around, approximately가 보이면 무조건 nail down. 대충 넘어간 단어 하나가 6개월 뒤 분쟁이 돼.",
       "mcOptions": [
-        { "text": "Let's ___ ___ the exact start and end dates. → nail down", "kind": "correct", "note": "정답. 못(nail)을 박아 고정하는 그림 그대로." },
-        { "text": "→ nail up", "kind": "weak", "note": "nail up은 판자로 막는 것. 확정은 down이야." },
-        { "text": "→ hammer down", "kind": "weak", "note": "16일차 hammer out과 섞였네. 확정 짓기는 nail down." }
+        {
+          "text": "We finally nailed down the venue for the offsite.",
+          "kind": "correct",
+          "note": "정답. nail down + 확정 대상. 장소 확정의 정석 표현."
+        },
+        {
+          "text": "We finally nailed up the venue for the offsite.",
+          "kind": "weak",
+          "note": "어색한 곳: up이 아니라 down. nail up은 판자로 입구 막는 그림이야."
+        },
+        {
+          "text": "We finally nailed the venue down hardly for the offsite.",
+          "kind": "weak",
+          "note": "hardly는 '거의 안'이라는 뜻. 문장이 '겨우 확정 못 했다'가 돼버려."
+        }
       ],
       "buddyAnswers": {
         "nuance": "못을 박아 움직이지 않게 고정.\n\n날짜, 숫자, 담당자처럼 '흔들리면 안 되는 것'을 확정할 때.\nnail down the details/schedule/terms.",
         "example": "• \"Can we nail down a launch date today?\"\n• \"The budget still isn't nailed down.\"",
         "default": "hammer out(16) → iron out(17) → nail down(18). 두들기고, 다리고, 못 박는다. 3일 연속 공구 시리즈, 이게 협상 마무리 3종 세트야."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 워크숍 준비 근황. 자연스러운 문장은?"
     },
     {
-      "tfDay": 19, "word": "upper hand", "pos": "n.", "meaning": "유리한 위치", "quizType": "tone",
+      "tfDay": 19,
+      "word": "upper hand",
+      "pos": "n.",
+      "meaning": "유리한 위치",
+      "quizType": "tone",
       "scene": "14:00. 뉴스 속보. Nexa의 경쟁사가 대형 계약을 따냈다. Nexa는 이제 우리 딜이 급해졌다. Daniel의 DM.",
-      "npc": "daniel", "quote": "Their rival just landed the Coex account. We have the upper hand now. Use it gracefully.",
+      "npc": "daniel",
+      "quote": "Their rival just landed the Coex account. We have the upper hand now. Use it gracefully.",
       "quoteKo": "경쟁사가 방금 대형 계약을 땄어. 이제 우리가 유리한 위치야. 품위 있게 쓰도록.",
-      "task": { "promptKo": "유리해진 상황을 남용하지 않고 마무리를 당기자고 답하세요.", "koSentence": "유리해진 건 맞지만 조건을 더 쥐어짜기보다, 이 흐름으로 서명을 앞당기겠습니다." },
-      "sampleAnswers": ["We do have the upper hand, but rather than squeezing for more, I'd use it to accelerate the signing.", "Agreed. I'll use the upper hand to speed up the close, not to squeeze them."],
+      "task": {
+        "promptKo": "유리해진 상황을 남용하지 않고 마무리를 당기자고 답하세요.",
+        "koSentence": "유리해진 건 맞지만 조건을 더 쥐어짜기보다, 이 흐름으로 서명을 앞당기겠습니다."
+      },
+      "sampleAnswers": [
+        "We do have the upper hand, but rather than squeezing for more, I'd use it to accelerate the signing.",
+        "Agreed. I'll use the upper hand to speed up the close, not to squeeze them."
+      ],
       "mentorTip": "upper hand를 잡았을 때 어떻게 쓰는지가 그 사람의 협상 급을 정해. 쥐어짜면 한 번 이기고, 품위 있게 쓰면 다음 딜도 이겨.",
       "mcOptions": [
-        { "text": "We have the upper hand, but I'd use it to accelerate the signing, not to squeeze them.", "kind": "correct", "note": "정답. Daniel의 gracefully를 정확히 받았어. 장기 관계까지 보는 답." },
-        { "text": "Now we can demand whatever we want! Let's raise the price 30%.", "kind": "weak", "note": "단기 승리, 장기 원한. 이 딜 끝나도 업계는 좁아." },
-        { "text": "It would be strategically advantageous to leverage our newly acquired positional superiority.", "kind": "formal", "note": "positional superiority... 체스 해설이니. upper hand 세 글자면 돼." }
+        {
+          "text": "With two competing offers, she had the upper hand. → upper",
+          "kind": "correct",
+          "note": "정답. 오퍼 2개 = 칩 2개 = upper hand. 8일차와 이어지는 논리야."
+        },
+        {
+          "text": "→ higher",
+          "kind": "weak",
+          "note": "higher hand는 없는 말. 팔씨름 그림 그대로 upper hand."
+        },
+        {
+          "text": "→ winning",
+          "kind": "weak",
+          "note": "winning hand는 카드게임 패. 협상 우위는 upper hand."
+        }
       ],
       "buddyAnswers": {
         "nuance": "팔씨름에서 위에 있는 손.\n\nhave/gain/lose the upper hand 조합.\n힘의 균형이 기울었을 때 쓰는 말.",
         "example": "• \"The seller has the upper hand in this market.\"\n• \"We lost the upper hand when they found another supplier.\"",
         "default": "upper hand는 빌린 것이지 소유한 게 아니야. 시장이 한 번 출렁이면 손 위치는 바뀌어. 잡았을 때 빨리, 품위 있게."
-      }
+      },
+      "quizPrompt": "빈칸: 이직 시장 이야기. \"경쟁 오퍼 두 개를 쥔 그녀가 연봉 협상에서 ___ hand를 쥐었다.\""
     },
     {
-      "tfDay": 20, "word": "off the table", "pos": "phr.", "meaning": "논의 대상에서 제외된", "quizType": "spot",
+      "tfDay": 20,
+      "word": "off the table",
+      "pos": "phr.",
+      "meaning": "논의 대상에서 제외된",
+      "quizType": "spot",
       "scene": "11:00. Nexa가 급해지더니 갑자기 지분 참여 같은 무리한 아이디어를 던진다. 김 팀장의 정리.",
-      "npc": "manager", "quote": "Equity is off the table. Full stop. We're signing a service contract, not a marriage.",
+      "npc": "manager",
+      "quote": "Equity is off the table. Full stop. We're signing a service contract, not a marriage.",
       "quoteKo": "지분은 논외야. 이상 끝. 우리는 서비스 계약을 하는 거지 결혼하는 게 아니야.",
-      "task": { "promptKo": "지분 논의는 제외하고 원래 범위로 돌아가자고 Alex에게 전하세요.", "koSentence": "지분 얘기는 이번 논의에서 제외하시죠. 원래 범위로 돌아갑시다." },
-      "sampleAnswers": ["Equity is off the table for this deal. Let's get back to the original scope.", "We'd rather keep equity off the table and close the service agreement as scoped."],
+      "task": {
+        "promptKo": "지분 논의는 제외하고 원래 범위로 돌아가자고 Alex에게 전하세요.",
+        "koSentence": "지분 얘기는 이번 논의에서 제외하시죠. 원래 범위로 돌아갑시다."
+      },
+      "sampleAnswers": [
+        "Equity is off the table for this deal. Let's get back to the original scope.",
+        "We'd rather keep equity off the table and close the service agreement as scoped."
+      ],
       "mentorTip": "off the table을 말할 땐 짧게 말해. 설명이 길어지면 '설득하면 되겠네'로 읽혀. 팀장의 Full stop이 그 기술이야.",
       "mcOptions": [
-        { "text": "Equity is off the table for this deal.", "kind": "correct", "note": "정답. 짧고 단호. 그래서 강해." },
-        { "text": "Equity is out of the table for this deal.", "kind": "weak", "note": "어색한 곳: out of가 아니라 off. 테이블 '위에서 치운' 그림이야." },
-        { "text": "Equity is under the table for this deal.", "kind": "weak", "note": "under the table은 뒷돈, 몰래라는 뜻이 돼버려. 대형 사고." }
+        {
+          "text": "A budget increase is off the table this quarter. Let's optimize what we have.",
+          "kind": "correct",
+          "note": "정답. 명확한 off the table + 대안 방향 제시. 리더의 정리법."
+        },
+        {
+          "text": "Stop asking about the budget. The answer is no forever.",
+          "kind": "weak",
+          "note": "forever는 필요 없는 상처야. this quarter로 시점을 한정하는 게 기술."
+        },
+        {
+          "text": "Fiscal augmentation possibilities have been excluded from deliberation scope.",
+          "kind": "formal",
+          "note": "팀원이 번역기를 켜야 해. off the table 넉 자면 될 걸."
+        }
       ],
       "buddyAnswers": {
         "nuance": "협상 테이블 위(on the table)에 있던 걸 치운 것.\n\n반대말 on the table = 논의 가능.\n\"Nothing is off the table\" = 모든 옵션 열려 있다.",
         "example": "• \"A discount is on the table, but free service is off the table.\"\n• \"Layoffs are off the table this year.\"",
         "default": "협상은 테이블 은유의 세계야. on/off the table, cards on the table(내일). 테이블 시리즈로 묶어두면 안 까먹어."
-      }
+      },
+      "quizPrompt": "분기 예산 회의. 팀원이 증액을 또 요청한다. 어떤 톤으로 정리할까?"
     },
     {
-      "tfDay": 21, "word": "cards on the table", "pos": "phr.", "meaning": "패를 다 까놓고", "quizType": "reply",
+      "tfDay": 21,
+      "word": "cards on the table",
+      "pos": "phr.",
+      "meaning": "패를 다 까놓고",
+      "quizType": "reply",
       "scene": "16:30. 3주차 막바지. Alex가 진지한 얼굴로 화상 미팅을 요청했다.",
-      "npc": "alex", "quote": "Let me put my cards on the table. Our budget resets in three weeks. If we can't sign by then, I lose this deal internally.",
+      "npc": "alex",
+      "quote": "Let me put my cards on the table. Our budget resets in three weeks. If we can't sign by then, I lose this deal internally.",
       "quoteKo": "패를 다 깔게요. 우리 예산이 3주 뒤에 리셋돼요. 그 전에 서명 못 하면 저는 내부에서 이 딜을 잃습니다.",
-      "task": { "promptKo": "솔직함에 화답하며 우리 쪽 일정 제약도 공유하세요.", "koSentence": "솔직하게 말해줘서 고마워요. 저희도 패를 깔면, 법무 검토에 최소 열흘이 필요합니다." },
-      "sampleAnswers": ["I appreciate the honesty. Cards on the table from our side too: legal review needs at least ten days.", "Thanks for being upfront. Our cards on the table: we need ten days for legal, so let's work backward from that."],
+      "task": {
+        "promptKo": "솔직함에 화답하며 우리 쪽 일정 제약도 공유하세요.",
+        "koSentence": "솔직하게 말해줘서 고마워요. 저희도 패를 깔면, 법무 검토에 최소 열흘이 필요합니다."
+      },
+      "sampleAnswers": [
+        "I appreciate the honesty. Cards on the table from our side too: legal review needs at least ten days.",
+        "Thanks for being upfront. Our cards on the table: we need ten days for legal, so let's work backward from that."
+      ],
       "mentorTip": "상대가 패를 깠을 때가 신뢰를 지을 기회야. 나도 하나 까면 관계가 생기고, 숨기면 정보만 먹은 사람이 돼. 단, 다 깔 필요는 없어. 하나면 돼.",
       "mcOptions": [
-        { "text": "I appreciate the honesty. Cards on the table from our side too: legal needs ten days.", "kind": "correct", "note": "정답. 상호 개방 + 실질 정보. 딜이 급물살을 타는 순간이야." },
-        { "text": "Interesting. We'll take that into consideration.", "kind": "weak", "note": "상대는 패를 깠는데 나만 포커페이스면, 신뢰 대신 경계가 자라." },
-        { "text": "Ha! So you're desperate. The price just went up.", "kind": "weak", "note": "솔직함을 무기로 되받으면 다시는 아무도 너에게 패를 안 까." }
+        {
+          "text": "Let me put my cards on the table: we can't start before March.",
+          "kind": "correct",
+          "note": "정답. 패를 깔고 현실 일정 공유. 킥오프에서 이 한마디가 뒤의 석 달을 구해."
+        },
+        {
+          "text": "We'll see how it goes. Timing is flexible-ish.",
+          "kind": "weak",
+          "note": "ish로 얼버무린 일정은 반드시 사고로 돌아와. 깔 건 지금 깔아."
+        },
+        {
+          "text": "Allow me to disclose our operational constraints comprehensively.",
+          "kind": "formal",
+          "note": "comprehensively 대신 그냥 cards on the table. 관용구가 온도를 만들어."
+        }
       ],
       "buddyAnswers": {
         "nuance": "포커에서 패를 테이블에 공개하는 그림.\n\nlay/put one's cards on the table.\n숨김없이 솔직하게 말하겠다는 선언.",
         "example": "• \"Let's all put our cards on the table before we decide.\"\n• \"She laid her cards on the table: she had another offer.\"",
         "default": "8일차 bargaining chip은 쥐는 것, 오늘은 까는 것. 언제 쥐고 언제 까는지가 협상의 리듬이야. 상대가 깠을 때 = 마무리 신호."
-      }
+      },
+      "quizPrompt": "협업 킥오프 미팅. 상대 팀이 일정을 자꾸 낙관한다. 솔직하게 정리할 타이밍. 뭐라고 할까?"
     },
     {
-      "tfDay": 22, "word": "in good faith", "pos": "phr.", "meaning": "선의로, 신의를 갖고", "quizType": "blank",
+      "tfDay": 22,
+      "word": "in good faith",
+      "pos": "phr.",
+      "meaning": "선의로, 신의를 갖고",
+      "quizType": "blank",
       "scene": "10:00. 서명 전 마지막 조율. 상대의 예산 사정을 안 김 팀장의 결정.",
-      "npc": "manager", "quote": "They were straight with us, so we act in good faith. Waive the rush fee. Small cost, big trust.",
+      "npc": "manager",
+      "quote": "They were straight with us, so we act in good faith. Waive the rush fee. Small cost, big trust.",
       "quoteKo": "저쪽이 솔직했으니 우리도 신의로 응답한다. 긴급 수수료 면제해줘. 작은 비용, 큰 신뢰.",
-      "task": { "promptKo": "빈칸 채우기: 신의의 표시로 수수료를 면제한다고 전하세요.", "koSentence": "신의의 표시로 긴급 수수료는 면제하겠습니다." },
-      "sampleAnswers": ["As a gesture of good faith, we'll waive the rush fee.", "We're waiving the rush fee in good faith, let's get this signed."],
+      "task": {
+        "promptKo": "빈칸 채우기: 신의의 표시로 수수료를 면제한다고 전하세요.",
+        "koSentence": "신의의 표시로 긴급 수수료는 면제하겠습니다."
+      },
+      "sampleAnswers": [
+        "As a gesture of good faith, we'll waive the rush fee.",
+        "We're waiving the rush fee in good faith, let's get this signed."
+      ],
       "mentorTip": "good faith는 협상의 윤활유야. 다만 순서가 있어. 상대가 먼저 신의를 보였을 때 응답으로. 아무에게나 먼저 주면 그건 그냥 할인.",
       "mcOptions": [
-        { "text": "As a gesture of ___ ___, we'll waive the rush fee. → good faith", "kind": "correct", "note": "정답. gesture of good faith가 정석 콜로케이션." },
-        { "text": "→ good heart", "kind": "weak", "note": "마음이 따뜻하시네요. 근데 비즈니스 관용구는 good faith야." },
-        { "text": "→ nice will", "kind": "weak", "note": "goodwill(호의)과 헷갈렸네. nice will은 없는 말." }
+        {
+          "text": "We returned the overpayment in good faith. → in",
+          "kind": "correct",
+          "note": "정답. in good faith. 전치사 in이 고정이야."
+        },
+        {
+          "text": "→ with",
+          "kind": "weak",
+          "note": "with good faith는 어색해. 관용구는 in good faith."
+        },
+        {
+          "text": "→ by",
+          "kind": "weak",
+          "note": "by good faith도 안 써. in 하나만 기억해."
+        }
       ],
       "buddyAnswers": {
         "nuance": "법률 용어로도 쓰는 진지한 표현.\n\nnegotiate in good faith = 성실히 협상하다.\nbad faith(기만적으로)가 반대말.",
         "example": "• \"Both parties agreed to negotiate in good faith.\"\n• \"We made a good-faith deposit to show commitment.\"",
         "default": "어제 cards on the table 다음 날 good faith가 온 건 우연이 아니야. 솔직함에는 신의로 답한다. 이 순서가 장기 파트너십의 문법이야."
-      }
+      },
+      "quizPrompt": "빈칸: 정산 오류로 돈을 더 받았다. \"우리는 ___ good faith로 초과분을 돌려줬다.\""
     },
     {
-      "tfDay": 23, "word": "bottom line", "pos": "n.", "meaning": "최종 결론, 마지노선", "quizType": "tone",
+      "tfDay": 23,
+      "word": "bottom line",
+      "pos": "n.",
+      "meaning": "최종 결론, 마지노선",
+      "quizType": "tone",
       "scene": "15:00. 최종 조건 정리 회의. Daniel이 화상으로 들어와 묻는다.",
-      "npc": "daniel", "quote": "Skip the story. What's the bottom line, what do we get, what do we give?",
+      "npc": "daniel",
+      "quote": "Skip the story. What's the bottom line, what do we get, what do we give?",
       "quoteKo": "과정은 됐고. 결론이 뭐야. 우리가 얻는 것, 내주는 것.",
-      "task": { "promptKo": "딜의 핵심을 두 줄로 요약해 보고하세요.", "koSentence": "결론: 2년 계약에 단가 4% 인하로 확보, 대신 무상 교육과 긴급 수수료를 내줍니다." },
-      "sampleAnswers": ["Bottom line: we lock a two-year term at 4 percent lower unit price. In exchange, we give free training and waive the rush fee.", "The bottom line: two years secured, 4 percent saved, and we concede training plus the rush fee."],
+      "task": {
+        "promptKo": "딜의 핵심을 두 줄로 요약해 보고하세요.",
+        "koSentence": "결론: 2년 계약에 단가 4% 인하로 확보, 대신 무상 교육과 긴급 수수료를 내줍니다."
+      },
+      "sampleAnswers": [
+        "Bottom line: we lock a two-year term at 4 percent lower unit price. In exchange, we give free training and waive the rush fee.",
+        "The bottom line: two years secured, 4 percent saved, and we concede training plus the rush fee."
+      ],
       "mentorTip": "임원에게는 bottom line부터. 이유는 그다음에 물어보면 말해. 결론 먼저 말하는 습관 하나가 '일 잘한다'는 평판의 절반이야.",
       "mcOptions": [
-        { "text": "Bottom line: two-year term at 4 percent lower price, in exchange for free training.", "kind": "correct", "note": "정답. 숫자 중심, 얻은 것과 준 것. Director가 원하는 밀도야." },
-        { "text": "Well, it started three weeks ago when we first received their proposal, and then...", "kind": "weak", "note": "Skip the story라고 했는데 story를 시작했네. 결론 먼저." },
-        { "text": "The comprehensive outcome encompasses multifaceted considerations.", "kind": "formal", "note": "말은 많은데 정보가 없어. bottom line의 정반대." }
+        {
+          "text": "Bottom line: two weeks behind, but recoverable with one more engineer.",
+          "kind": "correct",
+          "note": "정답. 결론 + 해법을 10초에. bottom line 화법의 실전이야."
+        },
+        {
+          "text": "Oh it's a long story, so it all started in June when...",
+          "kind": "weak",
+          "note": "엘리베이터는 12층까지야. story는 회의실에서."
+        },
+        {
+          "text": "The project exhibits multidimensional progress characteristics.",
+          "kind": "formal",
+          "note": "정보량 0. CFO의 시간을 훔치는 문장이야."
+        }
       ],
       "buddyAnswers": {
         "nuance": "재무제표 맨 아랫줄(순이익)에서 온 말.\n\n'다 떠나서 결국 뭐냐'가 bottom line.\n마지노선이라는 뜻으로도: \"My bottom line is 5K.\"",
         "example": "• \"The bottom line is: we can't miss this deadline.\"\n• \"What's your bottom line on price?\"",
         "default": "회의록 쓸 때 맨 위에 Bottom line: 한 줄부터 적어봐. 그 밑에 상세. 읽는 사람이 사랑하게 되는 문서 구조야."
-      }
+      },
+      "quizPrompt": "임원 엘리베이터에서 마주친 CFO: \"프로젝트 어때요?\" 10초 안에 뭐라고 답할까?"
     },
     {
-      "tfDay": 24, "word": "break even", "pos": "phr.", "meaning": "본전이 되다, 손익분기를 맞추다", "quizType": "spot",
+      "tfDay": 24,
+      "word": "break even",
+      "pos": "phr.",
+      "meaning": "본전이 되다, 손익분기를 맞추다",
+      "quizType": "spot",
       "scene": "11:00. 4주차. CFO 설득용 ROI 자료 작성 중. 차윤아가 숫자를 확인한다.",
-      "npc": "yoona", "quote": "With the new terms, they break even in month seven. Put that number front and center.",
+      "npc": "yoona",
+      "quote": "With the new terms, they break even in month seven. Put that number front and center.",
       "quoteKo": "새 조건이면 저쪽은 7개월 차에 본전을 뽑아. 그 숫자를 맨 앞에 놔.",
-      "task": { "promptKo": "7개월이면 손익분기라고 CFO 자료 첫 줄에 쓸 문장을 만드세요.", "koSentence": "이 조건이면 7개월 차에 손익분기점을 넘습니다." },
-      "sampleAnswers": ["With these terms, you break even by month seven.", "The investment breaks even in seven months, and everything after is upside."],
+      "task": {
+        "promptKo": "7개월이면 손익분기라고 CFO 자료 첫 줄에 쓸 문장을 만드세요.",
+        "koSentence": "이 조건이면 7개월 차에 손익분기점을 넘습니다."
+      },
+      "sampleAnswers": [
+        "With these terms, you break even by month seven.",
+        "The investment breaks even in seven months, and everything after is upside."
+      ],
       "mentorTip": "설득의 숫자는 하나면 돼. break-even 시점은 CFO의 모국어야. '언제 본전 뽑는지'만 명확하면 나머지 슬라이드는 장식이야.",
       "mcOptions": [
-        { "text": "With these terms, you break even by month seven.", "kind": "correct", "note": "정답. CFO가 3초 만에 이해하는 문장." },
-        { "text": "With these terms, you break the even by month seven.", "kind": "weak", "note": "어색한 곳: the가 왜 들어갔지? break even은 관사 없이 통째로." },
-        { "text": "With these terms, you become even-even by month seven.", "kind": "weak", "note": "even-even은 없는 말. 본전은 break even." }
+        {
+          "text": "The food truck broke even in its first summer.",
+          "kind": "correct",
+          "note": "정답. break even 과거형은 broke even. 관사 없이."
+        },
+        {
+          "text": "The food truck broke the even in its first summer.",
+          "kind": "weak",
+          "note": "어색한 곳: the가 끼면 안 돼. break even은 통째로 자동사구야."
+        },
+        {
+          "text": "The food truck breaked even in its first summer.",
+          "kind": "weak",
+          "note": "break의 과거는 broke. breaked는 없는 말."
+        }
       ],
       "buddyAnswers": {
         "nuance": "수익과 비용이 같아지는(even) 지점.\n\nbreak-even point = 손익분기점(BEP).\n투자, 사업, 개인 재테크까지 두루.",
         "example": "• \"The cafe took two years to break even.\"\n• \"We're not profitable yet, but we broke even last quarter.\"",
         "default": "14일차에 win over 하려던 그 CFO, 오늘 break even 숫자로 끝낸다. 사람은 말로 설득되지 않아. 자기 언어로 된 숫자에 설득되지."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 푸드트럭 창업 후기. 자연스러운 문장은?"
     },
     {
-      "tfDay": 25, "word": "margin", "pos": "n.", "meaning": "이윤, 여유 폭", "quizType": "reply",
+      "tfDay": 25,
+      "word": "margin",
+      "pos": "n.",
+      "meaning": "이윤, 여유 폭",
+      "quizType": "reply",
       "scene": "14:30. 마지막 진통. Alex가 추가 할인 1%를 요청. 김 팀장이 너에게 판단을 넘긴다.",
-      "npc": "manager", "quote": "One more percent takes our margin below fifteen. Your call, is the relationship worth it?",
+      "npc": "manager",
+      "quote": "One more percent takes our margin below fifteen. Your call, is the relationship worth it?",
       "quoteKo": "1% 더 내리면 마진이 15% 아래로 내려가. 네 판단에 맡길게. 그 관계가 그만한 가치가 있나?",
-      "task": { "promptKo": "마진을 지키는 대신 다른 걸 제안하는 결정을 내리세요.", "koSentence": "마진은 지키겠습니다. 대신 결제 조건을 30일에서 45일로 늘려주는 걸 제안합니다." },
-      "sampleAnswers": ["I'd protect the margin. Instead, let's offer extended payment terms, 45 days instead of 30.", "The margin stays. But we can give them 45-day payment terms as a goodwill move."],
+      "task": {
+        "promptKo": "마진을 지키는 대신 다른 걸 제안하는 결정을 내리세요.",
+        "koSentence": "마진은 지키겠습니다. 대신 결제 조건을 30일에서 45일로 늘려주는 걸 제안합니다."
+      },
+      "sampleAnswers": [
+        "I'd protect the margin. Instead, let's offer extended payment terms, 45 days instead of 30.",
+        "The margin stays. But we can give them 45-day payment terms as a goodwill move."
+      ],
       "mentorTip": "가격 할인은 마진을 영원히 깎지만, 결제 조건 같은 대안은 한 번의 편의야. 같은 '양보'라도 원가가 달라. 이게 협상 4주차의 눈이야.",
       "mcOptions": [
-        { "text": "I'd protect the margin. Instead, let's offer 45-day payment terms.", "kind": "correct", "note": "정답. 거절 + 대안. 마진도 관계도 지키는 답." },
-        { "text": "Sure, one percent is nothing. Give it to them.", "kind": "weak", "note": "1%가 연 단위로 쌓이면 nothing이 아니야. 팀장이 왜 물어봤겠어." },
-        { "text": "Marginal erosion of one percentage point is fiscally inadvisable.", "kind": "formal", "note": "맞는 말인데 판단이 없잖아. Your call이라고 했으면 call을 해." }
+        {
+          "text": "Software has higher margins than hardware. → margins",
+          "kind": "correct",
+          "note": "정답. 업계 비교에선 복수 margins를 자주 써."
+        },
+        {
+          "text": "→ benefits",
+          "kind": "weak",
+          "note": "benefit은 혜택. 이윤 폭은 margin이야."
+        },
+        {
+          "text": "→ moneys",
+          "kind": "weak",
+          "note": "moneys는 법률 문서에나 나오는 고어야. 여기선 margin."
+        }
       ],
       "buddyAnswers": {
         "nuance": "이윤(profit margin) 외에도 '여유 폭' 전반.\n\nmargin of error = 오차 범위.\nby a wide/narrow margin = 큰/근소한 차이로.",
         "example": "• \"Our margins are thin on hardware.\"\n• \"She won the vote by a narrow margin.\"",
         "default": "협상 끝물에 나오는 '마지막 1%'는 거의 항상 시험이야. 여기서 밀리면 서명 직전에 또 1%가 와. margin은 한 번 지키면 계속 지켜져."
-      }
+      },
+      "quizPrompt": "빈칸: 사업 모델 비교. \"소프트웨어는 하드웨어보다 ___이 높다.\""
     },
     {
-      "tfDay": 26, "word": "at stake", "pos": "phr.", "meaning": "걸려 있는", "quizType": "blank",
+      "tfDay": 26,
+      "word": "at stake",
+      "pos": "phr.",
+      "meaning": "걸려 있는",
+      "quizType": "blank",
       "scene": "10:00. 법무 검토 중 발견된 독소 조항 하나. 차윤아의 표정이 심각하다.",
-      "npc": "yoona", "quote": "Read clause 14 again. If we miss this, our whole client dataset is at stake.",
+      "npc": "yoona",
+      "quote": "Read clause 14 again. If we miss this, our whole client dataset is at stake.",
       "quoteKo": "14조 다시 읽어봐. 이거 놓치면 우리 고객 데이터셋 전체가 걸린 문제가 돼.",
-      "task": { "promptKo": "빈칸 채우기: 데이터 소유권이 걸려 있어 수정이 필요하다고 전하세요.", "koSentence": "14조는 데이터 소유권이 걸린 문제라 문구 수정이 필요합니다." },
-      "sampleAnswers": ["Clause 14 needs rewording. Our data ownership is at stake.", "We need to revise clause 14, data ownership is at stake here."],
+      "task": {
+        "promptKo": "빈칸 채우기: 데이터 소유권이 걸려 있어 수정이 필요하다고 전하세요.",
+        "koSentence": "14조는 데이터 소유권이 걸린 문제라 문구 수정이 필요합니다."
+      },
+      "sampleAnswers": [
+        "Clause 14 needs rewording. Our data ownership is at stake.",
+        "We need to revise clause 14, data ownership is at stake here."
+      ],
       "mentorTip": "at stake는 경보 단어야. 이 말이 나오면 회의실 온도가 바뀌어. 그래서 아껴 써야 해. 진짜 걸렸을 때만.",
       "mcOptions": [
-        { "text": "Clause 14 needs rewording. Our data ownership is ___ ___. → at stake", "kind": "correct", "note": "정답. 1일차 deal-breaker가 마지막에 진짜로 시험대에 올랐네." },
-        { "text": "→ on stake", "kind": "weak", "note": "on stake는 없는 말. 걸려 있는 건 at stake." },
-        { "text": "→ in the stake", "kind": "weak", "note": "스테이크 안에 뭐가 있나. 관용구는 at stake 고정." }
+        {
+          "text": "Customer trust is at stake. We disclose today, on our terms.",
+          "kind": "correct",
+          "note": "정답. at stake로 무게를 정확히 전달 + 결단. 위기 커뮤니케이션의 정석."
+        },
+        {
+          "text": "It's probably fine, let's just keep quiet and hope.",
+          "kind": "weak",
+          "note": "hope는 전략이 아니야. 걸린 게(at stake) 뭔지 못 본 답."
+        },
+        {
+          "text": "Reputational capital faces potential deleterious exposure scenarios.",
+          "kind": "formal",
+          "note": "deleterious... 브리핑에서 이러면 아무도 위기를 못 느껴."
+        }
       ],
       "buddyAnswers": {
         "nuance": "stake는 내기에 건 판돈.\n\n잃을 수 있는 상태 = at stake.\nhigh stakes(내일)와 한 가족.",
         "example": "• \"Millions are at stake in this lawsuit.\"\n• \"My reputation is at stake, so I'm triple-checking.\"",
         "default": "1일차에 정한 deal-breaker(데이터 소유권)가 26일차에 진짜 걸렸어(at stake). 첫날의 준비가 마지막 주의 방패가 되는 것. 이게 협상 서사의 완성이야."
-      }
+      },
+      "quizPrompt": "보안 이슈 브리핑. 공개 여부를 논의 중이다. 어떤 톤이 맞을까?"
     },
     {
-      "tfDay": 27, "word": "high-stakes", "pos": "adj.", "meaning": "판이 큰", "quizType": "tone",
+      "tfDay": 27,
+      "word": "high-stakes",
+      "pos": "adj.",
+      "meaning": "판이 큰",
+      "quizType": "tone",
       "scene": "16:00. 14조 수정을 요구하자 Nexa 법무팀이 미팅을 요청. 서명 이틀 전, 가장 판이 큰 회의. Daniel의 격려 DM.",
-      "npc": "daniel", "quote": "High-stakes meeting tomorrow. You've earned the seat. Stay calm, stay kind, stand firm.",
+      "npc": "daniel",
+      "quote": "High-stakes meeting tomorrow. You've earned the seat. Stay calm, stay kind, stand firm.",
       "quoteKo": "내일은 판이 큰 회의야. 그 자리는 네가 얻어낸 거야. 침착하게, 친절하게, 단단하게.",
-      "task": { "promptKo": "준비됐다고 짧고 단단하게 답하세요.", "koSentence": "준비됐습니다. 저희 입장은 명확하고, 대안도 준비해뒀습니다." },
-      "sampleAnswers": ["Ready. Our position is clear, and I have fallbacks prepared.", "I'm ready for it. Position is clear, alternatives are lined up."],
+      "task": {
+        "promptKo": "준비됐다고 짧고 단단하게 답하세요.",
+        "koSentence": "준비됐습니다. 저희 입장은 명확하고, 대안도 준비해뒀습니다."
+      },
+      "sampleAnswers": [
+        "Ready. Our position is clear, and I have fallbacks prepared.",
+        "I'm ready for it. Position is clear, alternatives are lined up."
+      ],
       "mentorTip": "high-stakes 상황일수록 문장은 짧아져야 해. 긴장하면 말이 길어지고, 말이 길어지면 약점이 새어 나가. 짧은 문장 = 준비된 사람.",
       "mcOptions": [
-        { "text": "Ready. Our position is clear, and I have fallbacks prepared.", "kind": "correct", "note": "정답. 세 문장 요소가 전부 자신감의 증거. Director가 안심해." },
-        { "text": "Honestly I'm super nervous, what if they get angry??", "kind": "weak", "note": "불안 공유는 사수에게(그것도 회의 전에). Director에겐 준비 상태를." },
-        { "text": "Rest assured, all contingencies have been comprehensively architected.", "kind": "formal", "note": "architected... 건축하니. 짧은 격려엔 짧은 확신으로." }
+        {
+          "text": "She thrives in high-stakes negotiations.",
+          "kind": "correct",
+          "note": "정답. high-stakes를 하이픈 형용사로. thrive와 찰떡 조합."
+        },
+        {
+          "text": "She thrives in high-stake negotiations.",
+          "kind": "weak",
+          "note": "어색한 곳: stake가 아니라 stakes. 판돈은 항상 복수야."
+        },
+        {
+          "text": "She thrives in tall-stakes negotiations.",
+          "kind": "weak",
+          "note": "tall은 키. 판이 큰 건 high-stakes."
+        }
       ],
       "buddyAnswers": {
         "nuance": "판돈(stakes)이 높은(high).\n\nhigh-stakes meeting/negotiation/exam.\n하이픈으로 묶어 형용사로 쓰는 게 포인트.",
         "example": "• \"It was a high-stakes presentation, the whole budget depended on it.\"\n• \"He performs well in high-stakes situations.\"",
         "default": "어제 at stake(걸려 있다), 오늘 high-stakes(판이 크다). stake 가족 이틀 연속. 판이 클수록 기본기가 이겨. 침착, 친절, 단단. Daniel의 세 단어를 기억해."
-      }
+      },
+      "quizPrompt": "어색한 곳 찾기: 동료 칭찬. 자연스러운 문장은?"
     },
     {
-      "tfDay": 28, "word": "best and final", "pos": "phr.", "meaning": "최종 제안", "quizType": "spot",
+      "tfDay": 28,
+      "word": "best and final",
+      "pos": "phr.",
+      "meaning": "최종 제안",
+      "quizType": "spot",
       "scene": "15:30. 판이 컸던 회의는 우리 완승. 14조 수정 관철. 이제 마지막 숫자만 남았다. 김 팀장의 지시.",
-      "npc": "manager", "quote": "Send them our best and final offer today. One page. No more rounds after this.",
+      "npc": "manager",
+      "quote": "Send them our best and final offer today. One page. No more rounds after this.",
       "quoteKo": "오늘 최종 제안 보내. 한 페이지로. 이 뒤로 라운드는 없어.",
-      "task": { "promptKo": "최종 제안임을 명확히 하는 메일 첫 문장을 쓰세요.", "koSentence": "저희의 최종 제안을 보내드립니다. 이 조건이 저희가 드릴 수 있는 최선입니다." },
-      "sampleAnswers": ["Please find our best and final offer attached. These are the strongest terms we can put forward.", "This is our best and final offer. We believe it reflects everything we've built over the past month."],
+      "task": {
+        "promptKo": "최종 제안임을 명확히 하는 메일 첫 문장을 쓰세요.",
+        "koSentence": "저희의 최종 제안을 보내드립니다. 이 조건이 저희가 드릴 수 있는 최선입니다."
+      },
+      "sampleAnswers": [
+        "Please find our best and final offer attached. These are the strongest terms we can put forward.",
+        "This is our best and final offer. We believe it reflects everything we've built over the past month."
+      ],
       "mentorTip": "best and final은 한 번만 쓸 수 있는 단어야. 이 말 하고 또 양보하면 다음 협상부터 아무도 네 final을 안 믿어. 쓸 거면 진짜 final일 때.",
       "mcOptions": [
-        { "text": "Please find our best and final offer attached.", "kind": "correct", "note": "정답. 조달, 입찰, B2B에서 쓰는 정식 표현 그대로." },
-        { "text": "Please find our best and last offer attached.", "kind": "weak", "note": "어색한 곳: last가 아니라 final. best and final이 굳은 관용구야." },
-        { "text": "Please find our bestest final offer attached.", "kind": "weak", "note": "bestest는 유치원 영어. 계약 메일에서 만나면 안 될 단어." }
+        {
+          "text": "The client wants best and final from all vendors by noon. One shot, make it count.",
+          "kind": "correct",
+          "note": "정답. BAFO 상황 공지의 정석. One shot의 무게까지 전달."
+        },
+        {
+          "text": "They want our best and last by noon.",
+          "kind": "weak",
+          "note": "best and last가 아니라 best and final. 입찰 용어는 정확하게."
+        },
+        {
+          "text": "Final pricing submissions are mandated by the meridian hour.",
+          "kind": "formal",
+          "note": "meridian hour... 정오면 noon이야. 팀이 사전 찾다 마감 놓쳐."
+        }
       ],
       "buddyAnswers": {
         "nuance": "입찰 용어 BAFO(Best And Final Offer)에서.\n\n'이게 마지막 라운드'라는 공식 선언.\n이후 재협상 요청은 결례로 간주돼.",
         "example": "• \"The buyer asked all vendors for their best and final by Friday.\"\n• \"We submitted our best and final. Now we wait.\"",
         "default": "final의 무게는 그 사람의 이력이 정해. 말한 대로 끝내는 사람의 final은 강철이고, 매번 흔들리는 사람의 final은 종이야. 오늘부터 네 final을 강철로 만들어."
-      }
+      },
+      "quizPrompt": "입찰 마감 상황. 발주사가 전 업체에 정오까지 최종가를 요구했다. 팀 공지로 맞는 문장은?"
     },
     {
-      "tfDay": 29, "word": "level with you", "pos": "phr.", "meaning": "솔직하게 말하다", "quizType": "reply",
+      "tfDay": 29,
+      "word": "level with you",
+      "pos": "phr.",
+      "meaning": "솔직하게 말하다",
+      "quizType": "reply",
       "scene": "17:00. 서명 전날 밤. Alex가 전화를 걸어왔다. 목소리가 부드럽다.",
-      "npc": "alex", "quote": "Let me level with you. This was the toughest and fairest negotiation I've had in years. Thank you.",
+      "npc": "alex",
+      "quote": "Let me level with you. This was the toughest and fairest negotiation I've had in years. Thank you.",
       "quoteKo": "솔직히 말할게요. 최근 몇 년 중 가장 힘들면서도 가장 공정한 협상이었어요. 고마워요.",
-      "task": { "promptKo": "같은 솔직함으로 화답하고 내일 서명을 확인하세요.", "koSentence": "저도 솔직히 말하면 많이 배웠습니다. 내일 서명 자리에서 뵙죠." },
-      "sampleAnswers": ["To level with you too, I learned a lot from this one. See you at the signing tomorrow.", "Same here, honestly. This deal taught me a lot. Tomorrow, we sign."],
+      "task": {
+        "promptKo": "같은 솔직함으로 화답하고 내일 서명을 확인하세요.",
+        "koSentence": "저도 솔직히 말하면 많이 배웠습니다. 내일 서명 자리에서 뵙죠."
+      },
+      "sampleAnswers": [
+        "To level with you too, I learned a lot from this one. See you at the signing tomorrow.",
+        "Same here, honestly. This deal taught me a lot. Tomorrow, we sign."
+      ],
       "mentorTip": "level with는 상대와 같은 높이(level)에 서서 말하는 그림이야. 협상의 끝에 이 말이 나왔다는 건, 숫자 싸움이 관계로 승격됐다는 뜻이야.",
       "mcOptions": [
-        { "text": "To level with you too, I learned a lot from this one. See you tomorrow.", "kind": "correct", "note": "정답. 솔직함에 솔직함으로. 딜의 마지막 밤에 어울리는 온도야." },
-        { "text": "Acknowledged. The sentiment is reciprocated on an organizational level.", "kind": "formal", "note": "organizational level... 사람 대 사람의 전화였잖아." },
-        { "text": "Yeah whatever, see you tomorrow I guess.", "kind": "weak", "note": "한 달의 협상이 whatever로 끝나면 다음 딜은 처음부터 다시 얼어붙어." }
+        {
+          "text": "I'll level with you: the budget is gone. → level",
+          "kind": "correct",
+          "note": "정답. 솔직 모드 스위치를 켜는 관용구. 뒤에 오는 나쁜 소식을 받아들이게 해줘."
+        },
+        {
+          "text": "→ flat",
+          "kind": "weak",
+          "note": "flat with you는 없는 말. 같은 높이는 level."
+        },
+        {
+          "text": "→ honest",
+          "kind": "weak",
+          "note": "be honest with you는 되지만 I'll honest with you는 문법이 깨져. level은 동사라 바로 돼."
+        }
       ],
       "buddyAnswers": {
         "nuance": "level = 평평한, 같은 높이.\n\n숨기던 걸 내려놓고 눈높이 맞춰 말할 때.\n\"I'll level with you\"로 운을 떼는 경우가 많아.",
         "example": "• \"I'll level with you: we can't afford this without cuts elsewhere.\"\n• \"Level with me, is the deadline realistic?\"",
         "default": "21일차 cards on the table이 정보의 솔직함이라면, level with you는 마음의 솔직함이야. 협상은 숫자로 시작해서 이 단어로 끝나."
-      }
+      },
+      "quizPrompt": "빈칸: 예산 회의에서 솔직하게 말문을 열 때. \"___ with you, 남은 예산이 없습니다.\""
     },
     {
-      "tfDay": 30, "word": "close the deal", "pos": "phr.", "meaning": "계약을 성사시키다", "quizType": "reply",
+      "tfDay": 30,
+      "word": "close the deal",
+      "pos": "phr.",
+      "meaning": "계약을 성사시키다",
+      "quizType": "reply",
       "scene": "10:00. 서명식. 펜이 종이를 긁는 소리. 악수. 김 팀장이 팀 전체 앞에서 말한다.",
-      "npc": "manager", "quote": "Thirty days ago I handed you a file. Today you closed the deal. Negotiation TF, complete. What did it teach you?",
+      "npc": "manager",
+      "quote": "Thirty days ago I handed you a file. Today you closed the deal. Negotiation TF, complete. What did it teach you?",
       "quoteKo": "30일 전에 내가 파일 하나를 건넸지. 오늘 네가 딜을 닫았어. 협상 TF 수료야. 뭘 배웠나?",
-      "task": { "promptKo": "협상 TF 30일에서 배운 것을 한 문장으로 정리하세요.", "koSentence": "딜을 닫는 건 마지막 서명이 아니라, 첫날 정한 원칙이라는 걸 배웠습니다." },
-      "sampleAnswers": ["I learned that what closes a deal isn't the final signature, it's the principles you set on day one.", "Closing the deal starts on day one. The signature is just where it becomes visible."],
+      "task": {
+        "promptKo": "협상 TF 30일에서 배운 것을 한 문장으로 정리하세요.",
+        "koSentence": "딜을 닫는 건 마지막 서명이 아니라, 첫날 정한 원칙이라는 걸 배웠습니다."
+      },
+      "sampleAnswers": [
+        "I learned that what closes a deal isn't the final signature, it's the principles you set on day one.",
+        "Closing the deal starts on day one. The signature is just where it becomes visible."
+      ],
       "mentorTip": "close the deal은 세일즈의 심장 같은 표현이야. 그리고 진실은: 좋은 클로징은 좋은 오프닝의 결과야. deal-breaker를 정한 1일차가 오늘을 만들었어. 수료 축하해. 🤝",
       "mcOptions": [
-        { "text": "What closes a deal isn't the signature, it's the principles you set on day one.", "kind": "correct", "note": "정답. 30일의 서사를 한 문장에 담았어. 이게 수료의 답이야." },
-        { "text": "I learned many valuable things throughout this meaningful journey.", "kind": "weak", "note": "수료 소감 자동 생성기 같아. 구체가 없으면 배움도 없어 보여." },
-        { "text": "The transaction has been consummated per the established parameters.", "kind": "formal", "note": "마지막 날까지 로봇으로 남을 셈이니. 사람의 언어로 마무리해." }
+        {
+          "text": "You've done the work. Now go close the deal.",
+          "kind": "correct",
+          "note": "정답. 30일 전 네가 받았던 격려를 이제 네가 보내는 차례야. pay it forward."
+        },
+        {
+          "text": "Don't mess it up, everything depends on this.",
+          "kind": "weak",
+          "note": "부담은 격려가 아니야. 긴장한 사람에겐 확신을 줘."
+        },
+        {
+          "text": "May the culmination of your endeavors prove fruitful.",
+          "kind": "formal",
+          "note": "축문이니. 후배 DM은 두 문장이면 충분해."
+        }
       ],
       "buddyAnswers": {
         "nuance": "딜의 문을 닫는(close) 그림.\n\nseal the deal, land the deal도 비슷.\ncloser = 마무리에 강한 사람이라는 칭호.",
         "example": "• \"She flew to Singapore to close the deal in person.\"\n• \"We're one signature away from closing.\"",
         "default": "협상 TF 30일 완주! deal-breaker로 시작해 close the deal로 끝났어. 이 30개 단어는 이제 너의 협상 무기고야. 다음 TF에서 만나. 🎖️"
-      }
+      },
+      "quizPrompt": "후배가 첫 단독 딜의 마지막 미팅을 앞두고 긴장하고 있다. 뭐라고 보낼까?"
     }
-  ]
+  ],
+  "principle": "퀴즈(mcOptions)와 영작 미션은 반드시 서로 다른 상황·다른 문장을 쓴다. 퀴즈 = 제3의 미니 상황에서 표현 이해 확인, 영작 = 오늘 딜 장면에 직접 적용. (Day 1-90 '퀴즈 답 = 영작 답' 피드백 반영)"
 }
