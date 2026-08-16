@@ -1617,6 +1617,7 @@ const CHARACTERS = {
   park: { id: "park", name: "박 대리", role: "동기 · 옆자리", avatar: "박", color: "#B89968", note: "번역 부탁이 잦음. 점심 메이트." },
   hr: { id: "hr", name: "인사팀", role: "12F", avatar: "HR", color: "#8A8579", note: "공지 발송 담당." },
   alex: { id: "alex", name: "Alex Chen", role: "Nexa · BD Lead", avatar: "A", color: "#2D6E8A", note: "파트너사 협상 카운터파트. 웃으면서 만만치 않음." },
+  rookie: { id: "rookie", name: "이수민", role: "신입 · 내 멘티", avatar: "이", color: "#5C8A4A", note: "피플 TF에서 내가 온보딩을 맡은 신입. 눈치 빠르지만 영어 슬랙 앞에서 얼어붙음." },
 };
 
 // 단어 + 시추에이션, Day 1~60 (status는 USER.currentDay 기준 자동 계산)
@@ -4336,7 +4337,7 @@ const _signupKST = _localUser?.signupDate
   : _todayKST;
 const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
 // ★ 시즌 3: 코스 전체 상한 90일 (Day 1-30 수습 / 31-60 사원 / 61-90 대리)
-const _autoDay = Math.max(1, Math.min(90, _daysSince + 1));
+const _autoDay = Math.max(1, Math.min(210, _daysSince + 1));  // 90 + TF 4트랙×30일 = 210
 
 // ── 레벨 (수습 → 사원 → ...) ──
 // users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
@@ -4368,7 +4369,8 @@ const _resolvedDay = (_isInternal && _localUser?.dayInCompany > 1)
 // ── 시즌/직급 단계 (day 기준) ──
 // 진도 분모는 단계마다 바뀜: 수습 1-30(/30), 사원 31-60(/60), 대리 트랙 61-90(/90).
 // 랭크: 수습(1-30) → 사원(31-89) → Day 90 완주 시 대리 승진.
-const _phaseCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : 90);
+// ★ 대리(Day 91+)부터는 TF 시대 포함 근속 분모 210 (90 + 4트랙x30)
+const _phaseCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : (_resolvedDay <= 90 ? 90 : 210));
 const _rankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime" : "probation");
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
@@ -5452,15 +5454,25 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   let today = SCENARIOS.find(s => s.day === USER.workingDay) || SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
   // ── TF 트랙 라우팅: 대리 + 트랙 배정이면 오늘 콘텐츠를 트랙 시나리오로 교체 ──
   const _tfNow2 = _tfState();
-  if (_tfNow2.track && (USER.realCurrentDay || USER.currentDay) >= 90) {
+  // ★ Day 90은 원래 피날레 콘텐츠 유지, TF 콘텐츠는 Day 91부터 (> 90)
+  const _tfRealDay = USER.realCurrentDay || USER.currentDay;
+  if (_tfNow2.track && _tfRealDay > 90) {
     const _tid = _tfNow2.track.id || _tfNow2.track;
     const _meta = TF_TRACKS.find(t => t.id === _tid);
     const _data = window.__TF_SCN[_tid];
+    // TF Day = 회사 Day 카운터 기준 (Day 91=1/30, Day 92=2/30, dev 점프도 그대로 반영)
     let _tfDayNum = 1;
-    try {
-      const st = new Date(_tfNow2.track.startedAt || new Date().toISOString());
-      _tfDayNum = Math.max(1, Math.min(30, Math.floor((Date.now() - st.getTime()) / 86400000) + 1));
-    } catch (e) {}
+    const _tfFirstDay = Number(_tfNow2.track.startedDay) || 0;
+    if (_tfFirstDay) {
+      _tfDayNum = Math.max(1, Math.min(30, _tfRealDay - _tfFirstDay + 1));
+    } else {
+      // 구버전 저장분 (startedDay 없음): 선택 날짜 기준 KST 경과일로 계산
+      try {
+        const _kst = d => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+        const _diff = Math.floor((Date.parse(_kst(new Date())) - Date.parse(_kst(_tfNow2.track.startedAt))) / 86400000);
+        _tfDayNum = Math.max(1, Math.min(30, _diff < 1 ? 1 : _diff));
+      } catch (e) {}
+    }
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
       if (raw && _meta) {
@@ -6345,7 +6357,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
       <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2 }}>
         <div className={"stamp small" + (done ? " blue" : "")} style={{ fontSize: done ? "10px" : "7px", letterSpacing: "0.02em" }}>{done ? "DONE" : "PENDING"}</div>
       </div>
-      <div className="scene-card-tag">오늘의 시추에이션 · DAY {scenario.day}</div>
+      <div className="scene-card-tag">{scenario._tfInfo ? `오늘의 시추에이션 · ${scenario._tfInfo.name} DAY ${scenario._tfInfo.tfDay}/30` : `오늘의 시추에이션 · DAY ${scenario.day}`}</div>
       <div className="scene-card-body">
         <div className="scene-card-time">{scenario.tags.map(t => "#" + t).join("  ")}</div>
         <div className="scene-card-scene">📍 {scenario.scene}</div>
@@ -10327,9 +10339,27 @@ function _tfState() {
   try {
     const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
     const em = u.email || "guest";
-    const track = JSON.parse(localStorage.getItem("__OD_TF_TRACK_" + em) || "null");
-    const done = JSON.parse(localStorage.getItem("__OD_TF_DONE_" + em) || "[]");
-    return { track: track || null, done: Array.isArray(done) ? done : [] };
+    let track = JSON.parse(localStorage.getItem("__OD_TF_TRACK_" + em) || "null");
+    const done0 = JSON.parse(localStorage.getItem("__OD_TF_DONE_" + em) || "[]");
+    const done = Array.isArray(done0) ? done0 : [];
+    // ── 30일 수료 자동 처리: startedDay부터 30일이 다 지나면 (예: 91 시작 → Day 121)
+    //    수료 목록으로 옮기고 트랙을 비워서 다음 TF 신청서가 뜨게 한다 ──
+    const _rd = (typeof USER !== "undefined" && (USER.realCurrentDay || USER.currentDay)) || 0;
+    if (track && _rd > 90) {
+      const _first = Number(track.startedDay) || 91;
+      if (_rd >= _first + 30) {
+        const _gid = track.id || track;
+        if (_gid && !done.includes(_gid)) done.push(_gid);
+        localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done));
+        localStorage.removeItem("__OD_TF_TRACK_" + em);
+        localStorage.setItem("__OD_TF_GRAD_" + em, JSON.stringify({ id: _gid, day: _rd, at: new Date().toISOString() }));
+        if (u.email && window.OD?.updateProgress) {
+          window.OD.updateProgress(u.email, { tf_track: null, tf_done: done }).catch(() => {});
+        }
+        track = null;
+      }
+    }
+    return { track: track || null, done };
   } catch (e) { return { track: null, done: [] }; }
 }
 
@@ -10359,9 +10389,11 @@ function TrackSelectModal({ done, onClose }) {
     if (!pick || saved) return;
     setSaved(true);
     const startedAt = new Date().toISOString();
+    // TF Day 1이 표시되는 회사 Day. 보통 Day 90 심사 직후 선택 → Day 91부터 1/30.
+    const startedDay = Math.max(91, Number(local.dayInCompany) || 90);
     try {
       const em = local.email || "guest";
-      localStorage.setItem("__OD_TF_TRACK_" + em, JSON.stringify({ id: pick, startedAt }));
+      localStorage.setItem("__OD_TF_TRACK_" + em, JSON.stringify({ id: pick, startedAt, startedDay }));
       localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done || []));
     } catch (e) {}
     if (local.email && window.OD?.updateProgress) {
@@ -10388,6 +10420,15 @@ function TrackSelectModal({ done, onClose }) {
         ) : (
           <>
             <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>인사 발령 · TF 신청서</div>
+            {nth > 1 && (() => {
+              const lastId = (done || [])[(done || []).length - 1];
+              const lastMeta = TF_TRACKS.find(t => t.id === lastId);
+              return lastMeta ? (
+                <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 9, padding: "9px 12px", marginBottom: 12, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.5 }}>
+                  🎉 <b style={{ color: lastMeta.color }}>{lastMeta.emoji} {lastMeta.name}</b> 30일 수료! 인사팀에 수료 기록이 등록됐어요.
+                </div>
+              ) : null;
+            })()}
             <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginBottom: 6 }}>
               {nth === 1 ? `${name} 대리님, 첫 TF를 선택하세요` : `다음 TF를 선택하세요 (${nth}번째)`}
             </h2>
@@ -12382,7 +12423,7 @@ window.SimApp = App;
         break;
       case 'tf-nego': case 'tf-people': case 'tf-docs': case 'tf-meeting': {
         const tid = act.replace('tf-', '');
-        localStorage.setItem('__OD_TF_TRACK_' + (u.email || 'guest'), JSON.stringify({ id: tid, startedAt: new Date().toISOString() }));
+        localStorage.setItem('__OD_TF_TRACK_' + (u.email || 'guest'), JSON.stringify({ id: tid, startedAt: new Date().toISOString(), startedDay: Math.max(91, Number(u.dayInCompany) || 90) }));
         reloadCleanUrl(); break;
       }
       case 'tf-clear':

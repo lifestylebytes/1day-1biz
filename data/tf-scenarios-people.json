@@ -1,0 +1,616 @@
+{
+  "track": "people",
+  "trackName": "피플 TF",
+  "arc": "첫 멘티, 신입 이수민의 온보딩 30일. 1주 관계 만들기, 2주 가르치기, 3주 위기(실수와 번아웃), 4주 성장과 첫 단독 발표.",
+  "npcs": {
+    "rookie": "이수민 · 신입 (내 첫 멘티)",
+    "manager": "김 팀장",
+    "mentor": "차윤아 · 동료 (전 사수)",
+    "daniel": "Daniel Park · 런던 본사 Director",
+    "hr": "인사팀"
+  },
+  "principle": "퀴즈(mcOptions)와 영작 미션은 반드시 서로 다른 상황·다른 문장을 쓴다.",
+  "scenarios": [
+    {
+      "tfDay": 1, "word": "one-on-one", "pos": "n.", "meaning": "1:1 면담", "quizType": "reply",
+      "scene": "09:30. 피플 TF 첫날. 김 팀장이 옆자리를 가리킨다. 신입 이수민, 오늘 입사. 그리고 멘토는 너다.",
+      "npc": "manager", "quote": "Meet Sumin, your first mentee. Set up a weekly one-on-one with her, starting today.",
+      "quoteKo": "이수민이야, 네 첫 멘티. 주간 1:1부터 잡아줘. 오늘부터.",
+      "task": { "promptKo": "수민에게 첫 1:1을 제안하는 메시지를 보내세요.", "koSentence": "환영해요 수민님. 매주 목요일에 30분씩 1:1 어때요?" },
+      "sampleAnswers": ["Welcome, Sumin! How about a 30-minute one-on-one every Thursday?", "Welcome aboard! Let's set up a weekly one-on-one, Thursdays work for me."],
+      "mentorTip": "one-on-one은 회의가 아니라 관계야. 첫 1:1의 절반은 일 얘기 말고 사람 얘기로 채워. 90일 전 네가 차윤아에게 받았던 그거.",
+      "quizPrompt": "옆 팀 동료: \"팀장님이랑 면담이 잡혔는데 뭘 준비해야 하지?\" 뭐라고 조언할까?",
+      "mcOptions": [
+        { "text": "Bring two things to the one-on-one: what's going well, and where you're stuck.", "kind": "correct", "note": "정답. 1:1 준비물의 정석 두 가지. 잘되는 것과 막힌 것." },
+        { "text": "Just wing it, those meetings mean nothing.", "kind": "weak", "note": "1:1을 버리는 사람은 성장 기회도 버리는 거야." },
+        { "text": "Prepare a comprehensive 20-slide performance deck.", "kind": "formal", "note": "1:1에 슬라이드 20장 들고 오면 팀장이 도망가." }
+      ],
+      "buddyAnswers": {
+        "nuance": "1대 1로 마주 앉는 정기 면담.\n미국 회사 문화의 핵심 의례야. 명사로 굳어서 관사 붙여 a one-on-one.",
+        "example": "• \"Can we move our one-on-one to Friday?\"\n• \"I raised it in my one-on-one with the manager.\"",
+        "default": "피플 TF 첫날. 이제 네가 사수 쪽 의자에 앉는다. 배웠던 것을 줄 차례야."
+      }
+    },
+    {
+      "tfDay": 2, "word": "constructive feedback", "pos": "n.", "meaning": "건설적 피드백", "quizType": "blank",
+      "scene": "11:00. 차윤아가 커피를 건네며. 멘토 데뷔 소감을 묻더니 한마디 얹는다.",
+      "npc": "mentor", "quote": "One rule: never just say 'good job' or 'this is wrong'. Constructive feedback always points to the next step.",
+      "quoteKo": "규칙 하나. '잘했어'나 '틀렸어'로 끝내지 마. 건설적 피드백은 항상 다음 걸음을 가리켜.",
+      "task": { "promptKo": "빈칸 채우기: 수민의 초안에 대해 피드백 방식을 정하는 한 줄.", "koSentence": "초안에 대해 건설적 피드백을 줄게요, 고칠 방향과 함께요." },
+      "sampleAnswers": ["I'll give you constructive feedback on the draft, with directions to fix it.", "Let me share some constructive feedback on your draft, including what to try next."],
+      "mentorTip": "feedback 앞에 constructive가 붙는 순간 약속이 생겨. '깎아내리려는 게 아니라 세우려는 것'이라는 약속. 그 약속을 지키는 게 멘토의 일이야.",
+      "quizPrompt": "빈칸: 팀 회고 규칙 소개. \"우리 회고의 원칙은 비난 말고 ___ feedback입니다.\"",
+      "mcOptions": [
+        { "text": "Our retro rule: no blame, only ___ feedback. → constructive", "kind": "correct", "note": "정답. 회고 문화의 표준 문구야." },
+        { "text": "→ positive", "kind": "weak", "note": "positive feedback은 칭찬만. 고칠 점을 담으려면 constructive." },
+        { "text": "→ soft", "kind": "weak", "note": "soft feedback은 뭉툭해서 도움이 안 돼. 부드러움과 건설은 달라." }
+      ],
+      "buddyAnswers": {
+        "nuance": "construct(짓다)에서 온 말.\n허물지 않고 지어 올리는 피드백. 반대는 destructive criticism.",
+        "example": "• \"She's great at giving constructive feedback without hurting morale.\"\n• \"Any constructive feedback on my slides?\"",
+        "default": "공식: 사실 + 영향 + 다음 걸음. 이 3종이 없으면 그냥 감상평이야."
+      }
+    },
+    {
+      "tfDay": 3, "word": "call out", "pos": "phr.", "meaning": "(문제를) 짚어 말하다", "quizType": "tone",
+      "scene": "15:00. 수민이 고객 메일에 반말 섞인 번역기 문장을 그대로 붙여 보내려 한다. 지금 짚어야 한다.",
+      "npc": "rookie", "quote": "I was about to hit send... is something wrong with it?",
+      "quoteKo": "지금 막 보내려고 했는데요... 뭔가 문제 있나요?",
+      "task": { "promptKo": "기분 상하지 않게, 그러나 명확하게 문제를 짚어주세요.", "koSentence": "보내기 전에 하나만 짚을게요. 이 문장은 고객에게 너무 캐주얼해요. 같이 고쳐봐요." },
+      "sampleAnswers": ["Before you send it, let me call out one thing: this line reads too casual for a client. Let's fix it together.", "One thing to call out before sending: the tone here is too casual for a client email. Want to rework it together?"],
+      "mentorTip": "call out은 타이밍이 생명이야. 보낸 뒤에 짚으면 비난이 되고, 보내기 전에 짚으면 보호가 돼. 같은 말인데 순서가 관계를 정해.",
+      "quizPrompt": "회의에서 데이터 오류를 발견했다. 발표자를 공격하지 않고 짚는 톤은?",
+      "mcOptions": [
+        { "text": "I want to call out a possible error in slide 3, the totals don't add up.", "kind": "correct", "note": "정답. 사람이 아니라 숫자를 짚었어. call out의 품격." },
+        { "text": "Who made this slide? This is embarrassing.", "kind": "weak", "note": "사람을 겨누면 지적이 아니라 공개 처형이야." },
+        { "text": "I hereby formally register an objection to the data integrity.", "kind": "formal", "note": "법정이니. 회의에선 사람 말로 짚어." }
+      ],
+      "buddyAnswers": {
+        "nuance": "밖으로(out) 불러내다(call).\n문제를 공개적으로 지목하는 것. 잘 쓰면 용기, 잘못 쓰면 저격.",
+        "example": "• \"Thanks for calling that out before the deadline.\"\n• \"She called out the risk everyone was ignoring.\"",
+        "default": "shout-out(내일)과 짝. call out은 문제를, shout-out은 공을 지목해. 방향만 반대인 쌍둥이."
+      }
+    },
+    {
+      "tfDay": 4, "word": "shout-out", "pos": "n.", "meaning": "공개 칭찬", "quizType": "spot",
+      "scene": "17:30. 수민이 어제 그 메일을 완벽하게 고쳐 보냈고, 고객이 칭찬 답장을 보냈다. 김 팀장이 슬쩍 묻는다.",
+      "npc": "manager", "quote": "Nice save yesterday. Are you going to give her a shout-out in the team channel, or should I?",
+      "quoteKo": "어제 잘 막았더라. 팀 채널에 공개 칭찬은 네가 할래, 내가 할까?",
+      "task": { "promptKo": "팀 채널에 올릴 수민 공개 칭찬을 쓰세요.", "koSentence": "수민님께 공개 칭찬 하나. 첫 주에 고객 메일을 혼자 마무리했어요. 고객이 먼저 칭찬했습니다." },
+      "sampleAnswers": ["Shout-out to Sumin: she handled a client email solo in her first week, and the client praised it first.", "Quick shout-out to Sumin, who nailed a tricky client email in week one. The client noticed too."],
+      "mentorTip": "지적은 1:1로, 칭찬은 공개로. 이 방향만 지켜도 팀의 절반은 관리돼. 어제 call out을 조용히 했으니 오늘 shout-out은 크게.",
+      "quizPrompt": "어색한 곳 찾기: 주간 회의 시작 멘트. 자연스러운 문장은?",
+      "mcOptions": [
+        { "text": "Quick shout-out to the design team for the launch page.", "kind": "correct", "note": "정답. shout-out to + 대상. 회의 오프닝의 정석." },
+        { "text": "Quick shouting-out to the design team for the launch page.", "kind": "weak", "note": "어색한 곳: shouting-out이 아니라 shout-out. 명사로 굳은 형태야." },
+        { "text": "Quick shout-up to the design team for the launch page.", "kind": "weak", "note": "shout-up은 없는 말. out이야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "라디오 DJ가 청취자 이름을 불러주던 것에서.\n공개 석상에서 이름 집어 칭찬하기. give a shout-out to.",
+        "example": "• \"Big shout-out to Minji for the all-nighter.\"\n• \"He always gives shout-outs in the town hall.\"",
+        "default": "칭찬은 구체적일수록 세. '수고했어' 말고 '그 메일의 그 문장이 좋았어'."
+      }
+    },
+    {
+      "tfDay": 5, "word": "onboarding", "pos": "n.", "meaning": "신규 입사자 적응 과정", "quizType": "reply",
+      "scene": "10:00. 인사팀에서 메시지. 수민의 온보딩 체크리스트 진행 상황을 묻는다.",
+      "npc": "hr", "quote": "Week one wrap-up: how is Sumin's onboarding going? Anything blocking her?",
+      "quoteKo": "첫 주 마감 점검이에요. 수민님 온보딩은 어때요? 막힌 것 있나요?",
+      "task": { "promptKo": "온보딩 진행 상황을 한 줄로 보고하세요.", "koSentence": "온보딩은 순조로워요. 계정 권한 하나만 아직 안 나왔는데, 오늘 요청해뒀습니다." },
+      "sampleAnswers": ["Onboarding is going smoothly. One system access is still pending, I've requested it today.", "Her onboarding is on track. The only blocker is one account permission, already requested."],
+      "mentorTip": "온보딩의 적은 거창한 게 아니라 계정 권한, 회의 초대 누락 같은 잔돌이야. 멘토의 일은 그 잔돌을 먼저 치워주는 것.",
+      "quizPrompt": "친구가 이직 첫 주: \"새 회사 적응 기간을 뭐라고 불러? 서류엔 어렵게 써 있던데.\" 답은?",
+      "mcOptions": [
+        { "text": "That's your onboarding. Usually the first few weeks with a checklist and a buddy.", "kind": "correct", "note": "정답. 개념 + 실제 모습까지 설명해주는 답." },
+        { "text": "It's called probation, so be scared.", "kind": "weak", "note": "수습(probation)과 온보딩은 달라. 겁줄 일도 아니고." },
+        { "text": "The organizational assimilation protocol.", "kind": "formal", "note": "동화 프로토콜... SF 아니고 onboarding 한 단어면 돼." }
+      ],
+      "buddyAnswers": {
+        "nuance": "배에 태우는(on board) 과정.\n반대말 offboarding(퇴사 절차)도 세트로 알아두면 좋아.",
+        "example": "• \"Our onboarding takes two weeks.\"\n• \"She built the onboarding docs from scratch.\"",
+        "default": "1일1비 신청서에도 있던 그 단어! 네가 겪은 온보딩을 이제 네가 설계하는 중."
+      }
+    },
+    {
+      "tfDay": 6, "word": "handover", "pos": "n.", "meaning": "인수인계", "quizType": "blank",
+      "scene": "14:00. 차윤아의 제안. 내 업무 중 주간 리포트를 수민에게 넘겨 실전 훈련을 시키자고 한다.",
+      "npc": "mentor", "quote": "Best way to train her? Give her something real. Do a proper handover of the weekly report.",
+      "quoteKo": "제일 좋은 훈련? 진짜 일을 주는 거야. 주간 리포트, 제대로 인수인계해.",
+      "task": { "promptKo": "빈칸 채우기: 다음 주부터 리포트를 넘기겠다고 수민에게 말하세요.", "koSentence": "다음 주부터 주간 리포트를 인수인계할게요. 문서로 정리해뒀어요." },
+      "sampleAnswers": ["I'll do a handover of the weekly report starting next week. I've documented everything.", "Let's start the handover of the weekly report next week, the doc is ready."],
+      "mentorTip": "handover 문서 없이 말로만 넘기면 그건 인계가 아니라 떠넘기기야. 문서 한 장이 후임의 한 달을 구해.",
+      "quizPrompt": "빈칸: 휴가 전 준비. \"휴가 가기 전에 ___ 문서부터 써야 해.\"",
+      "mcOptions": [
+        { "text": "Before my vacation, I need to write the ___ doc. → handover", "kind": "correct", "note": "정답. 휴가철 필수 문서, handover doc." },
+        { "text": "→ handout", "kind": "weak", "note": "handout은 유인물. 인수인계는 handover." },
+        { "text": "→ overhand", "kind": "weak", "note": "overhand는 야구 투구폼이야. 순서 조심." }
+      ],
+      "buddyAnswers": {
+        "nuance": "손(hand)에서 손으로 넘기는(over) 것.\n업무, 교대, 프로젝트 전부. 동사는 hand over 띄어 써.",
+        "example": "• \"The handover took a full week.\"\n• \"She handed over the account before leaving.\"",
+        "default": "인계의 완성은 '내가 없어도 돌아가는 것'. 그게 확인될 때까지가 handover야."
+      }
+    },
+    {
+      "tfDay": 7, "word": "micromanage", "pos": "v.", "meaning": "시시콜콜 간섭하다", "quizType": "tone",
+      "scene": "16:30. 수민의 리포트 초안에 코멘트를 17개 달다가 멈칫. 차윤아가 화면을 흘끗 보더니 웃는다.",
+      "npc": "mentor", "quote": "Seventeen comments on a first draft? Careful. There's a thin line between coaching and micromanaging.",
+      "quoteKo": "초안에 코멘트 17개? 조심해. 코칭과 마이크로매니징은 종이 한 장 차이야.",
+      "task": { "promptKo": "코멘트를 3개로 줄이겠다고, 자기 반성을 담아 답하세요.", "koSentence": "맞네요. 마이크로매니징 직전이었어요. 중요한 3개만 남길게요." },
+      "sampleAnswers": ["You're right, I was about to micromanage her. I'll cut it down to the three comments that matter.", "Fair point. That was borderline micromanaging. Keeping only the top three."],
+      "mentorTip": "첫 직속 후배가 생기면 누구나 마이크로매니저가 돼. 사랑이 간섭이 되는 순간이지. 코멘트 3개 규칙: 중요한 것만, 나머지는 다음 기회에.",
+      "quizPrompt": "친구의 하소연: \"팀장이 폰트 크기까지 정해줘...\" 공감하며 상황을 명명하는 톤은?",
+      "mcOptions": [
+        { "text": "That sounds like classic micromanaging. Have you tried sending updates before he asks?", "kind": "correct", "note": "정답. 명명 + 실전 대처법(선제 보고)까지. 마이크로매니저는 불안해서 그래, 불안을 먼저 없애줘." },
+        { "text": "Your manager is a control freak, just quit.", "kind": "weak", "note": "퇴사가 유일한 답이면 상담이 아니지." },
+        { "text": "Excessive supervisory granularity is indeed suboptimal.", "kind": "formal", "note": "granularity... 친구 하소연에 논문으로 답하지 마." }
+      ],
+      "buddyAnswers": {
+        "nuance": "micro(미세) + manage.\n일 말고 사람의 손끝까지 관리하려 들 때. 강한 비판 단어라 본인 앞에선 조심.",
+        "example": "• \"I trust my team, I don't micromanage.\"\n• \"Being micromanaged killed my motivation.\"",
+        "default": "해독제는 위임 + 선제 공유야. 내일과 모레 배울 hands-on/hands-off가 그 균형."
+      }
+    },
+    {
+      "tfDay": 8, "word": "hands-on", "pos": "adj.", "meaning": "직접 챙기는", "quizType": "spot",
+      "scene": "10:30. 김 팀장이 지나가다 한마디. 수민의 첫 고객 미팅이 이번 주다.",
+      "npc": "manager", "quote": "For her first client meeting, be hands-on. Sit in, take notes, debrief after. Next time, step back.",
+      "quoteKo": "첫 고객 미팅은 직접 챙겨. 들어가고, 기록하고, 끝나고 복기해줘. 다음부턴 물러서고.",
+      "task": { "promptKo": "첫 미팅은 직접 챙기겠다고 답하세요.", "koSentence": "첫 미팅은 제가 직접 챙기겠습니다. 그다음부터는 혼자 하게 둘게요." },
+      "sampleAnswers": ["I'll be hands-on for her first meeting, then let her run the next ones solo.", "Planning to stay hands-on for meeting one, and hands-off from meeting two."],
+      "mentorTip": "hands-on의 핵심은 기한이 있다는 거야. '언제까지 직접 챙기고 언제부터 놓을지'를 정해두면 마이크로매니징(어제)이 안 돼.",
+      "quizPrompt": "어색한 곳 찾기: 채용 공고 문구. 자연스러운 것은?",
+      "mcOptions": [
+        { "text": "We're looking for a hands-on engineering lead.", "kind": "correct", "note": "정답. hands-on + 직함. 실무형 리더라는 뜻." },
+        { "text": "We're looking for a hand-on engineering lead.", "kind": "weak", "note": "어색한 곳: hand가 아니라 hands. 두 손이야." },
+        { "text": "We're looking for an on-hands engineering lead.", "kind": "weak", "note": "순서 뒤집으면 없는 말이 돼." }
+      ],
+      "buddyAnswers": {
+        "nuance": "두 손을 얹고(on) 직접 만지는 그림.\nhands-on experience = 실습 경험. 리더 스타일로도, 경험 종류로도.",
+        "example": "• \"I prefer a hands-on approach in the early stage.\"\n• \"The workshop was very hands-on.\"",
+        "default": "내일 배울 hands-off와 한 쌍. 좋은 멘토는 이 둘을 시기별로 갈아 끼워."
+      }
+    },
+    {
+      "tfDay": 9, "word": "hands-off", "pos": "adj.", "meaning": "맡기고 안 건드리는", "quizType": "reply",
+      "scene": "17:00. 수민의 첫 고객 미팅이 무사히 끝났다. Daniel이 런던에서 짧은 DM.",
+      "npc": "daniel", "quote": "Heard the rookie did well. When do you plan to go hands-off? Don't hold on too long.",
+      "quoteKo": "신입이 잘했다며. 언제부터 손 뗄 계획이야? 너무 오래 붙잡고 있지 마.",
+      "task": { "promptKo": "다음 미팅부터 맡기겠다는 계획을 답하세요.", "koSentence": "다음 미팅부터는 맡기려고요. 저는 뒤에서 지켜보다가 요청할 때만 돕겠습니다." },
+      "sampleAnswers": ["Going hands-off from her next meeting. I'll watch from the back and step in only if she asks.", "Next meeting she runs solo. I'm switching to hands-off, available on request."],
+      "mentorTip": "hands-off가 무관심이 되면 방치야. 공식은 '손은 떼되 눈은 두기'. 지켜보고 있다는 것만 알아도 후배는 안전하게 도전해.",
+      "quizPrompt": "신임 리더 인터뷰 질문: \"당신의 리더십 스타일은?\" 위임형이라고 답하는 문장은?",
+      "mcOptions": [
+        { "text": "Mostly hands-off. I set clear goals, then trust the team with the how.", "kind": "correct", "note": "정답. 목표는 명확히 + 방법은 위임. hands-off의 정석 정의야." },
+        { "text": "I don't really care what the team does.", "kind": "weak", "note": "그건 hands-off가 아니라 checked-out(마음이 떠남)이야." },
+        { "text": "I practice non-interventionist delegatory governance.", "kind": "formal", "note": "정부 백서니. hands-off 한 단어로 끝나." }
+      ],
+      "buddyAnswers": {
+        "nuance": "손을 뗀(off) 상태.\n신뢰 기반 위임 스타일. hands-off parenting처럼 육아에도 써.",
+        "example": "• \"Our CEO is famously hands-off.\"\n• \"Time to take a hands-off approach with this project.\"",
+        "default": "hands-on(8일) → hands-off(9일) 순서 그대로가 멘토링의 타임라인이야."
+      }
+    },
+    {
+      "tfDay": 10, "word": "burnout", "pos": "n.", "meaning": "번아웃, 소진", "quizType": "blank",
+      "scene": "09:00. 수민의 출근이 사흘째 늦다. 눈 밑이 어둡다. 잘하고 싶어서 매일 밤 11시까지 공부했다고 한다.",
+      "npc": "rookie", "quote": "I'm fine! I just... want to catch up faster. Everyone here is so good.",
+      "quoteKo": "괜찮아요! 그냥... 빨리 따라잡고 싶어서요. 다들 너무 잘하시니까.",
+      "task": { "promptKo": "번아웃 신호를 짚고, 속도를 조절해주는 말을 건네세요.", "koSentence": "그 속도면 한 달 안에 번아웃 와요. 따라잡기는 단거리가 아니라 마라톤이에요." },
+      "sampleAnswers": ["At that pace you'll hit burnout within a month. Catching up is a marathon, not a sprint.", "I've seen that road end in burnout. Let's slow the pace, this is a marathon."],
+      "mentorTip": "열정적인 신입일수록 번아웃이 빨라. 막는 건 한마디야. '지금도 충분히 빠르다'. 속도 불안을 꺼주는 게 멘토의 일.",
+      "quizPrompt": "빈칸: 조직문화 기사 헤드라인. \"주 4일제 실험, 직원 ___율을 절반으로.\"",
+      "mcOptions": [
+        { "text": "The 4-day week trial cut employee ___ in half. → burnout", "kind": "correct", "note": "정답. HR 기사 단골 조합, employee burnout." },
+        { "text": "→ burndown", "kind": "weak", "note": "burndown은 스프린트 차트야. 소진은 burnout." },
+        { "text": "→ fire-out", "kind": "weak", "note": "fire-out은 없는 말. 다 타버린 건 burn."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "연료가 다 타서(burn out) 꺼진 상태.\nWHO가 직업 현상으로 공식 등재한 단어. 동사구는 burn out, 명사는 burnout.",
+        "example": "• \"I burned out at my last job and took two months off.\"\n• \"Watch for early signs of burnout in your team.\"",
+        "default": "번아웃의 첫 신호는 실력 저하가 아니라 지각과 침묵이야. 오늘 네가 본 그것."
+      }
+    },
+    {
+      "tfDay": 11, "word": "morale", "pos": "n.", "meaning": "팀 사기", "quizType": "tone",
+      "scene": "14:00. 분기 목표 미달 소식에 팀 공기가 가라앉았다. 김 팀장이 조용히 부른다.",
+      "npc": "manager", "quote": "Numbers are numbers, we'll recover. What worries me is team morale. Ideas?",
+      "quoteKo": "숫자는 숫자고, 회복하면 돼. 걱정은 팀 사기야. 아이디어 있어?",
+      "task": { "promptKo": "사기 회복 아이디어를 하나 제안하세요.", "koSentence": "작은 승리를 공개적으로 축하하는 것부터 시작하시죠. 이번 주 금요일에 잘된 것 세 가지만 공유해도 사기가 달라집니다." },
+      "sampleAnswers": ["Let's start small: celebrate quick wins publicly. Even three good things this Friday would lift morale.", "One idea: a Friday wins-roundup. Small public celebrations do more for morale than big speeches."],
+      "mentorTip": "사기는 연설로 안 올라가. 작은 승리의 목격으로 올라가. 그래서 shout-out(4일차)이 사기 관리 도구인 거야.",
+      "quizPrompt": "재택 전환 후 팀이 조용해졌다. 리더 회의에서 우려를 꺼내는 톤은?",
+      "mcOptions": [
+        { "text": "I'm seeing early signs of low morale, fewer questions, quieter channels. I'd like to act before it deepens.", "kind": "correct", "note": "정답. 관찰 근거 + 선제 대응 의지. 리더의 사기 보고법." },
+        { "text": "Everyone seems dead inside lately lol.", "kind": "weak", "note": "lol 붙이는 순간 너부터 사기 저하 유발자야." },
+        { "text": "Psychological capital indices appear to be deteriorating.", "kind": "formal", "note": "지수 얘기 말고 사람 얘기를 해." }
+      ],
+      "buddyAnswers": {
+        "nuance": "프랑스어에서 온 단어라 발음 주의: 머랠(morale).\nmoral(도덕)과 스펠 한 끗 차이, 뜻은 완전 다름.",
+        "example": "• \"The win did wonders for morale.\"\n• \"Layoff rumors are hurting morale.\"",
+        "default": "사기의 온도계는 회의 질문 수야. 질문이 사라지면 사기가 식은 것."
+      }
+    },
+    {
+      "tfDay": 12, "word": "team player", "pos": "n.", "meaning": "팀워크 좋은 사람", "quizType": "spot",
+      "scene": "16:00. 수민이 옆 팀 급한 번역을 자청해서 도왔다는 얘기가 들린다. 김 팀장이 흐뭇해한다.",
+      "npc": "manager", "quote": "Heard she volunteered for the localization crunch. She's turning into a real team player.",
+      "quoteKo": "로컬라이징 급한 불에 자원했다며. 진짜 팀 플레이어가 돼가는데.",
+      "task": { "promptKo": "수민의 성장을 인정하는 답을 하세요.", "koSentence": "그러니까요. 자기 일 끝내고 남 도울 여유까지 생겼어요. 팀 플레이어 다 됐죠." },
+      "sampleAnswers": ["Right? She finishes her own work and still helps others. A team player through and through.", "She really is. Owning her tasks and still showing up for others, that's a team player."],
+      "mentorTip": "team player의 정의는 '남 일 대신 해주는 사람'이 아니야. 자기 몫을 하면서(내일 단어 예고) 팀의 빈틈도 보는 사람이지.",
+      "quizPrompt": "어색한 곳 찾기: 자기소개서 문장. 자연스러운 것은?",
+      "mcOptions": [
+        { "text": "I'm a team player who communicates early and often.", "kind": "correct", "note": "정답. team player + 구체 행동. 면접 단골 표현이야." },
+        { "text": "I'm a team-play person who communicates early and often.", "kind": "weak", "note": "어색한 곳: team-play person은 콩글리시. team player로 굳은 명사야." },
+        { "text": "I'm a player of team who communicates early and often.", "kind": "weak", "note": "어순 분해 금지. 관용 명사는 통째로." }
+      ],
+      "buddyAnswers": {
+        "nuance": "스포츠에서 온 말.\n개인기보다 패스를 택하는 선수. 채용에서 최다 빈출 덕목.",
+        "example": "• \"We need team players, not lone wolves.\"\n• \"She's talented and a team player, rare combo.\"",
+        "default": "반대말 lone wolf(외로운 늑대)도 알아둬. 회사엔 둘 다 필요하지만, 신뢰는 team player에게 쌓여."
+      }
+    },
+    {
+      "tfDay": 13, "word": "pull one's weight", "pos": "phr.", "meaning": "제 몫을 하다", "quizType": "reply",
+      "scene": "11:00. 월간 리뷰. 김 팀장이 수민의 첫 달 성과를 묻는다.",
+      "npc": "manager", "quote": "One month in. Honest read: is she pulling her weight yet?",
+      "quoteKo": "한 달 됐네. 솔직한 평가로, 이제 제 몫을 하고 있나?",
+      "task": { "promptKo": "구체적 근거와 함께 긍정 평가를 보고하세요.", "koSentence": "네, 제 몫을 하고 있습니다. 주간 리포트를 혼자 끝내고, 고객 문의 두 건도 직접 처리했어요." },
+      "sampleAnswers": ["Yes, she's pulling her weight. She runs the weekly report solo and closed two client inquiries on her own.", "She is. The weekly report is fully hers now, plus two client tickets handled solo."],
+      "mentorTip": "'제 몫을 한다'는 평가엔 반드시 증거를 붙여. 근거 없는 옹호는 수민을 지키는 게 아니라 네 신용을 깎는 거야.",
+      "quizPrompt": "조별 과제 상황. 한 명이 계속 잠수다. 조원에게 상황을 표현하는 문장은?",
+      "mcOptions": [
+        { "text": "We need to talk to him, he's not pulling his weight.", "kind": "correct", "note": "정답. 무임승차 상황의 표준 표현." },
+        { "text": "We need to talk to him, he's not pulling his kilograms.", "kind": "weak", "note": "무게는 weight 고정이야. 단위 바꾸면 헬스 얘기가 돼." },
+        { "text": "We need to talk to him, he's not dragging his weight.", "kind": "weak", "note": "drag면 짐이 되는 그림. pull이라야 제 몫을 끄는 그림이야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "조정 경기에서 자기 노를 젓는 무게에서 온 말.\n각자 자기 몫의 무게를 끌어야 배가 나가지.",
+        "example": "• \"Everyone pulled their weight, so we hit the deadline.\"\n• \"I felt like I wasn't pulling my weight during onboarding.\"",
+        "default": "수민이 한 달 만에 여기 왔어. 다음 주부터는 폭풍이야. 위기에서 진짜 팀이 드러나거든."
+      }
+    },
+    {
+      "tfDay": 14, "word": "drop the ball", "pos": "phr.", "meaning": "실수로 놓치다", "quizType": "blank",
+      "scene": "15:30. 사고 발생. 수민이 고객 리포트 발송을 잊었고, 고객이 팀장에게 직접 항의 메일을 보냈다. 수민의 얼굴이 하얗다.",
+      "npc": "rookie", "quote": "I set a reminder but I... I completely missed it. What do I do now?",
+      "quoteKo": "리마인더도 해놨는데... 완전히 놓쳤어요. 이제 어떡하죠?",
+      "task": { "promptKo": "빈칸 채우기: 실수를 인정하되 수습 방향을 함께 제시하는 첫 마디.", "koSentence": "우리가 공을 놓쳤네요. 자책은 나중에, 지금은 수습부터 합시다." },
+      "sampleAnswers": ["We dropped the ball on this one. Beating yourself up comes later, recovery comes first.", "OK, we dropped the ball. Let's fix it first and learn from it after."],
+      "mentorTip": "주어를 봐. 'You dropped'가 아니라 'We dropped'. 멘티의 실수 앞에서 주어 하나가 멘토의 급을 정해. 책임은 같이, 배움은 본인에게.",
+      "quizPrompt": "빈칸: 프로젝트 회고 문장. \"홍보 타이밍에서 우리가 공을 ___.\"",
+      "mcOptions": [
+        { "text": "We ___ the ball on the launch timing. → dropped", "kind": "correct", "note": "정답. 미식축구에서 공 놓치는 그림 그대로." },
+        { "text": "→ threw", "kind": "weak", "note": "threw the ball은 그냥 던진 거야. 실수는 drop." },
+        { "text": "→ lost", "kind": "weak", "note": "lost the ball은 뺏긴 것. 스스로 놓친 건 drop." }
+      ],
+      "buddyAnswers": {
+        "nuance": "미식축구에서 공을 떨어뜨리는 실책.\n비난 수위가 낮은 편이라 실수 인정 표현으로 안전해.",
+        "example": "• \"Sorry, I dropped the ball on the invite.\"\n• \"We can't drop the ball twice with this client.\"",
+        "default": "내일 단어(pick up the slack)가 오늘의 해독제야. 누군가 공을 놓치면, 누군가 주워야지."
+      }
+    },
+    {
+      "tfDay": 15, "word": "pick up the slack", "pos": "phr.", "meaning": "공백을 메우다", "quizType": "tone",
+      "scene": "09:30. 어제의 사고 수습 날. 차윤아가 먼저 손을 든다. 고객 응대는 본인이 맡겠다고.",
+      "npc": "mentor", "quote": "I'll pick up the slack on the client side today. You two focus on the report and the apology.",
+      "quoteKo": "오늘 고객 쪽 공백은 내가 메울게. 너희 둘은 리포트랑 사과에 집중해.",
+      "task": { "promptKo": "고마움을 표하고 역할 분담을 확정하는 답을 하세요.", "koSentence": "고마워요. 그럼 고객 응대는 부탁하고, 저희는 오늘 안에 리포트와 사과 메일을 마무리할게요." },
+      "sampleAnswers": ["Thank you for picking up the slack. We'll finish the report and the apology email today.", "Appreciate it. With you covering the client, we'll close out the report and apology by EOD."],
+      "mentorTip": "슬랙(slack)은 밧줄의 늘어진 부분이야. 팀이 강한 이유는 실수가 없어서가 아니라, 늘어진 줄을 당겨줄 손이 많아서야.",
+      "quizPrompt": "동료가 2주 병가를 낸다. 팀 회의에서 커버 계획을 말하는 톤은?",
+      "mcOptions": [
+        { "text": "While Jin is out, I can pick up the slack on the daily reports.", "kind": "correct", "note": "정답. 자원 + 범위 명시. 부담 없이 명확해." },
+        { "text": "Ugh, so now we do Jin's job too?", "kind": "weak", "note": "병가 간 동료 뒤에서 이러면 다음 병가는 네 차례에 아무도 없어." },
+        { "text": "I shall assume the residual workload obligations.", "kind": "formal", "note": "의무 인수 선언문이니. 사람 말로 해." }
+      ],
+      "buddyAnswers": {
+        "nuance": "늘어진 밧줄(slack)을 당겨 팽팽하게.\n빈 자리의 일을 대신 맡을 때 쓰는 표현.",
+        "example": "• \"Thanks for picking up the slack while I was out.\"\n• \"Someone has to pick up the slack during the transition.\"",
+        "default": "어제 drop the ball, 오늘 pick up the slack. 실수와 회복은 항상 한 세트로 다녀."
+      }
+    },
+    {
+      "tfDay": 16, "word": "cover for", "pos": "phr.", "meaning": "대신 커버해주다", "quizType": "spot",
+      "scene": "13:00. 수민이 조심스럽게 부탁한다. 내일 오전 반차인데 하필 주간 회의가 있다.",
+      "npc": "rookie", "quote": "I have a half-day off tomorrow... could you possibly cover for me in the weekly sync?",
+      "quoteKo": "내일 오전 반차인데... 주간 싱크에서 저 대신 커버해주실 수 있을까요?",
+      "task": { "promptKo": "흔쾌히 수락하고 필요한 것을 요청하세요.", "koSentence": "당연하죠. 업데이트 요약만 오늘 퇴근 전까지 보내줘요." },
+      "sampleAnswers": ["Of course I'll cover for you. Just send me your update summary before you leave today.", "Happy to cover for you. Drop me your talking points by end of day."],
+      "mentorTip": "cover for를 부탁받으면 흔쾌히 + 준비물 요청. 이 두 박자가 '기꺼이, 그러나 프로답게'를 만들어. 그리고 이 부탁은 언젠가 반대로 돌아와.",
+      "quizPrompt": "어색한 곳 찾기: 점심 교대 대화. 자연스러운 문장은?",
+      "mcOptions": [
+        { "text": "Can you cover for me while I'm at the dentist?", "kind": "correct", "note": "정답. cover for + 사람. 자리 비움 커버의 정석." },
+        { "text": "Can you cover me up while I'm at the dentist?", "kind": "weak", "note": "어색한 곳: cover up은 은폐야. 범죄 드라마 톤이 돼버려." },
+        { "text": "Can you blanket for me while I'm at the dentist?", "kind": "weak", "note": "blanket은 이불. 덮는 건 맞는데 방향이 달라." }
+      ],
+      "buddyAnswers": {
+        "nuance": "빈자리를 덮어주는(cover) 것.\ncover up(은폐)과 구분! for가 붙어야 선의의 커버.",
+        "example": "• \"She covered for me during my leave.\"\n• \"Who's covering for the on-call this weekend?\"",
+        "default": "커버는 품앗이야. 잘 커버해주는 사람 곁엔 커버해줄 사람이 모여."
+      }
+    },
+    {
+      "tfDay": 17, "word": "back someone up", "pos": "phr.", "meaning": "뒤를 받쳐주다", "quizType": "reply",
+      "scene": "14:30. 부서 회의. 수민이 낸 개선안에 옆 팀 리드가 회의적이다. 수민이 흔들린다. 지금이 그 순간이다.",
+      "npc": "manager", "quote": "Interesting pushback from the platform team. Anyone want to weigh in on Sumin's proposal?",
+      "quoteKo": "플랫폼 팀 반박이 흥미롭네. 수민 제안에 의견 낼 사람?",
+      "task": { "promptKo": "데이터를 들어 수민의 제안을 지지하는 발언을 하세요.", "koSentence": "저는 수민님 제안을 지지합니다. 지난달 문의의 40%가 정확히 이 문제였어요. 시도할 가치가 충분합니다." },
+      "sampleAnswers": ["I'd like to back Sumin up here. Forty percent of last month's tickets were exactly this issue. It's worth trying.", "Backing Sumin up on this: the data says 40 percent of recent tickets match this problem."],
+      "mentorTip": "공개 석상에서 받쳐주는 한 번이, 1:1 칭찬 열 번보다 세. 단 감정으로 편들지 말고 데이터로 받쳐. 그래야 수민도 살고 논리도 살아.",
+      "quizPrompt": "동료가 무리한 마감 요구를 거절하려 한다. 지지 의사를 미리 전하는 메시지는?",
+      "mcOptions": [
+        { "text": "If you push back on that deadline in the meeting, I'll back you up.", "kind": "correct", "note": "정답. 사전 지지 약속. 거절할 용기는 뒷배에서 나와." },
+        { "text": "Good luck fighting alone, I'm staying out of it.", "kind": "weak", "note": "중립은 때로 방관의 다른 이름이야." },
+        { "text": "I shall provide corroborative testimony on your behalf.", "kind": "formal", "note": "법정 증인 선서니. back you up 세 마디면 돼." }
+      ],
+      "buddyAnswers": {
+        "nuance": "뒤(back)에서 받쳐 올리는 그림.\n데이터 백업과 같은 단어지만, 사람에게 쓰면 지원 사격.",
+        "example": "• \"My manager backed me up in front of the client.\"\n• \"I've got your back.\" (같은 뿌리의 관용구)",
+        "default": "back up의 짝꿍 문장 I've got your back도 세트로. 멘티에게 해줄 수 있는 최고의 말 중 하나야."
+      }
+    },
+    {
+      "tfDay": 18, "word": "give credit", "pos": "phr.", "meaning": "공을 인정하다", "quizType": "blank",
+      "scene": "10:00. 어제 회의의 개선안이 채택됐고, Daniel이 런던에서 결과 요약을 요청했다. 보고서 주인공을 정할 시간.",
+      "npc": "daniel", "quote": "Nice initiative from your team. Send me a summary, and make sure credit goes where it's due.",
+      "quoteKo": "좋은 시도였어. 요약 보내줘. 그리고 공은 마땅한 곳으로 가게 해.",
+      "task": { "promptKo": "빈칸 채우기: 요약 첫 줄에서 수민에게 공을 돌리세요.", "koSentence": "이 개선안의 공은 이수민에게 있습니다. 제안부터 검증까지 수민이 주도했습니다." },
+      "sampleAnswers": ["Full credit goes to Sumin Lee, she drove this from proposal to validation.", "I want to give credit to Sumin: the idea, the pushback handling, and the validation were all hers."],
+      "mentorTip": "공을 넘기면 사라질 것 같지? 반대야. 공을 흘려보내는 사람에게 더 큰 공이 흘러들어와. 리더십의 복리 법칙이야.",
+      "quizPrompt": "빈칸: 시상 소감. \"이 상의 ___은 밤새운 디자인 팀에게 돌립니다.\"",
+      "mcOptions": [
+        { "text": "The ___ for this award goes to the design team. → credit", "kind": "correct", "note": "정답. credit goes to, 시상식 표준 문형." },
+        { "text": "→ price", "kind": "weak", "note": "price는 가격. 공로는 credit." },
+        { "text": "→ praise-point", "kind": "weak", "note": "praise-point는 없는 말. 만들어 쓰지 마." }
+      ],
+      "buddyAnswers": {
+        "nuance": "credit = 신용, 공로.\ngive/take/share credit 조합. take credit for others' work가 최악의 조합.",
+        "example": "• \"She always gives credit to her juniors.\"\n• \"Don't let him take credit for your analysis.\"",
+        "default": "내일은 반대의 세계를 배워. 공 대신 책임을 떠넘기는 말, throw under the bus."
+      }
+    },
+    {
+      "tfDay": 19, "word": "throw under the bus", "pos": "phr.", "meaning": "(남에게) 책임을 뒤집어씌우다", "quizType": "tone",
+      "scene": "16:00. 타 부서 장애 보고서에 '신입 실수로 지연'이라는 문구가 있다. 수민 얘기다. 사실과 다르다. 김 팀장이 보고서를 던지듯 내민다.",
+      "npc": "manager", "quote": "They're throwing our rookie under the bus for their own delay. I want a correction. Draft it, factual and calm.",
+      "quoteKo": "자기들 지연을 우리 신입한테 뒤집어씌우고 있어. 정정 요청한다. 초안 잡아줘. 사실만, 침착하게.",
+      "task": { "promptKo": "감정 없이 사실관계로 정정을 요청하는 문장을 쓰세요.", "koSentence": "타임라인 정정을 요청합니다. 지연의 원인은 8월 2일 서버 마이그레이션이며, 관련 로그를 첨부합니다." },
+      "sampleAnswers": ["We'd like to request a correction to the timeline. The delay traces to the Aug 2 server migration, logs attached.", "Requesting a factual correction: the root cause was the Aug 2 migration, not the report handling. Logs attached."],
+      "mentorTip": "누가 팀원을 버스 밑으로 던지면, 화내며 뛰어들지 말고 로그를 들고 걸어 들어가. 분노는 반박당해도 타임스탬프는 반박 못 해.",
+      "quizPrompt": "친구가 하소연: \"팀장이 자기 결정이었으면서 회의에서 내 아이디어였다고 했어.\" 상황을 명명해주는 톤은?",
+      "mcOptions": [
+        { "text": "He threw you under the bus. Document what happened, dates and messages, before you decide anything.", "kind": "correct", "note": "정답. 명명 + 증거 확보 조언. 감정보다 기록이 먼저야." },
+        { "text": "Wow, just scream at him tomorrow in front of everyone.", "kind": "weak", "note": "공개 복수는 버스 밑에 같이 눕는 길이야." },
+        { "text": "A regrettable instance of accountability misattribution has transpired.", "kind": "formal", "note": "transpired... 친구 위로에 감사원 보고서 쓰지 마." }
+      ],
+      "buddyAnswers": {
+        "nuance": "달리는 버스 아래로 밀어 넣는 끔찍한 그림 그대로.\n자기가 살려고 남을 희생시키는 배신의 관용구.",
+        "example": "• \"He threw his own team under the bus in front of the CEO.\"\n• \"I won't throw you under the bus, we go in together.\"",
+        "default": "어제 give credit과 정반대 극. 공은 넘기고 책임은 끌어안는 게 리더, 반대로 하는 게 버스 던지기."
+      }
+    },
+    {
+      "tfDay": 20, "word": "coach someone through", "pos": "phr.", "meaning": "옆에서 코칭해 통과시키다", "quizType": "spot",
+      "scene": "11:00. 정정 요청은 받아들여졌다. 그리고 새 소식: 수민이 다음 주 부서 전체 앞에서 첫 단독 발표를 한다. 차윤아가 씩 웃는다.",
+      "npc": "mentor", "quote": "Her first solo presentation. Your job now: coach her through it, don't do it for her.",
+      "quoteKo": "첫 단독 발표네. 이제 네 일은 옆에서 코칭해서 통과시키는 것. 대신 해주는 게 아니라.",
+      "task": { "promptKo": "리허설 계획을 수민에게 제안하세요.", "koSentence": "발표까지 리허설 두 번 해요. 제가 옆에서 코칭할게요. 대본은 수민님이 쓰는 겁니다." },
+      "sampleAnswers": ["Let's do two rehearsals before the day. I'll coach you through it, but the script is yours.", "I'll coach you through two dry runs. You own the content, I'll sharpen the delivery."],
+      "mentorTip": "coach through의 핵심은 소유권이야. 대본을 뺏는 순간 코칭이 아니라 대필이 돼. 문장은 수민의 것, 자신감이 네가 주는 것.",
+      "quizPrompt": "어색한 곳 찾기: 첫 배포를 앞둔 후배 상황. 자연스러운 문장은?",
+      "mcOptions": [
+        { "text": "The senior coached me through my first deployment.", "kind": "correct", "note": "정답. coach + 사람 + through + 관문. 구조 그대로." },
+        { "text": "The senior coached me across my first deployment.", "kind": "weak", "note": "어색한 곳: across가 아니라 through. 터널을 통과하는 그림이야." },
+        { "text": "The senior coached to me through my first deployment.", "kind": "weak", "note": "coach는 타동사. to 없이 바로 사람이 와." }
+      ],
+      "buddyAnswers": {
+        "nuance": "관문(through)을 옆에서 함께 통과하는 코칭.\ntalk someone through(차근차근 설명)와 형제 표현.",
+        "example": "• \"She coached me through my first salary negotiation.\"\n• \"I'll talk you through the process step by step.\"",
+        "default": "90일 전 차윤아가 네게 했던 것, 이제 네가 수민에게. 이 순환이 이 회사의 진짜 커리큘럼이야."
+      }
+    },
+    {
+      "tfDay": 21, "word": "check in on", "pos": "phr.", "meaning": "안부·상태를 살피다", "quizType": "reply",
+      "scene": "18:00. 발표 이틀 전. 퇴근길에 수민 자리를 지나는데, 모니터 앞 어깨가 잔뜩 굳어 있다.",
+      "npc": "rookie", "quote": "Oh, I'm okay! Just... going over the script for the tenth time.",
+      "quoteKo": "아, 괜찮아요! 그냥... 대본 열 번째 보는 중이에요.",
+      "task": { "promptKo": "부담 주지 않고 상태를 살피는 말을 건네세요.", "koSentence": "잠깐 상태 보러 왔어요. 열 번 봤으면 대본은 완성이에요. 오늘은 그만 보고 퇴근해요." },
+      "sampleAnswers": ["Just checking in on you. If you've read it ten times, the script is done. Go home and rest.", "Wanted to check in on you before I leave. The script is ready, you are ready. Log off."],
+      "mentorTip": "check in on은 감시가 아니라 안부야. 차이는 질문에 있어. '얼마나 했어?'는 감시, '괜찮아?'는 안부. 발표 전 멘티에게 필요한 건 후자야.",
+      "quizPrompt": "재택 중인 팀 신입이 이틀째 조용하다. 부담 없이 살피는 첫 메시지는?",
+      "mcOptions": [
+        { "text": "Hey, just checking in on you. How's the week treating you?", "kind": "correct", "note": "정답. 가볍게 문 두드리는 표준 문형. 일 얘기가 아니라 사람 얘기로 시작." },
+        { "text": "Why have you been silent for two days? Status report, now.", "kind": "weak", "note": "이건 check in이 아니라 심문이야." },
+        { "text": "This is a wellness verification outreach communication.", "kind": "formal", "note": "복지 확인 통신문... 사람이 사람에게 보내는 말로." }
+      ],
+      "buddyAnswers": {
+        "nuance": "호텔 체크인처럼 잠깐 들르는(check in) 그림.\non 뒤에 사람이 오면 안부, with면 진행 확인 쪽에 가까워.",
+        "example": "• \"I check in on my mentee every Friday.\"\n• \"Thanks for checking in on me last week.\"",
+        "default": "번아웃(10일차)을 조기 발견하는 도구가 바로 이 습관이야. 주 1회, 일 말고 사람을 물어봐."
+      }
+    },
+    {
+      "tfDay": 22, "word": "course-correct", "pos": "v.", "meaning": "방향을 바로잡다", "quizType": "blank",
+      "scene": "10:30. 첫 리허설. 수민의 발표가 기능 나열에 15분을 쓴다. 청중이 원하는 건 결과인데. 차윤아가 메모를 슬쩍 민다.",
+      "npc": "mentor", "quote": "Good energy, wrong order. Help her course-correct before the real thing: outcomes first, features later.",
+      "quoteKo": "에너지는 좋은데 순서가 틀렸어. 본방 전에 방향 잡아줘. 결과 먼저, 기능은 나중.",
+      "task": { "promptKo": "빈칸 채우기: 발표 구조를 바로잡자고 수민에게 제안하세요.", "koSentence": "본방 전에 방향을 바로잡아요. 결과 슬라이드를 맨 앞으로 옮깁시다." },
+      "sampleAnswers": ["Let's course-correct before the real one: move the outcome slide to the front.", "Small course-correction: lead with outcomes, then show how."],
+      "mentorTip": "리허설의 존재 이유가 course-correct야. 본방의 실수는 사고지만, 리허설의 실수는 데이터야. 그래서 리허설에서 많이 틀릴수록 좋아.",
+      "quizPrompt": "빈칸: 분기 회고 문장. \"지표가 꺾인 걸 보고 우리는 빠르게 ___했다.\"",
+      "mcOptions": [
+        { "text": "Seeing the dip, we quickly ___ed. → course-correct", "kind": "correct", "note": "정답. 지표 보고 방향 트는 것, 그게 course-correct." },
+        { "text": "→ course-change", "kind": "weak", "note": "course-change는 동사로 안 써. correct가 관용형이야." },
+        { "text": "→ direction-fix", "kind": "weak", "note": "direction-fix는 조립한 말. 원어민 귀에 없는 단어야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "항해·항공 용어에서. 항로(course)를 수정(correct)하다.\n크게 틀기 전에 자주 조금씩 트는 게 포인트.",
+        "example": "• \"We course-corrected after the first user tests.\"\n• \"It's cheaper to course-correct early.\"",
+        "default": "멘토링도 항해야. 매주 check in(어제)이 레이더, course-correct가 키 조작."
+      }
+    },
+    {
+      "tfDay": 23, "word": "performance review", "pos": "n.", "meaning": "인사 평가", "quizType": "tone",
+      "scene": "14:00. 인사팀 메일. 수민의 수습 평가 시즌이다. 멘토 의견서를 제출해야 한다.",
+      "npc": "hr", "quote": "Probation review time: please submit your mentor input for Sumin's performance review by Friday.",
+      "quoteKo": "수습 평가 기간입니다. 금요일까지 수민님 인사 평가에 멘토 의견을 제출해주세요.",
+      "task": { "promptKo": "강점과 성장 포인트를 균형 있게 담은 평가 첫 문장을 쓰세요.", "koSentence": "수민은 한 달 만에 주간 리포트를 완전히 자기 것으로 만들었습니다. 다음 단계는 발표에서의 우선순위 감각입니다." },
+      "sampleAnswers": ["In one month, Sumin took full ownership of the weekly report. Her next growth edge is prioritization in presentations.", "Sumin owns the weekly report end to end after just a month. The area to grow next: leading with outcomes when presenting."],
+      "mentorTip": "평가서의 격은 성장 포인트를 쓰는 방식에서 갈려. '부족하다'가 아니라 '다음 단계는'. 같은 사실, 다른 미래.",
+      "quizPrompt": "동료가 첫 평가 면담을 앞두고 긴장한다. 조언하는 톤은?",
+      "mcOptions": [
+        { "text": "Bring your own list of wins to the performance review. Don't make your manager remember for you.", "kind": "correct", "note": "정답. 평가 면담의 황금 조언. 내 성과의 변호인은 나야." },
+        { "text": "Just nod and agree with whatever they say.", "kind": "weak", "note": "끄덕임만 하고 나오면 연봉도 끄덕임만 해." },
+        { "text": "Endeavor to optimize your evaluative outcome metrics.", "kind": "formal", "note": "뭘 하라는 건지 아무도 몰라." }
+      ],
+      "buddyAnswers": {
+        "nuance": "정기 인사 평가의 공식 명칭.\nannual review, mid-year review 등 주기 붙여 변형. 줄여서 그냥 review.",
+        "example": "• \"My performance review is next Tuesday.\"\n• \"She got a glowing performance review.\"",
+        "default": "평가받던 네가 평가를 쓰는 자리에 왔어. 기억해. 평가서 한 줄이 사람의 반년을 정의해. 무겁게, 공정하게."
+      }
+    },
+    {
+      "tfDay": 24, "word": "upskill", "pos": "v.", "meaning": "역량을 키우다", "quizType": "spot",
+      "scene": "11:30. Daniel의 팀 공지. 하반기 교육 예산이 배정됐다.",
+      "npc": "daniel", "quote": "L&D budget is in. Nominate one course each to upskill your mentees this half.",
+      "quoteKo": "교육 예산 나왔어. 하반기에 멘티 역량을 키울 과정을 하나씩 추천해줘.",
+      "task": { "promptKo": "수민에게 맞는 교육을 근거와 함께 추천하세요.", "koSentence": "수민에게는 데이터 시각화 과정을 추천합니다. 리포트 역량에 바로 얹을 수 있는 스킬입니다." },
+      "sampleAnswers": ["I'd nominate the data visualization course to upskill Sumin, it builds directly on her reporting work.", "For Sumin: the data viz course. It upskills exactly where her current work already lives."],
+      "mentorTip": "upskill 추천의 기술: 지금 하는 일에 바로 얹히는 것부터. 동떨어진 멋진 스킬보다, 월요일에 써먹는 스킬이 사람을 크게 해.",
+      "quizPrompt": "어색한 곳 찾기: 사내 교육 공지. 자연스러운 문장은?",
+      "mcOptions": [
+        { "text": "We're investing in upskilling the support team.", "kind": "correct", "note": "정답. upskill + 대상. HR 공지의 표준 표현." },
+        { "text": "We're investing in upskilling up the support team.", "kind": "weak", "note": "어색한 곳: up이 두 번이야. upskill 자체에 up이 들어 있어." },
+        { "text": "We're investing in skill-upping the support team.", "kind": "weak", "note": "skill-up은 게임 용어 느낌의 콩글리시. 동사는 upskill." }
+      ],
+      "buddyAnswers": {
+        "nuance": "skill을 위로(up) 끌어올리는 동사.\nreskill(다른 직무로 전환 교육)과 세트로 HR 필수 어휘.",
+        "example": "• \"The program upskills junior analysts in six weeks.\"\n• \"I want to upskill in public speaking this year.\"",
+        "default": "1일1비 하는 너 자신이 upskill의 현재진행형이야. I'm upskilling my business English."
+      }
+    },
+    {
+      "tfDay": 25, "word": "hand off", "pos": "phr.", "meaning": "넘겨주다, 이관하다", "quizType": "reply",
+      "scene": "15:00. 김 팀장의 결정. 주간 리포트를 이제 공식적으로 수민의 업무로 이관한다.",
+      "npc": "manager", "quote": "She's ready. Hand off the weekly report officially, it's hers now. Update the ownership doc.",
+      "quoteKo": "준비됐어. 주간 리포트 공식적으로 넘겨. 이제 수민 거야. 담당 문서도 갱신하고.",
+      "task": { "promptKo": "이관을 공식화하는 팀 공지 문장을 쓰세요.", "koSentence": "이번 주부터 주간 리포트 담당은 이수민입니다. 이관은 완료됐고, 관련 문의는 수민에게 부탁드립니다." },
+      "sampleAnswers": ["Starting this week, the weekly report is officially handed off to Sumin. Please direct related questions to her.", "The weekly report hand-off is complete: Sumin owns it from this week. Questions go to her directly."],
+      "mentorTip": "hand off의 마지막 단계는 '문의를 그 사람에게 보내는 것'이야. 이관했는데 질문이 계속 너에게 오면, 이관은 문서에만 있는 거지.",
+      "quizPrompt": "야간 교대 개발자에게 미해결 이슈를 넘기는 상황. 자연스러운 인계 메시지는?",
+      "mcOptions": [
+        { "text": "Handing off the open incident to you: current status and next steps are in the doc.", "kind": "correct", "note": "정답. hand off + 현황 문서. 교대 인계의 정석." },
+        { "text": "Handing over my hands off this issue now bye.", "kind": "weak", "note": "hand 대잔치... 문장이 사고 현장이야." },
+        { "text": "The incident is yours now. Good luck, you'll need it.", "kind": "weak", "note": "덕담인 척 저주하지 마. 현황을 넘겨야 인계야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "미식축구에서 공을 건네는 handoff에서.\nhandover(6일차)와 거의 같지만 hand off는 동작, handover는 과정 전체 느낌.",
+        "example": "• \"I handed off the project before parental leave.\"\n• \"Clean hand-offs make remote teams work.\"",
+        "default": "6일차에 시작한 인계가 오늘 완성됐어. 넘기고, 훈련시키고, 공식화하고. 이관은 이벤트가 아니라 3주짜리 과정이야."
+      }
+    },
+    {
+      "tfDay": 26, "word": "open-door policy", "pos": "n.", "meaning": "언제든 찾아와도 되는 문화", "quizType": "blank",
+      "scene": "10:00. 수민이 묻는다. 팀장님이 무섭진 않은데, 언제 말 걸어도 되는 건지 모르겠다고.",
+      "npc": "manager", "quote": "Tell her I run an open-door policy. No appointment needed for a five-minute question.",
+      "quoteKo": "나 오픈도어 정책이라고 전해줘. 5분짜리 질문에 예약은 필요 없어.",
+      "task": { "promptKo": "빈칸 채우기: 팀장의 문화를 수민에게 전달하세요.", "koSentence": "팀장님은 오픈도어 정책이에요. 궁금한 게 있으면 그냥 가서 물어봐도 돼요." },
+      "sampleAnswers": ["He has an open-door policy, just walk up and ask whenever you're stuck.", "The manager runs an open-door policy: no booking needed for quick questions."],
+      "mentorTip": "open-door는 문이 아니라 심리적 문턱 얘기야. 그리고 신입에겐 '와도 된다'보다 '와줘서 좋다'는 첫 경험 한 번이 문턱을 없애.",
+      "quizPrompt": "빈칸: 신임 임원 취임사. \"제 사무실은 ___입니다. 예약 없이 오세요.\"",
+      "mcOptions": [
+        { "text": "My office runs on an ___-___ policy. → open-door", "kind": "correct", "note": "정답. 취임사 단골 선언." },
+        { "text": "→ free-door", "kind": "weak", "note": "free-door는 없는 말. 열린 건 open." },
+        { "text": "→ no-door", "kind": "weak", "note": "문이 없다는 게 아니라 열려 있다는 거야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "사무실 문을 항상 열어둔다는 경영 관용구.\n정책(policy)이라고 부르지만 실은 문화 선언.",
+        "example": "• \"Thanks to the open-door policy, I flagged the issue early.\"\n• \"An open-door policy only works if people actually walk in.\"",
+        "default": "멘토인 너도 오늘부터 선언해봐. 수민의 질문 빈도가 곧 너의 open-door 점수야."
+      }
+    },
+    {
+      "tfDay": 27, "word": "town hall", "pos": "n.", "meaning": "전사 공유 미팅", "quizType": "tone",
+      "scene": "16:00. 분기 타운홀 안내가 떴다. 이번 주제 중 하나: 멘토링 프로그램 사례 발표. 발표자 후보에 네 이름이 있다.",
+      "npc": "daniel", "quote": "We want a mentoring story at the town hall. Yours with Sumin is the obvious pick. Two minutes, keep it human.",
+      "quoteKo": "타운홀에서 멘토링 사례를 하나 다루려고 해. 너와 수민 얘기가 적임이야. 2분, 사람 냄새 나게.",
+      "task": { "promptKo": "수락하되 수민과 함께 발표하겠다고 제안하세요.", "koSentence": "좋습니다. 대신 수민과 같이 무대에 서고 싶어요. 멘토링 이야기는 두 사람이 해야 완성되니까요." },
+      "sampleAnswers": ["Happy to. One ask: I'd like Sumin on stage with me. A mentoring story needs both voices.", "I'll do it, if Sumin co-presents. The story only works with both of us telling it."],
+      "mentorTip": "타운홀은 회사의 캠프파이어야. 숫자 말고 이야기가 도는 자리. 그리고 무대를 나누는 것 자체가 멘토링의 마지막 수업이야.",
+      "quizPrompt": "타운홀 Q&A에서 CEO에게 어려운 질문을 하고 싶다. 적절한 톤은?",
+      "mcOptions": [
+        { "text": "Thanks for the transparency so far. Can you share the thinking behind the hiring freeze?", "kind": "correct", "note": "정답. 존중 + 직구. 타운홀 질문의 모범 온도야." },
+        { "text": "Why is management hiding things from us again?", "kind": "weak", "note": "질문이 아니라 기소야. 답을 얻을 수 없는 형식." },
+        { "text": "I humbly beseech elucidation regarding personnel policy.", "kind": "formal", "note": "beseech... 중세 탄원서니. 현대인의 말로." }
+      ],
+      "buddyAnswers": {
+        "nuance": "마을 회관(town hall)에서 열리던 주민 회의에서.\n전 직원이 모여 경영진과 직접 소통하는 자리. all-hands와 거의 동의어.",
+        "example": "• \"The CEO announced it at the quarterly town hall.\"\n• \"Submit your town hall questions by Wednesday.\"",
+        "default": "all-hands = town hall, 회사마다 부르는 이름만 달라. 둘 다 알아두면 어느 회사를 가도 안 낯설어."
+      }
+    },
+    {
+      "tfDay": 28, "word": "skip-level", "pos": "n.", "meaning": "직속 상사 건너뛴 면담", "quizType": "spot",
+      "scene": "11:00. Daniel이 수민과 스킵레벨 면담을 잡았다. 수민이 사색이 되어 달려온다. 뭘 잘못한 건지 묻는다.",
+      "npc": "rookie", "quote": "The London Director wants to meet ME? Alone?? Did I do something wrong?",
+      "quoteKo": "런던 디렉터가 저를요? 단둘이요?? 저 뭐 잘못했나요?",
+      "task": { "promptKo": "스킵레벨의 의미를 설명하며 안심시키세요.", "koSentence": "잘못한 게 아니라 잘한 거예요. 스킵레벨은 임원이 현장 목소리를 직접 듣는 자리예요. 평소 생각을 솔직하게 말하면 돼요." },
+      "sampleAnswers": ["It's the opposite of trouble. A skip-level is how leaders hear the front line directly. Just be honest about your experience.", "Good news, not bad: skip-levels mean they value your view. Share what's working and what isn't, honestly."],
+      "mentorTip": "스킵레벨을 무서워하는 신입에게 해줄 말은 하나야. '너를 평가하는 자리가 아니라 회사를 평가받는 자리'. 주어가 바뀌면 긴장이 풀려.",
+      "quizPrompt": "어색한 곳 찾기: 조직문화 소개 글. 자연스러운 문장은?",
+      "mcOptions": [
+        { "text": "Our VP holds quarterly skip-level meetings with junior staff.", "kind": "correct", "note": "정답. skip-level + meeting. 하이픈까지 정확해." },
+        { "text": "Our VP holds quarterly skipping-level meetings with junior staff.", "kind": "weak", "note": "어색한 곳: skipping이 아니라 skip. 줄넘기 미팅이 돼버려." },
+        { "text": "Our VP holds quarterly level-skip meetings with junior staff.", "kind": "weak", "note": "순서 반대. skip-level로 굳은 합성어야." }
+      ],
+      "buddyAnswers": {
+        "nuance": "직급(level) 하나를 건너뛴(skip) 면담.\n내 상사의 상사와 하는 1:1. 조직 건강검진 도구야.",
+        "example": "• \"My skip-level with the VP is next week.\"\n• \"Skip-levels surface what managers filter out.\"",
+        "default": "1일차 one-on-one으로 시작해 28일차 skip-level까지. 면담의 세계를 한 바퀴 돌았네."
+      }
+    },
+    {
+      "tfDay": 29, "word": "hold accountable", "pos": "phr.", "meaning": "책임을 지게 하다", "quizType": "reply",
+      "scene": "14:30. 김 팀장과 멘토링 마무리 면담. 마지막 질문이 날아온다.",
+      "npc": "manager", "quote": "Last mentoring question: what's the difference between blaming someone and holding them accountable?",
+      "quoteKo": "멘토링 마지막 질문. 누굴 탓하는 것과 책임지게 하는 것의 차이가 뭐야?",
+      "task": { "promptKo": "너의 언어로 그 차이를 답하세요.", "koSentence": "탓하기는 과거를 겨누고, 책임지게 하기는 다음 행동을 겨눕니다. 기준을 미리 합의했을 때만 후자가 가능합니다." },
+      "sampleAnswers": ["Blame points at the past. Holding someone accountable points at the next action, and it only works when expectations were agreed upfront.", "Blame asks 'whose fault'. Accountability asks 'what happens next', and it requires standards set in advance."],
+      "mentorTip": "accountable의 어원은 '설명할 수 있는(account)'이야. 벌 주는 게 아니라 자기 일을 설명하게 하는 것. 그 전제는 기준의 사전 합의고.",
+      "quizPrompt": "프로젝트 지연이 반복된다. 회의에서 책임 구조를 제안하는 문장은?",
+      "mcOptions": [
+        { "text": "Let's assign one owner per deliverable, so we can hold each other accountable.", "kind": "correct", "note": "정답. 책임은 사람이 아니라 구조로 만드는 거야. 산출물당 오너 1명." },
+        { "text": "Someone here keeps failing and we all know who.", "kind": "weak", "note": "익명 저격은 hold accountable이 아니라 hold hostage야." },
+        { "text": "Culpability attribution frameworks must be instituted forthwith.", "kind": "formal", "note": "forthwith... 사람이 도망가는 소리가 들려." }
+      ],
+      "buddyAnswers": {
+        "nuance": "account(설명) + able.\n설명 책임을 지는 상태. hold A accountable for B 구조로.",
+        "example": "• \"Leaders should be held accountable for team health.\"\n• \"I hold myself accountable for this miss.\"",
+        "default": "최고 난도는 hold myself accountable이야. 남에게 들이대는 잣대를 나에게 먼저."
+      }
+    },
+    {
+      "tfDay": 30, "word": "give the benefit of the doubt", "pos": "phr.", "meaning": "일단 믿어주다", "quizType": "tone",
+      "scene": "17:00. 수민의 첫 단독 발표가 끝났다. 성공적이었다. 차윤아가 다가와 조용히 묻는다. 30일의 마지막 질문.",
+      "npc": "mentor", "quote": "Thirty days of People TF. One last question: what will you give every new person, before they prove anything?",
+      "quoteKo": "피플 TF 30일. 마지막 질문이야. 아무것도 증명하기 전의 새 사람에게, 너는 뭘 먼저 줄 거야?",
+      "task": { "promptKo": "이 트랙에서 배운 답을 한 문장으로 쓰세요.", "koSentence": "증명하기 전에 먼저 믿음을 주겠습니다. 사람은 의심 속에서가 아니라 신뢰 속에서 자라니까요." },
+      "sampleAnswers": ["I'll give them the benefit of the doubt first. People grow inside trust, not under suspicion.", "The benefit of the doubt, before any proof. That's the soil people actually grow in."],
+      "mentorTip": "피플 TF 수료 축하해. 사람을 이끄는 영어의 핵심은 문법이 아니라 방향이었지. 공은 넘기고, 책임은 안고, 믿음은 먼저 주는 것. 🎖️",
+      "quizPrompt": "신입이 회의에 늦었다. 첫 지각이다. 옆 동료가 '벌써 늘어졌네'라고 수군댄다. 너의 반응은?",
+      "mcOptions": [
+        { "text": "It's her first time, let's give her the benefit of the doubt. Something may have happened.", "kind": "correct", "note": "정답. 첫 사건엔 해석 유예를. 이게 30일의 결론이야." },
+        { "text": "Yeah, rookies these days have no discipline.", "kind": "weak", "note": "한 번의 지각으로 사람을 정의하면, 너도 언젠가 한 번으로 정의당해." },
+        { "text": "Attendance irregularities warrant immediate documentation.", "kind": "formal", "note": "첫 지각에 문서화... 신뢰가 자랄 틈이 없잖아." }
+      ],
+      "buddyAnswers": {
+        "nuance": "의심(doubt)의 이득(benefit)을 상대에게 주다.\n확실치 않을 땐 좋은 쪽으로 해석해준다는 법정 용어 출신 관용구.",
+        "example": "• \"I gave him the benefit of the doubt, and he came through.\"\n• \"New teams deserve the benefit of the doubt.\"",
+        "default": "피플 TF 완주! 🎉 one-on-one으로 시작해 믿음으로 끝났어. 다음 TF에서 봐."
+      }
+    }
+  ]
+}

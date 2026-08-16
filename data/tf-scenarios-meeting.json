@@ -1,0 +1,1300 @@
+{
+  "track": "meeting",
+  "trackName": "미팅 TF",
+  "arc": "미국 클라이언트사 VP, Sarah Chen과의 분기 리뷰(QBR)를 처음으로 직접 주재하는 30일. 1주차 사내 회의 진행 연습, 2주차 QBR 준비와 리허설, 3-4주차 실전 진행과 후속, 그리고 다음 분기 회의를 자신 있게 여는 마무리.",
+  "npcs": ["manager", "mentor", "sarah", "park", "daniel", "hr"],
+  "quizTypes": { "reply": 8, "blank": 8, "tone": 7, "spot": 7 },
+  "principle": "퀴즈(mcOptions)와 영작 미션은 반드시 서로 다른 상황·다른 문장을 쓴다. 퀴즈 = 제3의 미니 상황에서 표현 이해 확인, 영작 = 오늘 회의 장면에 직접 적용.",
+  "scenarios": [
+    {
+      "tfDay": 1,
+      "word": "get the ball rolling",
+      "pos": "phr.",
+      "meaning": "회의 시동 걸기",
+      "quizType": "reply",
+      "scene": "09:30. 미팅 TF 첫날. 김 팀장이 화면에 화상회의 초대장을 띄운다. Sarah Chen, 미국 클라이언트사 VP. 다음 달 분기 리뷰(QBR)를 네가 처음으로 직접 주재한다. 연습은 오늘부터. 주간 팀 회의 진행, 네 몫이다.",
+      "npc": "manager",
+      "quote": "Big news. You're running the QBR with Sarah Chen next month. We'll practice in-house first, so take today's team meeting and get the ball rolling.",
+      "quoteKo": "빅뉴스야. 다음 달 Sarah Chen과의 QBR, 네가 주재해. 연습은 사내에서 먼저. 오늘 팀 회의부터 네가 맡아서 시동 걸어봐.",
+      "task": {
+        "promptKo": "팀 회의를 여는 첫 마디를 영어로 해보세요.",
+        "koSentence": "다들 오셨으니, 이번 주 업데이트부터 시작하겠습니다."
+      },
+      "sampleAnswers": [
+        "Everyone's here, so let's get the ball rolling with this week's updates.",
+        "Alright, let's get the ball rolling. First up, weekly updates."
+      ],
+      "mentorTip": "회의 첫 10초가 제일 어색해. get the ball rolling은 그 어색함을 끊는 시동어야. 완벽한 오프닝 멘트를 고민하지 말고 일단 공부터 굴려.",
+      "mcOptions": [
+        {
+          "text": "Just say 'let's get the ball rolling' and throw out an easy icebreaker question.",
+          "kind": "correct",
+          "note": "정답. 시동어 하나 + 쉬운 질문 하나. 첫 모임 어색함 해체 공식."
+        },
+        {
+          "text": "Wait quietly until someone else speaks first.",
+          "kind": "weak",
+          "note": "다들 그 생각하면 30분간 정적이야. 모임장이 공을 굴려야지."
+        },
+        {
+          "text": "Commence the proceedings with a formal declaration of objectives.",
+          "kind": "formal",
+          "note": "declaration... 스터디 모임이 국회니. 사람 말로 시작해."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "멈춰 있는 공을 굴리기 시작하는 그림.\n\n회의, 프로젝트, 대화, 뭐든 '첫 시동'에 써.\nstart보다 부드럽고 캐주얼해.",
+        "example": "• \"Let's get the ball rolling with introductions.\"\n• \"I'll send a first draft to get the ball rolling.\"",
+        "default": "미팅 TF 1일차. 회의를 여는 사람의 첫 동사가 이거야. 30일 뒤엔 Sarah와의 QBR도 이 한마디로 열게 될 거야."
+      },
+      "quizPrompt": "옆 팀 동기가 슬랙으로: \"사내 스터디 만들었는데 첫 모임에서 뭐라고 시작하지? 다들 뻘쭘해할 것 같아.\" 뭐라고 조언할까?"
+    },
+    {
+      "tfDay": 2,
+      "word": "talking points",
+      "pos": "n.",
+      "meaning": "말할 거리 미리 장전",
+      "quizType": "blank",
+      "scene": "10:30. 차윤아가 커피 두 잔을 들고 온다. 어제 첫 진행은 나쁘지 않았지만, 중간중간 말이 자꾸 끊겼다. 그걸 다 보고 있었단다.",
+      "npc": "mentor",
+      "quote": "You froze because you had slides, not talking points. Three bullets per topic, that's all you need to sound prepared.",
+      "quoteKo": "네가 얼어붙은 건 슬라이드만 있고 토킹 포인트가 없어서야. 주제당 불릿 세 개. 그거면 준비된 사람처럼 들려.",
+      "task": {
+        "promptKo": "빈칸 채우기: 다음 회의 전까지 말할 포인트를 정리해두겠다고 답하세요.",
+        "koSentence": "다음 회의 전까지 안건별로 토킹 포인트 정리해둘게요."
+      },
+      "sampleAnswers": [
+        "I'll have my talking points ready before the next meeting.",
+        "Good call. I'll write up talking points for each agenda item tonight."
+      ],
+      "mentorTip": "talking points는 대본이 아니야. 대본은 읽는 순간 티가 나. 포인트만 적고 문장은 그 자리에서 만들어. 그래야 사람 말처럼 들려.",
+      "mcOptions": [
+        {
+          "text": "Prep your talking points first, three lines per likely question. → talking points",
+          "kind": "correct",
+          "note": "정답. 인터뷰든 회의든, 말 잘하는 사람들의 공통 준비물."
+        },
+        {
+          "text": "→ full script",
+          "kind": "weak",
+          "note": "대본 통암기는 한 번 막히면 전체가 무너져. 포인트로 준비해야 유연해."
+        },
+        {
+          "text": "→ a comprehensive elocution manuscript",
+          "kind": "formal",
+          "note": "elocution manuscript... 웅변대회 나가니. talking points 두 단어면 돼."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "말할(talking) 요점들(points).\n\n정치인 브리핑에서 온 말인데 지금은 회사 필수템.\n거의 항상 복수형으로 써.",
+        "example": "• \"Can you send me the talking points before the call?\"\n• \"Stick to the talking points, don't improvise the numbers.\"",
+        "default": "어제 공을 굴렸으면 오늘은 총알 장전. 회의 진행자의 자신감은 성격이 아니라 talking points에서 나와."
+      },
+      "quizPrompt": "빈칸: 친구가 첫 언론 인터뷰를 앞두고 긴장 중. \"인터뷰 전에 ___부터 정리해. 예상 질문마다 세 줄씩.\""
+    },
+    {
+      "tfDay": 3,
+      "word": "open the floor",
+      "pos": "phr.",
+      "meaning": "자, 이제 아무나 말해도 됩니다",
+      "quizType": "tone",
+      "scene": "14:00. 주간 회의 두 번째 진행. 토킹 포인트 덕에 말은 안 끊겼는데, 이번엔 너 혼자 떠들다 끝났다. 회의 후 차윤아가 다가온다.",
+      "npc": "mentor",
+      "quote": "You talked for twenty minutes straight. Next time, open the floor early, then count to five in your head. Silence does the work.",
+      "quoteKo": "너 혼자 20분 내리 말했어. 다음엔 발언권을 일찍 열어. 그리고 속으로 5초 세. 침묵이 일을 하게 둬.",
+      "task": {
+        "promptKo": "안건 공유를 끝내고 참석자들에게 발언권을 여는 말을 하세요.",
+        "koSentence": "제 쪽 공유는 여기까지입니다. 이제 의견 듣겠습니다. 어느 부분이든 좋아요."
+      },
+      "sampleAnswers": [
+        "That's it from me. I'd like to open the floor, any thoughts on the timeline?",
+        "Before we move on, let me open the floor. Questions or pushback welcome."
+      ],
+      "mentorTip": "open the floor 하고 침묵을 못 참아서 네가 또 말하면, 사람들은 영원히 입을 안 열어. 5초 침묵은 어색한 게 아니라 초대장이야.",
+      "mcOptions": [
+        {
+          "text": "That's my take. Let me open the floor, what did everyone get out of chapter three?",
+          "kind": "correct",
+          "note": "정답. 내 의견에 마침표 + 구체적 질문으로 floor 열기. 토론이 굴러가."
+        },
+        {
+          "text": "So... does anyone want to say anything? Anything at all? No? Okay...",
+          "kind": "weak",
+          "note": "구걸하는 톤은 침묵을 더 무겁게 해. 질문은 구체적으로, 한 번만."
+        },
+        {
+          "text": "The chairperson now solicits commentary from the assembled participants.",
+          "kind": "formal",
+          "note": "chairperson... 북클럽이야, 주주총회가 아니라."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "floor = 회의장의 발언 공간.\n\n그 바닥을 모두에게 여는(open) 그림.\n진행자만 쓸 수 있는 특권 표현이야.",
+        "example": "• \"Let's open the floor for questions.\"\n• \"I'll open the floor right after the demo.\"",
+        "default": "진행자의 일은 말하기가 아니라 말하게 하기. open the floor는 그 스위치야."
+      },
+      "quizPrompt": "사내 북클럽 첫 모임 진행을 맡았다. 발제를 끝내고 토론을 열려고 한다. 어떤 톤이 맞을까?"
+    },
+    {
+      "tfDay": 4,
+      "word": "the floor is yours",
+      "pos": "phr.",
+      "meaning": "마이크 너한테 넘어갔어",
+      "quizType": "spot",
+      "scene": "11:00. 주간 회의. 김 팀장이 갑자기 아젠다 하나를 통째로 너에게 넘긴다. 예고 없이.",
+      "npc": "manager",
+      "quote": "Next item is the client update, and honestly, you know it better than I do. The floor is yours.",
+      "quoteKo": "다음 안건은 클라이언트 업데이트인데, 솔직히 네가 나보다 잘 알잖아. 발언권은 네 거야.",
+      "task": {
+        "promptKo": "넘겨받은 발언권을 자연스럽게 받아서 시작하는 첫 문장을 말하세요.",
+        "koSentence": "감사합니다. 그럼 클라이언트 쪽 업데이트 세 가지를 빠르게 공유드릴게요."
+      },
+      "sampleAnswers": [
+        "Thanks. I'll take it from here, three quick updates on the client side.",
+        "Thank you. So, three things happening with the client this week."
+      ],
+      "mentorTip": "the floor is yours를 받았을 때 '어... 네...' 하고 버벅이면 아까워. 감사 한마디 + 바로 숫자로 시작. 넘겨받는 그 순간이 네 첫인상이야.",
+      "mcOptions": [
+        {
+          "text": "Minji has been leading this project for a year. Minji, the floor is yours.",
+          "kind": "correct",
+          "note": "정답. 소개 한 줄 + 깔끔한 토스. 마이크 넘김의 정석."
+        },
+        {
+          "text": "Minji, the floor is for you now, please use it well.",
+          "kind": "weak",
+          "note": "어색한 곳: is yours가 굳은 표현이야. for you로 풀면 바닥을 진짜 빌려주는 느낌이 돼."
+        },
+        {
+          "text": "Minji, I hereby relinquish the floor unto you.",
+          "kind": "formal",
+          "note": "unto... 중세 기사 서임식이니. the floor is yours 네 단어면 끝."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "'이 발언 공간, 이제 네 소유'라는 선언.\n\n어제 open the floor가 모두에게 열기라면\n이건 한 사람에게 정확히 토스하기.",
+        "example": "• \"No more slides from me. The floor is yours.\"\n• \"You've prepped for this. The floor is yours.\"",
+        "default": "언젠가 Sarah 앞에서 이 말을 듣게 될 거야. 그때 버벅이지 않도록, 오늘은 받는 연습."
+      },
+      "quizPrompt": "어색한 곳 찾기: 사내 세미나에서 발표자를 소개하며 마이크를 넘기는 상황. 자연스러운 문장은?"
+    },
+    {
+      "tfDay": 5,
+      "word": "jump in",
+      "pos": "phr.v.",
+      "meaning": "대화에 예의 있게 끼어들기",
+      "quizType": "reply",
+      "scene": "15:00. 본사와의 화상회의. 하고 싶은 말이 있었는데 타이밍을 못 잡고 회의가 끝나버렸다. 차윤아의 DM이 온다.",
+      "npc": "mentor",
+      "quote": "I saw you unmute and give up, twice. On video calls you have to jump in, politely but firmly. 'Sorry, can I jump in here?' works every time.",
+      "quoteKo": "너 마이크 켰다가 포기하는 거 두 번 봤어. 화상회의에선 끼어들어야 해. 정중하지만 단호하게. 'Sorry, can I jump in here?' 이거면 백발백중이야.",
+      "task": {
+        "promptKo": "화상회의에서 정중하게 끼어들어 의견을 말하는 첫 문장을 쓰세요.",
+        "koSentence": "잠깐 끼어들어도 될까요? 일정 쪽에 짚을 게 하나 있어요."
+      },
+      "sampleAnswers": [
+        "Sorry to jump in, but I have one flag on the timeline.",
+        "Can I jump in real quick? One thing on the schedule before we move on."
+      ],
+      "mentorTip": "jump in의 핵심은 타이밍이야. 상대 문장이 끝나고 숨 쉬는 반 박자, 거기가 문이야. 그리고 끼어들었으면 한 문장으로 끝내. 길어지면 뺏은 게 돼.",
+      "mcOptions": [
+        {
+          "text": "Just say 'sorry, can I jump in?' first. That phrase buys you the floor politely.",
+          "kind": "correct",
+          "note": "정답. 매직 프레이즈 하나로 예의와 발언권을 동시에 확보."
+        },
+        {
+          "text": "Talk louder than everyone else until they stop.",
+          "kind": "weak",
+          "note": "볼륨 전쟁은 회의가 아니라 경매야. 프레이즈로 들어가."
+        },
+        {
+          "text": "One must formally request permission to interject via the designated host.",
+          "kind": "formal",
+          "note": "designated host... 손 들고 허락 기다리다 회의 끝나."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "대화에 뛰어드는(jump in) 그림.\n\ninterrupt보다 훨씬 가볍고 긍정적.\n'Sorry to jump in'은 사실상 국제 표준 인사.",
+        "example": "• \"Feel free to jump in anytime.\"\n• \"Can I jump in with one quick point?\"",
+        "default": "한국 회의는 차례를 기다리지만 글로벌 회의는 끼어드는 사람이 지분을 가져가. jump in은 무례가 아니라 참여야."
+      },
+      "quizPrompt": "다른 팀 동기: \"화상회의에서 미국 동료들은 막 끼어드는데 나만 타이밍을 놓쳐. 무례해 보일까 봐 무섭기도 하고.\" 뭐라고 답할까?"
+    },
+    {
+      "tfDay": 6,
+      "word": "piggyback on",
+      "pos": "phr.v.",
+      "meaning": "남의 아이디어에 업혀 한마디 얹기",
+      "quizType": "blank",
+      "scene": "10:00. 팀 회의. 데모 일정 아이디어를 냈더니, 박민준 대리가 끝나기 무섭게 손을 든다.",
+      "npc": "park",
+      "quote": "Can I piggyback on that? If we move the demo earlier, marketing can reuse the recording too.",
+      "quoteKo": "그 아이디어에 하나 얹어도 돼요? 데모를 앞당기면 마케팅이 녹화본도 재활용할 수 있어요.",
+      "task": {
+        "promptKo": "빈칸 채우기: 박 대리 아이디어에 내 의견을 얹어 보세요.",
+        "koSentence": "민준님 말에 얹자면, 그 녹화본을 온보딩 자료로도 쓸 수 있어요."
+      },
+      "sampleAnswers": [
+        "To piggyback on Minjun's point, we could reuse that recording for onboarding too.",
+        "Piggybacking on that, the same recording could double as onboarding material."
+      ],
+      "mentorTip": "piggyback은 남의 아이디어를 뺏는 게 아니라 공을 돌려주면서 얹는 거야. 이름을 꼭 불러. 'to piggyback on Minjun's point'. 이름이 들어가는 순간 협업이 돼.",
+      "mcOptions": [
+        {
+          "text": "To piggyback on the last question, how does this affect cost? → piggyback on",
+          "kind": "correct",
+          "note": "정답. 앞 질문에 업혀 자연스럽게 이어 묻기. Q&A 고수의 기술."
+        },
+        {
+          "text": "→ copy",
+          "kind": "weak",
+          "note": "copy는 그냥 베끼기야. 업혀서 한 발 더 가는 그림이 없어."
+        },
+        {
+          "text": "→ append a supplementary inquiry to",
+          "kind": "formal",
+          "note": "supplementary inquiry... 질문 하나에 관공서 공문 쓰지 마."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "piggyback = 목말, 업기.\n\n남의 아이디어에 업혀서 한 발 더 가는 것.\n반드시 원 아이디어를 인정하는 뉘앙스가 깔려 있어.",
+        "example": "• \"Just to piggyback on what Sarah said...\"\n• \"Can I piggyback on that idea for a second?\"",
+        "default": "어제 jump in이 문을 여는 법이라면, piggyback은 들어가서 뭘 말할지야. '이어서 얹기'는 회의 발언의 최저 리스크 최고 효율 카드."
+      },
+      "quizPrompt": "빈칸: 외부 세미나 Q&A에서 앞사람 질문에 이어 묻고 싶다. \"앞 질문에 ___ 하자면, 비용 쪽은 어떻게 되나요?\""
+    },
+    {
+      "tfDay": 7,
+      "word": "play devil's advocate",
+      "pos": "phr.",
+      "meaning": "일부러 반대편에 서보기",
+      "quizType": "tone",
+      "scene": "14:00. 회의에서 네 QBR 구성안이 만장일치로 통과되려는 순간, 김 팀장이 손을 든다.",
+      "npc": "manager",
+      "quote": "Everyone agrees? That worries me. Let me play devil's advocate: what if Sarah asks why usage dropped in March?",
+      "quoteKo": "전원 동의? 그게 더 걱정인데. 내가 악마의 변호인 역할 좀 하지. Sarah가 3월에 사용량 왜 떨어졌냐고 물으면?",
+      "task": {
+        "promptKo": "팀장의 반박을 방어가 아니라 환영으로 받는 대답을 하세요.",
+        "koSentence": "좋은 지적입니다. 그 질문은 실제로 나올 거예요. 3월 데이터를 다시 파보겠습니다."
+      },
+      "sampleAnswers": [
+        "Fair challenge. That question will come up, let me dig into the March data.",
+        "Good push. I'll build an answer for the March dip before the QBR."
+      ],
+      "mentorTip": "devil's advocate를 선언하고 반대하는 건 '너를 공격하는 게 아니라 아이디어를 시험한다'는 안전장치야. 반대로 네가 반박하고 싶을 때도 이 말로 시작하면 감정이 안 섞여.",
+      "mcOptions": [
+        {
+          "text": "I love the idea, but let me play devil's advocate for a minute: what's our rain plan?",
+          "kind": "correct",
+          "note": "정답. 애정 표시 + 역할 선언 + 구체적 리스크. 분위기 안 깨고 구멍만 찾기."
+        },
+        {
+          "text": "This will fail. Nobody thought about the weather?",
+          "kind": "weak",
+          "note": "같은 지적도 이 톤이면 적이 돼. 역할 선언이 왜 필요한지 보여주는 예."
+        },
+        {
+          "text": "I must interpose a contrarian perspective for deliberative purposes.",
+          "kind": "formal",
+          "note": "contrarian perspective... 말하는 데 5초, 친구 잃는 데 1초."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "devil's advocate = 옛날 교회에서 성인 후보의 흠을 일부러 찾던 직책.\n\n'반대를 위한 반대'가 아니라 '검증을 위한 반대'.\nplay를 붙여서 역할극임을 선언해.",
+        "example": "• \"Playing devil's advocate here: do users actually want this?\"\n• \"Someone needs to play devil's advocate before we commit.\"",
+        "default": "만장일치가 제일 위험한 회의야. QBR 전에 서로의 devil's advocate가 되어주는 게 진짜 준비."
+      },
+      "quizPrompt": "사내 동호회 운영 회의. 다들 야외 이벤트에 들떠 있는데 나만 리스크가 보인다. 어떤 톤으로 말할까?"
+    },
+    {
+      "tfDay": 8,
+      "word": "go off on a tangent",
+      "pos": "phr.",
+      "meaning": "얘기가 삼천포로",
+      "quizType": "spot",
+      "scene": "10:30. 네가 진행하는 회의. 박 대리의 '짧은 공유'가 7분째 사이드 프로젝트 무용담으로 흐르고 있었다. 네가 끊고 본론으로 돌렸다. 회의 후 박 대리가 멋쩍게 웃는다.",
+      "npc": "park",
+      "quote": "Sorry about earlier. I went off on a tangent again, didn't I? You did the right thing pulling us back.",
+      "quoteKo": "아까 미안. 나 또 삼천포로 빠졌지? 네가 다시 끌고 온 거 잘한 거야.",
+      "task": {
+        "promptKo": "삼천포를 정중하게 끊고 본론으로 돌리는 진행 멘트를 쓰세요.",
+        "koSentence": "재밌는 얘기지만 더 삼천포로 빠지기 전에, 아젠다로 돌아가시죠."
+      },
+      "sampleAnswers": [
+        "Fun story, but before we go off on a tangent, let's get back to the agenda.",
+        "I'll stop us before we go off on a tangent. Back to item two."
+      ],
+      "mentorTip": "tangent를 끊을 땐 내용을 비난하지 말고 시간 탓을 해. 'good point, but for time...' 사람이 아니라 시계를 악역으로 만들면 아무도 안 다쳐.",
+      "mcOptions": [
+        {
+          "text": "The budget review went off on a tangent about office snacks for half an hour.",
+          "kind": "correct",
+          "note": "정답. go off on a tangent, 전치사 세트 그대로. 간식 잡담 30분, 어느 회사나 있지."
+        },
+        {
+          "text": "The budget review went off on a tangent line about office snacks.",
+          "kind": "weak",
+          "note": "어색한 곳: tangent line은 수학 시간 접선이야. 회의에선 tangent까지만."
+        },
+        {
+          "text": "The budget review deviated into extraneous discursive territory.",
+          "kind": "formal",
+          "note": "discursive territory... 회의록에 이렇게 쓰면 아무도 안 읽어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "tangent = 원에 잠깐 닿았다 떠나는 접선.\n\n본론(원)에서 접선 타고 우주로 가는 그림.\ngo off on a tangent 통째로 외워.",
+        "example": "• \"Sorry, I'm going off on a tangent. Back to the point.\"\n• \"He goes off on tangents, so budget time for it.\"",
+        "default": "진행자의 적은 둘이야, 침묵과 삼천포. 어제 devil's advocate가 좋은 탈선이라면 tangent는 그냥 탈선. 구분해서 다뤄."
+      },
+      "quizPrompt": "어색한 곳 찾기: 옆 팀 회의가 산으로 갔던 얘기를 동료에게 전하는 중. 자연스러운 문장은?"
+    },
+{
+      "tfDay": 9,
+      "word": "off the cuff",
+      "pos": "adv./adj.",
+      "meaning": "준비 없이, 그 자리에서",
+      "quizType": "reply",
+      "scene": "16:00. 차윤아의 스피킹 코칭. 회의실에 들어오자마자 네 노트북을 덮게 하더니, 준비 안 된 주제를 던진다.",
+      "npc": "mentor",
+      "quote": "The QBR won't follow your script, so today we practice speaking off the cuff. Thirty seconds on this quarter's biggest win. Go.",
+      "quoteKo": "QBR은 네 대본대로 안 흘러가. 그러니까 오늘은 즉석 스피킹 연습이야. 이번 분기 최대 성과, 30초. 시작.",
+      "task": {
+        "promptKo": "준비 없이, 이번 분기 성과 하나를 즉석에서 말해보세요.",
+        "koSentence": "즉석에서 말하자면, 이번 분기 최대 성과는 고객 이탈률을 2%p 낮춘 겁니다."
+      },
+      "sampleAnswers": [
+        "Off the cuff? Our biggest win was cutting churn by two points this quarter.",
+        "Speaking off the cuff, I'd say the churn improvement is the story of the quarter."
+      ],
+      "mentorTip": "off the cuff를 잘하는 비결은 역설적으로 준비야. 핵심 숫자 세 개를 평소에 외워두면 어떤 돌발 질문도 그 셋 중 하나로 연결돼. 즉흥은 재료가 있어야 요리가 돼.",
+      "mcOptions": [
+        {
+          "text": "You gave a whole speech off the cuff? That's impressive, most people freeze.",
+          "kind": "correct",
+          "note": "정답. off the cuff 상황을 정확히 알아듣고 감탄. 리액션도 실력이야."
+        },
+        {
+          "text": "Why didn't you prepare a backup speech in advance?",
+          "kind": "weak",
+          "note": "즉석 대응 무용담에 '왜 준비 안 했어'는 초 치는 소리야."
+        },
+        {
+          "text": "Your extemporaneous oration was doubtless commendable.",
+          "kind": "formal",
+          "note": "extemporaneous oration... 친구가 조용히 멀어져."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "cuff = 셔츠 소매.\n\n옛날 연설자들이 소매에 급히 메모해 말한 데서 유래.\n준비 없이, 그 자리에서, 라는 뜻.",
+        "example": "• \"I can't give you numbers off the cuff, let me check.\"\n• \"He's great at off-the-cuff remarks.\"",
+        "default": "반대로 쓰는 법도 알아둬. \"I don't want to answer that off the cuff\" = 지금 즉답은 안 할래. 모르는 숫자 앞에서 널 지켜주는 문장이야."
+      },
+      "quizPrompt": "친구가 결혼식 사회를 보다가 축사자가 안 와서 즉석 멘트로 때웠다는 무용담을 들려준다. 뭐라고 리액션할까?"
+    },
+    {
+      "tfDay": 10,
+      "word": "think on your feet",
+      "pos": "phr.",
+      "meaning": "실시간으로 굴러가는 순발력",
+      "quizType": "blank",
+      "scene": "11:00. 돌발 상황. 런던의 Daniel이 예고 없이 팀 회의에 들어와 네 진행을 조용히 지켜봤다. 회의가 끝나자 DM이 온다.",
+      "npc": "daniel",
+      "quote": "Nice recovery on the budget question. Running a QBR is 20% slides and 80% thinking on your feet. You're getting there.",
+      "quoteKo": "예산 질문 받아친 거 좋았어. QBR은 슬라이드가 2할, 순발력이 8할이야. 잘 크고 있네.",
+      "task": {
+        "promptKo": "빈칸 채우기: 순발력은 아직 매일 연습 중이라고 겸손하게 답하세요.",
+        "koSentence": "감사합니다. 순발력 있게 대응하는 건 아직 매일 연습 중입니다."
+      },
+      "sampleAnswers": [
+        "Thank you! Still practicing thinking on my feet every day.",
+        "Thanks, Daniel. Thinking on my feet is exactly what I'm training for the QBR."
+      ],
+      "mentorTip": "think on your feet는 타고나는 게 아니라 패턴이야. 모르면 '좋은 질문이네요, 정확한 숫자는 확인 후 드릴게요'. 이 한 문장만 있어도 안 무너져. 순발력의 절반은 준비된 도망길이야.",
+      "mcOptions": [
+        {
+          "text": "Interviews really test your ability to think on your feet. → think on your feet",
+          "kind": "correct",
+          "note": "정답. 압박 면접의 본질을 한 표현으로. feet가 복수인 것까지 기억해."
+        },
+        {
+          "text": "→ think on your foot",
+          "kind": "weak",
+          "note": "한 발로 서면 넘어져. feet, 항상 복수야."
+        },
+        {
+          "text": "→ engage in spontaneous cognitive processing",
+          "kind": "formal",
+          "note": "cognitive processing... 면접 후기가 논문 초록이 됐어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "서 있는(on your feet) 채로 생각하는 그림.\n\n앉아서 고민할 시간 없이 실시간 판단.\n권투 선수의 풋워크를 떠올려.",
+        "example": "• \"She thinks on her feet, perfect for live Q&A.\"\n• \"You'll need to think on your feet in that role.\"",
+        "default": "1주차 수료. 진행의 기본기는 다 깔았어. 다음 주부터는 진짜 상대, Sarah Chen과의 QBR 준비다."
+      },
+      "quizPrompt": "빈칸: 후배의 면접 후기. \"압박 질문이 계속 나왔는데, 결국 면접은 ___ 능력을 보는 거더라고요.\""
+    },
+    {
+      "tfDay": 11,
+      "word": "hard stop",
+      "pos": "n.",
+      "meaning": "이 시간엔 무조건 일어나야 함",
+      "quizType": "tone",
+      "scene": "09:00. 2주차. Sarah Chen과의 첫 사전 콜을 잡는 중. 답장이 도착했다. 캐주얼한데 어딘가 정확하다. 소문대로다.",
+      "npc": "sarah",
+      "quote": "Hey! Happy to do a prep call Thursday. Heads up, I have a hard stop at 10:30 your time, so let's keep it tight.",
+      "quoteKo": "안녕하세요! 목요일 사전 콜 좋아요. 미리 말해두면, 그쪽 시간 10:30에 하드 스탑이라 타이트하게 가요.",
+      "task": {
+        "promptKo": "30분이면 충분하다고, 아젠다를 미리 보내겠다고 답장하세요.",
+        "koSentence": "30분이면 충분합니다. 시간 지키실 수 있게 아젠다를 미리 보내드릴게요."
+      },
+      "sampleAnswers": [
+        "Thirty minutes is plenty. I'll send an agenda ahead so we respect your hard stop.",
+        "Noted on the 10:30 hard stop. Agenda coming your way today, we'll keep it tight."
+      ],
+      "mentorTip": "hard stop 통보를 받으면 부담 갖지 말고 오히려 활용해. '10:25에 랩업할게요'라고 먼저 말하는 진행자를 상대는 신뢰해. 시간 감각이 곧 실력으로 보이는 문화야.",
+      "mcOptions": [
+        {
+          "text": "Quick note before we start: I have a hard stop at 2, so let's prioritize the top two items.",
+          "kind": "correct",
+          "note": "정답. 시작할 때 미리 선언 + 우선순위 제안. hard stop의 정석 사용법."
+        },
+        {
+          "text": "I might have to leave at some point, we'll see how it goes.",
+          "kind": "weak",
+          "note": "'아마 어쩌면'으론 아무도 계획을 못 세워. 스탑은 하드하게 말해야 스탑이야."
+        },
+        {
+          "text": "Be advised that my departure shall occur promptly at 1400 hours.",
+          "kind": "formal",
+          "note": "1400 hours... 회의지 군사 작전이 아니야."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "hard = 못 움직이는, stop = 종료 시각.\n\n'그 시간엔 무슨 일이 있어도 일어난다'는 선언.\nsoft stop이면 조금 늘어나도 되는 것.",
+        "example": "• \"Do you have a hard stop, or can we run long if needed?\"\n• \"I have a hard stop at 5, kids' pickup.\"",
+        "default": "Sarah가 첫 메일부터 hard stop을 말했지? 까칠함이 아니라 배려야. 서로의 시간을 지키는 신호. 미국 회의 문화의 기본 문법이야."
+      },
+      "quizPrompt": "다음 회의가 바로 붙어 있는데 지금 회의가 길어질 조짐이다. 시작할 때 뭐라고 말해두는 게 맞을까?"
+    },
+    {
+      "tfDay": 12,
+      "word": "run over",
+      "pos": "phr.v.",
+      "meaning": "예정 시간을 잡아먹고 초과",
+      "quizType": "spot",
+      "scene": "15:00. 첫 QBR 리허설. 45분짜리 발표가 70분이 걸렸다. 김 팀장이 말없이 스톱워치를 보여준다.",
+      "npc": "manager",
+      "quote": "Seventy minutes. If you run over like this with Sarah, you'll lose her at minute forty-six. Cut a third.",
+      "quoteKo": "70분. Sarah 앞에서 이렇게 시간을 넘기면 46분째에 그녀를 잃는 거야. 3분의 1 잘라.",
+      "task": {
+        "promptKo": "시간 초과의 원인을 짚고 줄이겠다고 답하세요.",
+        "koSentence": "데이터 섹션에서 시간을 넘겼습니다. 슬라이드를 잘라내고 내일 다시 재보겠습니다."
+      },
+      "sampleAnswers": [
+        "The data section made us run over. I'll cut it down and time it again tomorrow.",
+        "We ran over mostly in the data part. Trimming five slides tonight."
+      ],
+      "mentorTip": "run over의 주범은 항상 '아까워서 못 버린 슬라이드'야. 발표는 요리랑 같아서 뺄수록 맛이 나. Sarah의 hard stop(어제 단어) 기억하지? 시간 초과는 콘텐츠가 아니라 신뢰의 문제야.",
+      "mcOptions": [
+        {
+          "text": "Sorry I'm late, the standup ran over by twenty minutes.",
+          "kind": "correct",
+          "note": "정답. 회의가 주어로 와서 ran over. 지각 사유의 국제 표준 문장."
+        },
+        {
+          "text": "Sorry I'm late, the standup was run over by twenty minutes.",
+          "kind": "weak",
+          "note": "어색한 곳: was run over면 회의가 차에 치였다는 뜻이 돼. 능동으로 써."
+        },
+        {
+          "text": "My tardiness is attributable to the antecedent meeting's temporal overextension.",
+          "kind": "formal",
+          "note": "temporal overextension... 사과가 더 길어지면 두 번 지각이야."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "정해진 시간 위로(over) 흘러넘치는(run) 그림.\n\n회의, 발표, 통화가 주어로 와.\nrun over by 10 minutes처럼 by로 초과량 표시.",
+        "example": "• \"We're about to run over, let's take this offline.\"\n• \"Every meeting with that team runs over.\"",
+        "default": "안 넘기는 진행자의 비밀은 '80% 설계'야. 45분 회의면 36분치만 준비해. 나머지는 질문이 채워. 항상."
+      },
+      "quizPrompt": "어색한 곳 찾기: 앞 회의가 길어져서 다음 일정에 늦었다는 얘기. 자연스러운 문장은?"
+    },
+    {
+      "tfDay": 13,
+      "word": "steer the conversation",
+      "pos": "phr.",
+      "meaning": "대화 핸들 꺾기",
+      "quizType": "reply",
+      "scene": "10:00. 차윤아 코칭. 리허설 녹화를 같이 돌려보다가 그녀가 화면을 멈춘다.",
+      "npc": "mentor",
+      "quote": "See this part? Sarah will grill you on pricing here. Your job is to answer once, then steer the conversation back to the roadmap. Watch me do it.",
+      "quoteKo": "이 부분 봐. Sarah는 여기서 가격을 물고 늘어질 거야. 한 번 답하고, 대화를 로드맵으로 다시 조종하는 게 네 일이야. 내가 해볼 테니 봐봐.",
+      "task": {
+        "promptKo": "가격 질문에 짧게 답한 뒤 대화를 로드맵으로 돌리는 문장을 만드세요.",
+        "koSentence": "짧게 답하면, 가격은 3분기까지 유지됩니다. 이제 대화를 로드맵으로 다시 돌리겠습니다."
+      },
+      "sampleAnswers": [
+        "Short answer: pricing holds through Q3. Now let me steer the conversation back to the roadmap.",
+        "Happy to cover pricing in a separate session. For today, let me steer us back to the roadmap."
+      ],
+      "mentorTip": "steer는 '무시하고 화제 돌리기'가 아니야. 한 번은 제대로 답해. 답 없이 핸들만 꺾으면 상대는 도망친다고 느껴. 답하고 꺾기, 순서가 생명이야.",
+      "mcOptions": [
+        {
+          "text": "Okay, let me steer the conversation somewhere safer. Who's watched anything good lately?",
+          "kind": "correct",
+          "note": "정답. 유머로 선언하고 부드럽게 핸들 꺾기. 가족 모임 필수 스킬."
+        },
+        {
+          "text": "Stop talking about politics right now. New topic.",
+          "kind": "weak",
+          "note": "급브레이크는 분위기가 먼저 죽어. 조종은 부드럽게."
+        },
+        {
+          "text": "I propose we redirect our discourse toward less contentious subject matter.",
+          "kind": "formal",
+          "note": "discourse... 가족 모임에서 이러면 네가 다음 화제가 돼."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "steer = 핸들을 잡고 방향을 트는 것.\n\n대화를 원하는 곳으로 '운전'하는 그림.\nsteer A toward B, steer back to B 형태로.",
+        "example": "• \"He kept steering the conversation toward budget.\"\n• \"Let's steer this back to the main issue.\"",
+        "default": "진행자와 참석자의 차이가 이거야. 참석자는 대화에 타고, 진행자는 대화를 운전해. QBR에서 핸들은 네 손에 있어야 해."
+      },
+      "quizPrompt": "가족 모임에서 사촌들끼리 정치 얘기로 언성이 높아지고 있다. 분위기를 살리려면 뭐라고 할까?"
+    },
+    {
+      "tfDay": 14,
+      "word": "debrief",
+      "pos": "n./v.",
+      "meaning": "끝나고 모여서 복기",
+      "quizType": "blank",
+      "scene": "17:30. 두 번째 리허설 종료. 이번엔 44분. 김 팀장이 회의실에 남으라는 손짓을 한다.",
+      "npc": "manager",
+      "quote": "Better. Now the habit that separates pros from amateurs: a five-minute debrief after every run. What worked, what didn't, what changes.",
+      "quoteKo": "나아졌어. 이제 프로와 아마추어를 가르는 습관 하나. 매 리허설 뒤 5분 복기. 뭐가 됐고, 뭐가 안 됐고, 뭘 바꿀지.",
+      "task": {
+        "promptKo": "빈칸 채우기: 기억이 생생할 때 바로 복기하자고 팀에 제안하세요.",
+        "koSentence": "기억이 생생할 때 바로 15분만 복기하시죠."
+      },
+      "sampleAnswers": [
+        "Let's do a quick debrief now while it's fresh, fifteen minutes.",
+        "Can we debrief right away? I want the feedback while it's still warm."
+      ],
+      "mentorTip": "debrief의 골든타임은 종료 직후 30분이야. 하루 지나면 기억이 미화돼. 그리고 잘된 것부터 말해. 못한 것부터 시작하는 복기엔 아무도 다시 안 와.",
+      "mcOptions": [
+        {
+          "text": "Let's debrief over lunch tomorrow before we forget the prop disaster. → debrief",
+          "kind": "correct",
+          "note": "정답. 이벤트 직후 복기 소집. 동사로도 명사로도 되는 만능 단어."
+        },
+        {
+          "text": "→ forget about it",
+          "kind": "weak",
+          "note": "잊자는 팀은 다음 공연에서 같은 소품이 또 넘어져."
+        },
+        {
+          "text": "→ convene a retrospective evaluation session",
+          "kind": "formal",
+          "note": "retrospective evaluation... 점심 먹다 체하겠다. debrief 한 단어면 돼."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "brief(사전 브리핑)의 반대, 사후 복기.\n\n군대에서 온 말. 작전 끝나고 모여서 리뷰.\n명사로도 동사로도 써.",
+        "example": "• \"Quick debrief after the client call?\"\n• \"We debriefed on what went wrong with the launch.\"",
+        "default": "리허설보다 debrief가 더 중요할 때가 많아. 연습은 반복이고 복기는 방향이거든. 방향 없는 반복은 실수를 근육에 새기는 일이야."
+      },
+      "quizPrompt": "빈칸: 동아리 공연이 끝난 단톡방. \"소품 사고 잊기 전에 내일 점심에 ___ 하자!\""
+    },
+    {
+      "tfDay": 15,
+      "word": "walk through",
+      "pos": "phr.v.",
+      "meaning": "처음부터 차근차근 짚어주기",
+      "quizType": "tone",
+      "scene": "09:30. Sarah와의 사전 콜 당일. 접속하자마자 그녀가 환하게 웃으며 인사하더니, 3초 만에 본론이다. 역시 숫자에 예리하다.",
+      "npc": "sarah",
+      "quote": "Great to finally meet you! Before the QBR, can you walk me through the Q2 numbers? Especially that March dip, I'm curious about the story there.",
+      "quoteKo": "드디어 만나네요! QBR 전에 2분기 숫자를 차근차근 짚어줄래요? 특히 그 3월 하락, 뒤에 무슨 스토리가 있는지 궁금해요.",
+      "task": {
+        "promptKo": "3월 숫자부터 차례로 설명을 시작하겠다고 답하세요.",
+        "koSentence": "물론이죠. 3월부터 차근차근 짚어드릴게요. 하락엔 분명한 이유가 있습니다."
+      },
+      "sampleAnswers": [
+        "Of course. Let me walk you through it starting with March, there's a clear story behind the dip.",
+        "Happy to walk you through the numbers. March first, since that's the interesting one."
+      ],
+      "mentorTip": "walk through를 부탁받으면 겁먹지 마. 널 시험하는 게 아니라 '네 속도로 안내해달라'는 뜻이야. 산책(walk)이잖아. 뛰지 말고, 한 숫자씩, 스토리를 붙여서.",
+      "mcOptions": [
+        {
+          "text": "Come grab a seat, I'll walk you through the whole deploy process step by step.",
+          "kind": "correct",
+          "note": "정답. 옆에 앉혀서 한 단계씩. walk through가 만드는 안전감이 이거야."
+        },
+        {
+          "text": "The wiki has everything, just read it carefully.",
+          "kind": "weak",
+          "note": "위키 던지기는 안내가 아니라 방치야. 첫 배포는 같이 걸어줘."
+        },
+        {
+          "text": "Kindly familiarize yourself with the standard operating procedures documentation.",
+          "kind": "formal",
+          "note": "SOP documentation... 신입 퇴사 사유 1위 문장."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "옆에서 같이 걸으며(walk) 끝까지 통과(through)하는 그림.\n\n설명하는 쪽이 페이스를 잡고 단계별로 안내.\nwalk A through B 형태가 기본.",
+        "example": "• \"Can you walk me through your thinking?\"\n• \"She walked the client through the contract line by line.\"",
+        "default": "Sarah의 walk me through는 심문이 아니라 이해하고 싶다는 신호야. 2주차 중간, 첫 실전 대면은 나쁘지 않았어."
+      },
+      "quizPrompt": "신입이 배포 절차를 처음 맡아서 눈에 띄게 불안해한다. 사수로서 어떤 톤으로 말해줄까?"
+    },
+    {
+      "tfDay": 16,
+      "word": "deep dive",
+      "pos": "n.",
+      "meaning": "한 주제 바닥까지 파기",
+      "quizType": "spot",
+      "scene": "11:00. 사전 콜 후폭풍. Sarah가 3월 이탈 데이터에 제대로 꽂혔다. 후속 메일이 도착한다.",
+      "npc": "sarah",
+      "quote": "Thanks for the call! One ask: at the QBR, I'd love a deep dive on the March churn. Ten minutes is fine, I just want the full picture.",
+      "quoteKo": "콜 고마웠어요! 요청 하나. QBR에서 3월 이탈률 딥다이브 부탁해요. 10분이면 돼요, 전체 그림이 보고 싶어서요.",
+      "task": {
+        "promptKo": "딥다이브 섹션을 준비하겠다고 김 팀장에게 보고하세요.",
+        "koSentence": "Sarah가 3월 이탈률 딥다이브를 요청했습니다. 원인 분석까지 10분짜리 섹션으로 준비하겠습니다."
+      },
+      "sampleAnswers": [
+        "Sarah asked for a deep dive on the March churn. I'll build a ten-minute section with root causes.",
+        "Adding a deep dive on March churn to the deck, per Sarah's request."
+      ],
+      "mentorTip": "deep dive 요청은 위기가 아니라 기회야. 상대가 파고 싶다는 건 관심이 있다는 뜻이거든. 최악은 얕게 파고 들키는 것. 딥다이브 섹션엔 네가 제일 잘 아는 데이터만 넣어.",
+      "mcOptions": [
+        {
+          "text": "We're doing a deep dive into the latency issue next sprint.",
+          "kind": "correct",
+          "note": "정답. do a deep dive into, 세트 그대로. 분석 예고의 표준 문장."
+        },
+        {
+          "text": "We're doing a deeply dive into the latency issue next sprint.",
+          "kind": "weak",
+          "note": "어색한 곳: deeply dive는 부사가 명사에 끼어든 꼴. deep dive가 한 덩어리야."
+        },
+        {
+          "text": "We shall undertake an exhaustive analytical examination of the latency phenomenon.",
+          "kind": "formal",
+          "note": "phenomenon... 스프린트 공유가 학회 발표가 됐어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "수면 위 스노클링 말고 깊이 잠수(dive)하는 그림.\n\n한 주제를 바닥까지 파는 세션이나 분석.\ndo/take a deep dive into 형태로.",
+        "example": "• \"Let's schedule a deep dive on the funnel data.\"\n• \"The report is a deep dive into user behavior.\"",
+        "default": "내일 배울 high-level과 정반대 개념이야. 좋은 발표자는 이 둘 사이를 자유롭게 오가. 수심 조절이 진행의 기술."
+      },
+      "quizPrompt": "어색한 곳 찾기: 다음 스프린트에 성능 이슈를 분석하기로 했다는 팀 공유. 자연스러운 문장은?"
+    },
+{
+      "tfDay": 17,
+      "word": "high-level",
+      "pos": "adj.",
+      "meaning": "디테일 빼고 큰 그림만",
+      "quizType": "reply",
+      "scene": "09:00. 런던에서 Daniel의 화상 요청. QBR 자료 초안을 미리 본 모양이다.",
+      "npc": "daniel",
+      "quote": "Strong deck, but you open with forty rows of data. Executives listen top-down: give me the high-level story first, then earn the right to go deep.",
+      "quoteKo": "자료 좋아. 근데 데이터 40줄로 시작하더라. 임원들은 위에서 아래로 들어. 큰 그림 스토리를 먼저 주고, 그다음에 깊이 들어갈 자격을 얻는 거야.",
+      "task": {
+        "promptKo": "첫 슬라이드를 하이레벨 요약으로 바꾸겠다고 답하세요.",
+        "koSentence": "첫 슬라이드를 하이레벨 요약 세 줄로 바꾸겠습니다. 데이터는 뒤로 빼겠습니다."
+      },
+      "sampleAnswers": [
+        "Good point. I'll open with a high-level summary, three lines, and move the data back.",
+        "I'll rework slide one into a high-level overview and push the forty rows to the appendix."
+      ],
+      "mentorTip": "high-level 요약의 공식은 '숫자 하나 + 방향 하나 + 요청 하나'야. 'ARR 12% 성장, 이탈은 잡히는 중, 오늘은 갱신 얘기를 하고 싶다'. 이 세 줄이면 임원의 귀가 열려.",
+      "mcOptions": [
+        {
+          "text": "High-level: we're on track, two weeks ahead on dev, one open risk on hiring.",
+          "kind": "correct",
+          "note": "정답. 상태 + 진도 + 리스크, 15초 완결. 임원은 이 밀도를 사랑해."
+        },
+        {
+          "text": "Well, it all started when the API team changed the spec back in March...",
+          "kind": "weak",
+          "note": "3월 스펙 얘기 나오는 순간 임원은 내릴 층만 세고 있어."
+        },
+        {
+          "text": "Permit me to furnish a comprehensive progress elucidation at your convenience.",
+          "kind": "formal",
+          "note": "elucidation... 엘리베이터가 멈춰도 이 문장은 안 끝나."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "높은 곳에서(high-level) 내려다본 시야.\n\n디테일을 뺀 큰 그림, 요약 관점.\n반대말은 in the weeds(잡초 속), granular(알갱이 단위).",
+        "example": "• \"Just give me the high-level version.\"\n• \"This is a high-level roadmap, dates may shift.\"",
+        "default": "어제 deep dive와 세트로 기억해. Sarah에겐 deep dive를, Daniel에겐 high-level을. 같은 데이터도 듣는 사람에 따라 수심이 달라."
+      },
+      "quizPrompt": "엘리베이터에서 임원과 단둘이 탔는데 \"그 프로젝트 요즘 어때요?\"라고 묻는다. 뭐라고 답할까?"
+    },
+    {
+      "tfDay": 18,
+      "word": "drill down",
+      "pos": "phr.v.",
+      "meaning": "숫자 속으로 뚫고 들어가기",
+      "quizType": "blank",
+      "scene": "14:00. 3월 이탈 딥다이브 준비. 박 대리와 나란히 앉아 대시보드를 연다.",
+      "npc": "park",
+      "quote": "The monthly chart hides everything. Let's drill down by week, then by account tier. I bet the dip is just two big accounts.",
+      "quoteKo": "월간 차트는 다 가려버려요. 주 단위로, 그다음 고객 등급별로 파고들어 보죠. 그 하락, 큰 고객 두 곳 때문일걸요?",
+      "task": {
+        "promptKo": "빈칸 채우기: 지역별로 한 단계 더 파고들자고 제안하세요.",
+        "koSentence": "지역별로 한 단계 더 파고들어 보죠. 어디서 빠졌는지 나올 거예요."
+      },
+      "sampleAnswers": [
+        "Let's drill down by region and see exactly where the drop came from.",
+        "Can we drill down one more level, by region this time?"
+      ],
+      "mentorTip": "drill down은 방향이 있는 딥다이브야. 무작정 파지 말고 가설을 들고 파. 박 대리처럼 '두 계정 때문일걸?' 하고 드릴을 대는 거지. 가설 없는 드릴링은 그냥 소음이야.",
+      "mcOptions": [
+        {
+          "text": "We need to drill down by channel to find the real problem. → drill down",
+          "kind": "correct",
+          "note": "정답. 총합에 속지 않는 사람의 동사. by 뒤에 쪼개는 기준을 붙여."
+        },
+        {
+          "text": "→ drill up",
+          "kind": "weak",
+          "note": "드릴은 아래로 파는 물건이야. 위로 올라가는 건 내일 배울 zoom out."
+        },
+        {
+          "text": "→ conduct a granular segmentation analysis",
+          "kind": "formal",
+          "note": "granular segmentation... 맞는 말인데 이러면 다들 커피 뜨러 가."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "드릴로 뚫고(drill) 내려가는(down) 그림.\n\n합계에서 세부 데이터로 한 층씩 내려가기.\n대시보드에서 클릭해 상세 보는 것도 drill down.",
+        "example": "• \"Let's drill down into the numbers by cohort.\"\n• \"The dashboard lets you drill down to individual orders.\"",
+        "default": "deep dive가 '깊게 본다'는 선언이라면 drill down은 실제로 파는 동작이야. Sarah 같은 숫자형 상대는 네가 어디까지 드릴을 대봤는지 3초 만에 알아채."
+      },
+      "quizPrompt": "빈칸: 광고 성과 회의에서. \"전체 클릭률 말고, 채널별로 ___ 해서 봐야 어디가 문제인지 알죠.\""
+    },
+    {
+      "tfDay": 19,
+      "word": "zoom out",
+      "pos": "phr.v.",
+      "meaning": "카메라 빼서 전체 보기",
+      "quizType": "tone",
+      "scene": "16:00. 드릴다운의 늪. 이탈 원인을 찾다가 스프레드시트 지옥에 빠진 지 세 시간째. 지나가던 김 팀장이 모니터를 흘끗 본다.",
+      "npc": "manager",
+      "quote": "You've been in cell-level detail all afternoon. Zoom out for a second: does the March story change the renewal ask? That's the only question Sarah cares about.",
+      "quoteKo": "오후 내내 셀 단위에 박혀 있네. 잠깐 카메라 빼봐. 3월 스토리가 갱신 요청을 바꾸나? Sarah가 신경 쓰는 질문은 그것뿐이야.",
+      "task": {
+        "promptKo": "줌아웃해서 결론이 뭔지 한 문장으로 답하세요.",
+        "koSentence": "줌아웃해서 보면, 3월 하락은 일회성이고 갱신 논리는 그대로 유효합니다."
+      },
+      "sampleAnswers": [
+        "Zooming out, the March dip is a one-off and the renewal case still holds.",
+        "Fair. If I zoom out, the story is simple: one-time dip, fundamentals intact."
+      ],
+      "mentorTip": "발표 중에도 써먹어. 디테일 질문 러시에 말리면 'let me zoom out for a second' 하고 큰 그림을 다시 깔아. 수세를 공세로 바꾸는 진행자의 카메라 워크야.",
+      "mcOptions": [
+        {
+          "text": "Zoom out for a second: which job gets you where you want to be in five years?",
+          "kind": "correct",
+          "note": "정답. 엑셀에서 인생으로 카메라 빼주기. 좋은 친구의 질문."
+        },
+        {
+          "text": "Just pick the higher salary, easy decision.",
+          "kind": "weak",
+          "note": "숫자 하나로 끝내는 조언은 줌아웃이 아니라 그냥 안 보는 거야."
+        },
+        {
+          "text": "You must holistically evaluate the totality of each employment opportunity.",
+          "kind": "formal",
+          "note": "totality... 고민 상담이 약관 낭독이 됐어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "카메라를 뒤로 빼는(zoom out) 그림.\n\n디테일에서 빠져나와 전체 맥락 보기.\n반대는 zoom in.",
+        "example": "• \"Let's zoom out: what's the actual goal here?\"\n• \"Good detail, but zoom out, does it move revenue?\"",
+        "default": "drill down(어제)과 zoom out은 페달 두 개야. 파고들 줄만 알면 늪에 빠지고, 빼고 볼 줄만 알면 얕아져. 번갈아 밟는 게 운전이야."
+      },
+      "quizPrompt": "친구가 이직 고민 중인데 연봉 몇백 차이 엑셀만 사흘째 돌리고 있다. 어떤 톤으로 말해줄까?"
+    },
+    {
+      "tfDay": 20,
+      "word": "level set",
+      "pos": "phr./v.",
+      "meaning": "다 같은 출발선에 세우기",
+      "quizType": "spot",
+      "scene": "10:00. 마지막 리허설. 차윤아가 청중석에 앉아 Sarah 역할을 맡는다. 시작 직전, 그녀가 손을 든다.",
+      "npc": "mentor",
+      "quote": "One more thing. Sarah's side will have new faces who missed last quarter. Open by level setting: where we ended Q1, in three sentences. Then nobody's lost.",
+      "quoteKo": "하나 더. Sarah 쪽엔 지난 분기를 모르는 새 얼굴들이 올 거야. 레벨셋으로 열어. 1분기가 어디서 끝났는지 세 문장. 그러면 아무도 안 헤매.",
+      "task": {
+        "promptKo": "회의 도입에서 전제를 맞추는 레벨셋 멘트를 만드세요.",
+        "koSentence": "본론 전에 눈높이부터 맞추죠. 1분기는 갱신 논의를 열기로 합의하며 마무리됐습니다."
+      },
+      "sampleAnswers": [
+        "Before we dive in, let me level set: we closed Q1 agreeing to open renewal talks this quarter.",
+        "Quick level set for the new folks: Q1 ended with three commitments, and here's where each stands."
+      ],
+      "mentorTip": "level set은 '아는 사람에겐 복습, 모르는 사람에겐 구조'야. 30초면 충분해. 이걸 건너뛰면 회의 중반에 '잠깐, 그게 뭐였죠?'가 터지고, 그 순간 네 페이스는 끝나.",
+      "mcOptions": [
+        {
+          "text": "I started the kickoff by level setting on what the project covers and what it doesn't.",
+          "kind": "correct",
+          "note": "정답. level set on + 주제. 범위 합의로 여는 킥오프의 정석."
+        },
+        {
+          "text": "I started the kickoff by setting levels on what the project covers.",
+          "kind": "weak",
+          "note": "어색한 곳: setting levels는 오디오 믹싱이야. level set이 한 덩어리 동사."
+        },
+        {
+          "text": "I inaugurated the kickoff via harmonization of participants' epistemic baselines.",
+          "kind": "formal",
+          "note": "epistemic baselines... 참석자 전원이 조용히 노트북을 덮어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "모두의 눈높이(level)를 같은 선에 맞추는(set) 것.\n\n회의 도입부에 전제, 용어, 현황을 통일하는 작업.\n미국 회사 회의의 국룰 오프닝.",
+        "example": "• \"Let me level set before we jump into decisions.\"\n• \"We spent five minutes level setting on definitions.\"",
+        "default": "2주차 수료. talking points부터 level set까지, 준비의 기술은 다 채웠어. 다음 주, 드디어 실전이다."
+      },
+      "quizPrompt": "어색한 곳 찾기: 프로젝트 킥오프 미팅을 어떻게 열었는지 회고하는 중. 자연스러운 문장은?"
+    },
+    {
+      "tfDay": 21,
+      "word": "strawman",
+      "pos": "n.",
+      "meaning": "두들겨 맞으라고 만든 초안",
+      "quizType": "reply",
+      "scene": "09:30. 3주차, QBR D-3. 갱신 조건을 사내에서 아직 못 정했다. 회의가 30분째 빙빙 돈다. 김 팀장이 화이트보드 앞에 선다.",
+      "npc": "manager",
+      "quote": "We're circling. Enough. I'll put up a strawman: two-year renewal, 8% uplift, quarterly reviews. Tear it apart, that's what it's for.",
+      "quoteKo": "계속 빙빙 돌잖아. 그만. 내가 스트로맨 하나 세울게. 2년 갱신, 8% 인상, 분기 리뷰. 마음껏 뜯어. 그러라고 만든 거니까.",
+      "task": {
+        "promptKo": "스트로맨의 조건 하나를 근거와 함께 반박해 보세요.",
+        "koSentence": "스트로맨에서 8%는 공격받기 쉽습니다. 3월 하락을 감안하면 5%에 성과 조건을 붙이는 게 방어가 됩니다."
+      },
+      "sampleAnswers": [
+        "Poking at the strawman: 8% is hard to defend after the March dip. I'd go 5% with a performance kicker.",
+        "One hit on the strawman: quarterly reviews sound heavy for Sarah's team. Twice a year?"
+      ],
+      "mentorTip": "strawman의 마법은 '완벽하지 않아도 된다'는 데 있어. 빈 화이트보드 앞에선 다들 조용한데, 허수아비 하나 세우면 갑자기 다들 말이 많아지거든. 회의가 안 굴러가면 네가 먼저 세워.",
+      "mcOptions": [
+        {
+          "text": "Bring a strawman proposal to the next meeting. People decide faster when there's something to attack.",
+          "kind": "correct",
+          "note": "정답. 결정 못 하는 팀의 특효약. 뜯을 대상을 만들어주는 것."
+        },
+        {
+          "text": "Just wait, good ideas take time to emerge naturally.",
+          "kind": "weak",
+          "note": "3주 돌았으면 자연 발생은 물 건너갔어. 허수아비가 필요한 타이밍."
+        },
+        {
+          "text": "Institute a formalized ideation framework with weighted decision matrices.",
+          "kind": "formal",
+          "note": "weighted matrices... 회의가 하나 더 늘어날 소리야."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "strawman = 짚으로 만든 허수아비.\n\n두들겨 맞으면서 진짜 답을 찾게 해주는 초안.\nstrawman proposal로 붙여 쓰면 안전장치가 돼.",
+        "example": "• \"This is just a strawman, feel free to tear it apart.\"\n• \"Can someone put up a strawman so we have something to react to?\"",
+        "default": "주의: 논리학에서 strawman argument는 '상대 주장을 왜곡해서 때리기'라는 나쁜 뜻이야. 회의실에선 '두들겨 맞을 초안'. 문맥으로 구분해."
+      },
+      "quizPrompt": "동기가 사이드 프로젝트 회의가 3주째 아이디어만 돌고 결정이 안 난다고 한탄한다. 뭐라고 조언할까?"
+    },
+    {
+      "tfDay": 22,
+      "word": "show of hands",
+      "pos": "n.",
+      "meaning": "자, 손들어 보실까요",
+      "quizType": "blank",
+      "scene": "12:00. QBR D-2인데 인사팀이 자리로 찾아왔다. 다음 달 사내 워크숍 진행자로 네가 추천됐단다. 소문이 났다, 회의 잘 굴리는 사람이라고.",
+      "npc": "hr",
+      "quote": "Word is you run a tight meeting. For the workshop, could you sprinkle in quick polls, you know, a show of hands, to keep two hundred people awake?",
+      "quoteKo": "회의 잘한다는 소문이 자자하던데요. 워크숍에서 간단한 투표 좀 섞어줄래요? 왜, 손들기 같은 거요. 200명 안 졸게요.",
+      "task": {
+        "promptKo": "빈칸 채우기: 워크숍 오프닝용 손들기 질문을 만들어 보세요.",
+        "koSentence": "시작 전에 손 한번 들어볼까요? 이번 주에 회의가 5개 넘었던 분?"
+      },
+      "sampleAnswers": [
+        "Quick show of hands before we start: who sat through more than five meetings this week?",
+        "Let's do a show of hands: who actually read the pre-read? Be honest!"
+      ],
+      "mentorTip": "show of hands는 데이터 수집이 아니라 잠 깨우기용이야. 첫 질문은 무조건 가볍고 웃긴 걸로. 손을 한 번 든 청중은 그 뒤로 계속 참여해. 몸이 열리면 입도 열리거든.",
+      "mcOptions": [
+        {
+          "text": "Let's settle it with a show of hands. Korean food, who's in? → show of hands",
+          "kind": "correct",
+          "note": "정답. 끝없는 토론 정리기. 회식 메뉴부터 워크숍까지 만능."
+        },
+        {
+          "text": "→ showing hands",
+          "kind": "weak",
+          "note": "showing hands는 손 검사받는 느낌이야. a show of hands, 관사까지 세트."
+        },
+        {
+          "text": "→ a formal manual suffrage procedure",
+          "kind": "formal",
+          "note": "manual suffrage... 회식 정하는데 선거관리위원회 소집하지 마."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "손(hands)을 들어 보여주는(show) 약식 투표.\n\nby a show of hands = 거수로.\n정밀 표결이 아니라 분위기 파악용.",
+        "example": "• \"Show of hands: who can make Friday work?\"\n• \"We took a quick show of hands and moved on.\"",
+        "default": "QBR 이틀 전의 숨 고르기 에피소드. 근데 기억해, 200명 워크숍 제안이 들어왔다는 건 네 진행 실력이 이미 소문났다는 뜻이야."
+      },
+      "quizPrompt": "빈칸: 팀 회식 장소를 정하는 중. \"말로 하면 끝이 없으니까 ___로 정하죠. 한식파, 손!\""
+    },
+    {
+      "tfDay": 23,
+      "word": "put a pin in it",
+      "pos": "phr.",
+      "meaning": "그 얘긴 핀 꽂아두고 나중에",
+      "quizType": "tone",
+      "scene": "15:00. QBR 전날 최종 점검 회의. 갱신 가격을 두고 김 팀장과 박 대리가 15분째 평행선. 시간은 없고 확인할 건 산더미. 진행자는 너다. 김 팀장이 시계를 보더니 너를 본다.",
+      "npc": "manager",
+      "quote": "...and that's why 8% holds. Wait, look at the clock. Your call, chair. Do we keep going or put a pin in it?",
+      "quoteKo": "...그래서 8%가 맞다니까. 잠깐, 시계 봐라. 진행자, 네가 정해. 계속 가, 아니면 핀 꽂아둬?",
+      "task": {
+        "promptKo": "가격 논쟁에 핀을 꽂고 다음 안건으로 넘기는 진행 멘트를 하세요.",
+        "koSentence": "이 건은 핀 꽂아두고 오늘 저녁에 30분 따로 잡겠습니다. 지금은 체크리스트 마저 가시죠."
+      },
+      "sampleAnswers": [
+        "Let's put a pin in the pricing debate. I'll book thirty minutes tonight just for that, now back to the checklist.",
+        "I'm putting a pin in this one. Tonight at eight, pricing only. Moving on to the run-through."
+      ],
+      "mentorTip": "put a pin in it의 신뢰는 후속에서 나와. 핀만 꽂고 안 돌아오면 다음부턴 아무도 안 믿어. 꽂는 순간 '언제 다시 열지'를 같이 말해. 핀과 캘린더는 세트야.",
+      "mcOptions": [
+        {
+          "text": "Great debate, but let's put a pin in it and finish the chapter. We'll settle it in the group chat.",
+          "kind": "correct",
+          "note": "정답. 논쟁 존중 + 핀 + 후속 장소 지정. 아무도 안 삐지는 정리법."
+        },
+        {
+          "text": "You two are wasting everyone's time. Drop it.",
+          "kind": "weak",
+          "note": "정리는 됐는데 두 사람은 다음 모임에 안 나와."
+        },
+        {
+          "text": "I move to table this discussion pursuant to our procedural guidelines.",
+          "kind": "formal",
+          "note": "pursuant... 스터디에 로버트 회의규칙 들고 오지 마."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "핀을 꽂아 벽에 붙여두는 그림.\n\n버리는 게 아니라 '보이는 곳에 보관'.\n나중에 꼭 돌아온다는 뉘앙스가 핵심.",
+        "example": "• \"Let's put a pin in that and revisit after lunch.\"\n• \"Good question, can I put a pin in it until the Q&A?\"",
+        "default": "내일 QBR에서 제일 많이 쓸 표현일지도 몰라. 돌발 논쟁이 열리면 핀 꽂고 아젠다로 복귀. 진행자의 핀은 많을수록 좋아."
+      },
+      "quizPrompt": "스터디 모임에서 멤버 둘이 지엽적인 문법 문제로 20분째 논쟁 중이다. 진행자로서 어떤 톤으로 정리할까?"
+    },
+{
+      "tfDay": 24,
+      "word": "you're on mute",
+      "pos": "phr.",
+      "meaning": "화상회의 국민 대사: 음소거예요",
+      "quizType": "spot",
+      "scene": "22:00. QBR 당일 밤(미국은 아침). 심호흡, 접속. 참가자 12명. 준비한 오프닝 멘트를 완벽하게 말했다. 그런데 화면 속 모두가 고요하다. Sarah가 웃음을 참으며 입 모양으로 말한다.",
+      "npc": "sarah",
+      "quote": "I'm so sorry to start us off like this, but... you're on mute! Take two, the intro looked great though.",
+      "quoteKo": "이렇게 시작하게 해서 미안한데... 음소거예요! 다시 한번요. 입 모양은 완벽했어요.",
+      "task": {
+        "promptKo": "뮤트 사고를 웃음으로 넘기고 다시 시작하는 첫 마디를 하세요.",
+        "koSentence": "화상회의 10년 차인데 이러네요. 다시 갈게요. 2분기 리뷰에 오신 걸 환영합니다!"
+      },
+      "sampleAnswers": [
+        "Well, that's my icebreaker done. Take two: welcome, everyone, to our Q2 business review!",
+        "Classic. Ten years of video calls and I still open on mute. Alright, welcome to the QBR, for real this time."
+      ],
+      "mentorTip": "뮤트 사고는 사고가 아니라 최고의 아이스브레이커야. 당황해서 사과를 세 번 하면 그때부터 진짜 사고가 돼. 씩 웃고, 농담 한 줄, 바로 재시작. 회복 속도가 곧 신뢰야.",
+      "mcOptions": [
+        {
+          "text": "Hold on, you're on mute! We missed all of that.",
+          "kind": "correct",
+          "note": "정답. 세계에서 제일 많이 쓰인 화상회의 문장. 이대로 통째로."
+        },
+        {
+          "text": "Hold on, you're in the mute! We missed all of that.",
+          "kind": "weak",
+          "note": "어색한 곳: in the mute는 뮤트라는 방에 갇힌 느낌이야. on mute가 맞아."
+        },
+        {
+          "text": "Your audio transmission appears to be in a deactivated state.",
+          "kind": "formal",
+          "note": "audio transmission... 알려주는 데 10초 걸리면 발표는 이미 3장 넘어갔어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "mute(음소거) 상태 위에(on) 있다는 뜻.\n\n2020년 이후 인류 공용어가 된 문장.\ngo on mute = 음소거 켜기, come off mute = 풀기.",
+        "example": "• \"Sorry, I was on mute. As I was saying...\"\n• \"You might want to go on mute, we can hear the dog.\"",
+        "default": "이 말을 듣는 게 창피한 게 아니라, 듣고 얼어붙는 게 창피한 거야. 오늘 너는 웃으며 다시 시작했고, 그 순간 회의장의 긴장이 풀렸어. 사고를 자산으로 바꿨네."
+      },
+      "quizPrompt": "어색한 곳 찾기: 화상 스터디에서 발표자의 입만 움직이고 소리가 안 나온다. 자연스럽게 알려주는 문장은?"
+    },
+    {
+      "tfDay": 25,
+      "word": "turn it over to",
+      "pos": "phr.",
+      "meaning": "다음 발표자에게 토스",
+      "quizType": "reply",
+      "scene": "22:20. QBR 진행 중. 하이레벨 요약이 잘 끝났고 다음은 3월 딥다이브. 데이터 오너는 박 대리다. 슬랙에 그의 DM이 떠 있다.",
+      "npc": "park",
+      "quote": "Ready on my end whenever. Just say you'll turn it over to me for the churn section, and I'll take the screen.",
+      "quoteKo": "저는 준비 완료예요. 이탈률 섹션은 저한테 넘긴다고만 말해주세요. 화면 바로 잡을게요.",
+      "task": {
+        "promptKo": "박 대리에게 발표를 자연스럽게 넘기는 진행 멘트를 하세요.",
+        "koSentence": "여기서부터는 이 데이터를 처음부터 끝까지 만든 민준님께 넘기겠습니다."
+      },
+      "sampleAnswers": [
+        "For the churn deep dive, I'll turn it over to Minjun, who owns this data end to end.",
+        "Now let me turn it over to Minjun for the March numbers. Minjun, the screen's yours."
+      ],
+      "mentorTip": "turn it over to는 넘기는 사람을 세워주는 표현이야. 이름 + 왜 이 사람인지 한 줄. 'who owns this data'처럼. 그 한 줄이 발표자의 권위를 만들고, 그건 결국 네 팀의 권위가 돼.",
+      "mcOptions": [
+        {
+          "text": "That's the agenda. Now I'll turn it over to Dr. Lee, who built this framework from scratch.",
+          "kind": "correct",
+          "note": "정답. 아젠다 마침표 + 연사 크레딧 한 줄 + 토스. 사회의 정석."
+        },
+        {
+          "text": "Okay, I'm done talking. Dr. Lee, go.",
+          "kind": "weak",
+          "note": "'go'는 토스가 아니라 투척이야. 연사를 세워주는 한 줄이 빠졌어."
+        },
+        {
+          "text": "I shall now transfer presentational authority to our distinguished orator.",
+          "kind": "formal",
+          "note": "presentational authority... 연사가 부담스러워서 카메라를 꺼."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "진행권을 뒤집어(turn over) 건네는 그림.\n\nhand it over to, pass it over to도 비슷.\n사회자, 진행자의 필수 동사.",
+        "example": "• \"With that, I'll turn it over to the finance team.\"\n• \"Let me turn it over to Jane for the demo.\"",
+        "default": "4일차에 the floor is yours를 '받는' 연습을 했지? 오늘은 네가 '주는' 쪽이야. 받던 사람이 주는 사람이 되는 것, 그게 이 TF의 목표였어."
+      },
+      "quizPrompt": "회사 온라인 세미나 사회를 맡았다. 오프닝을 끝내고 첫 연사를 소개해야 한다. 뭐라고 할까?"
+    },
+    {
+      "tfDay": 26,
+      "word": "field questions",
+      "pos": "phr.",
+      "meaning": "날아오는 질문 받아내기",
+      "quizType": "blank",
+      "scene": "22:45. 딥다이브 종료, Q&A 시작. Sarah의 질문이 기관총처럼 날아온다. 다행히 대부분 예상 질문 리스트에서 준비한 것들이다. 슬랙에 김 팀장의 DM이 뜬다.",
+      "npc": "manager",
+      "quote": "Look at you fielding questions like a pro. She's testing depth, not doubting you. Keep the answers short and confident.",
+      "quoteKo": "질문 받아내는 것 봐라, 프로네. Sarah는 깊이를 시험하는 거지 널 의심하는 게 아니야. 답은 짧고 자신 있게.",
+      "task": {
+        "promptKo": "빈칸 채우기: Q&A 시간을 공식적으로 여는 멘트를 하세요.",
+        "koSentence": "다음 10분간 질문 받겠습니다. 어려운 질문 환영이에요."
+      },
+      "sampleAnswers": [
+        "I'll field questions for the next ten minutes, tough ones welcome.",
+        "Happy to field questions now. Fire away, we saved ten minutes for this."
+      ],
+      "mentorTip": "field questions의 field는 야구 수비수의 그 필드야. 공이 어디로 튈지 몰라도 잡아내는 것. 못 잡을 공은 '확인 후 서면으로 드릴게요' 하고 흘려보내. 다 잡으려다 놓치는 게 최악이야.",
+      "mcOptions": [
+        {
+          "text": "The real test is fielding questions for ten minutes after the talk. → fielding questions",
+          "kind": "correct",
+          "note": "정답. 발표는 대본이 지켜주지만 Q&A는 맨몸이지. 그래서 진짜 시험."
+        },
+        {
+          "text": "→ avoiding questions",
+          "kind": "weak",
+          "note": "질문을 피하는 발표자는 발표 내용까지 의심받아. 받아내야 해."
+        },
+        {
+          "text": "→ entertaining interrogative submissions",
+          "kind": "formal",
+          "note": "interrogative submissions... 학회에서도 이런 말은 안 써."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "야구 수비(field)에서 온 말.\n\n날아오는 질문을 받아서 처리하는 것.\ntake questions보다 '능숙하게 쳐낸다'는 뉘앙스.",
+        "example": "• \"The CEO fielded questions for a full hour.\"\n• \"She fielded every question without notes.\"",
+        "default": "예상 질문 리스트 만들던 2주차 훈련이 오늘 빛나는 중이야. Q&A의 8할은 예상 범위 안에 있어. 나머지 2할은 think on your feet(10일차)의 몫."
+      },
+      "quizPrompt": "빈칸: 학회 발표를 앞둔 친구에게. \"발표 15분보다 끝나고 ___ 하는 10분이 진짜 시험이야.\""
+    },
+    {
+      "tfDay": 27,
+      "word": "elevator pitch",
+      "pos": "n.",
+      "meaning": "엘리베이터 30초 요약",
+      "quizType": "tone",
+      "scene": "10:00. QBR 다음 날. 성공이었다. Sarah는 갱신 논의를 공식화하자고 했다. 런던의 Daniel에게서 화상 요청이 온다.",
+      "npc": "daniel",
+      "quote": "I heard it went well! I have three minutes before my next call. Give me the elevator pitch: how did it go, and what do you need from me?",
+      "quoteKo": "잘됐다며! 다음 콜까지 3분 남았어. 엘리베이터 피치로 줘봐. 어떻게 됐고, 나한테 필요한 게 뭐야?",
+      "task": {
+        "promptKo": "QBR 결과를 30초 엘리베이터 피치로 정리해 보고하세요.",
+        "koSentence": "30초 요약입니다. QBR 성공, Sarah가 갱신 논의 공식화에 동의했고, 금요일까지 가격 범위에 대한 본사 승인이 필요합니다."
+      },
+      "sampleAnswers": [
+        "The elevator pitch: the QBR landed, Sarah agreed to formal renewal talks, and I need your sign-off on terms by Friday.",
+        "Thirty-second version: strong QBR, renewal talks are on, one ask: your approval on the pricing band this week."
+      ],
+      "mentorTip": "elevator pitch의 구조는 '결과 + 의미 + 요청' 딱 셋이야. 형용사를 줄이고 명사와 숫자로 말해. 'went really super well'보다 'Sarah agreed to renewal talks'가 백 배 강해.",
+      "mcOptions": [
+        {
+          "text": "Start with your elevator pitch: one problem, one solution, one number. Say it out loud until it's boring.",
+          "kind": "correct",
+          "note": "정답. 피치의 3요소 + 소리 내 연습. 데모데이 준비의 1번."
+        },
+        {
+          "text": "One minute is nothing, just read your intro slide really fast.",
+          "kind": "weak",
+          "note": "빨리 읽기는 피치가 아니라 랩이야. 심사위원 귀는 닫혀."
+        },
+        {
+          "text": "Compose a meticulously structured oratorical presentation encompassing your venture's totality.",
+          "kind": "formal",
+          "note": "totality... 1분 안에 이 단어 설명도 못 끝나."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "엘리베이터에서 내리기 전 30초 안에 끝내는 요약.\n\n실리콘밸리 스타트업 문화에서 온 말.\n자기소개, 사업 설명, 결과 보고 전부 커버.",
+        "example": "• \"What's your elevator pitch for this product?\"\n• \"Keep the intro to an elevator pitch, then demo.\"",
+        "default": "17일차 high-level의 실전 압축판이야. 잘된 일일수록 짧게 말할 수 있어야 해. 길게 말하는 성공담은 어쩐지 덜 성공한 것처럼 들리거든."
+      },
+      "quizPrompt": "후배: \"다음 주 사내 데모데이에서 심사위원 앞 1분 발표를 해야 하는데 뭐부터 준비하죠?\" 어떤 조언 톤이 맞을까?"
+    },
+    {
+      "tfDay": 28,
+      "word": "segue",
+      "pos": "n./v.",
+      "meaning": "티 안 나게 화제 전환",
+      "quizType": "spot",
+      "scene": "14:00. QBR 성공 사례를 전사 공유회에서 발표하게 됐다. 리허설을 지켜본 차윤아가 슬라이드와 슬라이드 사이를 가리킨다.",
+      "npc": "mentor",
+      "quote": "Your sections are strong, but the jumps between them are abrupt. You need a segue: one bridge sentence, and the audience follows you anywhere.",
+      "quoteKo": "섹션은 다 좋은데 사이사이가 뚝뚝 끊겨. 세구에가 필요해. 다리 문장 하나면 청중은 어디든 따라와.",
+      "task": {
+        "promptKo": "이탈 데이터 섹션에서 갱신 전략 섹션으로 넘어가는 다리 문장을 만드세요.",
+        "koSentence": "이탈이 잡혔다는 얘기는, 자연스럽게 갱신 전략 얘기로 이어집니다."
+      },
+      "sampleAnswers": [
+        "And that churn recovery is a perfect segue into our renewal strategy.",
+        "Which segues nicely into the next section: what this means for the renewal."
+      ],
+      "mentorTip": "segue 문장의 공식은 '방금 것의 결론 = 다음 것의 이유'야. 'A가 됐다는 건, B를 얘기할 때가 됐다는 뜻이죠'. 이 틀 하나면 어떤 슬라이드 사이도 이어져.",
+      "mcOptions": [
+        {
+          "text": "I loved how she segued from the customer story into the pricing ask.",
+          "kind": "correct",
+          "note": "정답. segue from A into B. 발음은 '세그웨이', 타는 그것과 같아."
+        },
+        {
+          "text": "I loved how she segwayed from the customer story into the pricing ask.",
+          "kind": "weak",
+          "note": "어색한 곳: segway는 두 바퀴 탈것 상표야. 철자는 segue, 이탈리아어 출신."
+        },
+        {
+          "text": "I admired her seamless transitional discourse modulation between thematic units.",
+          "kind": "formal",
+          "note": "discourse modulation... 칭찬이 논문 심사평이 됐어."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "이탈리아어 seguire(따라가다)에서 온 음악 용어.\n\n곡과 곡을 끊김 없이 잇는 것에서 발표, 대화로 확장.\n명사로도 동사로도, 발음은 '세그웨이'.",
+        "example": "• \"That's a nice segue into my next point.\"\n• \"He segued from small talk into the sales pitch smoothly.\"",
+        "default": "발표를 외울 때 슬라이드를 외우지 말고 segue를 외워. 내용은 알면 나오는데, 연결은 준비 안 하면 안 나오거든. 프로와 아마추어는 슬라이드 사이에서 갈려."
+      },
+      "quizPrompt": "어색한 곳 찾기: 어제 본 발표에서 화제 전환이 매끄러웠다고 칭찬하는 중. 자연스러운 문장은?"
+    },
+    {
+      "tfDay": 29,
+      "word": "sanity check",
+      "pos": "n.",
+      "meaning": "보내기 전, 말이 되는지 최종 점검",
+      "quizType": "reply",
+      "scene": "11:00. 후속 작업. Sarah에게 보낼 갱신 조건 요약본이 완성됐다. 전송 버튼 직전, 박 대리가 의자를 끌고 온다.",
+      "npc": "park",
+      "quote": "Before this goes to Sarah, can I get a sanity check on the numbers? If the uplift math is off by even a decimal, she'll catch it in seconds.",
+      "quoteKo": "이거 Sarah한테 가기 전에, 숫자 새니티 체크 한번 해줄래요? 인상률 계산이 소수점 하나라도 틀리면 그분은 몇 초 만에 잡아내요.",
+      "task": {
+        "promptKo": "같이 검증하자고 답하고, 서로 크로스 체크를 제안하세요.",
+        "koSentence": "좋아요, 지금 바로 같이 점검하죠. 제 계산은 민준님이, 민준님 표는 제가 볼게요."
+      },
+      "sampleAnswers": [
+        "Good call, let's sanity check it together now. You take my math, I'll take your table.",
+        "Yes, quick sanity check before it goes out. Cross-checking beats double-checking your own work."
+      ],
+      "mentorTip": "sanity check는 실력 의심이 아니라 프로의 절차야. 부탁하길 부끄러워하는 사람이 제일 위험해. 그리고 Sarah 같은 상대에게 가는 숫자는 무조건 두 사람의 눈을 거쳐. 예외 없이.",
+      "mcOptions": [
+        {
+          "text": "Before you sign, get a sanity check from someone who's rented before. Ten minutes, zero regrets.",
+          "kind": "correct",
+          "note": "정답. 도장 전 제3자 검증. sanity check가 지켜주는 건 계약서만이 아니야."
+        },
+        {
+          "text": "Looks fine to me, just sign it and celebrate!",
+          "kind": "weak",
+          "note": "사진 한 장 보고 '괜찮네'는 체크가 아니라 덕담이야."
+        },
+        {
+          "text": "I recommend commissioning a comprehensive juridical due diligence review.",
+          "kind": "formal",
+          "note": "juridical due diligence... 전세 계약에 로펌 선임하란 소리야."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "sanity(제정신)인지 확인하는 가벼운 검증.\n\n정밀 감사가 아니라 '말이 되는지' 훑는 수준.\n\"Can I get a sanity check on this?\" 통문장으로.",
+        "example": "• \"Quick sanity check: this says March, right?\"\n• \"I sanity checked the totals before sending.\"",
+        "default": "발표를 아무리 잘해도 틀린 숫자 하나면 다 무너져. 화려한 스킬보다 보내기 전 30초 sanity check가 커리어를 지켜. 오늘 박 대리가 준 건 습관이야."
+      },
+      "quizPrompt": "친구가 첫 전세 계약서에 도장 찍기 직전이라며 계약서 사진을 보내왔다. 뭐라고 답할까?"
+    },
+    {
+      "tfDay": 30,
+      "word": "housekeeping",
+      "pos": "n.",
+      "meaning": "본론 전 공지 정리",
+      "quizType": "blank",
+      "scene": "09:00. 30일차. 다음 분기 첫 정기 미팅, Sarah와의 월간 체크인이 시작됐다. 이번엔 심장이 안 뛴다. 아니, 딱 적당히 뛴다. 네 오프닝이 끝나자 화면 속 김 팀장이 채팅창에 한 줄을 남긴다.",
+      "npc": "manager",
+      "quote": "Opening with housekeeping like you've chaired for years. Thirty days ago you couldn't even unmute in time. Meeting TF, complete.",
+      "quoteKo": "하우스키핑으로 여는 것 봐라, 몇 년 차 의장 같네. 30일 전엔 뮤트도 제때 못 풀던 애가. 미팅 TF, 수료야.",
+      "task": {
+        "promptKo": "빈칸 채우기: 본론 전 공지사항으로 회의를 여는 멘트를 완성하세요.",
+        "koSentence": "시작 전에 공지 두 가지만요. 오늘은 45분이고, 녹화됩니다. 자, 시작하죠."
+      },
+      "sampleAnswers": [
+        "Two quick housekeeping items before we start: we have 45 minutes today, and this call is recorded. Let's get going.",
+        "First, some housekeeping: notes will be shared afterward, and we'll hold questions for the last ten minutes."
+      ],
+      "mentorTip": "housekeeping으로 여는 회의는 '이 사람이 이 방의 주인'이라는 신호야. 시간, 녹화, 질문 타이밍. 이 셋을 30초에 정리하고 시작하는 사람을 사람들은 따라가. 30일 전의 너에게 보여주고 싶은 오프닝이네. 수료 축하해. 🎤",
+      "mcOptions": [
+        {
+          "text": "A few housekeeping items before we dive in: recording policy and how to ask questions. → housekeeping",
+          "kind": "correct",
+          "note": "정답. 수업, 웨비나, 회의 어디든 여는 공식. 이 단어 하나로 '아, 진행자구나' 각인."
+        },
+        {
+          "text": "→ housework",
+          "kind": "weak",
+          "note": "housework는 설거지랑 빨래야. 회의 공지는 housekeeping."
+        },
+        {
+          "text": "→ preliminary administrative stipulations",
+          "kind": "formal",
+          "note": "administrative stipulations... 수강생 절반이 첫 시간에 환불 누른다."
+        }
+      ],
+      "buddyAnswers": {
+        "nuance": "회의라는 집(house)의 정리정돈(keeping).\n\n본론 전 공지: 시간, 녹화, 질문 규칙, 자료 공유.\nhousekeeping items/notes 형태로 자주 써.",
+        "example": "• \"Some quick housekeeping before we begin.\"\n• \"One housekeeping note: slides will be emailed after.\"",
+        "default": "미팅 TF 30일 완주! get the ball rolling로 시작해서 housekeeping으로 끝났네. 이제 회의는 네가 여는 무대야. Sarah도, 200명 워크숍도, 다음 분기도. 다음 TF에서 만나. 🎖️"
+      },
+      "quizPrompt": "빈칸: 온라인 클래스 첫 시간을 여는 강사. \"본격적으로 들어가기 전에 ___ 몇 가지만 안내할게요. 녹화 여부랑 질문 방법이요.\""
+    }
+  ]
+}
