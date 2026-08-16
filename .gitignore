@@ -49,3 +49,7 @@ docs-viewer.html
 dev.html
 dev-login.html
 supabase/.temp/
+
+# 세션 임시 파일
+_to_delete/
+_tmp_*
