@@ -9132,6 +9132,21 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
                 style={{ fontFamily: "inherit", fontSize: 13, fontWeight: 700, padding: "6px 10px", borderRadius: 7, border: "1px solid var(--line)", background: "var(--paper-warm)", color: "var(--ink)", cursor: "pointer" }}>{t.w}</button>
             ))}
           </div>
+          {built.length < D.tokens.length && (
+            <div className="row" style={{ marginTop: 10, gap: 8, alignItems: "center" }}>
+              <button className="btn btn-ghost" onClick={() => {
+                // 힌트: 지금까지 맞은 부분까지만 남기고, 다음 올 블록을 자동으로 놓아줌
+                const words = D.sentence.split(" ");
+                let k = 0;
+                while (k < built.length && built[k].w === words[k]) k++;
+                const prefix = built.slice(0, k);
+                const cand = D.tokens.find(t => t.w === words[k] && !prefix.some(x => x.i === t.i));
+                setBuilt(cand ? [...prefix, cand] : prefix);
+                missed();
+              }}>💡 힌트: 다음 블록 놓아줘</button>
+              {built.length > 0 && <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>놓은 블록을 누르면 뺄 수 있어요</span>}
+            </div>
+          )}
           {built.length === D.tokens.length && built.map(t => t.w).join(" ") === D.sentence && (
             <>
               <div style={{ marginTop: 8, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ "{D.sentence}"</div>
