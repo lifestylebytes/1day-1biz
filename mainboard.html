@@ -4337,7 +4337,7 @@ const _signupKST = _localUser?.signupDate
   : _todayKST;
 const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
 // ★ 시즌 3: 코스 전체 상한 90일 (Day 1-30 수습 / 31-60 사원 / 61-90 대리)
-const _autoDay = Math.max(1, Math.min(210, _daysSince + 1));  // 90 + TF 4트랙×30일 = 210
+const _autoDay = Math.max(1, Math.min(240, _daysSince + 1));  // 90 + TF 4트랙×30 + 늦은 시작 여유 (표시 분모는 210)
 
 // ── 학습 게이트 (2026-08-16 도입): 그날 학습을 마쳐야 자정(KST) 이후 다음 Day가 열림 ──
 // - 도입 전 사용자: 도입 시점까지 진행된 day는 그대로 인정 (grandfather)
@@ -4370,15 +4370,15 @@ if (_localUser && _localUser.email) {
       try {
         const _ts = localStorage.getItem('__OD_TASKS_DAY_' + _gs.day + '_ts');
         const _tsDate = _ts ? new Date(_ts).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) : _todayKST;
-        if (_tsDate < _todayKST) _gs.day = Math.min(210, _gs.day + 1);
+        if (_tsDate < _todayKST) _gs.day = Math.min(240, _gs.day + 1);
       } catch (e) {}
     }
   } else if (_todayKST > _gs.date) {
     // 자정이 지났고, 현재 day 학습이 끝나 있을 때만 +1
-    if (_dayLearnedFor(_localUser, _gs.day)) _gs.day = Math.min(210, _gs.day + 1);
+    if (_dayLearnedFor(_localUser, _gs.day)) _gs.day = Math.min(240, _gs.day + 1);
     _gs.date = _todayKST;
   }
-  if ((_localUser.dayInCompany || 1) > _gs.day) _gs.day = Math.min(210, _localUser.dayInCompany);
+  if ((_localUser.dayInCompany || 1) > _gs.day) _gs.day = Math.min(240, _localUser.dayInCompany);
   try { localStorage.setItem(_GK, JSON.stringify(_gs)); } catch (e) {}
   _gatedDay = _gs.day;
 }
@@ -5508,9 +5508,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     const _tid = _tfNow2.track.id || _tfNow2.track;
     const _meta = TF_TRACKS.find(t => t.id === _tid);
     const _data = window.__TF_SCN[_tid];
-    // TF Day = 절대 앵커: n번째 트랙은 Day (91+30n)~. Day 91=1/30, 92=2/30 ... 120=30/30, 121=다음 트랙 1/30.
-    // 언제 선택했든, dev 점프든 항상 회사 Day와 일치한다.
-    const _tfAnchor = 91 + 30 * ((_tfNow2.done || []).length);
+    // TF Day = 선택한 날 기준: 시작한 날이 1/30, 다음 날 2/30 (뒤늦게 시작한 사람도 무조건 1일차부터).
+    // startedDay는 신청서/DEV 토글에서 저장. 없으면(아주 초기 저장분) 절대 앵커(91+30n) 폴백.
+    const _tfAnchor = Number(_tfNow2.track.startedDay) || (91 + 30 * ((_tfNow2.done || []).length));
     const _tfDayNum = Math.max(1, Math.min(30, _tfViewDay - _tfAnchor + 1));
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
@@ -10729,7 +10729,7 @@ function _tfState() {
     //    수료 목록으로 옮기고 트랙을 비워서 다음 TF 신청서가 뜨게 한다 ──
     const _rd = (typeof USER !== "undefined" && (USER.realCurrentDay || USER.currentDay)) || 0;
     if (track && _rd > 90) {
-      const _first = 91 + 30 * done.length;  // n번째 트랙의 시작 Day (절대 앵커)
+      const _first = Number(track.startedDay) || (91 + 30 * done.length);  // 트랙 시작 Day (선택일 기준, 구버전은 절대 앵커)
       if (_rd >= _first + 30) {
         const _gid = track.id || track;
         if (_gid && !done.includes(_gid)) done.push(_gid);
