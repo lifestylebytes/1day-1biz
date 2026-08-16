@@ -9348,7 +9348,22 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
             <b>{word}</b> 를(을) {tf.id ? "뜻 → 스펠링 → 어순 → 상황 → 빈칸 → 슬랙 실전, 6가지" : "뜻 → 스펠링 → 어순 → 빈칸 → 슬랙 실전, 5가지"} 각도로 다뤘어요.<br/>
             {firstTryAll ? "이 단어는 이제 회의에서 튀어나올 준비 끝." : "한 번 헷갈린 단어가 더 오래 남는 법. 내일 복습에서 만나요."}
           </div>
-          <button className="btn btn-primary" style={{ width: "100%" }} onClick={onComplete}>미션 완료 ✓</button>
+          <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => {
+            // ★ 미션 결과 DB 기록 (기존 미니미션의 mc_choice 저장과 동일 경로, submissions 테이블)
+            try {
+              if (window.OD?.enabled && window.OD.saveSubmission && USER.email) {
+                window.OD.saveSubmission(USER.email, today.day, {
+                  word: today.word,
+                  scenario_id: String(today.day) + ':' + (today.word || ''),
+                  answer_text: '',
+                  mc_choice: 'correct',
+                  meta: { combo: true, steps: ORDER.length, perfect: firstTryAll, tf: tf.id || null, tfDay: tf.tfDay || null, completedAt: new Date().toISOString() },
+                  status: 'draft',
+                }).catch(() => {});
+              }
+            } catch (e) {}
+            onComplete();
+          }}>미션 완료 ✓</button>
         </div>
       )}
     </ActivityShell>
