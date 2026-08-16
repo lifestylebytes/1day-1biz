@@ -5456,15 +5456,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ── TF 트랙 라우팅: 대리 + 트랙 배정이면 오늘 콘텐츠를 트랙 시나리오로 교체 ──
   const _tfNow2 = _tfState();
   // ★ Day 90은 원래 피날레 콘텐츠 유지, TF 콘텐츠는 Day 91부터 (> 90)
-  const _tfRealDay = USER.realCurrentDay || USER.currentDay;
-  if (_tfNow2.track && _tfRealDay > 90) {
+  // 과거 날짜 보기 중이면 그 날 기준: Day 1~90 과거를 열면 원래 그날 콘텐츠가 그대로 보여야 함
+  const _tfViewDay = USER.currentDay || USER.realCurrentDay;
+  if (_tfNow2.track && _tfViewDay > 90) {
     const _tid = _tfNow2.track.id || _tfNow2.track;
     const _meta = TF_TRACKS.find(t => t.id === _tid);
     const _data = window.__TF_SCN[_tid];
     // TF Day = 절대 앵커: n번째 트랙은 Day (91+30n)~. Day 91=1/30, 92=2/30 ... 120=30/30, 121=다음 트랙 1/30.
     // 언제 선택했든, dev 점프든 항상 회사 Day와 일치한다.
     const _tfAnchor = 91 + 30 * ((_tfNow2.done || []).length);
-    const _tfDayNum = Math.max(1, Math.min(30, _tfRealDay - _tfAnchor + 1));
+    const _tfDayNum = Math.max(1, Math.min(30, _tfViewDay - _tfAnchor + 1));
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
       if (raw && _meta) {
@@ -9008,6 +9009,11 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
       words5: _shuf([today.word, (o1 && o1.word) || "sync up", (o2 && o2.word) || "circle back"]),
       tokens: _shuf(sentence.split(" ").map((w, i) => ({ w, i }))),
       sentence, blankQuote,
+      slackOpts: _shuf([
+        { text: (today.sampleAnswers || [])[0] || today.sampleAnswer || "", kind: "correct", note: "오늘 단어 + 자연스러운 사내 톤. 이대로 전송." },
+        { text: "Kindly be advised that the aforementioned " + (today.word || "") + " shall be duly noted and processed accordingly.", kind: "formal", note: "슬랙에서 이러면 채널이 조용해져... 격식 과다." },
+        { text: (pk(4) && (pk(4).sampleAnswers || [])[0]) || "Noted, I will review and circle back sometime soon.", kind: "missing", note: "문장은 멀쩡한데 오늘 단어 " + (today.word || "") + " 를 못 살렸어. 미션 실패." },
+      ]),
     };
   }, [today.word]);
 
@@ -9023,6 +9029,8 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
   const [picks4, setPicks4] = useState([]);          // 상황 판단: 고른 text들
   const [pick5, setPick5] = useState(null);
   const [wrong5, setWrong5] = useState([]);
+  const [pick6, setPick6] = useState(null);          // 슬랙 실전
+  const [wrong6, setWrong6] = useState([]);
 
   const _norm = s => (s || "").toLowerCase().replace(/[^a-z0-9']/g, "");
   const word = today.word || "";
@@ -9035,7 +9043,7 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
 
   const stepMeta = [
     { icon: "1", label: "뜻" }, { icon: "2", label: "스펠링" }, { icon: "3", label: "조립" },
-    { icon: "4", label: "상황" }, { icon: "5", label: "빈칸" },
+    { icon: "4", label: "상황" }, { icon: "5", label: "빈칸" }, { icon: "6", label: "슬랙" },
   ];
   const StepHead = () => (
     <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 12, marginBottom: 14 }}>
@@ -9061,8 +9069,8 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
   });
 
   return (
-    <ActivityShell title={`MINI MISSION · ${tf.name || "TF"} 5단계`} onClose={onClose}>
-      <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 5단계 훈련</span>
+    <ActivityShell title={`MINI MISSION · ${tf.name || "TF"} 6단계`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 6단계 훈련</span>
       <StepHead />
 
       {step === 0 && (
@@ -9207,7 +9215,7 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
           </div>
           {pick5 !== null && (
             <>
-              <div style={{ marginTop: 10, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 5단계 전부 통과!</div>
+              <div style={{ marginTop: 10, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 통과! 마지막은 실전, 슬랙에 답장 보내기.</div>
               <NextBtn on={() => setStep(5)} />
             </>
           )}
@@ -9215,13 +9223,79 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
       )}
 
       {step === 5 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>⑥ 실전 · {npc.name} 슬랙에 답장</div>
+          <div className="slack-frame">
+            <div className="slack-head">
+              <span>💬</span>
+              <span className="slack-channel">@{npc.name}</span>
+              <span className="slack-channel-meta">2 members · 14:00</span>
+            </div>
+            <div className="slack-body">
+              <div className="slack-msg">
+                <div className="slack-msg-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
+                <div className="slack-msg-content">
+                  <div>
+                    <span className="slack-msg-name">{npc.name}</span>
+                    <span className="slack-msg-time">14:00</span>
+                  </div>
+                  <div className="slack-msg-text">{today.quote}</div>
+                  <KoPeek ko={today.quoteKo} />
+                </div>
+              </div>
+              {pick6 !== null && (
+                <div className="slack-msg">
+                  <div className="slack-msg-avatar" style={{ background: "var(--orange)" }}>나</div>
+                  <div className="slack-msg-content">
+                    <div>
+                      <span className="slack-msg-name">{USER.name}</span>
+                      <span className="slack-msg-time">14:01</span>
+                    </div>
+                    <div className="slack-msg-text">{pick6}</div>
+                  </div>
+                </div>
+              )}
+              {pick6 === null && (
+                <div className="slack-replies-prompt">
+                  💬 답할 차례. 오늘 단어 <b>{word}</b> 를(을) 살린 한 줄을 골라 전송하세요.
+                  {_mcCriteriaLine()}
+                </div>
+              )}
+            </div>
+          </div>
+          {pick6 === null && (
+            <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+              {D.slackOpts.map((o, i) => {
+                const st = wrong6.includes(o.text) ? "no" : null;
+                return (
+                  <button key={i} style={optBtn(st)} onClick={() => {
+                    if (o.kind === "correct") setPick6(o.text);
+                    else { if (!wrong6.includes(o.text)) { setWrong6([...wrong6, o.text]); missed(); } }
+                  }}>
+                    {String.fromCharCode(65 + i)}. {o.text}
+                    {wrong6.includes(o.text) && <div style={{ marginTop: 5, fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.5 }}>{_mcKindBadge(o.kind)}{o.note}</div>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {pick6 !== null && (
+            <>
+              <div style={{ marginTop: 10, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 전송 완료. 6단계 전부 통과!</div>
+              <NextBtn on={() => setStep(6)} />
+            </>
+          )}
+        </>
+      )}
+
+      {step === 6 && (
         <div style={{ textAlign: "center", padding: "18px 0 6px" }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>{firstTryAll ? "💯" : "✅"}</div>
           <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>
             {firstTryAll ? "PERFECT · 전부 한 번에!" : "미션 클리어"}
           </div>
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 14 }}>
-            <b>{word}</b> 를(을) 뜻 → 스펠링 → 어순 → 상황 → 빈칸, 5가지 각도로 다뤘어요.<br/>
+            <b>{word}</b> 를(을) 뜻 → 스펠링 → 어순 → 상황 → 빈칸 → 슬랙 실전, 6가지 각도로 다뤘어요.<br/>
             {firstTryAll ? "이 단어는 이제 회의에서 튀어나올 준비 끝." : "한 번 헷갈린 단어가 더 오래 남는 법. 내일 복습에서 만나요."}
           </div>
           <button className="btn btn-primary" style={{ width: "100%" }} onClick={onComplete}>미션 완료 ✓</button>
