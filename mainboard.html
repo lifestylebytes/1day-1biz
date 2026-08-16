@@ -4575,7 +4575,8 @@ function getScheduleForDay(day) {
   // Day별 변동 활동: mini_mission → english_lunch → recap → office_task 순환
   // (P5 contextual variability, 매일 다른 맥락으로 표현 만남)
   const VARIANT_ROTATION = ["mini_mission", "english_lunch", "recap", "office_task"];
-  const variantType = VARIANT_ROTATION[(day - 1) % VARIANT_ROTATION.length];
+  // ★ TF 기간(Day 91+)엔 매일 5단계 콤보 미니미션 고정 (트랙 훈련의 핵심 루프)
+  const variantType = day > 90 ? "mini_mission" : VARIANT_ROTATION[(day - 1) % VARIANT_ROTATION.length];
 
   const variantItem = (() => {
     switch (variantType) {
@@ -5309,7 +5310,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 어떤 투어를 돌릴지: 승급 직후(또는 정직원인데 아직 못 봄) → s2, Day 1 첫 방문 → day1
   const [tourKind] = useState(() => {
     try {
-      if (USER.isFulltime && !USER.isViewingPast && !localStorage.getItem(S2_TOUR_KEY)) return "s2";
+      if (USER.isFulltime && !USER.isViewingPast && (USER.realCurrentDay || USER.currentDay) <= 60 && !localStorage.getItem(S2_TOUR_KEY)) return "s2";
       if (USER.currentDay === 1 && !localStorage.getItem(TOUR_KEY)) return "day1";
     } catch(e) {}
     return null;
@@ -5460,19 +5461,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     const _tid = _tfNow2.track.id || _tfNow2.track;
     const _meta = TF_TRACKS.find(t => t.id === _tid);
     const _data = window.__TF_SCN[_tid];
-    // TF Day = 회사 Day 카운터 기준 (Day 91=1/30, Day 92=2/30, dev 점프도 그대로 반영)
-    let _tfDayNum = 1;
-    const _tfFirstDay = Number(_tfNow2.track.startedDay) || 0;
-    if (_tfFirstDay) {
-      _tfDayNum = Math.max(1, Math.min(30, _tfRealDay - _tfFirstDay + 1));
-    } else {
-      // 구버전 저장분 (startedDay 없음): 선택 날짜 기준 KST 경과일로 계산
-      try {
-        const _kst = d => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
-        const _diff = Math.floor((Date.parse(_kst(new Date())) - Date.parse(_kst(_tfNow2.track.startedAt))) / 86400000);
-        _tfDayNum = Math.max(1, Math.min(30, _diff < 1 ? 1 : _diff));
-      } catch (e) {}
-    }
+    // TF Day = 절대 앵커: n번째 트랙은 Day (91+30n)~. Day 91=1/30, 92=2/30 ... 120=30/30, 121=다음 트랙 1/30.
+    // 언제 선택했든, dev 점프든 항상 회사 Day와 일치한다.
+    const _tfAnchor = 91 + 30 * ((_tfNow2.done || []).length);
+    const _tfDayNum = Math.max(1, Math.min(30, _tfRealDay - _tfAnchor + 1));
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
       if (raw && _meta) {
@@ -5484,6 +5476,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           npc: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'),
           quote: raw.quote,
           sampleAnswer: (raw.sampleAnswers || [])[0] || "",
+          sampleAnswers: raw.sampleAnswers || [],
           mentorTip: raw.mentorTip,
           mcOptions: raw.mcOptions,
           buddyAnswers: raw.buddyAnswers,
@@ -8987,6 +8980,242 @@ function _mcCriteriaLine() {
   );
 }
 
+// === TF 전용 미니미션 5단계 콤보: 뜻 확인 → 스펠링 → 문장 조립 → 상황 판단 → 빈칸 완성 ===
+// 데이터는 트랙 시나리오에서 자동 파생 (별도 콘텐츠 작업 없이 굴러감). 전부 첫 시도 정답이면 PERFECT 도장.
+function MissionComboActivity({ today, item, onClose, onComplete }) {
+  const { CHARACTERS } = window.__SIM;
+  const npc = CHARACTERS[today.npc] || CHARACTERS.manager;
+  const tf = today._tfInfo || {};
+  const [step, setStep] = useState(0);           // 0~4 = 문제, 5 = 완료 화면
+  const [firstTryAll, setFirstTryAll] = useState(true);
+  const missed = () => setFirstTryAll(false);
+
+  const D = useMemo(() => {
+    const pool = (((window.__TF_SCN || {})[tf.id] || {}).scenarios || []).filter(x => x.word !== today.word);
+    const pk = n => pool.length ? pool[(((tf.tfDay || 1) * 7 + n * 13) % pool.length)] : null;
+    let o1 = pk(1), o2 = pk(2);
+    if (o1 && o2 && o1.word === o2.word) o2 = pk(3);
+    const sentence = ((today.sampleAnswers || [])[1] || today.sampleAnswer || "").trim().replace(/\s+/g, " ");
+    const esc = (today.word || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    let blankQuote = today.quote || "";
+    try { blankQuote = blankQuote.replace(new RegExp(esc, "i"), " ______ "); } catch (e) {}
+    return {
+      meanings: _shuf([
+        { t: today.meaning, ok: true },
+        { t: (o1 && o1.meaning) || "회의를 짧게 끝내자는 신호", ok: false },
+        { t: (o2 && o2.meaning) || "일정을 뒤로 미루자는 제안", ok: false },
+      ]),
+      words5: _shuf([today.word, (o1 && o1.word) || "sync up", (o2 && o2.word) || "circle back"]),
+      tokens: _shuf(sentence.split(" ").map((w, i) => ({ w, i }))),
+      sentence, blankQuote,
+    };
+  }, [today.word]);
+
+  // step별 상태
+  const [pick1, setPick1] = useState(null);          // 뜻 고르기: 고른 index들
+  const [wrong1, setWrong1] = useState([]);
+  const [typed, setTyped] = useState("");            // 스펠링
+  const [hint, setHint] = useState(0);
+  const [spellOk, setSpellOk] = useState(false);
+  const [spellTried, setSpellTried] = useState(false);
+  const [built, setBuilt] = useState([]);            // 조립: token 객체 배열
+  const [buildWrong, setBuildWrong] = useState(false);
+  const [picks4, setPicks4] = useState([]);          // 상황 판단: 고른 text들
+  const [pick5, setPick5] = useState(null);
+  const [wrong5, setWrong5] = useState([]);
+
+  const _norm = s => (s || "").toLowerCase().replace(/[^a-z0-9']/g, "");
+  const word = today.word || "";
+  // 스펠링 마스크: 각 어절 첫 글자 + 힌트만큼 앞에서 추가 공개, 나머지는 ·
+  const masked = word.split("").map((ch, i) => {
+    if (!/[a-zA-Z0-9']/.test(ch)) return ch;
+    const chunkStart = i === 0 || !/[a-zA-Z0-9']/.test(word[i - 1]);
+    return (chunkStart || i < hint + 1) ? ch : "·";
+  }).join("");
+
+  const stepMeta = [
+    { icon: "1", label: "뜻" }, { icon: "2", label: "스펠링" }, { icon: "3", label: "조립" },
+    { icon: "4", label: "상황" }, { icon: "5", label: "빈칸" },
+  ];
+  const StepHead = () => (
+    <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 12, marginBottom: 14 }}>
+      {stepMeta.map((m, i) => (
+        <div key={i} style={{ flex: 1, textAlign: "center" }}>
+          <div style={{ height: 4, borderRadius: 2, background: i < step ? "var(--orange)" : (i === step ? "var(--ink-soft)" : "var(--line)"), marginBottom: 4 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: i === step ? "var(--ink)" : "var(--ink-mute)" }}>{m.icon}. {m.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+  const NextBtn = ({ on }) => (
+    <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
+      <button className="btn btn-primary" onClick={on}>다음 →</button>
+    </div>
+  );
+  const optBtn = (state) => ({
+    textAlign: "left", fontFamily: "inherit", cursor: "pointer", fontSize: 13, lineHeight: 1.55,
+    padding: "11px 13px", borderRadius: 9, transition: "all 0.12s", width: "100%",
+    border: state === "ok" ? "2px solid #2D7A3D" : state === "no" ? "2px solid #B23A2C" : "1px solid var(--line)",
+    background: state === "ok" ? "#EEF6EE" : state === "no" ? "#FAEDEA" : "var(--paper)",
+    color: "var(--ink)", opacity: state === "no" ? 0.75 : 1,
+  });
+
+  return (
+    <ActivityShell title={`MINI MISSION · ${tf.name || "TF"} 5단계`} onClose={onClose}>
+      <span className="label-doc label-orange">▶ 14:00 · 오늘 표현 5단계 훈련</span>
+      <StepHead />
+
+      {step === 0 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 10 }}>
+            ① 오늘 단어 <span style={{ background: "var(--highlight, #FBE9A9)", padding: "1px 6px", borderRadius: 4 }}>{word}</span>, 무슨 뜻일까?
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {D.meanings.map((m, i) => {
+              const st = pick1 === i && m.ok ? "ok" : (wrong1.includes(i) ? "no" : null);
+              return (
+                <button key={i} style={optBtn(st)} disabled={pick1 !== null && D.meanings[pick1] && D.meanings[pick1].ok} onClick={() => {
+                  if (m.ok) { setPick1(i); } else { if (!wrong1.includes(i)) { setWrong1([...wrong1, i]); missed(); } }
+                }}>{String.fromCharCode(65 + i)}. {m.t}</button>
+              );
+            })}
+          </div>
+          {pick1 !== null && D.meanings[pick1] && D.meanings[pick1].ok && (
+            <>
+              <div style={{ marginTop: 10, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>정확해요. 이 감각 그대로 다음 단계로.</div>
+              <NextBtn on={() => setStep(1)} />
+            </>
+          )}
+        </>
+      )}
+
+      {step === 1 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 뜻 보고 스펠링 쓰기</div>
+          <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 10 }}>"{today.meaning}"</div>
+          <div style={{ fontFamily: "monospace", fontSize: 20, letterSpacing: "0.12em", background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, padding: "10px 14px", marginBottom: 10, color: "var(--ink)" }}>{spellOk ? word : masked}</div>
+          {!spellOk && (
+            <>
+              <input value={typed} onChange={e => setTyped(e.target.value)} placeholder="여기에 타이핑"
+                onKeyDown={e => { if (e.key === "Enter") { setSpellTried(true); if (_norm(typed) === _norm(word)) setSpellOk(true); else missed(); } }}
+                style={{ width: "100%", boxSizing: "border-box", fontFamily: "inherit", fontSize: 14, padding: "10px 12px", borderRadius: 8, border: spellTried && _norm(typed) !== _norm(word) ? "2px solid #B23A2C" : "1px solid var(--line)", background: "var(--paper)" }} />
+              <div className="row" style={{ marginTop: 10, gap: 8, justifyContent: "space-between" }}>
+                <button className="btn btn-ghost" disabled={hint >= 3} onClick={() => { setHint(h => h + 2); missed(); }}>힌트 (+2글자) {hint > 0 ? `· ${hint}` : ""}</button>
+                <button className="btn btn-primary" onClick={() => { setSpellTried(true); if (_norm(typed) === _norm(word)) setSpellOk(true); else missed(); }}>확인</button>
+              </div>
+              {spellTried && _norm(typed) !== _norm(word) && <div style={{ marginTop: 8, fontSize: 12.5, color: "#B23A2C", fontWeight: 700 }}>아직! 다시 한번. (힌트 써도 돼요)</div>}
+            </>
+          )}
+          {spellOk && (
+            <>
+              <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>손으로 쳐본 단어는 진짜 내 단어. ✓</div>
+              <NextBtn on={() => setStep(2)} />
+            </>
+          )}
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>③ 단어 블록으로 문장 조립</div>
+          <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 10 }}>🇰🇷 {(today.task && today.task.koSentence) || "오늘 표현이 든 문장을 순서대로 조립하세요."}</div>
+          <div style={{ minHeight: 44, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, padding: "8px 10px", marginBottom: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {built.length === 0 && <span style={{ fontSize: 12, color: "var(--ink-mute)", alignSelf: "center" }}>아래 블록을 순서대로 탭</span>}
+            {built.map((t, bi) => (
+              <button key={t.i} onClick={() => setBuilt(built.filter((_, j) => j !== bi))}
+                style={{ fontFamily: "inherit", fontSize: 13, fontWeight: 700, padding: "5px 9px", borderRadius: 7, border: "1px solid var(--orange)", background: "var(--paper)", color: "var(--ink)", cursor: "pointer" }}>{t.w}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
+            {D.tokens.filter(t => !built.some(b => b.i === t.i)).map(t => (
+              <button key={t.i} onClick={() => { setBuildWrong(false); setBuilt([...built, t]); }}
+                style={{ fontFamily: "inherit", fontSize: 13, fontWeight: 700, padding: "6px 10px", borderRadius: 7, border: "1px solid var(--line)", background: "var(--paper-warm)", color: "var(--ink)", cursor: "pointer" }}>{t.w}</button>
+            ))}
+          </div>
+          {built.length === D.tokens.length && built.map(t => t.w).join(" ") === D.sentence && (
+            <>
+              <div style={{ marginTop: 8, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ "{D.sentence}"</div>
+              <NextBtn on={() => setStep(3)} />
+            </>
+          )}
+          {built.length === D.tokens.length && built.map(t => t.w).join(" ") !== D.sentence && (
+            <div className="row" style={{ marginTop: 8, gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 12.5, color: "#B23A2C", fontWeight: 700 }}>어순이 조금 달라요.</span>
+              <button className="btn btn-ghost" onClick={() => { setBuilt([]); missed(); }}>다시 조립</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>④ 상황 판단</div>
+          <div style={{ padding: 13, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 10 }}>
+            {tf.quizPrompt || `이 상황에서 ${word} 를(을) 가장 자연스럽게 쓴 한 줄은?`}
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {(today.mcOptions || []).map((o, i) => {
+              const pickedThis = picks4.includes(o.text);
+              const st = pickedThis ? (o.kind === "correct" ? "ok" : "no") : null;
+              const solved = picks4.some(t => { const f = (today.mcOptions || []).find(x => x.text === t); return f && f.kind === "correct"; });
+              return (
+                <button key={i} style={optBtn(st)} disabled={pickedThis || solved} onClick={() => {
+                  setPicks4([...picks4, o.text]);
+                  if (o.kind !== "correct") missed();
+                }}>
+                  {String.fromCharCode(65 + i)}. {o.text}
+                  {pickedThis && <div style={{ marginTop: 5, fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.5 }}>{_mcKindBadge(o.kind)}{o.note}</div>}
+                </button>
+              );
+            })}
+          </div>
+          {picks4.some(t => { const f = (today.mcOptions || []).find(x => x.text === t); return f && f.kind === "correct"; }) && <NextBtn on={() => setStep(4)} />}
+        </>
+      )}
+
+      {step === 4 && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>⑤ 빈칸 완성 · {npc.name}의 말</div>
+          <div style={{ padding: 13, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 13.5, color: "var(--ink)", lineHeight: 1.65, marginBottom: 10 }}>
+            "{D.blankQuote}"
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {D.words5.map((w, i) => {
+              const st = pick5 === w ? "ok" : (wrong5.includes(w) ? "no" : null);
+              return (
+                <button key={i} style={optBtn(st)} disabled={pick5 !== null} onClick={() => {
+                  if (_norm(w) === _norm(word)) setPick5(w);
+                  else { if (!wrong5.includes(w)) { setWrong5([...wrong5, w]); missed(); } }
+                }}>{w}</button>
+              );
+            })}
+          </div>
+          {pick5 !== null && (
+            <>
+              <div style={{ marginTop: 10, fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 5단계 전부 통과!</div>
+              <NextBtn on={() => setStep(5)} />
+            </>
+          )}
+        </>
+      )}
+
+      {step === 5 && (
+        <div style={{ textAlign: "center", padding: "18px 0 6px" }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>{firstTryAll ? "💯" : "✅"}</div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>
+            {firstTryAll ? "PERFECT · 전부 한 번에!" : "미션 클리어"}
+          </div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 14 }}>
+            <b>{word}</b> 를(을) 뜻 → 스펠링 → 어순 → 상황 → 빈칸, 5가지 각도로 다뤘어요.<br/>
+            {firstTryAll ? "이 단어는 이제 회의에서 튀어나올 준비 끝." : "한 번 헷갈린 단어가 더 오래 남는 법. 내일 복습에서 만나요."}
+          </div>
+          <button className="btn btn-primary" style={{ width: "100%" }} onClick={onComplete}>미션 완료 ✓</button>
+        </div>
+      )}
+    </ActivityShell>
+  );
+}
+
 function MissionActivity({ today, item, onClose, onComplete }) {
   const ctx = item.context || { ctx: "팀 슬랙", prompt: "팀 슬랙에 한 줄 던진다고 생각하고." };
   const { CHARACTERS } = window.__SIM;
@@ -10009,7 +10238,7 @@ function ActivityModal({ item, today, onClose, onComplete }) {
   if (!today) return null;
   switch (item.type) {
     case "checkin": return <CheckinActivity {...props} />;
-    case "mini_mission": return <MissionActivity {...props} />;
+    case "mini_mission": return (props.today && props.today._tfInfo) ? <MissionComboActivity {...props} /> : <MissionActivity {...props} />;
     case "english_lunch": return <LunchActivity {...props} />;
     case "recap": return <RecapActivity {...props} />;
     case "office_task": return <OfficeTaskActivity {...props} />;
@@ -10346,7 +10575,7 @@ function _tfState() {
     //    수료 목록으로 옮기고 트랙을 비워서 다음 TF 신청서가 뜨게 한다 ──
     const _rd = (typeof USER !== "undefined" && (USER.realCurrentDay || USER.currentDay)) || 0;
     if (track && _rd > 90) {
-      const _first = Number(track.startedDay) || 91;
+      const _first = 91 + 30 * done.length;  // n번째 트랙의 시작 Day (절대 앵커)
       if (_rd >= _first + 30) {
         const _gid = track.id || track;
         if (_gid && !done.includes(_gid)) done.push(_gid);
