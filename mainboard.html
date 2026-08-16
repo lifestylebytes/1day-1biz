@@ -1616,6 +1616,7 @@ const CHARACTERS = {
   sarah: { id: "sarah", name: "Sarah Chen", role: "美 클라이언트 · VP", avatar: "S", color: "#6E3F6E", note: "미국식. 캐주얼하지만 숫자에 예리." },
   park: { id: "park", name: "박 대리", role: "동기 · 옆자리", avatar: "박", color: "#B89968", note: "번역 부탁이 잦음. 점심 메이트." },
   hr: { id: "hr", name: "인사팀", role: "12F", avatar: "HR", color: "#8A8579", note: "공지 발송 담당." },
+  alex: { id: "alex", name: "Alex Chen", role: "Nexa · BD Lead", avatar: "A", color: "#2D6E8A", note: "파트너사 협상 카운터파트. 웃으면서 만만치 않음." },
 };
 
 // 단어 + 시추에이션, Day 1~60 (status는 USER.currentDay 기준 자동 계산)
@@ -5438,9 +5439,53 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     };
   }, [tourStep]);
 
+  // TF 시나리오 파일이 늦게 도착하면 한 번 리렌더
+  const [, _tfLoadedTick] = useState(0);
+  useEffect(() => {
+    const h = () => _tfLoadedTick(t => t + 1);
+    window.addEventListener('tf-scn-loaded', h);
+    return () => window.removeEventListener('tf-scn-loaded', h);
+  }, []);
+
   // === 모든 hooks 끝난 후, 데이터 lookup + 안전장치 early return ===
   // Day 91+ (코스 완주 이후, 주로 운영자 테스트)엔 시나리오가 없어 undefined 방지: 마지막 Day 90으로 폴백.
-  const today = SCENARIOS.find(s => s.day === USER.workingDay) || SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
+  let today = SCENARIOS.find(s => s.day === USER.workingDay) || SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
+  // ── TF 트랙 라우팅: 대리 + 트랙 배정이면 오늘 콘텐츠를 트랙 시나리오로 교체 ──
+  const _tfNow2 = _tfState();
+  if (_tfNow2.track && (USER.realCurrentDay || USER.currentDay) >= 90) {
+    const _tid = _tfNow2.track.id || _tfNow2.track;
+    const _meta = TF_TRACKS.find(t => t.id === _tid);
+    const _data = window.__TF_SCN[_tid];
+    let _tfDayNum = 1;
+    try {
+      const st = new Date(_tfNow2.track.startedAt || new Date().toISOString());
+      _tfDayNum = Math.max(1, Math.min(30, Math.floor((Date.now() - st.getTime()) / 86400000) + 1));
+    } catch (e) {}
+    if (_data && _data !== 'missing' && _data.scenarios) {
+      const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
+      if (raw && _meta) {
+        today = {
+          day: today.day,  // day 키 기반 활동(점심/복습) 호환을 위해 기존 day 유지
+          tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[_tid]) || ["tf"],
+          word: raw.word, pos: raw.pos || "", meaning: raw.meaning, phonetic: "",
+          scene: `[${_meta.emoji} ${_meta.name} · Day ${raw.tfDay}/30] ` + raw.scene,
+          npc: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'),
+          quote: raw.quote,
+          sampleAnswer: (raw.sampleAnswers || [])[0] || "",
+          mentorTip: raw.mentorTip,
+          mcOptions: raw.mcOptions,
+          buddyAnswers: raw.buddyAnswers,
+          task: { to: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'), channel: "slack-dm",
+                  promptKo: (raw.task || {}).promptKo || "", koSentence: (raw.task || {}).koSentence || "" },
+          _tfInfo: { id: _tid, name: _meta.name, emoji: _meta.emoji, tfDay: raw.tfDay, quizPrompt: raw.quizPrompt || "", quoteKo: raw.quoteKo || "" },
+        };
+      }
+    } else if (_data === 'missing' && _meta && today) {
+      today = { ...today,
+        scene: `[${_meta.emoji} ${_meta.name}] 첫 임무를 준비 중이에요. 콘텐츠가 도착하는 대로 여기에 뜹니다. 그동안 지난 표현 복습을 추천해요. (아래는 Day 90 내용)`,
+      };
+    }
+  }
   const npc = today ? CHARACTERS[today.npc] : null;
 
   if (!today) {
@@ -10287,6 +10332,19 @@ function _tfState() {
     return { track: track || null, done: Array.isArray(done) ? done : [] };
   } catch (e) { return { track: null, done: [] }; }
 }
+
+// ── TF 트랙 시나리오 로더: 선택된 트랙의 30일 콘텐츠를 data/에서 로드 ──
+window.__TF_SCN = window.__TF_SCN || {};
+(function _tfLoadScenarios() {
+  try {
+    const t = _tfState().track; if (!t) return;
+    const id = t.id || t; if (window.__TF_SCN[id]) return;
+    fetch('data/tf-scenarios-' + id + '.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { window.__TF_SCN[id] = d || 'missing'; window.dispatchEvent(new Event('tf-scn-loaded')); })
+      .catch(() => { window.__TF_SCN[id] = 'missing'; window.dispatchEvent(new Event('tf-scn-loaded')); });
+  } catch (e) {}
+})();
 
 // ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
 function TrackSelectModal({ done, onClose }) {
