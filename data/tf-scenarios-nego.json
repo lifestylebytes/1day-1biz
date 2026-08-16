@@ -1,7 +1,7 @@
 {
   "track": "nego",
   "trackName": "협상 TF",
-  "arc": "파트너사 Nexa와의 연간 계약 갱신 딜. 1주 준비, 2주 밀당, 3주 위기, 4주 클로징.",
+  "arc": "파트너사 Nexa(우리 서비스의 데이터 분석 벤더, 가상의 회사)와의 연간 계약 갱신 딜. 1주 준비, 2주 밀당, 3주 위기, 4주 클로징.",
   "npcs": {
     "alex": "Alex Chen · Nexa BD Lead",
     "manager": "김 팀장",
@@ -21,10 +21,10 @@
       "pos": "n.",
       "meaning": "이건 절대 안 되는 조건",
       "quizType": "reply",
-      "scene": "09:30. 협상 TF 첫날. 김 팀장이 Nexa 계약 갱신 딜 파일을 건넨다.",
+      "scene": "09:30. 협상 TF 첫날. 김 팀장이 파일을 건넨다. Nexa는 우리 서비스의 데이터 분석을 맡아온 파트너사. 그 연간 계약이 다음 달 만료된다. 갱신 협상 담당자, 바로 너다.",
       "npc": "manager",
-      "quote": "Welcome to the deal. First things first: what's our deal-breaker? Know it before they test it.",
-      "quoteKo": "딜에 온 걸 환영해. 먼저 할 일: 우리의 deal-breaker가 뭔지 알아둬. 상대가 건드리기 전에.",
+      "quote": "Meet Nexa, our data analytics partner for the past two years. The contract expires next month, and you're leading the renewal. First things first: what's our deal-breaker?",
+      "quoteKo": "Nexa야. 2년간 우리 데이터 분석을 맡아온 파트너사지. 계약이 다음 달에 끝나는데, 갱신 협상은 네가 리드해. 먼저 할 일: 우리의 deal-breaker가 뭔지 알아둬.",
       "task": {
         "promptKo": "우리 쪽에서 양보 못 하는 조건 하나를 팀장에게 보고하세요.",
         "koSentence": "데이터 소유권은 우리가 양보할 수 없는 조건입니다."
