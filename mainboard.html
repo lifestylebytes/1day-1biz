@@ -4973,6 +4973,23 @@ function Locker({ active, setActive, user, unread }) {
           </div>
         </div>
         <div className="locker-card-day">DAY <b>{user.currentDay}</b> / {user.totalDays} · 🔥 출근 {user.streak}일</div>
+        {(() => { // TF 뱃지: 트랙 배정된 대리만. 4도트 = 수료 현황, 다음 진급 투두
+          const tf = _tfState(); if (!tf.track) return null;
+          const meta = TF_TRACKS.find(t => t.id === (tf.track.id || tf.track)); if (!meta) return null;
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 6 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: meta.color, borderRadius: 20, padding: "2px 9px" }}>{meta.emoji} {meta.name}</span>
+              <span style={{ display: "inline-flex", gap: 3 }} title="TF 4개 완주 시 과장 승진 심사">
+                {TF_TRACKS.map(t => (
+                  <span key={t.id} style={{ width: 7, height: 7, borderRadius: "50%",
+                    background: (tf.done || []).includes(t.id) ? t.color : (t.id === (tf.track.id || tf.track) ? t.color : "transparent"),
+                    border: `1.5px solid ${t.color}`, opacity: (tf.done || []).includes(t.id) || t.id === (tf.track.id || tf.track) ? 1 : 0.4 }} />
+                ))}
+              </span>
+              <span style={{ fontSize: 9.5, color: "var(--ink-mute)", fontWeight: 700 }}>과장까지 {4 - (tf.done || []).length}개</span>
+            </div>
+          );
+        })()}
       </div>
     </aside>
   );
@@ -10176,6 +10193,98 @@ function Day60Checkpoint({ onClose }) {
   );
 }
 
+// ── TF 트랙 (대리 이후 4개 전문 트랙). 메타는 여기 한 곳에서만 관리 ──
+const TF_TRACKS = [
+  { id: "nego",    emoji: "🤝", name: "협상 TF",       color: "#B23A2C", tagline: "조건을 밀당하고, 거절하고, 설득하는 영어" },
+  { id: "people",  emoji: "👥", name: "피플 TF",       color: "#2D6E3A", tagline: "후배 피드백, 갈등 중재, 이끄는 사람의 말" },
+  { id: "docs",    emoji: "✉️", name: "글로벌 문서 TF", color: "#3D4DA8", tagline: "메일, 보고서, 공지문. 쓰는 영어의 격" },
+  { id: "meeting", emoji: "🎤", name: "미팅 TF",       color: "#8A5A2B", tagline: "회의를 주도하고, 즉석 질문을 받아내는 영어" },
+];
+function _tfState() {
+  try { const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+    return { track: u.tfTrack || null, done: Array.isArray(u.tfDone) ? u.tfDone : [] };
+  } catch (e) { return { track: null, done: [] }; }
+}
+
+// ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
+function TrackSelectModal({ done, onClose }) {
+  const [pick, setPick] = useState(null);
+  const [saved, setSaved] = useState(false);
+  const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const name = local.name || "대리";
+  const remaining = TF_TRACKS.filter(t => !(done || []).includes(t.id));
+  const nth = (done || []).length + 1;
+
+  const confirm = () => {
+    if (!pick || saved) return;
+    setSaved(true);
+    const startedAt = new Date().toISOString();
+    try {
+      const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+      u.tfTrack = { id: pick, startedAt };
+      u.tfDone = done || [];
+      localStorage.setItem("__OD_USER", JSON.stringify(u));
+    } catch (e) {}
+    if (local.email && window.OD?.updateProgress) {
+      window.OD.updateProgress(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
+    }
+    try { if (window.gtag) window.gtag("event", "tf_select", { track: pick, nth }); } catch (e) {}
+  };
+  const picked = TF_TRACKS.find(t => t.id === pick);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9210, background: "rgba(42,31,20,0.82)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 480, width: "100%", padding: "28px 26px 24px", margin: "auto", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)" }}>
+        {saved ? (
+          <div style={{ textAlign: "center", padding: "14px 0" }}>
+            <div style={{ fontSize: 44, marginBottom: 10 }}>{picked.emoji}</div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--ink)", marginBottom: 8 }}>{picked.name} 발령 완료</h2>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 16 }}>
+              {name}님, 오늘부터 {picked.name} 소속이에요.<br/>
+              첫 임무가 책상에 도착하는 대로 시작됩니다.<br/>
+              <span style={{ color: "var(--ink-mute)", fontSize: 12 }}>30일 완주하면 다음 TF를 고를 수 있어요. ({nth}/4)</span>
+            </p>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>출근하기 →</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>인사 발령 · TF 신청서</div>
+            <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginBottom: 6 }}>
+              {nth === 1 ? `${name} 대리님, 첫 TF를 선택하세요` : `다음 TF를 선택하세요 (${nth}번째)`}
+            </h2>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 16 }}>
+              트랙마다 30일. 순서는 자유. 4개를 모두 완주하면 <b>과장 승진 심사</b>가 열려요.
+            </p>
+            <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
+              {TF_TRACKS.map(t => {
+                const isDone = (done || []).includes(t.id);
+                const isPick = pick === t.id;
+                return (
+                  <button key={t.id} disabled={isDone} onClick={() => setPick(t.id)}
+                    style={{ textAlign: "left", fontFamily: "inherit", cursor: isDone ? "default" : "pointer", opacity: isDone ? 0.45 : 1,
+                      display: "flex", gap: 11, alignItems: "center", padding: "12px 13px", borderRadius: 11,
+                      border: isPick ? `2px solid ${t.color}` : "1px solid var(--line)",
+                      background: isPick ? "var(--paper-warm)" : "var(--paper)" }}>
+                    <span style={{ fontSize: 22 }}>{t.emoji}</span>
+                    <span style={{ flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 900, color: t.color }}>{t.name} {isDone && "· 수료 ✓"}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.5, marginTop: 2 }}>{t.tagline}</span>
+                    </span>
+                    {isPick && <span style={{ fontSize: 16, color: t.color, fontWeight: 900 }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button className="btn btn-primary" style={{ width: "100%", opacity: pick ? 1 : 0.5 }} disabled={!pick} onClick={confirm}>
+              {picked ? `${picked.name}로 발령 요청 →` : "트랙을 골라주세요"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Day 90 대리 승진 시험: 사원 90일 완주 → 미니 시험(Day 61-90 풀) → 대리 승진 축하 ──
 function Season3Checkpoint({ onClose }) {
   const [step, setStep] = useState(0);   // 0 인트로 / 1 시험 / 2 결과·승진
@@ -11051,6 +11160,10 @@ function App() {
   };
   // 대리 시험은 실제로 60일 이상 학습(완주)한 사람만. 운영자/Dev는 테스트용 통과.
   const _isInternalTester = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
+  const _forceTest = (() => { try { return new URLSearchParams(location.search).get('forcetest'); } catch (e) { return null; } })();
+  // TF 신청서: 대리(90+) + 승진 의례를 이미 봤고 + 현재 트랙 없음
+  const [_tf, _setTf] = useState(_tfState());
+  const _showTfSelect = !!_localUserNow && _realDay >= 90 && _s3Seen && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
   const _studiedEnough = USER.streak >= 60 || _isInternalTester;
   const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen && !_showCeremony && !_showD1Popup;
 
@@ -11328,6 +11441,11 @@ function App() {
       {_showD1Popup && <PromotionD1Popup onClose={_dismissD1} />}
       {_showCeremony && <PromotionCeremony realDay={_realDay} />}
       {_showS3Checkpoint && <Season3Checkpoint onClose={_dismissS3} />}
+      {_showTfSelect && <TrackSelectModal done={_tf.done} onClose={() => _setTf(_tfState())} />}
+      {_forceTest === "tf" && _isInternalTester && <TrackSelectModal done={[]} onClose={() => { try { const u = new URL(location.href); u.searchParams.delete("forcetest"); location.href = u.toString(); } catch (e) { location.reload(); } }} />}
+      {/* dev 런처용: ?forcetest=levelup|senior 로 승급/대리 시험 바로 열기 (운영자/Dev만) */}
+      {_forceTest === "levelup" && _isInternalTester && <PromotionCeremony realDay={30} />}
+      {_forceTest === "senior" && _isInternalTester && <Season3Checkpoint onClose={() => { try { const u = new URL(location.href); u.searchParams.delete("forcetest"); location.href = u.toString(); } catch (e) { location.reload(); } }} />}
       {_showDay60 && <Day60Checkpoint onClose={_dismissDay60} />}
       {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />

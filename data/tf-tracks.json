@@ -1,0 +1,660 @@
+{
+  "version": 1,
+  "note": "TF 트랙 (Day 90 대리 이후). 각 트랙 30일. 완주 순서는 자유, 4개 완주 시 과장 승진 트랙 개방 예정.",
+  "quizRotation": {
+    "note": "TF 콘텐츠는 미니미션 퀴즈 유형을 날마다 순환. 기존 reply형 반복 문제 해소.",
+    "types": [
+      {
+        "id": "reply",
+        "desc": "메시지에 자연스러운 답장 고르기 (기존 유형)"
+      },
+      {
+        "id": "blank",
+        "desc": "문장 빈칸에 오늘 표현 채우기"
+      },
+      {
+        "id": "tone",
+        "desc": "같은 뜻 3문장 중 상황에 맞는 톤 고르기"
+      },
+      {
+        "id": "spot",
+        "desc": "어색한/틀린 부분 찾아내기"
+      }
+    ],
+    "sampleAnswerPolicy": "sampleAnswer 단일 필드 대신 sampleAnswers 배열(2-3개 변형)로 작성, 복습 때 랜덤 노출"
+  },
+  "tracks": {
+    "nego": {
+      "emoji": "🤝",
+      "name": "협상 TF",
+      "en": "Negotiation Task Force",
+      "tagline": "조건을 밀당하고, 거절하고, 설득하는 영어",
+      "words": [
+        {
+          "day": 1,
+          "word": "deal-breaker",
+          "meaning": "이건 절대 안 되는 조건"
+        },
+        {
+          "day": 2,
+          "word": "non-negotiable",
+          "meaning": "협상 불가 항목"
+        },
+        {
+          "day": 3,
+          "word": "counteroffer",
+          "meaning": "역제안"
+        },
+        {
+          "day": 4,
+          "word": "lowball",
+          "meaning": "터무니없이 낮게 부르다"
+        },
+        {
+          "day": 5,
+          "word": "sweeten the deal",
+          "meaning": "조건을 더 얹어주다"
+        },
+        {
+          "day": 6,
+          "word": "drive a hard bargain",
+          "meaning": "호락호락하지 않게 협상하다"
+        },
+        {
+          "day": 7,
+          "word": "walk away",
+          "meaning": "(협상을) 접고 나오다"
+        },
+        {
+          "day": 8,
+          "word": "bargaining chip",
+          "meaning": "협상 카드"
+        },
+        {
+          "day": 9,
+          "word": "sticking point",
+          "meaning": "협상이 막히는 지점"
+        },
+        {
+          "day": 10,
+          "word": "fine print",
+          "meaning": "작은 글씨, 세부 조항"
+        },
+        {
+          "day": 11,
+          "word": "play hardball",
+          "meaning": "강경하게 나가다"
+        },
+        {
+          "day": 12,
+          "word": "stand firm",
+          "meaning": "입장을 굽히지 않다"
+        },
+        {
+          "day": 13,
+          "word": "split the difference",
+          "meaning": "중간에서 절충하다"
+        },
+        {
+          "day": 14,
+          "word": "win over",
+          "meaning": "마음을 돌려놓다"
+        },
+        {
+          "day": 15,
+          "word": "back out",
+          "meaning": "(합의에서) 발을 빼다"
+        },
+        {
+          "day": 16,
+          "word": "hammer out",
+          "meaning": "(합의를) 두들겨 만들어내다"
+        },
+        {
+          "day": 17,
+          "word": "iron out",
+          "meaning": "(문제를) 매끄럽게 정리하다"
+        },
+        {
+          "day": 18,
+          "word": "nail down",
+          "meaning": "확실하게 못 박다"
+        },
+        {
+          "day": 19,
+          "word": "upper hand",
+          "meaning": "유리한 위치"
+        },
+        {
+          "day": 20,
+          "word": "off the table",
+          "meaning": "논의 대상에서 제외된"
+        },
+        {
+          "day": 21,
+          "word": "cards on the table",
+          "meaning": "패를 다 까놓고"
+        },
+        {
+          "day": 22,
+          "word": "in good faith",
+          "meaning": "선의로, 신의를 갖고"
+        },
+        {
+          "day": 23,
+          "word": "bottom line",
+          "meaning": "최종 결론, 마지노선"
+        },
+        {
+          "day": 24,
+          "word": "break even",
+          "meaning": "본전치기하다"
+        },
+        {
+          "day": 25,
+          "word": "margin",
+          "meaning": "이윤, 여유 폭"
+        },
+        {
+          "day": 26,
+          "word": "at stake",
+          "meaning": "걸려 있는"
+        },
+        {
+          "day": 27,
+          "word": "high-stakes",
+          "meaning": "판이 큰"
+        },
+        {
+          "day": 28,
+          "word": "best and final",
+          "meaning": "최종 제안"
+        },
+        {
+          "day": 29,
+          "word": "level with you",
+          "meaning": "솔직하게 말하다"
+        },
+        {
+          "day": 30,
+          "word": "close the deal",
+          "meaning": "계약을 성사시키다"
+        }
+      ]
+    },
+    "people": {
+      "emoji": "👥",
+      "name": "피플 TF",
+      "en": "People Task Force",
+      "tagline": "후배 피드백, 갈등 중재, 이끄는 사람의 말",
+      "words": [
+        {
+          "day": 1,
+          "word": "one-on-one",
+          "meaning": "1:1 면담"
+        },
+        {
+          "day": 2,
+          "word": "constructive feedback",
+          "meaning": "건설적 피드백"
+        },
+        {
+          "day": 3,
+          "word": "call out",
+          "meaning": "(문제를) 짚어 말하다"
+        },
+        {
+          "day": 4,
+          "word": "shout-out",
+          "meaning": "공개 칭찬"
+        },
+        {
+          "day": 5,
+          "word": "onboarding",
+          "meaning": "신규 입사자 적응 과정"
+        },
+        {
+          "day": 6,
+          "word": "handover",
+          "meaning": "인수인계"
+        },
+        {
+          "day": 7,
+          "word": "micromanage",
+          "meaning": "시시콜콜 간섭하다"
+        },
+        {
+          "day": 8,
+          "word": "hands-on",
+          "meaning": "직접 챙기는"
+        },
+        {
+          "day": 9,
+          "word": "hands-off",
+          "meaning": "맡기고 안 건드리는"
+        },
+        {
+          "day": 10,
+          "word": "burnout",
+          "meaning": "번아웃, 소진"
+        },
+        {
+          "day": 11,
+          "word": "morale",
+          "meaning": "팀 사기"
+        },
+        {
+          "day": 12,
+          "word": "team player",
+          "meaning": "팀워크 좋은 사람"
+        },
+        {
+          "day": 13,
+          "word": "pull one's weight",
+          "meaning": "제 몫을 하다"
+        },
+        {
+          "day": 14,
+          "word": "drop the ball",
+          "meaning": "실수로 놓치다"
+        },
+        {
+          "day": 15,
+          "word": "pick up the slack",
+          "meaning": "공백을 메우다"
+        },
+        {
+          "day": 16,
+          "word": "cover for",
+          "meaning": "대신 커버해주다"
+        },
+        {
+          "day": 17,
+          "word": "back someone up",
+          "meaning": "뒤를 받쳐주다"
+        },
+        {
+          "day": 18,
+          "word": "give credit",
+          "meaning": "공을 인정하다"
+        },
+        {
+          "day": 19,
+          "word": "throw under the bus",
+          "meaning": "(남에게) 책임을 뒤집어씌우다"
+        },
+        {
+          "day": 20,
+          "word": "coach someone through",
+          "meaning": "옆에서 코칭해주다"
+        },
+        {
+          "day": 21,
+          "word": "check in on",
+          "meaning": "안부·상태를 살피다"
+        },
+        {
+          "day": 22,
+          "word": "course-correct",
+          "meaning": "방향을 바로잡다"
+        },
+        {
+          "day": 23,
+          "word": "performance review",
+          "meaning": "인사 평가"
+        },
+        {
+          "day": 24,
+          "word": "upskill",
+          "meaning": "역량을 키우다"
+        },
+        {
+          "day": 25,
+          "word": "hand off",
+          "meaning": "넘겨주다, 이관하다"
+        },
+        {
+          "day": 26,
+          "word": "open-door policy",
+          "meaning": "언제든 찾아와도 되는 문화"
+        },
+        {
+          "day": 27,
+          "word": "town hall",
+          "meaning": "전사 공유 미팅"
+        },
+        {
+          "day": 28,
+          "word": "skip-level",
+          "meaning": "직속 상사 건너뛴 면담"
+        },
+        {
+          "day": 29,
+          "word": "hold accountable",
+          "meaning": "책임을 지게 하다"
+        },
+        {
+          "day": 30,
+          "word": "give the benefit of the doubt",
+          "meaning": "일단 믿어주다"
+        }
+      ]
+    },
+    "docs": {
+      "emoji": "✉️",
+      "name": "글로벌 문서 TF",
+      "en": "Global Writing Task Force",
+      "tagline": "메일, 보고서, 공지문. 쓰는 영어의 격을 올리기",
+      "words": [
+        {
+          "day": 1,
+          "word": "as per",
+          "meaning": "~에 따라"
+        },
+        {
+          "day": 2,
+          "word": "please find attached",
+          "meaning": "첨부드립니다"
+        },
+        {
+          "day": 3,
+          "word": "bullet points",
+          "meaning": "개조식 정리"
+        },
+        {
+          "day": 4,
+          "word": "TL;DR",
+          "meaning": "한 줄 요약"
+        },
+        {
+          "day": 5,
+          "word": "FYI",
+          "meaning": "참고로"
+        },
+        {
+          "day": 6,
+          "word": "EOD",
+          "meaning": "오늘 퇴근 전까지"
+        },
+        {
+          "day": 7,
+          "word": "COB",
+          "meaning": "업무 마감 시각까지"
+        },
+        {
+          "day": 8,
+          "word": "recap",
+          "meaning": "요점 정리"
+        },
+        {
+          "day": 9,
+          "word": "action items",
+          "meaning": "해야 할 일 목록"
+        },
+        {
+          "day": 10,
+          "word": "draft",
+          "meaning": "초안"
+        },
+        {
+          "day": 11,
+          "word": "proofread",
+          "meaning": "교정하다"
+        },
+        {
+          "day": 12,
+          "word": "typo",
+          "meaning": "오타"
+        },
+        {
+          "day": 13,
+          "word": "wordsmith",
+          "meaning": "문장을 다듬다"
+        },
+        {
+          "day": 14,
+          "word": "flesh out",
+          "meaning": "살을 붙이다"
+        },
+        {
+          "day": 15,
+          "word": "tighten up",
+          "meaning": "(글을) 조이다, 간결하게"
+        },
+        {
+          "day": 16,
+          "word": "cc",
+          "meaning": "참조"
+        },
+        {
+          "day": 17,
+          "word": "reply all",
+          "meaning": "전체 답장"
+        },
+        {
+          "day": 18,
+          "word": "bump",
+          "meaning": "(스레드를) 다시 끌어올리다"
+        },
+        {
+          "day": 19,
+          "word": "gentle reminder",
+          "meaning": "부드러운 리마인드"
+        },
+        {
+          "day": 20,
+          "word": "nudge",
+          "meaning": "슬쩍 찌르기, 재촉"
+        },
+        {
+          "day": 21,
+          "word": "boilerplate",
+          "meaning": "상용구, 틀 문구"
+        },
+        {
+          "day": 22,
+          "word": "redline",
+          "meaning": "계약서 수정 표시"
+        },
+        {
+          "day": 23,
+          "word": "track changes",
+          "meaning": "변경 이력 추적"
+        },
+        {
+          "day": 24,
+          "word": "appendix",
+          "meaning": "부록"
+        },
+        {
+          "day": 25,
+          "word": "executive summary",
+          "meaning": "경영진용 요약"
+        },
+        {
+          "day": 26,
+          "word": "takeaways",
+          "meaning": "핵심 정리"
+        },
+        {
+          "day": 27,
+          "word": "at your earliest convenience",
+          "meaning": "편하신 가장 빠른 시일에"
+        },
+        {
+          "day": 28,
+          "word": "moving forward",
+          "meaning": "앞으로는"
+        },
+        {
+          "day": 29,
+          "word": "please advise",
+          "meaning": "의견 부탁드립니다"
+        },
+        {
+          "day": 30,
+          "word": "acknowledge receipt",
+          "meaning": "수신 확인하다"
+        }
+      ]
+    },
+    "meeting": {
+      "emoji": "🎤",
+      "name": "미팅 TF",
+      "en": "Meeting Task Force",
+      "tagline": "회의를 주도하고, 발표하고, 즉석 질문을 받아내는 영어",
+      "words": [
+        {
+          "day": 1,
+          "word": "agenda",
+          "meaning": "회의 안건"
+        },
+        {
+          "day": 2,
+          "word": "talking points",
+          "meaning": "말할 요점"
+        },
+        {
+          "day": 3,
+          "word": "open the floor",
+          "meaning": "발언 기회를 열다"
+        },
+        {
+          "day": 4,
+          "word": "the floor is yours",
+          "meaning": "발언권 드릴게요"
+        },
+        {
+          "day": 5,
+          "word": "jump in",
+          "meaning": "끼어들다"
+        },
+        {
+          "day": 6,
+          "word": "piggyback on",
+          "meaning": "앞 의견에 얹어 말하다"
+        },
+        {
+          "day": 7,
+          "word": "play devil's advocate",
+          "meaning": "일부러 반대 입장을 서보다"
+        },
+        {
+          "day": 8,
+          "word": "go off on a tangent",
+          "meaning": "이야기가 샛길로 빠지다"
+        },
+        {
+          "day": 9,
+          "word": "off the cuff",
+          "meaning": "즉석에서, 준비 없이"
+        },
+        {
+          "day": 10,
+          "word": "time check",
+          "meaning": "시간 확인"
+        },
+        {
+          "day": 11,
+          "word": "hard stop",
+          "meaning": "(회의) 칼퇴 시각"
+        },
+        {
+          "day": 12,
+          "word": "run over",
+          "meaning": "(시간을) 초과하다"
+        },
+        {
+          "day": 13,
+          "word": "wrap up",
+          "meaning": "마무리하다"
+        },
+        {
+          "day": 14,
+          "word": "debrief",
+          "meaning": "사후 브리핑"
+        },
+        {
+          "day": 15,
+          "word": "walk through",
+          "meaning": "차근차근 설명하다"
+        },
+        {
+          "day": 16,
+          "word": "deep dive",
+          "meaning": "깊이 파고들기"
+        },
+        {
+          "day": 17,
+          "word": "high-level",
+          "meaning": "큰 그림 수준의"
+        },
+        {
+          "day": 18,
+          "word": "drill down",
+          "meaning": "세부로 파고들다"
+        },
+        {
+          "day": 19,
+          "word": "zoom out",
+          "meaning": "시야를 넓히다"
+        },
+        {
+          "day": 20,
+          "word": "level set",
+          "meaning": "눈높이를 맞추다"
+        },
+        {
+          "day": 21,
+          "word": "strawman",
+          "meaning": "초안용 가설안"
+        },
+        {
+          "day": 22,
+          "word": "show of hands",
+          "meaning": "거수 표결"
+        },
+        {
+          "day": 23,
+          "word": "put a pin in it",
+          "meaning": "일단 표시해두고 넘어가다"
+        },
+        {
+          "day": 24,
+          "word": "you're on mute",
+          "meaning": "음소거 켜져 있어요"
+        },
+        {
+          "day": 25,
+          "word": "turn it over to",
+          "meaning": "다음 발표자에게 넘기다"
+        },
+        {
+          "day": 26,
+          "word": "field questions",
+          "meaning": "질문을 받아내다"
+        },
+        {
+          "day": 27,
+          "word": "elevator pitch",
+          "meaning": "30초 요약 발표"
+        },
+        {
+          "day": 28,
+          "word": "segue",
+          "meaning": "자연스러운 화제 전환"
+        },
+        {
+          "day": 29,
+          "word": "sanity check",
+          "meaning": "상식선 점검"
+        },
+        {
+          "day": 30,
+          "word": "housekeeping",
+          "meaning": "회의 시작 전 공지사항"
+        }
+      ]
+    }
+  }
+}
