@@ -10278,8 +10278,13 @@ const TF_TRACKS = [
   { id: "meeting", emoji: "🎤", name: "미팅 TF",       color: "#8A5A2B", tagline: "회의를 주도하고, 즉석 질문을 받아내는 영어" },
 ];
 function _tfState() {
-  try { const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
-    return { track: u.tfTrack || null, done: Array.isArray(u.tfDone) ? u.tfDone : [] };
+  // 전용 키 사용: __OD_USER는 앱이 통째로 재저장하는 객체라 커스텀 필드가 증발한다.
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+    const em = u.email || "guest";
+    const track = JSON.parse(localStorage.getItem("__OD_TF_TRACK_" + em) || "null");
+    const done = JSON.parse(localStorage.getItem("__OD_TF_DONE_" + em) || "[]");
+    return { track: track || null, done: Array.isArray(done) ? done : [] };
   } catch (e) { return { track: null, done: [] }; }
 }
 
@@ -10297,10 +10302,9 @@ function TrackSelectModal({ done, onClose }) {
     setSaved(true);
     const startedAt = new Date().toISOString();
     try {
-      const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
-      u.tfTrack = { id: pick, startedAt };
-      u.tfDone = done || [];
-      localStorage.setItem("__OD_USER", JSON.stringify(u));
+      const em = local.email || "guest";
+      localStorage.setItem("__OD_TF_TRACK_" + em, JSON.stringify({ id: pick, startedAt }));
+      localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done || []));
     } catch (e) {}
     if (local.email && window.OD?.updateProgress) {
       window.OD.updateProgress(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
@@ -11236,11 +11240,11 @@ function App() {
   // 대리 시험은 실제로 60일 이상 학습(완주)한 사람만. 운영자/Dev는 테스트용 통과.
   const _isInternalTester = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
   const _forceTest = (() => { try { return new URLSearchParams(location.search).get('forcetest'); } catch (e) { return null; } })();
-  // TF 신청서: 대리(90+) + 승진 의례를 이미 봤고 + 현재 트랙 없음
   const [_tf, _setTf] = useState(_tfState());
-  const _showTfSelect = !!_localUserNow && _realDay >= 90 && _s3Seen && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
   const _studiedEnough = USER.streak >= 60 || _isInternalTester;
   const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen && !_showCeremony && !_showD1Popup;
+  // TF 신청서: 대리(90+) + 승진 심사를 이미 마쳤고 + 현재 트랙 없음 (반드시 _showS3Checkpoint 선언 이후!)
+  const _showTfSelect = !!_localUserNow && _realDay >= 90 && _s3Seen && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
 
   // ── Day 60 체크포인트: 60일 완주 축하 + 대리 트랙 안내 + 업계 설문 (Day 60-89 1회) ──
   const _DAY60_KEY = '__OD_DAY60_SEEN_' + (_localUserNow?.email || 'guest');
@@ -12241,14 +12245,14 @@ window.SimApp = App;
       </div>
 
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
-        <div class="muted" style="margin-bottom:4px;">TF 트랙 (현재: ${u.tfTrack ? (u.tfTrack.id || u.tfTrack) : '없음'})</div>
+        <div class="muted" style="margin-bottom:4px;">TF 트랙 (현재: ${(function(){ try { var t = JSON.parse(localStorage.getItem('__OD_TF_TRACK_' + (u.email || 'guest')) || 'null'); return t ? t.id : '없음'; } catch(e){ return '없음'; } })()})</div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr">
-          <button class="dp-btn" data-act="tf-nego" style="${u.tfTrack && (u.tfTrack.id||u.tfTrack)==='nego' ? 'background:rgba(243,138,92,0.4)' : ''}">🤝 협상</button>
-          <button class="dp-btn" data-act="tf-people" style="${u.tfTrack && (u.tfTrack.id||u.tfTrack)==='people' ? 'background:rgba(243,138,92,0.4)' : ''}">👥 피플</button>
+          <button class="dp-btn" data-act="tf-nego" style="${(localStorage.getItem('__OD_TF_TRACK_' + (u.email||'guest'))||'').includes('nego') ? 'background:rgba(243,138,92,0.4)' : ''}">🤝 협상</button>
+          <button class="dp-btn" data-act="tf-people" style="${(localStorage.getItem('__OD_TF_TRACK_' + (u.email||'guest'))||'').includes('people') ? 'background:rgba(243,138,92,0.4)' : ''}">👥 피플</button>
         </div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr; margin-top:6px">
-          <button class="dp-btn" data-act="tf-docs" style="${u.tfTrack && (u.tfTrack.id||u.tfTrack)==='docs' ? 'background:rgba(243,138,92,0.4)' : ''}">✉️ 문서</button>
-          <button class="dp-btn" data-act="tf-meeting" style="${u.tfTrack && (u.tfTrack.id||u.tfTrack)==='meeting' ? 'background:rgba(243,138,92,0.4)' : ''}">🎤 미팅</button>
+          <button class="dp-btn" data-act="tf-docs" style="${(localStorage.getItem('__OD_TF_TRACK_' + (u.email||'guest'))||'').includes('docs') ? 'background:rgba(243,138,92,0.4)' : ''}">✉️ 문서</button>
+          <button class="dp-btn" data-act="tf-meeting" style="${(localStorage.getItem('__OD_TF_TRACK_' + (u.email||'guest'))||'').includes('meeting') ? 'background:rgba(243,138,92,0.4)' : ''}">🎤 미팅</button>
         </div>
         <div class="dp-row" style="grid-template-columns: 1fr; margin-top:6px">
           <button class="dp-btn" data-act="tf-clear" title="TF 선택 해제 (신청서 다시 보기)">↩ TF 해제</button>
@@ -12320,12 +12324,13 @@ window.SimApp = App;
         break;
       case 'tf-nego': case 'tf-people': case 'tf-docs': case 'tf-meeting': {
         const tid = act.replace('tf-', '');
-        u.tfTrack = { id: tid, startedAt: new Date().toISOString() };
-        save(u); reloadCleanUrl(); break;
+        localStorage.setItem('__OD_TF_TRACK_' + (u.email || 'guest'), JSON.stringify({ id: tid, startedAt: new Date().toISOString() }));
+        reloadCleanUrl(); break;
       }
       case 'tf-clear':
-        delete u.tfTrack; delete u.tfDone;
-        save(u); reloadCleanUrl(); break;
+        localStorage.removeItem('__OD_TF_TRACK_' + (u.email || 'guest'));
+        localStorage.removeItem('__OD_TF_DONE_' + (u.email || 'guest'));
+        reloadCleanUrl(); break;
       case 'level-fulltime':
         u.level = { id: 'fulltime', ko: '사원', en: 'Associate' };
         u.levelupCompletedAt = u.levelupCompletedAt || new Date().toISOString();
