@@ -1726,7 +1726,7 @@ function App() {
 
                   {/* 학습 진도 */}
                   <div className="col-progress">
-                    <div className="progress-day">Day {day} / {(day || 0) > 30 ? 90 : 30}</div>
+                    <div className="progress-day">Day {day} / {(day || 0) > 90 ? 210 : ((day || 0) > 30 ? 90 : 30)}</div>
                     <div className="progress-last">마지막 {lastActiveMD}</div>
                   </div>
 

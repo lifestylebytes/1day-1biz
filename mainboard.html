@@ -6422,12 +6422,16 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
           <div style={{ flex: 1 }}>
             <div className="scene-npc-name">{npc.name} · {npc.role}</div>
             <div className="scene-quote-bubble">
-              "{scenario.quote.split(scenario.word).map((part, i, arr) => (
-                <React.Fragment key={i}>
-                  {part}
-                  {i < arr.length - 1 ? <span className="scene-target-word">{scenario.word}</span> : null}
-                </React.Fragment>
-              ))}"
+              "{(() => {
+                // 대소문자 무시 하이라이트 (문장 맨 앞에 와서 Per my last email처럼 대문자가 돼도 매칭)
+                const _esc = (scenario.word || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                let _parts;
+                try { _parts = scenario.quote.split(new RegExp("(" + _esc + ")", "gi")); }
+                catch (e) { _parts = [scenario.quote]; }
+                return _parts.map((part, i) => (i % 2 === 1)
+                  ? <span key={i} className="scene-target-word">{part}</span>
+                  : <React.Fragment key={i}>{part}</React.Fragment>);
+              })()}"
             </div>
             <KoPeek ko={scenario.quoteKo} />
           </div>
