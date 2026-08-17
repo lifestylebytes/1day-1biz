@@ -1641,6 +1641,29 @@ function App() {
                 </div>
               </details>
             )}
+            {(() => {
+              // TF 트랙별 인원 요약 (트랙 진행 중인 사람이 있을 때만 표시)
+              const TFM = { nego: ['🤝', '협상'], people: ['👥', '피플'], docs: ['✉️', '문서'], meeting: ['🎤', '미팅'] };
+              const cnt = {};
+              let doneTotal = 0;
+              supaUsers.filter(u => !u.is_operator && !u.is_dev_mode).forEach(u => {
+                if (u.tf_track && TFM[u.tf_track]) cnt[u.tf_track] = (cnt[u.tf_track] || 0) + 1;
+                if (Array.isArray(u.tf_done)) doneTotal += u.tf_done.length;
+              });
+              const keys = Object.keys(cnt);
+              if (keys.length === 0 && doneTotal === 0) return null;
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', margin: '4px 0 10px', fontSize: 12 }}>
+                  <b style={{ color: '#5C4A36' }}>🎯 TF 현황</b>
+                  {['nego', 'people', 'docs', 'meeting'].map(k => cnt[k] ? (
+                    <span key={k} style={{ background: '#FFF', border: '1px solid #E8DFCB', borderRadius: 12, padding: '3px 10px', fontWeight: 700 }}>
+                      {TFM[k][0]} {TFM[k][1]} <b style={{ color: '#B8431A' }}>{cnt[k]}명</b>
+                    </span>
+                  ) : null)}
+                  {doneTotal > 0 && <span style={{ color: '#8A7964' }}>· 누적 수료 {doneTotal}개</span>}
+                </div>
+              );
+            })()}
             <div className="card" style={{ padding: 0 }}>
               <div className="user-row head">
                 <div>사용자</div>
@@ -1728,6 +1751,27 @@ function App() {
                   <div className="col-progress">
                     <div className="progress-day">Day {day} / {(day || 0) > 90 ? 210 : ((day || 0) > 30 ? 90 : 30)}</div>
                     <div className="progress-last">마지막 {lastActiveMD}</div>
+                    {(() => {
+                      // TF 트랙 표시: 진행 중 트랙 + 수료 목록 (users.tf_track / tf_done)
+                      const TFM = { nego: ['🤝', '협상', '#B23A2C'], people: ['👥', '피플', '#2D6E3A'], docs: ['✉️', '문서', '#3D4DA8'], meeting: ['🎤', '미팅', '#8A5A2B'] };
+                      const doneArr = Array.isArray(u.tf_done) ? u.tf_done : [];
+                      const cur = TFM[u.tf_track];
+                      if (!cur && doneArr.length === 0) return null;
+                      return (
+                        <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                          {cur && (
+                            <span style={{ fontSize: 10, fontWeight: 800, background: cur[2], color: '#FFF', padding: '2px 7px', borderRadius: 9 }}>
+                              {cur[0]} {cur[1]} TF
+                            </span>
+                          )}
+                          {doneArr.length > 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#8A7964' }}>
+                              수료 {doneArr.map(t => (TFM[t] || ['?'])[0]).join('')} {doneArr.length}/4
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* 유형 */}
