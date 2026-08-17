@@ -12218,7 +12218,13 @@ window.SimApp = App;
         // 반영이 안 돼서 베타 연장 등이 안 보임. 베타 만료 화면 잘못 노출 사고 방지.
         try {
           if (window.OD?.fetchByEmail) {
-            const ur = await window.OD.fetchByEmail(local.email);
+            let ur = await window.OD.fetchByEmail(local.email);
+            // ★ RLS 폴백 (2026-08-18): 로그인 세션이 없으면 users 직접 조회가 빈 결과로 조용히
+            //   실패한다 (maybeSingle → user:null). 그러면 membership_ends_at이 로컬로 안 내려와서
+            //   구독 종료자가 만료 잠금 없이 계속 이용하는 구멍이 생김. 이메일+사번 RPC로 재시도.
+            if ((!ur || !ur.ok || !ur.user) && window.OD.fetchMembershipStatus) {
+              ur = await window.OD.fetchMembershipStatus(local.email, local.empNumber || local.emp_number || null);
+            }
             if (ur && ur.ok && ur.user) {
               const u = ur.user;
               // snake/camel 둘 다 채워서 어느 쪽 읽어도 OK
@@ -12263,6 +12269,29 @@ window.SimApp = App;
         }
 
         localStorage.setItem("__OD_USER", JSON.stringify(local));
+
+        // ★ 동기화로 방금 내려온 만료 정보 즉시 반영 (2026-08-18):
+        //   만료 판정은 앱 부팅 시 localStorage 기준으로 이미 끝났으므로, 이번 동기화로
+        //   만료가 확정됐다면 한 번만 새로고침해서 휴직 화면으로 보낸다. (무한 리로드 방지 가드)
+        try {
+          const _isInt = !!(local.isOperator || local.isDevMode);
+          const _isMem = local.cohort === 'member';
+          const _endsRaw2 = local.membershipEndsAt || local.membership_ends_at || null;
+          const _ends2 = _endsRaw2 ? new Date(_endsRaw2).getTime() : null;
+          const _cancel2 = !!(local.membershipCancelAt || local.membership_cancel_at);
+          const _msLeft2 = _ends2 ? (_ends2 - Date.now()) : null;
+          const _expiredNow = !_isInt && (
+            _isMem
+              ? (local.unlocked === false
+                 || (_ends2 && _msLeft2 <= -(2 * 86400000))
+                 || (_cancel2 && _ends2 && _msLeft2 <= 0))
+              : (_ends2 && _msLeft2 <= 0));
+          if (_expiredNow && !sessionStorage.getItem('__OD_EXP_RELOADED')) {
+            sessionStorage.setItem('__OD_EXP_RELOADED', '1');
+            location.reload();
+            return;
+          }
+        } catch (e) {}
 
         // 공지 읽음 ID
         try {
