@@ -10755,8 +10755,15 @@ function _tfState() {
         localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done));
         localStorage.removeItem("__OD_TF_TRACK_" + em);
         localStorage.setItem("__OD_TF_GRAD_" + em, JSON.stringify({ id: _gid, day: _rd, at: new Date().toISOString() }));
-        if (u.email && window.OD?.updateProgress) {
-          window.OD.updateProgress(u.email, { tf_track: null, tf_done: done }).catch(() => {});
+        if (u.email && window.OD) {
+          const _emp2 = u.empNumber || u.emp_number || null;
+          if (window.OD.saveTfState) {
+            window.OD.saveTfState(u.email, _emp2, null, null, done).then(r => {
+              if (!r || !r.ok) window.OD.updateProgress?.(u.email, { tf_track: null, tf_done: done }).catch(() => {});
+            }).catch(() => {});
+          } else if (window.OD.updateProgress) {
+            window.OD.updateProgress(u.email, { tf_track: null, tf_done: done }).catch(() => {});
+          }
         }
         track = null;
       }
@@ -10798,8 +10805,16 @@ function TrackSelectModal({ done, onClose }) {
       localStorage.setItem("__OD_TF_TRACK_" + em, JSON.stringify({ id: pick, startedAt, startedDay }));
       localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done || []));
     } catch (e) {}
-    if (local.email && window.OD?.updateProgress) {
-      window.OD.updateProgress(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
+    if (local.email && window.OD) {
+      // RPC 우선 (RLS 무관), 구버전 배포 대비 updateProgress 백업
+      const _emp = local.empNumber || local.emp_number || null;
+      if (window.OD.saveTfState) {
+        window.OD.saveTfState(local.email, _emp, pick, startedAt, done || []).then(r => {
+          if (!r || !r.ok) window.OD.updateProgress?.(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
+        }).catch(() => {});
+      } else if (window.OD.updateProgress) {
+        window.OD.updateProgress(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
+      }
     }
     try { if (window.gtag) window.gtag("event", "tf_select", { track: pick, nth }); } catch (e) {}
   };
@@ -12253,6 +12268,27 @@ window.SimApp = App;
               if (u.levelup_completed_at) { local.levelupCompletedAt = u.levelup_completed_at; local.levelup_completed_at = u.levelup_completed_at; }
               if (u.levelup_test_score != null) { local.levelupTestScore = u.levelup_test_score; local.levelup_test_score = u.levelup_test_score; }
               if (u.day60_completed_at) { local.day60CompletedAt = u.day60_completed_at; local.day60_completed_at = u.day60_completed_at; }
+              // ★ TF 트랙 로컬 ↔ DB 복구 동기화 (2026-08-18):
+              //   과거 RLS로 tf_track DB 기록이 실패한 사용자를 다음 접속 때 자동 백필.
+              try {
+                const _tfEm = local.email || 'guest';
+                const _locT = JSON.parse(localStorage.getItem('__OD_TF_TRACK_' + _tfEm) || 'null');
+                const _locD = (() => { try { const d = JSON.parse(localStorage.getItem('__OD_TF_DONE_' + _tfEm) || '[]'); return Array.isArray(d) ? d : []; } catch (e2) { return []; } })();
+                const _dbT = u.tf_track || null;
+                const _dbD = Array.isArray(u.tf_done) ? u.tf_done : [];
+                const _locId = _locT ? (_locT.id || _locT) : null;
+                if (_locId || _locD.length) {
+                  // 로컬이 진실: DB와 다르면 RPC로 밀어올림
+                  if ((_dbT !== _locId || JSON.stringify(_dbD) !== JSON.stringify(_locD)) && window.OD.saveTfState) {
+                    window.OD.saveTfState(local.email, local.empNumber || local.emp_number || null,
+                      _locId, (_locT && _locT.startedAt) || null, _locD).catch(() => {});
+                  }
+                } else if (_dbT || _dbD.length) {
+                  // 로컬이 빈 새 기기: DB에서 내려받기 (startedDay는 tf_started_at으로 근사 불가하니 91+30n 앵커 폴백에 맡김)
+                  if (_dbT) localStorage.setItem('__OD_TF_TRACK_' + _tfEm, JSON.stringify({ id: _dbT, startedAt: u.tf_started_at || null }));
+                  if (_dbD.length) localStorage.setItem('__OD_TF_DONE_' + _tfEm, JSON.stringify(_dbD));
+                }
+              } catch (e2) {}
               // dayInCompany 동기화: 운영자/Dev는 dev 패널로 자유롭게 day 점프하니까 DB로 덮어쓰면 안 됨.
               // 일반 사용자는 DB와 localStorage 중 큰 값(자연 진행 또는 운영자 수동 연장 반영) 사용.
               if (u.day_in_company) {

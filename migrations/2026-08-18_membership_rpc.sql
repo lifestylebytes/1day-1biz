@@ -19,3 +19,22 @@ as $$
 $$;
 
 grant execute on function get_membership_status(text, text) to anon, authenticated;
+
+-- ── TF 트랙 저장 RPC (같은 날 추가) ──
+-- 배경: 트랙 선택/수료가 users 직접 UPDATE라 로그인 세션 없으면 RLS에 막혀
+--       조용히 실패 → 운영자뷰에 트랙이 안 보임.
+create or replace function save_tf_state(p_email text, p_emp text, p_track text, p_started_at timestamptz, p_done jsonb)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update users
+  set tf_track = p_track,
+      tf_started_at = coalesce(p_started_at, tf_started_at),
+      tf_done = coalesce(p_done, tf_done)
+  where lower(email) = lower(trim(p_email))
+    and emp_number = p_emp;
+$$;
+
+grant execute on function save_tf_state(text, text, text, timestamptz, jsonb) to anon, authenticated;
