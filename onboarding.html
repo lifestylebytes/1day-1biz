@@ -1011,16 +1011,32 @@ function WelcomeScreenV3({ onNext }) {
     <div className="card">
 
       {/* ── 1. 히어로 ── */}
-      <div className="eyebrow">YOUBUDDY KOREA · 신입 채용 #2026</div>
-      <h1 style={{ lineHeight: 1.25 }}>내가 쓴 영어 문장,<br/><em>매일 사수가</em> 고쳐줘요</h1>
-      <p className="lead" style={{ marginBottom: 14 }}>
-        <strong>1일1비 = 하루에 하나, 비즈니스 영어.</strong><br/>
-        가상의 외국계 회사에 입사해서, 매일 5분씩 진짜처럼 일하며 배우는 멤버십이에요.
+      <div className="eyebrow">외국계 대기업 6년차가 선별합니다</div>
+      <h1 style={{ lineHeight: 1.25 }}>외국계 대기업 직장인<br/>유버디가 <em>선별한</em><br/>1일 1 비즈니스</h1>
+      <p className="lead" style={{ marginBottom: 12 }}>
+        오늘 회의에서 실제로 오간 표현만 골라, <strong>하루 한 문장</strong>씩 보내드려요.<br/>
+        읽고 끝이 아니라 <strong>직접 써보고</strong>, 그 자리에서 <strong>첨삭</strong>까지 받는 멤버십이에요.
       </p>
+
+      {/* 선별 기준: 왜 이 사람이 고른 표현을 믿을 수 있나 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {[
+          ["🏢", "외국계 대기업 6년차"],
+          ["✍️", "현업에서 실제로 쓰는 표현만"],
+          ["🗓", "210일치 커리큘럼 완비"],
+        ].map(t => (
+          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
+            <span>{t[0]}</span>{t[1]}
+          </span>
+        ))}
+      </div>
 
       {/* 처음 온 사람용: 하루가 어떻게 굴러가는지 3단계 */}
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 10 }}>매일 이렇게 굴러가요</div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 4 }}>매일 이렇게 굴러가요</div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginBottom: 9 }}>
+          단어장 앱이 아니라, <b style={{ color: "var(--ink-soft)" }}>가상의 외국계 회사에 입사</b>해서 배우는 방식이에요.
+        </div>
         {[
           ["1", "하루 한 번, 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디. 출퇴근길이든 자기 전이든, 편한 때 열면 돼요"],
           ["2", "답장을 영어로 직접 써봐요", "읽고 끝이 아니라 내 손으로. 하루 5분이면 충분해요"],
