@@ -1014,8 +1014,8 @@ function WelcomeScreenV3({ onNext }) {
       <div className="eyebrow">외국계 대기업 6년차가 선별합니다</div>
       <h1 style={{ lineHeight: 1.25 }}>외국계 대기업 직장인<br/>유버디가 <em>선별한</em><br/>1일 1 비즈니스</h1>
       <p className="lead" style={{ marginBottom: 12 }}>
-        오늘 회의에서 실제로 오간 표현만 골라, <strong>하루 한 문장</strong>씩 보내드려요.<br/>
-        읽고 끝이 아니라 <strong>직접 써보고</strong>, 그 자리에서 <strong>첨삭</strong>까지 받는 멤버십이에요.
+        외국계 회의와 메일에서 실제로 오가는 표현만 골라, <strong>하루 하나</strong>씩 보내드려요.<br/>
+        읽고 흘려보내지 않게 그 자리에서 한 번 써보고, <strong>내 표현 라이브러리</strong>로 쌓아가요.
       </p>
 
       {/* 선별 기준: 왜 이 사람이 고른 표현을 믿을 수 있나 */}
@@ -1023,7 +1023,7 @@ function WelcomeScreenV3({ onNext }) {
         {[
           ["🏢", "외국계 대기업 6년차"],
           ["✍️", "현업에서 실제로 쓰는 표현만"],
-          ["🗓", "210일치 커리큘럼 완비"],
+          ["📚", "6년치 표현 수집본"],
         ].map(t => (
           <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
             <span>{t[0]}</span>{t[1]}
@@ -1343,19 +1343,23 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
-      <SectionTitle eyebrow="FROM YOUBUDDY" title="외국계 현업자가 퇴근하고 이걸 만드는 이유" />
+      <SectionTitle eyebrow="FROM YOUBUDDY" title="6년 동안 모은 표현을 나누는 이유" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
         <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
           안녕하세요, 유버디예요. 외국계에서 6년째 일하고 있어요.<br/><br/>
           "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
           저는 이 말을 그만 듣고 싶어요.<br/><br/>
-          우리가 실력이 없어서가 아니잖아요.
-          그 상황에서 <strong>말해본 적이 없어서</strong>지.
-          저도 그랬어요. 할 말을 정리하는 사이에 화제는 넘어가 있고,
-          메일 하나 보내면서 번역기를 두 번 돌리고.<br/><br/>
-          그래서 퇴근하고 이걸 만들어요.
+          근데 실력이 없어서가 아니잖아요.
+          다 아는 단어인데 저 사람들이 쓰는 조합은 처음 들어봐서,
+          알아듣는 데 반 박자 걸리는 거죠. 그 사이에 화제는 넘어가 있고요.
+          저도 그랬어요.<br/><br/>
+          그때부터 회의에서 들린 표현을 하나씩 적어뒀어요.
+          팀장이 슬랙에 쓴 말, 메일에서 본 문장.
+          적어두니까 신기하게, 같은 상황이 다시 왔을 때 그게 먼저 떠오르더라고요.
+          <strong>오늘 내가 안 써도 괜찮아요. 알고 있으면 알아듣고, 알아들으면 대답이 나와요.</strong><br/><br/>
+          그래서 6년치 수집품을 하루 하나씩 꺼내 드려요.
           한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어서요.<br/>
-          <strong style={{ color: "var(--accent)" }}>하루 5분씩, 같이 목소리를 냅시다.</strong>
+          <strong style={{ color: "var(--accent)" }}>오늘 하나, 당신의 라이브러리에 같이 담아요.</strong>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, paddingTop: 13, borderTop: "1px dashed var(--line)" }}>
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
@@ -1373,9 +1377,9 @@ function WelcomeScreenV3({ onNext }) {
       <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
         {[
           ["영어 왕초보인데 할 수 있나요?", "Day 1-30은 기본 표현부터 시작하고, 모든 영어 문장에 한국어 해석이 붙어요. 위 데모의 난이도가 실제 Day 1 난이도예요."],
-          ["하루 놓치면 어떻게 되나요?", "잘리지 않아요. 밀린 날은 출근부에 남아 있어서 언제든 몰아서 따라잡을 수 있어요."],
+          ["하루 놓치면 어떻게 되나요?", "진도가 앞서 도망가지 않아요. 그날 학습을 안 하면 다음 Day로 넘어가지 않고, 돌아온 날 멈춘 자리에서 그대로 이어져요. 밀린 날짜에 쫓길 일이 없어요."],
           ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 와요. 지원서에 코드를 넣으면 사번이 즉시 발급되고, 오늘부터 Day 1이 시작돼요."],
-          ["해지하면 기록은 사라지나요?", "아니요. 해지는 결제 페이지에서 언제든 되고, 표현 노트와 진도는 그대로 보관돼요. 재구독하면 하던 Day부터 이어져요."],
+          ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 되고, 표현 노트와 진도는 해지 후 2개월간 그대로 보관돼요. 그 안에 재구독하면 하던 Day부터 이어지고, 2개월이 지나면 기록은 삭제돼요."],
           ["누구한테 잘 맞나요?", "슬랙, 메일, 회의에서 영어를 실제로 써야 하는 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스예요."],
         ].map(q => (
           <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
@@ -1390,7 +1394,7 @@ function WelcomeScreenV3({ onNext }) {
       {/* ── 5. 구성 + CTA ── */}
       <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
-        {[["📩", "하루 하나, 새로운 Day 도착 (90일 커리큘럼)"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
+        {[["📩", "하루 하나, 새로운 Day 도착"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
           <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
             <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
           </div>
