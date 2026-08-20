@@ -1756,6 +1756,29 @@ function App() {
                       const TFM = { nego: ['🤝', '협상', '#B23A2C'], people: ['👥', '피플', '#2D6E3A'], docs: ['✉️', '문서', '#3D4DA8'], meeting: ['🎤', '미팅', '#8A5A2B'] };
                       const doneArr = Array.isArray(u.tf_done) ? u.tf_done : [];
                       const cur = TFM[u.tf_track];
+                      // ★ Day 90+ 인데 트랙이 없으면 운영자가 직접 지정 가능 (심사 플로우 못 만난 사용자 구제)
+                      if (!cur && (day || 0) > 90 && !u.is_operator && !u.is_dev_mode) {
+                        return (
+                          <div style={{ marginTop: 4 }}>
+                            <select defaultValue="" style={{ fontSize: 10, fontFamily: 'inherit', padding: '2px 4px', borderRadius: 6, border: '1px solid #D8CDB4', background: '#FFF' }}
+                              onChange={async (e) => {
+                                const tid = e.target.value;
+                                if (!tid) return;
+                                const label = { nego: '협상', people: '피플', docs: '문서', meeting: '미팅' }[tid];
+                                if (!confirm(u.name + '님을 ' + label + ' TF에 배정할까요?\n다음 접속부터 해당 트랙 Day 1/30으로 시작합니다.')) { e.target.value = ''; return; }
+                                const r = await window.OD.saveTfState(u.email, u.emp_number || null, tid, new Date().toISOString(), doneArr);
+                                if (r && r.ok) { alert('배정 완료. ' + u.name + '님 다음 접속 때 적용돼요.'); try { if (typeof refreshSupabase === 'function') refreshSupabase(); } catch (e2) {} }
+                                else { alert('실패: ' + (r && r.error || '?')); e.target.value = ''; }
+                              }}>
+                              <option value="">🎯 트랙 지정...</option>
+                              <option value="nego">🤝 협상 TF</option>
+                              <option value="people">👥 피플 TF</option>
+                              <option value="docs">✉️ 문서 TF</option>
+                              <option value="meeting">🎤 미팅 TF</option>
+                            </select>
+                          </div>
+                        );
+                      }
                       if (!cur && doneArr.length === 0) return null;
                       return (
                         <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>

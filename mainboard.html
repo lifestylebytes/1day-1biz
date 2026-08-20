@@ -12284,8 +12284,19 @@ window.SimApp = App;
                       _locId, (_locT && _locT.startedAt) || null, _locD).catch(() => {});
                   }
                 } else if (_dbT || _dbD.length) {
-                  // 로컬이 빈 새 기기: DB에서 내려받기 (startedDay는 tf_started_at으로 근사 불가하니 91+30n 앵커 폴백에 맡김)
-                  if (_dbT) localStorage.setItem('__OD_TF_TRACK_' + _tfEm, JSON.stringify({ id: _dbT, startedAt: u.tf_started_at || null }));
+                  // 로컬이 빈 새 기기(또는 운영자가 직접 지정): DB에서 내려받기.
+                  // startedDay는 tf_started_at 이후 경과일로 복원 (지금 지정됐으면 오늘부터 1/30).
+                  if (_dbT) {
+                    let _sd = null;
+                    try {
+                      const _kstD = d => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+                      const _elapsed = u.tf_started_at
+                        ? Math.max(0, Math.floor((Date.parse(_kstD(new Date())) - Date.parse(_kstD(u.tf_started_at))) / 86400000))
+                        : 0;
+                      _sd = Math.max(91, (local.dayInCompany || 91) - _elapsed);
+                    } catch (e3) {}
+                    localStorage.setItem('__OD_TF_TRACK_' + _tfEm, JSON.stringify({ id: _dbT, startedAt: u.tf_started_at || null, startedDay: _sd }));
+                  }
                   if (_dbD.length) localStorage.setItem('__OD_TF_DONE_' + _tfEm, JSON.stringify(_dbD));
                 }
               } catch (e2) {}
