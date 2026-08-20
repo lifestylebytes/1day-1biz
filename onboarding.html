@@ -1011,7 +1011,7 @@ function WelcomeScreenV3({ onNext }) {
     <div className="card">
 
       {/* ── 1. 히어로 ── */}
-      <div className="eyebrow">외국계 대기업 6년차가 선별합니다</div>
+      <div className="eyebrow">외국계 대기업 7년차가 선별합니다</div>
       <h1 style={{ lineHeight: 1.25 }}>외국계 대기업 직장인<br/>유버디가 <em>선별한</em><br/>1일 1 비즈니스</h1>
       <p className="lead" style={{ marginBottom: 12 }}>
         외국계 회의와 메일에서 실제로 오가는 표현만 골라, <strong>하루 하나</strong>씩 보내드려요.<br/>
@@ -1021,9 +1021,9 @@ function WelcomeScreenV3({ onNext }) {
       {/* 선별 기준: 왜 이 사람이 고른 표현을 믿을 수 있나 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
         {[
-          ["🏢", "외국계 대기업 6년차"],
+          ["🏢", "외국계 대기업 7년차"],
           ["✍️", "현업에서 실제로 쓰는 표현만"],
-          ["📚", "6년치 표현 수집본"],
+          ["📚", "7년치 표현 수집본"],
         ].map(t => (
           <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
             <span>{t[0]}</span>{t[1]}
@@ -1031,26 +1031,6 @@ function WelcomeScreenV3({ onNext }) {
         ))}
       </div>
 
-      {/* 처음 온 사람용: 하루가 어떻게 굴러가는지 3단계 */}
-      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 4 }}>매일 이렇게 굴러가요</div>
-        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginBottom: 9 }}>
-          단어장 앱이 아니라, <b style={{ color: "var(--ink-soft)" }}>가상의 외국계 회사에 입사</b>해서 배우는 방식이에요.
-        </div>
-        {[
-          ["1", "하루 한 번, 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디. 출퇴근길이든 자기 전이든, 편한 때 열면 돼요"],
-          ["2", "답장을 영어로 직접 써봐요", "읽고 끝이 아니라 내 손으로. 하루 5분이면 충분해요"],
-          ["3", "AI 사수가 그 자리에서 고쳐줘요", "사수 = 나를 가르쳐주는 선배. 문법만이 아니라 \"원어민 동료라면 이렇게 써요\"까지"],
-        ].map(st => (
-          <div key={st[0]} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0" }}>
-            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{st[0]}</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{st[1]}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginTop: 1 }}>{st[2]}</div>
-            </div>
-          </div>
-        ))}
-      </div>
       <Divider />
 
       {/* ── 1.2 페인 체크: 타깃 3명의 순간 (지원 동기) ── */}
@@ -1121,6 +1101,26 @@ function WelcomeScreenV3({ onNext }) {
       <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, textAlign: "center", marginBottom: 4 }}>
         입사 3주차쯤 되면 이런 게 옵니다. Day 90까지 가면 <strong style={{ color: "var(--ink)" }}>리더의 영어</strong>까지 가고요.<br/>
         <span style={{ color: "var(--ink-mute)" }}>물론 Day 1은 훨씬 쉬운 것부터 시작해요. 직접 볼까요?</span>
+      </div>
+      {/* 책상을 본 직후: 이 화면이 매일 어떻게 굴러가는지 3단계 */}
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 4 }}>매일 이렇게 굴러가요</div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginBottom: 9 }}>
+          단어장 앱이 아니라, <b style={{ color: "var(--ink-soft)" }}>가상의 외국계 회사에 입사</b>해서 배우는 방식이에요.
+        </div>
+        {[
+          ["1", "하루 한 번, 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디. 출퇴근길이든 자기 전이든, 편한 때 열면 돼요"],
+          ["2", "답장을 영어로 직접 써봐요", "읽고 끝이 아니라 내 손으로. 하루 5분이면 충분해요"],
+          ["3", "AI 사수가 그 자리에서 고쳐줘요", "사수 = 나를 가르쳐주는 선배. 문법만이 아니라 \"원어민 동료라면 이렇게 써요\"까지"],
+        ].map(st => (
+          <div key={st[0]} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0" }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{st[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{st[1]}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginTop: 1 }}>{st[2]}</div>
+            </div>
+          </div>
+        ))}
       </div>
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 4, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
         👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
@@ -1343,10 +1343,10 @@ function WelcomeScreenV3({ onNext }) {
       <Divider />
 
       {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
-      <SectionTitle eyebrow="FROM YOUBUDDY" title="6년 동안 모은 표현을 나누는 이유" />
+      <SectionTitle eyebrow="FROM YOUBUDDY" title="7년 동안 모은 표현을 나누는 이유" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
         <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
-          안녕하세요, 유버디예요. 외국계에서 6년째 일하고 있어요.<br/><br/>
+          안녕하세요, 유버디예요. 외국계에서 7년째 일하고 있어요.<br/><br/>
           "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
           저는 이 말을 그만 듣고 싶어요.<br/><br/>
           근데 실력이 없어서가 아니잖아요.
@@ -1357,7 +1357,7 @@ function WelcomeScreenV3({ onNext }) {
           팀장이 슬랙에 쓴 말, 메일에서 본 문장.
           적어두니까 신기하게, 같은 상황이 다시 왔을 때 그게 먼저 떠오르더라고요.
           <strong>오늘 내가 안 써도 괜찮아요. 알고 있으면 알아듣고, 알아들으면 대답이 나와요.</strong><br/><br/>
-          그래서 6년치 수집품을 하루 하나씩 꺼내 드려요.
+          그래서 7년치 수집품을 하루 하나씩 꺼내 드려요.
           한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어서요.<br/>
           <strong style={{ color: "var(--accent)" }}>오늘 하나, 당신의 라이브러리에 같이 담아요.</strong>
         </div>
@@ -1365,7 +1365,7 @@ function WelcomeScreenV3({ onNext }) {
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
           <div>
             <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>버디 드림</div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 6년차</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 7년차</div>
           </div>
         </div>
       </div>
@@ -1518,7 +1518,7 @@ function WelcomeScreenV1({ onNext }) {
             <strong>비즈니스 영어 표현</strong>이 매일 한 개씩 제공돼요.
           </p>
           <ul style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.85, marginBottom: 22, paddingLeft: 0, listStyle: "none" }}>
-            <li>· <strong>유버디가 외국계 6년 다니며 건진 표현들</strong> 위주</li>
+            <li>· <strong>유버디가 외국계 7년 다니며 건진 표현들</strong> 위주</li>
             <li>· <strong>실제 외국계 회사에서 일어나는 다양한 상황</strong> 제공 (유버디 전매특허!)</li>
             <li>· 모은 표현으로 <strong>테스트 보기</strong> 가능</li>
             <li>· <strong>월 구독제</strong>로 진행됩니다</li>
