@@ -10786,6 +10786,162 @@ window.__TF_SCN = window.__TF_SCN || {};
 })();
 
 // ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
+// === 첫 주 웰컴 팝업 (Day 1~5): 하루 하나, 회사 첫 주에 진짜 있을 법한 순간들 ===
+// 노출 규칙: 하루 1회(__OD_FWP_<day>_<email>), 다른 팝업(투어/설문/승급)과 안 겹침.
+// 미리보기: ?fwp=1~5 (운영자/Dev 전용)
+function FirstWeekPopup({ day, onClose }) {
+  const name = (USER.name || "신입") ;
+  const [step, setStep] = useState(0);
+  const [spoil, setSpoil] = useState(false);
+  const nextScn = (window.__SIM?.SCENARIOS || []).find(x => x.day === day + 1);
+  const shell = (inner, footer) => (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9150, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div className="od-rise" style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out" }}>
+        {inner}
+        {footer}
+      </div>
+    </div>
+  );
+  const cta = (label, on) => (
+    <button className="btn btn-primary" style={{ width: "100%", marginTop: 16 }} onClick={on || onClose}>{label}</button>
+  );
+  const eyebrow = (t) => (
+    <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>{t}</div>
+  );
+
+  if (day === 1) {
+    return shell(
+      <>
+        {eyebrow("총무팀 · 택배 도착")}
+        {step === 0 ? (
+          <div style={{ textAlign: "center", padding: "8px 0" }}>
+            <div style={{ fontSize: 54, marginBottom: 10 }}>📦</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>{name}님 앞으로 상자가 하나 와 있어요</div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>보낸 사람: 총무팀. 책상 위에 올려뒀어요.</div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginBottom: 12, textAlign: "center" }}>🎁 웰컴 키트</div>
+            {[
+              ["🪪", "사원증", name + "님 이름이 각인돼 있어요. 사이드바 [사원증 / 인사]에 걸어뒀어요."],
+              ["📓", "회사 노트", "오늘부터 수집하는 표현이 전부 여기 쌓여요. 90일 뒤엔 당신만의 표현 사전이 돼요."],
+              ["📝", "노란 포스트잇", "사수의 첫 메모: \"모르는 건 다 물어봐요. 그러라고 제가 있는 거예요.\""],
+            ].map((it, i) => (
+              <div key={i} className="od-rise" style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "11px 13px", marginBottom: 8, animationDelay: (i * 0.18) + "s", animationFillMode: "both" }}>
+                <span style={{ fontSize: 21 }}>{it[0]}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>{it[1]}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 2 }}>{it[2]}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </>,
+      step === 0 ? cta("포장 뜯기 ✂️", () => setStep(1)) : cta("책상에 놓기 →")
+    );
+  }
+
+  if (day === 2) {
+    return shell(
+      <>
+        {eyebrow("12F 탕비실 · 오전 10:40")}
+        <div style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12 }}>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#B89968", color: "#fff", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>박</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>박 대리 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 동기 · 옆자리</span></div>
+            <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: "3px 12px 12px 12px", padding: "10px 13px", fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
+              어제 얼굴 봤죠? ☕ 이거 하나는 {name}님 거예요.<br/>둘째 날이 제일 어색한 법이라, 커피 핑계로 왔어요.
+            </div>
+          </div>
+        </div>
+        <div style={{ background: "rgba(216,90,42,0.06)", border: "1px dashed var(--orange)", borderRadius: 10, padding: "11px 13px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65 }}>
+          🤫 <b style={{ color: "var(--ink)" }}>나만 아는 꿀팁:</b> 우리 회사, 그날 학습을 끝내야 다음 Day가 열려요.
+          하루 빼먹어도 진도가 도망 안 가니까, 부담 갖지 말고 매일 조금씩만 해요.
+        </div>
+      </>,
+      cta("☕ 잘 마실게요")
+    );
+  }
+
+  if (day === 3) {
+    return shell(
+      <>
+        {eyebrow("인사팀 · 정정 공문")}
+        <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+          {name}님, 죄송해요. 사원증 서류에 오타가 있어서 <b style={{ color: "var(--ink)" }}>재발급</b>했습니다. 📎<br/>
+          <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>(이번 건 특별히 도장을 하나 추가해 드렸어요)</span>
+        </div>
+        <div style={{ position: "relative", background: "#8C3B2E", borderRadius: 12, padding: "16px 16px 14px", color: "#F4EFE3", marginBottom: 2 }}>
+          <div style={{ fontSize: 9, letterSpacing: "0.16em", opacity: 0.85, marginBottom: 8 }}>YOUBUDDY KOREA · PROBATION</div>
+          <div style={{ fontSize: 17, fontWeight: 900 }}>{name}</div>
+          <div style={{ fontSize: 11, opacity: 0.85, marginTop: 3 }}>{USER.position} · Strategy Team · 12F</div>
+          <div style={{ position: "absolute", right: 14, bottom: 12, border: "2.5px solid #F0CC8A", color: "#F0CC8A", borderRadius: 8, padding: "4px 9px", fontSize: 11.5, fontWeight: 900, transform: "rotate(-8deg)", letterSpacing: "0.05em" }}>3일째 생존 중</div>
+        </div>
+      </>,
+      cta("🪪 목에 걸기")
+    );
+  }
+
+  if (day === 4) {
+    return shell(
+      <>
+        {eyebrow("퇴근길 · 슬랙 DM")}
+        <div className="slack-frame" style={{ marginBottom: 2 }}>
+          <div className="slack-head"><span>💬</span><span className="slack-channel">김 팀장</span><span className="slack-channel-meta">18:47</span></div>
+          <div className="slack-body">
+            <div className="slack-msg">
+              <div className="slack-msg-avatar" style={{ background: "#3A4A5C" }}>김</div>
+              <div className="slack-msg-content">
+                <div><span className="slack-msg-name">김 팀장</span><span className="slack-msg-time">18:47</span></div>
+                <div className="slack-msg-text">Still here? Good. 4일 버티면 반은 온 거야.</div>
+                <div className="slack-msg-text" style={{ marginTop: 6 }}>
+                  내일 회의에서 내가 쓸 단어 하나 미리 흘려주지.{" "}
+                  {spoil
+                    ? <b style={{ background: "var(--highlight, #FBE9A9)", padding: "1px 6px", borderRadius: 4 }}>{(nextScn && nextScn.word) || "circle back"}</b>
+                    : <button onClick={() => setSpoil(true)} style={{ fontFamily: "inherit", border: "1px dashed var(--line)", background: "var(--paper-warm)", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 800, color: "var(--ink-mute)", cursor: "pointer", filter: "blur(0px)" }}>🔒 탭해서 미리 보기</button>}
+                  {spoil && <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}> ({(nextScn && nextScn.meaning) || ""})</span>}
+                </div>
+                {spoil && <div className="slack-msg-text" style={{ marginTop: 6 }}>내일 아침에 아는 척해 봐. 모른 척해 줄 테니.</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </>,
+      cta(spoil ? "내일 아는 척하러 가기 →" : "퇴근하기")
+    );
+  }
+
+  // day 5: 첫 주 급여명세서
+  const rows = [
+    ["수집한 표현", (USER.wordsCollected || 5) + "개"],
+    ["출근 도장", (USER.streak || 5) + "일"],
+    ["사수의 첨삭", "매일 1회"],
+    ["어색한 침묵 감소", "측정 중 📈"],
+  ];
+  return shell(
+    <>
+      {eyebrow("경리팀 · 첫 주 급여명세서")}
+      <div style={{ textAlign: "center", marginBottom: 12 }}>
+        <div style={{ fontSize: 38, marginBottom: 6 }}>💌</div>
+        <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)" }}>{name}님의 첫 주 급여가 입금됐어요</div>
+      </div>
+      <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden", marginBottom: 10 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 13px", fontSize: 12.5, background: i % 2 ? "var(--paper-warm)" : "var(--paper)", color: "var(--ink)" }}>
+            <span style={{ color: "var(--ink-soft)" }}>{r[0]}</span><b>{r[1]}</b>
+          </div>
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 13px", fontSize: 13, background: "var(--ink)", color: "var(--paper)", fontWeight: 800 }}>
+          <span>실수령액</span><span>영어 앞에서 안 작아지는 5일 🏅</span>
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>다음 주부터 연봉이 인상됩니다. (표현이 더 어려워진다는 뜻이에요)</div>
+    </>,
+    cta("다음 주도 다니기 💪")
+  );
+}
+
 function TrackSelectModal({ done, onClose }) {
   const [pick, setPick] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -11776,6 +11932,30 @@ function App() {
   // ── 의견 설문 (사용자당 1회). 접속 3초 뒤 자동 노출. ──
   const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_08";  // 새 설문 돌릴 땐 이 키만 변경
   const [_showSurvey, _setShowSurvey] = useState(false);
+
+  // ── 첫 주 웰컴 팝업 (Day 1~5, 하루 1회. ?fwp=N 은 운영자/Dev 미리보기) ──
+  const _fwpForce = (() => { try { const v = new URLSearchParams(location.search).get('fwp'); return v ? Number(v) : null; } catch (e) { return null; } })();
+  const [_fwpDay, _setFwpDay] = useState(null);
+  React.useEffect(() => {
+    if (_fwpForce && _isInternalTester) { _setFwpDay(Math.max(1, Math.min(5, _fwpForce))); return; }
+    if (!_localUserNow?.email) return;
+    const d = _realDay;
+    if (d < 1 || d > 5) return;
+    const KEY = '__OD_FWP_' + d + '_' + _localUserNow.email;
+    try { if (localStorage.getItem(KEY) === '1') return; } catch (e) { return; }
+    try {
+      // Day 1은 첫 출근 투어를 마친 뒤에, Day 2는 1일차 설문을 마친 뒤에만
+      if (d === 1 && localStorage.getItem('__OD_TOUR_DONE_DAY_1') !== '1') return;
+      if (d === 2 && localStorage.getItem('__OD_SURVEY_DAY1_DONE_' + _localUserNow.email) !== '1') return;
+    } catch (e) {}
+    const t = setTimeout(() => _setFwpDay(d), 1800);
+    return () => clearTimeout(t);
+  }, []);
+  const _closeFwp = () => {
+    try { if (!_fwpForce && _localUserNow?.email && _fwpDay) localStorage.setItem('__OD_FWP_' + _fwpDay + '_' + _localUserNow.email, '1'); } catch (e) {}
+    _setFwpDay(null);
+    if (_fwpForce) { try { const u = new URL(location.href); u.searchParams.delete('fwp'); history.replaceState(null, '', u.toString()); } catch (e) {} }
+  };
   const _surveyDone = (() => { try { return !!localStorage.getItem(PULSE_SURVEY_KEY); } catch (e) { return true; } })();
   // 접속 후 3초 뒤 자동 노출. 승급 의례 등 다른 팝업이 떠 있으면 렌더 가드에서 걸러짐.
   React.useEffect(() => {
@@ -12047,6 +12227,10 @@ function App() {
       )}
       {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
+      )}
+      {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
+      {_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_showSurvey && (
+        <FirstWeekPopup day={_fwpDay} onClose={_closeFwp} />
       )}
 
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
