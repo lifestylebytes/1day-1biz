@@ -4408,8 +4408,10 @@ const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
 // 운영자/Dev는 dev패널로 Day 2 이상으로 "명시적으로" 점프했을 때만 그 값을 override로 쓴다.
 // (로그인 코드가 dayInCompany를 항상 최소 1로 세팅해서, 예전엔 signup_date를 넣어도
 //  운영자 계정이 Day 1에 고정되는 버그가 있었음. 기본값 1은 무시하고 가입일 기준 auto-day 사용.)
-const _resolvedDay = (_isInternal && _localUser?.dayInCompany > 1)
-  ? _localUser.dayInCompany
+// devDayOverride: dev 패널로 day를 "명시적으로" 바꿨다는 표시. 이게 있으면 Day 1도 override 가능.
+// (예전엔 dayInCompany > 1 만 봐서, 운영자가 Day 1로 점프하면 auto-day로 튕겨 테스트가 불가능했음)
+const _resolvedDay = (_isInternal && (_localUser?.devDayOverride === true || _localUser?.dayInCompany > 1))
+  ? Math.max(1, _localUser.dayInCompany || 1)
   : _gatedDay;
 
 // ── 시즌/직급 단계 (day 기준) ──
@@ -5027,6 +5029,8 @@ function Locker({ active, setActive, user, unread }) {
         <div className="locker-card-day">DAY <b>{user.currentDay}</b> / {user.totalDays} · 🔥 출근 {user.streak}일</div>
         {(() => { // TF 뱃지: 트랙 배정된 대리만. 4도트 = 수료 현황, 다음 진급 투두
           const tf = _tfState(); if (!tf.track) return null;
+          // Day 90 이하(과거 보기/운영자 점프 포함)에선 TF 뱃지 숨김: 그 시점엔 아직 TF가 없어야 자연스러움
+          if ((user.currentDay || 0) <= 90) return null;
           const meta = TF_TRACKS.find(t => t.id === (tf.track.id || tf.track)); if (!meta) return null;
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 6 }}>
@@ -10856,8 +10860,10 @@ function FirstWeekPopup({ day, onClose }) {
   const [tipsSaved, setTipsSaved] = useState(false);
   const nextScn = (window.__SIM?.SCENARIOS || []).find(x => x.day === day + 1);
   const shell = (inner, footer) => (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9150, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
+        <button onClick={onClose} aria-label="닫기"
+          style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent", color: "var(--ink-mute)", fontSize: 17, lineHeight: 1, cursor: "pointer", fontFamily: "inherit", zIndex: 2 }}>✕</button>
         {inner}
         {footer}
       </div>
@@ -12080,14 +12086,29 @@ function App() {
     const d = _realDay;
     if (d < 1 || d > 5) return;
     const KEY = '__OD_FWP_' + d + '_' + _localUserNow.email;
-    try { if (localStorage.getItem(KEY) === '1') return; } catch (e) { return; }
-    try {
-      // Day 1은 첫 출근 투어를 마친 뒤에, Day 2는 1일차 설문을 마친 뒤에만
-      if (d === 1 && localStorage.getItem('__OD_TOUR_DONE_DAY_1') !== '1') return;
-      if (d === 2 && localStorage.getItem('__OD_SURVEY_DAY1_DONE_' + _localUserNow.email) !== '1') return;
-    } catch (e) {}
-    const t = setTimeout(() => _setFwpDay(d), 1800);
-    return () => clearTimeout(t);
+    // 준비 상태 판정: 이미 봤으면 stop, 앞선 팝업(투어/설문)이 진행 중이면 false(대기)
+    //  ★ 예전엔 마운트 시 1회만 검사해서, Day 1에 투어를 하는 중이면 그날 팝업을 영영 못 보고
+    //    (운영자는 투어 뒤에 깔려서) 안 보이는 문제가 있었음. 이제 끝나는 즉시 이어서 뜬다.
+    const ready = () => {
+      try {
+        if (localStorage.getItem(KEY) === '1') return 'stop';
+        if (d === 1 && localStorage.getItem('__OD_TOUR_DONE_DAY_1') !== '1') return false;
+        if (d === 2 && localStorage.getItem('__OD_SURVEY_DAY1_DONE_' + _localUserNow.email) !== '1') return false;
+      } catch (e) { return 'stop'; }
+      return true;
+    };
+    let timer = null;
+    const fire = (delay) => { timer = setTimeout(() => _setFwpDay(d), delay); };
+    const first = ready();
+    if (first === 'stop') return;
+    if (first === true) { fire(1800); return () => clearTimeout(timer); }
+    let tries = 0;
+    const iv = setInterval(() => {
+      const r = ready();
+      if (r === 'stop' || tries++ > 120) { clearInterval(iv); return; }
+      if (r === true) { clearInterval(iv); fire(900); }
+    }, 1000);
+    return () => { clearInterval(iv); if (timer) clearTimeout(timer); };
   }, []);
   const _closeFwp = () => {
     try { if (!_fwpForce && _localUserNow?.email && _fwpDay) localStorage.setItem('__OD_FWP_' + _fwpDay + '_' + _localUserNow.email, '1'); } catch (e) {}
@@ -13162,7 +13183,8 @@ window.SimApp = App;
         <div class="muted" style="margin-bottom:4px;">시뮬레이션</div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr">
           <button class="dp-btn" data-act="fill-learning" title="현재 Day까지의 단어를 예시 답안으로 자동 채움, 단어 사전 미리보기">📚 학습 채우기</button>
-          <button class="dp-btn" data-act="clear-learning" title="저장된 본인 답변 모두 삭제">🧹 학습 비우기</button>
+          <button class="dp-btn" data-act="clear-learning" title="답변·일정체크·저널·팝업기록 전부 비우기">🧹 학습 비우기</button>
+          <button class="dp-btn" data-act="reset-popups" style="grid-column: span 2" title="첫 주 팝업/투어/설문 1회 노출 기록만 초기화">🎁 팝업 기록만 리셋 (다시 보기)</button>
         </div>
       </div>
 
@@ -13195,15 +13217,15 @@ window.SimApp = App;
     let u = load();
     if (!u && act !== 'reload') return;
     switch (act) {
-      case 'd+1': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 1); save(u); reloadCleanUrl(); break;
-      case 'd-1': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 1); save(u); reloadCleanUrl(); break;
-      case 'd+7': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 7); save(u); reloadCleanUrl(); break;
-      case 'd-7': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 7); save(u); reloadCleanUrl(); break;
+      case 'd+1': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 1); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
+      case 'd-1': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 1); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
+      case 'd+7': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 7); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
+      case 'd-7': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 7); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
       case 'set': {
         const v = prompt('이동할 Day (1-365):', String(u.dayInCompany || 1));
         if (!v) return;
         const n = Math.max(1, Math.min(365, parseInt(v, 10) || 1));
-        u.dayInCompany = n; save(u); reloadCleanUrl();
+        u.dayInCompany = n; u.devDayOverride = true; save(u); reloadCleanUrl();
         break;
       }
       case 'level-probation':
@@ -13314,12 +13336,31 @@ window.SimApp = App;
         break;
       }
       case 'clear-learning': {
-        if (!confirm('저장된 본인 답변을 모두 삭제할까요?')) return;
+        if (!confirm('저장된 답변 + 일정 체크 + 저널 + 첫 주 팝업 기록을 비울까요?\n(운영자 재테스트용. 출근 도장 0이 되고, 투어/설문 기록은 유지돼요)')) return;
         u.scenariosCompleted = [];
+        u.dailyJournals = {};
         save(u);
+        try {
+          // 일정 체크(출근 도장 계산에 쓰임) + 팝업 1회 노출 기록 제거
+          const em = u.email || 'guest';
+          Object.keys(localStorage).filter(k =>
+            k.startsWith('__OD_TASKS_DAY_') ||
+            k.startsWith('__OD_FWP_') ||
+            k.startsWith('__OD_MILESTONES_SEEN')
+          ).forEach(k => localStorage.removeItem(k));
+        } catch (e) {}
         if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
           window.OD.updateProgress(u.email, { scenarios_completed: [] }).catch(() => {});
         }
+        location.reload();
+        break;
+      }
+      case 'reset-popups': {
+        // 첫 주 팝업(Day 1~5) 기록만 초기화. 투어/설문 기록은 유지해야
+        // 리셋 직후 투어가 다시 떠서 팝업을 가리는 일이 없다.
+        try {
+          Object.keys(localStorage).filter(k => k.startsWith('__OD_FWP_')).forEach(k => localStorage.removeItem(k));
+        } catch (e) {}
         location.reload();
         break;
       }
