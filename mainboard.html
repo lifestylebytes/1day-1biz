@@ -10867,19 +10867,24 @@ function FirstWeekPopup({ day, onClose }) {
   if (day === 3) {
     return shell(
       <>
-        {eyebrow("인사팀 · 정정 공문")}
-        <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
-          {name}님, 죄송해요. 사원증 서류에 오타가 있어서 <b style={{ color: "var(--ink)" }}>재발급</b>했습니다. 📎<br/>
-          <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>(이번 건 특별히 도장을 하나 추가해 드렸어요)</span>
+        {eyebrow("13F 엘리베이터 앞 · 사내 소문")}
+        <div style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12 }}>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#B89968", color: "#fff", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>박</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>박 대리 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 속닥속닥</span></div>
+            <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: "3px 12px 12px 12px", padding: "10px 13px", fontSize: 13, color: "var(--ink)", lineHeight: 1.65 }}>
+              {name}님, 그 얘기 들었어요? 오늘 아침에 누가 <b>회장님</b>을 봤대요. 엘리베이터에서. 🫢
+            </div>
+          </div>
         </div>
-        <div style={{ position: "relative", background: "#8C3B2E", borderRadius: 12, padding: "16px 16px 14px", color: "#F4EFE3", marginBottom: 2 }}>
-          <div style={{ fontSize: 9, letterSpacing: "0.16em", opacity: 0.85, marginBottom: 8 }}>YOUBUDDY KOREA · PROBATION</div>
-          <div style={{ fontSize: 17, fontWeight: 900 }}>{name}</div>
-          <div style={{ fontSize: 11, opacity: 0.85, marginTop: 3 }}>{USER.position} · Strategy Team · 12F</div>
-          <div style={{ position: "absolute", right: 14, bottom: 12, border: "2.5px solid #F0CC8A", color: "#F0CC8A", borderRadius: 8, padding: "4px 9px", fontSize: 11.5, fontWeight: 900, transform: "rotate(-8deg)", letterSpacing: "0.05em" }}>3일째 생존 중</div>
+        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 10, padding: "12px 14px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 2 }}>
+          🗞 <b style={{ color: "var(--ink)" }}>사내에 전해지는 이야기:</b> 입사 이래 회장님을 실제로 본 사람은 아무도 없다.
+          김 팀장도, 차윤아 사수도 아직이다. 알려진 건 딱 하나,
+          <b style={{ color: "var(--ink)" }}> 임원으로 승진하면 뵐 기회가 있다</b>는 것.<br/>
+          <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>...그러니까 오늘 아침 그 목격담은, 아마 헛것이었을 거예요. 아마도.</span>
         </div>
       </>,
-      cta("🪪 목에 걸기")
+      cta("🤫 소문은 여기까지만")
     );
   }
 
