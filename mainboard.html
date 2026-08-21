@@ -1603,6 +1603,8 @@ const _DOW_KO = ["월","화","수","목","금","토","일"];
 window._dayOfWeek = _dayOfWeek;
 window._isWeekendDay = _isWeekendDay;
 window._workingDayIndex = _workingDayIndex;
+// PWA 설치 프롬프트 캡처 (안드로이드 크롬): Day 2 팝업의 [홈 화면에 설치] 버튼에서 사용
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__OD_A2HS = e; });
 window._wordsCollected = _wordsCollected;
 window._nextWeekdayDay = _nextWeekdayDay;
 window._DOW_KO = _DOW_KO;
@@ -10921,6 +10923,63 @@ function FirstWeekPopup({ day, onClose }) {
   }
 
   if (day === 2) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+    const isAndroid = /Android/.test(navigator.userAgent || "");
+    const isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+    const a2hs = window.__OD_A2HS;
+    if (step === 1) {
+      return shell(
+        <>
+          {eyebrow("총무팀 · 출근 환경 세팅")}
+          <div style={{ fontSize: 15.5, fontWeight: 900, color: "var(--ink)", marginBottom: 4 }}>내일부터 출근 편하게, 딱 2개만 해둬요</div>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 12 }}>매일 주소 치고 들어오면 3일을 못 가요. 30초면 끝나요.</div>
+
+          <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>① 홈 화면에 1일1비 추가</div>
+            {isStandalone ? (
+              <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 이미 홈 화면 앱으로 쓰고 계시네요. 완벽해요.</div>
+            ) : isIOS ? (
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
+                1. 사파리 하단 <b>공유 버튼</b> <span style={{ border: "1px solid var(--line)", borderRadius: 4, padding: "0 5px" }}>⬆</span> 탭<br/>
+                2. 아래로 내려 <b>"홈 화면에 추가"</b> 탭<br/>
+                3. 오른쪽 위 <b>추가</b> 누르면 끝!
+              </div>
+            ) : isAndroid ? (
+              a2hs ? (
+                <button className="btn btn-primary" style={{ width: "100%", padding: "9px 12px", fontSize: 13 }}
+                  onClick={() => { try { a2hs.prompt(); } catch (e) {} }}>📲 홈 화면에 설치하기 (원클릭)</button>
+              ) : (
+                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
+                  크롬 오른쪽 위 <b>메뉴(⋮)</b> → <b>"홈 화면에 추가"</b> 탭하면 끝!
+                </div>
+              )
+            ) : (
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
+                주소창 오른쪽 <b>⭐(북마크)</b> 또는 <b>Ctrl+D</b> (맥은 Cmd+D)로 저장해두세요.
+              </div>
+            )}
+          </div>
+
+          <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 출근 리마인드 알림 켜기</div>
+            {isIOS && !isStandalone ? (
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+                아이폰은 <b>홈 화면에 추가한 앱</b>에서만 알림이 돼요.<br/>위 ①을 먼저 하고, 홈 화면 앱에서 [분기 평가] 탭 → 알림 켜기!
+              </div>
+            ) : (
+              <>
+                <button onClick={() => { try { odEnablePush(USER.email); } catch (e) {} }}
+                  style={{ width: "100%", fontFamily: "inherit", fontSize: 13, fontWeight: 800, padding: "9px 12px", borderRadius: 9, cursor: "pointer", border: "1px solid var(--orange)", background: "var(--paper)", color: "var(--orange)" }}>
+                  🔔 알림 켜기
+                </button>
+                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5, lineHeight: 1.5 }}>출근 잊지 않게 하루 한 번만 보내요. 언제든 끌 수 있어요.</div>
+              </>
+            )}
+          </div>
+        </>,
+        cta("세팅 끝, 출근 준비 완료 →")
+      );
+    }
     return shell(
       <>
         {eyebrow("12F 탕비실 · 오전 10:40")}
@@ -10939,7 +10998,7 @@ function FirstWeekPopup({ day, onClose }) {
           🤫 그리고 하나 더: 우리 회사는 그날 학습을 끝내야 다음 Day가 열려요. 진도는 도망 안 가요.
         </div>
       </>,
-      cta("☕ 잘 마실게요")
+      cta("☕ 잘 마실게요", () => setStep(1))
     );
   }
 
