@@ -4598,7 +4598,7 @@ function _afternoonForDay(day) {
 const _MORNING_TONES = [
   "사수가 노란 포스트잇 줬어. 오른쪽 메모 확인 ↗",
   "오늘은 사수가 손글씨로 단어 줬어, 좀 진지한 느낌 ↗",
-  "사수: \"이거 오늘 회의에서 진짜 쓸 거야.\" 메모 ↗",
+  "사수: \"이거 오늘 회의에서 진짜 쓸 거예요.\" 메모 ↗",
   "포스트잇에 작은 그림까지 ㅋㅋ 단어 메모 ↗",
   "사수 빠른 슬랙 한 줄 + 포스트잇, 오늘의 단어 ↗",
 ];
@@ -7628,9 +7628,9 @@ function _classifyMentorFeedback(sentence, scenario) {
   let headline;
   if (isExample) {
     headline = _pickV([
-      "예시 문장 그대로 제출하셨네. 본인 표현으로 한 번 써보면 더 늘어요.",
-      "예문 참고는 좋아. 근데 한 단어라도 본인 상황으로 바꿔보면 기억에 세 배 오래 남아요.",
-      "모범 답안은 출발점이에요. 내일은 본인 문장으로 한 줄, 약속.",
+      "예시 문장 그대로 제출하셨네요. 본인 표현으로 한 번 써보시면 더 늘어요.",
+      "예문 참고는 좋아요. 한 단어라도 본인 상황으로 바꿔보시면 기억에 세 배 오래 남아요.",
+      "모범 답안은 출발점이에요. 내일은 본인 문장으로 한 줄, 약속해요.",
     ]);
   } else if (!hasWord) {
     headline = _pickV([
@@ -7640,47 +7640,47 @@ function _classifyMentorFeedback(sentence, scenario) {
     ]);
   } else if (tooFormal) {
     headline = _pickV([
-      "단어는 잘 살렸는데, 표현이 너무 무거워. 슬랙 한 줄 정도 가벼움이 좋아.",
-      "계약서 번역투에 가까워. 동료한테 말하듯 풀면 같은 내용도 훨씬 잘 통해.",
-      "격식은 충분하니, 이제 힘을 빼보자. 비즈니스 영어의 고수는 쉬운 단어로 말해.",
+      "단어는 잘 살리셨는데 표현이 조금 무거워요. 슬랙 한 줄 정도의 가벼움이 좋아요.",
+      "계약서 번역투에 가까워요. 동료에게 말하듯 푸시면 같은 내용도 훨씬 잘 통해요.",
+      "격식은 충분해요. 이제 힘을 빼보세요. 비즈니스 영어의 고수는 쉬운 단어로 말해요.",
     ]);
   } else if (tooCasual) {
     headline = _pickV([
-      `톤이 좀 가벼워. ${W}을(를) 잘 살렸으니, 사내 채널엔 무게 살짝만 더 줘.`,
-      `친구한테 보내는 톤이야. ${W}은(는) 좋았으니 인사말만 사내용으로 바꿔보자.`,
+      `톤이 조금 가벼워요. ${W}을(를) 잘 살리셨으니 사내 채널용으로 무게만 살짝 더해보세요.`,
+      `친구에게 보내는 톤이에요. ${W}은(는) 좋았으니 인사말만 사내용으로 바꿔보세요.`,
     ]);
   } else if (tooShort) {
     headline = _pickV([
-      "한 줄로는 의도가 안 보일 수 있어. 누가/언제/뭘 한다 정도까지 풀어보자.",
-      "짧은 건 좋은데 정보가 부족해. 받은 사람이 되묻지 않게 한 조각만 더.",
-      "핵심은 있는데 살이 없어. 누가/언제까지 중 하나만 더 얹어보자.",
+      "한 줄로는 의도가 안 보일 수 있어요. 누가/언제/뭘 한다 정도까지 풀어보세요.",
+      "짧은 건 좋은데 정보가 조금 부족해요. 받는 사람이 되묻지 않게 한 조각만 더해주세요.",
+      "핵심은 있는데 살이 조금 부족해요. 누가/언제까지 중 하나만 더 얹어보세요.",
     ]);
   } else if (tooLong) {
     headline = _pickV([
-      "내용은 좋은데 길어. 한 호흡으로 끊으면 임팩트 더 살아.",
-      "정성은 보이는데 슬랙에선 긴 글부터 안 읽혀. 절반으로 줄여볼까?",
-      "좋은 내용이 길이에 묻혔어. 가장 중요한 문장 하나만 남겨보자.",
+      "내용은 좋은데 조금 길어요. 한 호흡으로 끊으시면 임팩트가 더 살아요.",
+      "정성이 보여요. 다만 슬랙에선 긴 글부터 안 읽히니 절반으로 줄여볼까요?",
+      "좋은 내용이 길이에 묻혔어요. 가장 중요한 문장 하나만 남겨보세요.",
     ]);
   } else if (hasAction && hasTiming) {
     headline = _pickV([
-      `완벽에 가까워. ${W} + 행동 + 시점까지, 사수가 더 볼 게 없는 문장이야.`,
-      "이 문장 그대로 보내도 돼. 단어, 행동, 시점 세 박자가 다 잡혔어.",
-      `오늘 건 노트에 저장해둬. ${W} 실전 활용의 교과서 같은 문장이야.`,
+      `완벽에 가까워요. ${W} + 행동 + 시점까지, 사수가 더 볼 게 없는 문장이에요.`,
+      "이 문장 그대로 보내셔도 돼요. 단어, 행동, 시점 세 박자가 다 잡혔어요.",
+      `오늘 건 노트에 저장해두세요. ${W} 실전 활용의 교과서 같은 문장이에요.`,
     ]);
   } else if (hasAction) {
     headline = _pickV([
       "오늘 단어 자연스럽게 들어갔고, action까지 명확. 이대로면 회의에서도 통해요.",
-      `${W} 활용 정확하고 주체도 분명해. 끝에 by Friday 같은 시점 하나 박으면 만점.`,
-      "사수 입장에서 반가운 답이야. 뭘 하겠다는 게 보여. 언제까지인지만 더해보자.",
-      `이 정도면 Daniel한테 바로 보내도 부끄럽지 않아. ${W} 감 제대로 잡았네.`,
+      `${W} 활용도 정확하고 주체도 분명해요. 끝에 by Friday 같은 시점 하나만 넣으면 만점이에요.`,
+      "사수 입장에서 반가운 답이에요. 뭘 하겠다는 게 보여요. 언제까지인지만 더해보세요.",
+      `이 정도면 Daniel에게 바로 보내셔도 돼요. ${W} 감을 제대로 잡으셨어요.`,
     ]);
   } else {
     headline = _pickV([
-      `${W} 잘 들어갔어. 다음엔 "I'll …" 같은 액션 동사 더해보면 더 프로페셔널해져.`,
-      `${W} 자연스러워. 여기에 '내가 언제까지 뭘 할게'까지 붙으면 사수가 안심해.`,
-      `좋아, ${W} 쓰임새 정확해. 욕심내자면 주어를 I로 세워서 다음 행동을 약속해봐.`,
-      `${W} 감 잡았네. 받은 공을 되돌려주는 한 마디(다음 행동)까지 붙이면 완성이야.`,
-      "깔끔하게 들어갔어. 끝에 EOD나 tomorrow 같은 시점 하나 박아봐, 신뢰도가 달라져.",
+      `${W} 잘 들어갔어요. 다음엔 "I'll …" 같은 액션 동사를 더해보시면 더 프로페셔널해져요.`,
+      `${W} 자연스러워요. 여기에 '언제까지 뭘 하겠다'까지 붙으면 사수가 안심해요.`,
+      `${W} 쓰임새가 정확해요. 욕심내자면 주어를 I로 세워서 다음 행동을 약속해보세요.`,
+      `${W} 감을 잡으셨네요. 받은 공을 되돌려주는 한 마디(다음 행동)까지 붙이면 완성이에요.`,
+      "깔끔하게 들어갔어요. 끝에 EOD나 tomorrow 같은 시점 하나만 넣어보세요. 신뢰도가 달라져요.",
     ]);
   }
 
@@ -8450,7 +8450,7 @@ function SceneModal({ scenario, onClose }) {
               <div className="buddy-avatar small">{buddy.avatar}</div>
               <div>
                 <div className="buddy-name">{buddy.name} <span className="buddy-online">● online</span></div>
-                <div className="buddy-role">모를 때 부담 없이 물어봐 · 메신저 창으로 열려요</div>
+                <div className="buddy-role">모를 때 부담 없이 물어보세요 · 메신저 창으로 열려요</div>
               </div>
               {buddyMsgs.length > 0 && (
                 <button className="quick-q" style={{ marginLeft: "auto" }} onClick={() => setBuddyDockOpen(true)}>
@@ -8826,7 +8826,7 @@ function SurveyModal({ email, onClose }) {
         <div className="modal-doc-body">
           <p style={{ fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
             첫 출근 어떠셨어요?<br/>
-            잠깐 알려주시면 진짜 큰 도움 돼요. 강제는 아니니 편하게.
+            잠깐 알려주시면 정말 큰 도움이 돼요. 편하게 답해주세요.
           </p>
 
           {/* 별점 */}
@@ -10076,7 +10076,7 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
       </div>
       {pick !== null && (
         <>
-          <FeedbackBox ok={pick === correctOpt} correct={correctOpt} hint={`사수: "이 자리엔 ${correctOpt} 가 톤 잡기 딱 좋아." · ${today.mentorTip || ""}`} />
+          <FeedbackBox ok={pick === correctOpt} correct={correctOpt} hint={`사수: "이 자리엔 ${correctOpt} 가 톤 잡기 딱 좋아요." · ${today.mentorTip || ""}`} />
           <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
             <button className="btn btn-primary" onClick={onComplete}>초안 회신 ✓</button>
           </div>
@@ -10129,8 +10129,8 @@ function JournalActivity({ today, item, onClose, onComplete }) {
 
   const buddyReply = useMemo(() => {
     const pool = [
-      `좋아, ${today.word} 한 번 자기 입으로 써본 거, 진짜 외운 거야. 내일 또 만나자.`,
-      `오늘 ${today.word} 한 번도 입으로 안 굴렸으면 휘발돼. 자기 전에 한 번만 더, 그러면 진짜 머리에 박혀.`,
+      `${today.word}, 한 번 직접 써보셨으니 진짜 외운 거예요. 내일 또 만나요.`,
+      `오늘 ${today.word}를 한 번도 입으로 안 굴리셨다면 휘발돼요. 자기 전에 한 번만 더 해보세요.`,
       `30일 중 ${window.__SIM.USER.currentDay}일째. ${today.word} 같은 표현 30개 모이면 회의 분위기 자체가 달라져.`,
     ];
     return pool[(today.day - 1) % pool.length];
