@@ -5655,6 +5655,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const _maybeFinaleToast = (idx) => {
     if (idx === TODAY_SCHEDULE.length - 1) {
       setTimeout(() => showToast("🎊 Day " + USER.currentDay + " 완주! 내일 또 봐요.", 4000), 200);
+      // Day 1을 다 끝낸 직후 = 계속할 마음이 가장 큰 순간. 출근 환경 세팅 안내.
+      if ((USER.realCurrentDay || USER.currentDay) === 1 && !USER.isViewingPast) {
+        try { window.dispatchEvent(new Event('od-day-finale')); } catch (e) {}
+      }
     }
   };
 
@@ -10853,6 +10857,71 @@ function _saveFwpTips(day) {
     return true;
   } catch (e) { return false; }
 }
+// === 출근 환경 세팅 팝업: Day 1 학습을 끝낸 직후 1회 (홈 화면 추가 + 알림) ===
+function SetupPopup({ onClose }) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+  const isAndroid = /Android/.test(navigator.userAgent || "");
+  const isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  const a2hs = window.__OD_A2HS;
+  const [pushOn, setPushOn] = useState(false);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
+        <button onClick={onClose} aria-label="닫기"
+          style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent", color: "var(--ink-mute)", fontSize: 17, lineHeight: 1, cursor: "pointer", fontFamily: "inherit", zIndex: 2 }}>✕</button>
+        <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>총무팀 · 출근 환경 세팅</div>
+        <div style={{ textAlign: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 32, marginBottom: 6 }}>🎉</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginBottom: 4 }}>첫 출근, 무사히 끝났어요</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>내일도 편하게 오시게 딱 2개만 해둘까요? 30초면 끝나요.</div>
+        </div>
+
+        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>① 홈 화면에 1일1비 추가</div>
+          {isStandalone ? (
+            <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 이미 홈 화면 앱으로 쓰고 계시네요. 완벽해요.</div>
+          ) : isIOS ? (
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
+              1. 사파리 하단 <b>공유 버튼</b> <span style={{ border: "1px solid var(--line)", borderRadius: 4, padding: "0 5px" }}>⬆</span> 탭<br/>
+              2. 아래로 내려 <b>"홈 화면에 추가"</b> 탭<br/>
+              3. 오른쪽 위 <b>추가</b> 누르면 끝!
+            </div>
+          ) : isAndroid ? (
+            a2hs ? (
+              <button className="btn btn-primary" style={{ width: "100%", padding: "9px 12px", fontSize: 13 }}
+                onClick={() => { try { a2hs.prompt(); } catch (e) {} }}>📲 홈 화면에 설치하기 (원클릭)</button>
+            ) : (
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>크롬 오른쪽 위 <b>메뉴(⋮)</b> → <b>"홈 화면에 추가"</b> 탭하면 끝!</div>
+            )
+          ) : (
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>주소창 오른쪽 <b>⭐(북마크)</b> 또는 <b>Ctrl+D</b> (맥은 Cmd+D)로 저장해두세요.</div>
+          )}
+        </div>
+
+        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 출근 리마인드 알림 켜기</div>
+          {isIOS && !isStandalone ? (
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+              아이폰은 <b>홈 화면에 추가한 앱</b>에서만 알림이 돼요.<br/>위 ①을 먼저 하고, 홈 화면 앱에서 [분기 평가] 탭에서 켜주세요!
+            </div>
+          ) : (
+            <>
+              <button onClick={async () => { try { const r = await odEnablePush(USER.email); if (r) setPushOn(true); } catch (e) {} }}
+                disabled={pushOn}
+                style={{ width: "100%", fontFamily: "inherit", fontSize: 13, fontWeight: 800, padding: "9px 12px", borderRadius: 9, cursor: pushOn ? "default" : "pointer",
+                  border: pushOn ? "1px solid #2D7A3D" : "1px solid var(--orange)", background: pushOn ? "#EEF6EE" : "var(--paper)", color: pushOn ? "#2D7A3D" : "var(--orange)" }}>
+                {pushOn ? "✓ 알림이 켜졌어요" : "🔔 알림 켜기"}
+              </button>
+              <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5, lineHeight: 1.5 }}>출근 잊지 않게 하루 한 번만 보내요. 언제든 끌 수 있어요.</div>
+            </>
+          )}
+        </div>
+        <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>세팅 끝, 내일 봬요 →</button>
+      </div>
+    </div>
+  );
+}
+
 function FirstWeekPopup({ day, onClose }) {
   const name = (USER.name || "신입");
   const [step, setStep] = useState(0);
@@ -10929,63 +10998,6 @@ function FirstWeekPopup({ day, onClose }) {
   }
 
   if (day === 2) {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
-    const isAndroid = /Android/.test(navigator.userAgent || "");
-    const isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
-    const a2hs = window.__OD_A2HS;
-    if (step === 1) {
-      return shell(
-        <>
-          {eyebrow("총무팀 · 출근 환경 세팅")}
-          <div style={{ fontSize: 15.5, fontWeight: 900, color: "var(--ink)", marginBottom: 4 }}>내일부터 출근 편하게, 딱 2개만 해둬요</div>
-          <div style={{ fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 12 }}>매일 주소 치고 들어오면 3일을 못 가요. 30초면 끝나요.</div>
-
-          <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 8 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>① 홈 화면에 1일1비 추가</div>
-            {isStandalone ? (
-              <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 이미 홈 화면 앱으로 쓰고 계시네요. 완벽해요.</div>
-            ) : isIOS ? (
-              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
-                1. 사파리 하단 <b>공유 버튼</b> <span style={{ border: "1px solid var(--line)", borderRadius: 4, padding: "0 5px" }}>⬆</span> 탭<br/>
-                2. 아래로 내려 <b>"홈 화면에 추가"</b> 탭<br/>
-                3. 오른쪽 위 <b>추가</b> 누르면 끝!
-              </div>
-            ) : isAndroid ? (
-              a2hs ? (
-                <button className="btn btn-primary" style={{ width: "100%", padding: "9px 12px", fontSize: 13 }}
-                  onClick={() => { try { a2hs.prompt(); } catch (e) {} }}>📲 홈 화면에 설치하기 (원클릭)</button>
-              ) : (
-                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
-                  크롬 오른쪽 위 <b>메뉴(⋮)</b> → <b>"홈 화면에 추가"</b> 탭하면 끝!
-                </div>
-              )
-            ) : (
-              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.8 }}>
-                주소창 오른쪽 <b>⭐(북마크)</b> 또는 <b>Ctrl+D</b> (맥은 Cmd+D)로 저장해두세요.
-              </div>
-            )}
-          </div>
-
-          <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 4 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 출근 리마인드 알림 켜기</div>
-            {isIOS && !isStandalone ? (
-              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
-                아이폰은 <b>홈 화면에 추가한 앱</b>에서만 알림이 돼요.<br/>위 ①을 먼저 하고, 홈 화면 앱에서 [분기 평가] 탭 → 알림 켜기!
-              </div>
-            ) : (
-              <>
-                <button onClick={() => { try { odEnablePush(USER.email); } catch (e) {} }}
-                  style={{ width: "100%", fontFamily: "inherit", fontSize: 13, fontWeight: 800, padding: "9px 12px", borderRadius: 9, cursor: "pointer", border: "1px solid var(--orange)", background: "var(--paper)", color: "var(--orange)" }}>
-                  🔔 알림 켜기
-                </button>
-                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5, lineHeight: 1.5 }}>출근 잊지 않게 하루 한 번만 보내요. 언제든 끌 수 있어요.</div>
-              </>
-            )}
-          </div>
-        </>,
-        cta("세팅 끝, 출근 준비 완료 →")
-      );
-    }
     return shell(
       <>
         {eyebrow("12F 탕비실 · 오전 10:40")}
@@ -11004,7 +11016,7 @@ function FirstWeekPopup({ day, onClose }) {
           🤫 그리고 하나 더: 우리 회사는 그날 학습을 끝내야 다음 Day가 열려요. 진도는 도망 안 가요.
         </div>
       </>,
-      cta("☕ 잘 마실게요", () => setStep(1))
+      cta("☕ 잘 마실게요")
     );
   }
 
@@ -12110,21 +12122,47 @@ function App() {
     }, 1000);
     return () => { clearInterval(iv); if (timer) clearTimeout(timer); };
   }, []);
+  // ── 출근 환경 세팅 팝업: Day 1 학습을 다 끝낸 직후 1회 ──
+  const [_showSetup, _setShowSetup] = useState(false);
+  React.useEffect(() => {
+    const KEY = '__OD_SETUP_SEEN_' + (_localUserNow?.email || 'guest');
+    const onDone = () => {
+      try { if (localStorage.getItem(KEY) === '1') return; } catch (e) { return; }
+      setTimeout(() => _setShowSetup(true), 900);
+    };
+    window.addEventListener('od-day-finale', onDone);
+    return () => window.removeEventListener('od-day-finale', onDone);
+  }, []);
+  const _closeSetup = () => {
+    try { localStorage.setItem('__OD_SETUP_SEEN_' + (_localUserNow?.email || 'guest'), '1'); } catch (e) {}
+    _setShowSetup(false);
+  };
   const _closeFwp = () => {
     try { if (!_fwpForce && _localUserNow?.email && _fwpDay) localStorage.setItem('__OD_FWP_' + _fwpDay + '_' + _localUserNow.email, '1'); } catch (e) {}
     _setFwpDay(null);
     if (_fwpForce) { try { const u = new URL(location.href); u.searchParams.delete('fwp'); history.replaceState(null, '', u.toString()); } catch (e) {} }
   };
   const _surveyDone = (() => { try { return !!localStorage.getItem(PULSE_SURVEY_KEY); } catch (e) { return true; } })();
+  // ★ 설문 노출 자격 (2026-08-21): "요즘 어떠세요?"는 어느 정도 써본 사람에게만.
+  //   첫 주 신규는 아직 평가할 경험이 없고, 첫날부터 이탈 이유를 묻는 건 인상이 나쁨.
+  //   기준: 회사 Day 8 이상 + 실제 출근(완주) 5일 이상. 첫 주 팝업과도 겹치지 않음.
+  const _surveyEligible = (() => {
+    try {
+      if (!_localUserNow) return false;
+      const d = _realDay || 0;
+      const doneDays = _completedDayCount ? _completedDayCount(_localUserNow) : (USER.streak || 0);
+      return d >= 8 && doneDays >= 5;
+    } catch (e) { return false; }
+  })();
   // 접속 후 3초 뒤 자동 노출. 승급 의례 등 다른 팝업이 떠 있으면 렌더 가드에서 걸러짐.
   React.useEffect(() => {
-    if (_surveyDone || !_localUserNow) return;
+    if (_surveyDone || !_localUserNow || !_surveyEligible) return;
     const _t = setTimeout(() => _setShowSurvey(true), 3000);
     return () => clearTimeout(_t);
-  }, [_surveyDone, !!_localUserNow]);
+  }, [_surveyDone, !!_localUserNow, _surveyEligible]);
   // 공지(메모)를 먼저 닫는 경우엔 그 직후에 바로 노출.
   const _maybeSurveyAfterMemo = () => {
-    if (_surveyDone || !_localUserNow) return;
+    if (_surveyDone || !_localUserNow || !_surveyEligible) return;
     if (_showCeremony || _showD1Popup) return;
     setTimeout(() => _setShowSurvey(true), 350);
   };
@@ -12384,11 +12422,15 @@ function App() {
       {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
       )}
-      {_showSurvey && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && (
+      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
+      {/* 출근 환경 세팅 (Day 1 학습 완료 직후) */}
+      {_showSetup && !_showCeremony && !_showS3Checkpoint && !_showDay60 && (
+        <SetupPopup onClose={_closeSetup} />
+      )}
       {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_showSurvey && (
+      {_fwpDay && !_showSetup && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_showSurvey && (
         <FirstWeekPopup day={_fwpDay} onClose={_closeFwp} />
       )}
 

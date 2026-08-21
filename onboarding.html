@@ -2408,30 +2408,32 @@ function CEOScreen({ name, dept, stageIdx, totalStages, onNext }) {
   return (
     <div className="card">
       <StepBar idx={stageIdx} total={totalStages} />
-      <div className="eyebrow">STEP 5 · 너의 버디 인사</div>
+      <div className="eyebrow">STEP 5 · 버디 인사</div>
       <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 22, padding: "16px", background: "var(--paper-warm)", borderRadius: 8, border: "1px dashed var(--line)" }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #D85A2A, #8B3A18)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900, fontSize: 22, flexShrink: 0 }}>🤝</div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 14 }}>유버디 (YouBuddy)</div>
-          <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>1일1비를 만든 사람 · 너의 첫 회사 버디</div>
+          <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>1일1비를 만든 사람 · 외국계 7년차</div>
         </div>
       </div>
-      <h1>"안녕, 오늘부터 내가<br/><em>너의 버디</em>야."</h1>
+      <h1>"오늘부터 제가<br/><em>{name}님의 버디</em>예요."</h1>
       <p className="lead">
-        반가워, {name}님. 나는 유버디. <strong>외국계 회사 다니면서 신입한테 버디 여러 번 해본 사람</strong>이야.
+        반갑습니다, {name}님. 유버디예요. <strong>외국계에서 7년째 일하면서 신입 버디를 여러 번 맡아봤어요.</strong>
         <br/><br/>
-        외국계엔 입사하면 "버디"가 붙어줘요. 모르는 거 부담 없이 물어볼 수 있는, 한 발 앞선 동료. 근데 한국 회사엔 그게 거의 없어서 신입들이 답답해해요.
-        <strong>1일1비는 그 버디를 누구나 받을 수 있게 만든 앱이야.</strong>
+        외국계에 입사하면 "버디"가 한 명 붙어요. 모르는 걸 부담 없이 물어볼 수 있는, 한 발 앞선 동료요.
+        그런데 그런 사람이 없어서 혼자 헤매는 분들이 많더라고요.
+        <strong>1일1비는 그 버디를 누구나 한 명 갖게 하려고 만들었어요.</strong>
         <br/><br/>
-        매일 5-10분, 너무 무리 마. 꾸준히가 핵심. 모르는 거 있으면 나한테 톡 보내.
+        매일 5~10분이면 충분해요. 무리하지 마시고, 대신 오래 가요.
       </p>
-      <div style={{ marginTop: 18, padding: "14px 16px", background: "rgba(58,40,18,0.05)", borderRadius: 8, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7 }}>
-        💡 <strong>참, 우리 회사엔 또 한 사람 있어.</strong>
+      <div style={{ marginTop: 18, padding: "14px 16px", background: "rgba(58,40,18,0.05)", borderRadius: 8, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.75 }}>
+        💡 <strong>내일부터 이렇게 진행돼요</strong>
         <br/>
-        회장님인데… 본사가 어디 계신지 아무도 몰라. 가끔 책상에 손글씨 메모만 발견되거든. <strong>임원까지 올라가야 만날 수 있다</strong>는 소문이 있어.
+        하루 한 번, 회사에서 실제로 오가는 표현이 상황과 함께 도착해요.
+        읽고 넘기지 말고 <strong>한 줄만 직접 써보세요.</strong> 그 자리에서 사수 첨삭이 붙고, 그 표현은 <strong>내 노트</strong>에 남아요.
       </div>
       <div className="btn-row">
-        <button className="btn" onClick={onNext}>알겠어 →</button>
+        <button className="btn" onClick={onNext}>네, 잘 부탁드려요 →</button>
       </div>
     </div>
   );
@@ -2448,9 +2450,9 @@ function ReadyScreen({ name, mentor, stageIdx, totalStages, onStart }) {
       <div className="eyebrow">STEP 6 · 첫 출근</div>
       <h1>{name}님, 9시예요.<br/><em>출근하세요.</em></h1>
       <p className="lead">
-        {mentor.name}님이 사옥 로비에서 기다리고 있어요. 첫날은 자기소개와 자리 안내, 그리고 아주 짧은 첫 미팅으로 끝납니다.
+        {mentor.name}님이 사옥 로비에서 기다리고 있어요. 첫날은 자기소개와 자리 안내, 그리고 아주 짧은 첫 미팅으로 끝나요.
         <br/><br/>
-        부담 갖지 말고, 진짜 회사처럼 천천히.
+        부담 갖지 않으셔도 돼요. 오늘은 딱 5분이면 충분해요.
       </p>
       <div style={{
         background: "rgba(216,90,42,0.06)", border: "1px dashed rgba(216,90,42,0.4)",
