@@ -10789,36 +10789,111 @@ window.__TF_SCN = window.__TF_SCN || {};
 // === 첫 주 웰컴 팝업 (Day 1~5): 프레임은 회사 첫 주, 내용물은 매일 하나씩 실전 꿀팁 ===
 // 노출 규칙: 하루 1회(__OD_FWP_<day>_<email>), 다른 팝업(투어/설문/승급)과 안 겹침.
 // 미리보기: ?fwp=1~5 (운영자/Dev 전용)
+const FWP_TIPS = {
+  1: { title: "🎁 회의에서 웃고만 있지 않는 법, 이 3개", tips: [
+    ["Can I jump in real quick?", "끼어들 때. 이 한마디면 무례하지 않게 발언권이 생겨요."],
+    ["Just to add one thing,", "의견을 얹을 때. 길게 말하지 않아도 존재감이 생겨요."],
+    ["That makes sense.", "동의할 때. 침묵 대신 이 네 단어면 이미 대화에 참여한 거예요."],
+  ]},
+  2: { title: "☕ 스몰토크, 이 3개면 어색하지 않아요", tips: [
+    ["How's your week going?", "\"How are you?\"보다 대화가 이어져요. 월~수 아무 때나."],
+    ["Busy day?", "두 단어로 충분한 안부. 엘리베이터에서 최고예요."],
+    ["I'm slammed today.", "\"바빠 죽겠어요\"의 자연스러운 버전. busy만 반복하지 않게."],
+  ]},
+  3: { title: "📌 영어 메일 첫 문장, 이 3개면 평생 써요", tips: [
+    ["Hope you're doing well.", "무난한 인사. 교과서의 \"I hope this email finds you well\"은 요즘 원어민도 잘 안 써요."],
+    ["Just following up on ~", "재촉인데 부드럽게. 답장 없을 때 \"Did you see my email?\" 대신 이거예요."],
+    ["Quick question about ~", "부담 없이 물어볼 때. quick 한 단어가 \"금방 끝나요\"라는 배려예요."],
+  ]},
+  4: { title: "⏰ 마감·일정 얘기, 이 3개로 다 돼요", tips: [
+    ["by EOD", "\"오늘 퇴근 전까지\". End of Day. 외국계 마감의 기본 단위예요."],
+    ["No rush.", "\"급한 거 아니에요\". 부탁할 때 이 두 단어가 최고의 매너예요."],
+    ["Can we push this to tomorrow?", "미룰 때. delay보다 push가 훨씬 자연스러워요."],
+  ]},
+  5: { title: "🏅 보너스 · 칭찬 받았을 때, 이 3개", tips: [
+    ["Thanks, that means a lot.", "\"감사합니다\"보다 진심이 전해져요. 곧 듣게 될 말에 대한 답."],
+    ["Happy to help.", "겸손하면서 쿨한 답. \"아닙니다, 별거 아니에요\"의 영어 버전."],
+    ["It was a team effort.", "공을 나누는 답. 이 한마디가 다음 기회를 불러와요."],
+  ]},
+};
+// 팁 3종을 나만의 노트(savedNotes[day])에 저장 + DB(notes) 동기화
+function _saveFwpTips(day) {
+  try {
+    const raw = localStorage.getItem("__OD_USER");
+    const u = raw ? JSON.parse(raw) : {};
+    u.savedNotes = u.savedNotes || {};
+    const dayKey = String(day);
+    u.savedNotes[dayKey] = u.savedNotes[dayKey] || [];
+    const cfg = FWP_TIPS[day];
+    if (!cfg) return false;
+    const added = [];
+    cfg.tips.forEach(t => {
+      const text = t[0] + " · " + t[1];
+      if (u.savedNotes[dayKey].some(n => n.text === text)) return;
+      const entry = { kind: "memo", label: "첫 주 꿀팁", text, savedAt: new Date().toISOString() };
+      u.savedNotes[dayKey].push(entry);
+      added.push(entry);
+    });
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    if (added.length && window.OD && window.OD.enabled && window.OD.saveNoteRow && u.email) {
+      added.forEach(entry => {
+        window.OD.saveNoteRow(u.email, day, entry.text, entry.label, entry.kind).then(r => {
+          if (!r || !r.ok) window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day, text: entry.text, label: entry.label, kind: entry.kind });
+        }).catch(() => {
+          window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day, text: entry.text, label: entry.label, kind: entry.kind });
+        });
+      });
+    }
+    return true;
+  } catch (e) { return false; }
+}
 function FirstWeekPopup({ day, onClose }) {
   const name = (USER.name || "신입");
   const [step, setStep] = useState(0);
   const [spoil, setSpoil] = useState(false);
+  const [tipsSaved, setTipsSaved] = useState(false);
   const nextScn = (window.__SIM?.SCENARIOS || []).find(x => x.day === day + 1);
   const shell = (inner, footer) => (
     <div style={{ position: "fixed", inset: 0, zIndex: 9150, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out" }}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
         {inner}
         {footer}
       </div>
     </div>
   );
   const cta = (label, on) => (
-    <button className="btn btn-primary" style={{ width: "100%", marginTop: 16 }} onClick={on || onClose}>{label}</button>
+    <button className="btn btn-primary" style={{ width: "100%", marginTop: 10 }} onClick={on || onClose}>{label}</button>
   );
   const eyebrow = (t) => (
     <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>{t}</div>
   );
-  // 공통 팁 카드 (노란 포스트잇 스타일): title + [영어표현, 해설] 3줄
-  const tipCard = (title, tips) => (
-    <div style={{ background: "#FBF3C9", border: "1px solid #E8D48A", borderRadius: 4, padding: "14px 15px", boxShadow: "0 6px 14px -8px rgba(58,40,18,0.35)", transform: "rotate(-0.6deg)", marginBottom: 10 }}>
-      <div style={{ fontSize: 12.5, fontWeight: 900, color: "#5C4A36", marginBottom: 9 }}>{title}</div>
-      {tips.map((t, i) => (
-        <div key={i} style={{ padding: "7px 0", borderTop: i ? "1px dashed #E0CF96" : "none" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#3D3222" }}>{t[0]}</div>
-          <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
-        </div>
-      ))}
-    </div>
+  // 공통 팁 카드 (반듯한 노란 카드): FWP_TIPS[day] 렌더
+  const tipCard = () => {
+    const cfg = FWP_TIPS[day];
+    if (!cfg) return null;
+    return (
+      <div style={{ background: "#FBF3C9", border: "1px solid #E8D48A", borderRadius: 10, padding: "14px 15px", boxShadow: "0 6px 14px -8px rgba(58,40,18,0.35)", marginBottom: 10 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 900, color: "#5C4A36", marginBottom: 9 }}>{cfg.title}</div>
+        {cfg.tips.map((t, i) => (
+          <div key={i} style={{ padding: "7px 0", borderTop: i ? "1px dashed #E0CF96" : "none" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#3D3222" }}>{t[0]}</div>
+            <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  // 노트 저장 버튼 (저장하면 나만의 노트 Day N에 3줄로 들어감)
+  const saveBtn = () => (
+    <button
+      onClick={() => { if (!tipsSaved && _saveFwpTips(day)) setTipsSaved(true); }}
+      disabled={tipsSaved}
+      style={{ width: "100%", fontFamily: "inherit", fontSize: 12.5, fontWeight: 800, padding: "10px 12px", borderRadius: 9, cursor: tipsSaved ? "default" : "pointer",
+        border: tipsSaved ? "1px solid #2D7A3D" : "1px dashed var(--orange)",
+        background: tipsSaved ? "#EEF6EE" : "var(--paper-warm)",
+        color: tipsSaved ? "#2D7A3D" : "var(--orange)" }}>
+      {tipsSaved ? "✓ 나만의 노트에 저장됐어요 (Day " + day + ")" : "📓 이 3개, 내 표현 노트에 저장하기"}
+    </button>
   );
 
   if (day === 1) {
@@ -10836,12 +10911,8 @@ function FirstWeekPopup({ day, onClose }) {
             <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 10 }}>
               🪪 사원증과 📓 회사 노트는 책상에 뒀어요.<br/>제일 중요한 건 이 카드예요. 사수가 손글씨로 써뒀네요.
             </div>
-            {tipCard("🎁 회의에서 웃고만 있지 않는 법, 이 3개", [
-              ["Can I jump in real quick?", "끼어들 때. 이 한마디면 무례하지 않게 발언권이 생겨요."],
-              ["Just to add one thing,", "의견을 얹을 때. 길게 말하지 않아도 존재감이 생겨요."],
-              ["That makes sense.", "동의할 때. 침묵 대신 이 네 단어면 이미 대화에 참여한 거예요."],
-            ])}
-            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>다음 화상회의에서 셋 중 하나만 써봐도 오늘 입사한 보람이 있어요.</div>
+            {tipCard()}
+            {saveBtn()}
           </div>
         )}
       </>,
@@ -10858,16 +10929,13 @@ function FirstWeekPopup({ day, onClose }) {
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>박 대리 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 동기 · 옆자리</span></div>
             <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: "3px 12px 12px 12px", padding: "10px 13px", fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
-              ☕ 이거 하나는 {name}님 거예요. 외국인 동료랑 커피 마실 때 뭐라 해야 할지 몰라서 어색하게 웃던 시절에, 저 살려준 세 마디 알려드릴게요.
+              ☕ 이거 하나는 {name}님 거예요. 외국인 동료랑 커피 마실 때 어색하게 웃던 시절에 저 살려준 세 마디 알려드릴게요.
             </div>
           </div>
         </div>
-        {tipCard("☕ 스몰토크, 이 3개면 어색하지 않아요", [
-          ["How's your week going?", "\"How are you?\"보다 대화가 이어져요. 월~수 아무 때나."],
-          ["Busy day?", "두 단어로 충분한 안부. 엘리베이터에서 최고예요."],
-          ["I'm slammed today.", "\"바빠 죽겠어요\"의 자연스러운 버전. busy만 반복하지 않게."],
-        ])}
-        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>
+        {tipCard()}
+        {saveBtn()}
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6, marginTop: 8 }}>
           🤫 그리고 하나 더: 우리 회사는 그날 학습을 끝내야 다음 Day가 열려요. 진도는 도망 안 가요.
         </div>
       </>,
@@ -10886,12 +10954,9 @@ function FirstWeekPopup({ day, onClose }) {
             <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>"3일이나 버텼으니, 실전용 하나 알려드릴게요."</span>
           </div>
         </div>
-        {tipCard("📌 영어 메일 첫 문장, 이 3개면 평생 써요", [
-          ["Hope you're doing well.", "무난한 인사. 교과서의 \"I hope this email finds you well\"은 요즘 원어민도 잘 안 써요."],
-          ["Just following up on ~", "재촉인데 부드럽게. 답장 없을 때 \"Did you see my email?\" 대신 이거예요."],
-          ["Quick question about ~", "부담 없이 물어볼 때. quick 한 단어가 \"금방 끝나요\"라는 배려예요."],
-        ])}
-        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>셋 다 내일 아침 메일에 그대로 복붙해도 돼요.</div>
+        {tipCard()}
+        {saveBtn()}
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6, marginTop: 8 }}>셋 다 내일 아침 메일에 그대로 복붙해도 돼요.</div>
       </>,
       cta("📌 잘 보이는 데 붙여두기")
     );
@@ -10913,12 +10978,9 @@ function FirstWeekPopup({ day, onClose }) {
             </div>
           </div>
         </div>
-        {tipCard("⏰ 마감·일정 얘기, 이 3개로 다 돼요", [
-          ["by EOD", "\"오늘 퇴근 전까지\". End of Day. 외국계 마감의 기본 단위예요."],
-          ["No rush.", "\"급한 거 아니에요\". 부탁할 때 이 두 단어가 최고의 매너예요."],
-          ["Can we push this to tomorrow?", "미룰 때. delay보다 push가 훨씬 자연스러워요."],
-        ])}
-        <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+        {tipCard()}
+        {saveBtn()}
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center", marginTop: 8 }}>
           그리고 내일 회의에서 내가 쓸 단어 하나 미리 흘려주지.{" "}
           {spoil
             ? <><b style={{ background: "var(--highlight, #FBE9A9)", padding: "1px 6px", borderRadius: 4 }}>{(nextScn && nextScn.word) || ""}</b> <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>({(nextScn && nextScn.meaning) || ""})</span></>
@@ -10952,11 +11014,8 @@ function FirstWeekPopup({ day, onClose }) {
           <span>실수령액</span><span>영어 앞에서 안 작아지는 5일 🏅</span>
         </div>
       </div>
-      {tipCard("🏅 보너스 · 칭찬 받았을 때, 이 3개", [
-        ["Thanks, that means a lot.", "\"감사합니다\"보다 진심이 전해져요. 첫 주 버틴 당신이 곧 듣게 될 말에 대한 답."],
-        ["Happy to help.", "겸손하면서 쿨한 답. \"아닙니다, 별거 아니에요\"의 영어 버전."],
-        ["It was a team effort.", "공을 나누는 답. 이 한마디가 다음 기회를 불러와요."],
-      ])}
+      {tipCard()}
+      {saveBtn()}
     </>,
     cta("다음 주도 다니기 💪")
   );
