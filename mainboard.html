@@ -10786,17 +10786,17 @@ window.__TF_SCN = window.__TF_SCN || {};
 })();
 
 // ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
-// === 첫 주 웰컴 팝업 (Day 1~5): 하루 하나, 회사 첫 주에 진짜 있을 법한 순간들 ===
+// === 첫 주 웰컴 팝업 (Day 1~5): 프레임은 회사 첫 주, 내용물은 매일 하나씩 실전 꿀팁 ===
 // 노출 규칙: 하루 1회(__OD_FWP_<day>_<email>), 다른 팝업(투어/설문/승급)과 안 겹침.
 // 미리보기: ?fwp=1~5 (운영자/Dev 전용)
 function FirstWeekPopup({ day, onClose }) {
-  const name = (USER.name || "신입") ;
+  const name = (USER.name || "신입");
   const [step, setStep] = useState(0);
   const [spoil, setSpoil] = useState(false);
   const nextScn = (window.__SIM?.SCENARIOS || []).find(x => x.day === day + 1);
   const shell = (inner, footer) => (
     <div style={{ position: "fixed", inset: 0, zIndex: 9150, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div className="od-rise" style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out" }}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out" }}>
         {inner}
         {footer}
       </div>
@@ -10808,37 +10808,44 @@ function FirstWeekPopup({ day, onClose }) {
   const eyebrow = (t) => (
     <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>{t}</div>
   );
+  // 공통 팁 카드 (노란 포스트잇 스타일): title + [영어표현, 해설] 3줄
+  const tipCard = (title, tips) => (
+    <div style={{ background: "#FBF3C9", border: "1px solid #E8D48A", borderRadius: 4, padding: "14px 15px", boxShadow: "0 6px 14px -8px rgba(58,40,18,0.35)", transform: "rotate(-0.6deg)", marginBottom: 10 }}>
+      <div style={{ fontSize: 12.5, fontWeight: 900, color: "#5C4A36", marginBottom: 9 }}>{title}</div>
+      {tips.map((t, i) => (
+        <div key={i} style={{ padding: "7px 0", borderTop: i ? "1px dashed #E0CF96" : "none" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#3D3222" }}>{t[0]}</div>
+          <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
+        </div>
+      ))}
+    </div>
+  );
 
   if (day === 1) {
     return shell(
       <>
-        {eyebrow("총무팀 · 택배 도착")}
+        {eyebrow("총무팀 · 웰컴 키트 도착")}
         {step === 0 ? (
           <div style={{ textAlign: "center", padding: "8px 0" }}>
             <div style={{ fontSize: 54, marginBottom: 10 }}>📦</div>
             <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>{name}님 앞으로 상자가 하나 와 있어요</div>
-            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>보낸 사람: 총무팀. 책상 위에 올려뒀어요.</div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>사원증과 회사 노트, 그리고 사수가 넣어둔 카드 한 장.</div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginBottom: 12, textAlign: "center" }}>🎁 웰컴 키트</div>
-            {[
-              ["🪪", "사원증", name + "님 이름이 각인돼 있어요. 사이드바 [사원증 / 인사]에 걸어뒀어요."],
-              ["📓", "회사 노트", "오늘부터 수집하는 표현이 전부 여기 쌓여요. 90일 뒤엔 당신만의 표현 사전이 돼요."],
-              ["📝", "노란 포스트잇", "사수의 첫 메모: \"모르는 건 다 물어봐요. 그러라고 제가 있는 거예요.\""],
-            ].map((it, i) => (
-              <div key={i} className="od-rise" style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "11px 13px", marginBottom: 8, animationDelay: (i * 0.18) + "s", animationFillMode: "both" }}>
-                <span style={{ fontSize: 21 }}>{it[0]}</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>{it[1]}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 2 }}>{it[2]}</div>
-                </div>
-              </div>
-            ))}
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 10 }}>
+              🪪 사원증과 📓 회사 노트는 책상에 뒀어요.<br/>제일 중요한 건 이 카드예요. 사수가 손글씨로 써뒀네요.
+            </div>
+            {tipCard("🎁 회의에서 웃고만 있지 않는 법, 이 3개", [
+              ["Can I jump in real quick?", "끼어들 때. 이 한마디면 무례하지 않게 발언권이 생겨요."],
+              ["Just to add one thing,", "의견을 얹을 때. 길게 말하지 않아도 존재감이 생겨요."],
+              ["That makes sense.", "동의할 때. 침묵 대신 이 네 단어면 이미 대화에 참여한 거예요."],
+            ])}
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>다음 화상회의에서 셋 중 하나만 써봐도 오늘 입사한 보람이 있어요.</div>
           </div>
         )}
       </>,
-      step === 0 ? cta("포장 뜯기 ✂️", () => setStep(1)) : cta("책상에 놓기 →")
+      step === 0 ? cta("포장 뜯기 ✂️", () => setStep(1)) : cta("카드 챙기기 →")
     );
   }
 
@@ -10846,18 +10853,22 @@ function FirstWeekPopup({ day, onClose }) {
     return shell(
       <>
         {eyebrow("12F 탕비실 · 오전 10:40")}
-        <div style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 11 }}>
           <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#B89968", color: "#fff", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>박</div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>박 대리 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 동기 · 옆자리</span></div>
             <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: "3px 12px 12px 12px", padding: "10px 13px", fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
-              어제 얼굴 봤죠? ☕ 이거 하나는 {name}님 거예요.<br/>둘째 날이 제일 어색한 법이라, 커피 핑계로 왔어요.
+              ☕ 이거 하나는 {name}님 거예요. 외국인 동료랑 커피 마실 때 뭐라 해야 할지 몰라서 어색하게 웃던 시절에, 저 살려준 세 마디 알려드릴게요.
             </div>
           </div>
         </div>
-        <div style={{ background: "rgba(216,90,42,0.06)", border: "1px dashed var(--orange)", borderRadius: 10, padding: "11px 13px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65 }}>
-          🤫 <b style={{ color: "var(--ink)" }}>나만 아는 꿀팁:</b> 우리 회사, 그날 학습을 끝내야 다음 Day가 열려요.
-          하루 빼먹어도 진도가 도망 안 가니까, 부담 갖지 말고 매일 조금씩만 해요.
+        {tipCard("☕ 스몰토크, 이 3개면 어색하지 않아요", [
+          ["How's your week going?", "\"How are you?\"보다 대화가 이어져요. 월~수 아무 때나."],
+          ["Busy day?", "두 단어로 충분한 안부. 엘리베이터에서 최고예요."],
+          ["I'm slammed today.", "\"바빠 죽겠어요\"의 자연스러운 버전. busy만 반복하지 않게."],
+        ])}
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>
+          🤫 그리고 하나 더: 우리 회사는 그날 학습을 끝내야 다음 Day가 열려요. 진도는 도망 안 가요.
         </div>
       </>,
       cta("☕ 잘 마실게요")
@@ -10875,19 +10886,11 @@ function FirstWeekPopup({ day, onClose }) {
             <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>"3일이나 버텼으니, 실전용 하나 알려드릴게요."</span>
           </div>
         </div>
-        <div style={{ background: "#FBF3C9", border: "1px solid #E8D48A", borderRadius: 4, padding: "14px 15px", boxShadow: "0 6px 14px -8px rgba(58,40,18,0.35)", transform: "rotate(-0.6deg)", marginBottom: 10 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 900, color: "#5C4A36", marginBottom: 9 }}>📌 영어 메일 첫 문장, 이 3개면 평생 써요</div>
-          {[
-            ["Hope you're doing well.", "무난한 인사. 교과서의 \"I hope this email finds you well\"은 요즘 원어민도 잘 안 써요."],
-            ["Just following up on ~", "재촉인데 부드럽게. 답장 없을 때 \"Did you see my email?\" 대신 이거예요."],
-            ["Quick question about ~", "부담 없이 물어볼 때. quick 한 단어가 \"금방 끝나요\"라는 배려예요."],
-          ].map((t, i) => (
-            <div key={i} style={{ padding: "7px 0", borderTop: i ? "1px dashed #E0CF96" : "none" }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#3D3222", fontFamily: "inherit" }}>{t[0]}</div>
-              <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
-            </div>
-          ))}
-        </div>
+        {tipCard("📌 영어 메일 첫 문장, 이 3개면 평생 써요", [
+          ["Hope you're doing well.", "무난한 인사. 교과서의 \"I hope this email finds you well\"은 요즘 원어민도 잘 안 써요."],
+          ["Just following up on ~", "재촉인데 부드럽게. 답장 없을 때 \"Did you see my email?\" 대신 이거예요."],
+          ["Quick question about ~", "부담 없이 물어볼 때. quick 한 단어가 \"금방 끝나요\"라는 배려예요."],
+        ])}
         <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>셋 다 내일 아침 메일에 그대로 복붙해도 돼요.</div>
       </>,
       cta("📌 잘 보이는 데 붙여두기")
@@ -10898,56 +10901,62 @@ function FirstWeekPopup({ day, onClose }) {
     return shell(
       <>
         {eyebrow("퇴근길 · 슬랙 DM")}
-        <div className="slack-frame" style={{ marginBottom: 2 }}>
+        <div className="slack-frame" style={{ marginBottom: 10 }}>
           <div className="slack-head"><span>💬</span><span className="slack-channel">김 팀장</span><span className="slack-channel-meta">18:47</span></div>
           <div className="slack-body">
             <div className="slack-msg">
               <div className="slack-msg-avatar" style={{ background: "#3A4A5C" }}>김</div>
               <div className="slack-msg-content">
                 <div><span className="slack-msg-name">김 팀장</span><span className="slack-msg-time">18:47</span></div>
-                <div className="slack-msg-text">Still here? Good. 4일 버티면 반은 온 거야.</div>
-                <div className="slack-msg-text" style={{ marginTop: 6 }}>
-                  내일 회의에서 내가 쓸 단어 하나 미리 흘려주지.{" "}
-                  {spoil
-                    ? <b style={{ background: "var(--highlight, #FBE9A9)", padding: "1px 6px", borderRadius: 4 }}>{(nextScn && nextScn.word) || "circle back"}</b>
-                    : <button onClick={() => setSpoil(true)} style={{ fontFamily: "inherit", border: "1px dashed var(--line)", background: "var(--paper-warm)", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 800, color: "var(--ink-mute)", cursor: "pointer", filter: "blur(0px)" }}>🔒 탭해서 미리 보기</button>}
-                  {spoil && <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}> ({(nextScn && nextScn.meaning) || ""})</span>}
-                </div>
-                {spoil && <div className="slack-msg-text" style={{ marginTop: 6 }}>내일 아침에 아는 척해 봐. 모른 척해 줄 테니.</div>}
+                <div className="slack-msg-text">Still here? 4일 버텼으면 이제 마감 얘기할 때 쓰는 말은 알아야지.</div>
               </div>
             </div>
           </div>
+        </div>
+        {tipCard("⏰ 마감·일정 얘기, 이 3개로 다 돼요", [
+          ["by EOD", "\"오늘 퇴근 전까지\". End of Day. 외국계 마감의 기본 단위예요."],
+          ["No rush.", "\"급한 거 아니에요\". 부탁할 때 이 두 단어가 최고의 매너예요."],
+          ["Can we push this to tomorrow?", "미룰 때. delay보다 push가 훨씬 자연스러워요."],
+        ])}
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+          그리고 내일 회의에서 내가 쓸 단어 하나 미리 흘려주지.{" "}
+          {spoil
+            ? <><b style={{ background: "var(--highlight, #FBE9A9)", padding: "1px 6px", borderRadius: 4 }}>{(nextScn && nextScn.word) || ""}</b> <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>({(nextScn && nextScn.meaning) || ""})</span></>
+            : <button onClick={() => setSpoil(true)} style={{ fontFamily: "inherit", border: "1px dashed var(--line)", background: "var(--paper-warm)", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 800, color: "var(--ink-mute)", cursor: "pointer" }}>🔒 탭해서 미리 보기</button>}
         </div>
       </>,
       cta(spoil ? "내일 아는 척하러 가기 →" : "퇴근하기")
     );
   }
 
-  // day 5: 첫 주 급여명세서
+  // day 5: 첫 주 급여명세서 + 보너스 팁
   const rows = [
     ["수집한 표현", (USER.wordsCollected || 5) + "개"],
     ["출근 도장", (USER.streak || 5) + "일"],
     ["사수의 첨삭", "매일 1회"],
-    ["어색한 침묵 감소", "측정 중 📈"],
   ];
   return shell(
     <>
       {eyebrow("경리팀 · 첫 주 급여명세서")}
-      <div style={{ textAlign: "center", marginBottom: 12 }}>
-        <div style={{ fontSize: 38, marginBottom: 6 }}>💌</div>
+      <div style={{ textAlign: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 34, marginBottom: 4 }}>💌</div>
         <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)" }}>{name}님의 첫 주 급여가 입금됐어요</div>
       </div>
       <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden", marginBottom: 10 }}>
         {rows.map((r, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 13px", fontSize: 12.5, background: i % 2 ? "var(--paper-warm)" : "var(--paper)", color: "var(--ink)" }}>
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 13px", fontSize: 12.5, background: i % 2 ? "var(--paper-warm)" : "var(--paper)", color: "var(--ink)" }}>
             <span style={{ color: "var(--ink-soft)" }}>{r[0]}</span><b>{r[1]}</b>
           </div>
         ))}
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 13px", fontSize: 13, background: "var(--ink)", color: "var(--paper)", fontWeight: 800 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 13px", fontSize: 12.5, background: "var(--ink)", color: "var(--paper)", fontWeight: 800 }}>
           <span>실수령액</span><span>영어 앞에서 안 작아지는 5일 🏅</span>
         </div>
       </div>
-      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>다음 주부터 연봉이 인상됩니다. (표현이 더 어려워진다는 뜻이에요)</div>
+      {tipCard("🏅 보너스 · 칭찬 받았을 때, 이 3개", [
+        ["Thanks, that means a lot.", "\"감사합니다\"보다 진심이 전해져요. 첫 주 버틴 당신이 곧 듣게 될 말에 대한 답."],
+        ["Happy to help.", "겸손하면서 쿨한 답. \"아닙니다, 별거 아니에요\"의 영어 버전."],
+        ["It was a team effort.", "공을 나누는 답. 이 한마디가 다음 기회를 불러와요."],
+      ])}
     </>,
     cta("다음 주도 다니기 💪")
   );
