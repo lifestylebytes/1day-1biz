@@ -10867,24 +10867,30 @@ function FirstWeekPopup({ day, onClose }) {
   if (day === 3) {
     return shell(
       <>
-        {eyebrow("13F 엘리베이터 앞 · 사내 소문")}
-        <div style={{ display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 12 }}>
-          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#B89968", color: "#fff", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>박</div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>박 대리 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 속닥속닥</span></div>
-            <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: "3px 12px 12px 12px", padding: "10px 13px", fontSize: 13, color: "var(--ink)", lineHeight: 1.65 }}>
-              {name}님, 그 얘기 들었어요? 오늘 아침에 누가 <b>회장님</b>을 봤대요. 엘리베이터에서. 🫢
-            </div>
+        {eyebrow("사수의 포스트잇 · 3일차 보너스 팁")}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
+          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>차</div>
+          <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.55 }}>
+            <b>차윤아 사수</b>가 모니터에 포스트잇을 붙여뒀어요.<br/>
+            <span style={{ fontSize: 12, color: "var(--ink-mute)" }}>"3일이나 버텼으니, 실전용 하나 알려드릴게요."</span>
           </div>
         </div>
-        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 10, padding: "12px 14px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 2 }}>
-          🗞 <b style={{ color: "var(--ink)" }}>사내에 전해지는 이야기:</b> 입사 이래 회장님을 실제로 본 사람은 아무도 없다.
-          김 팀장도, 차윤아 사수도 아직이다. 알려진 건 딱 하나,
-          <b style={{ color: "var(--ink)" }}> 임원으로 승진하면 뵐 기회가 있다</b>는 것.<br/>
-          <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>...그러니까 오늘 아침 그 목격담은, 아마 헛것이었을 거예요. 아마도.</span>
+        <div style={{ background: "#FBF3C9", border: "1px solid #E8D48A", borderRadius: 4, padding: "14px 15px", boxShadow: "0 6px 14px -8px rgba(58,40,18,0.35)", transform: "rotate(-0.6deg)", marginBottom: 10 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 900, color: "#5C4A36", marginBottom: 9 }}>📌 영어 메일 첫 문장, 이 3개면 평생 써요</div>
+          {[
+            ["Hope you're doing well.", "무난한 인사. 교과서의 \"I hope this email finds you well\"은 요즘 원어민도 잘 안 써요."],
+            ["Just following up on ~", "재촉인데 부드럽게. 답장 없을 때 \"Did you see my email?\" 대신 이거예요."],
+            ["Quick question about ~", "부담 없이 물어볼 때. quick 한 단어가 \"금방 끝나요\"라는 배려예요."],
+          ].map((t, i) => (
+            <div key={i} style={{ padding: "7px 0", borderTop: i ? "1px dashed #E0CF96" : "none" }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#3D3222", fontFamily: "inherit" }}>{t[0]}</div>
+              <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
+            </div>
+          ))}
         </div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.6 }}>셋 다 내일 아침 메일에 그대로 복붙해도 돼요.</div>
       </>,
-      cta("🤫 소문은 여기까지만")
+      cta("📌 잘 보이는 데 붙여두기")
     );
   }
 
