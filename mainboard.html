@@ -4477,6 +4477,25 @@ const _rankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime"
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
 // ============================================================
+// 다음 버전 기능 플래그 (__OD_NEXT)
+//   가격 인상 후 공개할 기능을 미리 머지해두되, 회원에게는 보이지 않게 한다.
+//   켜는 법: 주소 끝에 ?next=1 을 한 번 붙여서 접속 (그 기기에 계속 유지)
+//   끄는 법: ?next=0
+//   운영자 계정은 별도 조작 없이 항상 켜짐.
+// ============================================================
+const _isNextFeature = (() => {
+  let on = false;
+  try {
+    const q = new URLSearchParams(location.search).get("next");
+    if (q === "1") localStorage.setItem("__OD_NEXT", "1");
+    if (q === "0") localStorage.removeItem("__OD_NEXT");
+    on = localStorage.getItem("__OD_NEXT") === "1";
+    if (!on && _localUser && (_localUser.isOperator || _localUser.isDevMode || _localUser.cohort === "team")) on = true;
+  } catch (e) { on = false; }
+  return () => on;
+})();
+
+// ============================================================
 // 역량 스탯: Day 1~90 각 시나리오가 어느 역량 영역인지
 //   M 회의 발언 / W 메일·문서 / S 관계·스몰토크 / R 보고·판단 / N 협상·설득
 //   (표현을 "실제로 어디서 쓰는가" 기준. 인덱스 0 = Day 1)
@@ -6126,7 +6145,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </div>
           )}
 
-          <SkillGrid user={USER} onGoDay={setViewingDay} />
+          {_isNextFeature() && <SkillGrid user={USER} onGoDay={setViewingDay} />}
 
           <div className="attendance">
             <div className="attendance-head">
