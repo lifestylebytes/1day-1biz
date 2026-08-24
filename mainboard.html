@@ -307,6 +307,13 @@ body::before {
   color: var(--ink-soft); padding-bottom: 16px;
   border-bottom: 1px dashed var(--line);
 }
+.scene-word-line {
+  font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+  background: rgba(216,90,42,0.07); border: 1px dashed rgba(216,90,42,0.45);
+  border-radius: 8px; padding: 7px 11px; margin-bottom: 10px; letter-spacing: 0.01em;
+}
+.scene-word-line-word { color: var(--orange); font-weight: 900; }
+.scene-word-line-ko { color: var(--ink-mute); font-weight: 600; }
 .scene-quote-row {
   margin-top: 18px;
   display: flex; gap: 14px; align-items: flex-start;
@@ -6409,6 +6416,36 @@ function ApplicationLine() {
 }
 
 // ============================================================
+// 어휘 하이라이트: 표기 변형까지 매칭
+//   follow up <-> follow-up, stepped up, raised the bar (동사 변형),
+//   loop ... in / hash it out (분리형 구동사, 사이 단어 3개까지),
+//   pull one's weight -> pulling her weight (대명사 치환)
+// ============================================================
+function _wordHlRegex(word) {
+  if (!word) return null;
+  const PLACEHOLDER = { "one's": 1, "someone": 1, "someone's": 1, "something": 1, "somebody": 1 };
+  const toks = String(word).trim().split(/\s+/).map(t => {
+    const low = t.toLowerCase();
+    if (PLACEHOLDER[low]) return "[\\w']+";
+    if (low === "go") return "(?:go|goes|going|went|gone)";
+    const esc = low.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (/e$/.test(low)) return esc.slice(0, -1) + "(?:e|es|ed|ing)";
+    return esc + "(?:" + low.slice(-1) + ")?(?:s|es|d|ed|ing)?";
+  });
+  try { return new RegExp("(\\b" + toks.join("[\\s-]+(?:[\\w']+[\\s-]+){0,3}?") + "\\b)", "gi"); }
+  catch (e) { return null; }
+}
+function _hlQuote(quote, word) {
+  const re = _wordHlRegex(word);
+  if (!re || !quote) return quote;
+  const parts = String(quote).split(re);
+  if (parts.length < 2) return quote;
+  return parts.map((part, i) => (i % 2 === 1)
+    ? <span key={i} className="scene-target-word">{part}</span>
+    : <React.Fragment key={i}>{part}</React.Fragment>);
+}
+
+// ============================================================
 // 시추에이션 카드 (홈)
 // ============================================================
 function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
@@ -6422,6 +6459,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
       </div>
       <div className="scene-card-tag">{scenario._tfInfo ? `오늘의 시추에이션 · ${scenario._tfInfo.name} DAY ${scenario._tfInfo.tfDay}/30` : `오늘의 시추에이션 · DAY ${scenario.day}`}</div>
       <div className="scene-card-body">
+        <div className="scene-word-line">오늘의 어휘 표현 : <b className="scene-word-line-word">{scenario.word}</b>{scenario.meaning ? <span className="scene-word-line-ko"> · {scenario.meaning}</span> : null}</div>
         <div className="scene-card-time">{scenario.tags.map(t => "#" + t).join("  ")}</div>
         <div className="scene-card-scene">📍 {scenario.scene}</div>
 
@@ -6430,16 +6468,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
           <div style={{ flex: 1 }}>
             <div className="scene-npc-name">{npc.name} · {npc.role}</div>
             <div className="scene-quote-bubble">
-              "{(() => {
-                // 대소문자 무시 하이라이트 (문장 맨 앞에 와서 Per my last email처럼 대문자가 돼도 매칭)
-                const _esc = (scenario.word || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                let _parts;
-                try { _parts = scenario.quote.split(new RegExp("(" + _esc + ")", "gi")); }
-                catch (e) { _parts = [scenario.quote]; }
-                return _parts.map((part, i) => (i % 2 === 1)
-                  ? <span key={i} className="scene-target-word">{part}</span>
-                  : <React.Fragment key={i}>{part}</React.Fragment>);
-              })()}"
+              "{_hlQuote(scenario.quote, scenario.word)}"
             </div>
             <KoPeek ko={scenario.quoteKo} />
           </div>
@@ -8144,7 +8173,7 @@ function SceneModal({ scenario, onClose }) {
             <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
             <div style={{ flex: 1 }}>
               <div className="scene-npc-name">{npc.name} · {npc.role}</div>
-              <div className="scene-quote-bubble">"{scenario.quote}"</div>
+              <div className="scene-quote-bubble">"{_hlQuote(scenario.quote, scenario.word)}"</div>
               <KoPeek ko={scenario.quoteKo} />
             </div>
           </div>
