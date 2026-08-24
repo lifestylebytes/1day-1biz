@@ -447,6 +447,56 @@ body::before {
 .schedule-status.now { background: var(--orange); color: #fff; }
 .schedule-status.done { background: transparent; color: var(--ink-mute); }
 
+/* 역량 스탯 그리드 */
+.skillgrid {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  padding: 16px 16px 14px;
+  box-shadow: 3px 3px 0 rgba(30,26,22,0.10);
+  margin-bottom: 14px;
+}
+.skillgrid-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.skillgrid-title { font-size: 13px; font-weight: 900; letter-spacing: 0.06em; color: var(--ink); }
+.skillgrid-num { font-size: 21px; font-weight: 900; color: var(--orange); line-height: 1; }
+.skillgrid-num small { font-size: 11px; font-weight: 700; color: var(--ink-mute); margin-left: 2px; }
+.skillgrid-lead { font-size: 11.5px; color: var(--ink-soft); line-height: 1.6; margin: 8px 0 12px; }
+.skillgrid-lead b { color: var(--orange); font-weight: 800; }
+.skillgrid-cells { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.skill-cell {
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px 10px;
+  background: var(--paper-warm); display: flex; flex-direction: column; gap: 5px;
+}
+.skill-cell.doing { background: rgba(216,90,42,0.07); border-color: rgba(216,90,42,0.45); }
+.skill-cell.done  { background: rgba(45,110,58,0.09); border-color: rgba(45,110,58,0.45); }
+.skill-cell.locked { opacity: 0.62; border-style: dashed; }
+.skill-cell.meta { grid-column: 1 / -1; opacity: 1; border-style: dashed; border-color: var(--line); background: transparent; }
+.skill-cell-top { display: flex; align-items: center; gap: 6px; }
+.skill-emoji { font-size: 13px; line-height: 1; }
+.skill-name { font-size: 12px; font-weight: 800; color: var(--ink); letter-spacing: -0.01em; }
+.skill-count { display: flex; align-items: baseline; gap: 3px; flex-wrap: wrap; }
+.skill-count b { font-size: 17px; font-weight: 900; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+.skill-count span { font-size: 11px; font-weight: 700; color: var(--ink-mute); }
+.skill-count em { font-style: normal; font-size: 10px; font-weight: 700; color: var(--ink-mute); margin-left: 4px; }
+.skill-cell.doing .skill-count b { color: var(--orange); }
+.skill-cell.done .skill-count b { color: #2D6E3A; }
+.skill-bar { height: 4px; border-radius: 3px; background: rgba(30,26,22,0.10); overflow: hidden; }
+.skill-bar i { display: block; height: 100%; background: var(--orange); border-radius: 3px; transition: width .4s ease; }
+.skill-cell.done .skill-bar i { background: #2D6E3A; }
+.skill-desc { font-size: 10px; color: var(--ink-mute); line-height: 1.45; }
+.skill-next {
+  display: flex; align-items: center; gap: 7px; width: 100%; margin-top: 10px;
+  padding: 9px 11px; border-radius: 8px; text-align: left;
+  background: var(--paper-warm); border: 1px dashed var(--line);
+  font-family: inherit; font-size: 11.5px; color: var(--ink-soft); line-height: 1.5;
+}
+.skill-next b { color: var(--ink); font-weight: 800; }
+.skill-next-lock { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .skill-bar i { transition: none; } }
+@media (max-width: 430px) {
+  .skillgrid-cells { grid-template-columns: 1fr; }
+}
+
 /* 출근부 = 14일 카드 */
 .attendance {
   background: var(--cream);
@@ -4426,9 +4476,25 @@ const _phaseCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : (_resolve
 const _rankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime" : "probation");
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
-const _odCompletedDays = (u) => {
-  if (!u) return 0;
+// ============================================================
+// 역량 스탯: Day 1~90 각 시나리오가 어느 역량 영역인지
+//   M 회의 발언 / W 메일·문서 / S 관계·스몰토크 / R 보고·판단 / N 협상·설득
+//   (표현을 "실제로 어디서 쓰는가" 기준. 인덱스 0 = Day 1)
+// ============================================================
+const _DAY_AREA_CODE = "MWWWMWMMMSRRWNMMRNMSWRNWWMSSRSMRRRRWSWWRMMMMMMNSSSSNRRRRRRWMMNNNNNSNNMMNNNRNNWNRSRRRRRMSSS";
+const AREA_META = [
+  { id: "M", emoji: "\uD83C\uDFA4", name: "\uD68C\uC758 \uBC1C\uC5B8", desc: "\uB07C\uC5B4\uB4E4\uACE0, \uC758\uACAC \uB0B4\uACE0, \uC9C4\uD589\uD558\uB294 \uC601\uC5B4" },
+  { id: "W", emoji: "\u2709\uFE0F", name: "\uBA54\uC77C\u00B7\uBB38\uC11C", desc: "\uBA54\uC77C, \uBCF4\uACE0\uC11C, \uC2AC\uB799. \uC4F0\uB294 \uC601\uC5B4" },
+  { id: "S", emoji: "\u2615", name: "\uAD00\uACC4\u00B7\uC2A4\uBAB0\uD1A0\uD06C", desc: "\uC548\uBD80, \uC7A1\uB2F4, \uCE6D\uCC2C\uACFC \uAC10\uC0AC" },
+  { id: "R", emoji: "\uD83D\uDCCB", name: "\uBCF4\uACE0\u00B7\uD310\uB2E8", desc: "\uC0C1\uD669 \uACF5\uC720, \uC77C\uC815 \uC870\uC728, \uB9AC\uC2A4\uD06C \uC54C\uB9AC\uAE30" },
+  { id: "N", emoji: "\uD83E\uDD1D", name: "\uD611\uC0C1\u00B7\uC124\uB4DD", desc: "\uC870\uAC74 \uC870\uC728, \uAC70\uC808, \uBC18\uB300 \uC758\uACAC" },
+];
+const _areaOf = (day) => _DAY_AREA_CODE[Number(day) - 1] || null;
+
+// 완주한 day 집합 (출근부·스탯·게이트가 같은 기준을 쓰도록 단일 소스)
+const _odCompletedDaySet = (u) => {
   const days = new Set();
+  if (!u) return days;
   (u.scenariosCompleted || []).forEach(s => { if (s && s.day) days.add(Number(s.day)); });
   Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
   try {
@@ -4437,8 +4503,10 @@ const _odCompletedDays = (u) => {
       if (Object.values(t).filter(Boolean).length >= 3) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
     });
   } catch (e) {}
-  return [...days].filter(d => d >= 1).length;
+  return days;
 };
+
+const _odCompletedDays = (u) => [..._odCompletedDaySet(u)].filter(d => d >= 1).length;
 
 const USER = {
   name: _localUser?.name || "김지원",
@@ -6058,6 +6126,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </div>
           )}
 
+          <SkillGrid user={USER} onGoDay={setViewingDay} />
+
           <div className="attendance">
             <div className="attendance-head">
               <span className="attendance-title">
@@ -6412,6 +6482,130 @@ function ApplicationLine() {
       applicant={U.name + " (" + U.position + ")"}
       status={"진행 중 · " + (U.position && U.position.replace(" 사원","")) + " " + U.currentDay + "/" + U.totalDays + "일"}
     />
+  );
+}
+
+// ============================================================
+// 역량 스탯 그리드
+//   "며칠 빠짐없이 했나"가 아니라 "무엇을 얼마나 모았나"를 보여준다.
+//   Day 1~90 = 5개 역량 영역 / Day 91+ = TF 트랙 4종
+//   채움 조건은 오직 학습 완료 (전사 헌법 4조).
+// ============================================================
+function SkillGrid({ user, onGoDay }) {
+  const rd = user.realCurrentDay || user.currentDay || 1;
+  const tf = React.useMemo(() => { try { return _tfState(); } catch (e) { return { track: null, done: [] }; } }, [rd]);
+  const doneSet = React.useMemo(() => _odCompletedDaySet(_localUser), [rd, user.streak]);
+  const isTf = rd > 90;
+
+  // 저장한 표현 수 (나만의 노트)
+  const savedCount = React.useMemo(() => {
+    try {
+      return Object.values(_localUser?.savedNotes || {}).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
+    } catch (e) { return 0; }
+  }, [rd]);
+
+  // ── 영역별 집계 ──
+  const rows = React.useMemo(() => {
+    if (isTf) {
+      const doneIds = (tf && tf.done) || [];
+      const curId = tf && tf.track ? (tf.track.id || tf.track) : null;
+      return TF_TRACKS.map(t => {
+        const finished = doneIds.indexOf(t.id) >= 0;
+        const current = !finished && curId === t.id;
+        return {
+          key: t.id, emoji: t.emoji, name: t.name, desc: t.tagline,
+          got: finished ? 30 : (current ? Math.max(0, Math.min(30, rd - (Number(tf.track && tf.track.startedDay) || 91) + 1)) : 0),
+          total: 30,
+          state: finished ? "done" : (current ? "doing" : "locked"),
+          hint: finished ? "수료" : (current ? "진행 중" : "아직 안 맡은 TF"),
+        };
+      });
+    }
+    const cap = Math.min(90, user.totalDays > 90 ? 90 : user.totalDays);
+    return AREA_META.map(a => {
+      let total = 0, got = 0, firstDay = null, nextDay = null;
+      for (let d = 1; d <= 90; d++) {
+        if (_areaOf(d) !== a.id) continue;
+        total++;
+        if (firstDay === null) firstDay = d;
+        if (doneSet.has(d)) got++;
+        else if (nextDay === null && d <= rd) nextDay = d;
+      }
+      const state = got >= total ? "done" : (got > 0 ? "doing" : (firstDay > rd ? "locked" : "open"));
+      return {
+        key: a.id, emoji: a.emoji, name: a.name, desc: a.desc, got, total, state,
+        nextDay,
+        hint: state === "done" ? "전부 수집"
+          : state === "locked" ? ("Day " + firstDay + "부터 열려요")
+          : state === "open" ? "아직 시작 전"
+          : "진행 중",
+      };
+    });
+  }, [rd, isTf, doneSet, tf && tf.track, tf && tf.done && tf.done.length]);
+
+  const gotAll = rows.reduce((n, r) => n + r.got, 0);
+  const totalAll = rows.reduce((n, r) => n + r.total, 0);
+  const clearedAreas = rows.filter(r => r.state === "done").length;
+
+  // ── 다음 예고 (스포일러 없이 영역만) ──
+  const nextDayNum = Math.min(isTf ? 240 : 90, rd + 1);
+  const nextArea = !isTf && nextDayNum <= 90 ? AREA_META.find(a => a.id === _areaOf(nextDayNum)) : null;
+
+  return (
+    <div className="skillgrid">
+      <div className="skillgrid-head">
+        <span className="skillgrid-title">{isTf ? "내 TF 이력" : "내 역량 스탯"}</span>
+        <span className="skillgrid-num">{gotAll}<small> / {totalAll} 수집</small></span>
+      </div>
+
+      <div className="skillgrid-lead">
+        {isTf
+          ? <>지금까지 <b>{clearedAreas}개 TF</b>를 수료했어요. 4개를 다 마치면 과장 승진 심사가 열려요.</>
+          : gotAll === 0
+            ? <>오늘 학습을 마치면 첫 표현이 여기 쌓여요.</>
+            : <>표현 <b>{gotAll}개</b>를 모았어요{savedCount > 0 ? <>, 그중 <b>{savedCount}개</b>는 노트에 따로 담아뒀고요</> : null}. 5개 영역 중 <b>{rows.filter(r => r.got > 0).length}개</b>를 열었어요.</>}
+      </div>
+
+      <div className="skillgrid-cells">
+        {rows.map(r => (
+          <div key={r.key} className={"skill-cell " + r.state}>
+            <div className="skill-cell-top">
+              <span className="skill-emoji">{r.emoji}</span>
+              <span className="skill-name">{r.name}</span>
+            </div>
+            <div className="skill-count">
+              <b>{r.got}</b><span>/{r.total}</span>
+              <em>{r.hint}</em>
+            </div>
+            <div className="skill-bar"><i style={{ width: Math.round((r.got / r.total) * 100) + "%" }} /></div>
+            <div className="skill-desc">{r.desc}</div>
+          </div>
+        ))}
+
+        <div className="skill-cell meta locked">
+          <div className="skill-cell-top">
+            <span className="skill-emoji">🔒</span>
+            <span className="skill-name">{isTf ? "과장 승진 종합 리포트" : "수습·사원 성장 리포트"}</span>
+          </div>
+          <div className="skill-count"><em>{isTf ? "TF 4개 전부 수료하면 해제" : "5개 영역을 다 열면 해제"}</em></div>
+          <div className="skill-desc">{isTf
+            ? "4개 TF에서 쓴 표현과 문장을 한 번에 정리해줘요."
+            : "내가 모은 표현이 실제로 살아남았는지 정리해서 보여줘요."}</div>
+        </div>
+      </div>
+
+      {nextArea && (
+        <button
+          type="button"
+          className="skill-next"
+          onClick={() => { if (onGoDay && nextDayNum <= rd) onGoDay(nextDayNum); }}
+          style={{ cursor: onGoDay && nextDayNum <= rd ? "pointer" : "default" }}
+        >
+          <span className="skill-next-lock">🔒</span>
+          <span>내일 · <b>{nextArea.emoji} {nextArea.name}</b> 표현이 하나 더 도착해요</span>
+        </button>
+      )}
+    </div>
   );
 }
 
