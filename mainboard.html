@@ -4341,48 +4341,45 @@ const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) /
 // ★ 시즌 3: 코스 전체 상한 90일 (Day 1-30 수습 / 31-60 사원 / 61-90 대리)
 const _autoDay = Math.max(1, Math.min(240, _daysSince + 1));  // 90 + TF 4트랙×30 + 늦은 시작 여유 (표시 분모는 210)
 
-// ── 학습 게이트 (2026-08-16 도입): 그날 학습을 마쳐야 자정(KST) 이후 다음 Day가 열림 ──
-// - 도입 전 사용자: 도입 시점까지 진행된 day는 그대로 인정 (grandfather)
-// - 하루 최대 +1, day는 절대 줄지 않음. 다른 기기에서 더 진행됐으면(DB dayInCompany) 따라감.
-// - 운영자/Dev 수동 override는 아래 _resolvedDay에서 이 게이트를 우회.
+// ── 학습 게이트 (2026-08-16 도입, 2026-08-24 재작성): 그날 학습을 마쳐야 다음 Day가 열림 ──
+// 규칙 하나로 단순화: 열리는 day = min(달력상 경과일, 완주한 날 수 + 1)
+//   · 완주 N일 → N+1일차까지만 열림 (안 하면 그 자리에 멈춤)
+//   · 달력보다 앞서갈 수는 없음 (하루에 몰아서 미래로 가는 것 방지)
+//   · 도입 전 진행분은 floor로 1회 스냅샷해 보존 (기존 회원 강등 방지)
+// ★ 예전엔 dayInCompany가 게이트를 덮어써서(구버전 클라이언트·다른 기기가 올려둔 값)
+//   학습을 안 해도 날짜가 넘어갔음. 이제 dayInCompany는 게이트 계산에 쓰지 않는다.
 const _GATE_EPOCH = '2026-08-16';
-const _dayLearnedFor = (u, d) => {
-  if (!u) return false;
+const _gateDoneCount = (u) => {
+  if (!u) return 0;
+  const days = new Set();
+  (u.scenariosCompleted || []).forEach(x => { if (x && x.day) days.add(Number(x.day)); });
+  Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
   try {
-    if ((u.scenariosCompleted || []).some(x => x && Number(x.day) === d)) return true;
-    const dj = u.dailyJournals || {};
-    if (dj[d] || dj[String(d)]) return true;
-    const t = JSON.parse(localStorage.getItem('__OD_TASKS_DAY_' + d) || '{}');
-    if (Object.values(t).filter(Boolean).length >= 3) return true;
+    Object.keys(localStorage).filter(k => k.startsWith('__OD_TASKS_DAY_') && !k.endsWith('_ts')).forEach(k => {
+      const t = JSON.parse(localStorage.getItem(k) || '{}');
+      if (Object.values(t).filter(Boolean).length >= 3) {
+        const n = Number(k.replace('__OD_TASKS_DAY_', '')); if (n) days.add(n);
+      }
+    });
   } catch (e) {}
-  return false;
+  return [...days].filter(d => d >= 1).length;
 };
 let _gatedDay = _autoDay;
 if (_localUser && _localUser.email) {
   const _GK = '__OD_DAYGATE_' + _localUser.email;
-  let _gs = null;
-  try { _gs = JSON.parse(localStorage.getItem(_GK) || 'null'); } catch (e) {}
-  if (!_gs || !_gs.day) {
-    // 첫 도입 (또는 새 기기): 도입일 기준 calendar day 상한 + DB 기록 중 큰 값으로 시작
-    const _daysAtEpoch = Math.max(1, Math.min(210, Math.floor((Date.parse(_GATE_EPOCH) - Date.parse(_signupKST)) / 86400000) + 1));
-    const _grandfather = (_signupKST < _GATE_EPOCH) ? Math.min(_autoDay, Math.max(_daysAtEpoch, _localUser.dayInCompany || 1)) : 1;
-    _gs = { day: Math.max(_grandfather, _localUser.dayInCompany || 1), date: _todayKST };
-    // 그 day 학습이 이미 이전 날짜에 끝나 있으면 (자정 지나 처음 접속) 바로 하루 진행
-    if (_dayLearnedFor(_localUser, _gs.day)) {
-      try {
-        const _ts = localStorage.getItem('__OD_TASKS_DAY_' + _gs.day + '_ts');
-        const _tsDate = _ts ? new Date(_ts).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) : _todayKST;
-        if (_tsDate < _todayKST) _gs.day = Math.min(240, _gs.day + 1);
-      } catch (e) {}
+  let _floor = 1;
+  try {
+    const _saved = JSON.parse(localStorage.getItem(_GK) || 'null');
+    if (_saved && _saved.floor) {
+      _floor = _saved.floor;
+    } else {
+      // 게이트 도입 전에 가입한 회원만, 지금 진행 중인 day를 바닥값으로 1회 고정
+      _floor = (_signupKST < _GATE_EPOCH) ? Math.max(1, _localUser.dayInCompany || 1) : 1;
+      localStorage.setItem(_GK, JSON.stringify({ floor: _floor, at: _todayKST }));
     }
-  } else if (_todayKST > _gs.date) {
-    // 자정이 지났고, 현재 day 학습이 끝나 있을 때만 +1
-    if (_dayLearnedFor(_localUser, _gs.day)) _gs.day = Math.min(240, _gs.day + 1);
-    _gs.date = _todayKST;
-  }
-  if ((_localUser.dayInCompany || 1) > _gs.day) _gs.day = Math.min(240, _localUser.dayInCompany);
-  try { localStorage.setItem(_GK, JSON.stringify(_gs)); } catch (e) {}
-  _gatedDay = _gs.day;
+  } catch (e) {}
+  const _earned = _gateDoneCount(_localUser) + 1;
+  _gatedDay = Math.max(1, Math.min(_autoDay, Math.max(_earned, _floor)));
 }
 
 // ── 레벨 (수습 → 사원 → ...) ──
