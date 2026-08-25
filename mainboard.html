@@ -5768,6 +5768,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
   // 마지막 항목 완료 토스트
   const _maybeFinaleToast = (idx) => {
+    // ★ 활동 하나 끝날 때마다 발사. 학습 게이트가 움직였는지 다시 계산하는 신호.
+    //   (od-day-finale은 Day 1 세팅 안내 전용이라 Day 1에만 나간다. 그걸 재사용하면
+    //    Day 2 이후 회원에겐 영영 안 온다.)
+    try { window.dispatchEvent(new Event('od-day-complete')); } catch (e) {}
     if (idx === TODAY_SCHEDULE.length - 1) {
       setTimeout(() => showToast("🎊 Day " + USER.currentDay + " 완주! 내일 또 봐요.", 4000), 200);
       // Day 1을 다 끝낸 직후 = 계속할 마음이 가장 큰 순간. 출근 환경 세팅 안내.
@@ -6181,6 +6185,17 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </span>
               <span className="attendance-num">{USER.streak}<small> / {USER.totalDays} 완주</small></span>
             </div>
+            {/* ★ 달력 경과일과 진도가 다를 수 있다 (몰아서 하시는 분들). 사실만 담담하게. */}
+            {(() => {
+              const _cal = Number(window.__odAutoDay) || 0;
+              const _rdN = USER.realCurrentDay || USER.currentDay || 1;
+              if (!_cal || _cal <= _rdN) return null;
+              return (
+                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2, marginBottom: 2, letterSpacing: "0.01em" }}>
+                  가입 후 {_cal}일째 · 진도 Day {_rdN}
+                </div>
+              );
+            })()}
             {/* ★ 대리 승진 시험 응시 조건 안내: 출근 60일 미만이면 조건과 현재 진행을 보여줌 (silent trap 방지) */}
             {(() => {
               const _rdA = USER.realCurrentDay || USER.currentDay;
@@ -6230,8 +6245,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 <i style={{ width: 12, height: 12, borderRadius: 3, background: "#E0A93D", display: "inline-block" }} />늦은 인증
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <i style={{ width: 12, height: 12, borderRadius: 3, border: "1.5px dashed var(--line)", display: "inline-block" }} />놓침
+                <i style={{ width: 12, height: 12, borderRadius: 3, border: "1.5px dashed var(--line)", display: "inline-block" }} />아직 안 함
               </span>
+            </div>
+            {/* ★ 학습 게이트 도입 후: 안 한 날은 '놓친' 게 아니라 그 자리에 그대로 남아 있다. */}
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 6, lineHeight: 1.55 }}>
+              지나간 칸은 사라지지 않아요. 순서대로 이어서 채우시면 됩니다.
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 8 }}>
               <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.5, flex: 1 }}>
@@ -6548,12 +6567,12 @@ function CatchUpBanner({ user }) {
 
   React.useEffect(() => {
     const onDone = () => setTimeout(check, 400);
+    window.addEventListener("od-day-complete", onDone);
     window.addEventListener("od-day-finale", onDone);
-    window.addEventListener("od-task-done", onDone);
     check();
     return () => {
+      window.removeEventListener("od-day-complete", onDone);
       window.removeEventListener("od-day-finale", onDone);
-      window.removeEventListener("od-task-done", onDone);
     };
   }, [check]);
 
@@ -6563,8 +6582,8 @@ function CatchUpBanner({ user }) {
   return (
     <div className="catchup">
       <div className="catchup-txt">
-        오늘 몫을 다 끝내셨어요. 밀린 <b>Day {next}</b>도 지금 이어서 하실 수 있어요.
-        {backlog > 1 ? <> 구독 기간 중 아직 안 푼 분량이 <b>{backlog}일</b> 남아 있어요.</> : null}
+        오늘 몫을 다 끝내셨어요. 이어서 <b>Day {next}</b>도 지금 하실 수 있어요.
+        {backlog > 1 ? <> 아직 안 푼 분량이 <b>{backlog}일</b> 남아 있어요.</> : null}
       </div>
       <button className="catchup-btn" onClick={() => { try { window.scrollTo(0, 0); } catch (e) {} location.reload(); }}>
         Day {next} 이어서 하기 →
