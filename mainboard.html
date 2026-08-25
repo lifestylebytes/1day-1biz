@@ -5563,6 +5563,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       if (tourKind === "s2") localStorage.setItem(S2_TOUR_KEY, "1");
       else localStorage.setItem(TOUR_KEY, "1");
     } catch(e) {}
+    // ★ 투어가 끝나야 공지 자동 팝업이 뜬다 (겹침 방지)
+    try { window.dispatchEvent(new Event("od-tour-done")); } catch (e) {}
   };
 
   // 타겟 요소 위치 추적, tourStep 바뀔 때마다 측정 + scroll into view
@@ -12267,9 +12269,27 @@ function App() {
   // ★ 입장 시 자동 팝업: popup=true 인 미확인 공지 중 가장 최근 1건을 모달로 띄움.
   // 기기당 1회만 (localStorage __OD_AUTOPOP). 운영자가 공지 작성 시 팝업 옵션 켰을 때만.
   const _autoPoppedRef = React.useRef(false);
+  // ★ 투어(첫 출근 가이드 / 정직원 모드 가이드)가 아직 안 끝났으면 공지 팝업을 미룬다.
+  //   예전엔 둘이 서로를 몰라서 같이 떠버렸고, 투어 스포트라이트가 공지 모달에 가려졌다.
+  const _tourPending = React.useCallback(() => {
+    try {
+      const rd = USER.realCurrentDay || USER.currentDay || 1;
+      if (USER.isFulltime && !USER.isViewingPast && rd <= 60
+          && !localStorage.getItem("__OD_S2_TOUR_DONE_" + (USER.email || "guest"))) return true;
+      if ((USER.currentDay === 1) && !localStorage.getItem("__OD_TOUR_DONE_DAY_1")) return true;
+    } catch (e) {}
+    return false;
+  }, []);
+  const [_tourCleared, _setTourCleared] = React.useState(false);
+  React.useEffect(() => {
+    const done = () => _setTourCleared(true);
+    window.addEventListener("od-tour-done", done);
+    return () => window.removeEventListener("od-tour-done", done);
+  }, []);
   React.useEffect(() => {
     if (_autoPoppedRef.current) return;
     if (!dbNotices || dbNotices.length === 0) return;
+    if (!_tourCleared && _tourPending()) return;   // 투어 먼저, 공지는 그다음
     const target = dbNotices.find(n => n.popup && !readIds.has(n.id));
     if (!target) return;
     let shown = [];
@@ -12278,7 +12298,7 @@ function App() {
     _autoPoppedRef.current = true;
     try { shown.push(target.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
     handleOpenMemo(target);
-  }, [dbNotices, readIds]);
+  }, [dbNotices, readIds, _tourCleared, _tourPending]);
 
   // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
   const weekend = _weekendKind();
