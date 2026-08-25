@@ -2027,6 +2027,22 @@ function LoginScreen({ onBack }) {
             연속 클릭하시면 차단 시간이 늘어나니 잠시만 기다려주세요.
           </div>
         )}
+        {/* ★ 비밀번호를 입력한 상태에서도 복구 경로가 항상 보이게. 예전엔 pw가 차 있으면
+            '비밀번호로 로그인' 버튼만 남아서, 비밀번호를 잊은 회원이 막다른 길에 갇혔다. */}
+        <button
+          type="button"
+          onClick={startPasswordSetup}
+          disabled={loading || !email.trim() || cooldownLeft > 0}
+          style={{
+            background: "transparent", border: "1px solid var(--line)", borderRadius: 8,
+            padding: "11px 14px", fontSize: 13, fontWeight: 700, color: "var(--ink-soft)",
+            cursor: (loading || !email.trim() || cooldownLeft > 0) ? "default" : "pointer",
+            fontFamily: "inherit", textAlign: "center",
+            opacity: (loading || !email.trim() || cooldownLeft > 0) ? 0.55 : 1,
+          }}
+        >
+          ✉️ 비밀번호를 잊으셨나요? 이메일 코드로 로그인
+        </button>
         <a
           onClick={onBack}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
@@ -2036,7 +2052,8 @@ function LoginScreen({ onBack }) {
       </div>
 
       <div className="fine-print" style={{ marginTop: 12 }}>
-        비밀번호를 잊어도 이메일 코드로 언제든 로그인 · 모바일·PC 어느 기기에서든 OK
+        비밀번호를 잊어도 이메일 코드로 언제든 로그인 · 모바일·PC 어느 기기에서든 OK<br/>
+        가입하신 이메일이 기억나지 않으시면 <b>youbuddy.co@gmail.com</b> 또는 인스타 <b>@youbuddy_day</b> DM으로 알려주세요. 확인해서 안내해 드릴게요.
       </div>
     </div>
   );
