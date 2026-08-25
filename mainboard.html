@@ -447,6 +447,22 @@ body::before {
 .schedule-status.now { background: var(--orange); color: #fff; }
 .schedule-status.done { background: transparent; color: var(--ink-mute); }
 
+/* 밀린 Day 이어하기 배너 */
+.catchup {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: rgba(45,110,58,0.10); border: 2px solid #2D6E3A; border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 14px;
+  box-shadow: 3px 3px 0 rgba(45,110,58,0.16);
+}
+.catchup-txt { flex: 1; min-width: 190px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+.catchup-txt b { color: #2D6E3A; font-weight: 900; }
+.catchup-btn {
+  background: #2D6E3A; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer;
+  font-family: inherit; white-space: nowrap;
+}
+.catchup-btn:hover { filter: brightness(1.08); }
+
 /* 역량 스탯 그리드 */
 .skillgrid {
   background: var(--paper);
@@ -4421,8 +4437,9 @@ const _gateDoneCount = (u) => {
   } catch (e) {}
   return [...days].filter(d => d >= 1).length;
 };
-let _gatedDay = _autoDay;
-if (_localUser && _localUser.email) {
+// 게이트 값 계산. 학습을 마칠 때마다 다시 불러 "밀린 Day 이어하기"를 즉시 열어준다.
+function _computeGatedDay() {
+  if (!_localUser || !_localUser.email) return _autoDay;
   const _GK = '__OD_DAYGATE_' + _localUser.email;
   let _floor = 1;
   try {
@@ -4435,9 +4452,14 @@ if (_localUser && _localUser.email) {
       localStorage.setItem(_GK, JSON.stringify({ floor: _floor, at: _todayKST }));
     }
   } catch (e) {}
-  const _earned = _gateDoneCount(_localUser) + 1;
-  _gatedDay = Math.max(1, Math.min(_autoDay, Math.max(_earned, _floor)));
+  let _u = _localUser;
+  try { _u = JSON.parse(localStorage.getItem('__OD_USER') || 'null') || _localUser; } catch (e) {}
+  const _earned = _gateDoneCount(_u) + 1;
+  return Math.max(1, Math.min(_autoDay, Math.max(_earned, _floor)));
 }
+let _gatedDay = _computeGatedDay();
+window.__odGateNow = _computeGatedDay;
+window.__odAutoDay = _autoDay;
 
 // ── 레벨 (수습 → 사원 → ...) ──
 // users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
@@ -6145,6 +6167,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </div>
           )}
 
+          <CatchUpBanner user={USER} />
           {_isNextFeature() && <SkillGrid user={USER} onGoDay={setViewingDay} />}
 
           <div className="attendance">
@@ -6501,6 +6524,50 @@ function ApplicationLine() {
       applicant={U.name + " (" + U.position + ")"}
       status={"진행 중 · " + (U.position && U.position.replace(" 사원","")) + " " + U.currentDay + "/" + U.totalDays + "일"}
     />
+  );
+}
+
+// ============================================================
+// 밀린 Day 이어하기
+//   학습 게이트는 "달력 경과일"까지는 이어서 할 수 있게 열어준다.
+//   다만 게이트 값이 페이지 로드 때 한 번만 계산돼서, 한 Day를 끝내도
+//   새로고침 전에는 다음 Day가 안 열려 보였다. 완료 직후 다시 계산해 알려준다.
+// ============================================================
+function CatchUpBanner({ user }) {
+  const [next, setNext] = React.useState(0);
+  const cur = user.realCurrentDay || user.currentDay || 1;
+
+  const check = React.useCallback(() => {
+    try {
+      const fresh = window.__odGateNow ? window.__odGateNow() : 0;
+      setNext(fresh > cur ? fresh : 0);
+    } catch (e) { setNext(0); }
+  }, [cur]);
+
+  React.useEffect(() => {
+    const onDone = () => setTimeout(check, 400);
+    window.addEventListener("od-day-finale", onDone);
+    window.addEventListener("od-task-done", onDone);
+    check();
+    return () => {
+      window.removeEventListener("od-day-finale", onDone);
+      window.removeEventListener("od-task-done", onDone);
+    };
+  }, [check]);
+
+  if (!next || user.isViewingPast) return null;
+  const _cal = Number(window.__odAutoDay) || next;
+  const backlog = Math.max(0, _cal - next + 1);
+  return (
+    <div className="catchup">
+      <div className="catchup-txt">
+        오늘 몫을 다 끝내셨어요. 밀린 <b>Day {next}</b>도 지금 이어서 하실 수 있어요.
+        {backlog > 1 ? <> 구독 기간 중 아직 안 푼 분량이 <b>{backlog}일</b> 남아 있어요.</> : null}
+      </div>
+      <button className="catchup-btn" onClick={() => { try { window.scrollTo(0, 0); } catch (e) {} location.reload(); }}>
+        Day {next} 이어서 하기 →
+      </button>
+    </div>
   );
 }
 
