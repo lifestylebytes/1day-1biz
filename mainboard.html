@@ -4422,15 +4422,18 @@ const _autoDay = Math.max(1, Math.min(240, _daysSince + 1));  // 90 + TF 4트랙
 // ★ 예전엔 dayInCompany가 게이트를 덮어써서(구버전 클라이언트·다른 기기가 올려둔 값)
 //   학습을 안 해도 날짜가 넘어갔음. 이제 dayInCompany는 게이트 계산에 쓰지 않는다.
 const _GATE_EPOCH = '2026-08-16';
+// ★ '하루 끝'의 기준 (2026-08-25 강화): 그날 일정 4개를 전부 끝냈거나(4/4),
+//   마지막 일정인 일지(내 시추에이션)를 제출한 날만 인정.
+//   예전에는 시추에이션 문장 제출(10시 일정)이나 체크 3개만으로도 세서
+//   4개 중 3개만 하고도 다음 Day가 열렸다 (2026-08-25 버그 신고).
 const _gateDoneCount = (u) => {
   if (!u) return 0;
   const days = new Set();
-  (u.scenariosCompleted || []).forEach(x => { if (x && x.day) days.add(Number(x.day)); });
   Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
   try {
     Object.keys(localStorage).filter(k => k.startsWith('__OD_TASKS_DAY_') && !k.endsWith('_ts')).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || '{}');
-      if (Object.values(t).filter(Boolean).length >= 3) {
+      if (Object.values(t).filter(Boolean).length >= 4) {
         const n = Number(k.replace('__OD_TASKS_DAY_', '')); if (n) days.add(n);
       }
     });
@@ -4494,8 +4497,14 @@ const _resolvedDay = (_isInternal && (_localUser?.devDayOverride === true || _lo
 // 진도 분모는 단계마다 바뀜: 수습 1-30(/30), 사원 31-60(/60), 대리 트랙 61-90(/90).
 // 랭크: 수습(1-30) → 사원(31-89) → Day 90 완주 시 대리 승진.
 // ★ 대리(Day 91+)부터는 TF 시대 포함 근속 분모 210 (90 + 4트랙x30)
-const _phaseCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : (_resolvedDay <= 90 ? 90 : 210));
-const _rankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime" : "probation");
+const _dayCap = _resolvedDay <= 30 ? 30 : (_resolvedDay <= 60 ? 60 : (_resolvedDay <= 90 ? 90 : 210));
+const _progressRankId = _resolvedDay >= 90 ? "senior" : (_resolvedDay >= 31 ? "fulltime" : "probation");
+// ★ 직급 유지 원칙 (2026-08-25): DB에서 이미 승급된 회원(level.id)은 진도가 뒤처져도
+//   강등해 보이지 않는다. 직급은 유지하고, 진도는 따로 표기한다.
+const _RANK_ORDER = { probation: 0, fulltime: 1, senior: 2 };
+const _rankId = (_RANK_ORDER[_levelId] || 0) > (_RANK_ORDER[_progressRankId] || 0) ? _levelId : _progressRankId;
+const _rankCap = _rankId === "senior" ? (_resolvedDay > 90 ? 210 : 90) : (_rankId === "fulltime" ? 60 : 30);
+const _phaseCap = Math.max(_dayCap, _rankCap);
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
 // ============================================================
@@ -4541,7 +4550,7 @@ const _odCompletedDaySet = (u) => {
   try {
     Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 3) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
+      if (Object.values(t).filter(Boolean).length >= 4) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
     });
   } catch (e) {}
   return days;
@@ -5682,7 +5691,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // 완료 판단 기준 (셋 중 하나라도 만족하면 출근 인정):
   //   1. scenariosCompleted 에 그날 entry 있음 (시추에이션 문장 제출)
   //   2. dailyJournals 에 그날 entry 있음 (내 시추에이션 제출)
-  //   3. __OD_TASKS_DAY_<day> 에 활동 3개 이상 체크됨 (대부분 일정 완료)
+  //   3. __OD_TASKS_DAY_<day> 에 일정 4개 전부 체크됨
   // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
   const [showFullAttend, setShowFullAttend] = useState(false);
   // ★ 시즌 2: 정직원 마일스톤 카드 (닫기가 아니라 접기, 수시로 펼쳐볼 수 있음)
@@ -5862,6 +5871,21 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       </div>
 
       <ApplicationLine />
+
+      {/* ★ 오랜만에 온 회원 안내: 달력은 흘렀지만 진도는 그대로일 때, 뭐부터 할지 한 줄로. */}
+      {(() => {
+        const _cal = Number(window.__odAutoDay) || 0;
+        const _cur = USER.realCurrentDay || USER.currentDay || 1;
+        if (USER.isViewingPast || !_cal || _cal <= _cur) return null;
+        return (
+          <div className="catchup" style={{ marginBottom: 14 }}>
+            <div className="catchup-txt">
+              📌 오늘 할 일은 하나예요. <b>Day {_cur}</b>부터 이어서 하시면 돼요.
+              하루 일정 4개를 다 마쳐야 다음 Day가 열리고, 지나간 칸은 사라지지 않아요.
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="desk-grid">
         <div className="col">
@@ -7588,6 +7612,14 @@ function MyPage() {
   // ★ 현재 재직 카드는 day 기반 랭크(rankId)로 판정. 분모: 현재 카드 = 코스 총일(phaseCap 30/60/90), 지난 카드 = 그 직급 종료일.
   const _cardEarned = card.id === USER.rankId;
   const _cardDays = _cardEarned ? USER.totalDays : card.cap;
+  // ★ 지난 직급 카드도 '실제 완주'만 인정 (2026-08-25). 그 구간을 다 채우지 않았으면
+  //   수료 도장 대신 실제 완주 일수를 보여준다 (허위 '수료' 표시 방지).
+  const _cardPhaseStart = card.id === "fulltime" ? 31 : (card.id === "senior" ? 61 : 1);
+  const _cardPhaseTotal = card.cap - _cardPhaseStart + 1;
+  const _cardPhaseDone = (() => {
+    try { return [..._odCompletedDaySet(_localUser)].filter(d => d >= _cardPhaseStart && d <= card.cap).length; } catch (e) { return 0; }
+  })();
+  const _cardGraduated = !_cardEarned && _cardPhaseDone >= _cardPhaseTotal;
   // 카드별 색: 수습=기본, 사원=네이비, 대리=레드
   const _cardStripStyle = card.id === "senior" ? { background: "#A6402E", color: "#F7EDE4" }
     : card.id === "fulltime" ? { background: "#3A4A5C", color: "#F2EBDD" } : null;
@@ -7651,7 +7683,7 @@ function MyPage() {
               <div className="id-field"><span className="id-field-label">소속</span><span className="id-field-value">{USER.team}</span></div>
             )}
             <div className="id-field"><span className="id-field-label">입사일</span><span className="id-field-value">{USER.joinDate}</span></div>
-            <div className="id-field"><span className="id-field-label">{_cardIsFull ? "근속" : "수습"}</span><span className="id-field-value">{_cardEarned ? `DAY ${USER.currentDay} / ${_cardDays} · 표현 ${USER.wordsCollected}개 · 🔥 ${USER.streak}` : `DAY ${_cardDays} / ${_cardDays} · 수료 ✓`}</span></div>
+            <div className="id-field"><span className="id-field-label">{_cardIsFull ? "근속" : "수습"}</span><span className="id-field-value">{_cardEarned ? `DAY ${USER.currentDay} / ${_cardDays} · 표현 ${USER.wordsCollected}개 · 🔥 ${USER.streak}` : (_cardGraduated ? `DAY ${_cardDays} / ${_cardDays} · 수료 ✓` : `완주 ${_cardPhaseDone} / ${_cardPhaseTotal}일 · 진행 중`)}</span></div>
             {(() => { // 소속 TF (대리 카드에만)
               const tf = _tfState(); if (!tf.track) return null;
               const meta = TF_TRACKS.find(t => t.id === (tf.track.id || tf.track)); if (!meta) return null;
@@ -7680,7 +7712,7 @@ function MyPage() {
             } catch (e) {}
             return "유효기간 · 2026.04.16 ~ 2026.05.15 (수습)";
           })()}</span>
-          {!_cardEarned && <span style={{ fontWeight: 800, color: "var(--ink-mute)" }}>🎓 수료한 직급</span>}
+          {!_cardEarned && <span style={{ fontWeight: 800, color: "var(--ink-mute)" }}>{_cardGraduated ? "🎓 수료한 직급" : `📌 완주 ${_cardPhaseDone} / ${_cardPhaseTotal}일 · 이어서 채울 수 있어요`}</span>}
         </div>
       </div>
       {_cardDeck.length > 1 && (
@@ -10934,9 +10966,9 @@ function _statBestStreak(u) {
   (u.scenariosCompleted || []).forEach(s => { if (s && s.day) days.add(Number(s.day)); });
   Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
   try {
-    Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_")).forEach(k => {
+    Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 3) {
+      if (Object.values(t).filter(Boolean).length >= 4) {
         const n = Number(k.replace("__OD_TASKS_DAY_", ""));
         if (n) days.add(n);
       }
@@ -10960,7 +10992,7 @@ function _completedDayCount(u) {
   try {
     Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 3) {
+      if (Object.values(t).filter(Boolean).length >= 4) {
         const n = Number(k.replace("__OD_TASKS_DAY_", ""));
         if (n) days.add(n);
       }
