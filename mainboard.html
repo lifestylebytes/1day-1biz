@@ -5915,11 +5915,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         const _cal = Number(window.__odAutoDay) || 0;
         const _cur = USER.realCurrentDay || USER.currentDay || 1;
         if (USER.isViewingPast || !_cal || _cal <= _cur) return null;
+        const _wait = _cal - _cur;
         return (
           <div className="catchup" style={{ marginBottom: 14 }}>
             <div className="catchup-txt">
-              📌 오늘 할 일은 하나예요. <b>Day {_cur}</b>부터 이어서 하시면 돼요.
-              하루 일정 4개를 다 마쳐야 다음 Day가 열리고, 지나간 칸은 사라지지 않아요.
+              📌 오늘은 <b>Day {_cur}</b>부터 이어서. 더 학습할 수 있는 Day가 <b>{_wait}일치</b> 기다리고 있어요.
+              하루를 마치면 다음 Day가 바로 열려서, 원하시면 오늘 몰아서 하셔도 돼요.
             </div>
           </div>
         );
@@ -6720,7 +6721,7 @@ function AwayReport({ user }) {
       <div className="ty-away-body">
         자리 비우신 동안 회사는 잘 돌아갔어요. 책상 위에 유버디가 남긴 메모가 한 장 있네요.
         <div className="ty-away-memo">"{memo}"</div>
-        밀린 Day는 사라지지 않았어요. 오늘 몫부터 하나씩 이어가면 됩니다.
+        그동안 쌓인 Day는 사라지지 않고 기다리고 있어요. 오늘 몫부터 하나씩, 원하시면 몰아서도 OK.
       </div>
       <button className="ty-away-x" onClick={() => setGap(0)}>확인했어요 ✓</button>
     </div>
