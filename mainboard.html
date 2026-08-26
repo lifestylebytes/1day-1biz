@@ -463,6 +463,44 @@ body::before {
 }
 .catchup-btn:hover { filter: brightness(1.08); }
 
+/* ===== 타이쿤 이식 (로컬 전용, __OD_NEXT) ===== */
+.ty-away { background: var(--cream); border: 2px solid var(--orange); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 3px 3px 0 rgba(216,90,42,0.18); }
+.ty-away-head { font-weight: 900; font-size: 13.5px; color: var(--ink); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.ty-away-head span { font-size: 11px; color: var(--orange); font-weight: 800; }
+.ty-away-body { font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 6px; }
+.ty-away-memo { border-left: 3px solid var(--orange); padding: 4px 10px; margin: 8px 0; font-weight: 700; color: var(--ink); background: var(--paper-warm); }
+.ty-away-x { margin-top: 8px; background: var(--orange); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-family: inherit; font-weight: 800; font-size: 12px; cursor: pointer; }
+.ty-attend { border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; background: var(--paper-warm); }
+.ty-attend-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink); }
+.ty-pips { display: inline-flex; gap: 5px; }
+.ty-pips i { font-style: normal; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid var(--line); color: var(--ink-mute); background: transparent; }
+.ty-pips i.on { border-color: var(--orange); color: #fff; background: var(--orange); }
+.ty-medal { font-size: 10.5px; font-weight: 900; color: var(--orange); margin-left: auto; }
+.ty-attend-line { font-size: 11.5px; color: var(--ink-soft); margin-top: 5px; line-height: 1.6; }
+.ty-errand { border: 1px solid var(--line); border-radius: 8px; background: var(--cream); padding: 12px 14px; margin-top: 12px; }
+.ty-errand-head { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
+.ty-errand-head small { font-weight: 600; color: var(--ink-mute); font-size: 10.5px; }
+.ty-errand-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; color: var(--ink-soft); }
+.ty-errand-row:hover { background: var(--paper-warm); }
+.ty-errand-row.done { opacity: 0.55; }
+.ty-errand-row.done .ty-errand-t { text-decoration: line-through; }
+.ty-errand-stamp { margin-left: auto; font-size: 11px; font-weight: 900; color: var(--orange); }
+.ty-promo { border: 1px solid var(--line); border-radius: 10px; background: var(--cream); padding: 16px 18px; margin-top: 20px; }
+.ty-promo-head { display: flex; gap: 10px; align-items: baseline; font-weight: 900; font-size: 13.5px; color: var(--ink); margin-bottom: 12px; flex-wrap: wrap; }
+.ty-promo-head span { font-size: 11px; color: var(--orange); font-weight: 800; }
+.ty-promo-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 12px; color: var(--ink-soft); }
+.ty-promo-row > span { width: 72px; flex: none; }
+.ty-promo-row > b { flex: none; font-size: 11.5px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ty-bar { flex: 1; height: 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper-warm); overflow: hidden; }
+.ty-bar i { display: block; height: 100%; background: var(--orange); }
+.ty-bar.gold i { background: #C9A23F; }
+.ty-promo-note { font-size: 11.5px; color: var(--ink-mute); margin-top: 10px; line-height: 1.6; }
+.ty-founding { font-size: 9px; font-weight: 900; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 3px; background: #C9A23F; color: #2A2211; margin-left: 8px; }
+.id-glow { position: relative; }
+.id-glow::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255,215,130,0.38) 45%, transparent 60%); background-size: 250% 100%; animation: ty-sheen 2.8s linear infinite; }
+@keyframes ty-sheen { from { background-position: 120% 0; } to { background-position: -130% 0; } }
+@media (prefers-reduced-motion: reduce) { .id-glow::after { animation: none; } }
+
 /* 역량 스탯 그리드 */
 .skillgrid {
   background: var(--paper);
@@ -5865,7 +5903,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
         </div>
         <div className="desk-meta">
-          <b>{USER.name}</b> · {USER.position}<br/>
+          <b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>
           {USER.team}
         </div>
       </div>
@@ -5886,6 +5924,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           </div>
         );
       })()}
+
+      {_isNextFeature() && <AwayReport user={USER} />}
+      {_isNextFeature() && <TycoonBoot toast={showToast} />}
 
       <div className="desk-grid">
         <div className="col">
@@ -6198,8 +6239,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           )}
 
           <CatchUpBanner user={USER} />
+          {_isNextFeature() && <ErrandsCard setActive={setActive} toast={showToast} />}
           {_isNextFeature() && <SkillGrid user={USER} onGoDay={setViewingDay} />}
 
+          {_isNextFeature() && <AttendStrip user={USER} />}
           <div className="attendance">
             <div className="attendance-head">
               <span className="attendance-title">
@@ -6570,6 +6613,229 @@ function ApplicationLine() {
       status={"진행 중 · " + (U.position && U.position.replace(" 사원","")) + " " + U.currentDay + "/" + U.totalDays + "일"}
     />
   );
+}
+
+// ============================================================
+// 글로우 타이쿤 이식 (로컬 전용: __OD_NEXT 플래그, 가격 인상 뒤 공개 예정)
+//   출석 반응 · 부재중 리포트 · 오늘의 심부름 · 호봉 · 승진 심사 카드
+//   · 공채 1기 뱃지 · 업무 위장 모드
+// ============================================================
+const _tyUser = () => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || _localUser; } catch (e) { return _localUser; } };
+const _tyDone = () => { try { return _odCompletedDaySet(_tyUser()); } catch (e) { return new Set(); } };
+const _TY_DAY = 86400000;
+const _tySignup0 = () => { try { const sd = _localUser && _localUser.signupDate ? new Date(_localUser.signupDate) : null; if (!sd || isNaN(sd.getTime())) return null; return Date.UTC(sd.getUTCFullYear(), sd.getUTCMonth(), sd.getUTCDate()); } catch (e) { return null; } };
+const _tyToday0 = () => { const n = new Date(Date.now() + 9 * 3600000); return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()); };
+const _tyTodayISO = () => new Date(_tyToday0()).toISOString().slice(0, 10);
+// 이번 주(월~오늘) 출근 통계. offsetWeeks=1 이면 지난주(월~일).
+function _tyWeek(offsetWeeks) {
+  const s0 = _tySignup0(); if (s0 === null) return null;
+  const t0 = _tyToday0();
+  const dowM = (Math.round(t0 / _TY_DAY) + 3) % 7; // 0=월요일
+  const mon = t0 - (dowM + (offsetWeeks || 0) * 7) * _TY_DAY;
+  const end = offsetWeeks ? mon + 6 * _TY_DAY : t0;
+  const done = _tyDone();
+  let due = 0, att = 0;
+  for (let ts = Math.max(mon, s0); ts <= end; ts += _TY_DAY) {
+    const d = Math.round((ts - s0) / _TY_DAY) + 1;
+    if (d < 1 || d > 240) continue;
+    due++; if (done.has(d)) att++;
+  }
+  return { due, att, perfect: due > 0 && att === due, monKey: new Date(mon).toISOString().slice(0, 10) };
+}
+// 성실왕 (개근 주) 통산 기록
+function _tyPerfect() { try { return JSON.parse(localStorage.getItem("__OD_PW_" + ((_localUser && _localUser.email) || "")) || "null") || { n: 0, weeks: [] }; } catch (e) { return { n: 0, weeks: [] }; } }
+function _tyAwardCheck(toast) {
+  try {
+    if (!_localUser || !_localUser.email) return;
+    const lw = _tyWeek(1);
+    if (!lw || lw.due < 5 || !lw.perfect) return;
+    const st = _tyPerfect();
+    if (st.weeks.indexOf(lw.monKey) >= 0) return;
+    st.n += 1; st.weeks.push(lw.monKey);
+    localStorage.setItem("__OD_PW_" + _localUser.email, JSON.stringify(st));
+    if (toast) setTimeout(() => toast("🏅 지난주 개근! 성실왕 배지 획득 (통산 " + st.n + "회)", 4500), 1200);
+  } catch (e) {}
+}
+// 호봉: 현 직급 구간에서 완주 5일마다 1호봉 (최대 6호봉)
+function _tyHobong() {
+  try {
+    const rank = (window.__SIM && window.__SIM.USER) ? window.__SIM.USER.rankId : "probation";
+    const st = rank === "senior" ? 61 : (rank === "fulltime" ? 31 : 1);
+    const en = rank === "senior" ? 90 : (rank === "fulltime" ? 60 : 30);
+    const cnt = [..._tyDone()].filter(d => d >= st && d <= en).length;
+    return Math.min(6, Math.floor(cnt / 5) + 1);
+  } catch (e) { return 1; }
+}
+// 공채 1기: 가격 인상 전 가입자 (인상일 확정 시 날짜만 조정)
+const _TY_FOUNDING_CUTOFF = "2026-10-01";
+function _tyFounding() { try { const sd = (_localUser && _localUser.signupDate) || ""; return !!sd && String(sd).slice(0, 10) < _TY_FOUNDING_CUTOFF; } catch (e) { return false; } }
+// 업무 위장 모드: 탭 제목·파비콘을 스프레드시트처럼
+function _tyStealthOn() { try { return localStorage.getItem("__OD_STEALTH") === "1"; } catch (e) { return false; } }
+function _tyApplyStealth(on) {
+  try {
+    let link = document.querySelector('link[rel="icon"]');
+    if (on) {
+      if (!window.__TY_REAL) window.__TY_REAL = { t: document.title, f: link ? link.href : "" };
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      document.title = "주간 보고_v3.xlsx - 스프레드시트";
+      link.href = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="#217346"/><text x="8" y="12" font-size="10" fill="#fff" text-anchor="middle" font-family="Arial" font-weight="bold">X</text></svg>');
+    } else if (window.__TY_REAL) {
+      document.title = window.__TY_REAL.t;
+      if (link) { if (window.__TY_REAL.f) link.href = window.__TY_REAL.f; else link.remove(); }
+    }
+  } catch (e) {}
+}
+if (_isNextFeature() && _tyStealthOn()) _tyApplyStealth(true);
+
+// 부재중 리포트: 3일 이상 만에 돌아오면 벌 대신 정산 카드
+function AwayReport({ user }) {
+  const [gap, setGap] = React.useState(0);
+  React.useEffect(() => {
+    try {
+      if (!user.email) return;
+      const q = new URLSearchParams(location.search).get("away");
+      const K = "__OD_LAST_SEEN_" + user.email;
+      const today = _tyTodayISO();
+      const prev = localStorage.getItem(K);
+      localStorage.setItem(K, today);
+      if (q) { setGap(Math.max(1, Number(q) || 0)); return; }
+      if (!prev || prev === today) return;
+      const g = Math.round((new Date(today).getTime() - new Date(prev).getTime()) / _TY_DAY);
+      const DK = "__OD_AWAY_SEEN_" + today + "_" + user.email;
+      if (g >= 3 && !localStorage.getItem(DK)) { localStorage.setItem(DK, "1"); setGap(g); }
+    } catch (e) {}
+  }, [user.email]);
+  if (!gap || user.isViewingPast) return null;
+  const memos = [
+    "천천히 와도 괜찮아요. 자리는 그대로예요.",
+    "복습부터 하실 필요 없어요. 오늘 몫 하나면 충분해요.",
+    "다들 그렇게 쉬었다 와요. 돌아온 게 실력이에요.",
+    "밀린 건 도망 안 가요. 오늘 하루만 저랑 해요.",
+    "커피 한 잔 내려놨어요. 가볍게 시작해요.",
+  ];
+  const memo = memos[gap % memos.length];
+  return (
+    <div className="ty-away">
+      <div className="ty-away-head">📬 부재중 리포트 <span>{gap}일 만의 출근</span></div>
+      <div className="ty-away-body">
+        자리 비우신 동안 회사는 잘 돌아갔어요. 책상 위에 유버디가 남긴 메모가 한 장 있네요.
+        <div className="ty-away-memo">"{memo}"</div>
+        밀린 Day는 사라지지 않았어요. 오늘 몫부터 하나씩 이어가면 됩니다.
+      </div>
+      <button className="ty-away-x" onClick={() => setGap(0)}>확인했어요 ✓</button>
+    </div>
+  );
+}
+
+// 오늘의 심부름: 날짜+계정 시드로 매일 2개 고정. 안 해도 불이익 없음 (도장 맛 전용).
+const _TY_ERRANDS = [
+  { id: "library", icon: "📓", t: "업무 노트 1개 다시 읽기", nav: "library" },
+  { id: "mypage", icon: "🪪", t: "사원증 한번 확인하기", nav: "mypage" },
+  { id: "inbox", icon: "✉️", t: "사내 메모함 열어보기", nav: "inbox" },
+  { id: "attend", icon: "📅", t: "출근부 구경하기", nav: null },
+  { id: "recall", icon: "💭", t: "어제 표현 하나 소리 내서 말해보기", nav: null },
+];
+function ErrandsCard({ setActive, toast }) {
+  const email = ((window.__SIM && window.__SIM.USER) ? window.__SIM.USER.email : "") || "";
+  const today = _tyTodayISO();
+  const K = "__OD_ERRAND_" + today + "_" + email;
+  const seed = [...(today + email)].reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7);
+  const picked = React.useMemo(() => {
+    const i1 = seed % _TY_ERRANDS.length;
+    const i2 = (i1 + 1 + ((seed >> 3) % (_TY_ERRANDS.length - 1))) % _TY_ERRANDS.length;
+    return [_TY_ERRANDS[i1], _TY_ERRANDS[i2]];
+  }, [seed]);
+  const [done, setDone] = React.useState(() => { try { return JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) { return {}; } });
+  const go = (er) => {
+    if (er.nav) setActive(er.nav);
+    else if (er.id === "attend") { try { document.querySelector(".attendance").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }
+  };
+  const stamp = (er) => {
+    if (done[er.id]) { go(er); return; }
+    const next = { ...done, [er.id]: true };
+    setDone(next);
+    try { localStorage.setItem(K, JSON.stringify(next)); } catch (e) {}
+    go(er);
+    const left = picked.filter(x => !next[x.id]).length;
+    if (toast) toast(left === 0 ? "🎖️ 오늘 심부름 완료! 가벼운 것도 챙기는 게 프로예요" : "✅ 심부름 하나 완료!", 2600);
+  };
+  return (
+    <div className="ty-errand">
+      <div className="ty-errand-head">🧺 오늘의 심부름 <small>보너스 · 안 해도 불이익 없어요, 도장 맛으로만</small></div>
+      {picked.map(er => (
+        <div key={er.id} className={"ty-errand-row" + (done[er.id] ? " done" : "")} onClick={() => stamp(er)}>
+          <span>{er.icon}</span>
+          <span className="ty-errand-t">{er.t}</span>
+          <span className="ty-errand-stamp">{done[er.id] ? "✓ 도장" : "하러 가기"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// 출석 반응: 이번 주 출근이 세계의 반응이 된다 (소문 · 눈도장 · 개근)
+function AttendStrip({ user }) {
+  const wk = _tyWeek(0);
+  const pw = _tyPerfect();
+  if (!wk || user.isViewingPast) return null;
+  const n = wk.att;
+  const line = n >= 5 ? "부장님: 저 사원, 요즘 매일 보이던데? 성실하다는 소문이 사내에 돌아요"
+    : n >= 3 ? "사수: 이번 주 벌써 " + n + "일째 출근이네요. 눈여겨보고 있어요 👀"
+    : n >= 1 ? "이번 주 출근 " + n + "일째. 사흘을 채우면 사내에 소문이 나기 시작해요"
+    : "이번 주 첫 출근 전이에요. 오늘 도장 하나면 시작!";
+  return (
+    <div className="ty-attend">
+      <div className="ty-attend-top">
+        <b>이번 주 출근 {n}일</b>
+        <span className="ty-pips">
+          <i className={n >= 3 ? "on" : ""}>3일 소문</i>
+          <i className={n >= 5 ? "on" : ""}>5일 눈도장</i>
+          <i className={wk.perfect && wk.due >= 5 ? "on" : ""}>개근</i>
+        </span>
+        {pw.n > 0 ? <span className="ty-medal">🏅 성실왕 x{pw.n}</span> : null}
+      </div>
+      <div className="ty-attend-line">{line}</div>
+    </div>
+  );
+}
+
+// 승진 심사 카드: 다음 직급 요건을 항상 숫자로
+function PromotionCard() {
+  const USER = window.__SIM.USER;
+  const done = _tyDone();
+  const target = USER.rankId === "probation" ? { nm: "사원", en: 30 }
+    : USER.rankId === "fulltime" ? { nm: "대리", en: 60 } : null;
+  if (!target) return null;
+  const cnt = [...done].filter(d => d >= 1 && d <= target.en).length;
+  const pw = _tyPerfect();
+  const words = USER.wordsCollected || 0;
+  const pct = (v, m) => Math.min(100, Math.round(v / m * 100));
+  return (
+    <div className="ty-promo">
+      <div className="ty-promo-head">📋 승진 심사 카드 <span>다음 직급 · {target.nm}</span></div>
+      <div className="ty-promo-row"><span>실제 완주</span><div className="ty-bar"><i style={{ width: pct(cnt, target.en) + "%" }} /></div><b>{cnt} / {target.en}일</b></div>
+      <div className="ty-promo-row"><span>수집 표현</span><div className="ty-bar"><i style={{ width: pct(words, target.en) + "%" }} /></div><b>{words}개</b></div>
+      <div className="ty-promo-row"><span>성실왕 배지</span><div className="ty-bar gold"><i style={{ width: Math.min(100, pw.n * 20) + "%" }} /></div><b>{pw.n}개</b></div>
+      <div className="ty-promo-note">{target.nm} 승진까지 완주 {Math.max(0, target.en - cnt)}일. 심사 기준은 하나, 진짜로 한 날만 셉니다.</div>
+    </div>
+  );
+}
+
+// 부팅 체크: 성실왕 지급 + 호봉 승급 알림 (홈 진입 시 1회)
+function TycoonBoot({ toast }) {
+  React.useEffect(() => {
+    try {
+      _tyAwardCheck(toast);
+      const email = (window.__SIM && window.__SIM.USER) ? window.__SIM.USER.email : null;
+      if (!email) return;
+      const K = "__OD_HOBONG_" + email;
+      const h = _tyHobong();
+      const prev = Number(localStorage.getItem(K) || "0");
+      localStorage.setItem(K, String(h));
+      if (prev && h > prev) setTimeout(() => toast("🎖️ 호봉 승급! " + window.__SIM.USER.position + " " + h + "호봉이 됐어요", 4000), 800);
+    } catch (e) {}
+  }, []);
+  return null;
 }
 
 // ============================================================
@@ -7583,6 +7849,8 @@ function MyPage() {
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPause, setShowPause] = useState(false);
+  const [tyStealth, setTyStealth] = useState(() => _tyStealthOn());
+  const _tyGlow = _isNextFeature() && (() => { try { const w = _tyWeek(0); return !!(w && w.due >= 3 && w.perfect); } catch (e) { return false; } })();
 
   const handleLogout = () => {
     if (!confirm("로그아웃 하시겠어요?\n\n진도는 서버에 저장돼있어서 다음에 같은 이메일로 다시 들어오면 그대로 이어져요.")) return;
@@ -7661,17 +7929,17 @@ function MyPage() {
         </div>
       )}
 
-      <div className="id-card">
+      <div className={"id-card" + (_tyGlow ? " id-glow" : "")}>
         <div className="id-card-clip"></div>
         <div className="id-card-strip" style={_cardStripStyle}>
-          <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}</span>
+          <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}{_isNextFeature() && _tyFounding() ? <span className="ty-founding">공채 1기</span> : null}</span>
           <b>NO. {_empNo}</b>
         </div>
         <div className="id-card-body">
           <div className="id-card-photo" style={_cardStripStyle}>{_cardIsFull ? "👔" : USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
-            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : ""}</span></div>
+            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : (_isNextFeature() ? " · " + _tyHobong() + "호봉" : "")}</span></div>
             {USER.email && (
               <div className="id-field">
                 <span className="id-field-label">로그인</span>
@@ -7721,9 +7989,29 @@ function MyPage() {
         </div>
       )}
 
+      {_isNextFeature() && <PromotionCard />}
+
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
       </div>
+
+      {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) */}
+      {_isNextFeature() && (
+        <div className="hr-section" style={{ marginTop: 28 }}>
+          <div className="hr-section-head">업무 위장 모드 🥸</div>
+          <div style={{ padding: "14px 16px", fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            켜면 브라우저 탭 제목이 <b>"주간 보고_v3.xlsx"</b>로 바뀌어요. 회사에서 몰래 출근하는 분들을 위한 기능.
+            <div style={{ marginTop: 10 }}>
+              <button className="btn btn-ink" onClick={() => {
+                const on = !_tyStealthOn();
+                try { localStorage.setItem("__OD_STEALTH", on ? "1" : "0"); } catch (e) {}
+                _tyApplyStealth(on);
+                setTyStealth(on);
+              }}>{tyStealth ? "위장 해제하기" : "위장 켜기"}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 내 버디 카드 */}
       <div className="hr-section" style={{ marginTop: 28 }}>
