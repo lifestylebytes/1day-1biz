@@ -4464,9 +4464,9 @@ const _GATE_EPOCH = '2026-08-16';
 //   마지막 일정인 일지(내 시추에이션)를 제출한 날만 인정.
 //   예전에는 시추에이션 문장 제출(10시 일정)이나 체크 3개만으로도 세서
 //   4개 중 3개만 하고도 다음 Day가 열렸다 (2026-08-25 버그 신고).
-const _gateDoneCount = (u) => {
-  if (!u) return 0;
+const _gateDoneSet = (u) => {
   const days = new Set();
+  if (!u) return days;
   Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
   try {
     Object.keys(localStorage).filter(k => k.startsWith('__OD_TASKS_DAY_') && !k.endsWith('_ts')).forEach(k => {
@@ -4476,7 +4476,7 @@ const _gateDoneCount = (u) => {
       }
     });
   } catch (e) {}
-  return [...days].filter(d => d >= 1).length;
+  return days;
 };
 // 게이트 값 계산. 학습을 마칠 때마다 다시 불러 "밀린 Day 이어하기"를 즉시 열어준다.
 function _computeGatedDay() {
@@ -4495,8 +4495,14 @@ function _computeGatedDay() {
   } catch (e) {}
   let _u = _localUser;
   try { _u = JSON.parse(localStorage.getItem('__OD_USER') || 'null') || _localUser; } catch (e) {}
-  const _earned = _gateDoneCount(_u) + 1;
-  return Math.max(1, Math.min(_autoDay, Math.max(_earned, _floor)));
+  // ★ 2026-08-26 수정: 게이트 = "floor에서 시작해, 완주한 날은 지나가고, 완주 못 한 첫 날에서 멈춤".
+  //   예전 공식 max(완주기록수+1, floor)는 floor가 큰 기존 회원(예: Day 96 스냅샷)이
+  //   완주 기록 수로는 floor를 영영 못 넘어 그 자리에 갇혔다 (매일 끝내도 같은 날 반복,
+  //   TF 회원은 같은 단어가 계속 나오는 증상. 2026-08-26 정주혜님 신고).
+  const _doneSet = _gateDoneSet(_u);
+  let _d = Math.max(1, Math.min(_floor, _autoDay));
+  while (_d < _autoDay && _doneSet.has(_d)) _d++;
+  return _d;
 }
 let _gatedDay = _computeGatedDay();
 window.__odGateNow = _computeGatedDay;
@@ -5676,9 +5682,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     const _tid = _tfNow2.track.id || _tfNow2.track;
     const _meta = TF_TRACKS.find(t => t.id === _tid);
     const _data = window.__TF_SCN[_tid];
-    // TF Day = 선택한 날 기준: 시작한 날이 1/30, 다음 날 2/30 (뒤늦게 시작한 사람도 무조건 1일차부터).
-    // startedDay는 신청서/DEV 토글에서 저장. 없으면(아주 초기 저장분) 절대 앵커(91+30n) 폴백.
-    const _tfAnchor = Number(_tfNow2.track.startedDay) || (91 + 30 * ((_tfNow2.done || []).length));
+    // ★ TF Day = Day 91 절대 기준 (2026-08-26 수정): Day 91 = 1/30, Day 92 = 2/30, ...
+    //   트랙 n번째면 91+30n 부터. 예전 '선택한 날 기준(startedDay)'은 과거 날짜(91~95)를
+    //   열면 전부 1/30 같은 단어가 나오는 버그를 만들었다. 진도는 게이트가 지키므로
+    //   늦게 시작해도 어차피 하루씩 순서대로 지나간다.
+    const _tfAnchor = 91 + 30 * ((_tfNow2.done || []).length);
     const _tfDayNum = Math.max(1, Math.min(30, _tfViewDay - _tfAnchor + 1));
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
@@ -6912,7 +6920,7 @@ function SkillGrid({ user, onGoDay }) {
         const current = !finished && curId === t.id;
         return {
           key: t.id, emoji: t.emoji, name: t.name, desc: t.tagline,
-          got: finished ? 30 : (current ? Math.max(0, Math.min(30, rd - (Number(tf.track && tf.track.startedDay) || 91) + 1)) : 0),
+          got: finished ? 30 : (current ? Math.max(0, Math.min(30, rd - (91 + 30 * doneIds.length) + 1)) : 0),
           total: 30,
           state: finished ? "done" : (current ? "doing" : "locked"),
           hint: finished ? "수료" : (current ? "진행 중" : "아직 안 맡은 TF"),
@@ -11407,7 +11415,7 @@ function _tfState() {
     //    수료 목록으로 옮기고 트랙을 비워서 다음 TF 신청서가 뜨게 한다 ──
     const _rd = (typeof USER !== "undefined" && (USER.realCurrentDay || USER.currentDay)) || 0;
     if (track && _rd > 90) {
-      const _first = Number(track.startedDay) || (91 + 30 * done.length);  // 트랙 시작 Day (선택일 기준, 구버전은 절대 앵커)
+      const _first = 91 + 30 * done.length;  // 트랙 시작 Day (Day 91 절대 기준, 2026-08-26)
       if (_rd >= _first + 30) {
         const _gid = track.id || track;
         if (_gid && !done.includes(_gid)) done.push(_gid);
