@@ -1002,7 +1002,7 @@ function WelcomeScreenV3({ onNext }) {
         </div>
         <button onClick={() => _goDomestic("sticky")}
           style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-          입사 지원하기 →
+          13,900원으로 시작하기 →
         </button>
       </div>
     </div>
@@ -1011,25 +1011,16 @@ function WelcomeScreenV3({ onNext }) {
     <div className="card">
 
       {/* ── 1. 히어로 ── */}
+      {/* ★ 광고(입사 시뮬레이션) message match: 클릭한 사람 머릿속 단어를 첫 줄에 */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, marginBottom: 12, letterSpacing: "-0.01em" }}>
+        👔 회사에 입사한 것처럼, 매일 영어로 출근해요
+      </div>
       <div className="eyebrow">외국계 대기업 7년차가 선별합니다</div>
       <h1 style={{ lineHeight: 1.25 }}>외국계 대기업 직장인<br/>유버디가 <em>선별한</em><br/>1일 1 비즈니스</h1>
       <p className="lead" style={{ marginBottom: 12 }}>
         외국계 회의와 메일에서 실제로 오가는 표현만 골라, <strong>하루 하나</strong>씩 보내드려요.<br/>
         읽고 흘려보내지 않게 그 자리에서 한 번 써보고, <strong>내 표현 라이브러리</strong>로 쌓아가요.
       </p>
-
-      {/* 선별 기준: 왜 이 사람이 고른 표현을 믿을 수 있나 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-        {[
-          ["🏢", "외국계 대기업 7년차"],
-          ["✍️", "현업에서 실제로 쓰는 표현만"],
-          ["📚", "7년치 표현 수집본"],
-        ].map(t => (
-          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
-            <span>{t[0]}</span>{t[1]}
-          </span>
-        ))}
-      </div>
 
       <Divider />
 
@@ -1053,6 +1044,22 @@ function WelcomeScreenV3({ onNext }) {
       <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.75, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
         셋 다 원인은 같아요. <strong>몰라서가 아니라, 써본 적이 없어서.</strong><br/>
         그래서 1일1비는 표현 대신 <strong style={{ color: "var(--accent)" }}>매일 써볼 자리</strong>를 드려요. 아래가 그 자리예요.
+      </div>
+
+      {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
+        {[
+          ["🏢", "외국계 대기업 7년차"],
+          ["✍️", "현업에서 실제로 쓰는 표현만"],
+          ["📚", "7년치 표현 수집본"],
+        ].map(t => (
+          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
+            <span>{t[0]}</span>{t[1]}
+          </span>
+        ))}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accent)", color: "#fff", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 800 }}>
+          💳 월 13,900원 · 언제든 해지
+        </span>
       </div>
 
       <Divider />
