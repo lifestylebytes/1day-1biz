@@ -4682,7 +4682,7 @@ const _todayLabel = _today.getFullYear() + "." +
   String(_today.getDate()).padStart(2,"0") + " · " + _weekdayKo + "요일";
 
 // 유비챌 상세페이지 URL (입장 버튼 + 9기 공지 CTA 공용. 기수 바뀌면 이 한 줄만 교체)
-const _TY_UBCHALL_URL = "https://youbuddy.co.kr/8th/";
+const _TY_UBCHALL_URL = "https://lifestylebytes.github.io/youbuddy-challenge/";
 
 // 사내 공지 (인트라넷 메모), currentDay 기준 동적 필터링
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
@@ -12715,6 +12715,23 @@ function App() {
     try { shown.push(target.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
     handleOpenMemo(target);
   }, [dbNotices, readIds, _tourCleared, _tourPending]);
+
+  // ★ 하드코딩 공지(예: 유비챌 9기 오픈)도 한 번은 자동으로 띄운다.
+  //   DB 공지 자동팝업은 dbNotices만 봐서, _NOTICES_ALL의 이벤트 공지는 안 떴음.
+  const _promoPoppedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (_promoPoppedRef.current) return;
+    if (!_tourCleared && _tourPending()) return;   // 투어 먼저
+    const list = (window.__SIM && window.__SIM.NOTICES) || [];
+    const promo = list.find(n => n.id === "n-ubchall-9");
+    if (!promo) return;
+    let shown = [];
+    try { shown = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); } catch (e) {}
+    if (shown.includes(promo.id)) return;
+    _promoPoppedRef.current = true;
+    try { shown.push(promo.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
+    setTimeout(() => handleOpenMemo(promo), 900);
+  }, [_tourCleared, _tourPending]);
 
   // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
   const weekend = _weekendKind();
