@@ -4563,17 +4563,18 @@ const _phaseCap = Math.max(_dayCap, _rankCap);
 //   끄는 법: ?next=0
 //   운영자 계정은 별도 조작 없이 항상 켜짐.
 // ============================================================
-const _isNextFeature = (() => {
-  let on = false;
+// 개발 뷰 플래그. 운영자도 기본은 멤버와 똑같이 본다. 오른쪽 위 '개발 뷰' 토글을
+// 켤 때만(또는 ?next=1) 개발 중 기능이 보인다. localStorage를 매번 읽어 토글 즉시 반영.
+(() => {
   try {
     const q = new URLSearchParams(location.search).get("next");
     if (q === "1") localStorage.setItem("__OD_NEXT", "1");
     if (q === "0") localStorage.removeItem("__OD_NEXT");
-    on = localStorage.getItem("__OD_NEXT") === "1";
-    if (!on && _localUser && (_localUser.isOperator || _localUser.isDevMode || _localUser.cohort === "team")) on = true;
-  } catch (e) { on = false; }
-  return () => on;
+  } catch (e) {}
 })();
+const _isNextFeature = () => {
+  try { return localStorage.getItem("__OD_NEXT") === "1"; } catch (e) { return false; }
+};
 
 // ============================================================
 // 역량 스탯: Day 1~90 각 시나리오가 어느 역량 영역인지
@@ -4680,6 +4681,9 @@ const _todayLabel = _today.getFullYear() + "." +
   String(_today.getMonth()+1).padStart(2,"0") + "." +
   String(_today.getDate()).padStart(2,"0") + " · " + _weekdayKo + "요일";
 
+// 유비챌 상세페이지 URL (입장 버튼 + 9기 공지 CTA 공용. 기수 바뀌면 이 한 줄만 교체)
+const _TY_UBCHALL_URL = "https://youbuddy.co.kr/8th/";
+
 // 사내 공지 (인트라넷 메모), currentDay 기준 동적 필터링
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
 const _NOTICES_ALL = [
@@ -4689,6 +4693,35 @@ const _NOTICES_ALL = [
   { id: "n-park-lunch", from: "park",   to: "당신",         date: "Day 5",     subject: "오늘 점심 같이 갈래?",          preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.",                                       unread: true,  tag: "동기",  showFromDay: 5 },
   { id: "n-workshop",   from: "hr",     to: "신입 사원 전원", date: "다음 주",   subject: "[전사] 5월 워크숍 일정 안내",   preview: "5월 둘째 주 워크숍 일정이 확정. 각자 일정표 확인 부탁드립니다.",                  unread: true,  tag: "이벤트", showFromDay: 7 },
   { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차, 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. by " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
+  { id: "n-ubchall-9",  from: "hr",     to: "1일1비 멤버 여러분", date: "오늘",  tag: "이벤트", unread: true, showFromDay: 1,
+    subject: "[멤버 전용] 유비챌 9기 오픈 · 지금이 딱 좋은 이유",
+    preview: "1일1비로 매일 쌓았다면, 9기는 그걸 실전에서 터뜨리는 4주. 멤버님껜 구독료만큼 할인 + 9기 한정 프리미엄까지.",
+    ctaUrl: _TY_UBCHALL_URL, ctaLabel: "유비챌 9기 살펴보기 →",
+    body: [
+      "안녕하세요, 유버디입니다.",
+      "",
+      "결론부터요. 1일1비 멤버님이라면, 유비챌은 9기에 들어오시는 게 가장 좋습니다.",
+      "",
+      "[왜 1일1비랑 같이 하면 좋은가]",
+      "1일1비는 '매일 혼자' 표현을 쌓는 습관이고, 유비챌은 그 표현을 '4주 동안 함께' 실전에서 써보는 훈련이에요. 쌓기만 하고 안 써보면 입은 안 떨어져요. 둘을 같이 하면 아침에 담은 표현을 그 주에 바로 회의·메일 상황으로 꺼내 쓰게 됩니다.",
+      "",
+      "[1일1비와 뭐가 다른가]",
+      "1일1비는 시각 자유·혼자·매일. 유비챌은 하루 3문장 인증·단톡방 동료·4주 마감이 있어요. 혼자서 자꾸 미루던 분에게 '끝까지 가는 힘'을 붙여주는 게 유비챌입니다.",
+      "",
+      "[이런 분께 추천]",
+      "표현은 아는데 실제 상황에서 안 나오는 분 / 혼자 하면 자꾸 미루는 분 / 4주 뒤 '해냈다'는 완주 경험이 필요한 분.",
+      "",
+      "[이런 분껜 비추천]",
+      "이번 4주가 너무 바쁜 분은 무리하지 마세요. 유비챌은 매일 인증이 있어서, 여유가 없을 땐 1일1비만으로도 충분합니다. 다음 기수에 오셔도 돼요.",
+      "",
+      "[지금이 절호의 기회인 이유]",
+      "9기 참여자에 한해 프리미엄 기능이 열려요. AI 사수 첨삭 무제한 + 내가 쓴 실제 대본으로 테스트해보기. 다음 기수엔 유료 전환될 기능을, 9기는 챌린지 기간 내내 그냥 쓰실 수 있어요.",
+      "",
+      "결론 다시. 매일 쌓아온 지금이, 실전으로 터뜨리기 가장 좋은 때예요. 결제 시 쿠폰 YBC-1D1B 를 넣으면 13,900원(1일1비 구독료만큼)이 할인됩니다. (모집 9/11 마감 · 9/14 시작)",
+      "",
+      "늘 자리를 지켜주셔서 고맙습니다. 9기에서 더 깊이 만나요.",
+    ].join("\n"),
+  },
 ];
 const NOTICES = _NOTICES_ALL.filter(n => n.showFromDay <= USER.currentDay);
 
@@ -5188,15 +5221,13 @@ function Locker({ active, setActive, user, unread }) {
           </button>
         ))}
       </div>
-      {_isNextFeature() && (
-        <div className="locker-section">
-          <div className="locker-label">Membership</div>
-          <button className="locker-link" onClick={_tyOpenUbchall} title="유비챌 챌린지 페이지가 새 탭으로 열려요">
-            <span className="locker-link-l"><span className="locker-link-icon">🔥</span>유비챌 입장</span>
-            <span className="locker-badge" style={{ background: "var(--orange)", color: "#fff" }}>8기</span>
-          </button>
-        </div>
-      )}
+      <div className="locker-section">
+        <div className="locker-label">Membership</div>
+        <button className="locker-link" onClick={_tyOpenUbchall} title="유비챌 상세페이지가 새 탭으로 열려요">
+          <span className="locker-link-l"><span className="locker-link-icon">🔥</span>유비챌 입장</span>
+          <span className="locker-badge" style={{ background: "var(--orange)", color: "#fff" }}>9기 오픈</span>
+        </button>
+      </div>
 
       <div className="locker-card">
         <div className="locker-card-row">
@@ -6845,8 +6876,7 @@ function PromotionCard() {
   );
 }
 
-// 멤버십: 유비챌 입장 (기수 바뀌면 URL만 수정)
-const _TY_UBCHALL_URL = "https://youbuddy.co.kr/8th/";
+// 멤버십: 유비챌 입장 = 상세페이지로 이동 (_TY_UBCHALL_URL은 위 _NOTICES_ALL 앞에서 정의)
 function _tyOpenUbchall() { try { window.open(_TY_UBCHALL_URL, "_blank", "noopener"); } catch (e) {} }
 function MembershipCard() {
   return (
@@ -11146,14 +11176,21 @@ function MemoModal({ memo, onClose }) {
           </div>
           <div style={{ marginTop: 18, fontSize: 14, lineHeight: 1.75, color: "var(--ink)", whiteSpace: "pre-wrap", wordBreak: "keep-all" }}>
             {memo.body || memo.preview}
-            {!memo.isDb && (
+            {!memo.isDb && !memo.body && (
               <>
                 <br/><br/>
                 자세한 내용은 인트라넷 게시판에서 확인 부탁드립니다. 문의는 인사팀 (12F) 으로.
               </>
             )}
           </div>
-          <div className="row" style={{ marginTop: 22 }}>
+          {memo.ctaUrl && (
+            <a href={memo.ctaUrl} target="_blank" rel="noopener noreferrer"
+               style={{ display: "block", textAlign: "center", marginTop: 20, background: "var(--orange)", color: "#fff",
+                        borderRadius: 8, padding: "12px 16px", fontWeight: 900, fontSize: 14, textDecoration: "none" }}>
+              {memo.ctaLabel || "자세히 보기 →"}
+            </a>
+          )}
+          <div className="row" style={{ marginTop: memo.ctaUrl ? 12 : 22 }}>
             <button className="btn btn-primary" onClick={onClose}>확인했습니다</button>
             <button className="btn btn-ghost" onClick={onClose}>나중에 보기</button>
           </div>
@@ -13112,6 +13149,26 @@ function App() {
           letterSpacing: "0.02em",
         }}
       >💬 피드백</button>
+
+      {/* ── 우상단 개발 뷰 토글 (운영자/Dev 전용). 켜면 개발 중 기능이 보이고, 끄면 멤버와 동일 ── */}
+      {_isInternal && (() => {
+        const _devOn = _isNextFeature();
+        return (
+          <button
+            onClick={() => { try { if (_devOn) localStorage.removeItem("__OD_NEXT"); else localStorage.setItem("__OD_NEXT", "1"); } catch (e) {} location.reload(); }}
+            title="개발 중 기능 미리보기 (멤버에겐 안 보임)"
+            style={{
+              position: "fixed", top: 14, right: 108, zIndex: 8000,
+              padding: "8px 14px", borderRadius: 22,
+              background: _devOn ? "var(--ink)" : "transparent",
+              color: _devOn ? "var(--paper)" : "var(--ink-mute)",
+              border: "1px solid " + (_devOn ? "var(--ink)" : "var(--line)"),
+              fontSize: 12.5, fontWeight: 800, fontFamily: "inherit", cursor: "pointer",
+              letterSpacing: "0.02em",
+            }}
+          >{_devOn ? "🛠 개발 뷰 ON" : "🛠 개발 뷰"}</button>
+        );
+      })()}
 
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
