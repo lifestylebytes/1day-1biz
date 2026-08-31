@@ -8765,6 +8765,7 @@ function SceneModal({ scenario, onClose }) {
 
   // 자유 질문 AI Q&A: 표현에 대해 직접 물어보면 사수(AI)가 답한다 (mentor-feedback qa 모드)
   async function askBuddyFree() {
+    if (!_isNextFeature()) return;
     const q = buddyQ.trim();
     if (!q || buddyAsking) return;
     setBuddyQ("");
@@ -9217,7 +9218,7 @@ function SceneModal({ scenario, onClose }) {
               <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("nuance"); }}>🗨️ 뉘앙스가 헷갈려요</button>
               <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("example"); }}>📌 예문 더 주세요</button>
               <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("default"); }}>💬 어떻게 외워요?</button>
-              <button className="quick-q" onClick={() => setBuddyDockOpen(true)}>✍️ 직접 물어보기</button>
+              {_isNextFeature() && <button className="quick-q" onClick={() => setBuddyDockOpen(true)}>✍️ 직접 물어보기</button>}
             </div>
           </div>
 
@@ -9268,6 +9269,7 @@ function SceneModal({ scenario, onClose }) {
                   );
                 })}
               </div>
+              {_isNextFeature() && (
               <form className="buddy-dock-ask" onSubmit={e => { e.preventDefault(); askBuddyFree(); }}
                 style={{ display: "flex", gap: 6, padding: "8px 10px", borderTop: "1px solid var(--line)" }}>
                 <input value={buddyQ} onChange={e => setBuddyQ(e.target.value)}
@@ -9279,6 +9281,7 @@ function SceneModal({ scenario, onClose }) {
                   {buddyAsking ? "…" : "질문"}
                 </button>
               </form>
+              )}
               <div className="buddy-dock-quick">
                 <button className="quick-q" onClick={() => askBuddy("nuance")}>🗨️ 뉘앙스가 헷갈려요</button>
                 <button className="quick-q" onClick={() => askBuddy("example")}>📌 예문 더 주세요</button>
