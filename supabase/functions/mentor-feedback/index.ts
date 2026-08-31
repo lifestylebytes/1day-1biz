@@ -46,7 +46,43 @@ Deno.serve(async (req) => {
   const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
   const mentor     = String(b?.mentorName || "사수").slice(0, 20);
   const mode       = String(b?.mode || "").trim();
+  const question   = String(b?.question || "").slice(0, 300).trim();  // AI Q&A 자유 질문
   const prevCorrected = String(b?.prevCorrected || "").slice(0, 300).trim();  // 직전에 사수가 추천했던 문장 (재제출 시 왔다갔다 방지)
+  // ── AI Q&A 모드 ──
+  // 학습 중인 표현에 대해 신입이 자유롭게 궁금한 걸 물으면, 사수가 짧고 따뜻하게 답한다.
+  if (mode === "qa") {
+    if (!question || !word) return json({ ok: false, error: "missing" }, 200);
+    const qsys = [
+      `너는 따뜻하고 명확한 영어 사수야. 신입이 오늘 배운 표현에 대해 궁금한 걸 물었어.`,
+      `오늘 표현: "${word}"${meaning ? ` (뜻: ${meaning})` : ""}.${scene ? ` 상황: ${scene}` : ""}`,
+      `질문에 한국어로 짧고 쉽게 답해. 꼭 필요하면 영어 예문 하나를 곁들여도 좋아. 장황하지 않게 3~4문장 이내.`,
+      `이 표현/비즈니스 영어와 무관한 질문이면, 여기선 표현 학습만 도와드린다고 부드럽게 안내해.`,
+      `반드시 JSON으로만: {"answer":"한국어 답변(3~4문장 이내)","exampleEn":"도움되는 영어 예문 하나 또는 빈 문자열","exampleKo":"그 예문의 한국어 뜻 또는 빈 문자열","ok":true}`,
+      `규칙: 따뜻한 존댓말. em-dash(U+2014) 절대 금지(쉼표나 마침표로).`,
+    ].join("\n");
+    try {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, temperature: 0.5, response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: qsys },
+            { role: "user", content: `신입의 질문: "${question}"` },
+          ],
+        }),
+      });
+      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
+      const d = await r.json();
+      let qa: any = {};
+      try { qa = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { qa = {}; }
+      if (!qa.answer) return json({ ok: false, error: "empty" }, 200);
+      return json({ ok: true, qa });
+    } catch (e) {
+      return json({ ok: false, error: "exception" }, 200);
+    }
+  }
+
   if (!sentence || !word) return json({ ok: false, error: "missing" }, 200);
 
   // 문장 비교용 정규화: 공백·끝 구두점·대소문자 무시
