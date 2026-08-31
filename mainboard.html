@@ -1429,6 +1429,7 @@ body::before {
   .desk-grid.next-home .ty-attend { order: 5; }
   .desk-grid.next-home .attendance { order: 6; }        /* 출근부는 아래로 */
   .desk-grid.next-home .memo-box { order: 7; }
+  .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
 
   /* 시추에이션 카드 */
   .scene-card { box-shadow: 3px 3px 0 var(--ink); }
@@ -5983,7 +5984,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
       </div>
 
-      <ApplicationLine />
+      <div className={"home-appline" + (_isNextFeature() ? " next" : "")}><ApplicationLine /></div>
 
       {/* ★ 오랜만에 온 회원 안내: 달력은 흘렀지만 진도는 그대로일 때, 뭐부터 할지 한 줄로. */}
       {(() => {
