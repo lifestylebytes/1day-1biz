@@ -3,12 +3,11 @@
 // 매시간 정각 Supabase Cron 으로 실행. 지금 KST 시각을 알림 시각으로
 // 고른 회원에게만, 그 회원의 오늘 게이트 Day 표현/씬/진도 문장을 채워 보낸다.
 //
-// 템플릿 (솔라피에 등록한 것과 변수명이 정확히 같아야 함):
-//   [1일1비] #{이름}님, 오늘 회사에서 이런 일이 있어요.
-//   #{상황}
-//   이럴 때 쓰는 말이 이거예요.
-//   "#{표현}"
-//   #{진도안내}
+// 템플릿 (솔라피에 등록한 것과 변수명이 정확히 같아야 함). 두 가지 중 승인된 걸 씀:
+//   SOLAPI_TEMPLATE_STYLE=safe (기본) : 고정 문구 + 값만 바뀌는 심사 안전판
+//     오늘 상황: #{상황} / 오늘 표현: #{표현} / 열린 Day: Day #{day}
+//     더 학습할 수 있는 날: #{밀린}일 / 연속 출근: #{연속}일
+//   SOLAPI_TEMPLATE_STYLE=story : 회사 세계관 톤 (#{이름} #{상황} #{표현} #{진도안내})
 //   버튼: 출근하기 (웹링크, 템플릿에 고정)
 //
 // 배포:
@@ -19,6 +18,7 @@
 //   SOLAPI_PFID                          (솔라피 > 카카오 > 채널 목록의 발신프로필 ID)
 //   SOLAPI_TEMPLATE_ID                   (심사 승인된 템플릿 ID)
 //   SOLAPI_FROM                          (선택. 대체문자 발신번호. 없으면 문자 대체발송 안 함)
+//   SOLAPI_TEMPLATE_STYLE                (safe | story, 승인된 템플릿에 맞춰. 기본 safe)
 //   SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (자동 주입)
 //
 // Cron 등록 (Dashboard > Database > Cron Jobs):
@@ -43,6 +43,7 @@ const API_SECRET    = Deno.env.get("SOLAPI_API_SECRET") || "";
 const PFID          = Deno.env.get("SOLAPI_PFID") || "";
 const TEMPLATE_ID   = Deno.env.get("SOLAPI_TEMPLATE_ID") || "";
 const FROM          = Deno.env.get("SOLAPI_FROM") || "";
+const STYLE         = (Deno.env.get("SOLAPI_TEMPLATE_STYLE") || "safe").toLowerCase();
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
@@ -173,12 +174,22 @@ Deno.serve(async (req) => {
       const g = computeGate(u, done.get(u.email) || new Set(), now);
       const idle = daysBetweenKST(u.last_active || u.signup_date, now);
       const s = scenarioFor(g.gated);
-      const variables = {
-        "#{이름}": u.name || "사원",
-        "#{상황}": s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.",
-        "#{표현}": s.word,
-        "#{진도안내}": progressLine(g, idle),
-      };
+      const scene = s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
+      const variables: Record<string, string> = STYLE === "story"
+        ? {
+            "#{이름}": u.name || "사원",
+            "#{상황}": scene,
+            "#{표현}": s.word,
+            "#{진도안내}": progressLine(g, idle),
+          }
+        : {
+            "#{이름}": u.name || "사원",
+            "#{상황}": scene,
+            "#{표현}": s.word,
+            "#{day}": String(g.gated),
+            "#{밀린}": String(g.backlog),
+            "#{연속}": String(g.streak),
+          };
       const row = { email: u.email, day: g.gated, word: s.word, variables, backlog: g.backlog, streak: g.streak, idle };
       if (dry) { results.push({ ...row, status: "dry" }); continue; }
       try {
