@@ -5135,6 +5135,87 @@ async function odDisablePush() {
 }
 
 // 푸시 알림 켜기/끄기 토글 (설정 화면)
+// 카톡 출근 알림 설정 (2026-09-03). 전화번호 + 받을 시각(KST)을 저장하면
+// kakao-daily Edge Function 이 매시간 그 시각 회원에게 오늘 표현/씬을 알림톡으로 보낸다.
+// 현재는 개발 뷰에서만 노출 (템플릿 심사 승인 후 _isNextFeature 게이트 제거).
+const KAKAO_HOURS = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+function KakaoNotifyRow({ email }) {
+  const [loaded, setLoaded] = useState(false);
+  const [hasPhone, setHasPhone] = useState(false);
+  const [masked, setMasked] = useState("");
+  const [hour, setHour] = useState("");        // "" = 끔
+  const [phone, setPhone] = useState("");      // 새로 입력하는 번호 (빈칸이면 기존 유지)
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!email || !window.OD?.getKakaoNotify) { setLoaded(true); return; }
+      const r = await window.OD.getKakaoNotify(email);
+      if (!alive) return;
+      if (r.ok && r.result) {
+        setHasPhone(!!r.result.has_phone);
+        setMasked(r.result.phone_masked || "");
+        setHour(r.result.hour == null ? "" : String(r.result.hour));
+      }
+      setLoaded(true);
+    })();
+    return () => { alive = false; };
+  }, [email]);
+
+  const save = async (nextHour) => {
+    if (!window.OD?.setKakaoNotify) { setMsg("지금은 저장할 수 없어요."); return; }
+    if (nextHour !== "" && !hasPhone && !phone.trim()) { setMsg("받을 휴대폰 번호를 먼저 적어주세요."); return; }
+    setBusy(true); setMsg("");
+    const r = await window.OD.setKakaoNotify(email, phone.trim(), nextHour === "" ? null : Number(nextHour));
+    setBusy(false);
+    if (!r.ok) {
+      const e = String(r.error || "");
+      setMsg(e.includes("invalid phone") ? "번호 형식을 확인해주세요 (010으로 시작)." : "저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    setHour(nextHour);
+    if (r.result?.phone_masked) { setMasked(r.result.phone_masked); setHasPhone(true); setPhone(""); }
+    setMsg(nextHour === "" ? "알림을 껐어요." : `매일 ${nextHour}시에 카톡으로 오늘 표현이 가요.`);
+  };
+
+  if (!loaded) return null;
+  return (
+    <>
+      <div className="hr-row">
+        <span className="hr-row-label">💬 카톡 출근 알림</span>
+        <select className="settings-select" value={hour} disabled={busy}
+          onChange={e => save(e.target.value)}>
+          <option value="">끔</option>
+          {KAKAO_HOURS.map(h => <option key={h} value={String(h)}>{String(h).padStart(2, "0")}:00</option>)}
+        </select>
+      </div>
+      <div className="hr-row" style={{ paddingTop: 6 }}>
+        <span className="hr-row-label" style={{ paddingLeft: 14, fontSize: 12 }}>└ 받을 번호</span>
+        <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder={hasPhone ? masked : "010-0000-0000"}
+            inputMode="tel"
+            style={{ width: 130, fontFamily: "inherit", fontSize: 12, padding: "5px 8px", border: "1.2px solid var(--line)", borderRadius: 6, background: "var(--paper)" }}
+          />
+          {phone.trim() && (
+            <button disabled={busy} onClick={() => save(hour)}
+              style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 6, border: "1.2px solid var(--ink)", background: "var(--paper)", cursor: "pointer" }}>
+              저장
+            </button>
+          )}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
+        {msg || "오늘 회사에서 벌어지는 상황과 표현 하나가 고른 시각에 카톡으로 와요. 번호는 알림에만 쓰고, 언제든 끌 수 있어요."}
+      </div>
+    </>
+  );
+}
+
 function PushToggle({ email }) {
   const [status, setStatus] = useState("checking"); // checking|on|off|unsupported
   const [busy, setBusy] = useState(false);
@@ -8229,6 +8310,9 @@ function MyPage() {
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
               출근 잊지 않게 리마인드를 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
             </div>
+
+            {/* 카톡 출근 알림 (2026-09-03), 템플릿 심사 승인 후 게이트 제거 */}
+            {_isNextFeature() && <KakaoNotifyRow email={USER.email} />}
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
             <a
