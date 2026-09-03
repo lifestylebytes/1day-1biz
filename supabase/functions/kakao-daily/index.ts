@@ -8,6 +8,7 @@
 //     오늘 상황: #{상황} / 오늘 표현: #{표현} / 열린 Day: Day #{day}
 //     더 학습할 수 있는 날: #{밀린}일 / 연속 출근: #{연속}일
 //   SOLAPI_TEMPLATE_STYLE=story : 회사 세계관 톤 (#{이름} #{상황} #{표현} #{진도안내})
+//   SOLAPI_TEMPLATE_STYLE=plain : 변수 없음 (매일 같은 문구, 첫 승인용)
 //   버튼: 출근하기 (웹링크, 템플릿에 고정)
 //
 // 배포:
@@ -18,7 +19,7 @@
 //   SOLAPI_PFID                          (솔라피 > 카카오 > 채널 목록의 발신프로필 ID)
 //   SOLAPI_TEMPLATE_ID                   (심사 승인된 템플릿 ID)
 //   SOLAPI_FROM                          (선택. 대체문자 발신번호. 없으면 문자 대체발송 안 함)
-//   SOLAPI_TEMPLATE_STYLE                (safe | story, 승인된 템플릿에 맞춰. 기본 safe)
+//   SOLAPI_TEMPLATE_STYLE                (safe | story | plain, 승인된 템플릿에 맞춰. 기본 safe)
 //   SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (자동 주입)
 //
 // Cron 등록 (Dashboard > Database > Cron Jobs):
@@ -175,7 +176,9 @@ Deno.serve(async (req) => {
       const idle = daysBetweenKST(u.last_active || u.signup_date, now);
       const s = scenarioFor(g.gated);
       const scene = s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
-      const variables: Record<string, string> = STYLE === "story"
+      const variables: Record<string, string> = STYLE === "plain"
+        ? {}
+        : STYLE === "story"
         ? {
             "#{이름}": u.name || "사원",
             "#{상황}": scene,
