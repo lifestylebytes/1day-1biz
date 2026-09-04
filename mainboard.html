@@ -7428,7 +7428,7 @@ function _buddyTipText(scn) {
 function Postit({ mentor, text, word }) {
   return (
     <div className="postit">
-      <div className="postit-from">▶ {mentor.name} 사수의 메모</div>
+      <div className="postit-from">▶ {mentor.name} 사수의 메모{_isNextFeature() ? " · 언제 쓰는지" : ""}</div>
       <div>오늘 단어 <b style={{ background: "rgba(255,255,255,0.5)", padding: "1px 5px" }}>{word}</b> 야. {text}</div>
       <div className="postit-sig">{mentor.name} ✍︎</div>
     </div>
@@ -7443,9 +7443,8 @@ function BuddyCard({ buddy, day, scn }) {
   const nudge = getBuddyNudgeForDay ? getBuddyNudgeForDay(day) : BUDDY_NUDGES[(day - 1) % BUDDY_NUDGES.length];
   // 오늘 시추에이션이 있으면 외우는 팁을 메인으로, 축하/아침 인사 nudge 는 그 아래 한 줄로만
   const tip = scn ? _buddyTipText(scn) : "";
-  // 팁이 있으면 day별 응원 문구는 마일스톤 날에만 한 줄 덧붙인다 (매일 붙이면 사수 메모와 내용이 겹친다는 피드백, 2026-09-04)
-  const _MILESTONE_DAYS = [1, 7, 15, 30, 60, 90];
-  const showNudgeToo = !!tip && nudge && _MILESTONE_DAYS.includes(Number(day));
+  // 팁이 있으면 day별 응원 문구는 붙이지 않는다. 역할을 하나로: 사수 = 언제 쓰는지, 유버디 = 쉽게 외우는 법 (2026-09-04)
+  const showNudgeToo = false;
   return (
     <div className="buddy-card">
       <div className="buddy-card-head">
@@ -7456,12 +7455,13 @@ function BuddyCard({ buddy, day, scn }) {
         </div>
       </div>
       <div className="buddy-bubble" style={tip ? { whiteSpace: "pre-line" } : undefined}>
+        {tip && <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "var(--orange)", marginBottom: 4 }}>💡 쉽게 외우는 법</div>}
         {tip || nudge.text}
       </div>
       {showNudgeToo && (
         <div className="buddy-bubble" style={{ marginTop: 6 }}>{nudge.text}</div>
       )}
-      <div className="buddy-time">{tip ? "방금 · 오늘의 외우는 팁" : "방금 · 오늘 한 마디"}</div>
+      <div className="buddy-time">{tip ? "방금 · 쉽게 외우는 법" : "방금 · 오늘 한 마디"}</div>
     </div>
   );
 }
