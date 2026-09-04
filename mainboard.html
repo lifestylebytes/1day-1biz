@@ -5042,6 +5042,12 @@ function _getBuddyNudgeForDay(day) {
   return _BUDDY_NUDGE_BY_DAY[day] || BUDDY_NUDGES[(day - 1) % BUDDY_NUDGES.length];
 }
 
+// 시추에이션 장면 문구에서 앞머리 시각("15:00, ")을 뗀다 (2026-09-04).
+// 하루 일정표(09:00 출근 / 10:00 시추에이션 / 15:30 Recap / 17:00 퇴근)는 "학습 순서"인데
+// 장면 속 시각과 나란히 보이면 흐름이 안 맞아 보인다는 피드백. 장면은 장소·상황만 남긴다.
+function _sceneNoClock(t) { return String(t || "").replace(/^\s*\d{1,2}:\d{2}\s*,?\s*/, ""); }
+window._sceneNoClock = _sceneNoClock;
+
 // 단어/시추에이션 모달의 "버디한테 물어보기" 응답 풀
 const BUDDY_ANSWERS = {
   default: [
@@ -6397,7 +6403,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {/* 사수 포스트잇, 첫 todo (출근/단어 받기) 끝나면 책상에 떨어짐 */}
           {Object.keys(doneTasks).length >= 1 ? (
             <div key={"postit-" + USER.currentDay} className="appear-postit">
-              <Postit mentor={CHARACTERS.mentor} text={today.mentorTip} word={today.word} />
+              <Postit mentor={CHARACTERS.mentor} text={_mentorNuanceLine(today)} word={today.word} />
             </div>
           ) : (
             <div className="empty-slot empty-postit">
@@ -6408,7 +6414,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {/* 유버디 1:1, 시추에이션(2번째 todo) 끝나면 등장 */}
           {Object.keys(doneTasks).length >= 2 ? (
             <div key={"buddy-" + USER.currentDay} className="appear-buddy">
-              <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} />
+              <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} scn={today} />
             </div>
           ) : (
             <div className="empty-slot empty-buddy">
@@ -7246,7 +7252,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
       <div className="scene-card-body">
         <div className="scene-word-line">오늘의 어휘 표현 : <b className="scene-word-line-word">{scenario.word}</b>{scenario.meaning ? <span className="scene-word-line-ko"> · {scenario.meaning}</span> : null}</div>
         <div className="scene-card-time">{scenario.tags.map(t => "#" + t).join("  ")}</div>
-        <div className="scene-card-scene">📍 {scenario.scene}</div>
+        <div className="scene-card-scene">📍 {_sceneNoClock(scenario.scene)}</div>
 
         <div className="scene-quote-row">
           <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
@@ -7283,6 +7289,23 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
   );
 }
 
+// ── 사수 메모 = 뉘앙스, 유버디 한 마디 = 외우는 팁 (2026-09-04, 두 메모 내용이 겹친다는 피드백) ──
+// 사수: buddyAnswers.nuance 첫 문단(짧은 뉘앙스 한 줄). 없으면 mentorTip.
+// 버디: buddyAnswers.default(외우는 팁) 앞 두 문단. 없으면 day별 nudge.
+function _firstParas(t, n) { return String(t || "").split(/\n\s*\n/).map(x => x.trim()).filter(Boolean).slice(0, n).join("\n"); }
+function _mentorNuanceLine(scn) {
+  let nu = _firstParas(scn?.buddyAnswers?.nuance, 1);
+  if (nu && scn?.word) {
+    // "오늘 단어 X 야." 뒤에 붙으니 "X = ..." / "X는 ..." 로 시작하면 앞머리 단어는 뗀다
+    const esc = String(scn.word).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    nu = nu.replace(new RegExp("^" + esc + "\\s*(=|는|은|이|가|이란|란|,)\\s*", "i"), "");
+  }
+  return nu || scn?.mentorTip || "";
+}
+function _buddyTipText(scn) {
+  return _firstParas(scn?.buddyAnswers?.default, 2);
+}
+
 function Postit({ mentor, text, word }) {
   return (
     <div className="postit">
@@ -7296,9 +7319,12 @@ function Postit({ mentor, text, word }) {
 // ============================================================
 // 버디 카드 = 유버디가 매일 한 마디 (1:1 글로벌 코치 컨셉)
 // ============================================================
-function BuddyCard({ buddy, day }) {
+function BuddyCard({ buddy, day, scn }) {
   const { getBuddyNudgeForDay, BUDDY_NUDGES } = window.__SIM;
   const nudge = getBuddyNudgeForDay ? getBuddyNudgeForDay(day) : BUDDY_NUDGES[(day - 1) % BUDDY_NUDGES.length];
+  // 오늘 시추에이션이 있으면 외우는 팁을 메인으로, 축하/아침 인사 nudge 는 그 아래 한 줄로만
+  const tip = scn ? _buddyTipText(scn) : "";
+  const showNudgeToo = !!tip && nudge && (nudge.tone === "cheer" || nudge.tone === "morning");
   return (
     <div className="buddy-card">
       <div className="buddy-card-head">
@@ -7308,10 +7334,13 @@ function BuddyCard({ buddy, day }) {
           <div className="buddy-role">{buddy.role}</div>
         </div>
       </div>
-      <div className="buddy-bubble">
-        {nudge.text}
+      <div className="buddy-bubble" style={tip ? { whiteSpace: "pre-line" } : undefined}>
+        {tip || nudge.text}
       </div>
-      <div className="buddy-time">방금 · 오늘 한 마디</div>
+      {showNudgeToo && (
+        <div className="buddy-bubble" style={{ marginTop: 6 }}>{nudge.text}</div>
+      )}
+      <div className="buddy-time">{tip ? "방금 · 오늘의 외우는 팁" : "방금 · 오늘 한 마디"}</div>
     </div>
   );
 }
@@ -7919,7 +7948,7 @@ function TestPage() {
 
           {/* 1) SITUATION, 한글로 상황 설명 */}
           <div className="eval-q-num">SITUATION · 상황</div>
-          <div className="eval-q-scene">📍 {cur.scene}</div>
+          <div className="eval-q-scene">📍 {_sceneNoClock(cur.scene)}</div>
           <div className="scene-quote-row" style={{ marginTop: 14 }}>
             <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
             <div style={{ flex: 1 }}>
@@ -8954,6 +8983,10 @@ function SceneModal({ scenario, onClose }) {
     } catch (e) { return false; }
   }
 
+  // 노트 저장 힌트: 한 번이라도 도크에서 저장하면 다시 안 보임
+  const [_dockSaveTipDone, setDockSaveTipDone] = React.useState(() => {
+    try { return localStorage.getItem("__OD_DOCKSAVE_TIP_DONE") === "1"; } catch (e) { return false; }
+  });
   // 이미 저장된 메시지 텍스트 추적 (한 세션 내)
   const [savedTexts, setSavedTexts] = React.useState(() => {
     try {
@@ -9020,7 +9053,7 @@ function SceneModal({ scenario, onClose }) {
           <hr className="divider" />
 
           <div className="label-doc">📍 시추에이션</div>
-          <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-soft)", marginTop: 6 }}>{scenario.scene}</div>
+          <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-soft)", marginTop: 6 }}>{_sceneNoClock(scenario.scene)}</div>
 
           <div className="scene-quote-row" style={{ marginTop: 16 }}>
             <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
@@ -9344,6 +9377,12 @@ function SceneModal({ scenario, onClose }) {
               <button className="quick-q" onClick={() => { setBuddyDockOpen(true); askBuddy("default"); }}>💬 어떻게 외워요?</button>
               {_isNextFeature() && <button className="quick-q" onClick={() => setBuddyDockOpen(true)}>✍️ 직접 물어보기</button>}
             </div>
+            {/* 노트 저장 기능 발견용 힌트 (2026-09-04). 한 번이라도 저장하면 사라짐 */}
+            {!_dockSaveTipDone && (
+              <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--ink-soft)", background: "rgba(255,255,255,0.6)", border: "1px dashed var(--line)", borderRadius: 6, padding: "7px 10px", lineHeight: 1.55 }}>
+                💡 유버디 답변 아래 <b style={{ color: "var(--ink)" }}>📒 노트에 저장</b>을 누르면 뉘앙스·예문·외우는 팁이 내 업무 노트에 쌓여요. 나중에 단어별로 다시 볼 수 있어요.
+              </div>
+            )}
           </div>
 
           {/* 유버디 메신저 도크 (우하단 고정, 하단에서 슬라이드 업) */}
@@ -9381,7 +9420,11 @@ function SceneModal({ scenario, onClose }) {
                           className={isSaved ? "saved" : ""}
                           onClick={() => {
                             const ok = saveBuddyNote(m.text, m.kind || "default");
-                            if (ok) setSavedTexts(prev => new Set([...prev, m.text]));
+                            if (ok) {
+                              setSavedTexts(prev => new Set([...prev, m.text]));
+                              try { localStorage.setItem("__OD_DOCKSAVE_TIP_DONE", "1"); } catch (e) {}
+                              setDockSaveTipDone(true);
+                            }
                           }}
                           disabled={isSaved}
                           title={isSaved ? "이미 노트에 저장됨" : "내 업무 노트에 저장"}

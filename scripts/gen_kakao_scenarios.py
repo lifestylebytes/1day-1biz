@@ -12,7 +12,8 @@ for b in blocks:
     def pick(key):
         mm = re.search(r"\b" + key + r": \"((?:[^\"\\]|\\.)*)\"", b)
         return json.loads('"' + mm.group(1) + '"') if mm else ""
-    out.append({"day": day, "word": word, "meaning": pick("meaning"), "scene": pick("scene"), "quoteKo": pick("quoteKo")})
+    scene = re.sub(r"^\s*\d{1,2}:\d{2}\s*,?\s*", "", pick("scene"))  # 앞머리 시각 제거 (mainboard 표시와 동일)
+    out.append({"day": day, "word": word, "meaning": pick("meaning"), "scene": scene, "quoteKo": pick("quoteKo")})
 out.sort(key=lambda x: x["day"])
 seen = {}
 for o in out: seen.setdefault(o["day"], o)
