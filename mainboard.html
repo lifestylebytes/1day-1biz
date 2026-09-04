@@ -11031,6 +11031,117 @@ function OfficeTaskActivity({ today, item, onClose, onComplete }) {
 }
 
 // === 6. JOURNAL, 내 시추에이션 + 퇴근 (한 줄 회고 + 버디 응원) ===
+// ============================================================
+// 퇴근 화면 (2026-09-04, 개발 뷰). 하루의 마침표: 오늘 얻은 것 / 성장 한 줄 / 실전 사용 체크 / 내일 예고 / 다음 마일스톤
+// 목적: "하루 해도 성취감 없음" + "내일 기대감 없음" 피드백. 단어는 가리고 상황만 예고한다.
+// ============================================================
+function _wrapCorrections(day) {
+  // 그날 AI 사수 피드백에서 고친 곳 수 (segments type=removed). 없으면 null
+  const c = _loadCompletion(day);
+  const segs = c?.feedback?.aiFb?.segments;
+  if (!Array.isArray(segs)) return null;
+  return segs.filter(x => x && x.type === "removed").length;
+}
+function _wrapTrend() {
+  // 최근 완주 7일 vs 그 전 7일 평균 고침 수. 양쪽 3일 이상 있을 때만
+  let days = [];
+  try { days = (JSON.parse(localStorage.getItem("__OD_USER") || "null")?.scenariosCompleted || []).map(x => x.day).filter(Boolean).sort((a, b) => a - b); } catch (e) {}
+  const vals = days.map(d => _wrapCorrections(d)).map((v, i) => ({ d: days[i], v })).filter(x => x.v !== null);
+  if (vals.length < 6) return null;
+  const recent = vals.slice(-7), prev = vals.slice(-14, -7);
+  if (recent.length < 3 || prev.length < 3) return null;
+  const avg = a => a.reduce((s, x) => s + x.v, 0) / a.length;
+  return { recent: avg(recent), prev: avg(prev) };
+}
+function _nextMilestone(day) {
+  const ladder = day <= 30 ? [7, 15, 21, 30] : (day <= 60 ? [37, 44, 51, 60] : [90]);
+  const labels = { 7: "1주 완주 배지", 15: "절반 돌파", 21: "3주 달성", 30: "사원 승진", 37: "사원 첫 주 완주", 44: "절반 돌파", 51: "50일 달성", 60: "특별 면담", 90: "대리 승진" };
+  const nxt = ladder.find(m => m > day);
+  return nxt ? { day: nxt, label: labels[nxt] || ("Day " + nxt), left: nxt - day } : null;
+}
+function WrapupScreen({ today, onDone }) {
+  const { SCENARIOS, USER } = window.__SIM;
+  const comp = _loadCompletion(today.day);
+  const mySentence = comp?.sentence || "";
+  const fixes = _wrapCorrections(today.day);
+  const praise = comp?.feedback?.aiFb?.praise || "";
+  const trend = _wrapTrend();
+  const next = SCENARIOS.find(x => x.day === today.day + 1);
+  const nextScene = next ? _sceneNoClock(next.scene) : "";
+  const ms = _nextMilestone(today.day);
+  const usedKey = "__OD_USED_DAY_" + today.day;
+  const [used, setUsed] = useState(() => { try { return localStorage.getItem(usedKey); } catch (e) { return null; } });
+  const mark = (v) => { setUsed(v); try { localStorage.setItem(usedKey, v); } catch (e) {} };
+  const collected = Math.max(1, Number(USER.wordsCollected) || 1);
+
+  const box = { marginTop: 12, padding: "12px 14px", background: "#fff", border: "1px solid var(--line)", borderRadius: 8 };
+  const head = { fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "var(--ink-mute)", marginBottom: 6 };
+
+  return (
+    <div className="wrapup">
+      <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
+        <div style={{ display: "inline-block", padding: "12px 24px", border: "3px solid var(--stamp-red)", color: "var(--stamp-red)", fontSize: 17, fontWeight: 900, letterSpacing: "0.16em", transform: "rotate(-5deg)" }}>
+          퇴근 · DAY {today.day} 완주
+        </div>
+      </div>
+
+      <div style={box}>
+        <div style={head}>오늘 얻은 것</div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "var(--ink)" }}>
+          <div>표현 1개 · <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b> <span style={{ color: "var(--ink-mute)", fontSize: 12 }}>{today.meaning}</span></div>
+          {mySentence && <div>내 문장 1줄 · <span style={{ fontStyle: "italic" }}>"{mySentence}"</span></div>}
+          {fixes !== null && <div>사수가 고친 곳 · <b>{fixes}곳</b>{fixes === 0 ? " (원샷 통과예요)" : ""}</div>}
+          {praise && <div style={{ color: "var(--ink-soft)", fontSize: 12.5 }}>사수 한 마디 · {praise}</div>}
+        </div>
+        <div style={{ marginTop: 10, fontSize: 12, color: "var(--ink-soft)" }}>
+          지금까지 표현 <b style={{ color: "var(--ink)" }}>{collected}</b> / 90개를 모았어요.
+          <span style={{ display: "block", marginTop: 5, height: 6, background: "var(--paper-warm)", borderRadius: 4, overflow: "hidden" }}>
+            <span style={{ display: "block", width: Math.min(100, Math.round(collected / 90 * 100)) + "%", height: "100%", background: "var(--orange)" }} />
+          </span>
+        </div>
+      </div>
+
+      {trend && (
+        <div style={box}>
+          <div style={head}>나아지고 있어요</div>
+          <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>
+            최근 7일은 문장당 사수가 <b>{trend.recent.toFixed(1)}곳</b> 고쳤어요. 그 전 7일은 {trend.prev.toFixed(1)}곳이었어요.
+            {trend.recent < trend.prev ? " 고칠 데가 줄고 있어요." : " 어려운 표현 구간이라 그래요. 계속 가면 돼요."}
+          </div>
+        </div>
+      )}
+
+      <div style={box}>
+        <div style={head}>실전 체크</div>
+        <div style={{ fontSize: 13, color: "var(--ink)", marginBottom: 8 }}>오늘 표현 <b>{today.word}</b>, 회사에서 쓸 자리가 있었어요?</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className={"btn " + (used === "1" ? "btn-primary" : "btn-ghost")} style={{ fontSize: 12, padding: "6px 14px" }} onClick={() => mark("1")}>네, 써봤어요</button>
+          <button className={"btn " + (used === "0" ? "btn-primary" : "btn-ghost")} style={{ fontSize: 12, padding: "6px 14px" }} onClick={() => mark("0")}>아직이요</button>
+        </div>
+        {used === "1" && <div style={{ marginTop: 8, fontSize: 12, color: "var(--green)" }}>실전에서 쓴 표현이 하나 늘었어요. 이게 진짜 실력이에요.</div>}
+        {used === "0" && <div style={{ marginTop: 8, fontSize: 12, color: "var(--ink-mute)" }}>괜찮아요. 내일 회의에서 한 번 노려봐요.</div>}
+      </div>
+
+      <div style={{ ...box, background: "var(--cream)", borderColor: "var(--orange)" }}>
+        <div style={head}>내일 예고</div>
+        {nextScene ? (
+          <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.6 }}>
+            내일은 이런 일이 있어요. <b>{nextScene}</b>
+            <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 4 }}>그때 쓰는 표현은 내일 아침 책상에 올려둘게요.</div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 13.5, color: "var(--ink)" }}>내일은 새 트랙이 열려요. 아침에 책상에서 확인해요.</div>
+        )}
+        {ms && <div style={{ marginTop: 8, fontSize: 12, color: "var(--ink-soft)" }}>{ms.label}까지 <b>{ms.left}일</b> 남았어요.</div>}
+      </div>
+
+      <div className="row" style={{ marginTop: 16, justifyContent: "flex-end" }}>
+        <button className="btn btn-primary" onClick={onDone}>내일 봐요 ✓</button>
+      </div>
+    </div>
+  );
+}
+
 function JournalActivity({ today, item, onClose, onComplete }) {
   const { CHARACTERS } = window.__SIM;
   const buddy = CHARACTERS.buddy;
@@ -11080,6 +11191,10 @@ function JournalActivity({ today, item, onClose, onComplete }) {
     return pool[(today.day - 1) % pool.length];
   }, [today.word, today.day]);
 
+  // 퇴근 화면 (개발 뷰): "퇴근하기" 누르면 바로 닫지 않고 오늘 얻은 것/내일 예고를 먼저 보여준다
+  const [wrapStage, setWrapStage] = useState(false);
+  const handleLeave = () => { if (_isNextFeature()) setWrapStage(true); else onComplete(); };
+
   // 제출 = 저장 + submitted 표시
   const handleSubmit = () => {
     if (!text.trim()) return;
@@ -11092,6 +11207,13 @@ function JournalActivity({ today, item, onClose, onComplete }) {
     }
   };
 
+  if (wrapStage) {
+    return (
+      <ActivityShell title={"WRAP-UP · 퇴근 · DAY " + today.day} onClose={onComplete}>
+        <WrapupScreen today={today} onDone={onComplete} />
+      </ActivityShell>
+    );
+  }
   return (
     <ActivityShell title="MY SITUATION · 내 시추에이션 + 퇴근" onClose={onClose}>
       <span className="label-doc label-orange">▶ 17:00 · 오늘의 한 줄</span>
@@ -11167,7 +11289,7 @@ function JournalActivity({ today, item, onClose, onComplete }) {
           </div>
           <div className="row" style={{ marginTop: 14, justifyContent: "space-between" }}>
             <button className="btn btn-ghost" onClick={() => setSubmitted(false)}>✏️ 내 시추에이션 수정하기</button>
-            <button className="btn btn-primary" onClick={onComplete}>퇴근하기 ✓</button>
+            <button className="btn btn-primary" onClick={handleLeave}>퇴근하기 ✓</button>
           </div>
         </>
       )}
