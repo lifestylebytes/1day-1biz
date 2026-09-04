@@ -5680,8 +5680,8 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ── 신입 모드 해금 사다리 (2026-09-04, 개발 뷰) ──
 // 핵심 루프(출근→시추에이션→미션→퇴근)는 Day 1부터 그대로. 주변 카드만 Day 에 따라 연다.
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
-const _UNLOCK_AT = { promo: 4, attendance: 4, skills: 4, memo: 8, errands: 8, member: 8 };
-const _UNLOCK_LABEL = { promo: "승진 마일스톤", attendance: "출근부", skills: "내 역량 스탯", memo: "사내 메모", errands: "오늘의 심부름", member: "1일1비 멤버십" };
+const _UNLOCK_AT = { promo: 4, attendance: 4, skills: 4, memo: 8, errands: 8 };
+const _UNLOCK_LABEL = { promo: "승진 마일스톤", attendance: "출근부", skills: "내 역량 스탯", memo: "사내 메모", errands: "오늘의 심부름" };
 function _lockedNext(key, rd, viewingPast) {
   return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
 }
@@ -6526,8 +6526,6 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {_isNextFeature() && !_lockedNext("errands", _rdNow, USER.isViewingPast) && <ErrandsCard setActive={setActive} toast={showToast} />}
           {_lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
           {_isNextFeature() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
-          {_lockedNext("member", _rdNow, USER.isViewingPast) && <LockedCard k="member" rd={_rdNow} />}
-          {_isNextFeature() && !_lockedNext("member", _rdNow, USER.isViewingPast) && <MembershipCard />}
 
           {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
           {_lockedNext("attendance", _rdNow, USER.isViewingPast) && <LockedCard k="attendance" rd={_rdNow} />}
@@ -7115,6 +7113,7 @@ function PromotionCard() {
 
 // 멤버십: 유비챌 입장 = 상세페이지로 이동 (_TY_UBCHALL_URL은 위 _NOTICES_ALL 앞에서 정의)
 function _tyOpenUbchall() { try { window.open(_TY_UBCHALL_URL, "_blank", "noopener"); } catch (e) {} }
+// (2026-09-04 사용 안 함: '구독에 유비챌 포함'은 사실이 아니라 홈에서 제거. 유비챌 진입은 사이드바 버튼/공지로만)
 function MembershipCard() {
   return (
     <div className="ty-member">
