@@ -34,6 +34,7 @@
         "For us, giving up data ownership would be a deal-breaker."
       ],
       "mentorTip": "deal-breaker는 '깨는 조건'. 협상 시작 전에 내 deal-breaker를 알면 나머지는 전부 카드가 돼.",
+      "mentorNuance": "계약 조건 검토하면서 \"이건 절대 양보 못 한다\"를 상대에게 선 긋듯 말할 때 써. 협상 시작 전에 우리 쪽 기준을 정리하는 내부 회의에서도 그대로 써.",
       "mcOptions": [
         {
           "text": "Is remote work a deal-breaker for you, or just a nice-to-have?",
@@ -77,6 +78,7 @@
         "Security is non-negotiable for us, everything else we can discuss."
       ],
       "mentorTip": "non-negotiable을 남발하면 협상 자체가 안 돼. 딱 1-2개만. 그래서 차윤아가 '두 번째 더미는 작게'라고 한 거야.",
+      "mentorNuance": "조건 리스트를 공유하면서 \"여기까지는 논의 대상이 아니다\"라고 못 박을 때 써. 한두 개만 골라 붙여야 말에 힘이 생겨.",
       "mcOptions": [
         {
           "text": "For me, the 30-minute lunch walk is non-negotiable. → non-negotiable",
@@ -120,6 +122,7 @@
         "Got it. I'll draft a counteroffer backed by numbers by Thursday."
       ],
       "mentorTip": "counteroffer는 숫자만 바꾸는 게 아니라 '근거'를 붙이는 거야. 근거 없는 역제안은 흥정, 근거 있는 역제안은 협상.",
+      "mentorNuance": "상대 제안서를 받고 우리 숫자를 되돌려 보낼 때 써. 메일 첫 문장에 \"역제안 드립니다\"로 시작하면 자연스러워.",
       "mcOptions": [
         {
           "text": "Thank you for the offer. Based on my research, I'd like to counter with 72.",
@@ -163,6 +166,7 @@
         "The first offer looks like a lowball. They're testing us."
       ],
       "mentorTip": "lowball을 당했다고 화내면 지는 거야. '아 lowball이네' 하고 알아보는 순간, 그건 정보가 돼. 상대가 급하지 않다는 정보.",
+      "mentorNuance": "상대가 말도 안 되게 낮은 금액을 불렀을 때 팀 내부에서 상황을 설명하며 써. 상대 면전에서는 안 쓰는 게 안전해.",
       "mcOptions": [
         {
           "text": "The buyer lowballed me, so I didn't even reply.",
@@ -206,6 +210,7 @@
         "Interesting. That does sweeten the deal, let me check internally and come back by Friday."
       ],
       "mentorTip": "상대가 sweeten the deal을 제안하면 즉답하지 마. '달콤한 것'이 내 deal-breaker(1일차)를 가리는 설탕일 수 있거든.",
+      "mentorNuance": "가격은 못 움직이는데 부가 조건으로 마무리를 당기고 싶을 때 써. 상대가 먼저 꺼내면 \"뭘 얹어줄 건지\" 되묻는 자리에서도 써.",
       "mcOptions": [
         {
           "text": "If you commit to a year, we'll sweeten the deal with a free month.",
@@ -249,6 +254,7 @@
         "They drive a hard bargain, but that means they're serious."
       ],
       "mentorTip": "drive a hard bargain은 욕이 아니라 존중이야. '상대할 맛 나는 프로'라는 뜻. 네가 이 말을 들으면 칭찬으로 받아.",
+      "mentorNuance": "상대의 협상력을 인정하면서 분위기를 풀 때 써. 합의 직후 악수하며 한마디 던지는 자리에 잘 어울려.",
       "mcOptions": [
         {
           "text": "My grandma really drives a hard bargain at the market. → drives",
@@ -292,6 +298,7 @@
         "We can. Two alternatives are lined up, so walking away is a real option."
       ],
       "mentorTip": "walk away는 협상 최강의 카드야. 진짜 나가는 게 아니라 '나갈 수 있는 상태'를 만드는 것. 대안이 있으면 목소리가 달라져.",
+      "mentorNuance": "조건이 안 맞으면 접을 수도 있다는 걸 상대에게 알릴 때 써. 내부 회의에서 \"마지노선 넘으면 접자\"를 정할 때도 써.",
       "mcOptions": [
         {
           "text": "The numbers don't work anymore. Let's be ready to walk away.",
@@ -335,6 +342,7 @@
         "Their logo on our case study is a bargaining chip we haven't played yet."
       ],
       "mentorTip": "돈만 카드가 아니야. 레퍼런스, 기간, 독점, 소개. 협상 잘하는 사람은 지갑 말고 칩을 늘려.",
+      "mentorNuance": "돈 말고 우리가 내밀 수 있는 카드를 정리하는 내부 회의에서 써. 상대에게 \"이건 우리 카드다\"라고 직접 말하지는 않아.",
       "mcOptions": [
         {
           "text": "Mention it politely. A competing offer is your best bargaining chip.",
@@ -378,6 +386,7 @@
         "It's the termination penalty. That's the real sticking point."
       ],
       "mentorTip": "sticking point를 정확히 짚는 게 협상의 절반이야. 겉으로는 가격 싸움처럼 보여도 진짜 막힌 곳은 따로 있는 경우가 많아.",
+      "mentorNuance": "협상 중간 보고에서 \"지금 막힌 지점이 여기다\"라고 팀장에게 요약할 때 써. 상대와도 \"이 부분만 풀면 된다\"로 쓸 수 있어.",
       "mcOptions": [
         {
           "text": "Parking became the sticking point in the office move. → sticking point",
@@ -421,6 +430,7 @@
         "I'll go through the fine print tonight and reply by tomorrow."
       ],
       "mentorTip": "fine print엔 자동 갱신, 위약금, 독점 조항이 숨어 살아. '좋아 보이는 딜'일수록 작은 글씨부터.",
+      "mentorNuance": "계약서 세부 조항을 확인해 달라고 하거나 \"작은 글씨까지 봤냐\"고 챙길 때 써. 법무 검토 요청 문장에 넣으면 자연스러워.",
       "mcOptions": [
         {
           "text": "Always read the fine print before you subscribe.",
@@ -464,6 +474,7 @@
         "To be transparent, we have other options on the table too. That said, Nexa remains our first choice."
       ],
       "mentorTip": "hardball에 hardball로 받되, 문은 열어둬. '우리도 대안 있음 + 그래도 너희가 1순위'. 이 조합이 단호함과 존중을 동시에 전달해.",
+      "mentorNuance": "상대가 압박 카드를 꺼냈을 때 팀 내부에서 상황을 정리하는 말로 써. \"우리도 세게 나가자\"를 정할 때도 이 표현으로 말해.",
       "mcOptions": [
         {
           "text": "If the landlord plays hardball, we bring up the repairs he's been ignoring.",
@@ -507,6 +518,7 @@
         "Let's stand firm on the core and stay flexible on the extras."
       ],
       "mentorTip": "stand firm은 고집이 아니야. '어디서 버틸지'를 정해놓고 버티는 것. 전부 버티면 결렬, 전부 양보하면 호구. 핵심만 firm.",
+      "mentorNuance": "상대가 재조정을 요구할 때 \"우리 입장은 그대로다\"를 답장에 담으며 써. 내부에서 \"여기서는 버티자\"를 정할 때도 써.",
       "mcOptions": [
         {
           "text": "Despite three rounds of pressure, she stood firm on the deadline. → stood",
@@ -550,6 +562,7 @@
         "Happy to split the difference, provided we lock in a two-year contract."
       ],
       "mentorTip": "split the difference를 공짜로 해주지 마. '반씩 양보'도 양보야. 받아줄 땐 반드시 뭔가를 얹어서 받아. 그게 if 한 마디의 힘이야.",
+      "mentorNuance": "격차가 많이 좁혀졌을 때 마무리 제안으로 써. 상대가 먼저 꺼내면 받되 조건을 붙이는 답장에서 써.",
       "mcOptions": [
         {
           "text": "You want five nights, I want three. Let's split the difference at four.",
@@ -593,6 +606,7 @@
         "Let me build an ROI case to win over their CFO."
       ],
       "mentorTip": "win over는 논쟁에서 이기는(win) 게 아니라 상대를 내 편으로 데려오는(over) 거야. 이긴 논쟁, 잃은 딜만큼 허무한 게 없어.",
+      "mentorNuance": "회의적인 결정권자를 설득해야 하는 상황을 팀장에게 보고할 때 써. \"CFO를 우리 편으로 만들어야 한다\"를 이 한 단어로 말해.",
       "mcOptions": [
         {
           "text": "The pilot program won over even the most skeptical managers.",
@@ -636,6 +650,7 @@
         "They backed out of the training commitment. Legally fine, but worth calling out."
       ],
       "mentorTip": "상대가 back out 하면 화보다 기록이 먼저야. '언제 합의했고 언제 뒤집었는지'. put it in writing(문서 TF 예고)이 왜 중요한지 몸으로 배우는 날.",
+      "mentorNuance": "상대가 합의를 뒤집었을 때 상황 보고 첫 줄에 써. 언제 합의했는지 기록과 같이 써야 힘이 생겨.",
       "mcOptions": [
         {
           "text": "The caterer just backed out. I'm getting two backup quotes within the hour.",
@@ -679,6 +694,7 @@
         "Can we block Thursday afternoon to hammer out what's left?"
       ],
       "mentorTip": "hammer out은 대장간에서 쇠 두들기듯, 이견을 '수고스럽게 때려서' 합의로 만드는 그림. 이 단어를 쓰는 순간 '이제 끝내자'는 신호가 전달돼.",
+      "mentorNuance": "이번 주 안에 큰 틀을 끝내자고 팀에 방향을 잡을 때 써. 마라톤 회의 소집 메일에 잘 어울려.",
       "mcOptions": [
         {
           "text": "The union and management hammered out an agreement overnight. → hammered",
@@ -722,6 +738,7 @@
         "Agreed. We'll iron out the specifics on our side by Tuesday."
       ],
       "mentorTip": "합의 직후가 제일 위험한 구간이야. '자잘한 것'이라며 미룬 것들이 fine print(10일차)가 되어 돌아오거든. iron out에도 기한을 박아.",
+      "mentorNuance": "큰 틀은 끝났고 남은 세부만 정리하면 되는 단계에서 써. 마무리 메일이나 후속 회의 제안에서 자주 나와.",
       "mcOptions": [
         {
           "text": "The structure is solid. Let's iron out the wording tomorrow morning.",
@@ -765,6 +782,7 @@
         "Before signing, we need to nail down the support dates."
       ],
       "mentorTip": "협상 후반의 적은 상대가 아니라 모호함이야. about, around, approximately가 보이면 무조건 nail down. 대충 넘어간 단어 하나가 6개월 뒤 분쟁이 돼.",
+      "mentorNuance": "계약서에 \"약\", \"대략\" 같은 모호한 표현이 보일 때 확정을 요청하며 써. 일정, 금액, 기간을 못 박을 때 전부 써.",
       "mcOptions": [
         {
           "text": "We finally nailed down the venue for the offsite.",
@@ -808,6 +826,7 @@
         "Agreed. I'll use the upper hand to speed up the close, not to squeeze them."
       ],
       "mentorTip": "upper hand를 잡았을 때 어떻게 쓰는지가 그 사람의 협상 급을 정해. 쥐어짜면 한 번 이기고, 품위 있게 쓰면 다음 딜도 이겨.",
+      "mentorNuance": "상황이 우리 쪽에 유리해졌을 때 내부 보고에서 써. 상대 앞에서 직접 쓰면 도발로 읽히니 조심해.",
       "mcOptions": [
         {
           "text": "With two competing offers, she had the upper hand. → upper",
@@ -851,6 +870,7 @@
         "We'd rather keep equity off the table and close the service agreement as scoped."
       ],
       "mentorTip": "off the table을 말할 땐 짧게 말해. 설명이 길어지면 '설득하면 되겠네'로 읽혀. 팀장의 Full stop이 그 기술이야.",
+      "mentorNuance": "상대가 무리한 아이디어를 던졌을 때 짧게 잘라 말하는 자리에 써. 설명 없이 한 문장으로 끝내야 효과가 있어.",
       "mcOptions": [
         {
           "text": "A budget increase is off the table this quarter. Let's optimize what we have.",
@@ -894,6 +914,7 @@
         "Thanks for being upfront. Our cards on the table: we need ten days for legal, so let's work backward from that."
       ],
       "mentorTip": "상대가 패를 깠을 때가 신뢰를 지을 기회야. 나도 하나 까면 관계가 생기고, 숨기면 정보만 먹은 사람이 돼. 단, 다 깔 필요는 없어. 하나면 돼.",
+      "mentorNuance": "서로 숨기던 걸 털어놓고 마무리 짓자고 제안할 때 써. 상대가 먼저 솔직해졌을 때 화답하는 자리에서도 써.",
       "mcOptions": [
         {
           "text": "Let me put my cards on the table: we can't start before March.",
@@ -937,6 +958,7 @@
         "We're waiving the rush fee in good faith, let's get this signed."
       ],
       "mentorTip": "good faith는 협상의 윤활유야. 다만 순서가 있어. 상대가 먼저 신의를 보였을 때 응답으로. 아무에게나 먼저 주면 그건 그냥 할인.",
+      "mentorNuance": "상대 사정을 봐주면서 \"선의로 하는 거다\"를 밝힐 때 써. 계약서 문구나 양보 메일에서 자주 등장해.",
       "mcOptions": [
         {
           "text": "We returned the overpayment in good faith. → in",
@@ -980,6 +1002,7 @@
         "The bottom line: two years secured, 4 percent saved, and we concede training plus the rush fee."
       ],
       "mentorTip": "임원에게는 bottom line부터. 이유는 그다음에 물어보면 말해. 결론 먼저 말하는 습관 하나가 '일 잘한다'는 평판의 절반이야.",
+      "mentorNuance": "임원 보고에서 결론부터 말할 때 써. 상대에게 \"우리 마지노선은 여기다\"라고 최종 선을 그을 때도 써.",
       "mcOptions": [
         {
           "text": "Bottom line: two weeks behind, but recoverable with one more engineer.",
@@ -1023,6 +1046,7 @@
         "The investment breaks even in seven months, and everything after is upside."
       ],
       "mentorTip": "설득의 숫자는 하나면 돼. break-even 시점은 CFO의 모국어야. '언제 본전 뽑는지'만 명확하면 나머지 슬라이드는 장식이야.",
+      "mentorNuance": "CFO 설득 자료에서 \"언제 본전을 뽑는지\" 설명할 때 써. ROI 회의라면 이 단어 하나로 대화가 열려.",
       "mcOptions": [
         {
           "text": "The food truck broke even in its first summer.",
@@ -1066,6 +1090,7 @@
         "The margin stays. But we can give them 45-day payment terms as a goodwill move."
       ],
       "mentorTip": "가격 할인은 마진을 영원히 깎지만, 결제 조건 같은 대안은 한 번의 편의야. 같은 '양보'라도 원가가 달라. 이게 협상 4주차의 눈이야.",
+      "mentorNuance": "추가 할인 요청이 들어왔을 때 내부에서 \"이윤이 얼마나 남는지\" 따지며 써. 할인 대신 대안을 제시하는 근거로 쓰기 좋아.",
       "mcOptions": [
         {
           "text": "Software has higher margins than hardware. → margins",
@@ -1109,6 +1134,7 @@
         "We need to revise clause 14, data ownership is at stake here."
       ],
       "mentorTip": "at stake는 경보 단어야. 이 말이 나오면 회의실 온도가 바뀌어. 그래서 아껴 써야 해. 진짜 걸렸을 때만.",
+      "mentorNuance": "리스크 보고에서 \"뭐가 걸려 있는지\" 경고할 때 써. 진짜 큰 건일 때만 꺼내야 무게가 유지돼.",
       "mcOptions": [
         {
           "text": "Customer trust is at stake. We disclose today, on our terms.",
@@ -1152,6 +1178,7 @@
         "I'm ready for it. Position is clear, alternatives are lined up."
       ],
       "mentorTip": "high-stakes 상황일수록 문장은 짧아져야 해. 긴장하면 말이 길어지고, 말이 길어지면 약점이 새어 나가. 짧은 문장 = 준비된 사람.",
+      "mentorNuance": "판이 큰 회의를 앞두고 팀에 긴장감을 줄 때 써. \"이번 미팅은 판이 크다\"를 한 단어로 말해.",
       "mcOptions": [
         {
           "text": "She thrives in high-stakes negotiations.",
@@ -1195,6 +1222,7 @@
         "This is our best and final offer. We believe it reflects everything we've built over the past month."
       ],
       "mentorTip": "best and final은 한 번만 쓸 수 있는 단어야. 이 말 하고 또 양보하면 다음 협상부터 아무도 네 final을 안 믿어. 쓸 거면 진짜 final일 때.",
+      "mentorNuance": "마지막 숫자를 던지면서 \"더는 없다\"를 선언할 때 써. 한 협상에서 딱 한 번만 써야 해.",
       "mcOptions": [
         {
           "text": "The client wants best and final from all vendors by noon. One shot, make it count.",
@@ -1238,6 +1266,7 @@
         "Same here, honestly. This deal taught me a lot. Tomorrow, we sign."
       ],
       "mentorTip": "level with는 상대와 같은 높이(level)에 서서 말하는 그림이야. 협상의 끝에 이 말이 나왔다는 건, 숫자 싸움이 관계로 승격됐다는 뜻이야.",
+      "mentorNuance": "협상 막판에 솔직한 얘기를 꺼내기 전 서두로 써. 신뢰가 쌓인 상대와 통화할 때 자연스러워.",
       "mcOptions": [
         {
           "text": "I'll level with you: the budget is gone. → level",
@@ -1281,6 +1310,7 @@
         "Closing the deal starts on day one. The signature is just where it becomes visible."
       ],
       "mentorTip": "close the deal은 세일즈의 심장 같은 표현이야. 그리고 진실은: 좋은 클로징은 좋은 오프닝의 결과야. deal-breaker를 정한 1일차가 오늘을 만들었어. 수료 축하해. 🤝",
+      "mentorNuance": "서명이 끝났을 때 팀에 알리거나 성과를 보고할 때 써. 세일즈 회의에서 \"이번 주 안에 마무리하자\"를 말할 때도 써.",
       "mcOptions": [
         {
           "text": "You've done the work. Now go close the deal.",

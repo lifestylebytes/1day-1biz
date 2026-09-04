@@ -25,6 +25,7 @@
         "Alright, let's get the ball rolling. First up, weekly updates."
       ],
       "mentorTip": "회의 첫 10초가 제일 어색해. get the ball rolling은 그 어색함을 끊는 시동어야. 완벽한 오프닝 멘트를 고민하지 말고 일단 공부터 굴려.",
+      "mentorNuance": "회의를 시작하면서 첫 안건으로 넘어갈 때 써. 어색한 첫 10초를 끊는 자리에 잘 맞아.",
       "mcOptions": [
         {
           "text": "Just say 'let's get the ball rolling' and throw out an easy icebreaker question.",
@@ -68,6 +69,7 @@
         "Good call. I'll write up talking points for each agenda item tonight."
       ],
       "mentorTip": "talking points는 대본이 아니야. 대본은 읽는 순간 티가 나. 포인트만 적고 문장은 그 자리에서 만들어. 그래야 사람 말처럼 들려.",
+      "mentorNuance": "회의 전에 말할 거리를 정리해 공유할 때 써. \"포인트만 미리 정리했다\"고 팀장에게 보낼 때 어울려.",
       "mcOptions": [
         {
           "text": "Prep your talking points first, three lines per likely question. → talking points",
@@ -111,6 +113,7 @@
         "Before we move on, let me open the floor. Questions or pushback welcome."
       ],
       "mentorTip": "open the floor 하고 침묵을 못 참아서 네가 또 말하면, 사람들은 영원히 입을 안 열어. 5초 침묵은 어색한 게 아니라 초대장이야.",
+      "mentorNuance": "내 얘기를 끝내고 다른 사람들 의견을 받을 때 써. 이 말 뒤에는 5초 침묵을 견뎌야 해.",
       "mcOptions": [
         {
           "text": "That's my take. Let me open the floor, what did everyone get out of chapter three?",
@@ -154,6 +157,7 @@
         "Thank you. So, three things happening with the client this week."
       ],
       "mentorTip": "the floor is yours를 받았을 때 '어... 네...' 하고 버벅이면 아까워. 감사 한마디 + 바로 숫자로 시작. 넘겨받는 그 순간이 네 첫인상이야.",
+      "mentorNuance": "발언권을 다른 사람에게 넘길 때 써. 받는 쪽이면 감사 한마디 뒤에 바로 본론으로 가.",
       "mcOptions": [
         {
           "text": "Minji has been leading this project for a year. Minji, the floor is yours.",
@@ -197,6 +201,7 @@
         "Can I jump in real quick? One thing on the schedule before we move on."
       ],
       "mentorTip": "jump in의 핵심은 타이밍이야. 상대 문장이 끝나고 숨 쉬는 반 박자, 거기가 문이야. 그리고 끼어들었으면 한 문장으로 끝내. 길어지면 뺏은 게 돼.",
+      "mentorNuance": "대화 중간에 끼어들 때 양해를 구하는 말로 써. \"잠깐 끼어들게요\"를 이 표현으로 해.",
       "mcOptions": [
         {
           "text": "Just say 'sorry, can I jump in?' first. That phrase buys you the floor politely.",
@@ -240,6 +245,7 @@
         "Piggybacking on that, the same recording could double as onboarding material."
       ],
       "mentorTip": "piggyback은 남의 아이디어를 뺏는 게 아니라 공을 돌려주면서 얹는 거야. 이름을 꼭 불러. 'to piggyback on Minjun's point'. 이름이 들어가는 순간 협업이 돼.",
+      "mentorNuance": "앞사람 아이디어에 한마디 얹을 때 써. 이름을 부르고 시작하면 공을 돌려주는 말이 돼.",
       "mcOptions": [
         {
           "text": "To piggyback on the last question, how does this affect cost? → piggyback on",
@@ -283,6 +289,7 @@
         "Good push. I'll build an answer for the March dip before the QBR."
       ],
       "mentorTip": "devil's advocate를 선언하고 반대하는 건 '너를 공격하는 게 아니라 아이디어를 시험한다'는 안전장치야. 반대로 네가 반박하고 싶을 때도 이 말로 시작하면 감정이 안 섞여.",
+      "mentorNuance": "일부러 반대 의견을 내기 전에 선언하며 써. 공격이 아니라 시험이라는 신호가 돼.",
       "mcOptions": [
         {
           "text": "I love the idea, but let me play devil's advocate for a minute: what's our rain plan?",
@@ -326,6 +333,7 @@
         "I'll stop us before we go off on a tangent. Back to item two."
       ],
       "mentorTip": "tangent를 끊을 땐 내용을 비난하지 말고 시간 탓을 해. 'good point, but for time...' 사람이 아니라 시계를 악역으로 만들면 아무도 안 다쳐.",
+      "mentorNuance": "얘기가 옆길로 샜을 때 되돌리는 말로 써. 시간 핑계와 같이 말하면 부드러워.",
       "mcOptions": [
         {
           "text": "The budget review went off on a tangent about office snacks for half an hour.",
@@ -369,6 +377,7 @@
         "Speaking off the cuff, I'd say the churn improvement is the story of the quarter."
       ],
       "mentorTip": "off the cuff를 잘하는 비결은 역설적으로 준비야. 핵심 숫자 세 개를 평소에 외워두면 어떤 돌발 질문도 그 셋 중 하나로 연결돼. 즉흥은 재료가 있어야 요리가 돼.",
+      "mentorNuance": "준비 없이 답하기 전에 양해를 구할 때 써. \"준비 안 된 거라 대략만 말할게요\"를 이 표현으로 해.",
       "mcOptions": [
         {
           "text": "You gave a whole speech off the cuff? That's impressive, most people freeze.",
@@ -412,6 +421,7 @@
         "Thanks, Daniel. Thinking on my feet is exactly what I'm training for the QBR."
       ],
       "mentorTip": "think on your feet는 타고나는 게 아니라 패턴이야. 모르면 '좋은 질문이네요, 정확한 숫자는 확인 후 드릴게요'. 이 한 문장만 있어도 안 무너져. 순발력의 절반은 준비된 도망길이야.",
+      "mentorNuance": "돌발 질문에 잘 대응한 사람을 칭찬할 때 써. 면접이나 평가 코멘트에도 나와.",
       "mcOptions": [
         {
           "text": "Interviews really test your ability to think on your feet. → think on your feet",
@@ -455,6 +465,7 @@
         "Noted on the 10:30 hard stop. Agenda coming your way today, we'll keep it tight."
       ],
       "mentorTip": "hard stop 통보를 받으면 부담 갖지 말고 오히려 활용해. '10:25에 랩업할게요'라고 먼저 말하는 진행자를 상대는 신뢰해. 시간 감각이 곧 실력으로 보이는 문화야.",
+      "mentorNuance": "회의를 잡을 때 \"이 시간엔 꼭 나가야 한다\"를 미리 알리며 써. 초대 답장에 한 줄 넣으면 돼.",
       "mcOptions": [
         {
           "text": "Quick note before we start: I have a hard stop at 2, so let's prioritize the top two items.",
@@ -498,6 +509,7 @@
         "We ran over mostly in the data part. Trimming five slides tonight."
       ],
       "mentorTip": "run over의 주범은 항상 '아까워서 못 버린 슬라이드'야. 발표는 요리랑 같아서 뺄수록 맛이 나. Sarah의 hard stop(어제 단어) 기억하지? 시간 초과는 콘텐츠가 아니라 신뢰의 문제야.",
+      "mentorNuance": "회의나 발표가 예정 시간을 넘길 때 써. \"10분 넘길 것 같다\"고 양해를 구하는 자리에서 나와.",
       "mcOptions": [
         {
           "text": "Sorry I'm late, the standup ran over by twenty minutes.",
@@ -541,6 +553,7 @@
         "Happy to cover pricing in a separate session. For today, let me steer us back to the roadmap."
       ],
       "mentorTip": "steer는 '무시하고 화제 돌리기'가 아니야. 한 번은 제대로 답해. 답 없이 핸들만 꺾으면 상대는 도망친다고 느껴. 답하고 꺾기, 순서가 생명이야.",
+      "mentorNuance": "대화가 엉뚱한 곳으로 갈 때 방향을 돌리는 상황을 설명하며 써. 진행자 코칭에서 자주 나와.",
       "mcOptions": [
         {
           "text": "Okay, let me steer the conversation somewhere safer. Who's watched anything good lately?",
@@ -584,6 +597,7 @@
         "Can we debrief right away? I want the feedback while it's still warm."
       ],
       "mentorTip": "debrief의 골든타임은 종료 직후 30분이야. 하루 지나면 기억이 미화돼. 그리고 잘된 것부터 말해. 못한 것부터 시작하는 복기엔 아무도 다시 안 와.",
+      "mentorNuance": "회의나 발표가 끝나고 복기 모임을 잡을 때 써. \"끝나고 잠깐 복기하자\"를 이 표현으로 해.",
       "mcOptions": [
         {
           "text": "Let's debrief over lunch tomorrow before we forget the prop disaster. → debrief",
@@ -627,6 +641,7 @@
         "Happy to walk you through the numbers. March first, since that's the interesting one."
       ],
       "mentorTip": "walk through를 부탁받으면 겁먹지 마. 널 시험하는 게 아니라 '네 속도로 안내해달라'는 뜻이야. 산책(walk)이잖아. 뛰지 말고, 한 숫자씩, 스토리를 붙여서.",
+      "mentorNuance": "자료를 처음부터 차근차근 설명해 달라고 요청하거나 설명할 때 써. 데모, 온보딩에서 매일 나와.",
       "mcOptions": [
         {
           "text": "Come grab a seat, I'll walk you through the whole deploy process step by step.",
@@ -670,6 +685,7 @@
         "Adding a deep dive on March churn to the deck, per Sarah's request."
       ],
       "mentorTip": "deep dive 요청은 위기가 아니라 기회야. 상대가 파고 싶다는 건 관심이 있다는 뜻이거든. 최악은 얕게 파고 들키는 것. 딥다이브 섹션엔 네가 제일 잘 아는 데이터만 넣어.",
+      "mentorNuance": "한 주제를 깊게 파는 후속 회의를 제안할 때 써. 미팅 제목에 그대로 붙여.",
       "mcOptions": [
         {
           "text": "We're doing a deep dive into the latency issue next sprint.",
@@ -713,6 +729,7 @@
         "I'll rework slide one into a high-level overview and push the forty rows to the appendix."
       ],
       "mentorTip": "high-level 요약의 공식은 '숫자 하나 + 방향 하나 + 요청 하나'야. 'ARR 12% 성장, 이탈은 잡히는 중, 오늘은 갱신 얘기를 하고 싶다'. 이 세 줄이면 임원의 귀가 열려.",
+      "mentorNuance": "디테일 빼고 큰 그림만 달라고 할 때 써. 임원 보고 요청에 자주 붙어.",
       "mcOptions": [
         {
           "text": "High-level: we're on track, two weeks ahead on dev, one open risk on hiring.",
@@ -756,6 +773,7 @@
         "Can we drill down one more level, by region this time?"
       ],
       "mentorTip": "drill down은 방향이 있는 딥다이브야. 무작정 파지 말고 가설을 들고 파. 박 대리처럼 '두 계정 때문일걸?' 하고 드릴을 대는 거지. 가설 없는 드릴링은 그냥 소음이야.",
+      "mentorNuance": "특정 숫자 속으로 더 파고들자고 할 때 써. 대시보드 앞에서 데이터 얘기를 할 때 어울려.",
       "mcOptions": [
         {
           "text": "We need to drill down by channel to find the real problem. → drill down",
@@ -799,6 +817,7 @@
         "Fair. If I zoom out, the story is simple: one-time dip, fundamentals intact."
       ],
       "mentorTip": "발표 중에도 써먹어. 디테일 질문 러시에 말리면 'let me zoom out for a second' 하고 큰 그림을 다시 깔아. 수세를 공세로 바꾸는 진행자의 카메라 워크야.",
+      "mentorNuance": "디테일에 빠졌을 때 전체 그림으로 돌아가자고 할 때 써. 발표 중 질문 러시를 정리할 때도 써.",
       "mcOptions": [
         {
           "text": "Zoom out for a second: which job gets you where you want to be in five years?",
@@ -842,6 +861,7 @@
         "Quick level set for the new folks: Q1 ended with three commitments, and here's where each stands."
       ],
       "mentorTip": "level set은 '아는 사람에겐 복습, 모르는 사람에겐 구조'야. 30초면 충분해. 이걸 건너뛰면 회의 중반에 '잠깐, 그게 뭐였죠?'가 터지고, 그 순간 네 페이스는 끝나.",
+      "mentorNuance": "회의 시작 전에 모두를 같은 출발선에 세우는 30초 정리를 부르며 써. 참석자 배경이 다를 때 꼭 필요해.",
       "mcOptions": [
         {
           "text": "I started the kickoff by level setting on what the project covers and what it doesn't.",
@@ -885,6 +905,7 @@
         "One hit on the strawman: quarterly reviews sound heavy for Sarah's team. Twice a year?"
       ],
       "mentorTip": "strawman의 마법은 '완벽하지 않아도 된다'는 데 있어. 빈 화이트보드 앞에선 다들 조용한데, 허수아비 하나 세우면 갑자기 다들 말이 많아지거든. 회의가 안 굴러가면 네가 먼저 세워.",
+      "mentorNuance": "완벽하지 않은 초안을 던져 논의를 시작할 때 써. \"두들겨 맞으라고 만든 안이다\"를 이 한 단어로 말해.",
       "mcOptions": [
         {
           "text": "Bring a strawman proposal to the next meeting. People decide faster when there's something to attack.",
@@ -928,6 +949,7 @@
         "Let's do a show of hands: who actually read the pre-read? Be honest!"
       ],
       "mentorTip": "show of hands는 데이터 수집이 아니라 잠 깨우기용이야. 첫 질문은 무조건 가볍고 웃긴 걸로. 손을 한 번 든 청중은 그 뒤로 계속 참여해. 몸이 열리면 입도 열리거든.",
+      "mentorNuance": "워크숍이나 큰 회의에서 손들기로 분위기를 깨울 때 써. 가벼운 질문과 같이 써.",
       "mcOptions": [
         {
           "text": "Let's settle it with a show of hands. Korean food, who's in? → show of hands",
@@ -971,6 +993,7 @@
         "I'm putting a pin in this one. Tonight at eight, pricing only. Moving on to the run-through."
       ],
       "mentorTip": "put a pin in it의 신뢰는 후속에서 나와. 핀만 꽂고 안 돌아오면 다음부턴 아무도 안 믿어. 꽂는 순간 '언제 다시 열지'를 같이 말해. 핀과 캘린더는 세트야.",
+      "mentorNuance": "논의를 잠시 접고 나중에 돌아오자고 할 때 써. 언제 돌아올지 같이 말해야 신뢰가 남아.",
       "mcOptions": [
         {
           "text": "Great debate, but let's put a pin in it and finish the chapter. We'll settle it in the group chat.",
@@ -1014,6 +1037,7 @@
         "Classic. Ten years of video calls and I still open on mute. Alright, welcome to the QBR, for real this time."
       ],
       "mentorTip": "뮤트 사고는 사고가 아니라 최고의 아이스브레이커야. 당황해서 사과를 세 번 하면 그때부터 진짜 사고가 돼. 씩 웃고, 농담 한 줄, 바로 재시작. 회복 속도가 곧 신뢰야.",
+      "mentorNuance": "화상회의에서 상대 소리가 안 들릴 때 써. 웃으면서 한 번만 말하면 돼.",
       "mcOptions": [
         {
           "text": "Hold on, you're on mute! We missed all of that.",
@@ -1057,6 +1081,7 @@
         "Now let me turn it over to Minjun for the March numbers. Minjun, the screen's yours."
       ],
       "mentorTip": "turn it over to는 넘기는 사람을 세워주는 표현이야. 이름 + 왜 이 사람인지 한 줄. 'who owns this data'처럼. 그 한 줄이 발표자의 권위를 만들고, 그건 결국 네 팀의 권위가 돼.",
+      "mentorNuance": "발표 순서를 다음 사람에게 넘길 때 써. 이름과 이유 한 줄을 같이 붙여.",
       "mcOptions": [
         {
           "text": "That's the agenda. Now I'll turn it over to Dr. Lee, who built this framework from scratch.",
@@ -1100,6 +1125,7 @@
         "Happy to field questions now. Fire away, we saved ten minutes for this."
       ],
       "mentorTip": "field questions의 field는 야구 수비수의 그 필드야. 공이 어디로 튈지 몰라도 잡아내는 것. 못 잡을 공은 '확인 후 서면으로 드릴게요' 하고 흘려보내. 다 잡으려다 놓치는 게 최악이야.",
+      "mentorNuance": "Q&A 시간을 열거나 \"질문 받겠다\"고 알릴 때 써. 발표 마무리 멘트에 어울려.",
       "mcOptions": [
         {
           "text": "The real test is fielding questions for ten minutes after the talk. → fielding questions",
@@ -1143,6 +1169,7 @@
         "Thirty-second version: strong QBR, renewal talks are on, one ask: your approval on the pricing band this week."
       ],
       "mentorTip": "elevator pitch의 구조는 '결과 + 의미 + 요청' 딱 셋이야. 형용사를 줄이고 명사와 숫자로 말해. 'went really super well'보다 'Sarah agreed to renewal talks'가 백 배 강해.",
+      "mentorNuance": "30초 안에 핵심을 말해야 할 때 그 요약을 부르며 써. 상사가 갑자기 물어볼 때 준비된 답이 이거야.",
       "mcOptions": [
         {
           "text": "Start with your elevator pitch: one problem, one solution, one number. Say it out loud until it's boring.",
@@ -1186,6 +1213,7 @@
         "Which segues nicely into the next section: what this means for the renewal."
       ],
       "mentorTip": "segue 문장의 공식은 '방금 것의 결론 = 다음 것의 이유'야. 'A가 됐다는 건, B를 얘기할 때가 됐다는 뜻이죠'. 이 틀 하나면 어떤 슬라이드 사이도 이어져.",
+      "mentorNuance": "발표에서 주제를 자연스럽게 넘길 때 그 연결 문장을 부르며 써. 리허설 피드백에서 자주 나와.",
       "mcOptions": [
         {
           "text": "I loved how she segued from the customer story into the pricing ask.",
@@ -1229,6 +1257,7 @@
         "Yes, quick sanity check before it goes out. Cross-checking beats double-checking your own work."
       ],
       "mentorTip": "sanity check는 실력 의심이 아니라 프로의 절차야. 부탁하길 부끄러워하는 사람이 제일 위험해. 그리고 Sarah 같은 상대에게 가는 숫자는 무조건 두 사람의 눈을 거쳐. 예외 없이.",
+      "mentorNuance": "보내기 전에 \"말이 되는지 한번 봐줘\"를 부탁할 때 써. 숫자 자료 검토 요청에 잘 맞아.",
       "mcOptions": [
         {
           "text": "Before you sign, get a sanity check from someone who's rented before. Ten minutes, zero regrets.",
@@ -1272,6 +1301,7 @@
         "First, some housekeeping: notes will be shared afterward, and we'll hold questions for the last ten minutes."
       ],
       "mentorTip": "housekeeping으로 여는 회의는 '이 사람이 이 방의 주인'이라는 신호야. 시간, 녹화, 질문 타이밍. 이 셋을 30초에 정리하고 시작하는 사람을 사람들은 따라가. 30일 전의 너에게 보여주고 싶은 오프닝이네. 수료 축하해. 🎤",
+      "mentorNuance": "회의 본론 전에 시간, 녹화, 질문 타이밍 같은 공지를 할 때 써. 진행자가 여는 첫 멘트에 어울려.",
       "mcOptions": [
         {
           "text": "A few housekeeping items before we dive in: recording policy and how to ask questions. → housekeeping",

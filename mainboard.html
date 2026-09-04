@@ -6009,6 +6009,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           sampleAnswer: (raw.sampleAnswers || [])[0] || "",
           sampleAnswers: raw.sampleAnswers || [],
           mentorTip: raw.mentorTip,
+          mentorNuance: raw.mentorNuance,
           mcOptions: raw.mcOptions,
           buddyAnswers: raw.buddyAnswers,
           task: { to: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'), channel: "slack-dm",
