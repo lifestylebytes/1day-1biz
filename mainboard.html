@@ -7303,6 +7303,10 @@ function _mentorNuanceLine(scn) {
     const esc = String(scn.word).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     nu = nu.replace(new RegExp("^" + esc + "\\s*(=|는|은|이|가|이란|란|,)\\s*", "i"), "");
   }
+  // 뉘앙스 첫 문단이 어원 설명("~에서 온 말", "A + B(...)")이거나 너무 짧은 정의뿐이면
+  // 외우는 팁(유버디)과 겹치니 사수 원래 메모(mentorTip, 쓰임새 조언)로 대체 (Day 38·50·51·68 등)
+  const looksEtymology = /에서 온 말|어원|유래|\+\s*[a-zA-Z]+\s*\(/.test(nu);
+  if (nu && (looksEtymology || nu.length < 28) && scn?.mentorTip) return scn.mentorTip;
   return nu || scn?.mentorTip || "";
 }
 function _buddyTipText(scn) {
