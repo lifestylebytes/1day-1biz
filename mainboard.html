@@ -520,6 +520,12 @@ body::before {
   margin-bottom: 14px;
 }
 .skillgrid-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.skillgrid-toggle { width: 100%; background: transparent; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
+.skillgrid-toggle:hover .skillgrid-caret { color: var(--ink); }
+.skillgrid-caret { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--ink-mute); white-space: nowrap; }
+.skillgrid-head .skillgrid-num { margin-left: auto; }
+.skillgrid-head .skillgrid-caret { margin-left: 10px; }
+.skillgrid.collapsed { padding-bottom: 12px; }
 .skillgrid-title { font-size: 13px; font-weight: 900; letter-spacing: 0.06em; color: var(--ink); }
 .skillgrid-num { font-size: 21px; font-weight: 900; color: var(--orange); line-height: 1; }
 .skillgrid-num small { font-size: 11px; font-weight: 700; color: var(--ink-mute); margin-left: 2px; }
@@ -7249,13 +7255,18 @@ function SkillGrid({ user, onGoDay }) {
   const nextDayNum = Math.min(isTf ? 240 : 90, rd + 1);
   const nextArea = !isTf && nextDayNum <= 90 ? AREA_META.find(a => a.id === _areaOf(nextDayNum)) : null;
 
+  // 접기/펼치기 (2026-09-04): 기본은 접힘. 헤더 한 줄(제목 + 수집 숫자)만 보이고 누르면 펼쳐진다.
+  const [sgOpen, setSgOpen] = React.useState(() => { try { return localStorage.getItem("__OD_SKILLGRID_OPEN") === "1"; } catch (e) { return false; } });
+  const toggleSg = () => { setSgOpen(v => { const n = !v; try { localStorage.setItem("__OD_SKILLGRID_OPEN", n ? "1" : "0"); } catch (e) {} return n; }); };
   return (
-    <div className="skillgrid">
-      <div className="skillgrid-head">
+    <div className={"skillgrid" + (sgOpen ? "" : " collapsed")}>
+      <button type="button" className="skillgrid-head skillgrid-toggle" onClick={toggleSg} aria-expanded={sgOpen} title={sgOpen ? "접기" : "펼치기"}>
         <span className="skillgrid-title">{isTf ? "내 TF 이력" : "내 역량 스탯"}</span>
         <span className="skillgrid-num">{gotAll}<small> / {totalAll} 수집</small></span>
-      </div>
+        <span className="skillgrid-caret">{sgOpen ? "▲ 접기" : "▼ 펼치기"}</span>
+      </button>
 
+      {sgOpen && (<>
       <div className="skillgrid-lead">
         {isTf
           ? <>지금까지 <b>{clearedAreas}개 TF</b>를 수료했어요. 4개를 다 마치면 과장 승진 심사가 열려요.</>
@@ -7303,6 +7314,7 @@ function SkillGrid({ user, onGoDay }) {
           <span>내일 · <b>{nextArea.emoji} {nextArea.name}</b> 표현이 하나 더 도착해요</span>
         </button>
       )}
+      </>)}
     </div>
   );
 }
