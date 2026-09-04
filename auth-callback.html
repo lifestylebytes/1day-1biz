@@ -158,14 +158,24 @@ h1 { font-size: 22px; font-weight: 900; line-height: 1.4; margin-bottom: 16px; l
       isTester: !!u.is_tester,
     };
 
-    // 이전 사용자 잔여 데이터 정리 (다른 계정으로 들어왔을 가능성)
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const k = localStorage.key(i);
-      if (k && (k === '__OD_USER' || k.startsWith('__OD_TASKS_') || k.startsWith('__OD_TOUR_') || k.startsWith('__OD_NOTICE_READS_') || k.startsWith('__OD_WEEKEND_'))) {
-        localStorage.removeItem(k);
+    // 이전 사용자 잔여 데이터 정리. ★ 2026-09-04: 같은 계정이면 지우지 않는다.
+    //   예전엔 매 로그인마다 투어 완료(__OD_TOUR_*)·일정 체크(__OD_TASKS_*)를 싹 지워서
+    //   로그인할 때마다 첫날 투어/팝업이 다시 뜨고, 오늘 체크한 일정이 사라지는 문제가 있었다.
+    let prevEmail = '';
+    try { prevEmail = String(JSON.parse(localStorage.getItem('__OD_USER') || 'null')?.email || '').toLowerCase(); } catch (e) {}
+    const sameAccount = prevEmail && prevEmail === String(u.email || '').toLowerCase();
+    if (!sameAccount) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k === '__OD_USER' || k.startsWith('__OD_TASKS_') || k.startsWith('__OD_TOUR_') || k.startsWith('__OD_NOTICE_READS_') || k.startsWith('__OD_WEEKEND_'))) {
+          localStorage.removeItem(k);
+        }
       }
     }
-    localStorage.setItem('__OD_USER', JSON.stringify(profile));
+    // 같은 계정이면 로컬에 있던 학습 캐시(일지·노트·완주 기록)는 유지하고 서버 값으로 덮어쓸 것만 덮는다
+    let keep = {};
+    if (sameAccount) { try { keep = JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}; } catch (e) { keep = {}; } }
+    localStorage.setItem('__OD_USER', JSON.stringify({ ...keep, ...profile }));
 
     // 역할별 redirect
     if (profile.isOperator)        window.location.replace('operator.html');
