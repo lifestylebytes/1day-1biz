@@ -1760,6 +1760,17 @@ const CHARACTERS = {
 
 // 단어 + 시추에이션, Day 1~60 (status는 USER.currentDay 기준 자동 계산)
 // Day 1-30 = 수습 (수동적 어휘: 들으면 알아듣는), Day 31-60 = 정직원 (능동적 어휘: 회의 주도·의사결정)
+// ── sampleAnswer(사수 예시 답안) 작성 규칙 (2026-09-04 재정리) ──
+// 1. 오늘 단어(word)를 반드시 포함. 원형이든 자연스러운 활용형이든(looping in, owned the room) OK. 예외 없음.
+// 2. 사람이 실제로 말하듯 완전한 문장. 주어+동사 유지. 명사 나열·전보체 금지
+//    (X "Agenda's tight, data's solid."  X "Calendar cleared."). 짧은 리액션("On it.", "Got it.")은 맨 앞 한 번만.
+// 3. 채널 톤: slack-dm/slack-channel = 캐주얼, 1~2문장, 이모지 없음 / email = 완결 문장, 인사 없이 본문만 /
+//    face·video-call = 구어체, 축약형(I'll, we're) 자연스럽게.
+// 4. 길이 8~25단어, 최대 2문장. 콜론(:)으로 나열하는 구조는 한 문장에 한 번만.
+// 5. 상대 말(quote)에 대한 "답"일 것: 받아치기(Thanks for naming it / You're right) + 내 행동 + 기한 하나(by Friday).
+// 6. 오늘 단어 외에 낯선 관용구를 추가로 넣지 않기 (하루 한 표현 원칙). 신입이 그대로 따라 쓸 수 있는 어휘.
+// 7. task.koSentence(한국어 의도)와 뜻이 정확히 일치해야 함. sampleAnswer를 고치면 koSentence도 같이 고친다.
+// 검사: scripts/check_sample_answers.py (단어 미포함 day 목록 출력)
 const SCENARIOS = [
   { day: 1, word: "stakeholder", pos: "n.", meaning: "이해관계자", phonetic: "/ˈsteɪkˌhoʊldər/",
     scene: "09:30, 입사 첫 회의실. 김 팀장이 화이트보드에 도식을 그리며.",
@@ -1849,10 +1860,10 @@ const SCENARIOS = [
     quoteKo: "수정된 숫자가 최대한 빨리 필요해요. 내일이 이사회예요.",
     youDo: "수치 다시 검토해서 1시간 안에 회신했다.",
     mentorTip: "ASAP는 강한 표현이야. 우리가 쓸 땐 'by EOD' 같은 구체적 시간이 더 프로페셔널해.",
-    sampleAnswer: "On it, ASAP. Revised numbers coming within the hour.", tags: ["urgent", "client"], status: "studied",
+    sampleAnswer: "On it. I'll send the revised numbers ASAP, within the hour.", tags: ["urgent", "client"], status: "studied",
     task: { to: "sarah", channel: "slack-dm",
       promptKo: "Sarah의 슬랙 DM에 한 줄로 답장하세요. (받았다는 확인 + 구체적 시간 약속)",
-      koSentence: "한 시간 안에 수정된 수치 보내드릴게요." },
+      koSentence: "네, 바로 할게요. 수정된 수치는 최대한 빨리, 한 시간 안에 보내드릴게요." },
     mcOptions: [
       { text: "On it, sending the revised numbers within the hour.", kind: "correct",
         note: "✓ 'On it' = 미국 직장 표준 응답 ('맡았습니다'). 'within the hour'로 ASAP을 구체적 시간으로 변환, 프로페셔널." },
@@ -2689,11 +2700,11 @@ const SCENARIOS = [
     quoteKo: "이번 스프린트부터 9시 반에 10분 스탠드업 합니다. 어제 한 일, 오늘 할 일, 막힌 것. 그게 다예요.",
     youDo: null,
     mentorTip: "standup은 서서(stand up) 할 만큼 짧게 하라는 회의. 어제 한 일 / 오늘 할 일 / 막힌 것, 딱 3줄이 공식이야.",
-    sampleAnswer: "Yesterday I closed the vendor brief, today I'm drafting the kickoff agenda, no blockers.",
+    sampleAnswer: "Standup: yesterday I closed the vendor brief, today I'm drafting the kickoff agenda, and I have no blockers.",
     tags: ["meeting", "workflow"], status: "locked",
     task: { to: "team", channel: "slack-channel",
       promptKo: "첫 스탠드업 공유를 팀 채널에 3요소(어제/오늘/블로커)로 한 줄에 쓰세요.",
-      koSentence: "어제는 벤더 브리프 마감했고, 오늘은 킥오프 아젠다 초안 작성, 막힌 건 없어요." },
+      koSentence: "스탠드업 공유요. 어제는 벤더 브리프 마감했고, 오늘은 킥오프 아젠다 초안 작성, 막힌 건 없어요." },
     mcOptions: [
       { text: "Yesterday: closed the vendor brief. Today: kickoff agenda draft. No blockers.", kind: "correct",
         note: "✓ 3요소를 그대로 3조각으로. standup은 문장력 시험이 아니라 정보 압축 시험이야. 이 포맷이 만점." },
@@ -2868,11 +2879,11 @@ const SCENARIOS = [
     quoteKo: "내일 리뷰는 당신 거예요. 준비해서 들어가서, 회의를 주도하세요. 난 지켜보기만 할게요.",
     youDo: null,
     mentorTip: "어제는 read, 오늘은 own. 공기를 읽은 다음엔 끌고 가는 거야. 준비량이 자신감이고, 자신감이 룸을 만들어.",
-    sampleAnswer: "I'll be ready. Agenda's tight, data's solid, and I'll open with the one number that matters.",
+    sampleAnswer: "I'll be ready. I'll open with the one number that matters and own the room from the first slide.",
     tags: ["leadership", "growth"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "맡겨준 신뢰에 준비된 모습으로 답하세요. 내일 회의를 어떻게 주도할지 한 줄로.",
-      koSentence: "준비할게요. 아젠다 탄탄하게, 데이터 확실하게, 제일 중요한 숫자 하나로 시작하겠습니다." },
+      koSentence: "준비할게요. 제일 중요한 숫자 하나로 시작해서, 첫 슬라이드부터 회의를 제가 주도하겠습니다." },
     mcOptions: [
       { text: "I'll be ready. Tight agenda, solid data, and I'll open with the number that matters.", kind: "correct",
         note: "✓ 수락 + 준비 계획 3종(아젠다/데이터/오프닝). own the room은 기세가 아니라 준비에서 나와." },
@@ -2893,11 +2904,11 @@ const SCENARIOS = [
     quoteKo: "자, 모두가 알면서 말 안 하는 문제부터 짚읍시다. 예산이 3월에 합의한 것의 두 배예요.",
     youDo: null,
     mentorTip: "회의실에 코끼리가 있는데 다들 날씨 얘기만 하는 그림. 먼저 코끼리를 말하는 사람이 그 회의의 신뢰를 가져가.",
-    sampleAnswer: "Glad you named it. Here's the breakdown of where it grew, and three options to bring it down.",
+    sampleAnswer: "Thanks for naming the elephant in the room. I have the breakdown of where it grew, and three options to bring it down.",
     tags: ["client", "communication"], status: "locked",
     task: { to: "sarah", channel: "video-call",
       promptKo: "Sarah가 꺼낸 민감한 주제를 회피하지 말고, 투명한 설명과 대안으로 한 줄 답하세요.",
-      koSentence: "먼저 꺼내줘서 다행이에요. 어디서 늘었는지 내역과, 줄일 수 있는 옵션 세 가지를 준비했어요." },
+      koSentence: "다들 알지만 말 안 하던 문제를 먼저 꺼내줘서 고마워요. 어디서 늘었는지 내역과, 줄일 수 있는 옵션 세 가지를 준비했어요." },
     mcOptions: [
       { text: "Glad you named it. Here's where it grew, and three options to bring it down.", kind: "correct",
         note: "✓ 정면 돌파 환영 + 투명한 내역 + 대안 제시. 코끼리는 숨길수록 커지고, 데이터로 다루면 작아져." },
@@ -2943,11 +2954,11 @@ const SCENARIOS = [
     quoteKo: "이 자료가 기준을 올려놨어요. 이제부터 클라이언트 보고서의 '완성'은 이 수준입니다.",
     youDo: null,
     mentorTip: "bar는 높이뛰기 가로대. 네 결과물이 팀의 새 기준선이 됐다는 뜻. 칭찬이자 책임이야. 다음에도 그 높이를 넘어야 하거든.",
-    sampleAnswer: "Thanks! I'll document the template so the whole team can clear the new bar without extra hours.",
+    sampleAnswer: "Thank you! I'll turn it into a template so the whole team can raise the bar without extra hours.",
     tags: ["leadership", "growth"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "팀 앞 칭찬을 받고, 혼자만의 기준이 아니라 팀의 기준이 되도록 한 줄 제안하세요.",
-      koSentence: "감사합니다! 템플릿으로 정리해서 팀 전체가 야근 없이 이 기준을 넘게 만들게요." },
+      koSentence: "감사합니다! 템플릿으로 만들어서 팀 전체가 야근 없이 기준을 높일 수 있게 할게요." },
     mcOptions: [
       { text: "Thanks! I'll turn it into a template so the whole team clears the new bar easily.", kind: "correct",
         note: "✓ 감사 + 팀 확산(template). 기준을 높인 사람이 사다리까지 만들면 그게 리더십이야. 시기 살 일도 없고." },
@@ -3072,11 +3083,11 @@ const SCENARIOS = [
     quoteKo: "잘한 일도 보여주지 않으면 안 보여요. 매달 요약을 윗선으로 올리세요.",
     youDo: null,
     mentorTip: "visibility는 자랑이 아니라 정보 유통이야. 윗선은 안 보이는 일을 평가할 수 없어. 잘한 일은 보이게 만드는 것까지가 일이야.",
-    sampleAnswer: "Will do. I'll start a monthly one-pager: wins, metrics, and what we need from leadership.",
+    sampleAnswer: "Will do. I'll send a monthly one-pager so our wins and metrics get real visibility with leadership.",
     tags: ["career", "communication"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "팀장의 조언을 받아 월간 요약 보고를 어떻게 할지 한 줄로 답하세요.",
-      koSentence: "네, 월간 원페이저 시작할게요. 성과, 지표, 그리고 리더십에 요청할 것까지요." },
+      koSentence: "네, 월간 원페이저 보낼게요. 우리 성과와 지표가 리더십 눈에 제대로 보이도록요." },
     mcOptions: [
       { text: "Will do. Monthly one-pager: wins, metrics, and asks for leadership.", kind: "correct",
         note: "✓ 즉시 수용 + 포맷(one-pager) + 구성 3종. 'asks'까지 넣은 게 고수야. visibility는 보여주기이자 요청 채널이거든." },
@@ -3197,11 +3208,11 @@ const SCENARIOS = [
     quoteKo: "총력전 구간입니다, 여러분. 이틀 남았어요. 캘린더 비우고, 막히면 바로 외치세요.",
     youDo: null,
     mentorTip: "crunch는 '으드득' 소리. 모든 게 압축되는 마감 직전 구간이야. 핵심은 영웅 놀이가 아니라 빠른 블로커 공유야.",
-    sampleAnswer: "Calendar cleared. I'm on the final QA pass, and I'll flag blockers in the channel the minute they appear.",
+    sampleAnswer: "Got it, crunch time it is. I've cleared my calendar, I'm on the final QA pass, and I'll flag any blocker in the channel right away.",
     tags: ["workflow", "team"], status: "locked",
     task: { to: "team", channel: "slack-channel",
       promptKo: "팀 채널에 크런치 모드 돌입을 알리는 답을 쓰세요. 맡은 것과 블로커 공유 약속 포함.",
-      koSentence: "캘린더 비웠어요. 저는 최종 QA 맡고, 막히는 거 생기면 그 즉시 채널에 올릴게요." },
+      koSentence: "네, 크런치 타임이네요. 캘린더 비웠고, 저는 최종 QA 맡을게요. 막히면 바로 채널에 올릴게요." },
     mcOptions: [
       { text: "Calendar cleared. I'm on final QA, and I'll flag blockers here the minute they appear.", kind: "correct",
         note: "✓ 즉시 실행(cleared) + 담당 명시(QA) + 블로커 공유 약속. crunch time의 팀워크는 투명성이 전부야." },
@@ -3455,11 +3466,11 @@ const SCENARIOS = [
     quoteKo: "솔직히 화가 나요. 벌써 두 번째 지연이잖아요. 제가 왜 침착해야 하죠?",
     youDo: null,
     mentorTip: "de-escalate의 첫 수는 반박이 아니라 인정이야. 상대 감정을 먼저 받아주면 온도가 내려가. 변명부터 하면 불에 기름이야. 인정 다음에 계획을 줘.",
-    sampleAnswer: "You're right to be frustrated, and I won't downplay it. Here's exactly what I'm changing so it's the last.",
+    sampleAnswer: "You have every right to be frustrated, and I won't downplay it. Let me de-escalate this with facts: here's exactly what I'm changing so this is the last delay.",
     tags: ["conflict", "client"], status: "locked",
     task: { to: "sarah", channel: "video-call",
       promptKo: "변명 대신 상대 감정을 먼저 인정하고, 재발 방지 계획을 한 줄로 이으세요.",
-      koSentence: "화나실 만해요, 축소하지 않을게요. 이게 마지막이 되도록 제가 뭘 바꿀지 바로 말씀드릴게요." },
+      koSentence: "화나실 만해요, 축소하지 않을게요. 사실로 진정시켜 드릴게요. 이게 마지막 지연이 되도록 제가 뭘 바꿀지 바로 말씀드릴게요." },
     mcOptions: [
       { text: "I won't try to de-escalate this with excuses. Here's the fix and the new date.", kind: "correct",
         note: "✓ 변명으로 무마하지 않겠다고 선을 긋고(de-escalate with excuses는 가짜 진정) 바로 해결책과 새 날짜를 줬어. 진짜 진정은 말이 아니라 계획에서 나와." },
@@ -3657,11 +3668,11 @@ const SCENARIOS = [
     quoteKo: "큰 회의에서 갑자기 던지지 말아요. 핵심 인물들에게 미리 의견을 돌린 다음에 발표해요.",
     youDo: null,
     mentorTip: "socialize an idea는 '비밀 작업'이 아니라 '반대를 미리 만나 다듬는 것'. 회의에서 처음 듣는 사람은 방어부터 해. 미리 돌리면 회의는 확인 도장만 찍는 자리가 돼.",
-    sampleAnswer: "Good call. I'll socialize it with finance and design one-on-one first, then the meeting is just a yes.",
+    sampleAnswer: "Good call. I'll socialize the idea with finance and design one-on-one first, so the meeting is just the final yes.",
     tags: ["stakeholder", "influence"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "큰 회의 전에 핵심 인물들에게 먼저 의견을 돌리겠다고, 이유까지 넣어 한 줄로 답하세요.",
-      koSentence: "좋은 지적이에요. 재무팀이랑 디자인팀에 1:1로 먼저 의견 돌릴게요. 그럼 회의는 승인만 받으면 돼요." },
+      koSentence: "좋은 지적이에요. 재무팀이랑 디자인팀에 1:1로 먼저 아이디어를 돌릴게요. 그럼 회의는 최종 승인만 받으면 돼요." },
     mcOptions: [
       { text: "Right. I'll grab coffee with the two key skeptics this week to socialize the idea early.", kind: "correct",
         note: "✓ socialize the idea + 대상(핵심 회의론자) + 형태(커피챗). 반대할 사람을 먼저 만나 다듬으면 본 회의에서 총알이 안 날아와." },
@@ -4545,9 +4556,9 @@ const _LEVEL_LABELS = {
 function _levelLabel(id) { return _LEVEL_LABELS[id] || _LEVEL_LABELS.probation; }
 const _userLevel = _localUser?.level || { id: "probation" };
 const _levelId = _userLevel.id || "probation";
-const _isFulltimeLevel = _levelId !== "probation";
+// ★ 2026-09-04: DB level.id 만 보면 Day 31+ 인데 승급 처리가 안 된 회원이 "수습" 화면(마일스톤 카드,
+//   노트 잠금)을 계속 본다. 헤더 직급(_rankId)과 같은 기준을 쓰도록 아래 _rankId 계산 뒤에서 확정.
 window.__OD_LEVEL = _userLevel;
-window.__OD_IS_FULLTIME = _isFulltimeLevel;
 // id는 호환 위해 "fulltime" 유지, 표시 라벨만 사원/Associate
 const LEVEL_FULLTIME = { id: "fulltime", ko: "사원", en: "Associate" };
 window.__OD_LEVEL_FULLTIME = LEVEL_FULLTIME;
@@ -4574,6 +4585,9 @@ const _RANK_ORDER = { probation: 0, fulltime: 1, senior: 2 };
 const _rankId = (_RANK_ORDER[_levelId] || 0) > (_RANK_ORDER[_progressRankId] || 0) ? _levelId : _progressRankId;
 const _rankCap = _rankId === "senior" ? (_resolvedDay > 90 ? 210 : 90) : (_rankId === "fulltime" ? 60 : 30);
 const _phaseCap = Math.max(_dayCap, _rankCap);
+// 정직원 여부 = 헤더에 표시되는 직급 기준 (DB 승급 or 진도 Day 31+ 둘 중 하나면 사원)
+const _isFulltimeLevel = _rankId !== "probation";
+window.__OD_IS_FULLTIME = _isFulltimeLevel;
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
 // ============================================================
@@ -9292,8 +9306,8 @@ function SceneModal({ scenario, onClose }) {
                         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>"{scenario.sampleAnswer}"</div>
                         {aiFb && aiFb.vsSample && (
                           <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)" }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>🔍 내 문장이랑 뭐가 다를까</div>
-                            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>{aiFb.vsSample}</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>✨ 이렇게 하면 더 좋아요!</div>
+                            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, whiteSpace: "pre-line" }}>{aiFb.vsSample}</div>
                           </div>
                         )}
                       </div>
