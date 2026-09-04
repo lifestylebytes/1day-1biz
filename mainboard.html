@@ -1118,6 +1118,19 @@ body::before {
   letter-spacing: 0.04em;
 }
 
+/* ── 신입 모드 (2026-09-04, 개발 뷰): 맨 위 큰 CTA + 잠긴 카드 ── */
+.next-cta { display: flex; align-items: center; gap: 14px; background: var(--orange); color: #fff; border-radius: 12px; padding: 16px 18px; margin: 0 0 14px; box-shadow: 4px 4px 0 rgba(216,90,42,0.25); cursor: pointer; border: none; width: 100%; text-align: left; font-family: inherit; }
+.next-cta:hover { filter: brightness(0.96); }
+.next-cta .next-cta-main { font-size: 17px; font-weight: 900; letter-spacing: -0.01em; }
+.next-cta .next-cta-sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+.next-cta .next-cta-arrow { margin-left: auto; font-size: 22px; font-weight: 900; }
+.next-cta.done { background: var(--paper-warm); color: var(--ink-soft); box-shadow: none; border: 1px dashed var(--line); cursor: default; }
+.locked-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 8px; color: var(--ink-mute); font-size: 12px; background: rgba(255,255,255,0.35); margin-top: 12px; }
+.locked-card b { color: var(--ink-soft); font-weight: 700; }
+.locked-card .locked-when { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--orange); white-space: nowrap; }
+.unlock-chip { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; color: #fff; background: var(--orange); padding: 2px 7px; border-radius: 999px; vertical-align: middle; }
+@media (max-width: 880px) { .next-cta { padding: 14px 16px; } .next-cta .next-cta-main { font-size: 15.5px; } }
+
 /* MyPage 안의 버디 row */
 .buddy-row {
   display: flex; gap: 12px; align-items: flex-start;
@@ -1429,6 +1442,9 @@ body::before {
   .desk-grid.next-home .ty-attend { order: 5; }
   .desk-grid.next-home .attendance { order: 6; }        /* 출근부는 아래로 */
   .desk-grid.next-home .memo-box { order: 7; }
+  .desk-grid.next-home .skillgrid { order: 5; }
+  .desk-grid.next-home .ty-member { order: 7; }
+  .desk-grid.next-home .locked-card { order: 8; }      /* 잠긴 카드는 맨 아래 */
   .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
 
   /* 시추에이션 카드 */
@@ -4928,7 +4944,7 @@ function getScheduleForDay(day) {
     {
       id: "scenario", time: "10:00", type: "scenario",
       title: "오늘의 시추에이션",
-      note: "← 클릭해서 시작",
+      note: (typeof _isNextFeature === "function" && _isNextFeature()) ? "상황 보고 한 줄 쓰면 완료" : "← 클릭해서 시작",
       action: null,
     },
     variantItem,
@@ -5655,6 +5671,30 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ============================================================
 // 홈, 오늘의 책상
 // ============================================================
+// ── 신입 모드 해금 사다리 (2026-09-04, 개발 뷰) ──
+// 핵심 루프(출근→시추에이션→미션→퇴근)는 Day 1부터 그대로. 주변 카드만 Day 에 따라 연다.
+// 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
+const _UNLOCK_AT = { promo: 4, attendance: 4, skills: 4, memo: 8, errands: 8, member: 8 };
+const _UNLOCK_LABEL = { promo: "승진 마일스톤", attendance: "출근부", skills: "내 역량 스탯", memo: "사내 메모", errands: "오늘의 심부름", member: "1일1비 멤버십" };
+function _lockedNext(key, rd, viewingPast) {
+  return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
+}
+function LockedCard({ k, rd }) {
+  const at = _UNLOCK_AT[k];
+  return (
+    <div className="locked-card" title={"Day " + at + "부터 열려요"}>
+      <span>🔒</span>
+      <b>{_UNLOCK_LABEL[k]}</b>
+      <span className="locked-when">Day {at}에 열려요 · {Math.max(0, at - rd)}일 남음</span>
+    </div>
+  );
+}
+// 해금 당일 카드에 붙는 NEW 칩
+function UnlockChip({ k, rd }) {
+  if (!_isNextFeature() || rd !== _UNLOCK_AT[k]) return null;
+  return <span className="unlock-chip">NEW · 오늘 열렸어요</span>;
+}
+
 function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
 
@@ -6039,6 +6079,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     }
 
     if (item.id === "scenario") {
+      // ★ 2026-09-04 (개발 뷰): 시추에이션은 열기만 해선 완료가 아니다. 한 줄 제출해야 완료.
+      //   제출 시 SceneModal 이 task 를 done 으로 쓰고 od-tasks-changed 를 쏘므로 여기선 열기만 한다.
+      //   (예전엔 클릭 즉시 done 이라 미션을 안 써도 하루가 완주됐다.)
+      if (_isNextFeature()) { openScene(today); return; }
       // 시추에이션, 기존 SceneModal 유지. 클릭 즉시 done 처리.
       const next = { ...doneTasks, [item.id]: true };
       setDoneTasks(next);
@@ -6086,6 +6130,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     return { ...item, computed: prevDone ? "now" : "locked" };
   });
 
+  const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
+  const _nextRow = scheduleWithStatus.find(r => r.computed === "now");
+  const _nextIdx = scheduleWithStatus.findIndex(r => r.computed === "now");
+  const _noneDone = !scheduleWithStatus.some(r => r.computed === "done");
+
   return (
     <div>
       <div className="desk-header">
@@ -6101,7 +6150,26 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
       </div>
 
-      <div className={"home-appline" + (_isNextFeature() ? " next" : "")}><ApplicationLine /></div>
+      {/* ★ 맨 위 큰 CTA (2026-09-04, 개발 뷰): 뭘 눌러야 하는지 3초 안에 보이게 */}
+      {_isNextFeature() && !USER.isViewingPast && (
+        _nextRow ? (
+          <button className="next-cta" onClick={() => handleScheduleClick(_nextRow, _nextIdx)}>
+            <span>
+              <div className="next-cta-main">{_noneDone ? "☀️ 오늘 일정 시작하기" : "▶ 이어서 하기 · " + _nextRow.title}</div>
+              <div className="next-cta-sub">{_noneDone ? "출근 도장 찍고 오늘의 표현 받기 · 5분이면 끝나요" : (_nextRow.time + " · " + (_nextRow.note || "다음 일정"))}</div>
+            </span>
+            <span className="next-cta-arrow">→</span>
+          </button>
+        ) : (
+          <div className="next-cta done">
+            <span>
+              <div className="next-cta-main">✓ Day {USER.currentDay} 완주</div>
+              <div className="next-cta-sub">오늘 할 일은 끝났어요. 내일 아침에 새 표현이 책상에 올라와요.</div>
+            </span>
+          </div>
+        )
+      )}
+      <div className={"home-appline" + (_isNextFeature() ? " next" : "")} style={_isNextFeature() && _rdNow <= 3 ? { display: "none" } : undefined}><ApplicationLine /></div>
 
       {/* ★ 오랜만에 온 회원 안내: 달력은 흘렀지만 진도는 그대로일 때, 뭐부터 할지 한 줄로. */}
       {(() => {
@@ -6169,12 +6237,21 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
 
         <div className="col">
+          {/* ★ 신입 모드: Day 4 전엔 마일스톤 카드 잠금 표시 */}
+          {_lockedNext("promo", _rdNow, USER.isViewingPast) && <LockedCard k="promo" rd={_rdNow} />}
           {/* ★ 수습 마일스톤 카드: 사원 전환 기대감 + 보상 미리보기 (접기/펼치기) */}
-          {!USER.isFulltime && !USER.isViewingPast && (() => {
+          {!USER.isFulltime && !USER.isViewingPast && !_lockedNext("promo", _rdNow, USER.isViewingPast) && (() => {
             const _rd = USER.realCurrentDay || USER.currentDay;
             const _pct = Math.max(3, Math.min(100, Math.round(_rd / 30 * 100)));
             const _dLeft = Math.max(0, 30 - _rd);
-            const MILESTONES = [
+            const MILESTONES = _isNextFeature() ? [
+              { d: 1,  icon: "🪪", label: "첫 출근" },
+              { d: 3,  icon: "🔥", label: "3일 연속" },
+              { d: 7,  icon: "🌱", label: "1주 완주" },
+              { d: 15, icon: "⚡", label: "절반 돌파" },
+              { d: 21, icon: "🔥", label: "3주 달성" },
+              { d: 30, icon: "🎓", label: "정직원 전환" },
+            ] : [
               { d: 7,  icon: "🌱", label: "1주 완주" },
               { d: 15, icon: "⚡", label: "절반 돌파" },
               { d: 21, icon: "🔥", label: "3주 달성" },
@@ -6439,14 +6516,18 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           )}
 
           <CatchUpBanner user={USER} />
-          {_isNextFeature() && <ErrandsCard setActive={setActive} toast={showToast} />}
-          {_isNextFeature() && <MembershipCard />}
-          {_isNextFeature() && <SkillGrid user={USER} onGoDay={setViewingDay} />}
+          {_lockedNext("errands", _rdNow, USER.isViewingPast) && <LockedCard k="errands" rd={_rdNow} />}
+          {_isNextFeature() && !_lockedNext("errands", _rdNow, USER.isViewingPast) && <ErrandsCard setActive={setActive} toast={showToast} />}
+          {_lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
+          {_isNextFeature() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
+          {_lockedNext("member", _rdNow, USER.isViewingPast) && <LockedCard k="member" rd={_rdNow} />}
+          {_isNextFeature() && !_lockedNext("member", _rdNow, USER.isViewingPast) && <MembershipCard />}
 
-          {_isNextFeature() && <AttendStrip user={USER} />}
-          <div className="attendance">
+          {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
+          {_lockedNext("attendance", _rdNow, USER.isViewingPast) && <LockedCard k="attendance" rd={_rdNow} />}
+          <div className="attendance" style={_lockedNext("attendance", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="attendance-head">
-              <span className="attendance-title">
+              <UnlockChip k="attendance" rd={_rdNow} /><span className="attendance-title">
                 {showFullAttend
                   ? `출근부 · 전체 ${USER.totalDays}일`
                   : (_attendStart > 1 ? `출근부 · DAY ${_attendStart}-${_attendEnd}` : "출근부 · 14일")}
@@ -6543,8 +6624,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </div>
           </div>
 
-          <div className="memo-box">
-            <div className="memo-box-head">
+          {_lockedNext("memo", _rdNow, USER.isViewingPast) && <LockedCard k="memo" rd={_rdNow} />}
+          <div className="memo-box" style={_lockedNext("memo", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
+            <div className="memo-box-head"><UnlockChip k="memo" rd={_rdNow} />
               <span>사내 메모 · INTRANET</span>
               <b>{NOTICES.filter(n => n.unread).length}건</b>
             </div>
@@ -9073,6 +9155,20 @@ function SceneModal({ scenario, onClose }) {
           <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--ink)", lineHeight: 1.05 }}>{scenario.word}</div>
           <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 4, fontWeight: 600 }}>{scenario.pos} · {scenario.phonetic}</div>
           <div style={{ fontSize: 15, color: "var(--ink)", marginTop: 8, fontWeight: 700 }}>{scenario.meaning}</div>
+          {/* 이미 아는 표현이면 설명 건너뛰고 바로 한 줄 쓰기 (2026-09-04, 개발 뷰). 아는 단어도 이 상황에서 쓸 수 있는지가 핵심 */}
+          {_isNextFeature() && !submitted && (
+            <button className="btn btn-ghost" style={{ marginTop: 10, fontSize: 12, padding: "6px 12px" }}
+              onClick={() => {
+                try {
+                  const k = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]");
+                  if (!k.some(x => x.day === scenario.day)) { k.push({ day: scenario.day, word: scenario.word, at: new Date().toISOString() }); localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(k)); }
+                } catch (e) {}
+                const ta = document.querySelector(".modal-doc-body textarea.scene-input");
+                if (ta) { ta.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => ta.focus(), 350); }
+              }}>
+              ✓ 이미 아는 표현이에요 → 바로 한 줄 쓰기
+            </button>
+          )}
 
           <hr className="divider" />
 
@@ -11072,8 +11168,8 @@ function _wrapTrend() {
   return { recent: avg(recent), prev: avg(prev) };
 }
 function _nextMilestone(day) {
-  const ladder = day <= 30 ? [7, 15, 21, 30] : (day <= 60 ? [37, 44, 51, 60] : [90]);
-  const labels = { 7: "1주 완주 배지", 15: "절반 돌파", 21: "3주 달성", 30: "사원 승진", 37: "사원 첫 주 완주", 44: "절반 돌파", 51: "50일 달성", 60: "특별 면담", 90: "대리 승진" };
+  const ladder = day <= 30 ? [1, 3, 7, 15, 21, 30] : (day <= 60 ? [37, 44, 51, 60] : [90]);
+  const labels = { 1: "첫 출근 배지", 3: "3일 연속 배지", 7: "1주 완주 배지", 15: "절반 돌파", 21: "3주 달성", 30: "사원 승진", 37: "사원 첫 주 완주", 44: "절반 돌파", 51: "50일 달성", 60: "특별 면담", 90: "대리 승진" };
   const nxt = ladder.find(m => m > day);
   return nxt ? { day: nxt, label: labels[nxt] || ("Day " + nxt), left: nxt - day } : null;
 }
@@ -11099,8 +11195,15 @@ function WrapupScreen({ today, onDone }) {
     <div className="wrapup">
       <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
         <div style={{ display: "inline-block", padding: "12px 24px", border: "3px solid var(--stamp-red)", color: "var(--stamp-red)", fontSize: 17, fontWeight: 900, letterSpacing: "0.16em", transform: "rotate(-5deg)" }}>
-          퇴근 · DAY {today.day} 완주
+          {fixes === 0 ? "원샷 통과 · DAY " + today.day : "퇴근 · DAY " + today.day + " 완주"}
         </div>
+        {(fixes === 0 || today.day === 1 || today.day === 3) && (
+          <div style={{ marginTop: 10, fontSize: 13.5, fontWeight: 800, color: "var(--ink)" }}>
+            {today.day === 1 ? "🪪 첫 출근 배지를 받았어요. 첫날이 제일 어려운데 해냈어요."
+              : today.day === 3 ? "🔥 3일 연속 배지를 받았어요. 여기서부터 습관이 시작돼요."
+              : "😄 사수가 고칠 데가 하나도 없었어요. 오늘은 그냥 잘 쓴 날이에요."}
+          </div>
+        )}
       </div>
 
       <div style={box}>
