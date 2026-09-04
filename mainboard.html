@@ -7443,7 +7443,9 @@ function BuddyCard({ buddy, day, scn }) {
   const nudge = getBuddyNudgeForDay ? getBuddyNudgeForDay(day) : BUDDY_NUDGES[(day - 1) % BUDDY_NUDGES.length];
   // 오늘 시추에이션이 있으면 외우는 팁을 메인으로, 축하/아침 인사 nudge 는 그 아래 한 줄로만
   const tip = scn ? _buddyTipText(scn) : "";
-  const showNudgeToo = !!tip && nudge && (nudge.tone === "cheer" || nudge.tone === "morning");
+  // 팁이 있으면 day별 응원 문구는 마일스톤 날에만 한 줄 덧붙인다 (매일 붙이면 사수 메모와 내용이 겹친다는 피드백, 2026-09-04)
+  const _MILESTONE_DAYS = [1, 7, 15, 30, 60, 90];
+  const showNudgeToo = !!tip && nudge && _MILESTONE_DAYS.includes(Number(day));
   return (
     <div className="buddy-card">
       <div className="buddy-card-head">
