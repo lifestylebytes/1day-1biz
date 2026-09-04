@@ -3,8 +3,13 @@
 // 매일 KST 오전 10시쯤 Supabase Cron으로 실행.
 //
 // 하는 일 (이메일로 자동 발송):
-//   1) comeback : 2~3일 안 들어온 회원에게 "보고 싶어요" 넛지 (침묵 이탈 차단)
-//   2) renewal  : Day 25~29 회원에게 "곧 사원 승진 + N개 모음" 가치 리마인드
+//   1) start     : 가입 후 1~2일, 아직 Day 1 도 안 끝낸 사람 ("5분이면 끝나요")            (2026-09-04 추가)
+//   2) day1      : Day 1 은 끝냈는데 그 뒤 하루 비운 사람 ("내일 예고" 톤)                    (2026-09-04 추가)
+//   3) comeback  : 2~3일 안 들어온 회원에게 "보고 싶어요" 넛지 (침묵 이탈 차단)
+//   4) comeback7 : 7~8일 비운 사람 (2차), comeback14 : 14~15일 비운 사람 (3차, 마지막)      (2026-09-04 추가)
+//   5) renewal   : Day 25~29 회원에게 "곧 사원 승진 + N개 모음" 가치 리마인드
+//   6) transition: Day 31 (사원 첫날, 뭐가 달라졌는지) / Day 58 (대리 트랙 예고)            (2026-09-04 추가)
+//   푸터는 직급(수습/사원/대리)에 맞춰 바뀜. 예전엔 Day 40 사원에게도 "30일 채우면 승진"이 나갔음.
 //   각각 1회만 (reengagement_log로 중복 방지).
 //
 // 배포:
@@ -36,6 +41,10 @@ const REPLY_TO         = Deno.env.get("REENGAGE_REPLY_TO") || "youbuddy.co@gmail
 const APP_URL          = Deno.env.get("APP_URL") || "https://1day-1biz.youbuddy.co.kr";
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+
+// Day → 오늘 단어 (day1 메일 "내일 예고"용). scripts/gen_kakao_scenarios.py 가 만드는 scenarios.ts 와 같은 원본.
+import { SCENARIOS as _SCN } from "../kakao-daily/scenarios.ts";
+const SCENARIO_WORDS: Record<number, string> = Object.fromEntries(_SCN.map((x: any) => [x.day, x.word]));
 
 // KST 자정 기준 날짜 차이 (일수)
 function daysBetweenKST(fromISO: string, toDate: Date): number {
@@ -101,7 +110,7 @@ function comebackEmail(name: string, dayN: number) {
     },
   ];
   const v = _pick(pool);
-  return { subject: v.subject, html: _wrap(v.body, "🏢 오늘 출근하기", `현재 Day ${dayN}. 30일 채우면 사원으로 승진해요. 거의 다 왔어요.`) };
+  return { subject: v.subject, html: _wrap(v.body, "🏢 오늘 출근하기", rankFooter(dayN)) };
 }
 
 // 갱신 직전(Day 25~29)용. 승진 코앞 가치 리마인드, 매번 다르게.
@@ -122,6 +131,56 @@ function renewalEmail(name: string, dayN: number, words: number) {
   ];
   const v = _pick(pool);
   return { subject: v.subject, html: _wrap(v.body, "🎓 마지막 며칠 마저 채우기", "여기까지 온 게 진짜 대단한 거예요. 조금만 더요.") };
+}
+
+// 직급별 푸터 (Day 기준)
+function rankFooter(dayN: number): string {
+  if (dayN <= 30) return `현재 Day ${dayN}. 30일 채우면 사원으로 승진해요.`;
+  if (dayN <= 60) return `현재 Day ${dayN}, 사원. Day 60에 특별 면담이 잡혀 있어요.`;
+  return `현재 Day ${dayN}, 대리 트랙 진행 중이에요.`;
+}
+
+// 가입만 하고 Day 1 을 안 끝낸 사람 (가입 1~2일째). 부담 최소.
+function startEmail(name: string) {
+  const v = _pick([
+    { subject: `${name}님, 첫 출근 5분이면 끝나요`,
+      body: `<p>${name}님, 유버디예요.</p><p>사원증은 나왔는데 아직 첫 출근을 안 하셨더라고요. 괜찮아요, 다들 그래요 ㅎㅎ</p><p>Day 1은 출근 도장 찍고 단어 하나 받는 게 전부라 <b>5분</b>이면 끝나요. 오늘 딱 그것만 해봐요. 내일부터가 진짜 시작이에요.</p>` },
+    { subject: `${name}님, 책상이 비어 있어요`,
+      body: `<p>${name}님, 유버디예요.</p><p>${name}님 자리에 사수가 포스트잇 하나 붙여놨는데 아직 아무도 안 봤어요 ㅎㅎ</p><p>오늘 5분만 들러서 첫 단어 하나만 챙겨가요. 그게 Day 1의 전부예요.</p>` },
+  ]);
+  return { subject: v.subject, html: _wrap(v.body, "🏢 첫 출근하기 (5분)", "Day 1은 출근 도장 + 단어 하나. 그게 다예요.") };
+}
+
+// Day 1 은 끝냈는데 다음 날 안 온 사람. "내일 예고" 톤으로 Day 2 를 궁금하게.
+function day1Email(name: string, tomorrowWord: string) {
+  const w = tomorrowWord ? `<b>${tomorrowWord}</b>` : "새 표현";
+  const v = _pick([
+    { subject: `${name}님, 어제 잘하셨어요. 오늘 단어는 ${tomorrowWord || "이거"}예요`,
+      body: `<p>${name}님, 유버디예요.</p><p>어제 Day 1 깔끔하게 끝내셨더라고요. 첫날이 제일 어려운데 해내신 거예요.</p><p>오늘 책상엔 ${w}가 올라와 있어요. 어제랑 똑같이 5분이면 돼요. 이틀 연속이 되면 그때부터 습관이 시작돼요.</p>` },
+    { subject: `${name}님, 이틀째가 진짜예요`,
+      body: `<p>${name}님, 유버디예요.</p><p>Day 1 끝낸 사람 중 절반이 Day 2를 안 와요. ${name}님은 그 절반이 아니었으면 해서요 ㅎㅎ</p><p>오늘 단어는 ${w}. 5분만 들러서 이틀 연속 도장 찍어봐요.</p>` },
+  ]);
+  return { subject: v.subject, html: _wrap(v.body, "☀️ 오늘 출근하기", "Day 2. 이틀 연속이면 스트릭이 시작돼요.") };
+}
+
+// 7~8일 / 14~15일 비운 사람. 압박 없이, 책상은 그대로라는 안심 + 밀린 건 안 해도 된다는 메시지.
+function comebackLateEmail(name: string, dayN: number, idle: number, last: boolean) {
+  const v = last
+    ? { subject: `${name}님, 책상은 그대로 두고 있을게요`,
+        body: `<p>${name}님, 유버디예요.</p><p>2주쯤 안 보이셨네요. 바쁜 시기였을 수도 있고, 안 맞았을 수도 있고요. 어느 쪽이든 괜찮아요.</p><p>하나만 알려드리면, 밀린 건 안 해도 돼요. 돌아오시면 그날 단어 하나부터 다시 시작이에요. 책상은 그대로 두고 있을게요.</p><p>혹시 안 맞았던 게 있으면 이 메일에 답장 한 줄만 주세요. 진짜 고치는 데 써요.</p>` }
+    : { subject: `${name}님, 밀린 건 안 해도 돼요`,
+        body: `<p>${name}님, 유버디예요.</p><p>일주일쯤 비우셨더라고요. 이럴 때 제일 흔한 생각이 "밀린 거 언제 다 하지"인데, 안 해도 돼요.</p><p>오늘 들어오면 그날 단어 하나만 하면 되고, 지난 건 그냥 지나가요. 5분이면 다시 출근 도장이에요.</p>` };
+  return { subject: v.subject, html: _wrap(v.body, "🏢 오늘 단어 하나만 하러 가기", rankFooter(dayN)) };
+}
+
+// 전환점: Day 31 (사원 첫날) / Day 58 (대리 트랙 예고)
+function transitionEmail(name: string, dayN: number) {
+  if (dayN <= 40) {
+    return { subject: `${name}님, 사원 첫날이에요. 달라진 3가지`,
+      html: _wrap(`<p>${name}님, 유버디예요.</p><p>수습 30일 완주, 진짜 축하해요. 오늘부터 사원이고, 책상이 세 가지 달라졌어요.</p><p>1) <b>나만의 노트</b>가 열렸어요. 저장한 표현·메모가 단어별로 모여요.<br/>2) 표현이 <b>회의 주도</b> 쪽으로 바뀌어요. 이제 듣는 영어가 아니라 이끄는 영어예요.<br/>3) Day 60에 <b>특별 면담</b>이 잡혀 있어요. 30일 더 채우면 대리 트랙이에요.</p>`, "🪪 새 사원증 보러 가기", rankFooter(dayN)) };
+  }
+  return { subject: `${name}님, 사원 구간 이틀 남았어요. 다음은 이거예요`,
+    html: _wrap(`<p>${name}님, 유버디예요.</p><p>Day 60이 코앞이에요. 여기서 끝나는 게 아니라 <b>대리 트랙</b>이 열려요. 협상, 리더십, 갈등 조율 표현으로 넘어가는 구간이에요.</p><p>지금까지 모은 표현이 회의에서 살아남는 영어였다면, 다음 30일은 회의를 움직이는 영어예요. 이틀만 더 채우고 넘어가요.</p>`, "🎯 Day 60까지 마저 가기", rankFooter(dayN)) };
 }
 
 // ── 업데이트 안내(푸시 알림 출시) 메일. 가입했던 전원(취소 포함) 컴백 + 기능 안내 톤 ──
@@ -165,6 +224,19 @@ Deno.serve(async (req) => {
   // 넛지 메일이 실제로 어떻게 오는지 내 인박스에서 확인용.
   const sampleTo = new URL(req.url).searchParams.get("sampleto");
   if (sampleTo) {
+    const kind = new URL(req.url).searchParams.get("kind") || "";
+    if (kind) {
+      const m = kind === "start" ? startEmail("테스터")
+        : kind === "day1" ? day1Email("테스터", SCENARIO_WORDS[2] || "deadline")
+        : kind === "comeback7" ? comebackLateEmail("테스터", 12, 7, false)
+        : kind === "comeback14" ? comebackLateEmail("테스터", 12, 14, true)
+        : kind === "transition31" ? transitionEmail("테스터", 31)
+        : kind === "transition58" ? transitionEmail("테스터", 58)
+        : kind === "renewal" ? renewalEmail("테스터", 27, 26)
+        : comebackEmail("테스터", 3);
+      const r = await sendEmail(sampleTo, "[샘플:" + kind + "] " + m.subject, m.html);
+      return new Response(JSON.stringify({ ok: r.ok, sample: true, kind, to: sampleTo, status: r.status, error: r.error }, null, 2), { headers: { "Content-Type": "application/json" } });
+    }
     const cb = comebackEmail("테스터", 3);
     const rn = renewalEmail("테스터", 27, 26);
     const ok1 = (await sendEmail(sampleTo, "[샘플] " + cb.subject, cb.html)).ok;
@@ -245,34 +317,66 @@ Deno.serve(async (req) => {
 
   // 발송 대상: 결제 회원 + 탈퇴 안 함 + 운영자/Dev 아님 + 멤버십 미만료 + 이메일 있음
   const { data: users, error } = await sb.from("users")
-    .select("email, name, signup_date, last_active, day_in_company, membership_ends_at, withdrawn_at, cohort, is_operator, is_dev_mode")
+    .select("email, name, signup_date, last_active, day_in_company, membership_ends_at, withdrawn_at, cohort, is_operator, is_dev_mode, is_tester")
     .eq("cohort", "member");
   if (error) return new Response(JSON.stringify({ ok: false, error: error.message }), { status: 200 });
 
-  const picked: any[] = [];
-  for (const u of users || []) {
-    if (!u.email || u.withdrawn_at || u.is_operator || u.is_dev_mode) continue;
-    // 멤버십 만료된 사람은 제외 (이미 떠난 사람)
-    if (u.membership_ends_at && new Date(u.membership_ends_at) < now) continue;
+  const base = (users || []).filter((u: any) => u.email && !u.withdrawn_at && !u.is_operator && !u.is_dev_mode && !u.is_tester
+    && !(u.membership_ends_at && new Date(u.membership_ends_at) < now));
+  const emails = base.map((u: any) => u.email);
 
+  // 완주 기록 (일지 or 일정 4/4) → 회원별 완주한 day 집합. "시작했는지 / Day 1 끝냈는지 / 표현 몇 개" 계산용
+  const done = new Map<string, Set<number>>();
+  const addDone = (e: string, d: number) => { if (!done.has(e)) done.set(e, new Set()); done.get(e)!.add(d); };
+  if (emails.length) {
+    const [{ data: js }, { data: ts }] = await Promise.all([
+      sb.from("journals").select("email, day").in("email", emails),
+      sb.from("task_progress").select("email, day, tasks").in("email", emails),
+    ]);
+    (js || []).forEach((j: any) => addDone(j.email, Number(j.day)));
+    (ts || []).forEach((t: any) => { if (Object.values(t.tasks || {}).filter(Boolean).length >= 4) addDone(t.email, Number(t.day)); });
+  }
+  const dayWord = (d: number) => {
+    const sc = SCENARIO_WORDS[d] || "";
+    return sc;
+  };
+
+  const picked: any[] = [];
+  for (const u of base) {
     const idle = daysBetweenKST(u.last_active || u.signup_date, now);
     const dayN = Math.max(1, daysBetweenKST(u.signup_date, now) + 1);
-    const words = Math.min(Math.max(0, dayN - 1), 30);
+    const ds = done.get(u.email) || new Set<number>();
+    const words = ds.size;
+    const sinceSignup = daysBetweenKST(u.signup_date, now);
 
-    // 1) comeback: 2~3일 비활성 (그 이상은 너무 늦음, 매일 스팸 방지로 좁은 창)
-    if (idle >= 2 && idle <= 3) {
-      // 마지막 활동 이후 comeback 보낸 적 없으면 발송 (재드리프트마다 1회)
-      if (!(await alreadySent(u.email, "comeback", u.last_active || u.signup_date))) {
-        picked.push({ ...u, _kind: "comeback", dayN, words });
-        continue;
-      }
+    // 1) start: 가입 1~2일째, 아직 아무 날도 안 끝냄 (1회)
+    if (sinceSignup >= 1 && sinceSignup <= 2 && ds.size === 0) {
+      if (!(await alreadySent(u.email, "start", u.signup_date))) { picked.push({ ...u, _kind: "start", dayN, words }); continue; }
     }
-    // 2) renewal: Day 25~29 (갱신 직전). 최근 20일 내 renewal 안 보냈으면.
+    // 2) day1: Day 1 끝냈고, Day 2 는 안 했고, 오늘 안 들어옴 (가입 2~3일째, 1회)
+    if (sinceSignup >= 1 && sinceSignup <= 3 && ds.has(1) && !ds.has(2) && idle >= 1) {
+      if (!(await alreadySent(u.email, "day1", u.signup_date))) { picked.push({ ...u, _kind: "day1", dayN, words, tomorrowWord: dayWord(2) }); continue; }
+    }
+    // 3) comeback: 2~3일 비활성 (재드리프트마다 1회)
+    if (idle >= 2 && idle <= 3 && ds.size > 0) {
+      if (!(await alreadySent(u.email, "comeback", u.last_active || u.signup_date))) { picked.push({ ...u, _kind: "comeback", dayN, words }); continue; }
+    }
+    // 4) comeback7 / comeback14: 2차·3차 (재드리프트마다 1회씩)
+    if (idle >= 7 && idle <= 8) {
+      if (!(await alreadySent(u.email, "comeback7", u.last_active || u.signup_date))) { picked.push({ ...u, _kind: "comeback7", dayN, words, idle }); continue; }
+    }
+    if (idle >= 14 && idle <= 15) {
+      if (!(await alreadySent(u.email, "comeback14", u.last_active || u.signup_date))) { picked.push({ ...u, _kind: "comeback14", dayN, words, idle }); continue; }
+    }
+    // 5) renewal: Day 25~29 (갱신 직전). 최근 20일 내 renewal 안 보냈으면.
     if (dayN >= 25 && dayN <= 29) {
       const since = new Date(now.getTime() - 20 * 86400000).toISOString();
-      if (!(await alreadySent(u.email, "renewal", since))) {
-        picked.push({ ...u, _kind: "renewal", dayN, words });
-      }
+      if (!(await alreadySent(u.email, "renewal", since))) { picked.push({ ...u, _kind: "renewal", dayN, words }); continue; }
+    }
+    // 6) transition: Day 31 / Day 58 (각 1회, 활동 중인 사람에게만)
+    if ((dayN === 31 || dayN === 58) && idle <= 3) {
+      const kind = dayN === 31 ? "transition31" : "transition58";
+      if (!(await alreadySent(u.email, kind, u.signup_date))) { picked.push({ ...u, _kind: kind, dayN, words }); continue; }
     }
   }
 
@@ -285,7 +389,14 @@ Deno.serve(async (req) => {
   let sent = 0;
   for (const p of picked) {
     const name = (p.name || "").trim() || "사원";
-    const mail = p._kind === "comeback" ? comebackEmail(name, p.dayN) : renewalEmail(name, p.dayN, p.words);
+    const mail =
+      p._kind === "start"        ? startEmail(name) :
+      p._kind === "day1"         ? day1Email(name, p.tomorrowWord || "") :
+      p._kind === "comeback"     ? comebackEmail(name, p.dayN) :
+      p._kind === "comeback7"    ? comebackLateEmail(name, p.dayN, p.idle, false) :
+      p._kind === "comeback14"   ? comebackLateEmail(name, p.dayN, p.idle, true) :
+      p._kind === "renewal"      ? renewalEmail(name, p.dayN, p.words) :
+                                   transitionEmail(name, p.dayN);
     const ok = (await sendEmail(p.email, mail.subject, mail.html)).ok;
     if (ok) {
       sent++;

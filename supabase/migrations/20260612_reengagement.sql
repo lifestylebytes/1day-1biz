@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS reengagement_log (
   id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   email      text NOT NULL,
-  kind       text NOT NULL,        -- 'comeback' | 'renewal'
+  kind       text NOT NULL,        -- start | day1 | comeback | comeback7 | comeback14 | renewal | transition31 | transition58 | push_update
   sent_at    timestamptz NOT NULL DEFAULT now(),
   meta       jsonb
 );
