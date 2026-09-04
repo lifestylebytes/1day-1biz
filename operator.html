@@ -623,10 +623,17 @@ function FeedbackInbox() {
         <button className="btn btn-ghost btn-mini" style={{ marginLeft: 12, padding: '2px 10px', fontSize: 11 }} onClick={load} disabled={loading}>
           {loading ? '로딩…' : '↻ 새로고침'}
         </button>
-        <label style={{ marginLeft: 12, fontSize: 11, color: '#8A7964', cursor: 'pointer', fontWeight: 500, textTransform: 'none', letterSpacing: 'normal' }}>
-          <input type="checkbox" checked={showResolved} onChange={e => setShowResolved(e.target.checked)} style={{ marginRight: 4 }} />
-          처리된 것도 보기
-        </label>
+        <button
+          className="btn btn-ghost btn-mini"
+          style={{
+            marginLeft: 8, padding: '2px 10px', fontSize: 11,
+            ...(showResolved ? { background: '#2A1F14', color: '#F4EFE3', borderColor: '#2A1F14' } : {}),
+          }}
+          onClick={() => setShowResolved(v => !v)}
+          title={showResolved ? '처리된 항목 숨기기' : '처리된 항목도 함께 보기'}
+        >
+          {showResolved ? '✓ 처리된 것 포함' : '처리된 것도 보기'}
+        </button>
       </div>
       <SurveySummary items={items} />
       <div className="card" style={{ padding: 0 }}>
