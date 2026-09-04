@@ -6926,9 +6926,12 @@ function ErrandsCard({ setActive, toast }) {
   const K = "__OD_ERRAND_" + today + "_" + email;
   const seed = [...(today + email)].reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7);
   const picked = React.useMemo(() => {
-    const i1 = seed % _TY_ERRANDS.length;
-    const i2 = (i1 + 1 + ((seed >> 3) % (_TY_ERRANDS.length - 1))) % _TY_ERRANDS.length;
-    return [_TY_ERRANDS[i1], _TY_ERRANDS[i2]];
+    // ★ 2026-09-04 핫픽스: seed 가 2^31 이상이면 `seed >> 3` 이 음수가 돼 인덱스가 음수 → undefined 심부름 → 홈 전체가 하얀 화면.
+    //   부호 없는 시프트(>>>)로 바꾸고, 혹시 모를 undefined 는 걸러낸다.
+    const n = _TY_ERRANDS.length;
+    const i1 = seed % n;
+    const i2 = (i1 + 1 + ((seed >>> 3) % Math.max(1, n - 1))) % n;
+    return [_TY_ERRANDS[i1], _TY_ERRANDS[i2]].filter(Boolean);
   }, [seed]);
   const [done, setDone] = React.useState(() => { try { return JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) { return {}; } });
   const go = (er) => {
