@@ -109,6 +109,29 @@ label { display: block; font-size: 11px; font-weight: 700; color: #8A7964; text-
   .user-row { grid-template-columns: 1fr 130px; gap: 8px; padding: 10px 12px; }
   .user-row > .col-progress, .user-row > .col-type { display: none; }
 }
+
+/* ── 시트 뷰 (전체 설문·피드백, 읽기 전용) ── */
+.sheet-overlay { position: fixed; inset: 0; background: rgba(42,31,20,0.55); z-index: 900; display: flex; align-items: stretch; justify-content: center; padding: 18px; }
+.sheet { background: #FFFDF8; border-radius: 10px; width: 100%; max-width: 1400px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 14px 40px rgba(0,0,0,0.3); }
+.sheet-top { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #E6DCC8; background: #F7F1E3; }
+.sheet-top h3 { margin: 0; font-size: 14px; font-weight: 800; color: #2A1F14; }
+.sheet-top input { flex: 1; max-width: 320px; font-family: inherit; font-size: 12px; padding: 6px 10px; border: 1px solid #C9BBA0; border-radius: 6px; background: #fff; }
+.sheet-top .cnt { font-size: 11px; color: #8A7964; font-variant-numeric: tabular-nums; }
+.sheet-body { flex: 1; overflow: auto; background: #fff; }
+.sheet-body table { border-collapse: collapse; min-width: 100%; font-size: 12px; }
+.sheet-body th, .sheet-body td { border: 1px solid #E6DCC8; padding: 6px 9px; vertical-align: top; text-align: left; max-width: 420px; }
+.sheet-body th { position: sticky; top: 0; background: #F0E8D5; color: #5C4A36; font-size: 11px; font-weight: 800; letter-spacing: 0.03em; white-space: nowrap; cursor: pointer; user-select: none; z-index: 1; }
+.sheet-body th:hover { background: #E6DCC8; }
+.sheet-body td { white-space: pre-wrap; word-break: break-word; line-height: 1.5; color: #2A1F14; }
+.sheet-body td.num { font-variant-numeric: tabular-nums; white-space: nowrap; color: #5C4A36; }
+.sheet-body td.rowno { color: #B8AA90; text-align: right; white-space: nowrap; background: #FCFAF4; font-size: 11px; }
+.sheet-body tbody tr:nth-child(even) td { background: #FCFAF4; }
+.sheet-body tbody tr:hover td { background: #FFF6E8; }
+.sheet-tabs { display: flex; gap: 2px; padding: 6px 10px 0; background: #EFE7D6; border-top: 1px solid #E6DCC8; }
+.sheet-tab { font-family: inherit; font-size: 12px; font-weight: 700; padding: 7px 14px; border: 1px solid #D9CDB3; border-bottom: none; border-radius: 6px 6px 0 0; background: #E6DCC8; color: #6B5A45; cursor: pointer; }
+.sheet-tab.on { background: #FFFDF8; color: #2A1F14; }
+.sheet-tab small { font-weight: 600; color: #8A7964; margin-left: 5px; }
+.sheet-empty { padding: 40px; text-align: center; color: #8A7964; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -552,17 +575,150 @@ function SurveySummary({ items }) {
 }
 
 // 💬 피드백 모아보기 카드 (사용자가 mainboard 우상단 버튼으로 보낸 피드백 표시)
+// ============================================================
+// 시트 뷰: 설문 · 피드백 · Day1 설문을 엑셀처럼 (읽기 전용, 하단 탭)
+// 데이터는 이미 운영자 화면이 받아오는 feedback 테이블 + Day1 설문 RPC. 화면에서 편집 불가.
+// ============================================================
+function _fmtAt(iso) {
+  if (!iso) return '';
+  try { const d = new Date(iso); return d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return String(iso); }
+}
+function _csvDownload(filename, headers, rows) {
+  const esc = (v) => { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const lines = [headers.map(esc).join(',')].concat(rows.map(r => r.map(esc).join(',')));
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const _CAT_KO = { bug: '오류', suggestion: '제안', content: '콘텐츠', general: '일반', survey: '설문' };
+
+function SheetView({ items, onClose }) {
+  const [tab, setTab] = React.useState('survey');
+  const [q, setQ] = React.useState('');
+  const [sort, setSort] = React.useState({ key: '_at', dir: -1 });
+  const [day1, setDay1] = React.useState({ rows: [], loading: true, error: '' });
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      const me = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null')?.email || ''; } catch (e) { return ''; } })();
+      if (!window.OD?.fetchSurveyResponses) { setDay1({ rows: [], loading: false, error: '연결 안 됨' }); return; }
+      const r = await window.OD.fetchSurveyResponses(me, 2000);
+      if (!alive) return;
+      setDay1({ rows: r.rows || [], loading: false, error: r.ok ? '' : (r.error || '불러오기 실패') });
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  // 탭별 컬럼/행 구성. 각 행은 {_at, ...} 객체, 컬럼은 {key, label, num?}
+  const survey = React.useMemo(() => {
+    const rows = (items || []).filter(it => it.category === 'survey').map(it => {
+      const p = parseSurveyRow(it);
+      return { _at: it.created_at, 날짜: _fmtAt(it.created_at), 이름: p.who, 이메일: p.email, Day: p.day || '', 만족도: p.rating || '', '한마디로 정의': p.oneLiner, '그만둔다면 이유': p.quit, '있으면 계속 쓸 것': p.keep, 원문: it.message || '' };
+    });
+    return { cols: ['날짜', '이름', '이메일', 'Day', '만족도', '한마디로 정의', '그만둔다면 이유', '있으면 계속 쓸 것', '원문'], num: new Set(['Day', '만족도']), rows };
+  }, [items]);
+
+  const fb = React.useMemo(() => {
+    const rows = (items || []).filter(it => it.category !== 'survey').map(it => ({
+      _at: it.created_at, 날짜: _fmtAt(it.created_at), 이름: it.name || '익명', 이메일: it.email || '', Day: it.day || '',
+      분류: _CAT_KO[it.category] || it.category || '', 내용: it.message || '',
+      상태: it.resolved ? '해결' : (it.replied_at ? '답장함' : '미답장'), 답장일: _fmtAt(it.replied_at), 완료일: _fmtAt(it.completed_at),
+    }));
+    return { cols: ['날짜', '이름', '이메일', 'Day', '분류', '내용', '상태', '답장일', '완료일'], num: new Set(['Day']), rows };
+  }, [items]);
+
+  const d1 = React.useMemo(() => {
+    const keys = [];
+    (day1.rows || []).forEach(r => Object.keys(r.responses || {}).forEach(k => { if (!keys.includes(k)) keys.push(k); }));
+    const rows = (day1.rows || []).map(r => {
+      const o = { _at: r.created_at, 날짜: _fmtAt(r.created_at), 이메일: r.email || '', 설문키: r.survey_key || '' };
+      keys.forEach(k => { const v = (r.responses || {})[k]; o[k] = (v && typeof v === 'object') ? JSON.stringify(v) : (v == null ? '' : String(v)); });
+      return o;
+    });
+    return { cols: ['날짜', '이메일', '설문키', ...keys], num: new Set(), rows };
+  }, [day1.rows]);
+
+  const cur = tab === 'survey' ? survey : (tab === 'fb' ? fb : d1);
+  const needle = q.trim().toLowerCase();
+  const filtered = needle ? cur.rows.filter(r => cur.cols.some(c => String(r[c] ?? '').toLowerCase().includes(needle))) : cur.rows;
+  const sorted = [...filtered].sort((a, b) => {
+    const k = sort.key; const va = a[k] ?? '', vb = b[k] ?? '';
+    if (k === '_at') return (Date.parse(va || 0) - Date.parse(vb || 0)) * sort.dir;
+    const na = Number(va), nb = Number(vb);
+    if (va !== '' && vb !== '' && !isNaN(na) && !isNaN(nb)) return (na - nb) * sort.dir;
+    return String(va).localeCompare(String(vb), 'ko') * sort.dir;
+  });
+  const clickSort = (c) => setSort(s => ({ key: c === '날짜' ? '_at' : c, dir: (s.key === (c === '날짜' ? '_at' : c)) ? -s.dir : -1 }));
+  const sortMark = (c) => { const k = c === '날짜' ? '_at' : c; return sort.key === k ? (sort.dir < 0 ? ' ▼' : ' ▲') : ''; };
+
+  const tabLabel = tab === 'survey' ? '설문' : (tab === 'fb' ? '피드백' : 'Day1설문');
+  const exportCsv = () => _csvDownload(`1일1비_${tabLabel}_${new Date().toISOString().slice(0, 10)}.csv`, cur.cols, sorted.map(r => cur.cols.map(c => r[c])));
+
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="sheet-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="sheet">
+        <div className="sheet-top">
+          <h3>📊 전체 설문 · 피드백</h3>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="검색 (이름, 이메일, 내용…)" />
+          <span className="cnt">{sorted.length}행{needle ? ` / 전체 ${cur.rows.length}` : ''}</span>
+          <span style={{ flex: 1 }} />
+          <button className="btn btn-ghost btn-mini" onClick={exportCsv} disabled={!sorted.length}>⬇ CSV 내보내기</button>
+          <button className="btn btn-mini" onClick={onClose}>닫기 (Esc)</button>
+        </div>
+        <div className="sheet-body">
+          {tab === 'day1' && day1.loading ? (
+            <div className="sheet-empty">Day1 설문 불러오는 중…</div>
+          ) : tab === 'day1' && day1.error ? (
+            <div className="sheet-empty">Day1 설문을 못 불러왔어요: {day1.error}<br /><small>list_survey_responses RPC(20260904_survey_sheet.sql)가 DB에 있어야 해요.</small></div>
+          ) : !sorted.length ? (
+            <div className="sheet-empty">{needle ? '검색 결과가 없어요.' : '아직 데이터가 없어요.'}</div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: 36 }}>#</th>
+                  {cur.cols.map(c => <th key={c} onClick={() => clickSort(c)} title="클릭해서 정렬">{c}{sortMark(c)}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((r, i) => (
+                  <tr key={i}>
+                    <td className="rowno">{i + 1}</td>
+                    {cur.cols.map(c => <td key={c} className={cur.num.has(c) || c === '날짜' ? 'num' : ''}>{r[c] ?? ''}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="sheet-tabs">
+          <button className={'sheet-tab' + (tab === 'survey' ? ' on' : '')} onClick={() => setTab('survey')}>설문<small>{survey.rows.length}</small></button>
+          <button className={'sheet-tab' + (tab === 'fb' ? ' on' : '')} onClick={() => setTab('fb')}>피드백<small>{fb.rows.length}</small></button>
+          <button className={'sheet-tab' + (tab === 'day1' ? ' on' : '')} onClick={() => setTab('day1')}>Day1 설문<small>{day1.loading ? '…' : d1.rows.length}</small></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FeedbackInbox() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [showResolved, setShowResolved] = React.useState(false);
   const [replyTo, setReplyTo] = React.useState(null);    // 답장 모달
   const [completeTo, setCompleteTo] = React.useState(null);  // 작업 완료 모달
+  const [sheetOpen, setSheetOpen] = React.useState(false);   // 전체 시트 뷰
 
   const load = async () => {
     if (!window.OD || !window.OD.enabled || !window.OD.fetchFeedback) return;
     setLoading(true);
-    const r = await window.OD.fetchFeedback(200);
+    const r = await window.OD.fetchFeedback(1000);  // 시트 뷰에서 전체를 보므로 넉넉히
     if (r.ok) setItems(r.feedback || []);
     setLoading(false);
   };
@@ -634,8 +790,12 @@ function FeedbackInbox() {
         >
           {showResolved ? '✓ 처리된 것 포함' : '처리된 것도 보기'}
         </button>
+        <button className="btn btn-ghost btn-mini" style={{ marginLeft: 8, padding: '2px 10px', fontSize: 11 }} onClick={() => setSheetOpen(true)} title="설문·피드백 전체를 표로 보기 (읽기 전용)">
+          📊 전체 설문·피드백 시트
+        </button>
       </div>
       <SurveySummary items={items} />
+      {sheetOpen && <SheetView items={items} onClose={() => setSheetOpen(false)} />}
       <div className="card" style={{ padding: 0 }}>
         {visible.length === 0 ? (
           <div className="empty" style={{ padding: 24 }}>{loading ? '로딩 중...' : '아직 들어온 피드백이 없어요.'}</div>
