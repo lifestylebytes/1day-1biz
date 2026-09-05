@@ -298,6 +298,46 @@ body::before {
   text-transform: uppercase;
 }
 .scene-card-body { padding: 24px 28px 28px; }
+/* 업무 노트 표 보기 (기본) */
+.lib-view { margin-left: auto; display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.lib-view button { background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 800; padding: 6px 10px; color: var(--ink-mute); cursor: pointer; }
+.lib-view button.on { background: var(--ink); color: var(--paper); }
+.lib-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); margin-top: 4px; }
+.lib-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+.lib-table th { text-align: left; font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute); padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--paper-warm); white-space: nowrap; }
+.lib-table th.sortable { cursor: pointer; user-select: none; color: var(--ink); }
+.lib-table th.sortable small { margin-left: 6px; font-size: 10px; letter-spacing: 0; text-transform: none; color: var(--orange); font-weight: 700; }
+.lib-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft, var(--line)); vertical-align: middle; }
+.lib-table th + th, .lib-row td + td { border-left: 1px solid var(--line-soft, var(--line)); }   /* 스프레드시트처럼 세로 구분선 */
+.lib-table tbody tr.lib-row:nth-child(4n+3) td { background: rgba(255,255,255,0.35); }
+.lib-row { cursor: pointer; }
+.lib-row:hover td { background: rgba(255,255,255,0.5); }
+.lib-row.open td { background: var(--paper-warm); }
+.lib-row.today .col-day { color: var(--orange); }
+.lib-row.locked { cursor: default; color: var(--ink-mute); }
+.lib-table .col-day { font-variant-numeric: tabular-nums; font-weight: 800; width: 52px; color: var(--ink-soft); }
+.lib-table .col-word b { font-size: 14px; }
+.lib-table .col-word small { margin-left: 6px; font-size: 10.5px; color: var(--ink-mute); }
+.lib-table .col-mean { color: var(--ink-soft); }
+.lib-table .col-npc { white-space: nowrap; color: var(--ink-soft); font-size: 12px; }
+.lib-table .col-npc .biz-card-npc-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.lib-table .col-st { white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.lib-table .col-st i { font-style: normal; margin-left: 8px; color: var(--ink-mute); font-size: 10px; }
+.lib-detail td { background: var(--paper); padding: 14px 16px 16px; border-bottom: 2px solid var(--line); }
+.lib-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+.lib-detail-grid label { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; color: var(--orange); margin-bottom: 4px; }
+.lib-detail-grid p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.lib-detail-grid .lib-ko { color: var(--ink-mute); font-size: 12px; margin-top: 2px; }
+.lib-detail-grid .lib-mine { font-style: italic; color: var(--ink-soft); }
+.lib-detail-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 11.5px; color: var(--ink-mute); }
+.lib-detail-actions .btn { padding: 7px 14px; font-size: 12.5px; }
+@media (max-width: 880px) {
+  .lib-table { min-width: 0; font-size: 12.5px; }
+  .lib-table .col-npc { display: none; }
+  .lib-table th, .lib-table td { padding: 9px 8px; }
+  .lib-detail-grid { grid-template-columns: 1fr; }
+  .lib-view { margin-left: 0; }
+}
 /* 🎁 첫 주 카드 다시 보기 (업무 노트 상단) */
 .fwc { margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .fwc-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 900; color: var(--ink); cursor: pointer; text-align: left; }
@@ -6280,11 +6320,12 @@ function _popupOpen() {
 }
 function SlackPing({ scn, npc, day, ready, onOpen }) {
   const [show, setShow] = useState(false);
+  // 접속(탭)마다 1회. 시추에이션을 끝낼 때까지는 다시 들어올 때마다 슬랙 알림처럼 또 온다.
   const KEY = "__OD_PING_DAY_" + day;
-  const mark = () => { try { localStorage.setItem(KEY, "1"); } catch (e) {} };
+  const mark = () => { try { sessionStorage.setItem(KEY, "1"); } catch (e) {} };
   React.useEffect(() => {
     if (!ready || !_isNextFeature()) return;
-    try { if (localStorage.getItem(KEY) === "1") return; } catch (e) {}
+    try { if (sessionStorage.getItem(KEY) === "1") return; } catch (e) {}
     // 팝업들은 저마다 1~3초 뒤에 뜨므로, 처음엔 최소 2.5초 기다리고 그 뒤로 1.5초 조용하면 띄운다.
     // 떠 있는 동안 팝업이 올라오면 잠시 숨겼다가 팝업이 닫힌 뒤 다시 나온다. 12초 보여주면 그날은 끝.
     let quiet = 0, elapsed = 0, visible = 0, shown = false, ended = false;
@@ -8690,6 +8731,12 @@ function LibraryPage({ openScene }) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [npcFilter, setNpcFilter] = useState("all");
+  // 보기 방식 (2026-09-05): 기본 표, 옵션 카드. 표는 Day 헤더 클릭으로 정렬, 행 클릭으로 펼침.
+  const [view, setView] = useState(() => { try { return localStorage.getItem("__OD_LIB_VIEW") || "table"; } catch (e) { return "table"; } });
+  const [sortDesc, setSortDesc] = useState(() => { try { return localStorage.getItem("__OD_LIB_SORT") !== "asc"; } catch (e) { return true; } });
+  const [openDay, setOpenDay] = useState(null);
+  const pickView = (v) => { setView(v); try { localStorage.setItem("__OD_LIB_VIEW", v); } catch (e) {} };
+  const toggleSort = () => setSortDesc(d => { try { localStorage.setItem("__OD_LIB_SORT", d ? "asc" : "desc"); } catch (e) {} return !d; });
 
   const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
   const filtered = accessible.filter(s => {
@@ -8726,6 +8773,10 @@ function LibraryPage({ openScene }) {
         <button className={"filter-chip " + (filter === "studied" ? "active" : "")} onClick={() => setFilter("studied")}>학습완료</button>
         <button className={"filter-chip " + (filter === "today" ? "active" : "")} onClick={() => setFilter("today")}>오늘</button>
         <input className="filter-search" placeholder="단어 / 뜻 검색…" value={search} onChange={e => setSearch(e.target.value)} />
+        <span className="lib-view">
+          <button className={view === "table" ? "on" : ""} onClick={() => pickView("table")} title="표로 보기">▤ 표</button>
+          <button className={view === "cards" ? "on" : ""} onClick={() => pickView("cards")} title="카드로 보기">▦ 카드</button>
+        </span>
       </div>
       <div className="filter-row" style={{ marginTop: -8 }}>
         <span style={{ fontSize: 10.5, color: "var(--ink-mute)", letterSpacing: "0.16em", fontWeight: 800 }}>NPC ·</span>
@@ -8750,7 +8801,70 @@ function LibraryPage({ openScene }) {
         return null;
       })()}
 
-      <div className="word-rolodex">
+      {view === "table" && (
+        <div className="lib-table-wrap">
+          <table className="lib-table">
+            <thead>
+              <tr>
+                <th className="sortable" onClick={toggleSort} title="클릭해서 정렬">DAY {sortDesc ? "▼" : "▲"}<small>{sortDesc ? "최신순" : "Day 1부터"}</small></th>
+                <th>표현</th>
+                <th>뜻</th>
+                <th className="col-npc">누구</th>
+                <th className="col-st">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...filtered].sort((a, b) => sortDesc ? b.day - a.day : a.day - b.day).map(s => {
+                const c = CHARACTERS[s.npc];
+                const myAnswer = _loadCompletion(s.day);
+                const savedNotes = (window.__savedNotesByDay && window.__savedNotesByDay[String(s.day)]) || [];
+                const myJournal = (window.__dailyJournalsByDay && window.__dailyJournalsByDay[String(s.day)]) || null;
+                const isOpen = openDay === s.day;
+                const st = myAnswer ? "✏️ 작성 완료" : s.status === "today" ? "● 오늘" : "✓ 완료";
+                return (
+                  <React.Fragment key={s.day}>
+                    <tr className={"lib-row" + (isOpen ? " open" : "") + (s.status === "today" ? " today" : "")} onClick={() => setOpenDay(isOpen ? null : s.day)}>
+                      <td className="col-day">{String(s.day).padStart(2, "0")}</td>
+                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small></td>
+                      <td className="col-mean">{s.meaning}</td>
+                      <td className="col-npc"><span className="biz-card-npc-dot" style={{ background: c.color }}></span>{c.name}</td>
+                      <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
+                    </tr>
+                    {isOpen && (
+                      <tr className="lib-detail"><td colSpan={5}>
+                        <div className="lib-detail-grid">
+                          <div><label>상황</label><p>{_sceneNoClock(s.scene)}</p></div>
+                          <div><label>{c.name} · {c.role}</label><p className="lib-quote">"{_hlQuote(s.quote, s.word)}"</p>{s.quoteKo && <p className="lib-ko">{s.quoteKo}</p>}</div>
+                          <div><label>▶ 사수 · 언제 쓰는지</label><p>{_mentorNuanceLine(s)}</p></div>
+                          <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{_buddyTipText(s)}</p></div>
+                          {myAnswer && myAnswer.sentence && <div><label>✏️ 내 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
+                          {myJournal && myJournal.text && <div><label>📝 내 시추에이션</label><p className="lib-mine">"{myJournal.text}"</p></div>}
+                          {savedNotes.length > 0 && <div><label>📒 저장한 노트 {savedNotes.length}개</label><p>{savedNotes.map(n => n.text).join("\n")}</p></div>}
+                        </div>
+                        <div className="lib-detail-actions">
+                          <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); openScene(s); }}>시추에이션 다시 열기 →</button>
+                          <span>{(s.tags || []).map(t => "#" + t).join(" ")}</span>
+                        </div>
+                      </td></tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {locked.slice(0, 3).map(s => (
+                <tr key={"l" + s.day} className="lib-row locked">
+                  <td className="col-day">{String(s.day).padStart(2, "0")}</td>
+                  <td className="col-word"><b>{"▒".repeat(Math.max(5, Math.min(12, (s.word || "").length)))}</b></td>
+                  <td className="col-mean">Day {s.day}에 만나요</td>
+                  <td className="col-npc"></td>
+                  <td className="col-st">🔒</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="word-rolodex" style={view === "table" ? { display: "none" } : undefined}>
         {filtered.map(s => {
           const c = CHARACTERS[s.npc];
           const myAnswer = _loadCompletion(s.day);  // 본인이 쓴 문장 (있으면)
@@ -10062,7 +10176,7 @@ function SceneModal({ scenario, onClose }) {
       u.savedNotes[dayKey] = u.savedNotes[dayKey] || [];
       // 중복 방지
       if (u.savedNotes[dayKey].some(n => n.text === text)) return false;
-      const labelMap = { nuance: "뉘앙스", example: "예문", default: "외우는 팁", native: "네이티브 문장", memo: "메모" };
+      const labelMap = { nuance: "뉘앙스", example: "예문", default: "외우는 팁", native: "네이티브 문장", memo: "메모", qa: "내 질문" };
       u.savedNotes[dayKey].push({
         kind, label: labelMap[kind] || "메모",
         text, savedAt: new Date().toISOString(),
@@ -10536,7 +10650,11 @@ function SceneModal({ scenario, onClose }) {
                         <button
                           className={isSaved ? "saved" : ""}
                           onClick={() => {
-                            const ok = saveBuddyNote(m.text, m.kind || "default");
+                            // 내가 물어본 질문이 바로 앞에 있으면 같이 저장 (나중에 봐도 무슨 답인지 알게)
+                            const prev = buddyMsgs[i - 1];
+                            const q = prev && prev.from === "me" ? String(prev.text || "").trim() : "";
+                            const body = q ? "❓ " + q + "\n" + m.text : m.text;
+                            const ok = saveBuddyNote(body, m.kind || "default");
                             if (ok) {
                               setSavedTexts(prev => new Set([...prev, m.text]));
                               try { localStorage.setItem("__OD_DOCKSAVE_TIP_DONE", "1"); } catch (e) {}
