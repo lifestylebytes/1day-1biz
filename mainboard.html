@@ -298,6 +298,47 @@ body::before {
   text-transform: uppercase;
 }
 .scene-card-body { padding: 24px 28px 28px; }
+/* 🌙 야근 카드 (개발 뷰) */
+.ot-card { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
+.ot-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
+.ot-head small { font-weight: 600; font-size: 11px; opacity: 0.7; margin-left: 8px; }
+.ot-head b { font-size: 12px; font-weight: 800; color: #FFB380; }
+.ot-body { padding: 16px; display: grid; gap: 18px; }
+.ot-sec-title { font-size: 13.5px; font-weight: 900; margin-bottom: 3px; }
+.ot-sec-sub { font-size: 12px; color: var(--ink-mute); line-height: 1.55; margin-bottom: 10px; }
+.ot-row { padding: 10px 0; border-top: 1px dashed var(--line); }
+.ot-row:first-of-type { border-top: none; }
+.ot-row-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
+.ot-row-head b { font-size: 14px; color: var(--ink); }
+.ot-row-head b.main { background: var(--highlight); padding: 0 4px; }
+.ot-row-head i { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--ink-mute); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.ot-row-input { display: flex; gap: 8px; }
+.ot-row-input input { flex: 1; min-width: 0; font-family: inherit; font-size: 13.5px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.ot-row-input input:focus { outline: 2px solid var(--orange); outline-offset: 1px; border-color: transparent; }
+.ot-row-input .btn { flex: none; padding: 8px 14px; font-size: 12.5px; }
+.ot-fb { margin-top: 8px; font-size: 12.5px; line-height: 1.55; }
+.ot-fb-fix { color: var(--ink); background: var(--paper-warm); padding: 6px 10px; border-radius: 6px; }
+.ot-fb-ok { color: var(--green); font-weight: 700; }
+.ot-fb-note { color: var(--ink-soft); margin-top: 4px; }
+.ot-pre-ko { font-size: 15px; font-weight: 700; color: var(--ink); background: var(--paper-warm); padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
+.ot-pre-saved { display: grid; gap: 6px; }
+.ot-pre-mine { font-size: 14px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.ot-pre-saved .btn { justify-self: start; }
+/* 🔮 어제 미리 쓴 문장 vs 오늘 표현 */
+.pre-reveal { margin-bottom: 14px; border: 2px solid var(--orange); border-radius: 12px; background: var(--paper); padding: 14px 16px; box-shadow: 4px 4px 0 rgba(216,90,42,0.18); animation: fadeUp 0.3s ease-out; }
+.pre-reveal-head { font-size: 13.5px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pre-hit { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--green); border-radius: 999px; padding: 2px 8px; }
+.pre-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pre-col { border-radius: 8px; padding: 10px 12px; }
+.pre-col.mine { background: var(--paper-warm); }
+.pre-col.ans { background: #FFF3B8; }
+.pre-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: var(--ink-mute); margin-bottom: 4px; }
+.pre-txt { font-size: 14px; line-height: 1.5; color: var(--ink); }
+.pre-word { margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); }
+.pre-word b { color: var(--ink); background: var(--highlight); padding: 0 4px; }
+.pre-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.pre-actions .btn { padding: 8px 14px; font-size: 12.5px; }
+@media (max-width: 880px) { .pre-cmp { grid-template-columns: 1fr; } .ot-body { padding: 14px; } }
 /* 슬랙 알림 핑 (개발 뷰): 휴대폰 알림처럼 위에서 내려오는 NPC 메시지 */
 .slack-ping { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 8500; width: min(420px, calc(100vw - 24px)); animation: pingDown 480ms cubic-bezier(.2,1.2,.3,1) both; }
 .slack-ping-card { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; background: rgba(42,31,20,0.96); color: var(--paper); border: none; border-radius: 16px; padding: 12px 14px; box-shadow: 0 18px 40px rgba(0,0,0,0.35); cursor: pointer; font-family: inherit; backdrop-filter: blur(8px); }
@@ -1516,6 +1557,8 @@ body::before {
   .desk-grid.next-home .ty-member { order: 7; }
   .desk-grid.next-home .locked-card { order: 8; }      /* 잠긴 카드는 맨 아래 */
   .desk-grid.next-home .unlock-ladder { order: 9; }    /* 해금 사다리는 맨 아래 */
+  .desk-grid.next-home .pre-reveal { order: -4; }      /* 어제 예측 결과는 시추에이션 위 */
+  .desk-grid.next-home .ot-card { order: -2; }         /* 야근은 시추에이션 바로 아래 */
   .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
 
   /* 시추에이션 카드 */
@@ -4771,6 +4814,101 @@ window.__OD_IS_FULLTIME = _isFulltimeLevel;
 
 // 완주(출근 도장)한 날 수. _completedDayCount는 다음 <script> 블록에 있어 여기선 못 쓰므로 인라인.
 // ============================================================
+
+// ── 유의어 (2026-09-05, 야근 "유의어로 3문장"용): 오늘 표현 + 결이 다른 표현 2개. ko는 "언제 이걸 대신 쓰는지" 한 줄 ──
+const SYNONYMS = {
+  1: [{ w: "key player", ko: "영향력 있는 개인 한 명을 가리킬 때 써요." }, { w: "party involved", ko: "계약이나 거래의 당사자를 말할 때 써요." }],
+  2: [{ w: "due date", ko: "제출일 자체를 가리킬 때 써요." }, { w: "cutoff", ko: "그 시각 이후엔 안 받는다는 느낌으로 써요." }],
+  3: [{ w: "check back", ko: "가볍게 다시 확인할 때 써요." }, { w: "chase up", ko: "답을 재촉할 때 영국식으로 써요." }],
+  4: [{ w: "at your earliest convenience", ko: "정중하게 빨리 달라고 할 때 써요." }, { w: "right away", ko: "지금 바로라는 뜻으로 말할 때 자주 써요." }],
+  5: [{ w: "revisit", ko: "안건을 다시 다룰 때 격식 있게 써요." }, { w: "get back to you", ko: "답을 나중에 주겠다고 할 때 써요." }],
+  6: [{ w: "cc", ko: "메일 참조로 넣을 때 그대로 동사로 써요." }, { w: "bring in", ko: "사람을 논의에 끌어들일 때 써요." }],
+  7: [{ w: "output", ko: "결과물 전반을 넓게 가리킬 때 써요." }, { w: "work product", ko: "계약서나 법무 문서에서 산출물을 말할 때 써요." }],
+  8: [{ w: "scale up", ko: "규모를 키울 때 써요." }, { w: "accelerate", ko: "속도를 올릴 때 써요." }],
+  9: [{ w: "quick win", ko: "빨리 보여줄 성과를 말할 때 써요." }, { w: "easy pickings", ko: "힘 안 들이고 얻는 것을 캐주얼하게 말할 때 써요." }],
+  10: [{ w: "check in", ko: "안부나 상황을 가볍게 확인할 때 써요." }, { w: "catch up", ko: "밀린 얘기를 나눌 때 써요." }],
+  11: [{ w: "vetting", ko: "사람이나 업체를 검증할 때 써요." }, { w: "thorough review", ko: "꼼꼼한 검토라고 풀어 말할 때 써요." }],
+  12: [{ w: "shift gears", ko: "방향을 바꿀 때 캐주얼하게 써요." }, { w: "change course", ko: "노선을 바꿀 때 격식 있게 써요." }],
+  13: [{ w: "concrete", ko: "구체적이라는 뜻으로 써요." }, { w: "practical", ko: "현실에서 바로 쓸 수 있다고 할 때 써요." }],
+  14: [{ w: "rough estimate", ko: "대략적 추정치를 풀어 말할 때 써요." }, { w: "in the region of", ko: "숫자 앞에 붙여 '약'이라고 할 때 써요." }],
+  15: [{ w: "put on hold", ko: "잠시 보류할 때 써요." }, { w: "park", ko: "영국식으로 잠깐 접어둘 때 써요." }],
+  16: [{ w: "get on the same page", ko: "생각을 맞출 때 캐주얼하게 써요." }, { w: "agree on", ko: "합의 자체를 말할 때 써요." }],
+  17: [{ w: "catch up", ko: "밀린 상황을 맞출 때 써요." }, { w: "huddle", ko: "짧게 모여서 맞출 때 써요." }],
+  18: [{ w: "capacity", ko: "처리 가능한 양을 격식 있게 말할 때 써요." }, { w: "availability", ko: "시간이 비는지 물을 때 써요." }],
+  19: [{ w: "range", ko: "범위를 일반적으로 말할 때 써요." }, { w: "boundaries", ko: "어디까지인지 경계를 말할 때 써요." }],
+  20: [{ w: "take the lead", ko: "앞장서겠다고 할 때 써요." }, { w: "rise to the occasion", ko: "중요한 순간에 해내는 걸 말할 때 써요." }],
+  21: [{ w: "FYI", ko: "참고로 알려줄 때 메일에 써요." }, { w: "advance notice", ko: "격식 있는 사전 통보에 써요." }],
+  22: [{ w: "take charge", ko: "지휘권을 잡을 때 써요." }, { w: "be accountable for", ko: "결과에 책임진다고 할 때 써요." }],
+  23: [{ w: "support", ko: "지지를 일반적으로 말할 때 써요." }, { w: "endorsement", ko: "공개적인 지지 표명을 말할 때 써요." }],
+  24: [{ w: "make use of", ko: "활용한다고 쉽게 말할 때 써요." }, { w: "capitalize on", ko: "기회를 살릴 때 써요." }],
+  25: [{ w: "on leave", ko: "휴가 중이라고 격식 있게 말할 때 써요." }, { w: "away from my desk", ko: "잠깐 자리를 비울 때 써요." }],
+  26: [{ w: "guiding principle", ko: "판단 기준이 되는 원칙을 말할 때 써요." }, { w: "top priority", ko: "최우선 순위를 말할 때 써요." }],
+  27: [{ w: "resistance", ko: "저항을 일반적으로 말할 때 써요." }, { w: "objection", ko: "구체적인 반대 의견을 말할 때 써요." }],
+  28: [{ w: "bogged down", ko: "세부에 빠져 진도가 안 날 때 써요." }, { w: "lost in the details", ko: "디테일에 빠졌다고 풀어 말할 때 써요." }],
+  29: [{ w: "give it a shot", ko: "한번 해보겠다고 캐주얼하게 말할 때 써요." }, { w: "have a go", ko: "영국식으로 시도해본다고 할 때 써요." }],
+  30: [{ w: "checkpoint", ko: "중간 점검 지점을 말할 때 써요." }, { w: "turning point", ko: "흐름이 바뀌는 순간을 말할 때 써요." }],
+  31: [{ w: "put it on the back burner", ko: "우선순위를 뒤로 미룰 때 써요." }, { w: "postpone", ko: "연기한다고 격식 있게 말할 때 써요." }],
+  32: [{ w: "raise it with", ko: "윗선에 올린다고 풀어 말할 때 써요." }, { w: "flag to leadership", ko: "리더십에 알린다고 할 때 써요." }],
+  33: [{ w: "mitigate", ko: "위험을 줄인다고 격식 있게 말할 때 써요." }, { w: "hedge", ko: "대비책을 걸어둘 때 써요." }],
+  34: [{ w: "backup plan", ko: "예비 계획을 쉽게 말할 때 써요." }, { w: "plan B", ko: "말로 할 때 제일 흔하게 써요." }],
+  35: [{ w: "make a difference", ko: "변화를 만든다고 쉽게 말할 때 써요." }, { w: "have an impact", ko: "영향을 준다고 격식 있게 말할 때 써요." }],
+  36: [{ w: "refine", ko: "다듬는다는 뜻으로 써요." }, { w: "tweak", ko: "조금씩 손볼 때 캐주얼하게 써요." }],
+  37: [{ w: "get up to speed quickly", ko: "빨리 따라잡는다고 풀어 말할 때 써요." }, { w: "start strong", ko: "출발이 좋다고 할 때 써요." }],
+  38: [{ w: "launch meeting", ko: "시작 회의를 풀어 말할 때 써요." }, { w: "opening session", ko: "첫 세션을 격식 있게 말할 때 써요." }],
+  39: [{ w: "daily check-in", ko: "매일 짧은 점검이라고 풀어 말할 때 써요." }, { w: "huddle", ko: "짧은 모임을 캐주얼하게 말할 때 써요." }],
+  40: [{ w: "cycle", ko: "작업 주기를 일반적으로 말할 때 써요." }, { w: "push", ko: "집중 구간을 말할 때 써요." }],
+  41: [{ w: "retrospective", ko: "애자일 팀에서 회고라고 부를 때 써요." }, { w: "debrief", ko: "끝나고 복기할 때 써요." }],
+  42: [{ w: "brainstorm", ko: "아이디어를 쏟아낼 때 써요." }, { w: "talk it through", ko: "같이 끝까지 얘기해볼 때 써요." }],
+  43: [{ w: "sleep on it", ko: "하루 자고 생각하겠다고 할 때 써요." }, { w: "mull it over", ko: "천천히 곱씹어본다고 할 때 써요." }],
+  44: [{ w: "traction", ko: "초기 반응이나 성장세를 말할 때 써요." }, { w: "drive", ko: "사람의 추진력을 말할 때 써요." }],
+  45: [{ w: "gauge the mood", ko: "분위기를 가늠한다고 풀어 말할 때 써요." }, { w: "pick up on cues", ko: "신호를 알아챈다고 할 때 써요." }],
+  46: [{ w: "command the room", ko: "카리스마로 장악한다고 할 때 써요." }, { w: "take the floor", ko: "발언권을 잡을 때 써요." }],
+  47: [{ w: "unspoken issue", ko: "말 안 하는 문제라고 풀어 말할 때 써요." }, { w: "the obvious problem", ko: "다들 아는 문제를 직설적으로 말할 때 써요." }],
+  48: [{ w: "a say in the decision", ko: "결정에 발언권이 있다고 풀어 말할 때 써요." }, { w: "a voice", ko: "의견을 낼 권한을 짧게 말할 때 써요." }],
+  49: [{ w: "set a higher standard", ko: "기준을 높인다고 풀어 말할 때 써요." }, { w: "level up", ko: "한 단계 올린다고 캐주얼하게 말할 때 써요." }],
+  50: [{ w: "proven history", ko: "검증된 이력이라고 풀어 말할 때 써요." }, { w: "credentials", ko: "자격과 경력을 격식 있게 말할 때 써요." }],
+  51: [{ w: "go above and beyond", ko: "기대 이상으로 한다고 할 때 써요." }, { w: "put in extra effort", ko: "추가 노력을 풀어 말할 때 써요." }],
+  52: [{ w: "compromise", ko: "타협한다고 격식 있게 말할 때 써요." }, { w: "split the difference", ko: "숫자를 반씩 양보할 때 써요." }],
+  53: [{ w: "a stake in", ko: "이해관계가 있다고 격식 있게 말할 때 써요." }, { w: "personal investment", ko: "개인적으로 걸었다고 풀어 말할 때 써요." }],
+  54: [{ w: "exposure", ko: "노출을 말할 때 써요." }, { w: "recognition", ko: "인정받는 것을 말할 때 써요." }],
+  55: [{ w: "big picture", ko: "큰 그림을 제일 흔하게 말할 때 써요." }, { w: "high-level overview", ko: "개요를 격식 있게 말할 때 써요." }],
+  56: [{ w: "ambitious target", ko: "도전적 목표를 풀어 말할 때 써요." }, { w: "moonshot", ko: "거의 불가능한 큰 목표를 말할 때 써요." }],
+  57: [{ w: "sanity check", ko: "말이 되는지 최종 점검할 때 써요." }, { w: "second thought", ko: "다시 한번 생각해본다고 할 때 써요." }],
+  58: [{ w: "status check", ko: "진행 상태 점검을 풀어 말할 때 써요." }, { w: "temperature check", ko: "분위기나 의견을 살필 때 써요." }],
+  59: [{ w: "final push", ko: "마지막 스퍼트를 말할 때 써요." }, { w: "down to the wire", ko: "마감 직전까지 간다고 할 때 써요." }],
+  60: [{ w: "discuss separately", ko: "따로 논의한다고 격식 있게 말할 때 써요." }, { w: "park it for now", ko: "잠깐 접어두자고 할 때 써요." }],
+  61: [{ w: "aligned", ko: "합이 맞는다고 한 단어로 말할 때 써요." }, { w: "in agreement", ko: "동의 상태를 격식 있게 말할 때 써요." }],
+  62: [{ w: "argue for", ko: "찬성 논리를 편다고 할 때 써요." }, { w: "build a business case", ko: "숫자로 근거 문서를 만든다고 할 때 써요." }],
+  63: [{ w: "shared interest", ko: "공통 이해관계를 말할 때 써요." }, { w: "middle ground", ko: "타협 지점을 말할 때 써요." }],
+  64: [{ w: "compromise", ko: "서로 양보한 결과를 말할 때 써요." }, { w: "give a little", ko: "조금 양보한다고 캐주얼하게 말할 때 써요." }],
+  65: [{ w: "compromise", ko: "하나를 얻고 하나를 내준다고 할 때 써요." }, { w: "cost-benefit", ko: "득실을 따질 때 써요." }],
+  66: [{ w: "mutually beneficial", ko: "서로 이득이라고 격식 있게 말할 때 써요." }, { w: "good for both sides", ko: "쉽게 풀어 말할 때 써요." }],
+  67: [{ w: "contribute", ko: "기여한다고 한 단어로 말할 때 써요." }, { w: "add value", ko: "가치를 더한다고 할 때 써요." }],
+  68: [{ w: "tension", ko: "긴장 관계를 말할 때 써요." }, { w: "pushback", ko: "반대 의견으로 나타날 때 써요." }],
+  69: [{ w: "calm things down", ko: "진정시킨다고 쉽게 말할 때 써요." }, { w: "defuse", ko: "폭발 직전 상황을 풀 때 써요." }],
+  70: [{ w: "voice concerns", ko: "우려를 말한다고 거의 같은 뜻으로 써요." }, { w: "speak up", ko: "입을 연다고 짧게 말할 때 써요." }],
+  71: [{ w: "work out", ko: "해결책을 찾아낼 때 써요." }, { w: "iron out", ko: "남은 세부를 매끄럽게 정리할 때 써요." }],
+  72: [{ w: "compromise", ko: "타협이라고 격식 있게 말할 때 써요." }, { w: "mutual concession", ko: "서로 양보한다고 격식 있게 말할 때 써요." }],
+  73: [{ w: "advocate for", ko: "옹호하고 주장한다고 격식 있게 말할 때 써요." }, { w: "press for", ko: "압박하며 요구할 때 써요." }],
+  74: [{ w: "stand firm", ko: "입장을 굽히지 않을 때 써요." }, { w: "not budge", ko: "한 치도 안 물러난다고 할 때 써요." }],
+  75: [{ w: "keep your boss in the loop", ko: "상사에게 계속 공유한다고 풀어 말할 때 써요." }, { w: "proactive communication", ko: "먼저 알리는 소통이라고 말할 때 써요." }],
+  76: [{ w: "advocate", ko: "지지자나 옹호자라고 격식 있게 말할 때 써요." }, { w: "back", ko: "밀어준다고 짧게 말할 때 써요." }],
+  77: [{ w: "float an idea", ko: "아이디어를 슬쩍 띄워볼 때 써요." }, { w: "run it by people", ko: "미리 보여주고 반응을 볼 때 써요." }],
+  78: [{ w: "approval", ko: "승인이라고 일반적으로 말할 때 써요." }, { w: "green light", ko: "진행 허가를 캐주얼하게 말할 때 써요." }],
+  79: [{ w: "set realistic expectations", ko: "현실적 기대치를 정한다고 풀어 말할 때 써요." }, { w: "under-promise", ko: "약속을 낮게 잡는다고 할 때 써요." }],
+  80: [{ w: "warning sign", ko: "경고 신호를 풀어 말할 때 써요." }, { w: "cause for concern", ko: "우려할 만한 점이라고 격식 있게 말할 때 써요." }],
+  81: [{ w: "mobilize", ko: "동원한다고 격식 있게 말할 때 써요." }, { w: "fire up", ko: "사기를 끌어올릴 때 캐주얼하게 써요." }],
+  82: [{ w: "commit further", ko: "더 투입한다고 격식 있게 말할 때 써요." }, { w: "go all in", ko: "전부 건다고 캐주얼하게 말할 때 써요." }],
+  83: [{ w: "feature creep", ko: "기능이 늘어날 때 제품팀에서 써요." }, { w: "expanding requirements", ko: "요구사항이 늘어난다고 풀어 말할 때 써요." }],
+  84: [{ w: "phase out", ko: "단계적으로 없앤다고 할 때 써요." }, { w: "retire", ko: "제품이나 시스템을 은퇴시킬 때 써요." }],
+  85: [{ w: "hand off", ko: "일을 넘길 때 써요." }, { w: "assign", ko: "업무를 배정할 때 써요." }],
+  86: [{ w: "give autonomy", ko: "자율권을 준다고 풀어 말할 때 써요." }, { w: "enable", ko: "할 수 있게 해준다고 말할 때 써요." }],
+  87: [{ w: "see the big picture", ko: "큰 그림을 본다고 할 때 써요." }, { w: "piece together", ko: "조각을 맞춘다고 할 때 써요." }],
+  88: [{ w: "lead the culture", ko: "문화를 이끈다고 할 때 써요." }, { w: "establish norms", ko: "기준을 세운다고 격식 있게 말할 때 써요." }],
+  89: [{ w: "walk the talk", ko: "말한 대로 행동한다고 캐주얼하게 말할 때 써요." }, { w: "practice what you preach", ko: "설교한 대로 실천하라고 할 때 써요." }],
+  90: [{ w: "give back", ko: "받은 걸 사회나 팀에 돌려줄 때 써요." }, { w: "mentor others", ko: "다음 사람을 가르친다고 할 때 써요." }],
+};
+
 // 다음 버전 기능 플래그 (__OD_NEXT)
 //   가격 인상 후 공개할 기능을 미리 머지해두되, 회원에게는 보이지 않게 한다.
 //   켜는 법: 주소 끝에 ?next=1 을 한 번 붙여서 접속 (그 기기에 계속 유지)
@@ -5922,6 +6060,156 @@ function SlackPing({ scn, npc, day, ready, onOpen }) {
   );
 }
 
+
+// ============================================================
+// 🌙 야근 (2026-09-05, 개발 뷰): 오늘 몫을 끝낸 사람에게만 열리는 선택 과제
+//   1) 유의어로 3문장: 오늘 표현 + 유의어 2개를 각각 한 문장씩. 사수 피드백은 표현마다 따로.
+//   2) 내일 미리 쓰기: 내일 시추에이션의 한국어 문장만 보고 지금 아는 영어로 써둔다. 정답은 내일.
+//   저장은 기기(localStorage). 서버 저장은 검증 뒤에.
+// ============================================================
+const _otKey = (email, day) => "__OD_OT_" + (email || "guest") + "_" + day;
+const _preKey = (email, day) => "__OD_PRE_" + (email || "guest") + "_" + day;
+function _loadJSON(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+function _saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+function OvertimeCard({ today, tomorrow, email }) {
+  const day = today.day;
+  const syns = [{ w: today.word, ko: today.meaning, main: true }].concat(SYNONYMS[day] || []);
+  const CTX = ["슬랙 DM", "메일 한 줄", "회의 한마디"];
+  const [saved, setSaved] = useState(() => _loadJSON(_otKey(email, day)) || { sentences: {}, fb: {}, preview: null });
+  const [drafts, setDrafts] = useState(() => { const d = {}; syns.forEach(x => { d[x.w] = (saved.sentences || {})[x.w] || ""; }); return d; });
+  const [loading, setLoading] = useState({});
+  const [pre, setPre] = useState(() => (_loadJSON(_preKey(email, day + 1)) || {}).text || "");
+  const [preSaved, setPreSaved] = useState(() => !!(_loadJSON(_preKey(email, day + 1)) || {}).text);
+  const [open, setOpen] = useState(() => !(saved.preview || Object.keys(saved.fb || {}).length));
+  const persist = (next) => { setSaved(next); _saveJSON(_otKey(email, day), next); };
+
+  const submitOne = (syn) => {
+    const text = (drafts[syn.w] || "").trim();
+    if (!text) return;
+    const next = { ...saved, sentences: { ...(saved.sentences || {}), [syn.w]: text } };
+    persist(next);
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) return;
+    setLoading(l => ({ ...l, [syn.w]: true }));
+    window.OD.getMentorAiFeedback({
+      sentence: text, word: syn.w, meaning: syn.ko, scene: today.scene, sampleAnswer: "", koSentence: "",
+      promptKo: syn.w + " 를 써서 회사에서 쓸 법한 한 문장", mentorName: CHARACTERS.mentor.name, prevCorrected: "",
+    }).then(r => {
+      setLoading(l => ({ ...l, [syn.w]: false }));
+      if (r && r.ok && r.fb) persist({ ...next, fb: { ...(next.fb || {}), [syn.w]: r.fb } });
+    }).catch(() => setLoading(l => ({ ...l, [syn.w]: false })));
+  };
+  const savePre = () => {
+    const text = pre.trim(); if (!text) return;
+    _saveJSON(_preKey(email, day + 1), { text, at: new Date().toISOString(), fromDay: day });
+    setPreSaved(true);
+    persist({ ...saved, preview: { text, at: new Date().toISOString() } });
+  };
+  const doneCount = Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0);
+
+  return (
+    <div className="ot-card">
+      <button className="ot-head" onClick={() => setOpen(o => !o)}>
+        <span>🌙 야근 <small>선택 · 안 해도 하루는 완주예요</small></span>
+        <b>{doneCount}/4 {open ? "▲" : "▼"}</b>
+      </button>
+      {open && (
+        <div className="ot-body">
+          <div className="ot-sec">
+            <div className="ot-sec-title">🔁 같은 뜻, 다른 표현으로 3문장</div>
+            <div className="ot-sec-sub">오늘 표현을 다른 말로도 할 수 있어야 진짜 내 거예요. 표현마다 한 줄씩, 사수가 따로 봐줘요.</div>
+            {syns.map((syn, i) => {
+              const fb = (saved.fb || {})[syn.w];
+              const done = !!(saved.sentences || {})[syn.w];
+              return (
+                <div key={syn.w} className={"ot-row" + (done ? " done" : "")}>
+                  <div className="ot-row-head">
+                    <b className={syn.main ? "main" : ""}>{syn.w}</b>
+                    <span>{syn.ko}</span>
+                    <i>{CTX[i]}</i>
+                  </div>
+                  <div className="ot-row-input">
+                    <input value={drafts[syn.w] || ""} onChange={e => setDrafts(d => ({ ...d, [syn.w]: e.target.value }))}
+                      placeholder={syn.w + " 를 넣어서 한 문장"} onKeyDown={e => { if (e.key === "Enter") submitOne(syn); }} />
+                    <button className="btn btn-ink" onClick={() => submitOne(syn)} disabled={!!loading[syn.w]}>{loading[syn.w] ? "…" : done ? "다시" : "제출"}</button>
+                  </div>
+                  {fb && (
+                    <div className="ot-fb">
+                      {fb.corrected && fb.corrected.trim() !== ((saved.sentences || {})[syn.w] || "").trim() ? <div className="ot-fb-fix">✨ {fb.corrected}</div> : <div className="ot-fb-ok">✓ 이대로도 충분해요!</div>}
+                      {(fb.nuance || fb.praise || fb.fix) && <div className="ot-fb-note">{fb.nuance || fb.praise || fb.fix}</div>}
+                    </div>
+                  )}
+                  {done && !fb && !loading[syn.w] && <div className="ot-fb"><div className="ot-fb-ok">✓ 저장했어요</div></div>}
+                </div>
+              );
+            })}
+          </div>
+
+          {tomorrow && tomorrow.task && tomorrow.task.koSentence && (
+            <div className="ot-sec">
+              <div className="ot-sec-title">🔮 내일 미리 쓰기</div>
+              <div className="ot-sec-sub">내일 이 말을 영어로 해야 해요. 지금 아는 표현으로 먼저 써두면, 내일 아침 사수가 정답 표현이랑 나란히 보여줘요.</div>
+              <div className="ot-pre-ko">"{tomorrow.task.koSentence}"</div>
+              {preSaved ? (
+                <div className="ot-pre-saved">
+                  <div className="ot-pre-mine">{(_loadJSON(_preKey(email, day + 1)) || {}).text || pre}</div>
+                  <div className="ot-fb-ok">✓ 저장했어요. 정답 표현은 내일 출근하면 확인할 수 있어요.</div>
+                  <button className="btn btn-ghost" style={{ fontSize: 12, padding: "5px 10px" }} onClick={() => setPreSaved(false)}>고쳐 쓰기</button>
+                </div>
+              ) : (
+                <div className="ot-row-input">
+                  <input value={pre} onChange={e => setPre(e.target.value)} placeholder="내가 지금 아는 영어로 한 문장" onKeyDown={e => { if (e.key === "Enter") savePre(); }} />
+                  <button className="btn btn-primary" onClick={savePre}>내일 확인</button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 다음 날 아침: 어제 미리 쓴 문장 vs 오늘 표현. 출근 뒤 시추에이션 카드 위에 뜬다.
+function PreReveal({ today, email }) {
+  const day = today.day;
+  const pre = _loadJSON(_preKey(email, day));
+  const [fb, setFb] = useState(() => (pre && pre.fb) || null);
+  const [loading, setLoading] = useState(false);
+  const [gone, setGone] = useState(() => !!(pre && pre.seenAt));
+  if (!pre || !pre.text || gone) return null;
+  const hit = new RegExp(today.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s-]?"), "i").test(pre.text);
+  const ask = () => {
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) return;
+    setLoading(true);
+    window.OD.getMentorAiFeedback({
+      sentence: pre.text, word: today.word, meaning: today.meaning, scene: today.scene, sampleAnswer: today.sampleAnswer,
+      koSentence: (today.task && today.task.koSentence) || "", promptKo: (today.task && today.task.promptKo) || "", mentorName: CHARACTERS.mentor.name, prevCorrected: "",
+    }).then(r => { setLoading(false); if (r && r.ok && r.fb) { setFb(r.fb); _saveJSON(_preKey(email, day), { ...pre, fb: r.fb }); } }).catch(() => setLoading(false));
+  };
+  const close = () => { _saveJSON(_preKey(email, day), { ...pre, fb, seenAt: new Date().toISOString() }); setGone(true); };
+  return (
+    <div className="pre-reveal">
+      <div className="pre-reveal-head">🔮 어제 미리 쓴 문장, 오늘 정답이 왔어요 {hit && <span className="pre-hit">예측 적중</span>}</div>
+      <div className="pre-cmp">
+        <div className="pre-col mine"><div className="pre-lbl">어제 내 문장</div><div className="pre-txt">{pre.text}</div></div>
+        <div className="pre-col ans"><div className="pre-lbl">오늘 표현으로</div><div className="pre-txt">{_hlQuote(today.sampleAnswer, today.word)}</div></div>
+      </div>
+      <div className="pre-word">오늘의 표현 <b>{today.word}</b> · {today.meaning}{hit ? " · 이미 알고 있던 표현이네요!" : ""}</div>
+      {fb ? (
+        <div className="ot-fb">
+          {fb.corrected && <div className="ot-fb-fix">✨ {fb.corrected}</div>}
+          {(fb.vsSample || fb.nuance) && <div className="ot-fb-note">{fb.vsSample || fb.nuance}</div>}
+        </div>
+      ) : null}
+      <div className="pre-actions">
+        {!fb && <button className="btn btn-ink" onClick={ask} disabled={loading}>{loading ? "사수가 보는 중…" : "사수 한마디 듣기"}</button>}
+        <button className="btn btn-ghost" onClick={close}>확인했어요</button>
+      </div>
+    </div>
+  );
+}
+
 function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
 
@@ -6520,6 +6808,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               <div className="today-accum-sub">🔥 출근 {USER.streak}일 · {USER.isFulltime ? "" : ("사원 승진까지 " + Math.max(0, 30 - (USER.realCurrentDay || USER.currentDay)) + "일")}</div>
             </div>
           )}
+          {_isNextFeature() && !USER.isViewingPast && !!doneTasks.checkin && (
+            <PreReveal key={"pre-" + USER.currentDay} today={today} email={USER.email} />
+          )}
           <SceneCard
             scenario={today}
             npc={npc}
@@ -6528,6 +6819,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             onStartDay={() => handleScheduleClick(scheduleWithStatus[0], 0)}
             done={_sceneDone}
           />
+          {_isNextFeature() && !USER.isViewingPast && allTodayDone && today && today.day <= 90 && (
+            <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
+          )}
 
           <div className="schedule" style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
