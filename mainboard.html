@@ -145,6 +145,10 @@ body::before {
   font-size: 10px; font-weight: 800; padding: 1px 7px;
   border-radius: 999px; letter-spacing: 0.04em;
 }
+/* 안 읽은 사내 메모: 주황 동그라미가 숨 쉬듯 커졌다 작아져서 눌러보고 싶게 */
+.locker-badge.unread-dot, .m-tab-badge.unread-dot { background: var(--orange); color: #fff; box-shadow: 0 0 0 0 rgba(216,90,42,0.5); animation: unreadPulse 1.8s ease-out infinite; }
+@keyframes unreadPulse { 0% { box-shadow: 0 0 0 0 rgba(216,90,42,0.55); } 70% { box-shadow: 0 0 0 7px rgba(216,90,42,0); } 100% { box-shadow: 0 0 0 0 rgba(216,90,42,0); } }
+@media (prefers-reduced-motion: reduce) { .locker-badge.unread-dot, .m-tab-badge.unread-dot { animation: none; } }
 
 /* 사물함 하단 = 사원증 미니 */
 .locker-card {
@@ -339,6 +343,25 @@ body::before {
   .lib-detail-grid { grid-template-columns: 1fr; }
   .lib-view { margin-left: 0; }
 }
+/* 🧠 AI 성장 리포트 (나만의 노트 상단, 개발 뷰) */
+.air { margin: 14px 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
+.air-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
+.air-head small { display: block; font-weight: 600; font-size: 11px; opacity: 0.75; margin-top: 2px; }
+.air-head > span { display: flex; flex-direction: column; }
+.air-body { padding: 16px; }
+.air-empty p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.65; color: var(--ink-soft); }
+.air-empty small { display: block; margin-top: 8px; font-size: 11.5px; color: var(--ink-mute); }
+.air-meta { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink-mute); margin-bottom: 6px; }
+.air-report h3 { margin: 0 0 14px; font-size: 18px; font-weight: 900; line-height: 1.4; letter-spacing: -0.01em; }
+.air-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.air-grid label { display: block; font-size: 11.5px; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+.air-grid ul { margin: 0; padding-left: 16px; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.air-grid li + li { margin-top: 4px; }
+.air-sign { margin-top: 14px; padding: 10px 14px; background: #FFF3B8; color: #3A2E10; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+.air-sign b { float: right; font-weight: 700; }
+.air-actions { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--ink-mute); }
+.air-actions .btn { padding: 6px 12px; font-size: 12px; }
+@media (max-width: 880px) { .air-grid { grid-template-columns: 1fr; } }
 /* 🎁 첫 주 카드 다시 보기 (업무 노트 상단) */
 .fwc { margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .fwc-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 900; color: var(--ink); cursor: pointer; text-align: left; }
@@ -5333,7 +5356,7 @@ const _V2_TIPS = [
   ["pencil in", "일단 잡아두기. 확정 권한이 없을 때 \"Let's pencil in Tuesday\"로 답하면 빠르고 안전해요."],
 ];
 const _NOTICES_ALL = [
-  ...((typeof _v2Launched !== "undefined" && _v2Launched && !_contentV2) ? [{ id: "n-curriculum-v2", from: "hr", to: "기존 사원 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
+  ...((typeof _v2Launched !== "undefined" && _v2Launched && !_contentV2) ? [{ id: "n-curriculum-v2", ts: "2026-09-06T00:00:00Z", from: "hr", to: "기존 사원 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
     subject: "[안내] 첫 주 교육 자료 개정, 새 표현 4개 공유",
     preview: "9월 6일 입사자부터 첫 주 표현이 바뀌었어요. 먼저 입사한 분들께도 새 표현 4개를 노트로 드려요.",
     ctaAction: "save-v2-tips", ctaLabel: "📓 이 4개, 내 표현 노트에 저장하기",
@@ -5348,7 +5371,7 @@ const _NOTICES_ALL = [
       "아래 버튼을 누르면 나만의 노트에 4줄로 들어가요. 오늘 문장 하나에 슬쩍 섞어 써보면 바로 내 것이 돼요.",
     ].join("\n"),
   }] : []),
-  { id: "n-notice-room", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
+  { id: "n-notice-room", ts: "2026-09-05T03:00:00Z", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
     subject: "[안내] 1일1비 공지방을 열었어요",
     preview: "업데이트 소식과 이벤트를 카카오톡 공지방에서 받아요. 공지만 올라가는 방이라 조용해요.",
     ctaUrl: _KAKAO_NOTICE_ROOM, ctaLabel: "📣 1일1비 공지방 입장 →",
@@ -5365,7 +5388,7 @@ const _NOTICES_ALL = [
       "아래 버튼을 누르면 카카오톡 오픈채팅으로 열려요. 사원증·인사 > 고객센터에서도 언제든 들어갈 수 있어요.",
     ].join("\n"),
   },
-  { id: "n-push-setup", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
+  { id: "n-push-setup", ts: "2026-09-05T02:00:00Z", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
     subject: "[안내] 출근 리마인드, 폰에서 알림으로 받는 법",
     preview: "폰에 앱으로 추가하면 매일 잊지 않게 출근 알림을 받을 수 있어요. 1분이면 끝나요.",
     body: [
@@ -5395,7 +5418,7 @@ const _NOTICES_ALL = [
   { id: "n-park-lunch", from: "park",   to: "당신",         date: "Day 5",     subject: "오늘 점심 같이 갈래?",          preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.",                                       unread: true,  tag: "동기",  showFromDay: 5 },
   { id: "n-workshop",   from: "hr",     to: "신입 사원 전원", date: "다음 주",   subject: "[전사] 5월 워크숍 일정 안내",   preview: "5월 둘째 주 워크숍 일정이 확정. 각자 일정표 확인 부탁드립니다.",                  unread: true,  tag: "이벤트", showFromDay: 7 },
   { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차, 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. by " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
-  { id: "n-ubchall-9",  from: "hr",     to: "1일1비 멤버 여러분", date: "오늘",  tag: "이벤트", unread: true, showFromDay: 1,
+  { id: "n-ubchall-9",  ts: "2026-09-01T00:00:00Z", from: "hr",     to: "1일1비 멤버 여러분", date: "오늘",  tag: "이벤트", unread: true, showFromDay: 1,
     subject: "[멤버 전용] 유비챌 9기 오픈 · 지금이 딱 좋은 이유",
     preview: "1일1비로 매일 쌓았다면, 9기는 그걸 실전에서 터뜨리는 4주. 멤버님껜 구독료만큼 할인 + 9기 한정 프리미엄까지.",
     ctaUrl: _TY_UBCHALL_URL, ctaLabel: "유비챌 9기 살펴보기 →",
@@ -5961,7 +5984,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: "나만의 노트", icon: user.isFulltime ? "📒" : "🔒", locked: !user.isFulltime },
+    { id: "mynotes", label: "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user) },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -6001,7 +6024,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(1, 3).map(it => (
           <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.badge ? <span className="locker-badge">{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>사원 ☆</span> : null}
+            {it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : "사원 ☆"}</span> : null}
           </button>
         ))}
       </div>
@@ -6010,7 +6033,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(3).map(it => (
           <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.badge ? <span className="locker-badge">{it.badge}</span> : null}
+            {it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : null}
           </button>
         ))}
       </div>
@@ -6058,6 +6081,7 @@ function Locker({ active, setActive, user, unread }) {
 // Mobile bottom tab bar
 function MobileTabbar({ active, setActive, unread, isFulltime }) {
   const [notesOpen, setNotesOpen] = useState(false);
+  const user = (window.__SIM && window.__SIM.USER) || { isFulltime };
   // "노트" 탭 하나로 업무 노트 + 나만의 노트를 묶고, 누르면 선택 시트가 뜸.
   // 나만의 노트는 정직원만 열림. 수습은 🔒 힌트로 보여줘 모바일에서도 잠금이 보이게.
   const items = [
@@ -6083,14 +6107,14 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
               </span>
             </button>
             <button
-              onClick={() => { if (isFulltime) { setActive("mynotes"); setNotesOpen(false); } }}
-              disabled={!isFulltime}
-              style={{ ...optionStyle, cursor: isFulltime ? "pointer" : "not-allowed", opacity: isFulltime ? 1 : 0.65 }}
+              onClick={() => { if (_myNotesOpen(user)) { setActive("mynotes"); setNotesOpen(false); } }}
+              disabled={!_myNotesOpen(user)}
+              style={{ ...optionStyle, cursor: _myNotesOpen(user) ? "pointer" : "not-allowed", opacity: _myNotesOpen(user) ? 1 : 0.65 }}
             >
-              <span style={{ fontSize: 20 }}>{isFulltime ? "📒" : "🔒"}</span>
+              <span style={{ fontSize: 20 }}>{_myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
                 <b style={{ fontSize: 14 }}>나만의 노트</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{isFulltime ? "내가 저장한 표현, 메모" : "정직원 승급 후 열려요"}</small>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? "내가 저장한 표현, 메모" : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -6105,7 +6129,7 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
           >
             <span className="m-tab-icon">{it.icon}</span>
             <span className="m-tab-label">{it.label}</span>
-            {it.badge ? <span className="m-tab-badge">{it.badge}</span> : null}
+            {it.badge ? <span className={"m-tab-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : null}
           </button>
         ))}
       </nav>
@@ -6313,10 +6337,16 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
-const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8 };
-const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름" };
+const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 15 };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트" };
 function _lockedNext(key, rd, viewingPast) {
   return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
+}
+// 나만의 노트 열림 기준 (2026-09-05 결정): Day 15 부터. 사원(Day 31+)은 당연히 열림. 인쇄/PDF 내보내기는 사원 보상으로 남긴다.
+const MYNOTES_OPEN_DAY = 15;
+function _myNotesOpen(u) {
+  const rd = (u && (u.realCurrentDay || u.currentDay)) || 1;
+  return !!(u && u.isFulltime) || rd >= MYNOTES_OPEN_DAY;
 }
 // 잠긴 카드를 자리마다 하나씩 그리면 Day 1 이 자물쇠 벽이 된다. 한 곳(UnlockLadder)에 모아서 보여준다.
 function LockedCard() { return null; }
@@ -6641,8 +6671,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     {
       selector: ".locker-link, .m-tab",
       placement: "right",
-      title: "🎁 보상: 나만의 노트 모아보기",
-      body: "사원이 되면 '나만의 노트' 탭이 열려요. 그동안 유버디한테 물어보고 저장한 답변들을 단어별로 모아서 검색하고 복습할 수 있어요. 수습 때 저장한 것도 전부 여기 모입니다.",
+      title: "🎁 보상: 나만의 노트 인쇄·PDF",
+      body: "사원이 되면 '나만의 노트'를 인쇄하거나 PDF로 내보낼 수 있어요. 그동안 유버디한테 물어보고 저장한 답변, 내 문장들을 한 권으로 뽑아 책상에 둘 수 있어요.",
     },
     {
       selector: null,
@@ -7259,7 +7289,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 </div>
                 <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
                   수습 30일을 완주하면 <b style={{ color: "var(--ink)" }}>정직원 전환</b>, 사원(Associate) 발령이에요.
-                  네이비 새 사원증과 <b style={{ color: "var(--ink)" }}>📒 나만의 노트 보관함</b>이 보상으로 열려요.
+                  네이비 새 사원증과 <b style={{ color: "var(--ink)" }}>📒 나만의 노트 인쇄·PDF 내보내기</b>가 보상으로 열려요.
                   단, <b style={{ color: "var(--ink)" }}>그날 학습을 마쳐야 다음 Day가 열려요.</b> 하루 하나씩 채우는 게 규칙이에요.
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
@@ -8498,6 +8528,94 @@ window.BuddyCard = BuddyCard;
 // 📒 나만의 노트 모아보기 (정직원 승급 보상, 피드백 #6 김원미)
 // 저장한 버디 답변(savedNotes)을 한 페이지에서 검색·필터·모아보기
 // ============================================================
+
+// ============================================================
+// 🧠 AI 성장 리포트 (2026-09-05, 개발 뷰 프로토타입): 나만의 노트 상단
+//   보내는 건 원문이 아니라 압축본(단어 목록, 내 문장, 질문 수, 아는 표현 수)이라 회원당 3천 토큰 안팎.
+//   mentor-feedback 의 mode:"report" 를 호출한다 (배포 전엔 샘플 리포트로 모양만 보여준다).
+// ============================================================
+function _reportPayload() {
+  const { SCENARIOS, USER } = window.__SIM;
+  let u = {}; try { u = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const days = SCENARIOS.filter(x => x.day <= Math.min(rd, 90));
+  const sentences = [];
+  days.forEach(x => { const c = _loadCompletion(x.day); if (c && c.sentence) sentences.push({ day: x.day, word: x.word, text: String(c.sentence).slice(0, 160), fixed: !!(c.feedback && c.feedback.aiFb && c.feedback.aiFb.corrected && c.feedback.aiFb.corrected.trim() !== String(c.sentence).trim()) }); });
+  const journals = Object.values(u.dailyJournals || {}).filter(j => j && j.text).map(j => ({ day: j.day, text: String(j.text).slice(0, 160) }));
+  let known = []; try { known = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]").map(k => k.word); } catch (e) {}
+  const notes = Object.values(u.savedNotes || {}).flat();
+  const questions = notes.filter(n => n.kind === "qa").map(n => String(n.text).split("\n")[0].replace(/^❓\s*/, "").slice(0, 80));
+  const streak = USER.streak || 0;
+  return {
+    name: USER.name, day: rd, words: days.map(x => x.word), sentences: sentences.slice(-30), journals: journals.slice(-10),
+    known, questions: questions.slice(-10), savedCount: notes.length, streak, fixedCount: sentences.filter(x => x.fixed).length,
+  };
+}
+const _SAMPLE_REPORT = {
+  headline: "회의 표현은 이미 손에 붙었고, 이제 메일 문장이 짧아질 차례예요.",
+  strengths: ["circle back, loop in처럼 회의·슬랙 표현을 실제 상황 문장으로 잘 옮겨요.", "10일 중 8일을 한 번에 통과했어요. 문장 길이가 안정적이에요."],
+  patterns: ["메일 문장에서 'I think that'으로 시작하는 습관이 4번 보여요. 결론부터 쓰면 더 프로답게 읽혀요.", "on someone's plate, bandwidth처럼 '여력' 표현은 알아도 아직 안 써봤어요."],
+  next: ["다음 10일은 메일 첫 줄을 결론으로 시작하는 연습 하나만 잡아요.", "야근에서 유의어 문장 3개를 이틀에 한 번만 해도 표현이 두 배로 남아요."],
+  oneLiner: "Day 10, 잘 오고 있어요. 지금 페이스면 Day 30 사원 전환은 무난해요.",
+};
+function AiGrowthReport() {
+  const { USER } = window.__SIM;
+  const KEY = "__OD_AI_REPORT_" + (USER.email || "guest");
+  const [rep, setRep] = useState(() => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } });
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [open, setOpen] = useState(true);
+  const run = () => {
+    const payload = _reportPayload();
+    setLoading(true); setErr("");
+    const done = (r, sample) => {
+      setLoading(false);
+      const out = { ...r, at: new Date().toISOString(), day: payload.day, sample: !!sample, tokens: payload.words.length * 12 + payload.sentences.length * 40 + 600 };
+      setRep(out); try { localStorage.setItem(KEY, JSON.stringify(out)); } catch (e) {}
+    };
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(_SAMPLE_REPORT, true); return; }
+    window.OD.getMentorAiFeedback({ mode: "report", report: payload, mentorName: CHARACTERS.mentor.name, word: "report" })
+      .then(r => { if (r && r.ok && r.report) done(r.report, false); else { setErr("서버에 report 모드가 아직 없어서 샘플로 보여줘요"); done(_SAMPLE_REPORT, true); } })
+      .catch(() => { setErr("연결이 안 돼서 샘플로 보여줘요"); done(_SAMPLE_REPORT, true); });
+  };
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const nextAt = [10, 20, 30, 45, 60, 75, 90].find(d => d > rd) || 90;
+  return (
+    <div className="air">
+      <button className="air-head" onClick={() => setOpen(o => !o)}>
+        <span>🧠 AI 성장 리포트 <small>개발 뷰 · 사수가 내 기록을 읽고 써주는 10일 단위 리포트</small></span>
+        <b>{open ? "▲" : "▼"}</b>
+      </button>
+      {open && (
+        <div className="air-body">
+          {!rep ? (
+            <div className="air-empty">
+              <p>지금까지 쓴 문장 {_reportPayload().sentences.length}개, 저장한 노트 {_reportPayload().savedCount}개, 아는 표현 {_reportPayload().known.length}개를 사수가 읽고 세 가지를 써줘요. 잘하는 것, 반복되는 습관, 다음 10일 한 가지.</p>
+              <button className="btn btn-primary" onClick={run} disabled={loading}>{loading ? "사수가 읽는 중…" : "지금 리포트 받기 (Day " + rd + ")"}</button>
+              <small>정식 오픈 후엔 Day {nextAt}에 자동으로 도착해요. 압축본만 보내서 리포트 하나에 3천 토큰 안팎이에요.</small>
+            </div>
+          ) : (
+            <div className="air-report">
+              <div className="air-meta">Day {rep.day} 리포트 · {String(rep.at || "").slice(0, 10)}{rep.sample ? " · 샘플" : ""}{err ? " · " + err : ""}</div>
+              <h3>{rep.headline}</h3>
+              <div className="air-grid">
+                <div><label>💪 잘하고 있는 것</label><ul>{(rep.strengths || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+                <div><label>🔁 반복되는 습관</label><ul>{(rep.patterns || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+                <div><label>🎯 다음 10일, 이것 하나</label><ul>{(rep.next || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+              </div>
+              <div className="air-sign">"{rep.oneLiner}" <b>{CHARACTERS.mentor.name} ✍︎</b></div>
+              <div className="air-actions">
+                <button className="btn btn-ghost" onClick={run} disabled={loading}>{loading ? "…" : "다시 받기"}</button>
+                <span>이번 리포트 약 {rep.tokens ? rep.tokens.toLocaleString() : "3,000"} 토큰</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MyNotesPage({ openScene }) {
   const { SCENARIOS, USER } = window.__SIM;
   const [kindFilter, setKindFilter] = useState("all");
@@ -8561,14 +8679,14 @@ function MyNotesPage({ openScene }) {
     w.document.close();
   };
 
-  // 정직원 잠금 화면 (수습은 미리보기 + 동기부여)
-  if (!USER.isFulltime) {
+  // 잠금 화면: Day 15 전 (그 전에도 저장은 되고, 열리면 전부 모여 있음)
+  if (!_myNotesOpen(USER)) {
     return (
       <div>
         <div className="desk-header">
           <div>
             <div className="desk-eyebrow">RECORDS · 나만의 노트 (잠김)</div>
-            <h1 className="desk-title"><em>사원</em> 전용 보관함</h1>
+            <h1 className="desk-title"><em>Day {MYNOTES_OPEN_DAY}</em>에 열리는 보관함</h1>
           </div>
         </div>
         <div style={{
@@ -8577,17 +8695,17 @@ function MyNotesPage({ openScene }) {
         }}>
           <div style={{ fontSize: 42, marginBottom: 14, filter: "grayscale(0.3)" }}>🔒</div>
           <h2 style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", marginBottom: 12, lineHeight: 1.4 }}>
-            저장한 노트를 한곳에 모아보는 기능,<br/>사원으로 승급하면 열려요
+            저장한 노트를 한곳에 모아보는 기능,<br/>Day {MYNOTES_OPEN_DAY}에 열려요
           </h2>
           <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 18, maxWidth: 420, margin: "0 auto 18px" }}>
-            유버디한테 물어보고 "📒 노트에 저장" 한 답변들을, 단어별로 묶어 검색하고 복습할 수 있는 나만의 보관함이에요.
-            수습 30일을 완주하고 정직원 전환(사원)하면 보상으로 열립니다.
+            유버디한테 물어보고 "📒 노트에 저장" 한 답변과 첫 주 카드, 내 문장들을 단어별로 묶어 검색하고 복습하는 보관함이에요.
+            Day {MYNOTES_OPEN_DAY}이 되면 열리고, 사원이 되면 인쇄·PDF 내보내기까지 열려요.
           </p>
           <div style={{
             display: "inline-block", background: "var(--paper-warm)", border: "1px solid var(--line)",
             borderRadius: 8, padding: "10px 16px", fontSize: 12.5, color: "var(--ink-soft)",
           }}>
-            지금까지 저장한 노트는 <b style={{ color: "var(--ink)" }}>안전하게 보관 중</b>이에요. 승급하면 전부 여기 모여요.
+            지금까지 저장한 노트는 <b style={{ color: "var(--ink)" }}>안전하게 보관 중</b>이에요. Day {MYNOTES_OPEN_DAY}에 전부 여기 모여요.
           </div>
         </div>
       </div>
@@ -8641,7 +8759,9 @@ function MyNotesPage({ openScene }) {
 
       <ApprovalLine doc="YB-MYNOTE-2026" applicant={USER.name} status={`${allNotes.length}개 보관`} />
 
-      {allNotes.length > 0 && (
+      {_isNextFeature() && <AiGrowthReport />}
+
+      {allNotes.length > 0 && USER.isFulltime && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
           <button onClick={() => printNotes(filtered)}
             style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "var(--ink-soft)" }}>
@@ -9564,13 +9684,13 @@ function MyPage() {
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>업데이트·이벤트 소식 받기 →</span>
         </a>
         <a
-          href="https://pf.kakao.com/_ExdxcGX"
+          href="http://pf.kakao.com/_RXxcxaX"
           target="_blank"
           rel="noopener noreferrer"
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
-          <span className="hr-row-label">💬 유버디랑 대화하기</span>
+          <span className="hr-row-label">💬 1:1 문의하기</span>
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>카카오톡 채널 열기 →</span>
         </a>
         <div className="hr-row" style={{ fontSize: 12 }}>
@@ -9684,7 +9804,7 @@ function MyPage() {
 
             {/* 회원 탈퇴는 데이터 보호를 위해 UI에서 제거. 탈퇴 요청은 유버디 문의로 안내. */}
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "12px 18px 14px", lineHeight: 1.6, borderTop: "1px dashed var(--line)", marginTop: 6 }}>
-              회원 탈퇴를 원하시면 <a href="https://pf.kakao.com/_ExdxcGX" target="_blank" rel="noopener" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>유버디 카카오톡 채널</a>로 알려주세요. 안전하게 처리해드려요.
+              회원 탈퇴를 원하시면 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>유버디 카카오톡 채널</a>로 알려주세요. 안전하게 처리해드려요.
               <br/>
               <a href="privacy.html" target="_blank" style={{ color: "var(--ink-soft)", textDecoration: "underline" }}>개인정보처리방침</a>
               {" · "}
@@ -14219,7 +14339,7 @@ function PromotionCeremony({ realDay }) {
               color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20, textAlign: "left",
             }}>
               <b style={{ color: "var(--ink)" }}>앞으로 30일, 이런 게 기다려요</b><br/>
-              📒 <b style={{ color: "var(--ink)" }}>나만의 노트 모아보기</b> 지금 열림<br/>
+              📒 <b style={{ color: "var(--ink)" }}>나만의 노트 인쇄·PDF 내보내기</b> 지금 열림<br/>
               🌱 Day 37 정직원 첫 주 완주 · ⚡ Day 44 절반 돌파<br/>
               🔥 Day 51 50일 달성 · 🌟 Day 60 <b style={{ color: "var(--orange)" }}>특별 면담</b> (60일 누적 통계 + 다음 레벨 부서 평가)
             </div>
@@ -14341,6 +14461,7 @@ function App() {
             : "전 직원";
           return {
             id: "db-" + n.id,
+            ts: n.sent_at || "",
             from: fromId,
             fromName: n.from_name || "유버디",
             to: recipient,
@@ -14371,8 +14492,15 @@ function App() {
     [dbNotices, HARDCODED_NOTICES]
   );
 
-  // 원본 unread 플래그에 readIds 적용
-  const NOTICES = ALL_NOTICES.map(n => ({ ...n, unread: n.unread && !readIds.has(n.id) }));
+  // 원본 unread 플래그에 readIds 적용 + 정렬: 안 읽은 것 먼저, 그 안에서 최신순 (ts 없는 기본 공지는 맨 뒤, 원래 순서 유지)
+  const NOTICES = ALL_NOTICES.map(n => ({ ...n, unread: n.unread && !readIds.has(n.id) }))
+    .map((n, i) => ({ n, i }))
+    .sort((a, b) => {
+      if (!!a.n.unread !== !!b.n.unread) return a.n.unread ? -1 : 1;
+      const ta = a.n.ts ? Date.parse(a.n.ts) || 0 : 0, tb = b.n.ts ? Date.parse(b.n.ts) || 0 : 0;
+      if (ta !== tb) return tb - ta;
+      return a.i - b.i;
+    }).map(x => x.n);
   window.__SIM.NOTICES = NOTICES; // 자식 페이지가 window.__SIM에서 읽으므로 갱신
   const unread = NOTICES.filter(n => n.unread).length;
 
@@ -14738,7 +14866,7 @@ function App() {
                 }}>
                 내 학습 기록 보관함 보기
               </button>
-              <a href="https://pf.kakao.com/_ExdxcGX" target="_blank" rel="noopener"
+              <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener"
                  style={{
                    display: "block", width: "100%", padding: "12px 0", marginTop: 10,
                    background: "transparent", color: "var(--ink-soft)",
@@ -14807,7 +14935,7 @@ function App() {
                  }}>
                 🎟 1일1비 구매하러 가기
               </a>
-              <a href="https://pf.kakao.com/_ExdxcGX" target="_blank" rel="noopener"
+              <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener"
                  style={{
                    display: "inline-block", padding: "10px 20px",
                    background: "transparent", color: "var(--ink-soft)",

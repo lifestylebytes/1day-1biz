@@ -48,6 +48,51 @@ Deno.serve(async (req) => {
   const mode       = String(b?.mode || "").trim();
   const question   = String(b?.question || "").slice(0, 300).trim();  // AI Q&A 자유 질문
   const prevCorrected = String(b?.prevCorrected || "").slice(0, 300).trim();  // 직전에 사수가 추천했던 문장 (재제출 시 왔다갔다 방지)
+  // ── AI 성장 리포트 모드 (2026-09-05, 개발 뷰 프로토타입) ──
+  // 클라이언트가 압축본(단어 목록, 최근 문장 30개, 저널 10개, 질문 10개, 아는 표현, 연속 출근)만 보낸다. 원문 노트는 안 보낸다.
+  if (mode === "report") {
+    const rp = (b && typeof b.report === "object" && b.report) || null;
+    if (!rp) return json({ ok: false, error: "missing" }, 200);
+    const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
+    const compact = {
+      name: String(rp.name || "").slice(0, 30), day: Number(rp.day) || 1, streak: Number(rp.streak) || 0,
+      words: clip(rp.words, 90).map((w: any) => String(w).slice(0, 40)),
+      known: clip(rp.known, 90).map((w: any) => String(w).slice(0, 40)),
+      sentences: clip(rp.sentences, 30).map((x: any) => ({ day: Number(x.day) || 0, word: String(x.word || "").slice(0, 40), text: String(x.text || "").slice(0, 160), fixed: !!x.fixed })),
+      journals: clip(rp.journals, 10).map((x: any) => ({ day: Number(x.day) || 0, text: String(x.text || "").slice(0, 160) })),
+      questions: clip(rp.questions, 10).map((q: any) => String(q).slice(0, 80)),
+      savedCount: Number(rp.savedCount) || 0, fixedCount: Number(rp.fixedCount) || 0,
+    };
+    const rsys = [
+      `너는 따뜻하고 구체적인 영어 사수(${mentor})야. 신입 ${compact.name || ""}의 ${compact.day}일차까지 학습 기록 압축본을 읽고 짧은 성장 리포트를 써.`,
+      `기록: 배운 표현 ${compact.words.length}개, 직접 쓴 문장 ${compact.sentences.length}개(사수가 고친 것 ${compact.fixedCount}개), 저널 ${compact.journals.length}개, 물어본 질문 ${compact.questions.length}개, 이미 알던 표현 ${compact.known.length}개, 연속 출근 ${compact.streak}일.`,
+      `반드시 기록에 실제로 있는 표현과 문장을 근거로 써. 없는 걸 지어내지 마. 문장 인용은 짧게.`,
+      `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","strengths":["잘하는 것 2개, 각 한 문장"],"patterns":["반복되는 습관이나 아직 안 써본 표현 2개, 각 한 문장"],"next":["다음 10일 할 것 1~2개, 각 한 문장"],"oneLiner":"사수가 남기는 응원 한 줄(동사로 끝남)"}`,
+      `규칙: 따뜻한 존댓말. 모든 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). em-dash(U+2014) 절대 금지.`,
+    ].join("\n");
+    try {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, temperature: 0.4, response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: rsys },
+            { role: "user", content: JSON.stringify(compact) },
+          ],
+        }),
+      });
+      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
+      const d = await r.json();
+      let report: any = {};
+      try { report = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { report = {}; }
+      if (!report.headline) return json({ ok: false, error: "empty" }, 200);
+      return json({ ok: true, report, usage: d?.usage || null });
+    } catch (e) {
+      return json({ ok: false, error: "exception" }, 200);
+    }
+  }
+
   // ── AI Q&A 모드 ──
   // 학습 중인 표현에 대해 신입이 자유롭게 궁금한 걸 물으면, 사수가 짧고 따뜻하게 답한다.
   if (mode === "qa") {
