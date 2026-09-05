@@ -5270,6 +5270,44 @@ const _isNextFeature = () => {
 //   단순 시추에이션 카드, 슬랙 핑, 읽지 않은 메시지 행, 이어서 하기 CTA, 해금 사다리, 퇴근 화면, 야근, 어제 미리 쓴 문장, 스탯 접힘.
 //   타이쿤(심부름·호봉·출근 스트립), 홈 2, AI 리포트, 사원증 개발 항목은 아직 _isNextFeature 로 남긴다.
 const _isHomeLive = () => true;
+
+// 문장 조립용 덩어리 나누기 (2026-09-05): 단어 하나씩이 아니라 자연스러운 구(2~4단어)로.
+//   전치사(from, to, by...)는 새 덩어리를 시작하고, 관사·조동사(the, I'll, let's) 뒤에서는 끊지 않는다.
+//   한 단어짜리 덩어리는 옆 덩어리에 붙인다. "I'll streamline the process | from eight steps | down to three."
+function _chunkSentence(sentence) {
+  const words = String(sentence || "").trim().split(/\s+/).filter(Boolean);
+  if (words.length <= 3) return words;
+  const LEAD = new Set(["the","a","an","my","our","your","their","his","her","its","this","that","these","those","some","any","every","each"]);
+  const PREP = new Set(["to","from","by","with","in","on","at","for","of","into","onto","over","under","about","after","before","until","through","as","than","and","but","or","because","if","when","while","once","so","down"]);
+  const AUX = new Set(["i","we","you","they","he","she","it","i'll","we'll","you'll","let's","i'm","we're","i've","we've","i'd","we'd","can","could","will","would","should","might","may","must","please"]);
+  const PART = new Set(["in","up","out","off","down","over","back","away","through","on"]);
+  const VERBISH = /(ing|ed)$/;
+  const VERBS = new Set(["wrap","weigh","map","set","pull","take","loop","ramp","step","sync","touch","circle","follow","reach","figure","sort","hash","iron","nail","check","call","push","kick","roll","hold","hand","stand","walk","back","bring","level","zoom","drill","scale","spell","flesh","tighten","run","put","carry","pick","move","get","go","come","break","cut","fill","find","lay","look","point","reach","send","shut","speak","split","turn","work","write","read","pay","give","double","sunset","chase","catch","bump","pencil","sign","shelve","table","escalate","flag","dial","opt","tee","key","boil"]);
+  const lc = w => w.toLowerCase().replace(/[^a-z'@]/g, "");
+  const chunks = []; let cur = [];
+  const flush = () => { if (cur.length) { chunks.push(cur); cur = []; } };
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i], l = lc(w);
+    const last = cur.length ? lc(cur[cur.length - 1]) : "";
+    const particle = PART.has(l) && cur.length && (VERBISH.test(last) || VERBS.has(last));   // 구동사 입자: looping in, wrap up
+    if (!particle && cur.length) {
+      if ((PREP.has(l) || LEAD.has(l) || AUX.has(l)) && cur.length >= 2) flush();
+      else if (cur.length >= 4) flush();
+    }
+    cur.push(w);
+    if (/[,;:]$/.test(w)) flush();   // 쉼표 뒤에서 끊기
+  }
+  flush();
+  // 한 단어짜리는 옆에 붙이기 (앞이 3단어 이하면 앞에, 아니면 뒤에)
+  const out = [];
+  chunks.forEach(c => {
+    if (c.length === 1 && out.length && out[out.length - 1].length <= 3) out[out.length - 1] = out[out.length - 1].concat(c);
+    else out.push(c);
+  });
+  for (let i = 0; i < out.length - 1; i++) { if (out[i].length === 1) { out[i + 1] = out[i].concat(out[i + 1]); out.splice(i, 1); i--; } }
+  const res = out.map(c => c.join(" "));
+  return res.length >= 2 ? res : words;
+}
 // 메인보드 2 (2026-09-05): 콘텐츠만 남긴 단순 홈. 개발 뷰가 켜진 상태에서만 동작.
 //   켜는 법: ?home2=1 또는 우상단 '홈 2' 토글. 끄는 법: ?home2=0
 (() => {
@@ -11841,7 +11879,8 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
         { t: (o2 && o2.meaning) || "일정을 뒤로 미루자는 제안", ok: false },
       ]),
       words5: _shuf([today.word, (o1 && o1.word) || "sync up", (o2 && o2.word) || "circle back"]),
-      tokens: _shuf(sentence.split(" ").map((w, i) => ({ w, i }))),
+      tokens: _shuf(_chunkSentence(sentence).map((w, i) => ({ w, i }))),
+      chunks: _chunkSentence(sentence),
       sentence, blankQuote,
       slackOpts: tf.id ? _shuf([
         { text: (today.sampleAnswers || [])[1] || (today.sampleAnswers || [])[0] || today.sampleAnswer || "", kind: "correct", note: "오늘 단어 + 자연스러운 사내 톤. 이대로 전송." },
@@ -11979,7 +12018,7 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
             <div className="row" style={{ marginTop: 10, gap: 8, alignItems: "center" }}>
               <button className="btn btn-ghost" onClick={() => {
                 // 힌트: 지금까지 맞은 부분까지만 남기고, 다음 올 블록을 자동으로 놓아줌
-                const words = D.sentence.split(" ");
+                const words = D.chunks || D.sentence.split(" ");
                 let k = 0;
                 while (k < built.length && built[k].w === words[k]) k++;
                 const prefix = built.slice(0, k);
