@@ -6197,7 +6197,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user) },
+    { id: "mynotes", label: _isNextFeature() ? "복습 노트" : "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user) },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -6326,8 +6326,8 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
             >
               <span style={{ fontSize: 20 }}>{_myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
-                <b style={{ fontSize: 14 }}>나만의 노트</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_isNextFeature() ? "내 표현 사전, 3분 복습" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
+                <b style={{ fontSize: 14 }}>{_isNextFeature() ? "복습 노트" : "나만의 노트"}</b>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_isNextFeature() ? "흔들리는 표현 3분 복습, 주간 인사이트" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -6551,7 +6551,7 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, aireport: 60 };
-const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", aireport: "AI 성장 리포트" };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: _isNextFeature() ? "복습 노트" : "나만의 노트", aireport: "AI 성장 리포트" };
 const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒", aireport: "🧠" };
 function _lockedNext(key, rd, viewingPast) {
   if ((key === "errands" || key === "aireport") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
@@ -6592,7 +6592,7 @@ const _UNLOCK_DESC = {
   skills: "표현을 5개 영역으로 나눠 모아요. 회의·메일·관계·보고·협상 중 어디가 비었는지 보여요.",
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
-  mynotes: _isNextFeature() ? "내 표현 사전이 열려요. 표현마다 내 문장과 기억 강도가 붙고, 흔들리는 표현만 골라 3분 복습을 시켜줘요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
+  mynotes: _isNextFeature() ? "복습 노트가 열려요. 표현마다 내 문장과 기억 강도가 붙고, 흔들리는 표현만 골라 3분 복습을 시켜줘요. 사수의 주간 인사이트도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
@@ -7417,7 +7417,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       </div>
 
       {_isNextFeature() && !USER.isViewingPast && (
-        <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mynotes")} />
+        <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
       {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => { if (k === "mynotes") setActive("mynotes"); else { const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k]; const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } }} />
@@ -9365,7 +9365,7 @@ function WordBookPage({ openScene }) {
       </div>`).join("");
     const w = window.open("", "_blank");
     if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
-    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 표현 사전</title>
+    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 복습 노트</title>
       <style>
         body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
         .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
@@ -9390,7 +9390,7 @@ function WordBookPage({ openScene }) {
         .fix { color: #4A7C59; }
         @media print { body { padding: 0; } .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .mem { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
-      <div class="cover"><div class="eyebrow">MY WORD BOOK · 1일1비</div><h1><em>${esc(USER.name)}</em>의 표현 사전</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div class="cover"><div class="eyebrow">MY REVIEW BOOK · 1일1비</div><h1><em>${esc(USER.name)}</em>의 복습 노트</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
       <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 표현</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
       ${rows}
       <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
@@ -9399,15 +9399,13 @@ function WordBookPage({ openScene }) {
   };
   const gridCells = SCENARIOS.filter(s => s.day <= 90).map(s => byDay[s.day] || { day: s.day, locked: true });
   const signupKo = USER.joinDate || "";
-  const reportDue = _REPORT_MILESTONES.some(m => rd >= m.at && !_reportsList().some(r => r.milestone === m.id));
-
   return (
     <div className="wb">
       {/* ── 표지 ── */}
       <div className="wb-cover">
         <div className="wb-cover-l">
-          <div className="wb-cover-eyebrow">MY WORD BOOK · SINCE {signupKo || "2026"}</div>
-          <h1 className="wb-cover-title"><em>{USER.name}</em>의 표현 사전</h1>
+          <div className="wb-cover-eyebrow">MY REVIEW BOOK · SINCE {signupKo || "2026"}</div>
+          <h1 className="wb-cover-title"><em>{USER.name}</em>의 복습 노트</h1>
           <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
           <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button>
         </div>
@@ -9496,20 +9494,17 @@ function WordBookPage({ openScene }) {
                 {isOpen && (
                   <div className="wb-card-body">
                     <div className="wb-card-grid">
-                      <div><label>📍 상황</label><p>{c.scene}</p></div>
-                      <div><label>▶ 사수 · 언제 쓰는지</label><p>{c.nuance}</p></div>
                       {c.mine ? <div><label>✏️ 내 문장 {c.corrected ? "· 사수 교정" : "· 한 번에 통과"}</label><p className="mono">{c.mine}</p>{c.corrected && <p className="mono wb-fix">→ {c.corrected}</p>}</div> : <div><label>✏️ 내 문장</label><p className="wb-muted">아직 없어요. 예시: <span className="mono">{c.sample}</span></p></div>}
                       {c.syn.length > 0 && <div><label>🔁 같은 뜻 다른 표현</label><p>{c.syn.map(x => <span key={x.w} className="wb-syn"><b>{x.w}</b> {x.ko}</span>)}</p></div>}
                       {c.ot.length > 0 && <div><label>🌙 야근에서 쓴 문장</label>{c.ot.map(x => <p key={x.w} className="mono"><small>{x.w}</small> {x.t}</p>)}</div>}
                       {c.rev && c.rev.sentence && <div><label>🔁 복습에서 쓴 문장</label><p className="mono">{c.rev.sentence}</p></div>}
                       {c.qa.length > 0 && <div><label>💬 유버디에게 물어본 것</label>{c.qa.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}>{n.text}</p>)}</div>}
                       {c.memos.length > 0 && <div><label>📒 저장한 노트</label>{c.memos.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}><small>{n.label || "메모"}</small> {n.text}</p>)}</div>}
-                      <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{c.tip}</p></div>
                       {c.rev && c.rev.history && c.rev.history.length > 0 && <div><label>📈 복습 기록</label><p>{c.rev.history.slice(-6).map((h, i) => <span key={i} className={"wb-hist " + h.g}>{h.at.slice(5)} {_WB_GRADE_KO[h.g]}</span>)}<span className="wb-muted">다음 복습 {c.rev.due}</span></p></div>}
                     </div>
                     <div className="wb-card-actions">
                       <button className="btn btn-primary" onClick={() => { setQueueSnapshot([c]); setQueueIdx(0); setSession({ done: 0, up: 0, log: [] }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>지금 복습하기</button>
-                      <button className="btn btn-ghost" onClick={() => openScene(c.scn)}>시추에이션 다시 열기</button>
+                      <button className="btn btn-ghost" onClick={() => openScene(c.scn)}>📖 상황·사수 설명 다시 보기</button>
                       <span>마지막으로 만난 날 {c.lastTouch} · {c.since === 0 ? "오늘" : c.since + "일 전"}</span>
                     </div>
                   </div>
@@ -9520,14 +9515,7 @@ function WordBookPage({ openScene }) {
         </div>
       </section>
 
-      {/* ── 성장 리포트 (Day 30·60·90 발급, 사원증 인사 기록에 보관) ── */}
-      <section className="wb-sec">
-        <div className="wb-sec-head"><h2>🧠 성장 리포트 <small>Day 30·60·90에 사수가 숫자와 함께 발급하는 공식 기록이에요</small></h2></div>
-        {(rd >= AIREPORT_OPEN_DAY || reportDue) ? <AiGrowthReport /> : (
-          <div className="wb-done calm"><b>🔒 다음 리포트는 Day {_REPORT_MILESTONES.find(m => m.at > rd) ? _REPORT_MILESTONES.find(m => m.at > rd).at : 90}에 발급돼요.</b><p>그때까지 쌓인 문장과 복습 기록을 사수가 읽고 정리해 줘요. 발급된 리포트는 사원증 인사 기록에 남아요.</p></div>
-        )}
-      </section>
-      <div className="wb-foot">기억 강도는 마지막으로 그 표현을 쓴 날부터 조금씩 줄어요. 내 문장으로 쓰거나 복습에서 떠올리면 다시 올라가고, 다음 복습은 알아서 미뤄져요. 복습 기록은 계정에 남아서 기기를 바꿔도 이어져요.</div>
+      <div className="wb-foot">성장 리포트(Day 30·60·90)는 사원증 / 인사의 인사 기록에서 발급하고 봐요. 기억 강도는 마지막으로 그 표현을 쓴 날부터 조금씩 줄어요. 내 문장으로 쓰거나 복습에서 떠올리면 다시 올라가고, 다음 복습은 알아서 미뤄져요. 복습 기록은 계정에 남아서 기기를 바꿔도 이어져요.</div>
     </div>
   );
 }
@@ -9965,11 +9953,11 @@ function LibraryPage({ openScene }) {
                           <div><label>{c.name} · {c.role}</label><p className="lib-quote">"{_hlQuote(s.quote, s.word)}"</p>{s.quoteKo && <p className="lib-ko">{s.quoteKo}</p>}</div>
                           <div><label>▶ 사수 · 언제 쓰는지</label><p>{_mentorNuanceLine(s)}</p></div>
                           <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{_buddyTipText(s)}</p></div>
-                          {myAnswer && myAnswer.sentence && <div><label>✏️ 그날 내가 쓴 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
+                          {!_isNextFeature() && myAnswer && myAnswer.sentence && <div><label>✏️ 그날 내가 쓴 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
                         </div>
                         <div className="lib-detail-actions">
                           <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); openScene(s); }}>시추에이션 다시 열기 →</button>
-                          {(savedNotes.length > 0 || (myJournal && myJournal.text)) && (
+                          {_isNextFeature() ? <span>✏️ 내 문장·복습·노트는 복습 노트에서 봐요</span> : (savedNotes.length > 0 || (myJournal && myJournal.text)) && (
                             <span>📒 이 표현에 내 노트 {savedNotes.length + ((myJournal && myJournal.text) ? 1 : 0)}개 · 나만의 노트에서 봐요</span>
                           )}
                         </div>
@@ -10027,7 +10015,7 @@ function LibraryPage({ openScene }) {
                   ✏️ "{myPreview}"
                 </div>
               )}
-              {savedNotes.length > 0 && (
+              {!_isNextFeature() && savedNotes.length > 0 && (
                 <div style={{
                   marginTop: 6,
                   padding: "6px 10px",
@@ -10416,10 +10404,11 @@ function HrRecordsSection() {
           </button>
         );
       })}
-      {nextMs && reports.length > 0 && (
+      {(rd >= AIREPORT_OPEN_DAY || (nextMs && rd >= nextMs.at)) && <div style={{ padding: "6px 0 2px" }}><AiGrowthReport /></div>}
+      {nextMs && reports.length > 0 && rd < nextMs.at && (
         <div className="hr-row" style={{ fontSize: 12 }}>
           <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>다음 발급</span>
-          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day {nextMs.at} · {nextMs.title}{rd >= nextMs.at ? " (지금 받을 수 있어요, 나만의 노트에서)" : ""}</span>
+          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day {nextMs.at} · {nextMs.title}</span>
         </div>
       )}
       {view && (
