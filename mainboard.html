@@ -404,7 +404,10 @@ body::before {
 .unlock-pop-eyebrow { font-size: 10.5px; letter-spacing: 0.18em; font-weight: 800; color: var(--orange); text-transform: uppercase; margin-bottom: 8px; }
 .unlock-pop-title { font-size: 18px; font-weight: 900; margin-bottom: 12px; }
 .unlock-pop-list { display: grid; gap: 8px; margin-bottom: 14px; }
-.unlock-pop-item { background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.unlock-pop-item { display: flex; gap: 12px; align-items: flex-start; background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.unlock-pop-emoji { flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px; animation: unlockPop 0.5s cubic-bezier(.3,1.4,.4,1) both; }
+@keyframes unlockPop { from { transform: scale(0.4) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .unlock-pop-emoji { animation: none; } }
 .unlock-pop-item b { display: block; font-size: 13.5px; margin-bottom: 3px; }
 .unlock-pop-item p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
 /* 🌙 야근 카드 (개발 뷰) */
@@ -6375,6 +6378,7 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 15 };
 const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트" };
+const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒" };
 function _lockedNext(key, rd, viewingPast) {
   if (key === "errands" && !_isNextFeature()) return false;   // 심부름(타이쿤)은 아직 개발 뷰
   return _isHomeLive() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
@@ -6398,7 +6402,7 @@ function UnlockLadder({ rd, viewingPast }) {
       {days.map(d => (
         <div key={d} className={"unlock-row" + (d === days[0] ? " next" : "")}>
           <b>Day {d}</b>
-          <span>{_keys.filter(k => _UNLOCK_AT[k] === d).map(k => _UNLOCK_LABEL[k]).join(" · ")}</span>
+          <span>{_keys.filter(k => _UNLOCK_AT[k] === d).map(k => (_UNLOCK_EMOJI[k] || "🔒") + " " + _UNLOCK_LABEL[k]).join(" · ")}</span>
           <i>{d - rd === 1 ? "내일 열려요" : (d - rd) + "일 뒤에 열려요"}</i>
         </div>
       ))}
@@ -6420,7 +6424,7 @@ function UnlockPopup({ rd, email, onGo }) {
   const KEY = "__OD_UNLOCK_POP_" + (email || "guest") + "_" + rd;
   const [show, setShow] = useState(false);
   React.useEffect(() => {
-    if (!_isNextFeature() || !keys.length) return;
+    if (!_isHomeLive() || !keys.length) return;
     try { if (localStorage.getItem(KEY) === "1") return; } catch (e) {}
     let quiet = 0, elapsed = 0, ended = false;
     const iv = setInterval(() => {
@@ -6437,12 +6441,15 @@ function UnlockPopup({ rd, email, onGo }) {
     <div className="unlock-pop-bg" onClick={() => setShow(false)}>
       <div className="unlock-pop" onClick={e => e.stopPropagation()}>
         <div className="unlock-pop-eyebrow">총무팀 · Day {rd}</div>
-        <div className="unlock-pop-title">🔓 오늘 새로 열렸어요</div>
+        <div className="unlock-pop-title">🔓 오늘 새로 열렸어요 <span style={{ fontSize: 22 }}>{keys.map(k => _UNLOCK_EMOJI[k] || "").join(" ")}</span></div>
         <div className="unlock-pop-list">
           {keys.map(k => (
             <div key={k} className="unlock-pop-item">
-              <b>{_UNLOCK_LABEL[k]}</b>
-              <p>{_UNLOCK_DESC[k]}</p>
+              <span className="unlock-pop-emoji">{_UNLOCK_EMOJI[k] || "🔓"}</span>
+              <div>
+                <b>{_UNLOCK_LABEL[k]}</b>
+                <p>{_UNLOCK_DESC[k]}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -7211,7 +7218,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
       </div>
 
-      {_isNextFeature() && !USER.isViewingPast && (
+      {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => { if (k === "mynotes") setActive("mynotes"); else { const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k]; const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } }} />
       )}
       {_isHomeLive() && !USER.isViewingPast && (
