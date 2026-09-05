@@ -17,7 +17,8 @@
 // ============================================================
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
-const MODEL = Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";  // 싸고 빠름
+const MODEL = Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";  // 첨삭·Q&A: 싸고 빠름
+const MODEL_RICH = Deno.env.get("OPENAI_MODEL_RICH") || "gpt-4.1";  // 리포트·코칭·상담: 한 장짜리 리포트는 큰 모델로 (secret OPENAI_MODEL_RICH 로 바꿈)
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -79,7 +80,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL, temperature: 0.4, response_format: { type: "json_object" },
+          model: MODEL_RICH, temperature: 0.4, response_format: { type: "json_object" }, max_tokens: 2500,
           messages: [
             { role: "system", content: rsys },
             { role: "user", content: JSON.stringify(compact) },
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL, temperature: 0.5, response_format: { type: "json_object" },
+          model: MODEL_RICH, temperature: 0.5, response_format: { type: "json_object" }, max_tokens: 1800,
           messages: [
             { role: "system", content: isys },
             { role: "user", content: JSON.stringify(compact) },
@@ -148,51 +149,61 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── 복지포인트 상담 모드 (2026-09-05, 개발 뷰): 커리어 / 직무 / 영어 공부법 / 직장생활 ──
-  // 클라이언트가 질문 + 직무 프로필 + 학습 요약(숫자만)을 보낸다. 상담 결과는 클라이언트가 notes(kind consult)에 보관.
+  // ── 복지포인트 상담 모드 (2026-09-05, 개발 뷰): 커리어 / 직무 / 영어 학습 처방 / 직장생활 ──
+  // 클라이언트가 진단 문답 + 직무 프로필 + 학습 기록 전체(내가 쓴 문장 전부, 교정, 야근 문장, 저널, 질문, 약한 표현, 영역별 숫자)를 보낸다.
+  // 한 장짜리 리포트(ingan 식 "기록에서 읽히는 나" 포함)를 돌려주고, 클라이언트가 notes(kind consult)에 보관한다.
+  // 모델: OPENAI_MODEL_RICH (기본 gpt-4.1). 리포트 하나에 입력 5~8천 + 출력 3~4천 토큰, 100원 안팎.
   if (mode === "consult") {
     const cp = (b && typeof b.consult === "object" && b.consult) || null;
     if (!cp) return json({ ok: false, error: "missing" }, 200);
     const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
-    const topic = String(cp.topic || "").slice(0, 20);
-    const question = String(cp.question || "").slice(0, 800).trim();
-    const answers = clip(cp.answers, 10).map((x: any) => ({ q: String(x.q || "").slice(0, 80), a: String(x.a || "").slice(0, 200) })).filter((x: any) => x.q && x.a);
+    const str = (v: any, n: number) => String(v || "").slice(0, n);
+    const topic = str(cp.topic, 20);
+    const question = str(cp.question, 800).trim();
+    const answers = clip(cp.answers, 10).map((x: any) => ({ q: str(x.q, 80), a: str(x.a, 200) })).filter((x: any) => x.q && x.a);
     if (!question && !answers.length) return json({ ok: false, error: "empty_input" }, 200);
+    const st = (cp.stats && typeof cp.stats === "object") ? cp.stats : {};
     const compact = {
-      name: String(cp.name || "").slice(0, 30), day: Number(cp.day) || 1, topic, question, answers,
-      profile: cp.profile && typeof cp.profile === "object" ? { job: String(cp.profile.job || "").slice(0, 60), industry: String(cp.profile.industry || "").slice(0, 40), years: String(cp.profile.years || "").slice(0, 60), situ: clip(cp.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(cp.profile.who, 6).map((x: any) => String(x).slice(0, 30)), freq: String(cp.profile.freq || "").slice(0, 20), confidence: Number(cp.profile.confidence) || 0, stuck: String(cp.profile.stuck || "").slice(0, 120), goal: String(cp.profile.goal || "").slice(0, 120) } : null,
-      stats: cp.stats && typeof cp.stats === "object" ? { learned: Number(cp.stats.learned) || 0, mine: Number(cp.stats.mine) || 0, oneShot: Number(cp.stats.oneShot) || 0, streak: Number(cp.stats.streak) || 0,
-        areas: clip(cp.stats.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, words: clip(a.words, 6).map((w: any) => String(w).slice(0, 40)) })),
-        recentQuestions: clip(cp.stats.recentQuestions, 5).map((x: any) => String(x).slice(0, 80)),
-        fixed: clip(cp.stats.fixed, 6).map((x: any) => ({ word: String(x.word || "").slice(0, 40), mine: String(x.mine || "").slice(0, 160) })),
-        recentSentences: clip(cp.stats.recentSentences, 8).map((x: any) => ({ word: String(x.word || "").slice(0, 40), text: String(x.text || "").slice(0, 160) })) } : null,
+      name: str(cp.name, 30), day: Number(cp.day) || 1, topic, question, answers,
+      profile: cp.profile && typeof cp.profile === "object" ? { job: str(cp.profile.job, 60), industry: str(cp.profile.industry, 40), years: str(cp.profile.years, 60), situ: clip(cp.profile.situ, 8).map((x: any) => str(x, 20)), who: clip(cp.profile.who, 6).map((x: any) => str(x, 30)), freq: str(cp.profile.freq, 20), confidence: Number(cp.profile.confidence) || 0, stuck: str(cp.profile.stuck, 120), goal: str(cp.profile.goal, 120), diag: clip(cp.profile.diag?.english?.labels, 8).map((x: any) => str(x.q, 60) + " → " + str(x.a, 120)) } : null,
+      stats: {
+        learned: Number(st.learned) || 0, mine: Number(st.mine) || 0, oneShot: Number(st.oneShot) || 0, streak: Number(st.streak) || 0,
+        areas: clip(st.areas, 6).map((a: any) => ({ name: str(a.name, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, words: clip(a.words, 12).map((w: any) => str(w, 40)) })),
+        sentences: clip(st.sentences, 120).map((x: any) => ({ day: Number(x.day) || 0, word: str(x.word, 40), text: str(x.text, 200), fixed: x.fixed ? str(x.fixed, 200) : undefined })),
+        ot: clip(st.ot, 40).map((x: any) => ({ day: Number(x.day) || 0, word: str(x.word, 40), text: str(x.text, 160) })),
+        journals: clip(st.journals, 15).map((x: any) => ({ day: Number(x.day) || 0, text: str(x.text, 200) })),
+        questions: clip(st.questions, 12).map((x: any) => str(x, 100)),
+        known: clip(st.known, 40).map((x: any) => str(x, 40)),
+        weak: clip(st.weak, 12).map((x: any) => ({ word: str(x.word, 40), strength: Number(x.strength) || 0, area: str(x.area, 20) })),
+        reviews: Number(st.reviews) || 0,
+      },
     };
-    const isEnglish = topic === "english";
-    const TOPIC: Record<string, string> = {
-      career: "커리어 상담: 이직·채용·면접·다음 스텝. 외국계 채용 관행(레퍼런스, 영어 면접, 링크드인)을 아는 선배로서 현실적인 선택지와 순서를 준다.",
-      job: "직무 고민 상담: 지금 맡은 일에서 막히는 것, 역할·우선순위·상사와의 합의. 외국계 협업 방식(비동기, 문서화, 기대치 조율)을 기준으로 구체적인 행동을 준다.",
-      english: "영어 학습 처방 리포트: 진단 문답(answers)과 학습 기록(배운 표현 수, 직접 쓴 문장, 사수가 고친 문장 fixed, 영역별 배운/써본 수와 표현 목록)을 근거로, 이 사람에게만 맞는 한 장짜리 처방전을 쓴다. 일반론 금지. 진단 답과 기록이 서로 다른 얘기를 하면 그 차이를 짚어라(예: 못 한다고 답했는데 기록은 이미 하고 있음).",
-      work: "직장생활 고민 상담: 관계, 번아웃, 리모트 근무, 피드백 받는 법. 공감 먼저, 그다음 이번 주에 해볼 작은 행동. 의학적·심리치료적 진단은 하지 않는다. 자해·극단적 선택·심한 우울 신호가 보이면 전문가(정신건강 상담전화 1577-0199 등)와 가까운 사람에게 지금 이야기하라고 분명히 권한다.",
+    const TOPIC: Record<string, { role: string; fixesLabel: string; termsLabel: string; actionsLabel: string }> = {
+      career: { role: "커리어 상담: 이직·채용·면접·다음 스텝. 외국계 채용 관행(영문 이력서의 동사+숫자 불릿, 링크드인 헤드라인, 레퍼럴·커피챗, 영어 면접 STAR)을 아는 선배로서 현실적인 선택지와 순서를 준다. fixes 에는 이 사람의 실제 문장이나 경험을 이력서·링크드인 불릿으로 고쳐 쓴 예를 넣는다(빈칸이 아니라 '이렇게 쓰면' 형태). expressions 에는 커피챗 요청·면접·링크드인에 바로 쓸 문장을 넣는다.", fixesLabel: "이력서·링크드인 문장, 이렇게 고치면", termsLabel: "지원하는 직무의 언어", actionsLabel: "다음 주 커리어 액션" },
+      job: { role: "직무 고민 상담: 지금 맡은 일에서 막히는 것, 역할·우선순위·상사와 본사의 기대치 조율. 외국계 협업 방식(비동기, 문서화, 선택지 제시, 슬랙 한 줄 확인)을 기준으로 구체적인 행동을 준다. fixes 에는 이 사람이 실제로 쓴 문장을 상사·본사에 보낼 문장으로 고쳐 쓴 예를 넣는다. expressions 에는 우선순위 합의·일정 확인·기대치 조율 문장을 넣는다.", fixesLabel: "상사·본사에 보낼 문장, 이렇게 고치면", termsLabel: "이 상황에서 통하는 표현", actionsLabel: "다음 주 업무 액션" },
+      english: { role: "영어 학습 처방 리포트: 진단 문답과 학습 기록 전체를 근거로 이 사람에게만 맞는 한 장짜리 처방전을 쓴다. 답과 기록이 서로 다른 얘기를 하면 그 차이를 짚어라(예: 못 한다고 답했는데 기록은 이미 하고 있음). fixes 에는 사수가 고친 문장(fixed 가 있는 sentences)을 빈칸 문제로 만든다.", fixesLabel: "이렇게 말하면 더 자연스러울 거예요", termsLabel: "내 직무에서 알아두면 좋은 표현", actionsLabel: "다음 주 영어 액션" },
+      work: { role: "직장생활 고민 상담: 관계, 번아웃, 리모트 근무, 피드백 받는 법. 공감 먼저, 그다음 이번 주에 해볼 작은 행동. 의학적·심리치료적 진단은 하지 않는다. 자해·극단적 선택·심한 우울 신호가 보이면 전문가(정신건강 상담전화 1577-0199 등)와 가까운 사람에게 지금 이야기하라고 headline 과 diagnosis 첫 문단에 분명히 쓴다. fixes 에는 피드백을 받을 때·부탁할 때·거절할 때 이 사람이 실제로 쓸 문장을 넣는다.", fixesLabel: "그 순간에 쓸 문장, 이렇게", termsLabel: "외국계에서 이 상황을 말하는 법", actionsLabel: "다음 주 액션" },
     };
-    const csys = [
-      `너는 따뜻하고 현실적인 외국계 회사 선배 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)의 고민 하나에 답해.`,
-      TOPIC[topic] || "고민 상담: 공감 먼저, 그다음 구체적인 행동.",
-      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 빈도: ${compact.profile.freq || "미입력"}. 자신감 ${compact.profile.confidence || "?"}/5. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.` : "직무 정보가 없다. 일반적인 외국계 회사 신입으로 가정하되, 필요하면 답 안에서 어떤 정보가 있으면 더 정확해지는지 한 줄로 말해.",
-      compact.stats ? `학습 기록: 배운 표현 ${compact.stats.learned}개, 직접 쓴 문장 ${compact.stats.mine}개, 연속 출근 ${compact.stats.streak}일. 영역별 배운/써본: ${(compact.stats.areas || []).map((a: any) => a.name + " " + a.used + "/" + a.learned).join(", ")}. 최근 질문: ${(compact.stats.recentQuestions || []).join(" / ") || "없음"}.` : "",
-      compact.answers.length ? `신입이 진단 문답에 이렇게 답했다: ${compact.answers.map((x: any) => x.q + " → " + x.a).join(" / ")}. 답을 그대로 반복하지 말고 해석해서 써.` : "",
-      isEnglish
-        ? `JSON 으로만: {"headline":"진단을 한 줄로 뒤집어 주는 문장(35자 안팎, 동사로 끝남)","oneLine":"기록에서 찾은 구체적 성취 한 줄(숫자 포함)","diagnosis":["사수가 드리는 말 2문단, 각 3~4문장. 답과 기록을 근거로 진짜 원인을 짚고, 효과 없던 방법이 왜 안 맞았는지, 지금 필요한 게 뭔지"],"strengths":["기록에 근거한 잘하는 것 2개"],"expressions":[{"en":"이번에 가져갈 표현","ko":"뜻","use":"이 사람 상황에서 언제 쓰는지 한 줄"}] 3개 (기록의 areas.words 나 fixed 에 있는 표현을 우선),"qa":[{"q":"진단 질문","a":"신입의 답","coach":"그 답에 대한 사수 코멘트 1~2문장"}] 3개 (answers 에서 고른다),"fixes":[{"blank":"빈칸 문장 (fixed 의 내 문장을 고쳐 만든 것 우선, 부족하면 이 직무에서 자주 틀리는 것)","answer":"정답","why":"왜 그게 자연스러운지"}] 4개,"jobTerms":[{"term":"직무 용어","ko":"뜻","ex":"예문"}] 4개 (직무 profile.job 기준),"culture":[{"title":"외국계에서 더 잘 통하는 방식","body":"1~2문장"}] 3개,"actions":[{"task":"할 것","how":"어떻게(1일1비 기능 활용 포함: 야근 3문장, 복습 탭 흔들리는 카드)","when":"언제"}] 5개,"goals":[{"goal":"다음 30일 목표","measure":"측정 방법"}] 3개,"vision":"1년 뒤의 모습 2~3문장","closing":"닫는 말 2~3문장","oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`
-        : `JSON 으로만: {"headline":"고민을 한 줄로 다시 짚고 방향을 주는 문장(30자 안팎, 동사로 끝남)","answer":["본론 2~3문단, 각 2~3문장"],"steps":["이번 주 해볼 행동 2~3개, 각 한 문장"],"english":[{"en":"바로 쓸 영어 문장","ko":"뜻"}] (영어로 말해야 하는 상황일 때만, 아니면 빈 배열),"oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
-      `규칙: 따뜻한 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). 일반론 대신 이 사람의 직무·기록에 붙는 말. em-dash(U+2014) 절대 금지.`,
+    const T = TOPIC[topic] || TOPIC.job;
+    const sysReport = [
+      `너는 외국계 회사에서 10년 넘게 신입을 키운 선배 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)에게 한 장짜리 리포트를 써. 이 리포트는 유료(복지포인트)라서, 어디서나 읽을 수 있는 일반론이 한 줄이라도 있으면 실패야.`,
+      T.role,
+      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 빈도: ${compact.profile.freq || "미입력"}. 자신감 ${compact.profile.confidence || "?"}/5. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.${(compact.profile.diag || []).length ? " 영어 진단 답: " + compact.profile.diag.join(" / ") + "." : ""}` : "직무 정보가 없다. 기록에서 읽히는 것만으로 쓰되, 어떤 정보가 있으면 더 정확해지는지 closing 에 한 줄 적어.",
+      `학습 기록(전부 실제 데이터): 배운 표현 ${compact.stats.learned}개, 직접 쓴 문장 ${compact.stats.sentences.length}개(그중 사수가 고친 문장 ${compact.stats.sentences.filter((x: any) => x.fixed).length}개, 한 번에 통과 ${compact.stats.oneShot}개), 야근 문장 ${compact.stats.ot.length}개, 저널 ${compact.stats.journals.length}개, 질문 ${compact.stats.questions.length}개, 이미 알던 표현 ${compact.stats.known.length}개, 복기 ${compact.stats.reviews}장, 연속 출근 ${compact.stats.streak}일. 영역별 배운/써본: ${compact.stats.areas.map((a: any) => a.name + " " + a.used + "/" + a.learned).join(", ")}. 기억이 흔들리는 표현: ${compact.stats.weak.map((w: any) => w.word + "(" + w.strength + ")").join(", ") || "없음"}.`,
+      `user 메시지의 sentences 가 이 사람이 90일 동안 실제로 쓴 문장 전부다. 전부 읽어라. 거기서 반복되는 습관(시제, 관사, 축약형, 특정 표현 회피, 문장 길이, 톤, 자주 등장하는 상황과 사람, 잘 쓰는 것)을 찾아서 readings 에 증거 문장과 함께 쓴다. 인용은 그 사람의 문장을 그대로 쓴다. 없는 문장을 지어내면 안 된다.`,
+      compact.answers.length ? `진단 문답: ${compact.answers.map((x: any) => x.q + " → " + x.a).join(" / ")}. 답을 반복하지 말고 해석해서 써. 답과 기록이 다르면 그 차이가 이 리포트의 핵심이다.` : "",
+      question ? `신입이 덧붙인 한 줄: "${question}". 이 문장이 이 리포트의 출발점이다. headline 과 diagnosis 첫 문단은 반드시 이 한 줄에 직접 답한다.` : "",
+      `JSON 으로만: {"headline":"이 사람의 상황을 한 줄로 뒤집어 주는 문장(35자 안팎, 동사로 끝남. '나아가다/극복하다/노력하다' 같은 뻔한 말 금지)","oneLine":"기록에서 찾은 구체적 성취 한 줄(숫자와 실제 표현 포함)","readings":[{"title":"기록에서 읽히는 나 (제목 8자 안팎)","body":"2~3문장. 이 사람의 문장 습관·일하는 방식·영어 성향 중 하나","evidence":"근거가 되는 실제 문장 하나 그대로 인용"}] 3개,"diagnosis":["사수가 드리는 말 2~3문단, 각 3~4문장. 답·기록·덧붙인 한 줄을 근거로 진짜 원인을 짚고 지금 필요한 게 뭔지"],"strengths":["기록에 근거한 잘하는 것 2개, 각각 실제 문장이나 숫자 인용"],"expressions":[{"en":"이번에 가져갈 표현","ko":"뜻","use":"이 사람 상황에서 언제 쓰는지 한 줄"}] 3개,"qa":[{"q":"진단 질문","a":"신입의 답","coach":"그 답에 대한 사수 코멘트 1~2문장, 기록과 연결"}] 3개,"fixes":[{"blank":"${T.fixesLabel}: 원문 또는 빈칸 문장","answer":"고친 문장 또는 정답","why":"왜 그게 통하는지"}] 4개,"jobTerms":[{"term":"${T.termsLabel}","ko":"뜻","ex":"예문"}] 4개,"culture":[{"title":"외국계에서 더 잘 통하는 방식","body":"1~2문장"}] 3개,"actions":[{"task":"할 것","how":"어떻게(구체적 산출물. 1일1비 기능 활용 포함: 야근 3문장, 복습 탭 흔들리는 카드, 사수 Q&A)","when":"언제"}] 5개,"goals":[{"goal":"다음 30일 목표","measure":"측정 방법"}] 3개,"vision":"1년 뒤의 모습 2~3문장, 이 사람 직무와 목표 기준","closing":"닫는 말 2~3문장","oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
+      `규칙: 따뜻하지만 날카로운 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). "중요합니다/도움이 될 것입니다/고민해보세요/노력하세요" 같은 빈 말 금지. 모든 조언은 이 사람의 문장·숫자·답을 근거로 대고, 근거를 문장 안에 보여준다. em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
     try {
       const r = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL, temperature: 0.5, response_format: { type: "json_object" }, max_tokens: isEnglish ? 3200 : 1200,
+          model: MODEL_RICH, temperature: 0.6, response_format: { type: "json_object" }, max_tokens: 4500,
           messages: [
-            { role: "system", content: csys },
+            { role: "system", content: sysReport },
             { role: "user", content: JSON.stringify(compact) },
           ],
         }),
@@ -202,23 +213,19 @@ Deno.serve(async (req) => {
       let consult: any = {};
       try { consult = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { consult = {}; }
       if (!consult.headline) return json({ ok: false, error: "empty" }, 200);
-      consult.answer = clip(consult.answer, 4).map((x: any) => String(x).slice(0, 600));
-      consult.steps = clip(consult.steps, 4).map((x: any) => String(x).slice(0, 200));
-      consult.english = clip(consult.english, 3).filter((x: any) => x && x.en).map((x: any) => ({ en: String(x.en).slice(0, 200), ko: String(x.ko || "").slice(0, 120) }));
-      if (isEnglish) {
-        const str = (v: any, n: number) => String(v || "").slice(0, n);
-        consult.diagnosis = clip(consult.diagnosis, 3).map((x: any) => str(x, 700));
-        consult.strengths = clip(consult.strengths, 3).map((x: any) => str(x, 200));
-        consult.expressions = clip(consult.expressions, 3).map((x: any) => ({ en: str(x.en, 120), ko: str(x.ko, 80), use: str(x.use, 160) }));
-        consult.qa = clip(consult.qa, 3).map((x: any) => ({ q: str(x.q, 80), a: str(x.a, 200), coach: str(x.coach, 300) }));
-        consult.fixes = clip(consult.fixes, 5).map((x: any) => ({ blank: str(x.blank, 160), answer: str(x.answer, 60), why: str(x.why, 200) }));
-        consult.jobTerms = clip(consult.jobTerms, 4).map((x: any) => ({ term: str(x.term, 40), ko: str(x.ko, 60), ex: str(x.ex, 140) }));
-        consult.culture = clip(consult.culture, 3).map((x: any) => ({ title: str(x.title, 60), body: str(x.body, 240) }));
-        consult.actions = clip(consult.actions, 5).map((x: any) => ({ task: str(x.task, 60), how: str(x.how, 140), when: str(x.when, 30) }));
-        consult.goals = clip(consult.goals, 3).map((x: any) => ({ goal: str(x.goal, 80), measure: str(x.measure, 120) }));
-        consult.vision = str(consult.vision, 400); consult.closing = str(consult.closing, 400); consult.oneLine = str(consult.oneLine, 200);
-      }
-      return json({ ok: true, consult, usage: d?.usage || null });
+      consult.readings = clip(consult.readings, 3).map((x: any) => ({ title: str(x.title, 40), body: str(x.body, 500), evidence: str(x.evidence, 220) }));
+      consult.diagnosis = clip(consult.diagnosis, 3).map((x: any) => str(x, 900));
+      consult.strengths = clip(consult.strengths, 3).map((x: any) => str(x, 300));
+      consult.expressions = clip(consult.expressions, 3).map((x: any) => ({ en: str(x.en, 160), ko: str(x.ko, 100), use: str(x.use, 200) }));
+      consult.qa = clip(consult.qa, 3).map((x: any) => ({ q: str(x.q, 80), a: str(x.a, 200), coach: str(x.coach, 400) }));
+      consult.fixes = clip(consult.fixes, 5).map((x: any) => ({ blank: str(x.blank, 220), answer: str(x.answer, 220), why: str(x.why, 260) }));
+      consult.jobTerms = clip(consult.jobTerms, 4).map((x: any) => ({ term: str(x.term, 60), ko: str(x.ko, 80), ex: str(x.ex, 180) }));
+      consult.culture = clip(consult.culture, 3).map((x: any) => ({ title: str(x.title, 80), body: str(x.body, 300) }));
+      consult.actions = clip(consult.actions, 5).map((x: any) => ({ task: str(x.task, 80), how: str(x.how, 200), when: str(x.when, 40) }));
+      consult.goals = clip(consult.goals, 3).map((x: any) => ({ goal: str(x.goal, 120), measure: str(x.measure, 160) }));
+      consult.vision = str(consult.vision, 500); consult.closing = str(consult.closing, 500); consult.oneLine = str(consult.oneLine, 240); consult.oneLiner = str(consult.oneLiner, 160);
+      consult.labels = { fixes: T.fixesLabel, terms: T.termsLabel, actions: T.actionsLabel };
+      return json({ ok: true, consult, model: MODEL_RICH, usage: d?.usage || null });
     } catch (e) {
       return json({ ok: false, error: "exception" }, 200);
     }

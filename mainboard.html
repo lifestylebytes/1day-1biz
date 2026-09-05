@@ -475,6 +475,16 @@ body::before {
   .wb-card-actions > span { margin-left: 0; width: 100%; }
 }
 /* 🎁 복지포인트 (사원증/인사, 개발 뷰) */
+#wp-toast-host { position: fixed; top: 14px; right: 14px; z-index: 9000; display: grid; gap: 6px; pointer-events: none; }
+.wp-toast { display: flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); border-radius: 999px; padding: 8px 14px 8px 10px; box-shadow: 0 8px 24px rgba(42,31,20,0.28); font-size: 13px; transform: translateY(-16px) scale(0.96); opacity: 0; transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25), opacity 0.2s; }
+.wp-toast.in { transform: none; opacity: 1; }
+.wp-toast.out { opacity: 0; transform: translateY(-10px); transition: opacity 0.35s, transform 0.35s; }
+.wp-toast-ico { font-size: 18px; animation: wpPop 0.6s ease-out; }
+.wp-toast b { color: #F5B08A; font-weight: 900; }
+.wp-toast small { opacity: 0.75; font-size: 11.5px; }
+@keyframes wpPop { 0% { transform: scale(0.4) rotate(-20deg); } 60% { transform: scale(1.25) rotate(8deg); } 100% { transform: none; } }
+@media (max-width: 880px) { #wp-toast-host { top: auto; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); left: 14px; right: 14px; justify-items: center; } .wp-toast { transform: translateY(16px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .wp-toast, .wp-toast-ico { transition: none; animation: none; } }
 .wp-balance { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; background: var(--ink); color: var(--paper); flex-wrap: wrap; }
 .wp-balance-l small { display: block; font-size: 10.5px; letter-spacing: 0.12em; font-weight: 800; opacity: 0.6; text-transform: uppercase; }
 .wp-balance-l b { display: block; font-size: 30px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin: 4px 0 2px; color: #F5B08A; font-variant-numeric: tabular-nums; }
@@ -546,6 +556,11 @@ body::before {
 .cr-sec { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .cr-sec-t { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--orange); margin-bottom: 8px; }
 .cr-lead { font-size: 14.5px !important; font-weight: 700; }
+.cr-reads { display: grid; gap: 8px; }
+.cr-read { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+.cr-read b { font-size: 14px; color: #F5B08A; }
+.cr-read p { margin: 0 !important; font-size: 13px !important; line-height: 1.6 !important; color: var(--paper) !important; }
+.cr-read small { font-size: 12px; opacity: 0.75; }
 .cr ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.65; }
 .cr-exprs { display: grid; gap: 8px; }
 .cr-expr { background: var(--cream); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 2px; }
@@ -6701,7 +6716,7 @@ const _UNLOCK_DESC = {
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
   mynotes: _isNextFeature() ? "복습이 열려요. 연봉협상 준비하듯 내가 쓴 표현을 복기하고 흔들리는 표현을 3분씩 다지면 협상 자리에서 꺼낼 카드가 늘어요. 사수의 주간 코칭도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
-  points: "복지포인트가 쌓이기 시작해요. 출근 완주 100P, 야근 50P, 복기 1장 10P. 모아서 사원증/인사에서 커리어·직무·영어·직장생활 상담을 받아요.",
+  points: "복지포인트가 쌓이기 시작해요. 출근 완주 100P, 야근 50P, 복기 1장 10P(하루 5장), 하루 최대 200P. 모아서 사원증/인사에서 커리어·직무·영어·직장생활 리포트를 받아요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
@@ -6856,6 +6871,7 @@ function OvertimeCard({ today, tomorrow, email }) {
     if (!text) return;
     const next = { ...saved, sentences: { ...(saved.sentences || {}), [syn.w]: text } };
     persist(next);
+    try { if (Object.keys(next.sentences).length === 3 && Object.keys(saved.sentences || {}).length < 3 && day >= 30) _wpToast(WP_RULES.ot, "야근 3문장"); } catch (e) {}
     if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) return;
     setLoading(l => ({ ...l, [syn.w]: true }));
     window.OD.getMentorAiFeedback({
@@ -7272,6 +7288,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     : Math.min(USER.totalDays, Math.max(14, _realCurrentDay));
   const _attendStart = showFullAttend ? 1 : Math.max(1, _attendEnd - 13);
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
+  useEffect(() => {
+    if (!allTodayDone || USER.isViewingPast) return;
+    try { const k = "__OD_WP_DAY_TOAST_" + (USER.email || "guest") + "_" + (USER.realCurrentDay || 1); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); if ((USER.realCurrentDay || 1) >= 30) setTimeout(() => _wpToast(WP_RULES.day, "오늘 완주"), 900); } catch (e) {}
+  }, [allTodayDone]);
   // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
   const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
   const _dayDeadline = (day) => {
@@ -9420,6 +9440,7 @@ function WordBookPage({ openScene }) {
     const before = cur.strength;
     const next = _wbGrade(rev, cur.day, g, extra);
     setRev(next); _wbSaveRev(em, next);
+    try { const today = _wbTodayKST(); const n = Object.values(next).reduce((k, r) => k + ((r && r.history) || []).filter(h => h.at === today).length, 0); if (n <= WP_RULES.reviewPerDay) _wpToast(WP_RULES.review, "복기 " + n + "/" + WP_RULES.reviewPerDay); } catch (e) {}
     // 서버에도 남긴다 (task_progress.tasks._rev, 기기 바뀌어도 복원)
     try { if (USER.email && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, cur.day, { _rev: next[cur.day] }).catch(() => {}); } catch (e) {}
     if (!queueSnapshot) setQueueSnapshot(activeQueue);
@@ -10500,12 +10521,26 @@ function InboxPage({ openMemo }) {
 // 🎁 복지포인트 (2026-09-05, 개발 뷰, 사원부터): 출근·야근·복기가 포인트로 쌓이고, 커리어·직무·영어·직장생활 상담에 쓴다.
 //   적립은 기록에서 그때그때 계산(따로 저장 안 함). 사용 내역과 상담 결과는 notes(kind points / consult, day 0)에 남아 기기 간 복원되고 운영자도 본다.
 // ============================================================
-const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10 };
+const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10, reviewPerDay: 5, dayMax: 200 };   // 하루 최대 200P = 완주 100 + 야근 50 + 복기 5장 50
+function _wpOpenFor(u) { return !!u && (u.isFulltime || (u.realCurrentDay || u.currentDay || 1) >= 30); }
+// 🎁 적립 순간 알림 (우상단, 모바일은 하단). 사원 + 개발 뷰일 때만.
+function _wpToast(amount, label) {
+  try {
+    if (!_isNextFeature() || !_wpOpenFor(window.__SIM && window.__SIM.USER)) return;
+    let host = document.getElementById("wp-toast-host");
+    if (!host) { host = document.createElement("div"); host.id = "wp-toast-host"; document.body.appendChild(host); }
+    const el = document.createElement("div"); el.className = "wp-toast";
+    el.innerHTML = '<span class="wp-toast-ico">🎁</span><b>복지포인트 +' + amount + 'P</b><small>' + label + '</small>';
+    host.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("in")));
+    setTimeout(() => { el.classList.remove("in"); el.classList.add("out"); setTimeout(() => el.remove(), 420); }, 2400);
+  } catch (e) {}
+}
 const WP_SERVICES = [
-  { id: "career", emoji: "🧭", title: "커리어 상담", desc: "이직·채용·면접, 다음 스텝 고민", cost: 500, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
-  { id: "job", emoji: "💼", title: "직무 고민 상담", desc: "지금 일에서 막히는 것, 역할 정리", cost: 500, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
+  { id: "career", emoji: "🧭", title: "커리어 리포트", desc: "5문항 진단 + 내 문장 전부를 읽고 쓰는 한 장", cost: 500, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
+  { id: "job", emoji: "💼", title: "직무 고민 리포트", desc: "막히는 일 하나를 문장 단위로 풀어주는 한 장", cost: 500, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
   { id: "english", emoji: "🗣️", title: "영어 학습 처방 리포트", desc: "8문항 진단 + 내 기록으로 한 장짜리 처방전", cost: 500, ph: "" },
-  { id: "work", emoji: "☕", title: "직장생활 고민 상담", desc: "관계·번아웃·리모트 근무, 사수가 들어줘요", cost: 500, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
+  { id: "work", emoji: "☕", title: "직장생활 리포트", desc: "관계·번아웃·리모트, 사수가 듣고 써주는 한 장", cost: 500, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
 ];
 function _wpNotes(kind) { const u = _wbUser(); return ((u.savedNotes || {})["0"] || []).filter(n => n.kind === kind).map(n => { try { return { ...JSON.parse(n.text), savedAt: n.savedAt }; } catch (e) { return null; } }).filter(Boolean); }
 function _wpEarned(USER) {
@@ -10517,8 +10552,10 @@ function _wpEarned(USER) {
   let ot = 0;
   try { Object.keys(localStorage).forEach(k => { if (k.startsWith("__OD_OT_" + em + "_")) { const d = Number(k.split("_").pop()); const v = _loadJSON(k); if (d >= 30 && v && Object.keys(v.sentences || {}).length >= 3) ot++; } }); } catch (e) {}
   if (ot) items.push({ k: "ot", p: ot * WP_RULES.ot, label: "야근 " + ot + "번 × " + WP_RULES.ot });
-  const rev = _wbLoadRev(em); let reviews = 0; Object.values(rev).forEach(r => { reviews += (r && r.history ? r.history.length : 0); });
-  if (reviews) items.push({ k: "review", p: reviews * WP_RULES.review, label: "복기 " + reviews + "장 × " + WP_RULES.review });
+  const rev = _wbLoadRev(em); const perDay = {};
+  Object.values(rev).forEach(r => ((r && r.history) || []).forEach(h => { perDay[h.at] = (perDay[h.at] || 0) + 1; }));
+  const reviews = Object.values(perDay).reduce((n, c) => n + Math.min(WP_RULES.reviewPerDay, c), 0);
+  if (reviews) items.push({ k: "review", p: reviews * WP_RULES.review, label: "복기 " + reviews + "장 × " + WP_RULES.review + " (하루 " + WP_RULES.reviewPerDay + "장까지)" });
   return { items, total: items.reduce((n, x) => n + x.p, 0) };
 }
 function _wpAddNote(kind, label, obj) {
@@ -10686,14 +10723,15 @@ function ConsultReportView({ view, mentor }) {
     <div className="cr">
       <h3>{view.headline}</h3>
       {view.oneLine && <Sec t="오늘의 한 줄"><p className="cr-lead">{view.oneLine}</p></Sec>}
+      {view.readings && view.readings.length > 0 && <Sec t="기록에서 읽히는 나"><div className="cr-reads">{view.readings.map((x, i) => <div key={i} className="cr-read"><b>{x.title}</b><p>{x.body}</p>{x.evidence && <small className="mono">"{x.evidence}"</small>}</div>)}</div></Sec>}
       {view.diagnosis && view.diagnosis.length > 0 && <Sec t="사수가 드리는 말">{view.diagnosis.map((p, i) => <p key={i}>{p}</p>)}</Sec>}
       {view.strengths && view.strengths.length > 0 && <Sec t="지금 잘하고 있는 것"><ul>{view.strengths.map((x, i) => <li key={i}>{x}</li>)}</ul></Sec>}
       {view.expressions && view.expressions.length > 0 && <Sec t="⭐ 이번에 가져갈 표현 3개"><div className="cr-exprs">{view.expressions.map((x, i) => <div key={i} className="cr-expr"><b className="mono">{x.en}</b><span>{x.ko}</span><small>{x.use}</small></div>)}</div></Sec>}
       {view.qa && view.qa.length > 0 && <Sec t="진단 문답">{view.qa.map((x, i) => <div key={i} className="cr-qa"><div className="cr-qa-q">Q. {x.q}</div><div className="cr-qa-a">A. {x.a}</div><div className="cr-qa-c">▶ {x.coach}</div></div>)}</Sec>}
-      {view.fixes && view.fixes.length > 0 && <Sec t="이렇게 말하면 더 자연스러울 거예요">{view.fixes.map((x, i) => <div key={i} className="cr-fix"><b className="mono">{x.blank}</b><span>→ <em>{x.answer}</em></span><small>{x.why}</small></div>)}</Sec>}
-      {view.jobTerms && view.jobTerms.length > 0 && <Sec t="내 직무에서 알아두면 좋은 표현"><div className="cr-terms">{view.jobTerms.map((x, i) => <div key={i}><b>{x.term}</b><span>{x.ko}</span><small className="mono">{x.ex}</small></div>)}</div></Sec>}
+      {view.fixes && view.fixes.length > 0 && <Sec t={(view.labels && view.labels.fixes) || "이렇게 말하면 더 자연스러울 거예요"}>{view.fixes.map((x, i) => <div key={i} className="cr-fix"><b className="mono">{x.blank}</b><span>→ <em className={String(x.answer || "").length > 24 ? "mono" : ""}>{x.answer}</em></span><small>{x.why}</small></div>)}</Sec>}
+      {view.jobTerms && view.jobTerms.length > 0 && <Sec t={(view.labels && view.labels.terms) || "내 직무에서 알아두면 좋은 표현"}><div className="cr-terms">{view.jobTerms.map((x, i) => <div key={i}><b>{x.term}</b><span>{x.ko}</span><small className="mono">{x.ex}</small></div>)}</div></Sec>}
       {view.culture && view.culture.length > 0 && <Sec t="외국계에서 더 잘 통하는 방식, 알고 계셨나요?">{view.culture.map((x, i) => <div key={i} className="cr-cul"><b>{x.title}</b><p>{x.body}</p></div>)}</Sec>}
-      {view.actions && view.actions.length > 0 && <Sec t="다음 주 영어 액션"><div className="cr-table"><div className="cr-tr cr-th"><span>할 것</span><span>어떻게</span><span>언제</span></div>{view.actions.map((x, i) => <div key={i} className="cr-tr"><span>{x.task}</span><span>{x.how}</span><span>{x.when}</span></div>)}</div></Sec>}
+      {view.actions && view.actions.length > 0 && <Sec t={(view.labels && view.labels.actions) || "다음 주 영어 액션"}><div className="cr-table"><div className="cr-tr cr-th"><span>할 것</span><span>어떻게</span><span>언제</span></div>{view.actions.map((x, i) => <div key={i} className="cr-tr"><span>{x.task}</span><span>{x.how}</span><span>{x.when}</span></div>)}</div></Sec>}
       {view.goals && view.goals.length > 0 && <Sec t="다음 30일 목표"><ol className="cr-goals">{view.goals.map((x, i) => <li key={i}><b>{x.goal}</b><small>측정: {x.measure}</small></li>)}</ol></Sec>}
       {view.vision && <Sec t="1년 뒤의 모습"><p>{view.vision}</p></Sec>}
       {view.closing && <p className="cr-closing">{view.closing}</p>}
@@ -10740,9 +10778,18 @@ function WelfarePointsSection() {
     _saveProfile(em, prof);
     setBusy(true); setErr("");
     const rp = _reportPayload(prof);
-    const fixed = (rp.sentences || []).filter(x => x.fixed).slice(-6).map(x => ({ word: x.word, mine: x.text }));
+    // 이 계정이 지금까지 쓴 문장 전부 (교정본 포함) + 야근 문장 + 흔들리는 표현. 사수가 다 읽고 쓴다.
+    const { SCENARIOS } = window.__SIM;
+    const sentences = [];
+    SCENARIOS.filter(x => x.day <= rd).forEach(x => { const c = _loadCompletion(x.day); if (c && c.sentence) { const fb = c.feedback && c.feedback.aiFb; const fixed = fb && fb.corrected && _wbNorm(fb.corrected) !== _wbNorm(c.sentence) ? fb.corrected : ""; sentences.push({ day: x.day, word: x.word, text: String(c.sentence).slice(0, 200), fixed }); } });
+    const otAll = [];
+    SCENARIOS.filter(x => x.day <= rd).forEach(x => { const o = _loadJSON(_otKey(em, x.day)); if (o && o.sentences) Object.entries(o.sentences).forEach(([w, t]) => otAll.push({ day: x.day, word: w, text: String(t).slice(0, 160) })); });
+    const cardsNow = _wbBuild(USER, SCENARIOS, _wbLoadRev(em));
+    const weak = cardsNow.filter(c => c.day !== rd).sort((a, b) => a.strength - b.strength).slice(0, 12).map(c => ({ word: c.word, strength: c.strength, area: (AREA_META.find(a => a.id === c.area) || {}).name || "" }));
+    const reviews = Object.values(_wbLoadRev(em)).reduce((n, r) => n + ((r && r.history) ? r.history.length : 0), 0);
     const payload = { topic: sv.id, title: sv.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
-      stats: { learned: rp.words.length, mine: rp.sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 6) })), recentQuestions: (rp.questions || []).slice(-5), fixed, recentSentences: (rp.sentences || []).slice(-8).map(x => ({ word: x.word, text: x.text })) } };
+      stats: { learned: rp.words.length, mine: sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 12) })),
+        sentences, ot: otAll.slice(-40), journals: (rp.journals || []).slice(-15), questions: (rp.questions || []).slice(-12), known: (rp.known || []).slice(0, 40), weak, reviews } };
     const isSample = !balanceOk(sv);
     const done = (ans, sample, why) => {
       const out = { ...ans, topic: sv.id, title: sv.title, answers: labels, question: payload.question, cost: sample ? 0 : sv.cost, sample: !!sample, sampleWhy: sample ? (why || "") : "", at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
@@ -10765,7 +10812,7 @@ function WelfarePointsSection() {
       <div className="wp-balance">
         <div className="wp-balance-l"><small>지금 쓸 수 있는 포인트</small><b>{_wpFmt(balance)}</b><span>적립 {_wpFmt(earned.total)} · 사용 {_wpFmt(spent)}</span></div>
         <div className="wp-balance-r">
-          <div className="wp-rules">출근 완주 <b>+{WP_RULES.day}</b> · 야근 <b>+{WP_RULES.ot}</b> · 복기 1장 <b>+{WP_RULES.review}</b></div>
+          <div className="wp-rules">출근 완주 <b>+{WP_RULES.day}</b> · 야근 <b>+{WP_RULES.ot}</b> · 복기 1장 <b>+{WP_RULES.review}</b> (하루 {WP_RULES.reviewPerDay}장) · 하루 최대 <b>{WP_RULES.dayMax}P</b></div>
           <button className="wb-link" onClick={() => setShowLedger(v => !v)}>{showLedger ? "내역 닫기" : "적립·사용 내역"}</button>
         </div>
       </div>
