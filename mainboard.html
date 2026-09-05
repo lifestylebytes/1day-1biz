@@ -321,6 +321,7 @@ body::before {
 .lib-table .col-mean { color: var(--ink-soft); }
 .lib-table .col-npc { white-space: nowrap; color: var(--ink-soft); font-size: 12px; }
 .lib-table .col-npc .biz-card-npc-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.lib-cat { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--paper-warm); border: 1px solid var(--line); color: var(--ink-soft); }
 .lib-table .col-st { white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
 .lib-table .col-st i { font-style: normal; margin-left: 8px; color: var(--ink-mute); font-size: 10px; }
 .lib-detail td { background: var(--paper); padding: 14px 16px 16px; border-bottom: 2px solid var(--line); }
@@ -8726,6 +8727,25 @@ function FirstWeekCards({ days }) {
   );
 }
 
+// 업무 노트 '상황' 분류: 태그·채널로 6개 묶음. 필터와 표 열에 같이 쓴다.
+const _LIB_CATS = [
+  { id: "meeting", label: "회의" }, { id: "msg", label: "메일·슬랙" }, { id: "client", label: "클라이언트·협상" },
+  { id: "people", label: "사람·리더십" }, { id: "work", label: "일정·업무" }, { id: "strategy", label: "전략·보고" },
+];
+function _libCategory(s) {
+  const t = new Set(s.tags || []);
+  const ch = (s.task && s.task.channel) || "";
+  // 우선순위: 어디서 쓰는지가 먼저 (메일·슬랙, 협상, 회의), 추상 태그(리더십, 전략)는 뒤
+  if (t.has("email") || t.has("slack") || t.has("writing") || ch === "email" || ch.startsWith("slack")) return "msg";
+  if (t.has("negotiation") || t.has("deal") || t.has("client")) return "client";
+  if (t.has("meeting") || t.has("facilitation") || t.has("speakup") || t.has("communication")) return "meeting";
+  if (t.has("schedule") || t.has("planning") || t.has("workflow") || t.has("project") || t.has("prioritization") || t.has("urgent") || t.has("workload")) return "work";
+  if (t.has("leadership") || t.has("team") || t.has("trust") || t.has("conflict") || t.has("feedback") || t.has("hr") || t.has("people") || t.has("career") || t.has("integrity") || t.has("collaboration")) return "people";
+  if (t.has("strategy") || t.has("decision") || t.has("exec") || t.has("budget") || t.has("growth") || t.has("judgment") || t.has("thinking") || t.has("milestone")) return "strategy";
+  return ch === "video-call" ? "meeting" : "work";
+}
+const _libCatLabel = (id) => (_LIB_CATS.find(c => c.id === id) || {}).label || "일정·업무";
+
 function LibraryPage({ openScene }) {
   const { SCENARIOS, CHARACTERS, USER } = window.__SIM;
   const [filter, setFilter] = useState("all");
@@ -8740,9 +8760,11 @@ function LibraryPage({ openScene }) {
 
   const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
   const filtered = accessible.filter(s => {
-    if (filter === "studied" && s.status !== "studied") return false;
+    if (filter === "written" && !_loadCompletion(s.day)) return false;
+    if (filter === "unwritten" && (_loadCompletion(s.day) || s.status === "today")) return false;
     if (filter === "today" && s.status !== "today") return false;
-    if (npcFilter !== "all" && s.npc !== npcFilter) return false;
+    // 상황 분류 (회의 / 메일·슬랙 / 클라이언트·협상 / 사람·리더십 / 일정·업무 / 전략·보고)
+    if (npcFilter !== "all" && _libCategory(s) !== npcFilter) return false;
     if (search && !s.word.toLowerCase().includes(search.toLowerCase()) && !(s.meaning || "").includes(search)) return false;
     return true;
   });
@@ -8770,7 +8792,8 @@ function LibraryPage({ openScene }) {
 
       <div className="filter-row">
         <button className={"filter-chip " + (filter === "all" ? "active" : "")} onClick={() => setFilter("all")}>전체 {accessible.length}</button>
-        <button className={"filter-chip " + (filter === "studied" ? "active" : "")} onClick={() => setFilter("studied")}>학습완료</button>
+        <button className={"filter-chip " + (filter === "written" ? "active" : "")} onClick={() => setFilter("written")}>✏️ 내 문장 있음</button>
+        <button className={"filter-chip " + (filter === "unwritten" ? "active" : "")} onClick={() => setFilter("unwritten")}>아직 안 쓴 것</button>
         <button className={"filter-chip " + (filter === "today" ? "active" : "")} onClick={() => setFilter("today")}>오늘</button>
         <input className="filter-search" placeholder="단어 / 뜻 검색…" value={search} onChange={e => setSearch(e.target.value)} />
         <span className="lib-view">
@@ -8779,12 +8802,10 @@ function LibraryPage({ openScene }) {
         </span>
       </div>
       <div className="filter-row" style={{ marginTop: -8 }}>
-        <span style={{ fontSize: 10.5, color: "var(--ink-mute)", letterSpacing: "0.16em", fontWeight: 800 }}>NPC ·</span>
+        <span style={{ fontSize: 10.5, color: "var(--ink-mute)", letterSpacing: "0.16em", fontWeight: 800 }}>상황 ·</span>
         <button className={"filter-chip " + (npcFilter === "all" ? "active" : "")} onClick={() => setNpcFilter("all")}>전체</button>
-        {Object.values(CHARACTERS).filter(c => c.id !== "hr").map(c => (
-          <button key={c.id} className={"filter-chip " + (npcFilter === c.id ? "active" : "")} onClick={() => setNpcFilter(c.id)} style={npcFilter === c.id ? { background: c.color, borderColor: c.color, color: "#fff" } : {}}>
-            {c.name}
-          </button>
+        {_LIB_CATS.filter(c => accessible.some(x => _libCategory(x) === c.id)).map(c => (
+          <button key={c.id} className={"filter-chip " + (npcFilter === c.id ? "active" : "")} onClick={() => setNpcFilter(c.id)}>{c.label}</button>
         ))}
       </div>
 
@@ -8809,7 +8830,7 @@ function LibraryPage({ openScene }) {
                 <th className="sortable" onClick={toggleSort} title="클릭해서 정렬">DAY {sortDesc ? "▼" : "▲"}<small>{sortDesc ? "최신순" : "Day 1부터"}</small></th>
                 <th>표현</th>
                 <th>뜻</th>
-                <th className="col-npc">누구</th>
+                <th className="col-npc">상황</th>
                 <th className="col-st">상태</th>
               </tr>
             </thead>
@@ -8827,7 +8848,7 @@ function LibraryPage({ openScene }) {
                       <td className="col-day">{String(s.day).padStart(2, "0")}</td>
                       <td className="col-word"><b>{s.word}</b><small>{s.pos}</small></td>
                       <td className="col-mean">{s.meaning}</td>
-                      <td className="col-npc"><span className="biz-card-npc-dot" style={{ background: c.color }}></span>{c.name}</td>
+                      <td className="col-npc"><span className="lib-cat">{_libCatLabel(_libCategory(s))}</span></td>
                       <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
                     </tr>
                     {isOpen && (
