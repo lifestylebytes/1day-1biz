@@ -6332,16 +6332,14 @@ function SlackPing({ scn, npc, day, ready, onOpen }) {
     if (!ready || !_isNextFeature()) return;
     try { if (sessionStorage.getItem(KEY) === "1") return; } catch (e) {}
     // 팝업들은 저마다 1~3초 뒤에 뜨므로, 처음엔 최소 2.5초 기다리고 그 뒤로 1.5초 조용하면 띄운다.
-    // 떠 있는 동안 팝업이 올라오면 잠시 숨겼다가 팝업이 닫힌 뒤 다시 나온다. 12초 보여주면 그날은 끝.
-    let quiet = 0, elapsed = 0, visible = 0, shown = false, ended = false;
+    // 떠 있는 동안 팝업이 올라오면 잠시 숨겼다가 팝업이 닫힌 뒤 다시 나온다.
+    // 한번 뜨면 X 를 누르거나 탭해서 답하기 전까지 안 사라진다 (진짜 알림처럼).
+    let quiet = 0, elapsed = 0, shown = false;
     const iv = setInterval(() => {
-      if (ended) return;
       elapsed += 400;
       const busy = _popupOpen();
       if (shown) {
-        if (busy) { shown = false; setShow(false); quiet = 0; return; }
-        visible += 400;
-        if (visible >= 12000) { ended = true; clearInterval(iv); setShow(false); mark(); }
+        if (busy) { shown = false; setShow(false); quiet = 0; }
         return;
       }
       if (busy) { quiet = 0; return; }
