@@ -304,6 +304,8 @@ body::before {
 .ot-head small { display: block; font-weight: 600; font-size: 11px; opacity: 0.75; margin-top: 2px; }
 .ot-head > span { display: flex; flex-direction: column; }
 .ot-head b { font-size: 12px; font-weight: 800; color: #FFB380; }
+.ot-card-locked { opacity: 0.75; }
+.ot-card-locked .ot-head { background: var(--paper-warm); color: var(--ink-soft); }
 .ot-body { padding: 16px; display: grid; gap: 18px; }
 .ot-sec-title { font-size: 13.5px; font-weight: 900; margin-bottom: 3px; }
 .ot-sec-sub { font-size: 12px; color: var(--ink-mute); line-height: 1.55; margin-bottom: 10px; }
@@ -4237,6 +4239,167 @@ const SCENARIOS = [
 ];
 
 // ============================================================
+// 첫 주 개정판 (2026-09-06 이후 가입자): Day 1~4 세트 교체
+//   기존 회원은 그대로(저널·노트·출근 기록이 옛 단어에 붙어 있음). 가입일(KST) >= CONTENT_CUTOVER 인 계정만 아래 세트.
+//   미리보기: ?content=v2 (끄기 ?content=v1). 알림톡(kakao-daily/scenarios.ts)도 같은 기준으로 gen 스크립트가 만든다.
+// ============================================================
+const CONTENT_CUTOVER = "2026-09-06";
+const SCENARIOS_V2 = {
+  1: { day: 1, word: "on my plate", pos: "phr.", meaning: "지금 맡고 있는 일", phonetic: "/ɑn maɪ pleɪt/",
+    scene: "09:30, 첫 회의가 끝나고 김 팀장이 자리로 와서 지금 맡은 일이 얼마나 되는지 물어요.",
+    npc: "manager", quote: "Before I hand you anything new, what's on your plate this week?",
+    quoteKo: "새 일을 주기 전에, 이번 주에 맡은 일이 뭐예요?",
+    youDo: "지금 맡은 일 두 가지를 정리해서 그 자리에서 답했다.",
+    mentorTip: "plate는 접시야. 내 접시에 올라온 음식이 내 일. '바빠요' 대신 '접시가 찼어요'라고 하면 프로처럼 들려.",
+    mentorNuance: "일을 더 받을지 말지 얘기할 때 써. 팀장이 새 일을 주려 할 때 '지금 이만큼 있어요'라고 답하는 자리, 동료가 도와달라 할 때 '이번 주는 접시가 꽉 찼어요'라고 거절하는 자리에 딱 맞아.",
+    sampleAnswer: "Right now I have the onboarding tasks and the client deck on my plate.", tags: ["meeting", "workload"], status: "studied",
+    task: { to: "manager", channel: "face",
+      promptKo: "김 팀장에게 지금 맡은 일을 한 줄로 답하세요. (지금 하는 일 한두 가지를 넣으면 좋음)",
+      koSentence: "지금은 온보딩 과제랑 클라이언트 자료, 두 가지를 맡고 있어요." },
+    mcOptions: [
+      { text: "I've got the onboarding tasks and the client deck on my plate, but I can take one more.", kind: "correct",
+        note: "✓ 지금 뭐가 있는지 + 여유가 있는지까지 한 줄. 팀장이 바로 판단할 수 있어. 'on my plate' 뒤에 'but I can take one more'를 붙이면 바쁜 척이 아니라 정리된 사람으로 보여." },
+      { text: "My current responsibilities comprise onboarding assignments and the client presentation.", kind: "formal",
+        note: "이력서 문장이야. 회의실에서 팀장이 지나가듯 물었는데 'comprise'가 나오면 거리가 생겨. 말은 짧고 구체적으로." },
+      { text: "I'm kind of busy this week with some stuff.", kind: "missing",
+        note: "❌ 오늘 표현이 빠졌고 'some stuff'는 아무 정보도 없어. 팀장은 '그래서 받을 수 있어, 없어?'를 알고 싶은 거야." },
+    ],
+    buddyAnswers: {
+      nuance:
+        "on my plate는 '지금 내가 맡아서 처리 중인 일'이야. busy가 상태라면 on my plate는 목록이야. 그래서 이 말 뒤에는 보통 뭐가 있는지가 따라와.\n\n\"I have a lot on my plate\"는 '바빠요'의 프로 버전. 핑계가 아니라 현황 보고로 들려.\n\n비슷한 말 정리:\n• workload = 업무량 (격식, 숫자로 말할 때)\n• swamped = 파묻혔다 (캐주얼, 감정 섞임)\n• on my plate = 지금 맡은 것들 (중립, 목록)",
+      example:
+        "🗣 회의: \"What's on your plate this week?\"\n💬 슬랙: \"Can't take that today, I've got too much on my plate.\"\n📧 메일: \"Once the audit is off my plate, I'll pick this up.\"\n\n자주 같이 쓰는 표현:\n• a lot on my plate (일이 많다)\n• take something off your plate (일을 덜어주다)\n• full plate (꽉 찬 접시, 여유 없음)",
+      default:
+        "접시 그림 하나면 끝나. 뷔페에서 접시에 음식을 담듯, 일이 접시 위에 올라와.\n\n→ on my plate = 내 접시 위 = 지금 내가 처리 중인 일\n\n그래서 일을 덜어주는 건 take it off your plate, 접시에서 내려주는 거야. 오늘은 '접시 = 할 일' 하나만 기억해.",
+    } },
+  2: { day: 2, word: "back-to-back", pos: "adj.", meaning: "(회의가) 연달아 있는", phonetic: "/ˌbæk tə ˈbæk/",
+    scene: "14:00, 차윤아 사수가 슬랙으로 잠깐 얘기하자는데 오후 일정이 회의로 꽉 차 있어요.", npc: "mentor",
+    quote: "Got 10 minutes this afternoon? I want to walk you through the client folder.",
+    quoteKo: "오후에 10분 있어요? 클라이언트 폴더 설명해주려고요.",
+    youDo: "오후엔 회의가 연달아 있어서 4시 15분으로 잡자고 답했다.",
+    mentorTip: "등(back)과 등이 맞붙은 그림이야. 회의 끝나자마자 다음 회의가 붙어 있는 상태.",
+    mentorNuance: "오늘 일정이 왜 안 되는지 말할 때 써. 'I'm busy'는 핑계처럼 들리는데 'I'm back-to-back until 4'는 일정표를 보여주는 말이라 상대가 바로 다른 시간을 찾아줘.",
+    sampleAnswer: "I'm back-to-back until 4, can we do 4:15?", tags: ["slack", "schedule"], status: "studied",
+    task: { to: "mentor", channel: "slack-dm",
+      promptKo: "사수의 슬랙 DM에 한 줄로 답하세요. (안 되는 이유 + 되는 시간 제안)",
+      koSentence: "4시까지 회의가 연달아 있어서요, 4시 15분 어때요?" },
+    mcOptions: [
+      { text: "I'm back-to-back until 4, could we do 4:15?", kind: "correct",
+        note: "✓ 이유 한 조각 + 대안 시간. 슬랙 답의 정석이야. 상대는 '네' 한 글자로 끝낼 수 있어." },
+      { text: "Regrettably, my schedule is fully committed until 16:00 today.", kind: "formal",
+        note: "비서가 대신 쓴 메일 같아. 사수와 DM인데 'regrettably'는 너무 멀어. 그리고 대안 시간이 없어서 상대가 또 물어봐야 해." },
+      { text: "I'm super busy today, maybe later?", kind: "weak",
+        note: "단어도 빠지고 시간도 없어. 'later'는 상대에게 일정 찾기를 떠넘기는 말이야." },
+    ],
+    buddyAnswers: {
+      nuance:
+        "back-to-back은 '연달아, 쉴 틈 없이'야. 회의뿐 아니라 출장, 경기, 발표에도 붙어. 회사에선 거의 'back-to-back meetings' 조합으로 나와.\n\n핵심은 이 말이 '바쁨'이 아니라 '일정 상태'를 말한다는 거야. 그래서 상대가 기분 상하지 않고 시간을 다시 잡아.\n\n비슷한 말 정리:\n• booked solid = 일정이 꽉 참 (하루 전체)\n• wall-to-wall meetings = 벽에서 벽까지 회의 (과장, 농담 섞임)\n• back-to-back = 붙어 있는 회의들 (구간)",
+      example:
+        "💬 슬랙: \"I'm back-to-back until 3, ping me after.\"\n🗣 회의: \"Sorry I'm late, I had back-to-back calls.\"\n📧 메일: \"Tuesday is back-to-back for me. Wednesday morning works.\"\n\n자주 같이 쓰는 표현:\n• back-to-back until [시간]\n• back-to-back meetings all day\n• I'm in back-to-backs (명사처럼)",
+      default:
+        "등 back, 등 back. 두 사람이 등을 맞대고 선 그림이야. 사이에 틈이 없지.\n\n→ 회의와 회의 사이에 틈이 없다 = back-to-back\n\n외우기는 소리로. '백투백'을 한 번 소리 내 말하면 리듬이 붙어. 내일 일정 볼 때 붙어 있는 회의 두 개 찾아서 속으로 '백투백'이라고 해봐.",
+    } },
+  3: { day: 3, word: "keep you posted", pos: "phr.", meaning: "진행되면 계속 알려드릴게요", phonetic: "/kiːp juː ˈpoʊstɪd/",
+    scene: "11:00, Sarah가 메일로 지난주에 요청한 자료가 어디까지 됐는지 물어요.", npc: "sarah",
+    quote: "Any update on the Q3 numbers? No rush, just want to know where things stand.",
+    quoteKo: "Q3 숫자는 진행이 어때요? 급한 건 아니고, 어디까지 됐는지만 알고 싶어요.",
+    youDo: "지금 상황 한 줄과 함께, 진행되면 바로 알리겠다고 답장했다.",
+    mentorTip: "posted는 '게시된'이 아니라 '소식을 받은' 상태야. 상대를 소식 위에 계속 올려둔다는 그림.",
+    mentorNuance: "아직 결과가 없을 때 답장을 닫는 말로 써. 상대가 '어떻게 됐어요?'라고 물었는데 줄 게 없으면, 지금 상태 한 줄 + 이 문장으로 끝내면 돼. 침묵보다 백 배 낫고, 다음 연락의 명분도 생겨.",
+    sampleAnswer: "We're halfway through the review. I'll keep you posted as soon as it's finalized.", tags: ["email", "client"], status: "studied",
+    task: { to: "sarah", channel: "email",
+      promptKo: "Sarah의 메일에 한 줄로 답하세요. (지금 상태 + 진행되면 알리겠다는 약속)",
+      koSentence: "검토가 절반쯤 끝났고, 확정되는 대로 계속 알려드릴게요." },
+    mcOptions: [
+      { text: "We're about halfway through. I'll keep you posted as soon as it's final.", kind: "correct",
+        note: "✓ 현재 상태 + 약속. 클라이언트는 숫자보다 '이 사람이 챙기고 있다'는 신호를 원해. 이 두 문장이 그 신호야." },
+      { text: "Kindly be advised that further updates shall be communicated in due course.", kind: "formal",
+        note: "관공서 공문이야. 'in due course'는 언제인지 아무 정보가 없어서, 정중한데 불안하게 만들어." },
+      { text: "Still working on it, will let you know sometime.", kind: "weak",
+        note: "단어가 빠졌고 'sometime'이 문제야. 언제 알려줄지 모르는 약속은 약속이 아니야." },
+    ],
+    buddyAnswers: {
+      nuance:
+        "keep you posted는 '새 소식이 생기면 계속 알려드릴게요'야. 지금 줄 게 없을 때 쓰는 말이라, 이 말을 쓰면 '아직 안 됐다'를 부드럽게 인정하는 셈이야.\n\n포인트는 keep이야. 한 번이 아니라 계속. 그래서 진짜로 두어 번 소식을 줘야 이 말이 신뢰가 돼.\n\n비슷한 말 정리:\n• keep you in the loop = 논의에서 안 빼놓을게요 (참여 보장)\n• keep you posted = 소식 계속 줄게요 (진행 보고)\n• follow up with you = 확인되면 다시 연락할게요 (1회)",
+      example:
+        "📧 메일: \"Nothing final yet, but I'll keep you posted.\"\n💬 슬랙: \"Vendor hasn't replied. Will keep you posted.\"\n🗣 회의: \"We're waiting on legal. I'll keep everyone posted.\"\n\n자주 같이 쓰는 표현:\n• keep you posted on [주제]\n• keep me posted (나한테도 알려줘)\n• I'll keep you posted as things move",
+      default:
+        "옛날 우체국(post)에서 소식을 게시판에 붙이던 그림을 떠올려. 소식이 붙으면 사람들이 알게 되지.\n\n→ keep you posted = 소식이 생길 때마다 네 앞에 붙여둘게\n\n오늘은 메일 마지막 줄 하나만 바꿔봐. '감사합니다' 앞에 'I'll keep you posted.' 한 줄. 그게 전부야.",
+    } },
+  4: { day: 4, word: "pencil in", pos: "phr.", meaning: "(확정 전) 일단 잡아두다", phonetic: "/ˈpensəl ɪn/",
+    scene: "15:30, Daniel이 런던에서 슬랙으로 다음 주 콜 시간을 잡자고 해요.", npc: "daniel",
+    quote: "Can we do a quick call next week? I'm flexible on the day.",
+    quoteKo: "다음 주에 짧게 콜 할 수 있어요? 요일은 편한 대로요.",
+    youDo: "화요일 오전으로 일단 잡아두고, 팀장 확인 후 확정하겠다고 답했다.",
+    mentorTip: "연필로 쓰면 지울 수 있잖아. 확정은 펜, 가안은 연필. 그 그림 그대로야.",
+    mentorNuance: "확정 권한이 아직 없을 때 일정을 잡는 말이야. 신입은 팀장 확인 전에 못 박으면 안 되는데, 그렇다고 답을 미루면 느려 보여. '일단 연필로 잡아둘게요'가 둘 다 살리는 답이야.",
+    sampleAnswer: "Let's pencil in Tuesday 10am KST. I'll confirm once I check with my manager.", tags: ["slack", "schedule"], status: "studied",
+    task: { to: "daniel", channel: "slack-dm",
+      promptKo: "Daniel에게 한 줄로 답하세요. (가안 시간 제안 + 확인 후 확정하겠다는 말)",
+      koSentence: "화요일 오전 10시로 일단 잡아둘게요. 팀장님 확인하고 확정할게요." },
+    mcOptions: [
+      { text: "Let's pencil in Tuesday 10am KST, I'll confirm after checking with my manager.", kind: "correct",
+        note: "✓ 시간을 먼저 던지고, 확정은 나중에. 런던 쪽은 캘린더에 가안을 넣을 수 있고, 너는 팀장 확인 여지를 남겼어. 시간대(KST)까지 적은 게 프로야." },
+      { text: "I shall tentatively schedule Tuesday, subject to managerial approval.", kind: "formal",
+        note: "계약서 문장이야. 뜻은 같은데 슬랙에서 'shall'과 'subject to'가 나오면 상대가 웃어. 그리고 몇 시인지가 없어." },
+      { text: "Sure, whenever works for you, just let me know.", kind: "weak",
+        note: "단어가 빠졌고 공을 상대에게 던졌어. 'whenever'는 친절해 보이지만 일정을 잡는 일을 상대가 대신 하게 만들어." },
+    ],
+    buddyAnswers: {
+      nuance:
+        "pencil in은 '일단 적어두되, 바뀔 수 있다'는 뜻이야. 연필은 지울 수 있으니까. 반대는 ink in, 펜으로 확정하는 것.\n\n이 말의 힘은 속도야. 확정을 못 해도 일단 시간을 던질 수 있어서, 상대는 기다리지 않고 나는 권한을 넘지 않아.\n\n비슷한 말 정리:\n• tentatively book = 가안으로 잡다 (격식)\n• hold the slot = 그 시간 비워두다 (캘린더 용어)\n• pencil in = 연필로 적어두다 (제일 흔하고 가벼움)",
+      example:
+        "💬 슬랙: \"Let's pencil in Thursday 3pm and confirm tomorrow.\"\n📧 메일: \"I've pencilled you in for the 12th. Let me know if that changes.\"\n🗣 회의: \"Can we pencil in a follow-up for next week?\"\n\n자주 같이 쓰는 표현:\n• pencil in [요일/시간]\n• pencil it in for now\n• pencilled in (영국식은 l 두 개)",
+      default:
+        "연필 ✏️ 하나만 기억해. 연필로 쓴 약속은 지우개로 지울 수 있어.\n\n→ pencil in = 연필로 캘린더에 적어두기 = 가안\n\n내일 캘린더에 확정 안 된 일정이 있으면 제목 앞에 (pencil) 하고 적어봐. 손이 먼저 외워.",
+    } },
+};
+const LUNCH_SCRIPTS_V2 = {
+  2: {
+    greet: `Lunch? I've been back-to-back since 9, I haven't even had coffee.`,
+    greetKo: `점심? 9시부터 회의가 연달아라 커피도 못 마셨어.`,
+    turn1: [
+      { text: `Back-to-back since 9? Let's get you fed first, coffee after.`, kind: "correct", note: `back-to-back을 그대로 받아서 공감하고, 밥부터 먹자고 챙겼어요. 동료가 일정 얘기를 꺼내면 같은 단어로 받아주는 게 제일 자연스럽답니다.` },
+      { text: `Meeting meeting all day? Cheer up, let's eat rice.`, kind: "konglish", note: `'meeting meeting'과 'eat rice'는 한국어 직역이야. 'back-to-back all day? let's grab lunch' 정도로.` },
+      { text: `I sympathize with your consecutive engagements this morning.`, kind: "formal", note: `'consecutive engagements'는 비서 말투야. 점심 얘기엔 너무 무거워.` },
+    ],
+    reply: `You're the best. Ten minutes, let me grab my wallet.`,
+    replyKo: `최고다. 10분만, 지갑 챙길게.`,
+    turn2: [
+      { text: `Take your time. If tomorrow's back-to-back too, block a lunch slot on your calendar.`, kind: "correct", note: `back-to-back을 한 번 더 쓰면서 실용적인 팁까지 얹었어요. 실제로 외국계에선 캘린더에 점심 슬롯을 막아두는 사람이 많답니다.` },
+      { text: `Tomorrow also back to back meeting? Block lunch time, don't skip meal.`, kind: "konglish", note: `뜻은 통하는데 'also back to back meeting'이 어색해. 'if tomorrow's back-to-back too'로.` },
+      { text: `I would advise reserving a midday interval for nourishment tomorrow.`, kind: "formal", note: `'midday interval for nourishment'는 의사 소견서야. 동료끼리는 가볍게.` },
+    ],
+  },
+};
+const RECAP_DATA_V2 = {
+  1: { blank: `I've got a lot _____ this week, can we push it to Monday?`, explain: `이번 주에 맡은 일이 많아서 미루자는 맥락이에요. on my plate는 내 접시 위, 곧 지금 맡고 있는 일을 뜻한답니다!` },
+  2: { blank: `I'm _____ until 4, can we do 4:15?`, explain: `회의가 연달아 있어서 시간을 다시 잡는 상황이에요. back-to-back은 회의 사이에 틈이 없다는 뜻이랍니다!` },
+  3: { blank: `Nothing final yet, but I'll _____ as things move.`, explain: `아직 결과는 없지만 소식을 계속 주겠다는 맥락이에요. keep you posted는 진행되면 계속 알려주겠다는 약속이랍니다!` },
+  4: { blank: `Let's _____ Tuesday 10am and confirm tomorrow.`, explain: `확정 전에 일단 시간을 잡아두는 상황이에요. pencil in은 연필로 적어두듯 가안으로 잡는다는 뜻이랍니다!` },
+};
+const SYNONYMS_V2 = {
+  1: [{ w: "workload", ko: "업무량 자체를 격식 있게 말할 때 써요." }, { w: "swamped", ko: "일에 파묻혔다고 캐주얼하게 말할 때 써요." }],
+  2: [{ w: "booked solid", ko: "하루 일정이 꽉 찼다고 할 때 써요." }, { w: "wall-to-wall meetings", ko: "하루 종일 회의뿐이라고 과장 섞어 말할 때 써요." }],
+  3: [{ w: "keep you in the loop", ko: "논의에서 빼놓지 않겠다고 할 때 써요." }, { w: "follow up with you", ko: "확인되면 다시 연락하겠다고 할 때 써요." }],
+  4: [{ w: "tentatively book", ko: "가안으로 잡는다고 격식 있게 말할 때 써요." }, { w: "hold the slot", ko: "그 시간을 비워두겠다고 할 때 써요." }],
+};
+const _BUDDY_NUDGE_V2 = {
+  1: { tone: "morning", text: "첫 출근 축하해요! 오늘은 on my plate 한 표현만 입에 붙여도 충분해요. 천천히, 매일 5분이면 돼요." },
+  2: { tone: "tip", text: "바쁜 날엔 back-to-back 한마디면 돼요. 일정표를 보여주는 말이라 상대가 알아서 시간을 다시 잡아줘요." },
+  3: { tone: "tip", text: "답할 게 없을 때는 keep you posted로 메일을 닫으면 돼요. 침묵보다 백 배 나아요." },
+  4: { tone: "tip", text: "확정 권한이 없을 땐 pencil in으로 잡아두면 돼요. 빠르면서도 안전해요." },
+};
+(() => {
+  try {
+    const q = new URLSearchParams(location.search).get("content");
+    if (q === "v2") localStorage.setItem("__OD_CONTENT_V2", "1");
+    if (q === "v1") localStorage.removeItem("__OD_CONTENT_V2");
+  } catch (e) {}
+})();
+
+
+// ============================================================
 // ★ day별 점심 대화 스크립트
 // 시즌 1: 2,6,10,14,18,22,26,30 / 시즌 2: 34,38,42,46,50,54,58 ((day-1)%4===1)
 // 자연스러운 대화 흐름 + 콩글리시/과격식 함정. kind: correct/konglish/formal
@@ -4705,7 +4868,40 @@ const _todayKST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul
 const _signupKST = _localUser?.signupDate
   ? new Date(_localUser.signupDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' })
   : _todayKST;
+// ── 첫 주 개정판 적용: 가입일(KST) >= CONTENT_CUTOVER 이거나 미리보기 플래그. Day 1~4 세트를 통째로 바꾼다.
+const _contentV2 = (() => {
+  try { if (localStorage.getItem("__OD_CONTENT_V2") === "1") return true; } catch (e) {}
+  return _signupKST >= CONTENT_CUTOVER;
+})();
+window.__OD_CONTENT_V2 = _contentV2;
+if (_contentV2) {
+  Object.keys(SCENARIOS_V2).forEach(d => {
+    const i = SCENARIOS.findIndex(x => x.day === Number(d));
+    const v = SCENARIOS_V2[d];
+    if (LUNCH_SCRIPTS_V2[d]) v.lunchScript = LUNCH_SCRIPTS_V2[d];
+    if (i >= 0) SCENARIOS[i] = v; else SCENARIOS.push(v);
+  });
+  Object.assign(LUNCH_SCRIPTS, LUNCH_SCRIPTS_V2);
+  Object.assign(RECAP_DATA, RECAP_DATA_V2);
+}
 const _daysSince = Math.floor((Date.parse(_todayKST) - Date.parse(_signupKST)) / 86400000);
+// ── 날짜가 넘어가면 자동 새로고침 (2026-09-05): Day 는 페이지를 연 시각 기준으로 계산된다.
+//   폰 홈 화면 앱이나 열어둔 탭은 자정을 넘겨도 어제 화면이 그대로라 "다음 날인데 Day 가 안 바뀌어요"가 됐다.
+//   탭이 다시 보일 때(또는 1분마다) KST 날짜가 바뀌었으면 조용히 새로고침해서 새 Day 를 연다. 모달 입력 중이면 미룬다.
+(() => {
+  const _kstNow = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+  const _check = () => {
+    try {
+      if (_kstNow() === _todayKST) return;
+      const typing = document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+      if (typing) return;
+      location.reload();
+    } catch (e) {}
+  };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') _check(); });
+  window.addEventListener('focus', _check);
+  setInterval(_check, 60000);
+})();
 // ★ 시즌 3: 코스 전체 상한 90일 (Day 1-30 수습 / 31-60 사원 / 61-90 대리)
 const _autoDay = Math.max(1, Math.min(240, _daysSince + 1));  // 90 + TF 4트랙×30 + 늦은 시작 여유 (표시 분모는 210)
 
@@ -4909,6 +5105,7 @@ const SYNONYMS = {
   89: [{ w: "walk the talk", ko: "말한 대로 행동한다고 캐주얼하게 말할 때 써요." }, { w: "practice what you preach", ko: "설교한 대로 실천하라고 할 때 써요." }],
   90: [{ w: "give back", ko: "받은 걸 사회나 팀에 돌려줄 때 써요." }, { w: "mentor others", ko: "다음 사람을 가르친다고 할 때 써요." }],
 };
+if (typeof _contentV2 !== "undefined" && _contentV2) Object.assign(SYNONYMS, SYNONYMS_V2);
 
 // 다음 버전 기능 플래그 (__OD_NEXT)
 //   가격 인상 후 공개할 기능을 미리 머지해두되, 회원에게는 보이지 않게 한다.
@@ -5051,7 +5248,29 @@ const _TY_UBCHALL_URL = "https://lifestylebytes.github.io/youbuddy-challenge/";
 
 // 사내 공지 (인트라넷 메모), currentDay 기준 동적 필터링
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
+// 첫 주 개정판 안내 (기존 회원 전용): 신규 가입자는 Day 1~4 로 만나니 이 공지는 v1 회원에게만 보인다
+const _V2_TIPS = [
+  ["on my plate", "지금 맡은 일. \"What's on your plate this week?\"라고 물으면 할 일 목록을 답하면 돼요."],
+  ["back-to-back", "회의가 연달아. \"I'm back-to-back until 4\"는 바쁘다는 핑계가 아니라 일정표예요."],
+  ["keep you posted", "진행되면 계속 알릴게요. 줄 게 없을 때 메일을 닫는 한 줄이에요."],
+  ["pencil in", "일단 잡아두기. 확정 권한이 없을 때 \"Let's pencil in Tuesday\"로 답하면 빠르고 안전해요."],
+];
 const _NOTICES_ALL = [
+  ...(!(typeof _contentV2 !== "undefined" && _contentV2) ? [{ id: "n-curriculum-v2", from: "hr", to: "기존 사원 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
+    subject: "[안내] 첫 주 교육 자료 개정, 새 표현 4개 공유",
+    preview: "9월 6일 입사자부터 첫 주 표현이 바뀌었어요. 먼저 입사한 분들께도 새 표현 4개를 노트로 드려요.",
+    ctaAction: "save-v2-tips", ctaLabel: "📓 이 4개, 내 표현 노트에 저장하기",
+    body: [
+      "안녕하세요, 인사팀입니다.",
+      "",
+      "첫 주 교육 자료를 개정했어요. 9월 6일 이후 입사자는 Day 1~4에서 새 표현을 만나고, 먼저 입사한 분들은 진도가 그대로 이어져요. 대신 새 표현 4개를 여기서 드릴게요.",
+      "",
+      "[새 표현 4개]",
+      ..._V2_TIPS.map(t => "• " + t[0] + " · " + t[1]),
+      "",
+      "아래 버튼을 누르면 나만의 노트에 4줄로 들어가요. 오늘 문장 하나에 슬쩍 섞어 써보면 바로 내 것이 돼요.",
+    ].join("\n"),
+  }] : []),
   { id: "n-push-setup", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
     subject: "[안내] 출근 리마인드, 폰에서 알림으로 받는 법",
     preview: "폰에 앱으로 추가하면 매일 잊지 않게 출근 알림을 받을 수 있어요. 1분이면 끝나요.",
@@ -5381,6 +5600,7 @@ const _BUDDY_NUDGE_BY_DAY = {
   89: { tone: "tip",     text: "lead by example, 팀은 리더의 말이 아니라 행동을 따라 해요. 정시 퇴근 문화를 원하면 내가 먼저 로그오프하면 돼요." },
   90: { tone: "cheer",   text: "🌟 Day 90 완주예요! pay it forward, 받은 걸 다음 사람에게 전해주세요. 90개의 표현이 온전히 내 것이 됐고, 이제는 누군가의 버디가 될 차례예요. 진심으로 축하해요." },
 };
+if (typeof _contentV2 !== "undefined" && _contentV2) Object.assign(_BUDDY_NUDGE_BY_DAY, _BUDDY_NUDGE_V2);
 
 const BUDDY_NUDGES = [
   { tone: "morning", text: "굿모닝이에요! 오늘 단어를 한 번 소리 내서 읽어보세요. 머리가 아니라 입에 익어야 회의에서 튀어나오거든요." },
@@ -5996,8 +6216,8 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // 핵심 루프(출근→시추에이션→미션→퇴근)는 Day 1부터 그대로. 주변 카드만 Day 에 따라 연다.
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
-//   Day 2 오늘 일정표 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 사내 메모·심부름
-const _UNLOCK_AT = { schedule: 2, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 8, errands: 8 };
+//   Day 1 일정표는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 사내 메모·심부름
+const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 8, errands: 8 };
 const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름" };
 function _lockedNext(key, rd, viewingPast) {
   return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
@@ -6844,8 +7064,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             onStartDay={() => handleScheduleClick(scheduleWithStatus[0], 0)}
             done={_sceneDone}
           />
-          {_isNextFeature() && !USER.isViewingPast && allTodayDone && today && today.day <= 90 && (
-            <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
+          {_isNextFeature() && !USER.isViewingPast && today && today.day <= 90 && (
+            (allTodayDone || !!doneTasks.wrapup)
+              ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
+              : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}><span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span><b>🔒</b></div></div>
           )}
 
           <div className="schedule" style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
@@ -12372,6 +12594,21 @@ function MemoModal({ memo, onClose }) {
               {memo.ctaLabel || "자세히 보기 →"}
             </a>
           )}
+          {memo.ctaAction === "save-v2-tips" && (() => {
+            const KEY = "__OD_V2_TIPS_SAVED_" + ((window.__SIM && window.__SIM.USER && window.__SIM.USER.email) || "guest");
+            let saved = false; try { saved = localStorage.getItem(KEY) === "1"; } catch (e) {}
+            return (
+              <button
+                disabled={saved}
+                onClick={(e) => {
+                  if (_saveTipList((window.__SIM && window.__SIM.USER && window.__SIM.USER.currentDay) || 1, "첫 주 개정판", _V2_TIPS)) { try { localStorage.setItem(KEY, "1"); } catch (err) {} e.currentTarget.textContent = "✓ 나만의 노트에 저장됐어요"; e.currentTarget.disabled = true; }
+                }}
+                style={{ display: "block", width: "100%", textAlign: "center", marginTop: 20, background: saved ? "#EEF6EE" : "var(--orange)", color: saved ? "#2D7A3D" : "#fff",
+                         border: saved ? "1px solid #2D7A3D" : "none", borderRadius: 8, padding: "12px 16px", fontWeight: 900, fontSize: 14, fontFamily: "inherit", cursor: saved ? "default" : "pointer" }}>
+                {saved ? "✓ 나만의 노트에 저장됐어요" : (memo.ctaLabel || "노트에 저장하기")}
+              </button>
+            );
+          })()}
           <div className="row" style={{ marginTop: memo.ctaUrl ? 12 : 22 }}>
             <button className="btn btn-primary" onClick={onClose}>확인했습니다</button>
             <button className="btn btn-ghost" onClick={onClose}>나중에 보기</button>
@@ -12734,6 +12971,33 @@ const FWP_TIPS = {
   ]},
 };
 // 팁 3종을 나만의 노트(savedNotes[day])에 저장 + DB(notes) 동기화
+// 팁 목록을 나만의 노트(savedNotes[day])에 저장 + DB(notes) 동기화. FWP 카드와 개정판 공지가 같이 쓴다.
+function _saveTipList(day, label, tips) {
+  try {
+    const raw = localStorage.getItem("__OD_USER");
+    const u = raw ? JSON.parse(raw) : {};
+    u.savedNotes = u.savedNotes || {};
+    const dayKey = String(day);
+    u.savedNotes[dayKey] = u.savedNotes[dayKey] || [];
+    const added = [];
+    tips.forEach(t => {
+      const text = t[0] + " · " + t[1];
+      if (u.savedNotes[dayKey].some(n => n.text === text)) return;
+      const entry = { kind: "memo", label, text, savedAt: new Date().toISOString() };
+      u.savedNotes[dayKey].push(entry);
+      added.push(entry);
+    });
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    if (added.length && window.OD && window.OD.enabled && window.OD.saveNoteRow && u.email) {
+      added.forEach(entry => {
+        window.OD.saveNoteRow(u.email, day, entry.text, entry.label, entry.kind).then(r => {
+          if (!r || !r.ok) window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day, text: entry.text, label: entry.label, kind: entry.kind });
+        }).catch(() => { window.OD.pushOutbox && window.OD.pushOutbox({ type: 'note', email: u.email, day, text: entry.text, label: entry.label, kind: entry.kind }); });
+      });
+    }
+    return true;
+  } catch (e) { return false; }
+}
 function _saveFwpTips(day) {
   try {
     const raw = localStorage.getItem("__OD_USER");
@@ -13901,7 +14165,7 @@ function App() {
   // ★ 하드코딩 공지(예: 유비챌 9기 오픈, 푸시 알림 안내)도 한 번은 자동으로 띄운다.
   //   DB 공지 자동팝업은 dbNotices만 봐서, _NOTICES_ALL의 공지는 안 떴음.
   //   한 번 접속에 하나만: 아직 안 띄운 것 중 앞의 것부터. 다음 접속 때 다음 공지가 뜬다.
-  const _AUTOPOP_HARDCODED = ["n-push-setup", "n-ubchall-9"];
+  const _AUTOPOP_HARDCODED = ["n-push-setup", "n-curriculum-v2", "n-ubchall-9"];
   const _promoPoppedRef = React.useRef(false);
   React.useEffect(() => {
     if (_promoPoppedRef.current) return;

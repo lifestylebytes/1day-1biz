@@ -43,8 +43,13 @@ const APP_URL          = Deno.env.get("APP_URL") || "https://1day-1biz.youbuddy.
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
 // Day → 오늘 단어 (day1 메일 "내일 예고"용). scripts/gen_kakao_scenarios.py 가 만드는 scenarios.ts 와 같은 원본.
-import { SCENARIOS as _SCN } from "../kakao-daily/scenarios.ts";
+import { SCENARIOS as _SCN, scenarioFor as _scnFor } from "../kakao-daily/scenarios.ts";
 const SCENARIO_WORDS: Record<number, string> = Object.fromEntries(_SCN.map((x: any) => [x.day, x.word]));
+// 첫 주 개정판 반영: 가입일(KST) >= CONTENT_CUTOVER 면 Day 1~4 단어가 다르다
+const wordFor = (d: number, signupDate?: string) => {
+  const kst = signupDate ? new Date(new Date(signupDate).getTime() + 9 * 3600e3).toISOString().slice(0, 10) : undefined;
+  return (_scnFor(d, kst) || {}).word || "";
+};
 
 // KST 자정 기준 날짜 차이 (일수)
 function daysBetweenKST(fromISO: string, toDate: Date): number {
@@ -336,10 +341,7 @@ Deno.serve(async (req) => {
     (js || []).forEach((j: any) => addDone(j.email, Number(j.day)));
     (ts || []).forEach((t: any) => { if (Object.values(t.tasks || {}).filter(Boolean).length >= 4) addDone(t.email, Number(t.day)); });
   }
-  const dayWord = (d: number) => {
-    const sc = SCENARIO_WORDS[d] || "";
-    return sc;
-  };
+  const dayWord = (d: number, signupDate?: string) => wordFor(d, signupDate) || SCENARIO_WORDS[d] || "";
 
   const picked: any[] = [];
   for (const u of base) {
@@ -355,7 +357,7 @@ Deno.serve(async (req) => {
     }
     // 2) day1: Day 1 끝냈고, Day 2 는 안 했고, 오늘 안 들어옴 (가입 2~3일째, 1회)
     if (sinceSignup >= 1 && sinceSignup <= 3 && ds.has(1) && !ds.has(2) && idle >= 1) {
-      if (!(await alreadySent(u.email, "day1", u.signup_date))) { picked.push({ ...u, _kind: "day1", dayN, words, tomorrowWord: dayWord(2) }); continue; }
+      if (!(await alreadySent(u.email, "day1", u.signup_date))) { picked.push({ ...u, _kind: "day1", dayN, words, tomorrowWord: dayWord(2, u.signup_date) }); continue; }
     }
     // 3) comeback: 2~3일 비활성 (재드리프트마다 1회)
     if (idle >= 2 && idle <= 3 && ds.size > 0) {

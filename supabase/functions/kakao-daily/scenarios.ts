@@ -632,3 +632,40 @@ export const SCENARIOS: Scn[] = [
   "quoteKo": "90일 전, 당신에겐 버디가 필요했죠. 이제 다른 누군가가 그래요. 받은 걸 물려줘요, 그 친구의 사수가 돼줄래요?"
  }
 ];
+// 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 를 아래로 교체
+export const CONTENT_CUTOVER = "2026-09-06";
+export const SCENARIOS_V2: Scn[] = [
+ {
+  "day": 1,
+  "word": "on my plate",
+  "meaning": "지금 맡고 있는 일",
+  "scene": "첫 회의가 끝나고 김 팀장이 자리로 와서 지금 맡은 일이 얼마나 되는지 물어요.",
+  "quoteKo": "새 일을 주기 전에, 이번 주에 맡은 일이 뭐예요?"
+ },
+ {
+  "day": 2,
+  "word": "back-to-back",
+  "meaning": "(회의가) 연달아 있는",
+  "scene": "차윤아 사수가 슬랙으로 잠깐 얘기하자는데 오후 일정이 회의로 꽉 차 있어요.",
+  "quoteKo": "오후에 10분 있어요? 클라이언트 폴더 설명해주려고요."
+ },
+ {
+  "day": 3,
+  "word": "keep you posted",
+  "meaning": "진행되면 계속 알려드릴게요",
+  "scene": "Sarah가 메일로 지난주에 요청한 자료가 어디까지 됐는지 물어요.",
+  "quoteKo": "Q3 숫자는 진행이 어때요? 급한 건 아니고, 어디까지 됐는지만 알고 싶어요."
+ },
+ {
+  "day": 4,
+  "word": "pencil in",
+  "meaning": "(확정 전) 일단 잡아두다",
+  "scene": "Daniel이 런던에서 슬랙으로 다음 주 콜 시간을 잡자고 해요.",
+  "quoteKo": "다음 주에 짧게 콜 할 수 있어요? 요일은 편한 대로요."
+ }
+];
+export function scenarioFor(day: number, signupKst?: string): Scn {
+  const d = Math.max(1, day);
+  if (signupKst && signupKst >= CONTENT_CUTOVER) { const v = SCENARIOS_V2.find(x => x.day === d); if (v) return v; }
+  return SCENARIOS[(d - 1) % SCENARIOS.length];
+}

@@ -35,7 +35,7 @@
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { SCENARIOS } from "./scenarios.ts";
+import { SCENARIOS, scenarioFor as _scnFor } from "./scenarios.ts";
 
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -89,10 +89,11 @@ function progressLine(g: Gate, idleDays: number): string {
   return `Day ${g.gated}. 오늘 출근 도장 찍고 시작해요.`;
 }
 
-function scenarioFor(day: number) {
+function scenarioFor(day: number, signupDate?: string) {
   // Day 91+ (TF 트랙) 은 별도 앵커 계산이 클라이언트에만 있어 우선 90일 순환으로 근사
-  const idx = ((Math.max(1, day) - 1) % SCENARIOS.length);
-  return SCENARIOS[idx];
+  // 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 가 다른 단어 (scenarios.ts 의 SCENARIOS_V2)
+  const signupKst = signupDate ? kstDateStr(new Date(signupDate)) : undefined;
+  return _scnFor(day, signupKst);
 }
 
 // ── 솔라피 HMAC-SHA256 인증 헤더 ──
@@ -174,7 +175,7 @@ Deno.serve(async (req) => {
       if (already.has(u.email) && !force) { results.push({ email: u.email, skipped: "already sent today" }); continue; }
       const g = computeGate(u, done.get(u.email) || new Set(), now);
       const idle = daysBetweenKST(u.last_active || u.signup_date, now);
-      const s = scenarioFor(g.gated);
+      const s = scenarioFor(g.gated, u.signup_date);
       const scene = s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
       const variables: Record<string, string> = STYLE === "plain"
         ? {}
