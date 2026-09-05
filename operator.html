@@ -170,22 +170,38 @@ function CsvSyncPanel({ supaUsers, onDone }) {
   const kdate = (s) => {
     s = (s || "").trim();
     if (!s || s === "-") return null;
-    const p = s.split(".").map(x => x.trim()).filter(Boolean);
+    const p = s.split(/\s+/)[0].split(".").map(x => x.trim()).filter(Boolean);   // "26.09.04 10:15" 처럼 시각이 붙어도 날짜만
     if (p.length < 3) return null;
-    return "20" + p[0] + "-" + p[1].padStart(2, "0") + "-" + p[2].padStart(2, "0");
+    return (p[0].length === 4 ? p[0] : "20" + p[0]) + "-" + p[1].padStart(2, "0") + "-" + p[2].padStart(2, "0");
   };
+  // 결제일 + 1개월 = 다음 결제일 (Latpeed 월 구독). 결제 내역 표를 붙여넣었을 때 만료일 계산용.
+  const plusMonth = (ymd) => { const d = new Date(ymd + "T00:00:00+09:00"); d.setMonth(d.getMonth() + 1); return d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); };
 
   const build = () => {
     setResult("");
     const lines = raw.split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) { setResult("CSV 내용이 비어있어요. 헤더 포함 전체를 붙여넣어 주세요."); setPlan(null); return; }
-    // 따옴표 감싼 CSV("김재희","...")와 일반 CSV 둘 다 지원
-    const split = (l) => l.split(",").map(x => x.trim().replace(/^"+|"+$/g, "").trim());
+    // 따옴표 감싼 CSV("김재희","...")와 일반 CSV, 그리고 화면 표를 복사해 붙인 탭 구분(TSV)까지 지원 (2026-09-05)
+    const tabbed = lines[0].indexOf("\t") >= 0;
+    const split = (l) => (tabbed ? l.split("\t") : l.split(",")).map(x => x.trim().replace(/^"+|"+$/g, "").trim());
     const hdr = split(lines[0]);
-    const idx = (name) => hdr.findIndex(h => h.replace(/\s+/g, "").includes(name));
+    const idx = (name) => hdr.findIndex(h => h.replace(/\s+/g, "") === name || h.replace(/\s+/g, "").includes(name));
     const iName = idx("이름"), iEmail = idx("이메일"), iState = idx("상태"),
-          iNext = idx("다음결제일"), iCancel = idx("취소예정일"), iEnd = idx("종료일");
-    if (iEmail < 0 || iState < 0) { setResult("헤더에서 이메일/상태 컬럼을 못 찾았어요. Latpeed CSV를 그대로 붙여넣었는지 확인해주세요."); setPlan(null); return; }
+          iNext = idx("다음결제일"), iCancel = idx("취소예정일"), iEnd = idx("종료일"),
+          iPaidAt = idx("일시"), iAmount = idx("결제금액");
+    if (iEmail < 0 || iState < 0 || hdr.length < 3) { setResult("헤더에서 이메일/상태 컬럼을 못 찾았어요. Latpeed CSV를 그대로 붙여넣었는지 확인해주세요."); setPlan(null); return; }
+    // 결제 내역 표(상태 = 결제 완료, 일시)를 붙여넣은 경우: 이메일별 가장 최근 결제만 남기고, 결제일 + 1개월을 만료일로
+    const isPaymentSheet = iPaidAt >= 0 && iNext < 0;
+    let unknownStates = new Set(), matched = 0;
+    const latestPaid = {};
+    if (isPaymentSheet) {
+      for (let li = 1; li < lines.length; li++) {
+        const c = split(lines[li]); const email = (c[iEmail] || "").toLowerCase().trim(); const d = kdate(c[iPaidAt]);
+        if (!email || !d) continue;
+        if ((c[iState] || "").replace(/\s+/g, "") !== "결제완료") { unknownStates.add(c[iState] || "(빈 상태)"); continue; }
+        if (!latestPaid[email] || latestPaid[email] < d) latestPaid[email] = d;
+      }
+    }
     const byEmail = {};
     (supaUsers || []).forEach(u => { if (u.email) byEmail[String(u.email).toLowerCase().trim()] = u; });
     const out = [];
@@ -198,12 +214,26 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       const st = c[iState] || "";
       const u = byEmail[email];
       if (!u) {
-        if (st === "구독 중") out.push({ email, name, st, noAccount: true });
+        if (st === "구독 중" || (isPaymentSheet && latestPaid[email])) out.push({ email, name, st, noAccount: true });
         continue;
       }
+      matched++;
       if (u.is_operator || u.is_dev_mode) continue;
       const dbEnd = (u.membership_ends_at || "").slice(0, 10);
       const hasCancel = !!u.membership_cancel_at;
+      if (isPaymentSheet) {
+        const paid = latestPaid[email];
+        if (!paid || kdate(c[iPaidAt]) !== paid) continue;   // 같은 이메일의 옛 결제 행은 건너뜀
+        const want = plusMonth(paid);
+        if (dbEnd < want || u.cohort !== "member" || u.unlocked === false || hasCancel) {
+          out.push({ email, name, st: "결제 완료 " + (c[iAmount] || ""),
+            detail: "결제 " + paid + " → 만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null },
+            checked: true });
+        }
+        continue;
+      }
+      if (st !== "구독 중" && st !== "구독 취소" && st !== "구독 종료") unknownStates.add(st || "(빈 상태)");
       if (st === "구독 중") {
         const want = kdate(c[iNext]);
         if (!want) continue;
@@ -226,7 +256,11 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       }
     }
     setPlan(out);
-    if (out.filter(x => !x.noAccount).length === 0) setResult("변경할 게 없어요. DB가 이미 Latpeed와 일치해요 ✓");
+    if (out.filter(x => !x.noAccount).length === 0) {
+      if (matched === 0) setResult("붙여넣은 표에서 DB 계정과 맞는 이메일이 없어요. 컬럼 구분(쉼표/탭)이나 이메일을 확인해주세요.");
+      else if (unknownStates.size) setResult("상태 값(" + Array.from(unknownStates).slice(0, 3).join(", ") + ")을 못 알아봤어요. 멤버 CSV는 '구독 중/구독 취소/구독 종료', 결제 내역 표는 '결제 완료'만 처리해요.");
+      else setResult("변경할 게 없어요. DB가 이미 Latpeed와 일치해요 ✓" + (isPaymentSheet ? " (결제 내역 표 기준, 결제일 + 1개월)" : ""));
+    }
   };
 
   const toggle = (i) => setPlan(p => p.map((x, j) => j === i ? { ...x, checked: !x.checked } : x));
@@ -257,7 +291,7 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       </summary>
       <div className="card" style={{ marginTop: 8, padding: 16 }}>
         <div style={{ fontSize: 12, color: '#8A7964', lineHeight: 1.6, marginBottom: 8 }}>
-          Latpeed 관리자에서 멤버 CSV를 내려받아 <b>전체 내용을 그대로 붙여넣고</b> [대조하기]를 누르세요.<br/>
+          Latpeed 관리자에서 멤버 CSV를 내려받아 <b>전체 내용을 그대로 붙여넣고</b> [대조하기]를 누르세요. 결제 내역 표(이름·이메일·상태·결제금액·일시)를 복사해 붙여도 돼요. 이땐 결제일 + 1개월이 만료일이에요.<br/>
           재량으로 기간을 늘려준 분은 미리보기에서 <b>체크를 해제</b>한 뒤 반영하세요.
         </div>
         <textarea value={raw} onChange={e => setRaw(e.target.value)} rows={5}
