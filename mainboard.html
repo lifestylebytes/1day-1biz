@@ -140,6 +140,7 @@ body::before {
 }
 .locker-link-l { display: flex; align-items: center; gap: 10px; }
 .locker-link-icon { font-size: 14px; width: 18px; text-align: center; }
+.locker-tag { font-size: 9.5px; font-weight: 800; letter-spacing: 0.02em; color: var(--orange); border: 1px solid var(--orange); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
 .locker-badge {
   background: var(--stamp-red); color: var(--cream);
   font-size: 10px; font-weight: 800; padding: 1px 7px;
@@ -418,6 +419,8 @@ body::before {
 .wb-ins-item b { font-size: 15px; color: var(--orange); }
 .wb-ins-item span { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
 .wb-ins-item em { font-size: 13px; color: var(--ink); line-height: 1.5; }
+.wb-link { background: none; border: none; padding: 0; font-family: inherit; font-size: inherit; color: var(--orange); font-weight: 800; cursor: pointer; text-decoration: underline; }
+.wb-ins-foot { margin-top: 10px; font-size: 11.5px; color: var(--ink-mute); }
 .wb-ins-task { margin-top: 12px; padding: 10px 14px; background: #FFF3B8; color: #3A2E10; border-radius: 8px; font-size: 13px; line-height: 1.5; }
 .wb-areas .filter-chip small { font-weight: 800; opacity: 0.7; margin-left: 2px; }
 .wb-cards { display: grid; gap: 8px; margin-top: 8px; }
@@ -6197,7 +6200,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: _isNextFeature() ? "복습 노트" : "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user) },
+    { id: "mynotes", label: _isNextFeature() ? "복습" : "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) ? "연봉협상 준비" : null },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -6237,7 +6240,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(1, 3).map(it => (
           <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : "사원 ☆"}</span> : null}
+            {it.tag ? <span className="locker-tag">{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : "사원 ☆"}</span> : null}
           </button>
         ))}
       </div>
@@ -6326,8 +6329,8 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
             >
               <span style={{ fontSize: 20 }}>{_myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
-                <b style={{ fontSize: 14 }}>{_isNextFeature() ? "복습 노트" : "나만의 노트"}</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_isNextFeature() ? "흔들리는 표현 3분 복습, 주간 인사이트" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
+                <b style={{ fontSize: 14 }}>{_isNextFeature() ? "복습" : "나만의 노트"}</b>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -6551,7 +6554,7 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, aireport: 60 };
-const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: _isNextFeature() ? "복습 노트" : "나만의 노트", aireport: "AI 성장 리포트" };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: _isNextFeature() ? "복습 · 연봉협상 준비" : "나만의 노트", aireport: "AI 성장 리포트" };
 const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒", aireport: "🧠" };
 function _lockedNext(key, rd, viewingPast) {
   if ((key === "errands" || key === "aireport") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
@@ -6592,7 +6595,7 @@ const _UNLOCK_DESC = {
   skills: "표현을 5개 영역으로 나눠 모아요. 회의·메일·관계·보고·협상 중 어디가 비었는지 보여요.",
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
-  mynotes: _isNextFeature() ? "복습 노트가 열려요. 표현마다 내 문장과 기억 강도가 붙고, 흔들리는 표현만 골라 3분 복습을 시켜줘요. 사수의 주간 인사이트도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
+  mynotes: _isNextFeature() ? "복습이 열려요. 연봉협상 준비하듯 내가 쓴 표현을 복기하고 흔들리는 표현을 3분씩 다지면 협상 자리에서 꺼낼 카드가 늘어요. 사수의 주간 코칭도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
@@ -8961,30 +8964,57 @@ function ReportSurvey({ day, email, name }) {
 }
 const _PROFILE_SITU = ["회의", "메일", "슬랙·팀즈", "발표", "협상", "고객 응대"];
 const _PROFILE_WHO = ["본사·해외 동료", "외국인 상사", "클라이언트", "한국 동료 (영어 문서만)"];
+// 👤 직무 프로필 (한 곳에서 관리, 2026-09-05): 복습 노트 인사이트·성장 리포트·사원증 인사 기록이 같은 프로필을 쓴다.
+//   저장 위치: localStorage __OD_PROFILE_<email> + notes(kind profile, day 0). 수정은 사원증/인사 > 인사 기록에서 언제든.
+function _loadProfile(em) { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + (em || "guest")) || "null"); } catch (e) { return null; } }
+function _saveProfile(em, p) {
+  try { localStorage.setItem("__OD_PROFILE_" + (em || "guest"), JSON.stringify(p)); } catch (e) {}
+  try { if (em && em !== "guest" && window.OD?.enabled && window.OD.saveNoteRow) window.OD.saveNoteRow(em, 0, JSON.stringify(p), "직무 프로필", "profile").catch(() => {}); } catch (e) {}
+  try { window.dispatchEvent(new CustomEvent("od-profile", { detail: p })); } catch (e) {}
+}
+function ProfileForm({ initial, onSave, onCancel, title, sub, saveLabel }) {
+  const [form, setForm] = useState(() => ({ job: "", industry: "", situ: [], who: [], goal: "", years: "", freq: "", confidence: 0, stuck: "", ...(initial || {}) }));
+  const [err, setErr] = useState("");
+  const toggleIn = (key, v) => setForm(f => ({ ...f, [key]: (f[key] || []).includes(v) ? f[key].filter(x => x !== v) : [...(f[key] || []), v] }));
+  const save = () => {
+    if (!String(form.job || "").trim()) { setErr("직종은 꼭 적어주세요"); return; }
+    onSave({ ...form, job: form.job.trim(), industry: String(form.industry || "").trim(), goal: String(form.goal || "").trim(), stuck: String(form.stuck || "").trim(), at: new Date().toISOString() });
+  };
+  return (
+    <div className="air-form">
+      <div className="air-form-title">{title || "사수가 알아야 할 것"}</div>
+      <p className="air-form-sub">{sub || "직종과 영어 쓰는 상황을 알아야 \"당신 회사에서 통하는\" 리포트와 인사이트가 나와요. 한 번만 적으면 계속 쓰고, 사원증/인사에서 언제든 고쳐요."}</p>
+      <label>직종·직무 <span>필수</span><input value={form.job} onChange={e => setForm(f => ({ ...f, job: e.target.value }))} placeholder="예: 마케팅 매니저, 백엔드 개발자, 인사팀 대리" /></label>
+      <label>업계<input value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} placeholder="예: IT, 제조, 금융, 패션" /></label>
+      <label>영어 경력<input value={form.years} onChange={e => setForm(f => ({ ...f, years: e.target.value }))} placeholder="예: 외국계 2년차, 영어 회의는 처음" /></label>
+      <div className="air-chips"><b>영어를 쓰는 상황</b>{_PROFILE_SITU.map(v => <button key={v} type="button" className={"filter-chip " + ((form.situ || []).includes(v) ? "active" : "")} onClick={() => toggleIn("situ", v)}>{v}</button>)}</div>
+      <div className="air-chips"><b>주로 누구와</b>{_PROFILE_WHO.map(v => <button key={v} type="button" className={"filter-chip " + ((form.who || []).includes(v) ? "active" : "")} onClick={() => toggleIn("who", v)}>{v}</button>)}</div>
+      <div className="air-chips"><b>영어로 말하거나 쓰는 빈도</b>{["거의 없음", "주 1~2번", "주 3~5번", "매일"].map(v => <button key={v} type="button" className={"filter-chip " + (form.freq === v ? "active" : "")} onClick={() => setForm(f => ({ ...f, freq: v }))}>{v}</button>)}</div>
+      <div className="air-chips"><b>지금 영어 자신감 (1 낮음 ~ 5 높음)</b>{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" className={"filter-chip " + (form.confidence === n ? "active" : "")} onClick={() => setForm(f => ({ ...f, confidence: n }))}>{n}</button>)}</div>
+      <label>요즘 제일 막히는 순간<input value={form.stuck} onChange={e => setForm(f => ({ ...f, stuck: e.target.value }))} placeholder="예: 회의에서 반대 의견 낼 때, 메일 첫 줄 쓸 때" /></label>
+      <label>90일 뒤 되고 싶은 모습 한 줄<input value={form.goal} onChange={e => setForm(f => ({ ...f, goal: e.target.value }))} placeholder="예: 본사 콜에서 내 의견을 먼저 꺼내는 사람" /></label>
+      {err && <div className="air-err">{err}</div>}
+      <div className="air-form-actions">
+        <button className="btn btn-primary" onClick={save}>{saveLabel || "저장"}</button>
+        {onCancel && <button className="btn btn-ghost" onClick={onCancel}>취소</button>}
+      </div>
+    </div>
+  );
+}
 function AiGrowthReport() {
   const { USER } = window.__SIM;
   const em = USER.email || "guest";
   const KEY = "__OD_AI_REPORT_" + em, PKEY = "__OD_PROFILE_" + em;
   const [rep, setRep] = useState(() => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } });
   const [profile, setProfile] = useState(() => { try { return JSON.parse(localStorage.getItem(PKEY) || "null"); } catch (e) { return null; } });
-  const [form, setForm] = useState(() => ({ job: "", industry: "", situ: [], who: [], goal: "", years: "", freq: "", confidence: 0, stuck: "" }));
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [open, setOpen] = useState(true);
+  useEffect(() => { const h = (e) => { if (e.detail) setProfile(e.detail); }; window.addEventListener("od-profile", h); return () => window.removeEventListener("od-profile", h); }, []);
   const stats = _reportPayload(profile);
   const rd = stats.day;
 
-  const saveProfile = () => {
-    if (!form.job.trim()) { setErr("직종은 꼭 적어주세요"); return; }
-    const p = { ...form, job: form.job.trim(), industry: form.industry.trim(), goal: form.goal.trim(), stuck: form.stuck.trim(), at: new Date().toISOString() };
-    setProfile(p); setEditing(false); setErr("");
-    try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
-    // 운영자가 볼 수 있게 notes 에 kind:"profile" 로 한 줄 (같은 텍스트면 중복 저장 안 함)
-    try {
-      if (window.OD?.enabled && window.OD.saveNoteRow && USER.email) window.OD.saveNoteRow(USER.email, 0, JSON.stringify(p), "직무 프로필", "profile").catch(() => {});
-    } catch (e) {}
-  };
   const run = () => {
     const payload = _reportPayload(profile);
     setLoading(true); setErr("");
@@ -9002,28 +9032,12 @@ function AiGrowthReport() {
       .catch(() => { setErr("연결이 안 돼서 샘플로 보여줘요"); done(_SAMPLE_REPORT, true); });
   };
   const nextAt = [10, 20, 30, 45, 60, 75, 90].find(d => d > rd) || 90;
-  const toggleIn = (key, v) => setForm(f => ({ ...f, [key]: f[key].includes(v) ? f[key].filter(x => x !== v) : [...f[key], v] }));
   const st = (rep && rep.stats) || { learned: stats.words.length, mine: stats.sentences.length, oneShot: stats.oneShot, known: stats.known.length, streak: stats.streak, saved: stats.savedCount, areas: stats.areas };
 
   const profileForm = (
-    <div className="air-form">
-      <div className="air-form-title">리포트 전에, 사수가 알아야 할 것</div>
-      <p className="air-form-sub">직종과 영어 쓰는 상황을 알아야 "당신 회사에서 통하는" 리포트가 나와요. 한 번만 적으면 계속 써요.</p>
-      <label>직종·직무 <span>필수</span><input value={form.job} onChange={e => setForm(f => ({ ...f, job: e.target.value }))} placeholder="예: 마케팅 매니저, 백엔드 개발자, 인사팀 대리" /></label>
-      <label>업계<input value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} placeholder="예: IT, 제조, 금융, 패션" /></label>
-      <label>영어 경력<input value={form.years} onChange={e => setForm(f => ({ ...f, years: e.target.value }))} placeholder="예: 외국계 2년차, 영어 회의는 처음" /></label>
-      <div className="air-chips"><b>영어를 쓰는 상황</b>{_PROFILE_SITU.map(v => <button key={v} type="button" className={"filter-chip " + (form.situ.includes(v) ? "active" : "")} onClick={() => toggleIn("situ", v)}>{v}</button>)}</div>
-      <div className="air-chips"><b>주로 누구와</b>{_PROFILE_WHO.map(v => <button key={v} type="button" className={"filter-chip " + (form.who.includes(v) ? "active" : "")} onClick={() => toggleIn("who", v)}>{v}</button>)}</div>
-      <div className="air-chips"><b>영어로 말하거나 쓰는 빈도</b>{["거의 없음", "주 1~2번", "주 3~5번", "매일"].map(v => <button key={v} type="button" className={"filter-chip " + (form.freq === v ? "active" : "")} onClick={() => setForm(f => ({ ...f, freq: v }))}>{v}</button>)}</div>
-      <div className="air-chips"><b>지금 영어 자신감 (1 낮음 ~ 5 높음)</b>{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" className={"filter-chip " + (form.confidence === n ? "active" : "")} onClick={() => setForm(f => ({ ...f, confidence: n }))}>{n}</button>)}</div>
-      <label>요즘 제일 막히는 순간<input value={form.stuck} onChange={e => setForm(f => ({ ...f, stuck: e.target.value }))} placeholder="예: 회의에서 반대 의견 낼 때, 메일 첫 줄 쓸 때" /></label>
-      <label>90일 뒤 되고 싶은 모습 한 줄<input value={form.goal} onChange={e => setForm(f => ({ ...f, goal: e.target.value }))} placeholder="예: 본사 콜에서 내 의견을 먼저 꺼내는 사람" /></label>
-      {err && <div className="air-err">{err}</div>}
-      <div className="air-form-actions">
-        <button className="btn btn-primary" onClick={saveProfile}>저장하고 리포트 만들기</button>
-        {profile && <button className="btn btn-ghost" onClick={() => setEditing(false)}>취소</button>}
-      </div>
-    </div>
+    <ProfileForm initial={profile || undefined} title="리포트 전에, 사수가 알아야 할 것" saveLabel={profile ? "저장" : "저장하고 리포트 만들기"}
+      onSave={(p) => { setProfile(p); setEditing(false); setErr(""); _saveProfile(USER.email || "guest", p); }}
+      onCancel={profile ? () => setEditing(false) : null} />
   );
 
   return (
@@ -9057,7 +9071,7 @@ function AiGrowthReport() {
             <div className="air-empty">
               <div className="air-profile">
                 <span>👤 {profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.situ.length ? " · " + profile.situ.join(", ") : ""}</span>
-                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "", freq: profile.freq || "", confidence: profile.confidence || 0, stuck: profile.stuck || "" }); setEditing(true); }}>수정</button>
+                <button className="btn btn-ghost" onClick={() => setEditing(true)}>수정</button>
               </div>
               <button className="btn btn-primary" onClick={run} disabled={loading}>{loading ? "사수가 읽는 중…" : "지금 리포트 받기 (Day " + rd + ")"}</button>
               <small>정식 오픈 후엔 Day {nextAt}에 자동으로 도착해요. 압축본만 보내서 리포트 하나에 3천 토큰 안팎이에요.</small>
@@ -9069,7 +9083,7 @@ function AiGrowthReport() {
               <ReportSurvey day={rep.day} email={USER.email} name={USER.name} />
               <div className="air-actions">
                 <button className="btn btn-ghost" onClick={run} disabled={loading}>{loading ? "…" : "다시 받기"}</button>
-                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "", freq: profile.freq || "", confidence: profile.confidence || 0, stuck: profile.stuck || "" }); setEditing(true); }}>프로필 수정</button>
+                <button className="btn btn-ghost" onClick={() => setEditing(true)}>프로필 수정</button>
                 <span>사원증 &gt; 인사 기록에 남아요. 운영팀도 같은 리포트를 봐요.</span>
               </div>
             </div>
@@ -9273,9 +9287,10 @@ function WordBookPage({ openScene }) {
   const [queueSnapshot, setQueueSnapshot] = useState(null);   // 복습 시작 시 고정 (등급 매기면서 큐가 바뀌지 않게)
   const [insight, setInsight] = useState(() => _wbLoadInsight(em, week));
   const [insLoading, setInsLoading] = useState(false);
-  const profile = (() => { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + em) || "null"); } catch (e) { return null; } })();
+  const profile = _loadProfile(em);
   const [pf, setPf] = useState({ job: "", situ: "", stuck: "" });
-  useEffect(() => { const bump = () => setTick(t => t + 1); window.addEventListener("focus", bump); return () => window.removeEventListener("focus", bump); }, []);
+  const [editPf, setEditPf] = useState(false);
+  useEffect(() => { const bump = () => setTick(t => t + 1); window.addEventListener("focus", bump); window.addEventListener("od-profile", bump); return () => { window.removeEventListener("focus", bump); window.removeEventListener("od-profile", bump); }; }, []);
 
   const cards = React.useMemo(() => _wbBuild(USER, SCENARIOS, rev), [rev, rd, tick]);
   const byDay = React.useMemo(() => Object.fromEntries(cards.map(c => [c.day, c])), [cards]);
@@ -9343,8 +9358,7 @@ function WordBookPage({ openScene }) {
   const saveMiniProfile = () => {
     if (!pf.job.trim()) return;
     const p = { ...(profile || {}), job: pf.job.trim(), situ: pf.situ ? pf.situ.split(/[,\s]+/).filter(Boolean) : (profile && profile.situ) || [], stuck: pf.stuck.trim(), at: new Date().toISOString() };
-    try { localStorage.setItem("__OD_PROFILE_" + em, JSON.stringify(p)); } catch (e) {}
-    try { if (window.OD?.enabled && window.OD.saveNoteRow && USER.email) window.OD.saveNoteRow(USER.email, 0, JSON.stringify(p), "직무 프로필", "profile").catch(() => {}); } catch (e) {}
+    _saveProfile(em, p);
     runInsight();
   };
   // 📄 PDF 소장: 깨끗한 새 창에 표지 + 카드 전부 (한글 폰트 안전, 나만의 노트 인쇄와 같은 방식)
@@ -9359,13 +9373,13 @@ function WordBookPage({ openScene }) {
         ${c.mine ? `<div class="row"><label>내 문장</label><p class="en">${esc(c.mine)}${c.corrected ? `<br/><span class="fix">→ ${esc(c.corrected)}</span>` : ""}</p></div>` : `<div class="row"><label>예시</label><p class="en">${esc(c.sample)}</p></div>`}
         ${c.syn.length ? `<div class="row"><label>유의어</label><p>${c.syn.map(x => `<b>${esc(x.w)}</b> ${esc(x.ko)}`).join(" · ")}</p></div>` : ""}
         ${c.ot.length ? `<div class="row"><label>야근</label><p class="en">${c.ot.map(x => esc(x.t)).join("<br/>")}</p></div>` : ""}
-        ${c.rev && c.rev.sentence ? `<div class="row"><label>복습</label><p class="en">${esc(c.rev.sentence)}</p></div>` : ""}
+        ${c.rev && c.rev.sentence ? `<div class="row"><label>복기</label><p class="en">${esc(c.rev.sentence)}</p></div>` : ""}
         ${c.qa.length ? `<div class="row"><label>Q&amp;A</label><p>${c.qa.map(n => esc(n.text).replace(/\n/g, "<br/>")).join("<br/><br/>")}</p></div>` : ""}
         ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
       </div>`).join("");
     const w = window.open("", "_blank");
     if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
-    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 복습 노트</title>
+    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 협상 카드</title>
       <style>
         body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
         .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
@@ -9390,8 +9404,8 @@ function WordBookPage({ openScene }) {
         .fix { color: #4A7C59; }
         @media print { body { padding: 0; } .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .mem { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
       </style></head><body>
-      <div class="cover"><div class="eyebrow">MY REVIEW BOOK · 1일1비</div><h1><em>${esc(USER.name)}</em>의 복습 노트</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
-      <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 표현</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
+      <div class="cover"><div class="eyebrow">SALARY REVIEW PREP · 1일1비</div><h1><em>${esc(USER.name)}</em>의 협상 카드</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 카드</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
       ${rows}
       <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
       </body></html>`);
@@ -9404,16 +9418,16 @@ function WordBookPage({ openScene }) {
       {/* ── 표지 ── */}
       <div className="wb-cover">
         <div className="wb-cover-l">
-          <div className="wb-cover-eyebrow">MY REVIEW BOOK · SINCE {signupKo || "2026"}</div>
-          <h1 className="wb-cover-title"><em>{USER.name}</em>의 복습 노트</h1>
+          <div className="wb-cover-eyebrow">SALARY REVIEW PREP · SINCE {signupKo || "2026"}</div>
+          <h1 className="wb-cover-title"><em>{USER.name}</em>의 협상 카드</h1>
           <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
           <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button>
         </div>
         <div className="wb-cover-r">
           <div><b>{stats.total}</b><span>모은 표현</span></div>
           <div><b>{stats.used}</b><span>내 문장으로</span></div>
-          <div><b>{stats.solid}</b><span>튼튼한 표현</span></div>
-          <div className={queue.length ? "hot" : ""}><b>{queue.length}</b><span>오늘 복습</span></div>
+          <div><b>{stats.solid}</b><span>튼튼한 카드</span></div>
+          <div className={queue.length ? "hot" : ""}><b>{queue.length}</b><span>오늘 복기</span></div>
         </div>
         <div className="wb-grid">
           {gridCells.map(c => (
@@ -9421,38 +9435,40 @@ function WordBookPage({ openScene }) {
               onClick={() => { if (!c.locked) jumpTo(c.day); }} />
           ))}
         </div>
-        <div className="wb-legend"><i className="fading" />희미 <i className="shaky" />흔들림 <i className="ok" />괜찮음 <i className="solid" />튼튼 <span>{stats.due ? "흔들리는 표현 " + stats.due + "개 · " : ""}평균 기억 강도 {stats.avg}{stats.reviewedToday ? " · 오늘 복습 " + stats.reviewedToday + "개" : ""}</span></div>
+        <div className="wb-legend"><i className="fading" />희미 <i className="shaky" />흔들림 <i className="ok" />괜찮음 <i className="solid" />튼튼 <span>{stats.due ? "흔들리는 표현 " + stats.due + "개 · " : ""}평균 기억 강도 {stats.avg}{stats.reviewedToday ? " · 오늘 복기 " + stats.reviewedToday + "개" : ""}</span></div>
       </div>
 
       {/* ── 오늘의 복습 ── */}
       <section className="wb-sec">
-        <div className="wb-sec-head"><h2>🔁 오늘의 복습 <small>{queue.length ? `흔들리는 표현 ${queue.length}개 · 3분이면 돼요` : stats.reviewedToday ? `오늘 ${stats.reviewedToday}개 복습했어요` : "지금은 전부 괜찮아요"}</small></h2>{session.done > 0 && cur && <span className="wb-progress">{session.done} / {activeQueue.length}</span>}</div>
+        <div className="wb-sec-head"><h2>🔁 오늘의 복기 <small>{queue.length ? `흔들리는 카드 ${queue.length}장 · 3분이면 돼요` : stats.reviewedToday ? `오늘 ${stats.reviewedToday}장 복기했어요` : "지금은 전부 괜찮아요"}</small></h2>{session.done > 0 && cur && <span className="wb-progress">{session.done} / {activeQueue.length}</span>}</div>
         {cur ? (
           <WbReviewCard key={cur.day + "-" + session.done} card={cur} mode={modeFor(cur)} onGrade={grade} mentorName={CHARACTERS.mentor.name} />
         ) : session.done > 0 ? (
           <div className="wb-done">
-            <b>오늘 복습 끝. {session.done}개 중 {session.up}개가 떠올랐어요.</b>
+            <b>오늘 복기 끝. {session.done}장 중 {session.up}장이 떠올랐어요.</b>
             <p>{session.log.filter(l => l.g === "again").length ? "몰랐던 " + session.log.filter(l => l.g === "again").map(l => l.word).join(", ") + "은 내일 다시 나와요." : "전부 떠올렸어요. 이 표현들은 며칠 뒤에 다시 만나요."}</p>
-            <button className="btn btn-ghost" onClick={restartQueue}>더 복습할 게 있는지 보기</button>
+            <button className="btn btn-ghost" onClick={restartQueue}>더 복기할 게 있는지 보기</button>
           </div>
         ) : (
-          <div className="wb-done calm"><b>지금 흔들리는 표현이 없어요.</b><p>매일 한 표현씩 내 문장으로 쓰는 게 최고의 복습이에요. 흔들리는 표현이 생기면 여기서 알려드릴게요.</p></div>
+          <div className="wb-done calm"><b>지금 흔들리는 카드가 없어요.</b><p>매일 한 표현씩 내 문장으로 쓰는 게 최고의 복기예요. 흔들리는 카드가 생기면 여기서 알려드릴게요.</p></div>
         )}
       </section>
 
       {/* ── 이번 주 인사이트 ── */}
       <section className="wb-sec">
-        <div className="wb-sec-head"><h2>🧭 이번 주 인사이트 <small>{CHARACTERS.mentor.name} 사수가 내 기록을 읽고 주 1회 써줘요{insight && insight.sample ? " · 샘플" : ""}</small></h2>{insight && <button className="btn btn-ghost" onClick={runInsight} disabled={insLoading}>{insLoading ? "…" : "다시 받기"}</button>}</div>
-        {!profile || !profile.job ? (
+        <div className="wb-sec-head"><h2>🧭 사수의 주간 코칭 <small>{CHARACTERS.mentor.name} 사수가 내 기록을 읽고 주 1회 써줘요{insight && insight.sample ? " · 샘플" : ""}</small></h2>{insight && <button className="btn btn-ghost" onClick={runInsight} disabled={insLoading}>{insLoading ? "…" : "다시 받기"}</button>}</div>
+        {editPf ? (
+          <ProfileForm initial={profile || undefined} title="👤 직무 프로필" sub="인사이트와 성장 리포트가 이 프로필을 읽어요. 사원증/인사 > 인사 기록에서도 고칠 수 있어요." onSave={(p) => { _saveProfile(em, p); setEditPf(false); }} onCancel={() => setEditPf(false)} />
+        ) : !profile || !profile.job ? (
           <div className="wb-ins-form">
-            <p>내 일에 맞춰 나오게, 세 가지만 알려주세요.</p>
+            <p>내 일에 맞춰 나오게, 세 가지만 알려주세요. (더 자세한 건 사원증/인사에서 언제든 적어요)</p>
             <input value={pf.job} onChange={e => setPf(f => ({ ...f, job: e.target.value }))} placeholder="직종·직무 (예: 마케팅 매니저)" />
             <input value={pf.situ} onChange={e => setPf(f => ({ ...f, situ: e.target.value }))} placeholder="영어 쓰는 상황 (예: 회의, 메일)" />
             <input value={pf.stuck} onChange={e => setPf(f => ({ ...f, stuck: e.target.value }))} placeholder="요즘 제일 막히는 순간 (선택)" />
-            <button className="btn btn-primary" onClick={saveMiniProfile} disabled={!pf.job.trim() || insLoading}>{insLoading ? "읽는 중…" : "저장하고 인사이트 받기"}</button>
+            <button className="btn btn-primary" onClick={saveMiniProfile} disabled={!pf.job.trim() || insLoading}>{insLoading ? "읽는 중…" : "저장하고 코칭 받기"}</button>
           </div>
         ) : !insight ? (
-          <div className="wb-ins-empty"><p>👤 {profile.job}{profile.situ && profile.situ.length ? " · " + profile.situ.join(", ") : ""}. 약한 표현 8개와 영역별 강도만 압축해서 보내요. 한 번에 2천 토큰 안팎이에요.</p><button className="btn btn-primary" onClick={runInsight} disabled={insLoading}>{insLoading ? "사수가 읽는 중…" : "이번 주 인사이트 받기"}</button></div>
+          <div className="wb-ins-empty"><p>👤 {profile.job}{profile.situ && profile.situ.length ? " · " + profile.situ.join(", ") : ""} <button className="wb-link" onClick={() => setEditPf(true)}>수정</button><br />약한 표현 8개와 영역별 강도만 압축해서 보내요. 한 번에 2천 토큰 안팎이에요.</p><button className="btn btn-primary" onClick={runInsight} disabled={insLoading}>{insLoading ? "사수가 읽는 중…" : "이번 주 코칭 받기"}</button></div>
         ) : (
           <div className="wb-ins">
             <h3>{insight.headline}</h3>
@@ -9465,13 +9481,14 @@ function WordBookPage({ openScene }) {
               ))}
             </div>
             {insight.task && <div className="wb-ins-task">🎯 이번 주 과제 · {insight.task}</div>}
+            <div className="wb-ins-foot">👤 {profile.job}{profile.situ && profile.situ.length ? " · " + profile.situ.join(", ") : ""} 기준 <button className="wb-link" onClick={() => setEditPf(true)}>프로필 수정</button></div>
           </div>
         )}
       </section>
 
       {/* ── 표현 카드 ── */}
       <section className="wb-sec">
-        <div className="wb-sec-head"><h2>📇 표현 카드 <small>{filtered.length}개 · 눌러서 펼쳐요</small></h2></div>
+        <div className="wb-sec-head"><h2>🃏 내 협상 카드 <small>{filtered.length}장 · 눌러서 펼쳐요</small></h2></div>
         <div className="filter-row" style={{ marginBottom: 6 }}>
           {[["shaky", "흔들려요"], ["unused", "안 써봤어요"], ["solid", "튼튼해요"], ["all", "전체"]].map(([k, l]) => <button key={k} className={"filter-chip " + (filter === k ? "active" : "")} onClick={() => setFilter(k)}>{l}</button>)}
         </div>
@@ -9497,13 +9514,13 @@ function WordBookPage({ openScene }) {
                       {c.mine ? <div><label>✏️ 내 문장 {c.corrected ? "· 사수 교정" : "· 한 번에 통과"}</label><p className="mono">{c.mine}</p>{c.corrected && <p className="mono wb-fix">→ {c.corrected}</p>}</div> : <div><label>✏️ 내 문장</label><p className="wb-muted">아직 없어요. 예시: <span className="mono">{c.sample}</span></p></div>}
                       {c.syn.length > 0 && <div><label>🔁 같은 뜻 다른 표현</label><p>{c.syn.map(x => <span key={x.w} className="wb-syn"><b>{x.w}</b> {x.ko}</span>)}</p></div>}
                       {c.ot.length > 0 && <div><label>🌙 야근에서 쓴 문장</label>{c.ot.map(x => <p key={x.w} className="mono"><small>{x.w}</small> {x.t}</p>)}</div>}
-                      {c.rev && c.rev.sentence && <div><label>🔁 복습에서 쓴 문장</label><p className="mono">{c.rev.sentence}</p></div>}
+                      {c.rev && c.rev.sentence && <div><label>🔁 복기에서 쓴 문장</label><p className="mono">{c.rev.sentence}</p></div>}
                       {c.qa.length > 0 && <div><label>💬 유버디에게 물어본 것</label>{c.qa.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}>{n.text}</p>)}</div>}
                       {c.memos.length > 0 && <div><label>📒 저장한 노트</label>{c.memos.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}><small>{n.label || "메모"}</small> {n.text}</p>)}</div>}
-                      {c.rev && c.rev.history && c.rev.history.length > 0 && <div><label>📈 복습 기록</label><p>{c.rev.history.slice(-6).map((h, i) => <span key={i} className={"wb-hist " + h.g}>{h.at.slice(5)} {_WB_GRADE_KO[h.g]}</span>)}<span className="wb-muted">다음 복습 {c.rev.due}</span></p></div>}
+                      {c.rev && c.rev.history && c.rev.history.length > 0 && <div><label>📈 복기 기록</label><p>{c.rev.history.slice(-6).map((h, i) => <span key={i} className={"wb-hist " + h.g}>{h.at.slice(5)} {_WB_GRADE_KO[h.g]}</span>)}<span className="wb-muted">다음 복기 {c.rev.due}</span></p></div>}
                     </div>
                     <div className="wb-card-actions">
-                      <button className="btn btn-primary" onClick={() => { setQueueSnapshot([c]); setQueueIdx(0); setSession({ done: 0, up: 0, log: [] }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>지금 복습하기</button>
+                      <button className="btn btn-primary" onClick={() => { setQueueSnapshot([c]); setQueueIdx(0); setSession({ done: 0, up: 0, log: [] }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>지금 복기하기</button>
                       <button className="btn btn-ghost" onClick={() => openScene(c.scn)}>📖 상황·사수 설명 다시 보기</button>
                       <span>마지막으로 만난 날 {c.lastTouch} · {c.since === 0 ? "오늘" : c.since + "일 전"}</span>
                     </div>
@@ -9515,7 +9532,7 @@ function WordBookPage({ openScene }) {
         </div>
       </section>
 
-      <div className="wb-foot">성장 리포트(Day 30·60·90)는 사원증 / 인사의 인사 기록에서 발급하고 봐요. 기억 강도는 마지막으로 그 표현을 쓴 날부터 조금씩 줄어요. 내 문장으로 쓰거나 복습에서 떠올리면 다시 올라가고, 다음 복습은 알아서 미뤄져요. 복습 기록은 계정에 남아서 기기를 바꿔도 이어져요.</div>
+      <div className="wb-foot">튼튼한 카드가 많을수록 협상 자리에서 꺼낼 표현이 많아져요. 기억 강도는 마지막으로 그 표현을 쓴 날부터 조금씩 줄고, 내 문장으로 쓰거나 복기에서 떠올리면 다시 올라가요. 복기 기록은 계정에 남아서 기기를 바꿔도 이어지고, 성장 리포트(Day 30·60·90)는 사원증 / 인사의 인사 기록에서 발급해요.</div>
     </div>
   );
 }
@@ -9957,7 +9974,7 @@ function LibraryPage({ openScene }) {
                         </div>
                         <div className="lib-detail-actions">
                           <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); openScene(s); }}>시추에이션 다시 열기 →</button>
-                          {_isNextFeature() ? <span>✏️ 내 문장·복습·노트는 복습 노트에서 봐요</span> : (savedNotes.length > 0 || (myJournal && myJournal.text)) && (
+                          {_isNextFeature() ? <span>✏️ 내 문장·복기·노트는 복습에서 봐요</span> : (savedNotes.length > 0 || (myJournal && myJournal.text)) && (
                             <span>📒 이 표현에 내 노트 {savedNotes.length + ((myJournal && myJournal.text) ? 1 : 0)}개 · 나만의 노트에서 봐요</span>
                           )}
                         </div>
@@ -10376,18 +10393,30 @@ function InboxPage({ openMemo }) {
 function HrRecordsSection() {
   const { USER } = window.__SIM;
   const reports = _reportsList();
-  const profile = (() => { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + (USER.email || "guest")) || "null"); } catch (e) { return null; } })();
+  const profile = _loadProfile(USER.email || "guest");
   const [view, setView] = useState(null);
+  const [editPf, setEditPf] = useState(false);
+  const [pfTick, setPfTick] = useState(0);
+  useEffect(() => { const h = () => setPfTick(t => t + 1); window.addEventListener("od-profile", h); return () => window.removeEventListener("od-profile", h); }, []);
+  void pfTick;
   const rd = USER.realCurrentDay || USER.currentDay || 1;
   const nextMs = _REPORT_MILESTONES.find(m => !reports.some(r => r.milestone === m.id));
   return (
     <>
       <div className="hr-section-head">📋 인사 기록 <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6 }}>개발 뷰</span></div>
-      {profile && (
-        <div className="hr-row" style={{ fontSize: 12.5 }}>
+      {editPf ? (
+        <div style={{ padding: "8px 0" }}><ProfileForm initial={profile || undefined} title="👤 직무 프로필" sub="복습 노트의 주간 인사이트와 성장 리포트가 이 프로필을 읽어요. 바뀌면 여기서 고쳐요." onSave={(p) => { _saveProfile(USER.email || "guest", p); setEditPf(false); }} onCancel={() => setEditPf(false)} /></div>
+      ) : !profile ? (
+        <button className="hr-row" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", fontSize: 12.5 }} onClick={() => setEditPf(true)}>
           <span className="hr-row-label">👤 직무 프로필</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>아직 없어요 · 입력하기 →</span>
+        </button>
+      ) : null}
+      {profile && !editPf && (
+        <button className="hr-row" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", fontSize: 12.5, textAlign: "left" }} onClick={() => setEditPf(true)} title="누르면 수정">
+          <span className="hr-row-label">👤 직무 프로필 <small style={{ color: "var(--ink-mute)", fontWeight: 600 }}>수정 →</small></span>
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", textAlign: "right" }}>{profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.freq ? " · 영어 " + profile.freq : ""}</span>
-        </div>
+        </button>
       )}
       {reports.length === 0 && (
         <div className="hr-row" style={{ fontSize: 12.5 }}>
