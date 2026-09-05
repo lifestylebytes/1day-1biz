@@ -513,6 +513,69 @@ body::before {
 .wp-result .mono { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
 .wp-history-head { padding: 8px 18px 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--ink-mute); text-transform: uppercase; }
 @media (max-width: 880px) { .wp-services { grid-template-columns: 1fr; } .wp-balance-r { text-align: left; justify-items: start; } }
+/* 진단 문답 (심리테스트처럼 한 장씩) */
+.dq { margin: 0 18px 14px; background: var(--cream); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 16px; overflow: hidden; }
+.dq-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.dq-back { background: none; border: 1px solid var(--line); border-radius: 999px; width: 28px; height: 28px; cursor: pointer; font-family: inherit; color: var(--ink-soft); }
+.dq-dots { display: flex; gap: 4px; flex: 1; }
+.dq-dots i { flex: 1; height: 4px; border-radius: 999px; background: var(--paper-warm); border: 1px solid var(--line); }
+.dq-dots i.done { background: var(--orange); border-color: var(--orange); }
+.dq-dots i.cur { background: #F5B08A; border-color: var(--orange); }
+.dq-count { font-size: 11px; font-weight: 800; color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+.dq-card { animation: dqIn 0.28s ease-out; }
+.dq-card.b { animation-name: dqBack; }
+@keyframes dqIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes dqBack { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+.dq-card h3 { margin: 4px 0 4px; font-size: 18px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.35; color: var(--ink); }
+.dq-sub { margin: 0 0 12px; font-size: 12px; color: var(--ink-mute); }
+.dq-opts { display: grid; gap: 6px; margin-top: 10px; }
+.dq-opt { text-align: left; font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); cursor: pointer; transition: transform 0.1s, border-color 0.1s; }
+.dq-opt:hover { border-color: var(--ink); }
+.dq-opt.on { border-color: var(--orange); background: var(--orange-soft); transform: translateX(3px); }
+.dq-scale { display: flex; gap: 8px; margin-top: 10px; }
+.dq-num { flex: 1; font-family: inherit; font-size: 16px; font-weight: 900; padding: 14px 0; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); cursor: pointer; }
+.dq-num.on { border-color: var(--orange); background: var(--orange); color: #fff; }
+.dq textarea { width: 100%; box-sizing: border-box; margin-top: 10px; font-family: inherit; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); resize: vertical; line-height: 1.55; }
+.dq-actions { display: flex; gap: 8px; margin-top: 10px; }
+.dq-actions .btn { padding: 8px 16px; font-size: 12.5px; }
+@media (prefers-reduced-motion: reduce) { .dq-card { animation: none; } }
+/* 처방 리포트 (한 장) */
+.cr-sec { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.cr-sec-t { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--orange); margin-bottom: 8px; }
+.cr-lead { font-size: 14.5px !important; font-weight: 700; }
+.cr ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.65; }
+.cr-exprs { display: grid; gap: 8px; }
+.cr-expr { background: var(--cream); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 2px; }
+.cr-expr b { font-size: 15px; }
+.cr-expr span { font-size: 12.5px; color: var(--ink-soft); }
+.cr-expr small { font-size: 12px; color: var(--ink-mute); line-height: 1.5; }
+.cr-qa { margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.cr-qa-q { font-weight: 800; }
+.cr-qa-a { color: var(--ink-soft); }
+.cr-qa-c { color: var(--ink); padding-left: 10px; border-left: 2px solid var(--orange); margin-top: 2px; }
+.cr-fix { display: grid; gap: 2px; margin-bottom: 8px; font-size: 13px; }
+.cr-fix b { font-size: 14.5px; font-weight: 700; }
+.cr-fix em { font-style: normal; color: var(--green); font-weight: 800; }
+.cr-fix small { color: var(--ink-mute); line-height: 1.5; }
+.cr-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cr-terms > div { display: grid; gap: 1px; font-size: 12.5px; background: var(--cream); border-radius: 8px; padding: 8px 10px; }
+.cr-terms b { font-size: 14px; }
+.cr-terms span { color: var(--ink-soft); }
+.cr-terms small { color: var(--ink-mute); }
+.cr-cul { margin-bottom: 8px; }
+.cr-cul b { display: block; font-size: 13.5px; }
+.cr-cul p { margin: 2px 0 0 !important; font-size: 13px !important; color: var(--ink-soft) !important; }
+.cr-table { display: grid; gap: 4px; font-size: 12.5px; }
+.cr-tr { display: grid; grid-template-columns: 1.1fr 2fr 0.9fr; gap: 8px; padding: 6px 8px; border-radius: 6px; background: var(--cream); }
+.cr-tr.cr-th { background: var(--paper-warm); font-weight: 800; font-size: 11px; color: var(--ink-soft); }
+.cr-goals { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.6; }
+.cr-goals li { margin-bottom: 4px; }
+.cr-goals small { display: block; color: var(--ink-mute); font-size: 12px; }
+.cr-closing { margin-top: 14px !important; font-weight: 600; }
+.cr-answers { display: grid; gap: 4px; margin-bottom: 10px; font-size: 12.5px; }
+.cr-answers span { display: grid; }
+.cr-answers small { color: var(--ink-mute); font-size: 11px; }
+@media (max-width: 880px) { .cr-terms { grid-template-columns: 1fr; } .cr-tr { grid-template-columns: 1fr; gap: 2px; } .cr-tr.cr-th { display: none; } }
 /* 🧠 AI 성장 리포트 (나만의 노트 상단, 개발 뷰) */
 .air { margin: 14px 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .air-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
@@ -10438,7 +10501,7 @@ const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10 };
 const WP_SERVICES = [
   { id: "career", emoji: "🧭", title: "커리어 상담", desc: "이직·채용·면접, 다음 스텝 고민", cost: 500, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
   { id: "job", emoji: "💼", title: "직무 고민 상담", desc: "지금 일에서 막히는 것, 역할 정리", cost: 500, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
-  { id: "english", emoji: "🗣️", title: "영어 공부법 처방", desc: "내 기록을 읽고 나한테 맞는 방법만 골라줘요", cost: 300, ph: "예: 회의에서 듣기는 되는데 끼어들 타이밍을 못 잡아요." },
+  { id: "english", emoji: "🗣️", title: "영어 학습 처방 리포트", desc: "8문항 진단 + 내 기록으로 한 장짜리 처방전", cost: 500, ph: "" },
   { id: "work", emoji: "☕", title: "직장생활 고민 상담", desc: "관계·번아웃·리모트 근무, 사수가 들어줘요", cost: 500, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
 ];
 function _wpNotes(kind) { const u = _wbUser(); return ((u.savedNotes || {})["0"] || []).filter(n => n.kind === kind).map(n => { try { return { ...JSON.parse(n.text), savedAt: n.savedAt }; } catch (e) { return null; } }).filter(Boolean); }
@@ -10467,13 +10530,170 @@ function _wpAddNote(kind, label, obj) {
 const _WP_SAMPLE = { headline: "질문의 핵심은 '내 의견을 먼저 꺼내도 되는가'예요. 돼요, 그리고 그게 기대돼요.", answer: ["외국계에서 침묵은 동의로 읽혀요. 반대든 질문이든 회의 안에서 한 번은 목소리를 내는 게 평가에 유리해요.", "지금 기록을 보면 회의 발언 표현은 튼튼한데 반대 의견 표현(push back, I see it differently)은 아직 한 번도 안 썼어요. 다음 회의에서 그 둘 중 하나를 준비해 가세요."], steps: ["회의 전 안건마다 내 입장을 한 줄 영어로 적어두세요.", "'I see it a bit differently. Could we…'로 시작하는 문장 하나를 외워 가세요.", "말한 뒤 슬랙에 요약을 남겨 기록으로 굳히세요."], oneLiner: "먼저 꺼낸 의견이 가장 오래 기억돼요. 이번 주 한 번만 해보세요." };
 function _wpFmt(n) { return Number(n || 0).toLocaleString("ko-KR") + "P"; }
 
+// ── 진단 문답 (2026-09-05): 고민을 적게 하지 않고, 서비스마다 맞는 질문을 심리테스트처럼 한 장씩 묻는다.
+//    답은 직무 프로필(profile.diag[topic])에 남아 코칭·성장 리포트·앞으로의 맞춤 학습이 같이 쓴다.
+const WP_DIAG = {
+  english: [
+    { id: "moment", q: "영어가 필요한 순간이 주로 언제예요?", sub: "다 골라도 돼요", type: "multi", opts: ["회의에서 발언", "메일·슬랙", "발표", "1:1·스몰토크", "협상·고객 응대", "문서·보고서"] },
+    { id: "pattern", q: "그 순간, 제일 자주 벌어지는 일은요?", type: "single", opts: ["할 말은 있는데 문장 만들다 타이밍을 놓쳐요", "듣기는 되는데 답이 한두 마디로 끝나요", "쓰는 건 되는데 말이 안 나와요", "틀릴까 봐 아예 입을 안 열어요", "표현은 아는데 이 상황에 맞는지 모르겠어요"] },
+    { id: "share", q: "회의에서 내 발언은 어느 정도예요?", type: "single", opts: ["거의 0, 듣기만 해요", "질문 받을 때만 답해요", "안건 하나엔 꼭 한마디 해요", "자주 먼저 꺼내요"] },
+    { id: "exposure", q: "영어로 말하거나 쓰는 날은 일주일에?", type: "single", opts: ["거의 없음", "1~2일", "3~5일", "매일"] },
+    { id: "confidence", q: "지금 영어 자신감은요?", sub: "1 낮음 · 5 높음", type: "scale" },
+    { id: "time", q: "공부에 낼 수 있는 시간은요?", type: "single", opts: ["하루 10분", "하루 30분", "주말에 몰아서", "출퇴근길에 듣기만"] },
+    { id: "tried", q: "해봤는데 효과 없던 방법은요?", sub: "다 골라도 돼요", type: "multi", opts: ["단어장 외우기", "문법책", "전화영어", "미드 쉐도잉", "영어 앱 게임", "학원", "없어요, 처음이에요"] },
+    { id: "wish", q: "30일 뒤 딱 하나만 바뀐다면, 뭐가 바뀌었으면 해요?", sub: "한 줄이면 돼요 (건너뛰어도 돼요)", type: "text", ph: "예: 본사 콜에서 내 의견을 먼저 꺼내는 사람" },
+  ],
+  career: [
+    { id: "stage", q: "지금 어디쯤이에요?", type: "single", opts: ["이직 고민을 시작했어요", "이미 지원하고 있어요", "면접을 앞뒀어요", "오퍼를 비교 중이에요", "사내 이동을 생각해요"] },
+    { id: "direction", q: "가고 싶은 방향은요?", sub: "다 골라도 돼요", type: "multi", opts: ["외국계에서 외국계로", "국내 기업에서 외국계로", "본사·해외 포지션", "직무 전환", "연봉을 올리고 싶어요"] },
+    { id: "block", q: "제일 막히는 건요?", type: "single", opts: ["영어 면접", "영문 이력서·링크드인", "레퍼런스·네트워킹", "연봉 협상", "내 강점을 한 줄로 못 말해요"] },
+    { id: "when", q: "언제까지 움직이고 싶어요?", type: "single", opts: ["1개월 안", "3개월 안", "6개월 이상", "아직 몰라요"] },
+    { id: "note", q: "사수가 알아야 할 사정이 있으면 한 줄만요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 지금 회사에서 2년을 채우고 싶어요" },
+  ],
+  job: [
+    { id: "kind", q: "요즘 일에서 제일 막히는 건요?", type: "single", opts: ["우선순위·업무량", "상사·본사의 기대치", "협업 (시차·비동기)", "성과를 인정받는 것", "내 역할이 불명확해요"] },
+    { id: "who", q: "그 고민의 상대는 누구예요?", sub: "다 골라도 돼요", type: "multi", opts: ["한국 팀장", "외국인 상사", "본사·해외 동료", "클라이언트", "같은 팀 동료"] },
+    { id: "tried", q: "지금까지 해본 건요?", sub: "다 골라도 돼요", type: "multi", opts: ["1:1을 요청했어요", "문서로 정리해 보냈어요", "그냥 버티고 있어요", "동료에게 물어봤어요", "아직 아무것도 안 했어요"] },
+    { id: "urgency", q: "얼마나 급해요?", sub: "1 천천히 · 5 이번 주 안에", type: "scale" },
+    { id: "note", q: "상황을 한 줄로 적어주면 더 정확해져요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 본사 PM이 일정을 자꾸 바꾸는데 팀장은 그냥 맞추래요" },
+  ],
+  work: [
+    { id: "heavy", q: "요즘 제일 무거운 건요?", type: "single", opts: ["피드백 받을 때 위축돼요", "관계·소외감", "번아웃·과로", "리모트라 고립돼요", "평가·불안"] },
+    { id: "since", q: "얼마나 됐어요?", type: "single", opts: ["이번 주부터", "한 달쯤", "몇 달째예요"] },
+    { id: "rest", q: "쉴 땐 주로 뭘 해요?", sub: "다 골라도 돼요", type: "multi", opts: ["운동", "친구·가족", "혼자 있기", "제대로 못 쉬어요"] },
+    { id: "energy", q: "지금 에너지는요?", sub: "1 바닥 · 5 충분", type: "scale" },
+    { id: "note", q: "한 줄만 더 들려주세요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요" },
+  ],
+};
+function _wpAnswerLabels(topic, answers) {
+  return (WP_DIAG[topic] || []).map(qq => { const v = answers[qq.id]; if (v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length)) return null; return { q: qq.q, a: Array.isArray(v) ? v.join(", ") : String(v) }; }).filter(Boolean);
+}
+function DiagQuiz({ topic, initial, onDone, onCancel }) {
+  const qs = WP_DIAG[topic] || [];
+  const [i, setI] = useState(0);
+  const [ans, setAns] = useState(() => ({ ...(initial || {}) }));
+  const [dir, setDir] = useState("f");
+  const [text, setText] = useState("");
+  const q = qs[i];
+  useEffect(() => { if (q && q.type === "text") setText(ans[q.id] || ""); }, [i]);
+  if (!q) return null;
+  const go = (next) => { setDir("f"); if (i + 1 >= qs.length) onDone(next); else setI(i + 1); };
+  const pick = (v) => { const next = { ...ans, [q.id]: v }; setAns(next); setTimeout(() => go(next), q.type === "single" || q.type === "scale" ? 220 : 0); };
+  const toggle = (v) => { const cur = ans[q.id] || []; setAns({ ...ans, [q.id]: cur.includes(v) ? cur.filter(x => x !== v) : cur.concat([v]) }); };
+  const back = () => { if (i === 0) { onCancel && onCancel(); return; } setDir("b"); setI(i - 1); };
+  const sel = ans[q.id];
+  return (
+    <div className="dq">
+      <div className="dq-top"><button className="dq-back" onClick={back}>←</button><div className="dq-dots">{qs.map((x, k) => <i key={x.id} className={k < i ? "done" : k === i ? "cur" : ""} />)}</div><span className="dq-count">{i + 1} / {qs.length}</span></div>
+      <div key={q.id} className={"dq-card " + dir}>
+        <h3>{q.q}</h3>
+        {q.sub && <p className="dq-sub">{q.sub}</p>}
+        {q.type === "single" && <div className="dq-opts">{q.opts.map(o => <button key={o} className={"dq-opt " + (sel === o ? "on" : "")} onClick={() => pick(o)}>{o}</button>)}</div>}
+        {q.type === "multi" && <div className="dq-opts">{q.opts.map(o => <button key={o} className={"dq-opt " + ((sel || []).includes(o) ? "on" : "")} onClick={() => toggle(o)}>{o}</button>)}</div>}
+        {q.type === "scale" && <div className="dq-scale">{[1, 2, 3, 4, 5].map(n => <button key={n} className={"dq-num " + (sel === n ? "on" : "")} onClick={() => pick(n)}>{n}</button>)}</div>}
+        {q.type === "text" && <textarea value={text} onChange={e => setText(e.target.value)} placeholder={q.ph} rows={3} />}
+        {(q.type === "multi" || q.type === "text") && (
+          <div className="dq-actions">
+            {q.type === "multi" && <button className="btn btn-primary" disabled={!(sel || []).length} onClick={() => go(ans)}>다음</button>}
+            {q.type === "text" && <button className="btn btn-primary" onClick={() => { const next = { ...ans, [q.id]: text.trim() }; setAns(next); go(next); }}>{i + 1 >= qs.length ? "완료" : "다음"}</button>}
+            {q.type === "text" && <button className="btn btn-ghost" onClick={() => { const next = { ...ans, [q.id]: "" }; setAns(next); go(next); }}>건너뛰기</button>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+// 영어 학습 처방 리포트 샘플 (서버에 consult 모드가 없을 때. 유비챌 발표 피드백 리포트 한 장 형식을 1일1비 기록에 맞춘 것)
+const _WP_SAMPLE_ENGLISH = {
+  headline: "문장이 부족한 게 아니라 순서가 뒤집혀 있어요. 자리를 먼저 잡고 문장을 그 안에서 만들면 돼요.",
+  oneLine: "지난 30일 동안 표현 34개 중 20개를 내 문장으로 썼고, 그중 16개는 사수 교정 없이 한 번에 통과했어요.",
+  diagnosis: [
+    "답변을 보면 회의에서 '할 말은 있는데 문장 만들다 타이밍을 놓친다'고 했고, 발언은 질문 받을 때만 해요. 그런데 기록은 다른 얘기를 해요. 회의 발언 영역 표현 10개 중 7개를 이미 내 문장으로 썼고, 야근에서 유의어까지 돌려 썼어요. 그러니까 문장을 못 만드는 사람이 아니라, 회의 안에서 문장을 만들 시간을 스스로에게 안 주는 사람이에요.",
+    "효과 없던 방법으로 단어장과 문법책을 꼽았어요. 맞아요, 둘 다 '준비'를 늘리는 방법이라 '진입'을 못 고쳐요. 지금 필요한 건 회의에서 3초 안에 자리를 잡는 문장 두 개와, 잡은 자리를 30초 채우는 연습이에요. 하루 10분이면 충분해요.",
+  ],
+  strengths: ["메일·문서 표현은 8개 중 6개를 써봤고 교정률이 낮아요. 쓰는 영어는 이미 됐어요.", "야근에서 유의어를 바꿔 쓴 문장이 자연스러워요. 같은 뜻을 두 가지로 말할 줄 알아요."],
+  expressions: [
+    { en: "Can I jump in on that?", ko: "그 얘기에 제가 잠깐 끼어들어도 될까요?", use: "문장이 다 안 만들어졌어도 이 한 줄로 자리를 먼저 잡아요." },
+    { en: "To build on that point,", ko: "그 말에 덧붙이자면,", use: "남의 말 끝에 붙이면 반대도 동의도 아닌 '참여'가 돼요. 제일 안전한 진입로예요." },
+    { en: "Before we move on, one quick thing.", ko: "넘어가기 전에 하나만요.", use: "주제가 넘어가려는 순간 멈추는 문장. 놓친 타이밍을 되돌려요." },
+  ],
+  qa: [
+    { q: "그 순간 제일 자주 벌어지는 일은요?", a: "할 말은 있는데 문장 만들다 타이밍을 놓쳐요", coach: "정확한 자가 진단이에요. 이건 어휘 문제가 아니라 순서 문제라서, 진입 문장을 먼저 던지고 내용을 뒤에 붙이는 연습으로 4주면 바뀌어요." },
+    { q: "회의에서 내 발언은 어느 정도예요?", a: "질문 받을 때만 답해요", coach: "질문에 답할 땐 문장이 나온다는 뜻이에요. 그 문장을 질문 없이 먼저 꺼내는 게 다음 단계예요. 안건 하나만 정해서 그 안건에선 무조건 한마디 하세요." },
+    { q: "30일 뒤 딱 하나만 바뀐다면?", a: "본사 콜에서 내 의견을 먼저 꺼내는 사람", coach: "목표가 행동으로 적혀 있어서 좋아요. 측정 가능하게 바꾸면 '주 1회, 질문 받기 전에 먼저 말하기'예요." },
+  ],
+  fixes: [
+    { blank: "Can I _____ _____ here?", answer: "jump in", why: "'끼어들다'를 interrupt로 쓰면 사과하는 느낌이 돼요. jump in은 참여하는 느낌이에요." },
+    { blank: "We're running ______ on the launch timeline.", answer: "behind", why: "지연을 late로 쓰면 '늦었다'는 결과만 남고, behind는 '따라잡는 중'이라 보고 문장으로 안전해요." },
+    { blank: "I see it a bit ___________.", answer: "differently", why: "반대 의견의 표준 진입 문장이에요. disagree보다 부드럽고, 그 뒤에 이유를 붙이기 쉬워요." },
+    { blank: "Let me ______ back on that after the call.", answer: "circle", why: "내 문장에서 'I will circle back'을 이미 썼어요. 회의 안에서도 같은 표현으로 시간을 벌면 돼요." },
+  ],
+  jobTerms: [
+    { term: "traction", ko: "초기 반응·견인력", ex: "The campaign is getting traction in Singapore." },
+    { term: "uplift", ko: "상승분", ex: "We saw a 12% uplift in CTR after the change." },
+    { term: "deprioritize", ko: "우선순위에서 내리다", ex: "Let's deprioritize the banner refresh this quarter." },
+    { term: "localize the creative", ko: "소재를 현지화하다", ex: "We'll localize the creative for the Korean market." },
+  ],
+  culture: [
+    { title: "말하는 게 참여예요, 끼어드는 게 아니에요", body: "외국계 회의에서 침묵은 동의로 읽혀요. 반대든 질문이든 한 번 목소리를 내는 게 평가에 유리해요." },
+    { title: "결론 먼저, 근거는 뒤에", body: "시간 순서로 설명하면 결론 전에 주제가 넘어가요. 'CTR went up. Here's why.' 순서로요." },
+    { title: "숫자 뒤에 'so I'd suggest'를 붙여요", body: "보고에서 제안으로 넘어가는 한 마디예요. 이 한 마디가 붙는 순간 발언이 의견이 돼요." },
+  ],
+  actions: [
+    { task: "진입 문장 한 번 던지기", how: "'Can I jump in on that?' 뒤에 숫자 하나만 붙여요", when: "다음 본사 콜" },
+    { task: "결론 먼저 말하기", how: "안건마다 한 줄 결론을 영어로 미리 적어 가요", when: "매주 회의 전" },
+    { task: "야근 3문장", how: "오늘 표현을 유의어로 바꿔 3문장, 그중 하나는 회의 문장으로", when: "매일 10분" },
+    { task: "흔들리는 카드 복기", how: "복습 탭에서 흔들리는 카드 5장, 상황에 한 줄 모드로", when: "매일 3분" },
+    { task: "이번 주 표현 3개 실전 투입", how: "위 3개 중 하나를 실제 회의나 슬랙에서 쓰고 복습 탭에 기록", when: "이번 주 안" },
+  ],
+  goals: [
+    { goal: "자리를 잡은 뒤 30초를 채워요", measure: "주 1회, 세 문장을 이어서 말했는지 체크" },
+    { goal: "보고를 제안으로 바꿔요", measure: "업데이트마다 'so I'd suggest' 한 번" },
+    { goal: "반대 의견을 부드럽게 꺼내요", measure: "30일 안에 'I see it differently'를 두 번 쓰기" },
+  ],
+  vision: "1년 뒤 목표는 유창해지는 게 아니라, 회의에서 방향을 바꾸는 사람이 되는 거예요. 내 한마디 뒤에 팀 결정이 달라지는 경험을 한 번 하면, 그다음부턴 영어가 아니라 내용을 준비하게 돼요.",
+  closing: "지금까지의 변화는 문법을 더 배워서가 아니라 순서를 바꿔서 왔어요. 다음 30일은 딱 하나, 자리를 잡은 뒤의 30초예요. 그건 이미 갖고 있는 문장으로 충분해요.",
+  oneLiner: "먼저 꺼낸 의견이 가장 오래 기억돼요. 이번 주 한 번만 해보세요.",
+};
+function ConsultReportView({ view, mentor }) {
+  const rich = !!(view.actions || view.goals || view.expressions);
+  if (!rich) return (
+    <>
+      <h3>{view.headline}</h3>
+      {(view.answers || []).length > 0 && <div className="cr-answers">{view.answers.map((x, i) => <span key={i}><small>{x.q}</small>{x.a}</span>)}</div>}
+      {(view.answer || []).map((p, i) => <p key={i}>{p}</p>)}
+      {view.steps && view.steps.length > 0 && <ol>{view.steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+      {view.english && view.english.length > 0 && <div className="wp-result-en">{view.english.map((x, i) => <p key={i}><span className="mono">{x.en}</span><small>{x.ko}</small></p>)}</div>}
+      {view.oneLiner && <div className="air-sign">{view.oneLiner}<b>{view.mentor || mentor}</b></div>}
+    </>
+  );
+  const Sec = ({ t, children }) => <div className="cr-sec"><div className="cr-sec-t">{t}</div>{children}</div>;
+  return (
+    <div className="cr">
+      <h3>{view.headline}</h3>
+      {view.oneLine && <Sec t="오늘의 한 줄"><p className="cr-lead">{view.oneLine}</p></Sec>}
+      {view.diagnosis && view.diagnosis.length > 0 && <Sec t="사수가 드리는 말">{view.diagnosis.map((p, i) => <p key={i}>{p}</p>)}</Sec>}
+      {view.strengths && view.strengths.length > 0 && <Sec t="지금 잘하고 있는 것"><ul>{view.strengths.map((x, i) => <li key={i}>{x}</li>)}</ul></Sec>}
+      {view.expressions && view.expressions.length > 0 && <Sec t="⭐ 이번에 가져갈 표현 3개"><div className="cr-exprs">{view.expressions.map((x, i) => <div key={i} className="cr-expr"><b className="mono">{x.en}</b><span>{x.ko}</span><small>{x.use}</small></div>)}</div></Sec>}
+      {view.qa && view.qa.length > 0 && <Sec t="진단 문답">{view.qa.map((x, i) => <div key={i} className="cr-qa"><div className="cr-qa-q">Q. {x.q}</div><div className="cr-qa-a">A. {x.a}</div><div className="cr-qa-c">▶ {x.coach}</div></div>)}</Sec>}
+      {view.fixes && view.fixes.length > 0 && <Sec t="이렇게 말하면 더 자연스러울 거예요">{view.fixes.map((x, i) => <div key={i} className="cr-fix"><b className="mono">{x.blank}</b><span>→ <em>{x.answer}</em></span><small>{x.why}</small></div>)}</Sec>}
+      {view.jobTerms && view.jobTerms.length > 0 && <Sec t="내 직무에서 알아두면 좋은 표현"><div className="cr-terms">{view.jobTerms.map((x, i) => <div key={i}><b>{x.term}</b><span>{x.ko}</span><small className="mono">{x.ex}</small></div>)}</div></Sec>}
+      {view.culture && view.culture.length > 0 && <Sec t="외국계에서 더 잘 통하는 방식, 알고 계셨나요?">{view.culture.map((x, i) => <div key={i} className="cr-cul"><b>{x.title}</b><p>{x.body}</p></div>)}</Sec>}
+      {view.actions && view.actions.length > 0 && <Sec t="다음 주 영어 액션"><div className="cr-table"><div className="cr-tr cr-th"><span>할 것</span><span>어떻게</span><span>언제</span></div>{view.actions.map((x, i) => <div key={i} className="cr-tr"><span>{x.task}</span><span>{x.how}</span><span>{x.when}</span></div>)}</div></Sec>}
+      {view.goals && view.goals.length > 0 && <Sec t="다음 30일 목표"><ol className="cr-goals">{view.goals.map((x, i) => <li key={i}><b>{x.goal}</b><small>측정: {x.measure}</small></li>)}</ol></Sec>}
+      {view.vision && <Sec t="1년 뒤의 모습"><p>{view.vision}</p></Sec>}
+      {view.closing && <p className="cr-closing">{view.closing}</p>}
+      {view.oneLiner && <div className="air-sign">{view.oneLiner}<b>{view.mentor || mentor}</b></div>}
+    </div>
+  );
+}
+
 function WelfarePointsSection() {
   const { USER, CHARACTERS } = window.__SIM;
   const em = USER.email || "guest";
   const rd = USER.realCurrentDay || USER.currentDay || 1;
   const [tick, setTick] = useState(0);
   const [svc, setSvc] = useState(null);
-  const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [view, setView] = useState(null);
@@ -10495,26 +10715,33 @@ function WelfarePointsSection() {
     </div>
   );
 
-  const ask = () => {
+  // 진단 문답이 끝나면: 답을 프로필(diag)에 남기고, 답 + 프로필 + 학습 기록(문장·교정·영역 숫자)으로 사수가 리포트를 쓴다
+  const ask = (answers) => {
     if (!svc) return;
-    const question = q.trim();
-    if (question.length < 5) { setErr("고민을 한 줄이라도 적어주세요"); return; }
-    if (balance < svc.cost) { setErr("포인트가 " + _wpFmt(svc.cost - balance) + " 모자라요. 내일 출근하면 " + WP_RULES.day + "P 쌓여요"); return; }
+    const labels = _wpAnswerLabels(svc.id, answers);
+    if (!labels.length) { setErr("답을 하나라도 골라주세요"); return; }
+    const prof = { ...(profile || {}), diag: { ...((profile && profile.diag) || {}), [svc.id]: { answers, labels, at: new Date().toISOString() } } };
+    if (svc.id === "english") { if (answers.confidence) prof.confidence = answers.confidence; if (answers.wish && !prof.goal) prof.goal = answers.wish; if (answers.pattern && !prof.stuck) prof.stuck = answers.pattern; }
+    _saveProfile(em, prof);
     setBusy(true); setErr("");
-    const rp = _reportPayload(profile);
-    const payload = { topic: svc.id, title: svc.title, question, profile, name: USER.name, day: rd,
-      stats: { learned: rp.words.length, mine: rp.sentences.length, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used })), recentQuestions: (rp.questions || []).slice(-5) } };
+    const rp = _reportPayload(prof);
+    const fixed = (rp.sentences || []).filter(x => x.fixed).slice(-6).map(x => ({ word: x.word, mine: x.text }));
+    const payload = { topic: svc.id, title: svc.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
+      stats: { learned: rp.words.length, mine: rp.sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 6) })), recentQuestions: (rp.questions || []).slice(-5), fixed, recentSentences: (rp.sentences || []).slice(-8).map(x => ({ word: x.word, text: x.text })) } };
+    const isSample = !balanceOk(svc);
     const done = (ans, sample) => {
-      const out = { ...ans, topic: svc.id, title: svc.title, question, cost: sample ? 0 : svc.cost, sample: !!sample, at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
+      const out = { ...ans, topic: svc.id, title: svc.title, answers: labels, question: payload.question, cost: sample ? 0 : svc.cost, sample: !!sample, at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
       _wpAddNote("consult", svc.title, out);
       if (!sample) _wpAddNote("points", "복지포인트 사용 · " + svc.title, { type: "spend", item: svc.id, title: svc.title, cost: svc.cost, at: out.at });
-      setBusy(false); setSvc(null); setQ(""); setView(out); setTick(t => t + 1);
+      setBusy(false); setSvc(null); setView(out); setTick(t => t + 1);
     };
-    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(_WP_SAMPLE, true); return; }
+    const sample = svc.id === "english" ? _WP_SAMPLE_ENGLISH : _WP_SAMPLE;
+    if (isSample || !(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(sample, true); return; }
     window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: CHARACTERS.mentor.name, word: "consult" })
-      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(_WP_SAMPLE, true); })
-      .catch(() => done(_WP_SAMPLE, true));
+      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(sample, true); })
+      .catch(() => done(sample, true));
   };
+  const balanceOk = (s) => balance >= s.cost;
 
   return (
     <div className="hr-section" style={{ marginTop: 16 }}>
@@ -10535,7 +10762,7 @@ function WelfarePointsSection() {
       )}
       <div className="wp-services">
         {WP_SERVICES.map(s => (
-          <button key={s.id} className={"wp-svc " + (svc && svc.id === s.id ? "active" : "")} onClick={() => { setSvc(svc && svc.id === s.id ? null : s); setErr(""); setView(null); }}>
+          <button key={s.id} className={"wp-svc " + (svc && svc.id === s.id ? "active" : "")} onClick={() => { if (svc && svc.id === s.id) { setSvc(null); return; } setView(null); setErr(balance < s.cost ? "포인트가 " + _wpFmt(s.cost - balance) + " 모자라요. 내일 출근하면 " + WP_RULES.day + "P 쌓여요. (지금은 샘플로 볼 수 있어요)" : ""); setSvc(s); }}>
             <span className="wp-svc-emoji">{s.emoji}</span>
             <span className="wp-svc-body"><b>{s.title}</b><small>{s.desc}</small></span>
             <span className={"wp-svc-cost " + (balance < s.cost ? "short" : "")}>{_wpFmt(s.cost)}</span>
@@ -10543,26 +10770,15 @@ function WelfarePointsSection() {
         ))}
       </div>
       {svc && (
-        <div className="wp-ask">
-          <div className="wp-ask-head"><b>{svc.emoji} {svc.title}</b><span>{CHARACTERS.mentor.name} 사수가 내 기록과 직무 프로필을 같이 읽고 답해요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"}</span></div>
-          <textarea value={q} onChange={e => setQ(e.target.value)} placeholder={svc.ph} rows={4} />
-          {err && <div className="air-err">{err}</div>}
-          <div className="wp-ask-actions">
-            <button className="btn btn-primary" onClick={ask} disabled={busy}>{busy ? "사수가 읽는 중…" : _wpFmt(svc.cost) + " 쓰고 상담 받기"}</button>
-            <button className="btn btn-ghost" onClick={() => { setSvc(null); setQ(""); setErr(""); }} disabled={busy}>취소</button>
-            <span>남는 포인트 {_wpFmt(balance - svc.cost)}</span>
-          </div>
-        </div>
+        <div className="wp-ask-head" style={{ margin: "0 18px 8px" }}><b>{svc.emoji} {svc.title}</b><span>{(WP_DIAG[svc.id] || []).length}문항 · {CHARACTERS.mentor.name} 사수가 답과 내 기록(문장·교정·영역별 숫자)을 같이 읽고 써요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"} · {busy ? "쓰는 중…" : _wpFmt(svc.cost) + (balance < svc.cost ? " (모자라서 샘플)" : " 사용")}</span>{err && <div className="air-err" style={{ marginTop: 4 }}>{err}</div>}</div>
       )}
+      {svc && !busy && <DiagQuiz key={svc.id} topic={svc.id} initial={profile && profile.diag && profile.diag[svc.id] ? profile.diag[svc.id].answers : null} onDone={ask} onCancel={() => setSvc(null)} />}
+      {svc && busy && <div className="wb-done" style={{ margin: "0 18px 14px" }}><b>{CHARACTERS.mentor.name} 사수가 답과 기록을 읽고 있어요…</b><p>한 장짜리 리포트라 20초쯤 걸려요.</p></div>}
       {view && (
         <div className="wp-result">
-          <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (서버에 consult 모드가 아직 없어서 포인트는 안 썼어요)" : " · " + _wpFmt(view.cost) + " 사용"}</div>
-          <div className="wp-result-q">❓ {view.question}</div>
-          <h3>{view.headline}</h3>
-          {(view.answer || []).map((p, i) => <p key={i}>{p}</p>)}
-          {view.steps && view.steps.length > 0 && <ol>{view.steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
-          {view.english && view.english.length > 0 && <div className="wp-result-en">{view.english.map((x, i) => <p key={i}><span className="mono">{x.en}</span><small>{x.ko}</small></p>)}</div>}
-          {view.oneLiner && <div className="air-sign">{view.oneLiner}<b>{view.mentor || CHARACTERS.mentor.name}</b></div>}
+          <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요)" : " · " + _wpFmt(view.cost) + " 사용"}</div>
+          {view.question && <div className="wp-result-q">{view.topic === "english" ? "🎯 30일 뒤 바라는 모습: " : "❓ "}{view.question}</div>}
+          <ConsultReportView view={view} mentor={CHARACTERS.mentor.name} />
           <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setView(null)}>닫기</button>
         </div>
       )}
@@ -10571,7 +10787,7 @@ function WelfarePointsSection() {
           <div className="wp-history-head">상담 기록 {consults.length}건</div>
           {consults.slice(0, 5).map((c, i) => (
             <button key={i} className="hr-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px dashed var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setView(c)}>
-              <span className="hr-row-label">{(WP_SERVICES.find(s => s.id === c.topic) || {}).emoji} {c.title} <small style={{ color: "var(--ink-mute)" }}>· {String(c.question || "").slice(0, 28)}{String(c.question || "").length > 28 ? "…" : ""}</small></span>
+              <span className="hr-row-label">{(WP_SERVICES.find(s => s.id === c.topic) || {}).emoji} {c.title} <small style={{ color: "var(--ink-mute)" }}>· {String(c.question || (c.answers && c.answers[0] && c.answers[0].a) || c.headline || "").slice(0, 28)}…</small></span>
               <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700, fontSize: 12 }}>{String(c.at || "").slice(0, 10)} · 다시 보기 →</span>
             </button>
           ))}

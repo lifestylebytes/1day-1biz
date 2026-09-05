@@ -62,13 +62,13 @@ Deno.serve(async (req) => {
       journals: clip(rp.journals, 10).map((x: any) => ({ day: Number(x.day) || 0, text: String(x.text || "").slice(0, 160) })),
       questions: clip(rp.questions, 10).map((q: any) => String(q).slice(0, 80)),
       savedCount: Number(rp.savedCount) || 0, fixedCount: Number(rp.fixedCount) || 0,
-      profile: rp.profile && typeof rp.profile === "object" ? { job: String(rp.profile.job || "").slice(0, 60), industry: String(rp.profile.industry || "").slice(0, 40), years: String(rp.profile.years || "").slice(0, 60), situ: clip(rp.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(rp.profile.who, 6).map((x: any) => String(x).slice(0, 30)), goal: String(rp.profile.goal || "").slice(0, 120) } : null,
+      profile: rp.profile && typeof rp.profile === "object" ? { job: String(rp.profile.job || "").slice(0, 60), industry: String(rp.profile.industry || "").slice(0, 40), years: String(rp.profile.years || "").slice(0, 60), situ: clip(rp.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(rp.profile.who, 6).map((x: any) => String(x).slice(0, 30)), goal: String(rp.profile.goal || "").slice(0, 120), diag: clip(rp.profile.diag?.english?.labels, 8).map((x: any) => String(x.q || "").slice(0, 60) + " → " + String(x.a || "").slice(0, 120)) } : null,
       areas: clip(rp.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, words: clip(a.words, 12).map((w: any) => String(w).slice(0, 40)) })),
     };
     const rsys = [
       `너는 따뜻하고 구체적인 영어 사수(${mentor})야. 신입 ${compact.name || ""}의 ${compact.day}일차까지 학습 기록 압축본을 읽고 짧은 성장 리포트를 써.`,
       `기록: 배운 표현 ${compact.words.length}개, 직접 쓴 문장 ${compact.sentences.length}개(사수가 고친 것 ${compact.fixedCount}개), 저널 ${compact.journals.length}개, 물어본 질문 ${compact.questions.length}개, 이미 알던 표현 ${compact.known.length}개, 연속 출근 ${compact.streak}일.`,
-      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 목표: ${compact.profile.goal || "미입력"}. 이 직종과 상황에서 실제로 통하는 조언으로 써.` : "",
+      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.${(compact.profile.diag || []).length ? " 영어 진단 답: " + compact.profile.diag.join(" / ") + "." : ""} 이 직종과 상황에서 실제로 통하는 조언으로 써.` : "",
       `영역별(회의/메일/관계/보고/협상) 배운 표현 대비 직접 써본 표현 수는 areas 에 있다. 비어 있는 영역을 짚어줘.`,
       `반드시 기록에 실제로 있는 표현과 문장을 근거로 써. 없는 걸 지어내지 마. 문장 인용은 짧게.`,
       `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","strengths":["잘하는 것 2개, 각 한 문장"],"patterns":["반복되는 습관이나 아직 안 써본 표현 2개, 각 한 문장"],"next":["다음 10일 할 것 1~2개, 각 한 문장"],"forYou":["이 직종·상황에 맞춘 조언 1~2개, 실제 쓸 영어 문장 하나 포함"],"oneLiner":"사수가 남기는 응원 한 줄(동사로 끝남)"}`,
@@ -109,13 +109,13 @@ Deno.serve(async (req) => {
       weak: clip(ip.weak, 8).map((x: any) => ({ word: String(x.word || "").slice(0, 40), meaning: String(x.meaning || "").slice(0, 60), mine: String(x.mine || "").slice(0, 120), strength: Number(x.strength) || 0, area: String(x.area || "").slice(0, 20) })),
       strong: clip(ip.strong, 5).map((w: any) => String(w).slice(0, 40)),
       areas: clip(ip.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, avg: Number(a.avg) || 0 })),
-      profile: ip.profile && typeof ip.profile === "object" ? { job: String(ip.profile.job || "").slice(0, 60), industry: String(ip.profile.industry || "").slice(0, 40), situ: clip(ip.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(ip.profile.who, 6).map((x: any) => String(x).slice(0, 30)), stuck: String(ip.profile.stuck || "").slice(0, 120), goal: String(ip.profile.goal || "").slice(0, 120) } : null,
+      profile: ip.profile && typeof ip.profile === "object" ? { job: String(ip.profile.job || "").slice(0, 60), industry: String(ip.profile.industry || "").slice(0, 40), situ: clip(ip.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(ip.profile.who, 6).map((x: any) => String(x).slice(0, 30)), stuck: String(ip.profile.stuck || "").slice(0, 120), goal: String(ip.profile.goal || "").slice(0, 120), diag: clip(ip.profile.diag?.english?.labels, 8).map((x: any) => String(x.q || "").slice(0, 60) + " → " + String(x.a || "").slice(0, 120)) } : null,
     };
     if (!compact.weak.length) return json({ ok: false, error: "empty_input" }, 200);
     const isys = [
       `너는 따뜻하고 구체적인 영어 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)의 표현 사전 기록을 읽고 이번 주 인사이트를 써.`,
       `기록: 기억 강도가 낮은 표현(weak, 0~100 낮을수록 희미함)과 그 표현으로 신입이 쓴 문장(mine, 없으면 한 번도 안 써본 것), 튼튼한 표현(strong), 영역별 배운 수/써본 수/평균 강도(areas), 이번 주 복습 횟수(reviewedThisWeek).`,
-      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}. 이 직종과 상황에서 실제로 통하는 문장으로 써.` : "직무 정보가 없으니 일반적인 외국계 회사 상황으로 써.",
+      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.${(compact.profile.diag || []).length ? " 영어 진단 답: " + compact.profile.diag.join(" / ") + "." : ""} 이 직종과 상황에서 실제로 통하는 문장으로 써.` : "직무 정보가 없으니 일반적인 외국계 회사 상황으로 써.",
       `set 은 weak 안에 있는 표현 3개만 고른다(있는 표현만, 지어내지 마). 각 표현마다 이 신입의 일에서 언제 쓰는지 한 줄(why)과 바로 쓸 수 있는 자연스러운 영어 문장 하나(sentence, 12단어 안팎)를 쓴다. 신입이 이미 쓴 문장(mine)이 있으면 그 습관을 이어서 다듬는 방향으로.`,
       `pattern 은 areas 와 weak 를 근거로 이번 주에 보이는 습관 하나를 숫자와 함께 짚는다(예: 어느 영역이 비었는지, 배웠지만 안 쓴 표현이 몇 개인지). 없는 숫자를 만들지 마.`,
       `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","pattern":"2~3문장","set":[{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""}],"task":"이번 주에 실제로 해볼 과제 한 문장(동사로 끝남)"}`,
@@ -156,16 +156,22 @@ Deno.serve(async (req) => {
     const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
     const topic = String(cp.topic || "").slice(0, 20);
     const question = String(cp.question || "").slice(0, 800).trim();
-    if (!question) return json({ ok: false, error: "empty_input" }, 200);
+    const answers = clip(cp.answers, 10).map((x: any) => ({ q: String(x.q || "").slice(0, 80), a: String(x.a || "").slice(0, 200) })).filter((x: any) => x.q && x.a);
+    if (!question && !answers.length) return json({ ok: false, error: "empty_input" }, 200);
     const compact = {
-      name: String(cp.name || "").slice(0, 30), day: Number(cp.day) || 1, topic, question,
+      name: String(cp.name || "").slice(0, 30), day: Number(cp.day) || 1, topic, question, answers,
       profile: cp.profile && typeof cp.profile === "object" ? { job: String(cp.profile.job || "").slice(0, 60), industry: String(cp.profile.industry || "").slice(0, 40), years: String(cp.profile.years || "").slice(0, 60), situ: clip(cp.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(cp.profile.who, 6).map((x: any) => String(x).slice(0, 30)), freq: String(cp.profile.freq || "").slice(0, 20), confidence: Number(cp.profile.confidence) || 0, stuck: String(cp.profile.stuck || "").slice(0, 120), goal: String(cp.profile.goal || "").slice(0, 120) } : null,
-      stats: cp.stats && typeof cp.stats === "object" ? { learned: Number(cp.stats.learned) || 0, mine: Number(cp.stats.mine) || 0, streak: Number(cp.stats.streak) || 0, areas: clip(cp.stats.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0 })), recentQuestions: clip(cp.stats.recentQuestions, 5).map((x: any) => String(x).slice(0, 80)) } : null,
+      stats: cp.stats && typeof cp.stats === "object" ? { learned: Number(cp.stats.learned) || 0, mine: Number(cp.stats.mine) || 0, oneShot: Number(cp.stats.oneShot) || 0, streak: Number(cp.stats.streak) || 0,
+        areas: clip(cp.stats.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, words: clip(a.words, 6).map((w: any) => String(w).slice(0, 40)) })),
+        recentQuestions: clip(cp.stats.recentQuestions, 5).map((x: any) => String(x).slice(0, 80)),
+        fixed: clip(cp.stats.fixed, 6).map((x: any) => ({ word: String(x.word || "").slice(0, 40), mine: String(x.mine || "").slice(0, 160) })),
+        recentSentences: clip(cp.stats.recentSentences, 8).map((x: any) => ({ word: String(x.word || "").slice(0, 40), text: String(x.text || "").slice(0, 160) })) } : null,
     };
+    const isEnglish = topic === "english";
     const TOPIC: Record<string, string> = {
       career: "커리어 상담: 이직·채용·면접·다음 스텝. 외국계 채용 관행(레퍼런스, 영어 면접, 링크드인)을 아는 선배로서 현실적인 선택지와 순서를 준다.",
       job: "직무 고민 상담: 지금 맡은 일에서 막히는 것, 역할·우선순위·상사와의 합의. 외국계 협업 방식(비동기, 문서화, 기대치 조율)을 기준으로 구체적인 행동을 준다.",
-      english: "영어 공부법 처방: 이 사람의 학습 기록(배운 표현 수, 직접 쓴 문장 수, 영역별 비어 있는 곳)과 직무를 근거로, 지금 이 사람에게만 맞는 방법 2~3개를 고른다. 일반론 금지. 실제로 쓸 영어 문장 2개를 english 에 준다.",
+      english: "영어 학습 처방 리포트: 진단 문답(answers)과 학습 기록(배운 표현 수, 직접 쓴 문장, 사수가 고친 문장 fixed, 영역별 배운/써본 수와 표현 목록)을 근거로, 이 사람에게만 맞는 한 장짜리 처방전을 쓴다. 일반론 금지. 진단 답과 기록이 서로 다른 얘기를 하면 그 차이를 짚어라(예: 못 한다고 답했는데 기록은 이미 하고 있음).",
       work: "직장생활 고민 상담: 관계, 번아웃, 리모트 근무, 피드백 받는 법. 공감 먼저, 그다음 이번 주에 해볼 작은 행동. 의학적·심리치료적 진단은 하지 않는다. 자해·극단적 선택·심한 우울 신호가 보이면 전문가(정신건강 상담전화 1577-0199 등)와 가까운 사람에게 지금 이야기하라고 분명히 권한다.",
     };
     const csys = [
@@ -173,7 +179,10 @@ Deno.serve(async (req) => {
       TOPIC[topic] || "고민 상담: 공감 먼저, 그다음 구체적인 행동.",
       compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 빈도: ${compact.profile.freq || "미입력"}. 자신감 ${compact.profile.confidence || "?"}/5. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.` : "직무 정보가 없다. 일반적인 외국계 회사 신입으로 가정하되, 필요하면 답 안에서 어떤 정보가 있으면 더 정확해지는지 한 줄로 말해.",
       compact.stats ? `학습 기록: 배운 표현 ${compact.stats.learned}개, 직접 쓴 문장 ${compact.stats.mine}개, 연속 출근 ${compact.stats.streak}일. 영역별 배운/써본: ${(compact.stats.areas || []).map((a: any) => a.name + " " + a.used + "/" + a.learned).join(", ")}. 최근 질문: ${(compact.stats.recentQuestions || []).join(" / ") || "없음"}.` : "",
-      `JSON 으로만: {"headline":"고민을 한 줄로 다시 짚고 방향을 주는 문장(30자 안팎, 동사로 끝남)","answer":["본론 2~3문단, 각 2~3문장"],"steps":["이번 주 해볼 행동 2~3개, 각 한 문장"],"english":[{"en":"바로 쓸 영어 문장","ko":"뜻"}] (english 은 영어 공부법이나 영어로 말해야 하는 상황일 때만, 아니면 빈 배열),"oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
+      compact.answers.length ? `신입이 진단 문답에 이렇게 답했다: ${compact.answers.map((x: any) => x.q + " → " + x.a).join(" / ")}. 답을 그대로 반복하지 말고 해석해서 써.` : "",
+      isEnglish
+        ? `JSON 으로만: {"headline":"진단을 한 줄로 뒤집어 주는 문장(35자 안팎, 동사로 끝남)","oneLine":"기록에서 찾은 구체적 성취 한 줄(숫자 포함)","diagnosis":["사수가 드리는 말 2문단, 각 3~4문장. 답과 기록을 근거로 진짜 원인을 짚고, 효과 없던 방법이 왜 안 맞았는지, 지금 필요한 게 뭔지"],"strengths":["기록에 근거한 잘하는 것 2개"],"expressions":[{"en":"이번에 가져갈 표현","ko":"뜻","use":"이 사람 상황에서 언제 쓰는지 한 줄"}] 3개 (기록의 areas.words 나 fixed 에 있는 표현을 우선),"qa":[{"q":"진단 질문","a":"신입의 답","coach":"그 답에 대한 사수 코멘트 1~2문장"}] 3개 (answers 에서 고른다),"fixes":[{"blank":"빈칸 문장 (fixed 의 내 문장을 고쳐 만든 것 우선, 부족하면 이 직무에서 자주 틀리는 것)","answer":"정답","why":"왜 그게 자연스러운지"}] 4개,"jobTerms":[{"term":"직무 용어","ko":"뜻","ex":"예문"}] 4개 (직무 profile.job 기준),"culture":[{"title":"외국계에서 더 잘 통하는 방식","body":"1~2문장"}] 3개,"actions":[{"task":"할 것","how":"어떻게(1일1비 기능 활용 포함: 야근 3문장, 복습 탭 흔들리는 카드)","when":"언제"}] 5개,"goals":[{"goal":"다음 30일 목표","measure":"측정 방법"}] 3개,"vision":"1년 뒤의 모습 2~3문장","closing":"닫는 말 2~3문장","oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`
+        : `JSON 으로만: {"headline":"고민을 한 줄로 다시 짚고 방향을 주는 문장(30자 안팎, 동사로 끝남)","answer":["본론 2~3문단, 각 2~3문장"],"steps":["이번 주 해볼 행동 2~3개, 각 한 문장"],"english":[{"en":"바로 쓸 영어 문장","ko":"뜻"}] (영어로 말해야 하는 상황일 때만, 아니면 빈 배열),"oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
       `규칙: 따뜻한 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). 일반론 대신 이 사람의 직무·기록에 붙는 말. em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
     try {
@@ -181,7 +190,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL, temperature: 0.5, response_format: { type: "json_object" },
+          model: MODEL, temperature: 0.5, response_format: { type: "json_object" }, max_tokens: isEnglish ? 3200 : 1200,
           messages: [
             { role: "system", content: csys },
             { role: "user", content: JSON.stringify(compact) },
@@ -196,6 +205,19 @@ Deno.serve(async (req) => {
       consult.answer = clip(consult.answer, 4).map((x: any) => String(x).slice(0, 600));
       consult.steps = clip(consult.steps, 4).map((x: any) => String(x).slice(0, 200));
       consult.english = clip(consult.english, 3).filter((x: any) => x && x.en).map((x: any) => ({ en: String(x.en).slice(0, 200), ko: String(x.ko || "").slice(0, 120) }));
+      if (isEnglish) {
+        const str = (v: any, n: number) => String(v || "").slice(0, n);
+        consult.diagnosis = clip(consult.diagnosis, 3).map((x: any) => str(x, 700));
+        consult.strengths = clip(consult.strengths, 3).map((x: any) => str(x, 200));
+        consult.expressions = clip(consult.expressions, 3).map((x: any) => ({ en: str(x.en, 120), ko: str(x.ko, 80), use: str(x.use, 160) }));
+        consult.qa = clip(consult.qa, 3).map((x: any) => ({ q: str(x.q, 80), a: str(x.a, 200), coach: str(x.coach, 300) }));
+        consult.fixes = clip(consult.fixes, 5).map((x: any) => ({ blank: str(x.blank, 160), answer: str(x.answer, 60), why: str(x.why, 200) }));
+        consult.jobTerms = clip(consult.jobTerms, 4).map((x: any) => ({ term: str(x.term, 40), ko: str(x.ko, 60), ex: str(x.ex, 140) }));
+        consult.culture = clip(consult.culture, 3).map((x: any) => ({ title: str(x.title, 60), body: str(x.body, 240) }));
+        consult.actions = clip(consult.actions, 5).map((x: any) => ({ task: str(x.task, 60), how: str(x.how, 140), when: str(x.when, 30) }));
+        consult.goals = clip(consult.goals, 3).map((x: any) => ({ goal: str(x.goal, 80), measure: str(x.measure, 120) }));
+        consult.vision = str(consult.vision, 400); consult.closing = str(consult.closing, 400); consult.oneLine = str(consult.oneLine, 200);
+      }
       return json({ ok: true, consult, usage: d?.usage || null });
     } catch (e) {
       return json({ ok: false, error: "exception" }, 200);
