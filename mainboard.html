@@ -374,6 +374,14 @@ body::before {
 .air-err { color: var(--bad, #B8402C); font-size: 12px; font-weight: 700; }
 .air-form-actions { display: flex; gap: 8px; }
 .air-profile { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 12.5px; color: var(--ink-soft); }
+.air-survey { margin-top: 14px; border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; font-size: 12.5px; }
+.air-survey.done { color: var(--green); font-weight: 700; border-style: solid; }
+.air-survey > b { font-size: 13.5px; }
+.air-stars { display: flex; gap: 4px; }
+.air-stars button { background: none; border: none; font-size: 24px; line-height: 1; color: var(--line); cursor: pointer; padding: 0 2px; }
+.air-stars button.on { color: var(--orange); }
+.air-survey input { font-family: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.air-survey .btn { justify-self: start; padding: 7px 14px; font-size: 12.5px; }
 .air-profile .btn { padding: 4px 10px; font-size: 11.5px; }
 .air-report h3 { margin: 0 0 14px; font-size: 18px; font-weight: 900; line-height: 1.4; letter-spacing: -0.01em; }
 .air-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
@@ -6376,15 +6384,16 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
-const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 15 };
-const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트" };
-const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒" };
+const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, aireport: 60 };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", aireport: "AI 성장 리포트" };
+const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒", aireport: "🧠" };
 function _lockedNext(key, rd, viewingPast) {
-  if (key === "errands" && !_isNextFeature()) return false;   // 심부름(타이쿤)은 아직 개발 뷰
+  if ((key === "errands" || key === "aireport") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
   return _isHomeLive() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
 }
-// 나만의 노트 열림 기준 (2026-09-05 결정): Day 15 부터. 사원(Day 31+)은 당연히 열림. 인쇄/PDF 내보내기는 사원 보상으로 남긴다.
-const MYNOTES_OPEN_DAY = 15;
+// 나만의 노트 열림 기준 (2026-09-05 결정): Day 30 부터 (사원 승진과 같은 날). AI 성장 리포트는 Day 60 부터.
+const MYNOTES_OPEN_DAY = 30;
+const AIREPORT_OPEN_DAY = 60;
 function _myNotesOpen(u) {
   const rd = (u && (u.realCurrentDay || u.currentDay)) || 1;
   return !!(u && u.isFulltime) || rd >= MYNOTES_OPEN_DAY;
@@ -6393,7 +6402,7 @@ function _myNotesOpen(u) {
 function LockedCard() { return null; }
 function UnlockLadder({ rd, viewingPast }) {
   if (!_isHomeLive() || viewingPast) return null;
-  const _keys = Object.keys(_UNLOCK_AT).filter(k => k !== "errands" || _isNextFeature());
+  const _keys = Object.keys(_UNLOCK_AT).filter(k => (k !== "errands" && k !== "aireport") || _isNextFeature());
   const days = [...new Set(_keys.map(k => _UNLOCK_AT[k]))].filter(d => d > rd).sort((a, b) => a - b);
   if (!days.length) return null;
   return (
@@ -6418,9 +6427,10 @@ const _UNLOCK_DESC = {
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
   mynotes: "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
+  aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
-  const keys = Object.keys(_UNLOCK_AT).filter(k => _UNLOCK_AT[k] === rd && (k !== "errands" || _isNextFeature()) && _UNLOCK_DESC[k]);
+  const keys = Object.keys(_UNLOCK_AT).filter(k => _UNLOCK_AT[k] === rd && ((k !== "errands" && k !== "aireport") || _isNextFeature()) && _UNLOCK_DESC[k]);
   const KEY = "__OD_UNLOCK_POP_" + (email || "guest") + "_" + rd;
   const [show, setShow] = useState(false);
   React.useEffect(() => {
@@ -7218,6 +7228,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
       </div>
 
+      {_isNextFeature() && !USER.isViewingPast && (
+        <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mynotes")} />
+      )}
       {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => { if (k === "mynotes") setActive("mynotes"); else { const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k]; const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } }} />
       )}
@@ -8663,6 +8676,101 @@ const _SAMPLE_REPORT = {
   forYou: ["본사 슬랙에서 결정을 넘겨받을 때 defer to you 한 문장을 준비해 두면 바로 써요."],
   oneLiner: "Day 10, 잘 오고 있어요. 지금 페이스면 Day 30 사원 전환은 무난해요.",
 };
+// 인사 기록: 발급된 리포트는 savedNotes(kind:"report") 로 저장 (notes 테이블과 같은 경로라 기기 바꿔도 남는다)
+const _REPORT_MILESTONES = [
+  { at: 30, id: "probation", title: "수습 성장 리포트", why: "수습 30일을 마친 기록이에요. 사원 승진 심사 자료로 남아요." },
+  { at: 60, id: "associate", title: "사원 성장 리포트", why: "특별 면담 날 받는 60일 기록이에요." },
+  { at: 90, id: "senior", title: "대리 승진 종합 리포트", why: "90일 전체를 정리한 최종 기록이에요." },
+];
+function _reportsList() {
+  let u = {}; try { u = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+  const out = [];
+  Object.keys(u.savedNotes || {}).forEach(d => (u.savedNotes[d] || []).forEach(n => {
+    if (n.kind !== "report") return;
+    try { const r = JSON.parse(n.text); if (r && r.headline) out.push({ ...r, day: r.day || Number(d), savedAt: n.savedAt }); } catch (e) {}
+  }));
+  return out.sort((a, b) => b.day - a.day);
+}
+function _storeReport(day, out) {
+  try {
+    const raw = localStorage.getItem("__OD_USER"); const u = raw ? JSON.parse(raw) : {};
+    u.savedNotes = u.savedNotes || {}; const k = String(day);
+    u.savedNotes[k] = (u.savedNotes[k] || []).filter(n => !(n.kind === "report" && (() => { try { return JSON.parse(n.text).milestone === out.milestone; } catch (e) { return false; } })()));
+    const text = JSON.stringify(out);
+    const label = (out.milestone && (_REPORT_MILESTONES.find(m => m.id === out.milestone) || {}).title) || ("AI 성장 리포트 Day " + day);
+    u.savedNotes[k].push({ kind: "report", label, text, savedAt: new Date().toISOString() });
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    if (!out.sample && window.OD?.enabled && window.OD.saveNoteRow && u.email) window.OD.saveNoteRow(u.email, day, text, label, "report").catch(() => {});
+  } catch (e) {}
+}
+// 리포트 본문 (나만의 노트 카드와 사원증 인사 기록이 같이 쓴다)
+function ReportView({ rep, profile, compact }) {
+  const st = rep.stats || {};
+  const mentor = (window.__SIM && window.__SIM.CHARACTERS && window.__SIM.CHARACTERS.mentor) || CHARACTERS.mentor;
+  const ms = rep.milestone && _REPORT_MILESTONES.find(m => m.id === rep.milestone);
+  return (
+    <div className="air-report">
+      <div className="air-meta">{ms ? ms.title + " · " : ""}Day {rep.day} · {String(rep.at || "").slice(0, 10)}{rep.sample ? " · 샘플" : ""}{profile && profile.job ? " · 👤 " + profile.job : ""}</div>
+      {!compact && (
+        <div className="air-stats">
+          <div><b>{st.learned ?? "-"}</b><span>배운 표현</span></div>
+          <div><b>{st.mine ?? "-"}</b><span>내 문장으로 쓴 것</span></div>
+          <div><b>{st.oneShot ?? "-"}</b><span>한 번에 통과</span></div>
+          <div><b>{st.known ?? "-"}</b><span>이미 알던 표현</span></div>
+          <div><b>{st.streak ?? "-"}</b><span>연속 출근</span></div>
+          <div><b>{st.saved ?? "-"}</b><span>저장한 노트</span></div>
+        </div>
+      )}
+      {!compact && st.areas && (
+        <div className="air-areas">
+          {st.areas.map(a => (
+            <div key={a.id} className="air-area">
+              <span>{a.emoji} {a.name}</span>
+              <i><em style={{ width: (a.learned ? Math.round(a.used / a.learned * 100) : 0) + "%" }} /></i>
+              <b>{a.used}<small>/{a.learned}</small></b>
+            </div>
+          ))}
+        </div>
+      )}
+      <h3>{rep.headline}</h3>
+      <div className="air-grid">
+        <div><label>💪 잘하고 있는 것</label><ul>{(rep.strengths || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+        <div><label>🔁 반복되는 습관</label><ul>{(rep.patterns || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+        <div><label>🎯 다음 10일, 이것 하나</label><ul>{(rep.next || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+        {rep.forYou && rep.forYou.length > 0 && <div><label>🏢 {profile && profile.job ? profile.job + "에게" : "내 일에 맞춰"}</label><ul>{rep.forYou.map((t, i) => <li key={i}>{t}</li>)}</ul></div>}
+      </div>
+      <div className="air-sign">"{rep.oneLiner}" <b>{mentor.name} ✍︎</b></div>
+    </div>
+  );
+}
+// 리포트 다 본 뒤 후기 한 번 (feedback 테이블 category:"survey", 운영자 시트에 같이 모임)
+function ReportSurvey({ day, email, name }) {
+  const KEY = "__OD_REPORT_SURVEY_" + (email || "guest") + "_" + day;
+  const [done, setDone] = useState(() => { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } });
+  const [rating, setRating] = useState(0);
+  const [line, setLine] = useState("");
+  const [useful, setUseful] = useState("");
+  if (done) return <div className="air-survey done">✓ 후기 고마워요. 다음 리포트에 반영할게요.</div>;
+  const send = () => {
+    if (!rating) return;
+    try {
+      if (window.OD?.enabled && window.OD.submitFeedback && email) {
+        window.OD.submitFeedback({ email, name, day, category: "survey", message: `[리포트 후기] Day ${day} 만족도 ${"★".repeat(rating)}${"☆".repeat(5 - rating)} (${rating}/5)\n제일 도움된 부분: ${useful || "(미선택)"}\n한마디: ${line.trim() || "(없음)"}`, context: { type: "report_survey", day, rating, useful } }).catch(() => {});
+      }
+    } catch (e) {}
+    try { localStorage.setItem(KEY, "1"); } catch (e) {}
+    setDone(true);
+  };
+  return (
+    <div className="air-survey">
+      <b>이 리포트, 어땠어요?</b>
+      <div className="air-stars">{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" className={n <= rating ? "on" : ""} onClick={() => setRating(n)}>★</button>)}</div>
+      <div className="air-chips">{["숫자가 와닿았어요", "습관 지적이 정확했어요", "다음 10일 과제가 좋았어요", "내 직종 조언이 유용했어요", "별로 안 맞았어요"].map(v => <button key={v} type="button" className={"filter-chip " + (useful === v ? "active" : "")} onClick={() => setUseful(v)}>{v}</button>)}</div>
+      <input value={line} onChange={e => setLine(e.target.value)} placeholder="한마디 (선택)" />
+      <button className="btn btn-primary" onClick={send} disabled={!rating}>보내기</button>
+    </div>
+  );
+}
 const _PROFILE_SITU = ["회의", "메일", "슬랙·팀즈", "발표", "협상", "고객 응대"];
 const _PROFILE_WHO = ["본사·해외 동료", "외국인 상사", "클라이언트", "한국 동료 (영어 문서만)"];
 function AiGrowthReport() {
@@ -8671,7 +8779,7 @@ function AiGrowthReport() {
   const KEY = "__OD_AI_REPORT_" + em, PKEY = "__OD_PROFILE_" + em;
   const [rep, setRep] = useState(() => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } });
   const [profile, setProfile] = useState(() => { try { return JSON.parse(localStorage.getItem(PKEY) || "null"); } catch (e) { return null; } });
-  const [form, setForm] = useState(() => ({ job: "", industry: "", situ: [], who: [], goal: "", years: "" }));
+  const [form, setForm] = useState(() => ({ job: "", industry: "", situ: [], who: [], goal: "", years: "", freq: "", confidence: 0, stuck: "" }));
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -8681,7 +8789,7 @@ function AiGrowthReport() {
 
   const saveProfile = () => {
     if (!form.job.trim()) { setErr("직종은 꼭 적어주세요"); return; }
-    const p = { ...form, job: form.job.trim(), industry: form.industry.trim(), goal: form.goal.trim(), at: new Date().toISOString() };
+    const p = { ...form, job: form.job.trim(), industry: form.industry.trim(), goal: form.goal.trim(), stuck: form.stuck.trim(), at: new Date().toISOString() };
     setProfile(p); setEditing(false); setErr("");
     try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
     // 운영자가 볼 수 있게 notes 에 kind:"profile" 로 한 줄 (같은 텍스트면 중복 저장 안 함)
@@ -8694,12 +8802,11 @@ function AiGrowthReport() {
     setLoading(true); setErr("");
     const done = (r, sample) => {
       setLoading(false);
-      const out = { ...r, at: new Date().toISOString(), day: payload.day, sample: !!sample, stats: { learned: payload.words.length, mine: payload.sentences.length, oneShot: payload.oneShot, known: payload.known.length, streak: payload.streak, saved: payload.savedCount, areas: payload.areas } };
+      // 마일스톤 리포트(30/60/90)는 그 Day 를 지나면 해당 마일스톤 이름으로 발급. 그 외는 일반 리포트
+      const ms = [..._REPORT_MILESTONES].reverse().find(m => payload.day >= m.at && !_reportsList().some(x => x.milestone === m.id));
+      const out = { ...r, at: new Date().toISOString(), day: payload.day, sample: !!sample, milestone: ms ? ms.id : null, stats: { learned: payload.words.length, mine: payload.sentences.length, oneShot: payload.oneShot, known: payload.known.length, streak: payload.streak, saved: payload.savedCount, areas: payload.areas } };
       setRep(out); try { localStorage.setItem(KEY, JSON.stringify(out)); } catch (e) {}
-      // 운영자가 볼 수 있게 notes 에 kind:"report" 로 저장
-      try {
-        if (!sample && window.OD?.enabled && window.OD.saveNoteRow && USER.email) window.OD.saveNoteRow(USER.email, payload.day, JSON.stringify(out), "AI 성장 리포트 Day " + payload.day, "report").catch(() => {});
-      } catch (e) {}
+      _storeReport(payload.day, out);   // 사원증 인사 기록 + notes 테이블(kind:"report")
     };
     if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(_SAMPLE_REPORT, true); return; }
     window.OD.getMentorAiFeedback({ mode: "report", report: payload, mentorName: CHARACTERS.mentor.name, word: "report" })
@@ -8719,6 +8826,9 @@ function AiGrowthReport() {
       <label>영어 경력<input value={form.years} onChange={e => setForm(f => ({ ...f, years: e.target.value }))} placeholder="예: 외국계 2년차, 영어 회의는 처음" /></label>
       <div className="air-chips"><b>영어를 쓰는 상황</b>{_PROFILE_SITU.map(v => <button key={v} type="button" className={"filter-chip " + (form.situ.includes(v) ? "active" : "")} onClick={() => toggleIn("situ", v)}>{v}</button>)}</div>
       <div className="air-chips"><b>주로 누구와</b>{_PROFILE_WHO.map(v => <button key={v} type="button" className={"filter-chip " + (form.who.includes(v) ? "active" : "")} onClick={() => toggleIn("who", v)}>{v}</button>)}</div>
+      <div className="air-chips"><b>영어로 말하거나 쓰는 빈도</b>{["거의 없음", "주 1~2번", "주 3~5번", "매일"].map(v => <button key={v} type="button" className={"filter-chip " + (form.freq === v ? "active" : "")} onClick={() => setForm(f => ({ ...f, freq: v }))}>{v}</button>)}</div>
+      <div className="air-chips"><b>지금 영어 자신감 (1 낮음 ~ 5 높음)</b>{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" className={"filter-chip " + (form.confidence === n ? "active" : "")} onClick={() => setForm(f => ({ ...f, confidence: n }))}>{n}</button>)}</div>
+      <label>요즘 제일 막히는 순간<input value={form.stuck} onChange={e => setForm(f => ({ ...f, stuck: e.target.value }))} placeholder="예: 회의에서 반대 의견 낼 때, 메일 첫 줄 쓸 때" /></label>
       <label>90일 뒤 되고 싶은 모습 한 줄<input value={form.goal} onChange={e => setForm(f => ({ ...f, goal: e.target.value }))} placeholder="예: 본사 콜에서 내 의견을 먼저 꺼내는 사람" /></label>
       {err && <div className="air-err">{err}</div>}
       <div className="air-form-actions">
@@ -8759,26 +8869,20 @@ function AiGrowthReport() {
             <div className="air-empty">
               <div className="air-profile">
                 <span>👤 {profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.situ.length ? " · " + profile.situ.join(", ") : ""}</span>
-                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "" }); setEditing(true); }}>수정</button>
+                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "", freq: profile.freq || "", confidence: profile.confidence || 0, stuck: profile.stuck || "" }); setEditing(true); }}>수정</button>
               </div>
               <button className="btn btn-primary" onClick={run} disabled={loading}>{loading ? "사수가 읽는 중…" : "지금 리포트 받기 (Day " + rd + ")"}</button>
               <small>정식 오픈 후엔 Day {nextAt}에 자동으로 도착해요. 압축본만 보내서 리포트 하나에 3천 토큰 안팎이에요.</small>
             </div>
           ) : (
-            <div className="air-report">
-              <div className="air-meta">Day {rep.day} 리포트 · {String(rep.at || "").slice(0, 10)}{rep.sample ? " · 샘플" : ""}{err ? " · " + err : ""} · 👤 {profile.job}</div>
-              <h3>{rep.headline}</h3>
-              <div className="air-grid">
-                <div><label>💪 잘하고 있는 것</label><ul>{(rep.strengths || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
-                <div><label>🔁 반복되는 습관</label><ul>{(rep.patterns || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
-                <div><label>🎯 다음 10일, 이것 하나</label><ul>{(rep.next || []).map((t, i) => <li key={i}>{t}</li>)}</ul></div>
-                {rep.forYou && rep.forYou.length > 0 && <div><label>🏢 {profile.job}에게</label><ul>{rep.forYou.map((t, i) => <li key={i}>{t}</li>)}</ul></div>}
-              </div>
-              <div className="air-sign">"{rep.oneLiner}" <b>{CHARACTERS.mentor.name} ✍︎</b></div>
+            <div>
+              {err && <div className="air-err">{err}</div>}
+              <ReportView rep={rep} profile={profile} compact />
+              <ReportSurvey day={rep.day} email={USER.email} name={USER.name} />
               <div className="air-actions">
                 <button className="btn btn-ghost" onClick={run} disabled={loading}>{loading ? "…" : "다시 받기"}</button>
-                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "" }); setEditing(true); }}>프로필 수정</button>
-                <span>운영팀도 같은 리포트를 봐요 (notes 테이블, kind=report)</span>
+                <button className="btn btn-ghost" onClick={() => { setForm({ job: profile.job || "", industry: profile.industry || "", situ: profile.situ || [], who: profile.who || [], goal: profile.goal || "", years: profile.years || "", freq: profile.freq || "", confidence: profile.confidence || 0, stuck: profile.stuck || "" }); setEditing(true); }}>프로필 수정</button>
+                <span>사원증 &gt; 인사 기록에 남아요. 운영팀도 같은 리포트를 봐요.</span>
               </div>
             </div>
           )}
@@ -8893,6 +8997,7 @@ function MyNotesPage({ openScene }) {
     Object.keys(byDay).forEach(dayKey => {
       const sc = SCENARIOS.find(s => s.day === Number(dayKey));
       (byDay[dayKey] || []).forEach(n => {
+        if (n.kind === "report" || n.kind === "profile") return;   // 인사 기록(리포트·프로필)은 사원증에서 본다
         allNotes.push({
           day: Number(dayKey),
           word: sc ? sc.word : "",
@@ -8931,7 +9036,19 @@ function MyNotesPage({ openScene }) {
 
       <ApprovalLine doc="YB-MYNOTE-2026" applicant={USER.name} status={`${allNotes.length}개 보관`} />
 
-      {_isNextFeature() && <AiGrowthReport />}
+      {_isNextFeature() && (() => {
+        const rd = USER.realCurrentDay || USER.currentDay || 1;
+        const due = _REPORT_MILESTONES.some(m => rd >= m.at && !_reportsList().some(r => r.milestone === m.id));
+        if (rd >= AIREPORT_OPEN_DAY || due) return <AiGrowthReport />;
+        return (
+          <div className="air" style={{ opacity: 0.8 }}>
+            <div className="air-head" style={{ background: "var(--paper-warm)", color: "var(--ink-soft)", cursor: "default" }}>
+              <span>🔒 AI 성장 리포트 <small>Day {AIREPORT_OPEN_DAY}에 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요</small></span>
+              <b>{AIREPORT_OPEN_DAY - rd}일 남음</b>
+            </div>
+          </div>
+        );
+      })()}
 
       {allNotes.length > 0 && USER.isFulltime && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
@@ -9627,6 +9744,87 @@ function InboxPage({ openMemo }) {
 // ============================================================
 // 사원증 = 마이페이지
 // ============================================================
+// 사원증 > 📋 인사 기록 (개발 뷰): 발급된 성장 리포트 + 직무 프로필. 다시 보기는 모달
+function HrRecordsSection() {
+  const { USER } = window.__SIM;
+  const reports = _reportsList();
+  const profile = (() => { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + (USER.email || "guest")) || "null"); } catch (e) { return null; } })();
+  const [view, setView] = useState(null);
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const nextMs = _REPORT_MILESTONES.find(m => !reports.some(r => r.milestone === m.id));
+  return (
+    <>
+      <div className="hr-section-head">📋 인사 기록 <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6 }}>개발 뷰</span></div>
+      {profile && (
+        <div className="hr-row" style={{ fontSize: 12.5 }}>
+          <span className="hr-row-label">👤 직무 프로필</span>
+          <span className="hr-row-value" style={{ color: "var(--ink-soft)", textAlign: "right" }}>{profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.freq ? " · 영어 " + profile.freq : ""}</span>
+        </div>
+      )}
+      {reports.length === 0 && (
+        <div className="hr-row" style={{ fontSize: 12.5 }}>
+          <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>발급된 리포트 없음</span>
+          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>{nextMs ? `Day ${nextMs.at}에 ${nextMs.title}가 발급돼요` : ""}</span>
+        </div>
+      )}
+      {reports.map(r => {
+        const ms = r.milestone && _REPORT_MILESTONES.find(m => m.id === r.milestone);
+        return (
+          <button key={r.day + (r.milestone || "")} className="hr-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setView(r)}>
+            <span className="hr-row-label">📋 {ms ? ms.title : "AI 성장 리포트"} · Day {r.day}</span>
+            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>{String(r.at || r.savedAt || "").slice(0, 10)} · 다시 보기 →</span>
+          </button>
+        );
+      })}
+      {nextMs && reports.length > 0 && (
+        <div className="hr-row" style={{ fontSize: 12 }}>
+          <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>다음 발급</span>
+          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day {nextMs.at} · {nextMs.title}{rd >= nextMs.at ? " (지금 받을 수 있어요, 나만의 노트에서)" : ""}</span>
+        </div>
+      )}
+      {view && (
+        <div className="unlock-pop-bg" onClick={() => setView(null)}>
+          <div className="unlock-pop" style={{ maxWidth: 720, maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+            <div className="unlock-pop-eyebrow">인사팀 · 인사 기록</div>
+            <ReportView rep={view} profile={profile} />
+            <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={() => setView(null)}>닫기</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+// Day 30/60/90 자동 발급 팝업 (개발 뷰): 마일스톤을 지났는데 그 리포트가 없으면 한 번 안내 → 나만의 노트로
+function ReportIssuePopup({ rd, email, onGo }) {
+  const ms = [..._REPORT_MILESTONES].reverse().find(m => rd >= m.at);
+  const KEY = ms ? "__OD_REPORT_ISSUE_POP_" + (email || "guest") + "_" + ms.id : "";
+  const [show, setShow] = useState(false);
+  React.useEffect(() => {
+    if (!_isNextFeature() || !ms) return;
+    if (_reportsList().some(r => r.milestone === ms.id)) return;
+    try { if (localStorage.getItem(KEY) === "1") return; } catch (e) {}
+    let quiet = 0, elapsed = 0, ended = false;
+    const iv = setInterval(() => {
+      if (ended) return; elapsed += 400;
+      if (_popupOpen()) { quiet = 0; return; }
+      quiet += 400;
+      if (quiet >= 1500 && elapsed >= 2500) { ended = true; clearInterval(iv); setShow(true); try { localStorage.setItem(KEY, "1"); } catch (e) {} }
+    }, 400);
+    return () => clearInterval(iv);
+  }, [rd]);
+  if (!show || !ms) return null;
+  return (
+    <div className="unlock-pop-bg" onClick={() => setShow(false)}>
+      <div className="unlock-pop" onClick={e => e.stopPropagation()}>
+        <div className="unlock-pop-eyebrow">인사팀 · Day {rd}</div>
+        <div className="unlock-pop-title">📋 {ms.title}가 발급됐어요</div>
+        <div className="unlock-pop-item"><span className="unlock-pop-emoji">📋</span><div><b>{ms.title}</b><p>{ms.why} 사수가 지금까지 기록을 읽고 숫자와 함께 정리해 줘요. 받은 리포트는 사원증 &gt; 인사 기록에 남아요.</p></div></div>
+        <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: 12 }} onClick={() => { setShow(false); onGo(); }}>리포트 받으러 가기 →</button>
+      </div>
+    </div>
+  );
+}
+
 function MyPage() {
   const { USER, CHARACTERS } = window.__SIM;
   const [notif, setNotif] = useState(true);
@@ -9844,6 +10042,7 @@ function MyPage() {
 
       {/* 고객센터, 유버디 카카오톡 채널 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
+        {_isNextFeature() && <HrRecordsSection />}
         <div className="hr-section-head">고객센터</div>
         <a
           href={_KAKAO_NOTICE_ROOM}
