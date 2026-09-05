@@ -14439,6 +14439,8 @@ function App() {
   React.useEffect(() => {
     if (_promoPoppedRef.current) return;
     if (!_tourCleared && _tourPending()) return;   // 투어 먼저
+    // ★ Day 1~2 는 첫 출근 투어·웰컴 키트·환경 세팅 팝업만으로도 벅차다. 공지 팝업은 Day 3 부터 (메모함엔 그대로 있음)
+    if ((USER.realCurrentDay || USER.currentDay || 1) < 3) return;
     const list = (window.__SIM && window.__SIM.NOTICES) || [];
     let shown = [];
     try { shown = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); } catch (e) {}
