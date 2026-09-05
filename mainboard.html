@@ -525,6 +525,22 @@ body::before {
 .wp-result-en p { display: grid; gap: 2px; }
 .wp-result-en small { color: var(--ink-mute); }
 .wp-result .mono { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+.wp-writing { margin: 0 18px 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.wp-writing-head { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; }
+.wp-writing-pen { display: inline-block; font-size: 20px; animation: wpPen 1.1s ease-in-out infinite; transform-origin: 20% 80%; }
+@keyframes wpPen { 0%, 100% { transform: rotate(-6deg) translateX(0); } 50% { transform: rotate(4deg) translateX(3px); } }
+.wp-writing-bar { height: 6px; border-radius: 999px; background: var(--paper-warm); border: 1px solid var(--line); overflow: hidden; margin-bottom: 12px; }
+.wp-writing-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--orange), #F5B08A, var(--orange)); background-size: 200% 100%; animation: wpBar 1.4s linear infinite; transition: width 0.6s ease-out; }
+@keyframes wpBar { from { background-position: 0 0; } to { background-position: 200% 0; } }
+.wp-writing-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12.5px; color: var(--ink-mute); }
+.wp-writing-steps li { display: flex; align-items: center; gap: 8px; transition: color 0.3s; }
+.wp-writing-steps li i { width: 14px; height: 14px; border-radius: 999px; border: 1.5px solid var(--line); flex-shrink: 0; display: inline-block; }
+.wp-writing-steps li.cur { color: var(--ink); font-weight: 700; }
+.wp-writing-steps li.cur i { border-color: var(--orange); box-shadow: 0 0 0 0 rgba(216,90,42,0.5); animation: unreadPulse 1.4s ease-out infinite; }
+.wp-writing-steps li.done { color: var(--ink-soft); }
+.wp-writing-steps li.done i { background: var(--green); border-color: var(--green); }
+.wp-writing p { margin: 12px 0 0; font-size: 11.5px; color: var(--ink-mute); }
+@media (prefers-reduced-motion: reduce) { .wp-writing-pen, .wp-writing-bar i, .wp-writing-steps li.cur i { animation: none; } }
 .wp-history-head { padding: 8px 18px 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--ink-mute); text-transform: uppercase; }
 @media (max-width: 880px) { .wp-services { grid-template-columns: 1fr; } .wp-balance-r { text-align: left; justify-items: start; } }
 /* 진단 문답 (심리테스트처럼 한 장씩) */
@@ -560,6 +576,16 @@ body::before {
 .cr-sec { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .cr-sec-t { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--orange); margin-bottom: 8px; }
 .cr-lead { font-size: 14.5px !important; font-weight: 700; }
+.wp-star { justify-self: start; margin-top: 4px; font-family: inherit; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; }
+.wp-star.on { border-color: var(--orange); color: var(--orange); background: var(--orange-soft); }
+.cr-fix .wp-star, .cr-terms .wp-star { display: inline-block; margin-top: 4px; }
+.wb-archive { display: grid; gap: 8px; }
+.wb-archive-item { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--orange); border-radius: 12px; padding: 12px 16px; display: grid; gap: 3px; }
+.wb-archive-item b { font-size: 15px; font-weight: 600; }
+.wb-archive-item span { font-size: 12.5px; color: var(--ink-soft); }
+.wb-archive-item small { font-size: 12px; color: var(--ink-mute); line-height: 1.5; }
+.wb-archive-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 11px; color: var(--ink-mute); }
+.wb-archive-meta em { font-style: normal; }
 .cr-reads { display: grid; gap: 8px; }
 .cr-read { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
 .cr-read b { font-size: 14px; color: #F5B08A; }
@@ -6833,6 +6859,21 @@ function SlackPing({ scn, npc, day, ready, onOpen }) {
 // ============================================================
 const _otKey = (email, day) => "__OD_OT_" + (email || "guest") + "_" + day;
 // task_progress.tasks 의 밑줄 메타(_rev 복습 기록, _known 이미 알아요)를 기기 간 복원 (2026-09-05). 완주 계산과 무관.
+// hydrate 가 DB 를 기다리는 동안 앱이 새로 저장한 노트(상담·건진 문장·포인트 등)가 옛 스냅샷에 덮여 사라지지 않게,
+// 쓰기 직전에 지금 저장소를 다시 읽어 노트를 합친다 (2026-09-05).
+function _odMergeFreshNotes(local) {
+  try {
+    const fresh = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    if (!fresh || !fresh.savedNotes) return local;
+    const out = { ...(local.savedNotes || {}) };
+    Object.keys(fresh.savedNotes).forEach(d => {
+      const have = new Set((out[d] || []).map(n => n && n.text));
+      (fresh.savedNotes[d] || []).forEach(n => { if (n && n.text && !have.has(n.text)) { out[d] = (out[d] || []).concat([n]); have.add(n.text); } });
+    });
+    local.savedNotes = out;
+  } catch (e) {}
+  return local;
+}
 function _odRestoreMetaFromTasks(email, task_progress) {
   try {
     if (!email || !task_progress) return;
@@ -9538,12 +9579,15 @@ function WordBookPage({ openScene }) {
       <div class="cover"><div class="eyebrow">SALARY REVIEW PREP · 1일1비</div><h1><em>${esc(USER.name)}</em>의 협상 카드</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
       <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 카드</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
       ${rows}
+      ${archive.length ? `<div class="card"><div class="head"><span class="word">📌 리포트에서 건진 문장</span><span class="mean">${archive.length}개</span></div>${archive.map(x => `<div class="row"><label>${esc(String(x.src || "").slice(0, 6))}</label><p class="en">${esc(x.en)}${x.ko ? `<br/><span style="font-family:-apple-system,'Noto Sans KR',sans-serif;font-style:normal;color:#8A7A66">${esc(x.ko)}</span>` : ""}</p></div>`).join("")}</div>` : ""}
       <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
       </body></html>`);
     w.document.close();
   };
   const gridCells = SCENARIOS.filter(s => s.day <= 90).map(s => byDay[s.day] || { day: s.day, locked: true });
   const signupKo = USER.joinDate || "";
+  const archive = React.useMemo(() => _wpArchiveList().sort((a, b) => String(b.at).localeCompare(String(a.at))), [tick]);
+  useEffect(() => { const h = () => setTick(t => t + 1); window.addEventListener("od-archive", h); return () => window.removeEventListener("od-archive", h); }, []);
   return (
     <div className="wb">
       {/* ── 표지 ── */}
@@ -9616,6 +9660,23 @@ function WordBookPage({ openScene }) {
           </div>
         )}
       </section>
+
+      {/* ── 리포트에서 건진 문장 ── */}
+      {archive.length > 0 && (
+        <section className="wb-sec">
+          <div className="wb-sec-head"><h2>📌 리포트에서 건진 문장 <small>{archive.length}개 · 사수 리포트에서 내가 골라둔 것</small></h2></div>
+          <div className="wb-archive">
+            {archive.map((x, i) => (
+              <div key={i} className="wb-archive-item">
+                <b className="mono">{x.en}</b>
+                {x.ko && <span>{x.ko}</span>}
+                {x.use && <small>{x.use}</small>}
+                <div className="wb-archive-meta"><em>{x.src}{x.at ? " · " + String(x.at).slice(0, 10) : ""}</em><button className="wb-link" onClick={() => { _wpArchiveToggle(x); setTick(t => t + 1); }}>빼기</button></div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── 표현 카드 ── */}
       <section className="wb-sec">
@@ -10710,6 +10771,86 @@ const _WP_SAMPLE_ENGLISH = {
   closing: "지금까지의 변화는 문법을 더 배워서가 아니라 순서를 바꿔서 왔어요. 다음 30일은 딱 하나, 자리를 잡은 뒤의 30초예요. 그건 이미 갖고 있는 문장으로 충분해요.",
   oneLiner: "먼저 꺼낸 의견이 가장 오래 기억돼요. 이번 주 한 번만 해보세요.",
 };
+// 📌 리포트에서 건진 문장 아카이브: notes(kind archive, day 0). 복습 노트에 모이고 PDF 소장본에도 들어간다.
+function _wpArchiveList() { return _wpNotes("archive").filter(x => x && x.en); }
+function _wpArchiveHas(en) { const k = _wbNorm(en); return _wpArchiveList().some(x => _wbNorm(x.en) === k); }
+function _wpArchiveToggle(item) {
+  try {
+    const u = _wbUser(); u.savedNotes = u.savedNotes || {}; const arr = u.savedNotes["0"] || [];
+    const k = _wbNorm(item.en);
+    const idx = arr.findIndex(n => n.kind === "archive" && (() => { try { return _wbNorm(JSON.parse(n.text).en) === k; } catch (e) { return false; } })());
+    if (idx >= 0) {
+      const text = arr[idx].text; arr.splice(idx, 1); u.savedNotes["0"] = arr; localStorage.setItem("__OD_USER", JSON.stringify(u));
+      if (u.email && window.OD?.enabled && window.OD.deleteNoteRow) window.OD.deleteNoteRow(u.email, 0, text).catch(() => {});
+      window.dispatchEvent(new CustomEvent("od-archive")); return false;
+    }
+    _wpAddNote("archive", "건진 문장", { en: item.en, ko: item.ko || "", use: item.use || "", src: item.src || "", at: new Date().toISOString() });
+    window.dispatchEvent(new CustomEvent("od-archive")); return true;
+  } catch (e) { return false; }
+}
+function _wpPrintReport(view, userName) {
+  const esc = (x) => String(x || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const sec = (t, body) => body ? `<div class="sec"><div class="t">${esc(t)}</div>${body}</div>` : "";
+  const L = view.labels || {};
+  const html = [
+    view.oneLine ? sec("오늘의 한 줄", `<p class="lead">${esc(view.oneLine)}</p>`) : "",
+    (view.readings || []).length ? sec("기록에서 읽히는 나", view.readings.map(x => `<div class="read"><b>${esc(x.title)}</b><p>${esc(x.body)}</p>${x.evidence ? `<small>"${esc(x.evidence)}"</small>` : ""}</div>`).join("")) : "",
+    (view.diagnosis || []).length ? sec("사수가 드리는 말", view.diagnosis.map(x => `<p>${esc(x)}</p>`).join("")) : "",
+    (view.answer || []).length ? sec("사수가 드리는 말", view.answer.map(x => `<p>${esc(x)}</p>`).join("")) : "",
+    (view.strengths || []).length ? sec("지금 잘하고 있는 것", `<ul>${view.strengths.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`) : "",
+    (view.expressions || []).length ? sec("이번에 가져갈 표현 3개", view.expressions.map(x => `<div class="ex"><b>${esc(x.en)}</b><span>${esc(x.ko)}</span><small>${esc(x.use)}</small></div>`).join("")) : "",
+    (view.qa || []).length ? sec("진단 문답", view.qa.map(x => `<div class="qa"><div><b>Q.</b> ${esc(x.q)}</div><div><b>A.</b> ${esc(x.a)}</div><div class="c">▶ ${esc(x.coach)}</div></div>`).join("")) : "",
+    (view.fixes || []).length ? sec(L.fixes || "이렇게 말하면 더 자연스러울 거예요", view.fixes.map(x => `<div class="fix"><b>${esc(x.blank)}</b><span>→ ${esc(x.answer)}</span><small>${esc(x.why)}</small></div>`).join("")) : "",
+    (view.jobTerms || []).length ? sec(L.terms || "내 직무에서 알아두면 좋은 표현", view.jobTerms.map(x => `<div class="term"><b>${esc(x.term)}</b> <span>${esc(x.ko)}</span><br/><small>${esc(x.ex)}</small></div>`).join("")) : "",
+    (view.culture || []).length ? sec("외국계에서 더 잘 통하는 방식, 알고 계셨나요?", view.culture.map(x => `<div class="cul"><b>${esc(x.title)}</b><p>${esc(x.body)}</p></div>`).join("")) : "",
+    (view.steps || []).length ? sec("이번 주 해볼 것", `<ol>${view.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol>`) : "",
+    (view.actions || []).length ? sec(L.actions || "다음 주 액션", `<table><tr><th>할 것</th><th>어떻게</th><th>언제</th></tr>${view.actions.map(x => `<tr><td>${esc(x.task)}</td><td>${esc(x.how)}</td><td>${esc(x.when)}</td></tr>`).join("")}</table>`) : "",
+    (view.goals || []).length ? sec("다음 30일 목표", `<ol>${view.goals.map(x => `<li><b>${esc(x.goal)}</b><br/><small>측정: ${esc(x.measure)}</small></li>`).join("")}</ol>`) : "",
+    view.vision ? sec("1년 뒤의 모습", `<p>${esc(view.vision)}</p>`) : "",
+    view.closing ? `<p class="closing">${esc(view.closing)}</p>` : "",
+    view.oneLiner ? `<div class="sign">${esc(view.oneLiner)}<b>${esc(view.mentor || "사수")}</b></div>` : "",
+  ].join("");
+  const w = window.open("", "_blank");
+  if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
+  w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(userName)}님 ${esc(view.title)}</title>
+    <style>
+      body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 36px; line-height: 1.65; max-width: 820px; margin: 0 auto; }
+      .top { font-size: 10.5px; letter-spacing: .12em; font-weight: 800; color: #8A7A66; }
+      h1 { font-size: 22px; margin: 8px 0 4px; line-height: 1.35; }
+      .q { color: #5C4A36; font-size: 13px; margin-bottom: 8px; }
+      .sec { margin-top: 18px; padding-top: 12px; border-top: 1px dashed #C9BBA0; page-break-inside: avoid; }
+      .t { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: #D85A2A; margin-bottom: 8px; }
+      p { margin: 0 0 8px; font-size: 13.5px; }
+      .lead { font-weight: 700; font-size: 14.5px; }
+      .read { background: #2A1F14; color: #F4EFE3; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .read b { color: #F5B08A; display: block; margin-bottom: 2px; } .read p { color: #F4EFE3; margin: 0; font-size: 13px; } .read small { opacity: .75; font-family: Georgia, serif; font-style: italic; }
+      .ex { background: #FAF6EB; border: 1px solid #C9BBA0; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; } .ex b { display: block; font-size: 15px; font-family: Georgia, serif; font-style: italic; } .ex span { color: #5C4A36; font-size: 12.5px; } .ex small { display: block; color: #8A7A66; font-size: 12px; }
+      .qa { margin-bottom: 10px; font-size: 13px; } .qa .c { padding-left: 10px; border-left: 2px solid #D85A2A; margin-top: 2px; }
+      .fix { margin-bottom: 8px; font-size: 13px; } .fix b { display: block; font-family: Georgia, serif; font-style: italic; font-weight: 600; } .fix span { color: #4A7C59; font-weight: 800; } .fix small { display: block; color: #8A7A66; }
+      .term { margin-bottom: 6px; font-size: 13px; } .term span { color: #5C4A36; } .term small { color: #8A7A66; font-family: Georgia, serif; font-style: italic; }
+      .cul { margin-bottom: 8px; } .cul b { display: block; font-size: 13.5px; } .cul p { color: #5C4A36; font-size: 13px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12.5px; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #E2D8C4; vertical-align: top; } th { font-size: 11px; color: #5C4A36; background: #ECE3CF; }
+      ol, ul { margin: 0; padding-left: 18px; font-size: 13.5px; } li { margin-bottom: 4px; } li small { color: #8A7A66; }
+      .closing { margin-top: 16px; font-weight: 600; }
+      .sign { margin-top: 12px; padding: 10px 14px; background: #FFF3B8; border-radius: 8px; font-size: 13px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .sign b { float: right; }
+      .foot { margin-top: 24px; font-size: 11px; color: #8A7A66; }
+      @media print { body { padding: 0; } }
+    </style></head><body>
+    <div class="top">1일1비 · ${esc(view.title)} · ${esc(String(view.at || "").slice(0, 10))}</div>
+    <h1>${esc(view.headline)}</h1>
+    ${view.question ? `<div class="q">${esc(view.question)}</div>` : ""}
+    ${html}
+    <div class="foot">${esc(userName)}님의 기록과 진단 답을 바탕으로 ${esc(view.mentor || "사수")}가 썼어요. 1일1비 복지포인트 리포트.</div>
+    <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
+    </body></html>`);
+  w.document.close();
+}
+function WpStar({ item }) {
+  const [on, setOn] = useState(() => _wpArchiveHas(item.en));
+  useEffect(() => { const h = () => setOn(_wpArchiveHas(item.en)); window.addEventListener("od-archive", h); return () => window.removeEventListener("od-archive", h); }, [item.en]);
+  return <button className={"wp-star " + (on ? "on" : "")} title={on ? "복습 노트에서 빼기" : "복습 노트에 건져두기"} onClick={(e) => { e.stopPropagation(); setOn(_wpArchiveToggle(item)); }}>{on ? "📌 건짐" : "📌 건지기"}</button>;
+}
+
 function ConsultReportView({ view, mentor }) {
   const rich = !!(view.actions || view.goals || view.expressions);
   if (!rich) return (
@@ -10718,7 +10859,7 @@ function ConsultReportView({ view, mentor }) {
       {(view.answers || []).length > 0 && <div className="cr-answers">{view.answers.map((x, i) => <span key={i}><small>{x.q}</small>{x.a}</span>)}</div>}
       {(view.answer || []).map((p, i) => <p key={i}>{p}</p>)}
       {view.steps && view.steps.length > 0 && <ol>{view.steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
-      {view.english && view.english.length > 0 && <div className="wp-result-en">{view.english.map((x, i) => <p key={i}><span className="mono">{x.en}</span><small>{x.ko}</small></p>)}</div>}
+      {view.english && view.english.length > 0 && <div className="wp-result-en">{view.english.map((x, i) => <p key={i}><span className="mono">{x.en}</span><small>{x.ko}</small><WpStar item={{ en: x.en, ko: x.ko, use: "", src: view.title }} /></p>)}</div>}
       {view.oneLiner && <div className="air-sign">{view.oneLiner}<b>{view.mentor || mentor}</b></div>}
     </>
   );
@@ -10730,10 +10871,10 @@ function ConsultReportView({ view, mentor }) {
       {view.readings && view.readings.length > 0 && <Sec t="기록에서 읽히는 나"><div className="cr-reads">{view.readings.map((x, i) => <div key={i} className="cr-read"><b>{x.title}</b><p>{x.body}</p>{x.evidence && <small className="mono">"{x.evidence}"</small>}</div>)}</div></Sec>}
       {view.diagnosis && view.diagnosis.length > 0 && <Sec t="사수가 드리는 말">{view.diagnosis.map((p, i) => <p key={i}>{p}</p>)}</Sec>}
       {view.strengths && view.strengths.length > 0 && <Sec t="지금 잘하고 있는 것"><ul>{view.strengths.map((x, i) => <li key={i}>{x}</li>)}</ul></Sec>}
-      {view.expressions && view.expressions.length > 0 && <Sec t="⭐ 이번에 가져갈 표현 3개"><div className="cr-exprs">{view.expressions.map((x, i) => <div key={i} className="cr-expr"><b className="mono">{x.en}</b><span>{x.ko}</span><small>{x.use}</small></div>)}</div></Sec>}
+      {view.expressions && view.expressions.length > 0 && <Sec t="⭐ 이번에 가져갈 표현 3개"><div className="cr-exprs">{view.expressions.map((x, i) => <div key={i} className="cr-expr"><b className="mono">{x.en}</b><span>{x.ko}</span><small>{x.use}</small><WpStar item={{ en: x.en, ko: x.ko, use: x.use, src: view.title }} /></div>)}</div></Sec>}
       {view.qa && view.qa.length > 0 && <Sec t="진단 문답">{view.qa.map((x, i) => <div key={i} className="cr-qa"><div className="cr-qa-q">Q. {x.q}</div><div className="cr-qa-a">A. {x.a}</div><div className="cr-qa-c">▶ {x.coach}</div></div>)}</Sec>}
-      {view.fixes && view.fixes.length > 0 && <Sec t={(view.labels && view.labels.fixes) || "이렇게 말하면 더 자연스러울 거예요"}>{view.fixes.map((x, i) => <div key={i} className="cr-fix"><b className="mono">{x.blank}</b><span>→ <em className={String(x.answer || "").length > 24 ? "mono" : ""}>{x.answer}</em></span><small>{x.why}</small></div>)}</Sec>}
-      {view.jobTerms && view.jobTerms.length > 0 && <Sec t={(view.labels && view.labels.terms) || "내 직무에서 알아두면 좋은 표현"}><div className="cr-terms">{view.jobTerms.map((x, i) => <div key={i}><b>{x.term}</b><span>{x.ko}</span><small className="mono">{x.ex}</small></div>)}</div></Sec>}
+      {view.fixes && view.fixes.length > 0 && <Sec t={(view.labels && view.labels.fixes) || "이렇게 말하면 더 자연스러울 거예요"}>{view.fixes.map((x, i) => <div key={i} className="cr-fix"><b className="mono">{x.blank}</b><span>→ <em className={String(x.answer || "").length > 24 ? "mono" : ""}>{x.answer}</em></span><small>{x.why}</small><WpStar item={{ en: String(x.answer || "").length > 24 ? x.answer : String(x.blank || "").replace(/_+/g, x.answer || ""), ko: x.why, use: "", src: view.title }} /></div>)}</Sec>}
+      {view.jobTerms && view.jobTerms.length > 0 && <Sec t={(view.labels && view.labels.terms) || "내 직무에서 알아두면 좋은 표현"}><div className="cr-terms">{view.jobTerms.map((x, i) => <div key={i}><b>{x.term}</b><span>{x.ko}</span><small className="mono">{x.ex}</small><WpStar item={{ en: x.ex || x.term, ko: x.term + " · " + x.ko, use: "", src: view.title }} /></div>)}</div></Sec>}
       {view.culture && view.culture.length > 0 && <Sec t="외국계에서 더 잘 통하는 방식, 알고 계셨나요?">{view.culture.map((x, i) => <div key={i} className="cr-cul"><b>{x.title}</b><p>{x.body}</p></div>)}</Sec>}
       {view.actions && view.actions.length > 0 && <Sec t={(view.labels && view.labels.actions) || "다음 주 영어 액션"}><div className="cr-table"><div className="cr-tr cr-th"><span>할 것</span><span>어떻게</span><span>언제</span></div>{view.actions.map((x, i) => <div key={i} className="cr-tr"><span>{x.task}</span><span>{x.how}</span><span>{x.when}</span></div>)}</div></Sec>}
       {view.goals && view.goals.length > 0 && <Sec t="다음 30일 목표"><ol className="cr-goals">{view.goals.map((x, i) => <li key={i}><b>{x.goal}</b><small>측정: {x.measure}</small></li>)}</ol></Sec>}
@@ -10770,13 +10911,41 @@ function _wpRunConsult(sv, payload, labels, mentor, sample) {
     window.dispatchEvent(new CustomEvent("od-consult-done", { detail: out }));
     _wpNotifyDone(out);
   };
-  window.__wpJobs[key] = { at: Date.now(), title: sv.title };
+  window.__wpJobs[key] = { at: Date.now(), title: sv.title, meta: { sentences: (payload.stats && payload.stats.sentences || []).length, ot: (payload.stats && payload.stats.ot || []).length, answers: labels.length, weak: (payload.stats && payload.stats.weak || []).length } };
   try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch (e) {}
   if (sample.why) { setTimeout(() => finish(sample.data, true, sample.why), 600); return; }
   if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { setTimeout(() => finish(sample.data, true, "서버 연결 없음"), 600); return; }
   window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: mentor, word: "consult" })
     .then(r => { if (r && r.ok && r.consult && r.consult.headline) finish(r.consult, false); else finish(sample.data, true, "서버 응답 " + ((r && r.error) || "없음") + " · mentor-feedback 배포 확인"); })
     .catch(() => finish(sample.data, true, "서버 호출 실패 · mentor-feedback 배포 확인"));
+}
+
+// ✍️ 쓰는 중 모션: 사수가 실제로 하는 일을 단계로 보여준다 (읽기 → 맞춰보기 → 습관 찾기 → 액션 짜기 → 다듬기)
+function WpWriting({ mentor }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(t); }, []);
+  const jobs = Object.values(window.__wpJobs || {});
+  const job = jobs[0] || { at: Date.now(), title: "리포트", meta: {} };
+  const m = job.meta || {};
+  const elapsed = (now - job.at) / 1000;
+  const steps = [
+    { at: 0, t: `내가 쓴 문장 ${m.sentences || 0}개${m.ot ? "와 야근 문장 " + m.ot + "개" : ""}를 처음부터 끝까지 읽는 중` },
+    { at: 7, t: `진단 답 ${m.answers || 0}개와 기록을 맞춰보는 중` },
+    { at: 14, t: `반복되는 습관과 흔들리는 표현 ${m.weak || 0}개를 찾는 중` },
+    { at: 22, t: "이번 주 액션과 30일 목표를 짜는 중" },
+    { at: 30, t: "문장을 다듬는 중" },
+  ];
+  const pct = Math.min(96, Math.round(100 * (1 - Math.exp(-elapsed / 18))));
+  return (
+    <div className="wp-writing">
+      <div className="wp-writing-head"><span className="wp-writing-pen">✍️</span><b>{mentor} 사수가 {job.title}를 쓰고 있어요</b></div>
+      <div className="wp-writing-bar"><i style={{ width: pct + "%" }} /></div>
+      <ul className="wp-writing-steps">
+        {steps.map((st, i) => { const state = elapsed >= (steps[i + 1] ? steps[i + 1].at : 1e9) ? "done" : elapsed >= st.at ? "cur" : ""; return <li key={i} className={state}><i />{st.t}</li>; })}
+      </ul>
+      <p>다른 탭에 가 있어도 돼요. 다 되면 알림으로 불러드려요.</p>
+    </div>
+  );
 }
 
 function WelfarePointsSection() {
@@ -10871,10 +11040,10 @@ function WelfarePointsSection() {
         ))}
       </div>
       {svc && (
-        <div className="wp-ask-head" style={{ margin: "0 18px 8px" }}><b>{svc.emoji} {svc.title}</b><span>{(WP_DIAG[svc.id] || []).length}문항 · {CHARACTERS.mentor.name} 사수가 답과 내 기록(문장·교정·영역별 숫자)을 같이 읽고 써요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"} · {busy ? "쓰는 중…" : _wpFmt(svc.cost) + (balance < svc.cost ? " (모자라서 샘플)" : " 사용")}</span>{err && <div className="air-err" style={{ marginTop: 4 }}>{err}</div>}</div>
+        <div className="wp-ask-head" style={{ margin: "0 18px 8px" }}><b>{svc.emoji} {svc.title}</b><span>{(WP_DIAG[svc.id] || []).length}문항 · {CHARACTERS.mentor.name} 사수가 답과 내가 쓴 문장 전부를 읽고 리포트로 써요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"} · {busy ? "쓰는 중…" : _wpFmt(svc.cost) + (balance < svc.cost ? " (모자라서 샘플)" : " 사용")}</span>{err && <div className="air-err" style={{ marginTop: 4 }}>{err}</div>}</div>
       )}
       {svc && !busy && <DiagQuiz key={svc.id} topic={svc.id} initial={profile && profile.diag && profile.diag[svc.id] ? profile.diag[svc.id].answers : null} onDone={ask} onCancel={() => setSvc(null)} />}
-      {busy && <div className="wb-done" style={{ margin: "0 18px 14px" }}><b>✍️ {CHARACTERS.mentor.name} 사수가 {Object.values(window.__wpJobs || {}).map(j => j.title).join(", ") || "리포트"}를 쓰고 있어요…</b><p>한 장짜리라 30초쯤 걸려요. 다른 탭에 가 있어도 되고, 다 되면 알림으로 알려드려요.</p></div>}
+      {busy && <WpWriting mentor={CHARACTERS.mentor.name} />}
       {view && (
         <div className="wp-result">
           <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요" + (view.sampleWhy ? " · " + view.sampleWhy : "") + ")" : " · " + _wpFmt(view.cost) + " 사용"}</div>
@@ -10882,6 +11051,7 @@ function WelfarePointsSection() {
           <ConsultReportView view={view} mentor={CHARACTERS.mentor.name} />
           <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
             <button className="btn btn-ghost" onClick={() => setView(null)}>닫기</button>
+            <button className="btn btn-ghost" onClick={() => _wpPrintReport(view, USER.name)}>📄 PDF로 저장</button>
             {(() => { const sv = WP_SERVICES.find(x => x.id === view.topic); const a = profile && profile.diag && profile.diag[view.topic] && profile.diag[view.topic].answers; if (!sv || !a) return null; return <button className="btn btn-primary" disabled={busy} onClick={() => { setView(null); setSvc(sv); ask(a, sv); }}>{busy ? "쓰는 중…" : "같은 답으로 다시 받기 · " + _wpFmt(sv.cost)}</button>; })()}
             {(() => { const sv = WP_SERVICES.find(x => x.id === view.topic); if (!sv) return null; return <button className="btn btn-ghost" onClick={() => { setView(null); setSvc(sv); }}>답 바꿔서 다시</button>; })()}
           </div>
@@ -16901,6 +17071,7 @@ window.SimApp = App;
           console.warn("[boot-hydrate] user profile sync failed:", e.message);
         }
 
+        _odMergeFreshNotes(local);
         localStorage.setItem("__OD_USER", JSON.stringify(local));
 
         // ★ 동기화로 방금 내려온 만료 정보 즉시 반영 (2026-08-18):
@@ -17180,6 +17351,7 @@ window.SimApp = App;
       local.scenariosCompleted = mergedCompleted;
       local.savedNotes = mergedNotes;
       local.dailyJournals = mergedJournals;
+      _odMergeFreshNotes(local);
       localStorage.setItem("__OD_USER", JSON.stringify(local));
 
       // 공지 읽음 ID도 localStorage에 hydrate (READ_KEY는 컴포넌트에서 사용)
