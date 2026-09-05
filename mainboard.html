@@ -8895,13 +8895,13 @@ function LibraryPage({ openScene }) {
                           <div><label>{c.name} · {c.role}</label><p className="lib-quote">"{_hlQuote(s.quote, s.word)}"</p>{s.quoteKo && <p className="lib-ko">{s.quoteKo}</p>}</div>
                           <div><label>▶ 사수 · 언제 쓰는지</label><p>{_mentorNuanceLine(s)}</p></div>
                           <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{_buddyTipText(s)}</p></div>
-                          {myAnswer && myAnswer.sentence && <div><label>✏️ 내 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
-                          {myJournal && myJournal.text && <div><label>📝 내 시추에이션</label><p className="lib-mine">"{myJournal.text}"</p></div>}
-                          {savedNotes.length > 0 && <div><label>📒 저장한 노트 {savedNotes.length}개</label><p>{savedNotes.map(n => n.text).join("\n")}</p></div>}
+                          {myAnswer && myAnswer.sentence && <div><label>✏️ 그날 내가 쓴 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
                         </div>
                         <div className="lib-detail-actions">
                           <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); openScene(s); }}>시추에이션 다시 열기 →</button>
-                          <span>{(s.tags || []).map(t => "#" + t).join(" ")}</span>
+                          {(savedNotes.length > 0 || (myJournal && myJournal.text)) && (
+                            <span>📒 이 표현에 내 노트 {savedNotes.length + ((myJournal && myJournal.text) ? 1 : 0)}개 · 나만의 노트에서 봐요</span>
+                          )}
                         </div>
                       </td></tr>
                     )}
