@@ -417,9 +417,22 @@ body::before {
 .scs-mean { font-size: 15px; color: var(--ink-soft); margin-top: 6px; font-weight: 600; }
 .scs-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .scs-known { border-color: var(--green) !important; color: var(--green) !important; background: rgba(74,124,89,0.08) !important; }
-.scs-new { background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 800; color: var(--orange); cursor: pointer; padding: 6px 4px; animation: scsBlink 1.1s ease-in-out infinite; }
+/* 읽지 않은 메시지 한 줄: 슬랙 알림을 놓쳐도 카드 안에 그대로 남는다. 누르면 시추에이션 */
+.scs-msg { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 12px 14px; text-align: left; background: #2A1F14; color: #F4EFE3; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; box-shadow: 0 10px 24px -14px rgba(0,0,0,0.6); animation: scsPulse 2.4s ease-in-out infinite; }
+.scs-msg:hover { filter: brightness(1.08); }
+.scs-msg-avatar { position: relative; flex: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 15px; }
+.scs-msg-dot { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; border-radius: 50%; background: #E5533D; border: 2px solid #2A1F14; animation: scsBlink 1.1s ease-in-out infinite; }
+.scs-msg-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.scs-msg-from { font-size: 11.5px; color: rgba(244,239,227,0.7); }
+.scs-msg-from b { color: #F4EFE3; }
+.scs-msg-from em { font-style: normal; margin-left: 6px; font-weight: 800; color: #FFB380; }
+.scs-msg-text { font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.scs-msg-text .scene-target-word { background: rgba(255,214,102,0.28); color: #FFD666; padding: 0 3px; border-radius: 3px; }
+.scs-msg-cta { flex: none; font-size: 12px; font-weight: 800; color: #FFB380; white-space: nowrap; }
 @keyframes scsBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-@media (prefers-reduced-motion: reduce) { .scs-new { animation: none; } }
+@keyframes scsPulse { 0%, 100% { box-shadow: 0 10px 24px -14px rgba(0,0,0,0.6); } 50% { box-shadow: 0 10px 24px -14px rgba(0,0,0,0.6), 0 0 0 4px rgba(216,90,42,0.25); } }
+@media (prefers-reduced-motion: reduce) { .scs-msg, .scs-msg-dot { animation: none; } }
+@media (max-width: 880px) { .scs-msg-cta { display: none; } }
 @media (max-width: 880px) { .scene-card-simple .scene-card-body { padding: 18px 18px 20px; } .scs-word { font-size: 28px; } .scs-actions .btn { flex: 1 1 auto; justify-content: center; } }
 .scene-card-time {
   font-size: 11px; letter-spacing: 0.16em; font-weight: 700;
@@ -8279,17 +8292,22 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
   //   "이미 알아요"는 아는 단어 기록(__OD_KNOWN_WORDS) 후 모달을 열고 바로 작성란으로 내려간다.
   if (_isNextFeature()) {
     const [known, setKnown] = useState(() => { try { return (JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]")).some(x => x.day === scenario.day); } catch (e) { return false; } });
-    const _markKnown = () => {
+    // 토글: 처음 누르면 기록 + 바로 작성란으로, 다시 누르면 기록 해제 (잘못 눌렀을 때)
+    const _syncKnown = (val) => {
       try {
-        const k = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]");
-        if (!k.some(x => x.day === scenario.day)) { k.push({ day: scenario.day, word: scenario.word, at: new Date().toISOString() }); localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(k)); }
+        const k = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]").filter(x => x.day !== scenario.day);
+        if (val) k.push({ day: scenario.day, word: scenario.word, at: new Date().toISOString() });
+        localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(k));
       } catch (e) {}
-      setKnown(true);
       // 운영자가 볼 수 있게 서버에도 기록: task_progress.tasks 에 _known 메타 키 (밑줄 키는 완주 계산에서 제외)
       try {
         const em = (window.__SIM && window.__SIM.USER && window.__SIM.USER.email) || "";
-        if (em && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(em, scenario.day, { _known: true }).catch(() => {});
+        if (em && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(em, scenario.day, { _known: !!val }).catch(() => {});
       } catch (e) {}
+    };
+    const _markKnown = () => {
+      if (known) { setKnown(false); _syncKnown(false); return; }
+      setKnown(true); _syncKnown(true);
       try { sessionStorage.setItem("__OD_KNOWN_JUMP", String(scenario.day)); } catch (e) {}
       onOpen();
     };
@@ -8303,6 +8321,16 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
           <div className="scs-label">오늘의 표현</div>
           <div className="scs-word">{scenario.word}</div>
           <div className="scs-mean">{scenario.meaning}</div>
+          {!needCheckin && !done && (
+            <button className="scs-msg" onClick={onOpen} title="탭해서 답하기">
+              <span className="scs-msg-avatar" style={{ background: npc.color }}>{npc.avatar}<i className="scs-msg-dot" /></span>
+              <span className="scs-msg-body">
+                <span className="scs-msg-from"><b>{npc.name}</b> <em>새 메시지 1</em></span>
+                <span className="scs-msg-text">{_hlQuote(scenario.quote, scenario.word)}</span>
+              </span>
+              <span className="scs-msg-cta">답장하기 →</span>
+            </button>
+          )}
           <div className="scene-actions scs-actions">
             {needCheckin ? (
               <>
@@ -8314,8 +8342,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
             ) : (
               <>
                 <button className="btn btn-primary" onClick={onOpen}>▶ 시작하러 가기</button>
-                <button className={"btn btn-ghost" + (known ? " scs-known" : "")} onClick={_markKnown} title={known ? "아는 표현으로 기록됐어요. 눌러서 바로 한 줄 써요" : "아는 표현이면 설명 건너뛰고 바로 한 줄 써요"}>{known ? "✓ 이미 아는 표현" : "✓ 이미 알아요"}</button>
-                <button className="scs-new" onClick={onOpen} title="새 메시지가 와 있어요">● 새 메시지 1</button>
+                <button className={"btn btn-ghost" + (known ? " scs-known" : "")} onClick={_markKnown} title={known ? "아는 표현으로 기록됐어요. 다시 누르면 해제돼요" : "아는 표현이면 설명 건너뛰고 바로 한 줄 써요"}>{known ? "✓ 이미 아는 표현 (해제)" : "✓ 이미 알아요"}</button>
               </>
             )}
           </div>
