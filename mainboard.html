@@ -10527,6 +10527,11 @@ function _wpAddNote(kind, label, obj) {
     if (u.email && window.OD?.enabled && window.OD.saveNoteRow) window.OD.saveNoteRow(u.email, 0, text, label, kind).catch(() => {});
   } catch (e) {}
 }
+const _WP_SAMPLES = {
+  career: { headline: "경험이 없는 직무는 이력서로 못 넘어가요. 지금 하는 일을 그 직무의 언어로 다시 쓰면 넘어가요.", answer: ["본사·해외 포지션에 이미 지원 중이고 막히는 게 영문 이력서와 링크드인이라면, 문제는 영어가 아니라 '증거의 순서'예요. 외국계 리크루터는 첫 5초에 직무명과 숫자 두 개만 봐요. 지금 이력서는 아마 회사 순서로 적혀 있을 거예요. 지원 직무의 키워드(예: operations, workflow automation)를 맨 위 한 줄 요약에 먼저 놓고, 그 아래에 그 키워드가 실제로 들어간 프로젝트만 남기세요.", "그 직무 경험이 없다는 건 반만 맞아요. 지금 일에서 반복 업무를 줄인 적, 프로세스를 문서화한 적, 툴을 붙여 시간을 아낀 적이 한 번이라도 있으면 그게 operations 경험이에요. 그걸 'Automated weekly reporting, cutting 4 hours to 30 minutes'처럼 동사 + 숫자로 바꾸는 게 이번 달 할 일이에요. 3개월 안이면 링크드인 헤드라인 교체, 이력서 한 장, 해당 직무 사람 5명과 커피챗 순서로 가면 돼요."], steps: ["링크드인 헤드라인을 '현재 직함'이 아니라 '가려는 직무 + 숫자 한 개'로 바꾸세요.", "이력서 상단 3줄 요약을 지원 직무의 JD 단어로 다시 쓰세요.", "그 직무로 이미 옮긴 사람 5명에게 15분 커피챗을 요청하세요. 그중 한 명이 레퍼럴이 돼요."], english: [{ en: "I'm exploring a move into operations and would love 15 minutes to hear how you made the switch.", ko: "오퍼레이션 쪽으로 옮기려고 알아보는 중인데, 어떻게 옮기셨는지 15분만 들을 수 있을까요." }, { en: "Streamlined the weekly reporting workflow, cutting turnaround from 4 hours to 30 minutes.", ko: "주간 보고 워크플로를 정리해 처리 시간을 4시간에서 30분으로 줄였습니다." }], oneLiner: "경험은 없는 게 아니라 아직 그 직무의 말로 안 적힌 거예요. 이번 주에 세 줄만 바꿔보세요." },
+  job: { headline: "일정이 자꾸 바뀌는 건 내 문제가 아니라 합의가 문서에 없는 문제예요.", answer: ["본사 쪽 기대치가 계속 흔들리고 팀장은 맞추라고만 하면, 지금 필요한 건 더 빨리 맞추는 게 아니라 '무엇을 언제까지'를 글로 못 박는 거예요. 외국계는 회의에서 한 말보다 슬랙에 남은 한 줄을 기준으로 움직여요. 바뀔 때마다 'Just to confirm, the new date is X. That pushes Y to Z, is that okay?' 한 줄을 남기면, 그 다음부턴 바꾸는 쪽이 비용을 설명해야 해요.", "그리고 팀장에겐 하소연 대신 선택지를 주세요. '둘 다는 안 됩니다' 말고 'A를 먼저 하면 B는 다음 주, B를 먼저 하면 A는 금요일. 어느 쪽으로 할까요?' 이렇게요. 우선순위를 정하는 건 팀장의 일이고, 그 일을 하게 만드는 게 지금 당신이 할 일이에요."], steps: ["일정이 바뀔 때마다 슬랙에 확인 한 줄을 남기세요. 감정 없이, 날짜와 영향만.", "이번 주 팀장 1:1에서 우선순위 선택지 두 개를 들고 가세요.", "바뀐 일정과 그 영향을 한 줄씩 적은 로그를 만드세요. 다음 분기 평가 때 그게 근거가 돼요."], english: [{ en: "Just to confirm, the launch moves to the 20th. That pushes the QA window to next week, is that okay?", ko: "확인차 남겨요. 런칭이 20일로 밀리면 QA 기간이 다음 주로 넘어가는데 괜찮을까요?" }, { en: "If we prioritize A, B lands next Tuesday. Which would you rather have first?", ko: "A를 먼저 하면 B는 다음 주 화요일이에요. 어느 쪽을 먼저 받으시겠어요?" }], oneLiner: "말한 건 사라지고 적은 건 남아요. 이번 주엔 한 줄만 남겨보세요." },
+  work: { headline: "직설적인 피드백은 당신에 대한 판단이 아니라 일에 대한 정보예요.", answer: ["외국인 상사의 피드백이 직설적이라 매번 위축된다면, 먼저 알아둘 게 있어요. 그쪽 문화에서 피드백은 '너를 평가한다'가 아니라 '이 결과물을 다음엔 이렇게'예요. 감정을 빼고 말하는 게 예의인 문화라서, 우리 귀엔 차갑게 들려요. 상사가 당신을 싫어하는 게 아니라, 당신이 고칠 수 있다고 믿어서 말하는 거예요. 안 믿으면 말도 안 해요.", "그래도 위축되는 건 당연해요. 몇 달째 그런 상태면 에너지가 먼저 닳아요. 피드백을 받을 때 '알겠습니다' 대신 'Got it. So the priority is X, right?' 하고 되묻는 습관 하나만 들이세요. 되묻는 순간 피드백은 대화가 되고, 대화가 되면 덜 아파요. 그리고 쉬는 시간에 혼자 있는 걸 고르고 있다면, 이번 주 한 번은 사람을 만나세요. 회사 얘기 안 해도 돼요."], steps: ["피드백을 받으면 한 문장으로 되물어 확인하세요. 감정 대신 우선순위를 묻는 거예요.", "이번 주 한 번, 회사 밖 사람과 회사 얘기 없이 밥을 먹으세요.", "잘한 일 한 줄을 매일 어디든 적어두세요. 피드백만 쌓이면 기억이 한쪽으로 기울어요."], english: [{ en: "Got it. So the priority is getting the numbers right before the format, correct?", ko: "알겠어요. 그러니까 형식보다 숫자를 먼저 맞추는 게 우선이라는 거죠?" }], oneLiner: "피드백은 정보고, 당신은 정보보다 큰 사람이에요. 이번 주 한 번만 되물어보세요." },
+};
 const _WP_SAMPLE = { headline: "질문의 핵심은 '내 의견을 먼저 꺼내도 되는가'예요. 돼요, 그리고 그게 기대돼요.", answer: ["외국계에서 침묵은 동의로 읽혀요. 반대든 질문이든 회의 안에서 한 번은 목소리를 내는 게 평가에 유리해요.", "지금 기록을 보면 회의 발언 표현은 튼튼한데 반대 의견 표현(push back, I see it differently)은 아직 한 번도 안 썼어요. 다음 회의에서 그 둘 중 하나를 준비해 가세요."], steps: ["회의 전 안건마다 내 입장을 한 줄 영어로 적어두세요.", "'I see it a bit differently. Could we…'로 시작하는 문장 하나를 외워 가세요.", "말한 뒤 슬랙에 요약을 남겨 기록으로 굳히세요."], oneLiner: "먼저 꺼낸 의견이 가장 오래 기억돼요. 이번 주 한 번만 해보세요." };
 function _wpFmt(n) { return Number(n || 0).toLocaleString("ko-KR") + "P"; }
 
@@ -10729,17 +10734,18 @@ function WelfarePointsSection() {
     const payload = { topic: svc.id, title: svc.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
       stats: { learned: rp.words.length, mine: rp.sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 6) })), recentQuestions: (rp.questions || []).slice(-5), fixed, recentSentences: (rp.sentences || []).slice(-8).map(x => ({ word: x.word, text: x.text })) } };
     const isSample = !balanceOk(svc);
-    const done = (ans, sample) => {
-      const out = { ...ans, topic: svc.id, title: svc.title, answers: labels, question: payload.question, cost: sample ? 0 : svc.cost, sample: !!sample, at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
+    const done = (ans, sample, why) => {
+      const out = { ...ans, topic: svc.id, title: svc.title, answers: labels, question: payload.question, cost: sample ? 0 : svc.cost, sample: !!sample, sampleWhy: sample ? (why || "") : "", at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
       _wpAddNote("consult", svc.title, out);
       if (!sample) _wpAddNote("points", "복지포인트 사용 · " + svc.title, { type: "spend", item: svc.id, title: svc.title, cost: svc.cost, at: out.at });
       setBusy(false); setSvc(null); setView(out); setTick(t => t + 1);
     };
-    const sample = svc.id === "english" ? _WP_SAMPLE_ENGLISH : _WP_SAMPLE;
-    if (isSample || !(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(sample, true); return; }
+    const sample = svc.id === "english" ? _WP_SAMPLE_ENGLISH : (_WP_SAMPLES[svc.id] || _WP_SAMPLE);
+    if (isSample) { done(sample, true, "포인트 부족"); return; }
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(sample, true, "서버 연결 없음"); return; }
     window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: CHARACTERS.mentor.name, word: "consult" })
-      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(sample, true); })
-      .catch(() => done(sample, true));
+      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(sample, true, "서버 응답 " + ((r && r.error) || "없음") + " · mentor-feedback 배포 확인"); })
+      .catch(() => done(sample, true, "서버 호출 실패 · mentor-feedback 배포 확인"));
   };
   const balanceOk = (s) => balance >= s.cost;
 
@@ -10776,7 +10782,7 @@ function WelfarePointsSection() {
       {svc && busy && <div className="wb-done" style={{ margin: "0 18px 14px" }}><b>{CHARACTERS.mentor.name} 사수가 답과 기록을 읽고 있어요…</b><p>한 장짜리 리포트라 20초쯤 걸려요.</p></div>}
       {view && (
         <div className="wp-result">
-          <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요)" : " · " + _wpFmt(view.cost) + " 사용"}</div>
+          <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요" + (view.sampleWhy ? " · " + view.sampleWhy : "") + ")" : " · " + _wpFmt(view.cost) + " 사용"}</div>
           {view.question && <div className="wp-result-q">{view.topic === "english" ? "🎯 30일 뒤 바라는 모습: " : "❓ "}{view.question}</div>}
           <ConsultReportView view={view} mentor={CHARACTERS.mentor.name} />
           <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setView(null)}>닫기</button>
