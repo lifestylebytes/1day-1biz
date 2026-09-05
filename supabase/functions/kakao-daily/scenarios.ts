@@ -633,7 +633,7 @@ export const SCENARIOS: Scn[] = [
  }
 ];
 // 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 를 아래로 교체
-export const CONTENT_CUTOVER = "2026-09-06";
+export const CONTENT_CUTOVER = "2099-12-31";
 export const SCENARIOS_V2: Scn[] = [
  {
   "day": 1,
