@@ -15583,6 +15583,9 @@ window.SimApp = App;
             localStorage.removeItem(tourKey);
             // 설문 팝업도 다시 뜨게 (dev 테스트용)
             localStorage.removeItem('__OD_SURVEY_2026_06W2');
+            // 슬랙 알림 핑 / 야근 / 내일 미리 쓰기 확인도 다시 (dev 테스트용)
+            localStorage.removeItem('__OD_PING_DAY_' + day);
+            Object.keys(localStorage).filter(k => k.startsWith('__OD_OT_') && k.endsWith('_' + day)).forEach(k => localStorage.removeItem(k));
           } catch (e) {}
           location.reload();
         }
