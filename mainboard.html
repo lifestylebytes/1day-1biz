@@ -463,6 +463,39 @@ body::before {
 }
 .catchup-btn:hover { filter: brightness(1.08); }
 
+/* ===== 메인보드 2 (개발 뷰 전용, 단순 홈: CTA 하나 + 오늘의 표현 + 사수/유버디) ===== */
+.h2 { max-width: 560px; margin: 0 auto; padding: 8px 0 40px; }
+.h2-eyebrow { font-size: 12px; font-weight: 700; color: var(--ink-mute); letter-spacing: 0.04em; margin-bottom: 6px; }
+.h2-title { font-size: 26px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.25; margin: 0 0 18px; }
+.h2-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 16px; padding: 22px; text-align: left; font-family: inherit; cursor: pointer; box-shadow: 5px 5px 0 rgba(216,90,42,0.25); }
+.h2-cta:hover { filter: brightness(0.96); }
+.h2-cta.done { background: var(--paper-warm); color: var(--ink-soft); border: 1px dashed var(--line); box-shadow: none; cursor: default; }
+.h2-cta-main { font-size: 21px; font-weight: 900; letter-spacing: -0.01em; }
+.h2-cta-sub { font-size: 13px; opacity: 0.92; }
+.h2-steps { list-style: none; display: flex; gap: 6px; padding: 0; margin: 14px 0 26px; }
+.h2-steps li { flex: 1; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink-mute); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); }
+.h2-steps li i { font-style: normal; flex: none; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; background: var(--paper-warm); color: var(--ink-mute); }
+.h2-steps li.now { color: var(--ink); border-color: var(--orange); }
+.h2-steps li.now i { background: var(--orange); color: #fff; }
+.h2-steps li.done { color: var(--ink-soft); }
+.h2-steps li.done i { background: var(--ink); color: var(--paper); }
+.h2-word { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 14px; }
+.h2-word-locked { border-style: dashed; background: transparent; }
+.h2-word-label { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+.h2-word-main { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+.h2-word-mean { font-size: 15px; color: var(--ink-soft); margin-top: 6px; }
+.h2-word-scene { font-size: 13.5px; line-height: 1.6; color: var(--ink-soft); margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); }
+.h2-link { margin-top: 12px; background: none; border: none; padding: 0; font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--orange); cursor: pointer; }
+.h2-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 26px; }
+.h2-note { border-radius: 14px; padding: 16px; font-size: 13px; line-height: 1.6; }
+.h2-note b { display: block; font-size: 12px; margin-bottom: 6px; }
+.h2-note p { margin: 0; white-space: pre-line; }
+.h2-note-mentor { background: #FFF3B8; color: #3A2E10; }
+.h2-note-buddy { background: var(--paper-warm); border: 1px solid var(--line); }
+.h2-more { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.h2-more button { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+@media (max-width: 880px) { .h2 { padding-top: 0; } .h2-title { font-size: 22px; } .h2-cta { padding: 18px; } .h2-cta-main { font-size: 18px; } .h2-notes { grid-template-columns: 1fr; } .h2-steps li { padding: 8px 6px; font-size: 11px; gap: 4px; } .h2-word-main { font-size: 26px; } }
+
 /* ===== 타이쿤 이식 (로컬 전용, __OD_NEXT) ===== */
 .ty-away { background: var(--cream); border: 2px solid var(--orange); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 3px 3px 0 rgba(216,90,42,0.18); }
 .ty-away-head { font-weight: 900; font-size: 13.5px; color: var(--ink); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
@@ -4721,6 +4754,18 @@ window.__OD_IS_FULLTIME = _isFulltimeLevel;
 const _isNextFeature = () => {
   try { return localStorage.getItem("__OD_NEXT") === "1"; } catch (e) { return false; }
 };
+// 메인보드 2 (2026-09-05): 콘텐츠만 남긴 단순 홈. 개발 뷰가 켜진 상태에서만 동작.
+//   켜는 법: ?home2=1 또는 우상단 '홈 2' 토글. 끄는 법: ?home2=0
+(() => {
+  try {
+    const q = new URLSearchParams(location.search).get("home2");
+    if (q === "1") localStorage.setItem("__OD_HOME2", "1");
+    if (q === "0") localStorage.removeItem("__OD_HOME2");
+  } catch (e) {}
+})();
+const _isHome2 = () => {
+  try { return _isNextFeature() && localStorage.getItem("__OD_HOME2") === "1"; } catch (e) { return false; }
+};
 
 // ============================================================
 // 역량 스탯: Day 1~90 각 시나리오가 어느 역량 영역인지
@@ -6215,6 +6260,96 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const _nextRow = scheduleWithStatus.find(r => r.computed === "now");
   const _nextIdx = scheduleWithStatus.findIndex(r => r.computed === "now");
   const _noneDone = !scheduleWithStatus.some(r => r.computed === "done");
+
+  // ★ 메인보드 2 (2026-09-05, 개발 뷰 전용): 기존 카드 전부 걷어내고 콘텐츠만.
+  //   위에서부터 CTA 하나 → 4단계 진행 → 오늘의 표현 → 사수(언제 쓰는지)/유버디(쉽게 외우는 법).
+  //   출근 전엔 표현 카드가 잠겨 있어서 첫 화면이 버튼 하나로 끝난다. 핸들러/모달은 기존 것을 그대로 쓴다.
+  if (_isHome2() && !USER.isViewingPast) {
+    const _h2Label = (row) => {
+      if (!row) return "";
+      if (row.id === "checkin") return "출근 도장 찍기";
+      if (row.id === "scenario") return "오늘의 상황 보기";
+      if (row.id === "wrapup") return "한 줄 쓰고 퇴근하기";
+      return row.title;
+    };
+    const _h2Step = (id) => id === "checkin" ? "출근" : id === "scenario" ? "상황" : id === "wrapup" ? "퇴근" : "미션";
+    const _checked = !!doneTasks.checkin;
+    const _d = USER.currentDay;
+    const _title = !_nextRow ? "오늘 몫은 끝났어요."
+      : _noneDone ? (_d === 1 ? "첫 출근이에요. 오늘은 한 줄이면 돼요." : "오늘도 한 줄이면 돼요.")
+      : "이어서 하면 돼요.";
+    return (
+      <div className="h2">
+        <div className="h2-eyebrow">{todayLabel} · DAY {_d} / {USER.totalDays}</div>
+        <h1 className="h2-title">{_title}</h1>
+
+        {_nextRow ? (
+          <button className="h2-cta" onClick={() => handleScheduleClick(_nextRow, _nextIdx)}>
+            <span className="h2-cta-main">{_noneDone ? "☀️ 오늘 일정 시작하기" : "▶ " + _h2Label(_nextRow)}</span>
+            <span className="h2-cta-sub">{_noneDone ? "출근 도장 찍고 오늘의 표현 받기 · 5분이면 끝나요" : (_nextIdx + 1) + "/" + scheduleWithStatus.length + " 단계 · " + (_nextRow.note || "다음 일정")}</span>
+          </button>
+        ) : (
+          <div className="h2-cta done">
+            <span className="h2-cta-main">✓ Day {_d} 완주</span>
+            <span className="h2-cta-sub">내일 아침에 새 표현이 올라와요.</span>
+          </div>
+        )}
+        <ol className="h2-steps">
+          {scheduleWithStatus.map((r, i) => (
+            <li key={r.id} className={r.computed}><i>{r.computed === "done" ? "✓" : i + 1}</i>{_h2Step(r.id)}</li>
+          ))}
+        </ol>
+
+        {_checked ? (
+          <section className="h2-word">
+            <div className="h2-word-label">오늘의 표현</div>
+            <div className="h2-word-main">{today.word}</div>
+            <div className="h2-word-mean">{today.meaning}</div>
+            <p className="h2-word-scene">{_sceneNoClock(today.scene)}</p>
+            {!doneTasks.scenario && scheduleWithStatus[1] && (
+              <button className="h2-link" onClick={() => handleScheduleClick(scheduleWithStatus[1], 1)}>상황 보러 가기 →</button>
+            )}
+          </section>
+        ) : (
+          <section className="h2-word h2-word-locked">
+            <div className="h2-word-label">오늘의 표현</div>
+            <div className="h2-word-mean">출근 도장을 찍으면 사수가 오늘의 표현을 줘요.</div>
+          </section>
+        )}
+
+        {_checked && (
+          <div className="h2-notes">
+            <div className="h2-note h2-note-mentor">
+              <b>▶ {CHARACTERS.mentor.name} 사수 · 언제 쓰는지</b>
+              <p>{_mentorNuanceLine(today)}</p>
+            </div>
+            <div className="h2-note h2-note-buddy">
+              <b>💡 유버디 · 쉽게 외우는 법</b>
+              <p>{_buddyTipText(today)}</p>
+            </div>
+          </div>
+        )}
+
+        <nav className="h2-more">
+          <button onClick={() => setActive("library")}>📓 업무 노트</button>
+          <button onClick={() => setActive("mypage")}>🪪 사원증</button>
+        </nav>
+
+        {toast && (
+          <div style={{
+            position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)",
+            background: "#2A1F14", color: "#F4EFE3", padding: "12px 20px", borderRadius: 10,
+            fontSize: 13, fontWeight: 600, lineHeight: 1.5, boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
+            maxWidth: 420, zIndex: 9000, animation: "fadeUp 0.25s ease-out",
+          }}>{toast}</div>
+        )}
+        {activeItem ? (
+          <ActivityModal item={activeItem.item} today={today} onClose={() => setActiveItem(null)} onComplete={completeActivity} />
+        ) : null}
+        {showSurvey && USER.email && <SurveyModal email={USER.email} onClose={closeSurvey} />}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -13741,6 +13876,25 @@ function App() {
               letterSpacing: "0.02em",
             }}
           >{_devOn ? "🛠 개발 뷰 ON" : "🛠 개발 뷰"}</button>
+        );
+      })()}
+      {/* ── 메인보드 2 토글 (개발 뷰 켜진 상태에서만). 기존 홈 ↔ 단순 홈 ── */}
+      {_isInternal && _isNextFeature() && (() => {
+        const _h2On = _isHome2();
+        return (
+          <button
+            onClick={() => { try { if (_h2On) localStorage.removeItem("__OD_HOME2"); else localStorage.setItem("__OD_HOME2", "1"); } catch (e) {} location.reload(); }}
+            title="메인보드 2 (단순 홈) 미리보기"
+            style={{
+              position: "fixed", top: 14, right: 226, zIndex: 8000,
+              padding: "8px 12px", borderRadius: 22,
+              background: _h2On ? "var(--orange)" : "transparent",
+              color: _h2On ? "#fff" : "var(--ink-mute)",
+              border: "1px solid " + (_h2On ? "var(--orange)" : "var(--line)"),
+              fontSize: 12.5, fontWeight: 800, fontFamily: "inherit", cursor: "pointer",
+              letterSpacing: "0.02em",
+            }}
+          >{_h2On ? "🏠 홈 2 ON" : "🏠 홈 2"}</button>
         );
       })()}
 
