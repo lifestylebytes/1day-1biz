@@ -298,6 +298,20 @@ body::before {
   text-transform: uppercase;
 }
 .scene-card-body { padding: 24px 28px 28px; }
+/* 슬랙 알림 핑 (개발 뷰): 휴대폰 알림처럼 위에서 내려오는 NPC 메시지 */
+.slack-ping { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 8500; width: min(420px, calc(100vw - 24px)); animation: pingDown 480ms cubic-bezier(.2,1.2,.3,1) both; }
+.slack-ping-card { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; background: rgba(42,31,20,0.96); color: var(--paper); border: none; border-radius: 16px; padding: 12px 14px; box-shadow: 0 18px 40px rgba(0,0,0,0.35); cursor: pointer; font-family: inherit; backdrop-filter: blur(8px); }
+.slack-ping-avatar { flex: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 15px; }
+.slack-ping-body { flex: 1; min-width: 0; }
+.slack-ping-from { font-size: 11.5px; color: rgba(244,239,227,0.7); margin-bottom: 3px; }
+.slack-ping-from b { color: var(--paper); }
+.slack-ping-from span { float: right; font-size: 10.5px; }
+.slack-ping-text { font-size: 14px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.slack-ping-text .scene-target-word { background: rgba(255,214,102,0.28); color: #FFD666; padding: 0 3px; border-radius: 3px; }
+.slack-ping-hint { margin-top: 6px; font-size: 11px; font-weight: 800; color: #FFB380; }
+.slack-ping-x { position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); font-size: 12px; cursor: pointer; }
+@keyframes pingDown { from { opacity: 0; transform: translate(-50%, -24px) scale(0.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .slack-ping { animation: none; } }
 /* 단순 시추에이션 카드 (개발 뷰): 표현·뜻·버튼 둘 */
 .scene-card-simple .scene-card-body { padding: 22px 28px 26px; }
 .scs-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px; }
@@ -5852,6 +5866,62 @@ function UnlockChip({ k, rd }) {
   return <span className="unlock-chip">NEW · 오늘 열렸어요</span>;
 }
 
+// ── 슬랙 알림 핑 (2026-09-05, 개발 뷰) ──
+// 단순 카드에서 뺀 NPC 대사를 "메시지가 온 것처럼" 보여준다. 출근 뒤, 팝업이 다 닫히고 1.5초 지나면
+// 휴대폰 알림처럼 위에서 내려온다. 탭하면 시추에이션이 열린다. 하루 1회.
+function _popupOpen() {
+  try {
+    const els = document.querySelectorAll('.modal-bg, .tour-dim, [style*="position: fixed"]');
+    for (const el of els) {
+      if (el.closest('.slack-ping')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width >= window.innerWidth * 0.8 && r.height >= window.innerHeight * 0.6 && getComputedStyle(el).display !== 'none') return true;
+    }
+  } catch (e) {}
+  return false;
+}
+function SlackPing({ scn, npc, day, ready, onOpen }) {
+  const [show, setShow] = useState(false);
+  const KEY = "__OD_PING_DAY_" + day;
+  const mark = () => { try { localStorage.setItem(KEY, "1"); } catch (e) {} };
+  React.useEffect(() => {
+    if (!ready || !_isNextFeature()) return;
+    try { if (localStorage.getItem(KEY) === "1") return; } catch (e) {}
+    // 팝업들은 저마다 1~3초 뒤에 뜨므로, 처음엔 최소 2.5초 기다리고 그 뒤로 1.5초 조용하면 띄운다.
+    // 떠 있는 동안 팝업이 올라오면 잠시 숨겼다가 팝업이 닫힌 뒤 다시 나온다. 12초 보여주면 그날은 끝.
+    let quiet = 0, elapsed = 0, visible = 0, shown = false, ended = false;
+    const iv = setInterval(() => {
+      if (ended) return;
+      elapsed += 400;
+      const busy = _popupOpen();
+      if (shown) {
+        if (busy) { shown = false; setShow(false); quiet = 0; return; }
+        visible += 400;
+        if (visible >= 12000) { ended = true; clearInterval(iv); setShow(false); mark(); }
+        return;
+      }
+      if (busy) { quiet = 0; return; }
+      quiet += 400;
+      if (quiet >= 1500 && elapsed >= 2500) { shown = true; setShow(true); }
+    }, 400);
+    return () => clearInterval(iv);
+  }, [ready, day]);
+  if (!show || !scn) return null;
+  return (
+    <div className="slack-ping" role="status">
+      <button className="slack-ping-card" onClick={() => { setShow(false); mark(); onOpen(); }}>
+        <div className="slack-ping-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
+        <div className="slack-ping-body">
+          <div className="slack-ping-from"><b>{npc.name}</b> · {npc.role} <span>지금</span></div>
+          <div className="slack-ping-text">{_hlQuote(scn.quote, scn.word)}</div>
+          <div className="slack-ping-hint">탭해서 답하기 →</div>
+        </div>
+      </button>
+      <button className="slack-ping-x" onClick={() => { setShow(false); mark(); }} aria-label="닫기">✕</button>
+    </div>
+  );
+}
+
 function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
 
@@ -6397,6 +6467,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {USER.team}
         </div>
       </div>
+
+      {_isNextFeature() && !USER.isViewingPast && (
+        <SlackPing scn={today} npc={npc} day={USER.currentDay} ready={!!doneTasks.checkin && !doneTasks.scenario} onOpen={() => openScene(today)} />
+      )}
 
       {/* ★ 맨 위 큰 CTA (2026-09-04, 개발 뷰): 뭘 눌러야 하는지 3초 안에 보이게 */}
       {_isNextFeature() && !USER.isViewingPast && (
