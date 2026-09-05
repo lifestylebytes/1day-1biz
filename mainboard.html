@@ -537,6 +537,9 @@ body::before {
 .dq-num.on { border-color: var(--orange); background: var(--orange); color: #fff; }
 .dq textarea { width: 100%; box-sizing: border-box; margin-top: 10px; font-family: inherit; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); resize: vertical; line-height: 1.55; }
 .dq-actions { display: flex; gap: 8px; margin-top: 10px; }
+.dq-resume { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-soft); background: #FFF3B8; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; }
+.dq-resume span { flex: 1 1 200px; }
+.dq-resume .btn { padding: 6px 10px; font-size: 11.5px; }
 .dq-actions .btn { padding: 8px 16px; font-size: 12.5px; }
 @media (prefers-reduced-motion: reduce) { .dq-card { animation: none; } }
 /* 처방 리포트 (한 장) */
@@ -10587,8 +10590,13 @@ function DiagQuiz({ topic, initial, onDone, onCancel }) {
   const toggle = (v) => { const cur = ans[q.id] || []; setAns({ ...ans, [q.id]: cur.includes(v) ? cur.filter(x => x !== v) : cur.concat([v]) }); };
   const back = () => { if (i === 0) { onCancel && onCancel(); return; } setDir("b"); setI(i - 1); };
   const sel = ans[q.id];
+  const hasInitial = !!(initial && Object.keys(initial).length);
+  const hasSel = sel !== undefined && sel !== null && sel !== "" && !(Array.isArray(sel) && !sel.length);
   return (
     <div className="dq">
+      {hasInitial && i === 0 && (
+        <div className="dq-resume"><span>지난번 답이 채워져 있어요. 답을 눌러 바꾸거나, 그대로 넘겨도 돼요.</span><button className="btn btn-ink" onClick={() => onDone(ans)}>이 답 그대로 받기</button><button className="btn btn-ghost" onClick={() => setAns({})}>처음부터</button></div>
+      )}
       <div className="dq-top"><button className="dq-back" onClick={back}>←</button><div className="dq-dots">{qs.map((x, k) => <i key={x.id} className={k < i ? "done" : k === i ? "cur" : ""} />)}</div><span className="dq-count">{i + 1} / {qs.length}</span></div>
       <div key={q.id} className={"dq-card " + dir}>
         <h3>{q.q}</h3>
@@ -10597,9 +10605,10 @@ function DiagQuiz({ topic, initial, onDone, onCancel }) {
         {q.type === "multi" && <div className="dq-opts">{q.opts.map(o => <button key={o} className={"dq-opt " + ((sel || []).includes(o) ? "on" : "")} onClick={() => toggle(o)}>{o}</button>)}</div>}
         {q.type === "scale" && <div className="dq-scale">{[1, 2, 3, 4, 5].map(n => <button key={n} className={"dq-num " + (sel === n ? "on" : "")} onClick={() => pick(n)}>{n}</button>)}</div>}
         {q.type === "text" && <textarea value={text} onChange={e => setText(e.target.value)} placeholder={q.ph} rows={3} />}
-        {(q.type === "multi" || q.type === "text") && (
+        {(q.type === "multi" || q.type === "text" || ((q.type === "single" || q.type === "scale") && hasSel)) && (
           <div className="dq-actions">
             {q.type === "multi" && <button className="btn btn-primary" disabled={!(sel || []).length} onClick={() => go(ans)}>다음</button>}
+            {(q.type === "single" || q.type === "scale") && hasSel && <button className="btn btn-primary" onClick={() => go(ans)}>{i + 1 >= qs.length ? "완료" : "다음"}</button>}
             {q.type === "text" && <button className="btn btn-primary" onClick={() => { const next = { ...ans, [q.id]: text.trim() }; setAns(next); go(next); }}>{i + 1 >= qs.length ? "완료" : "다음"}</button>}
             {q.type === "text" && <button className="btn btn-ghost" onClick={() => { const next = { ...ans, [q.id]: "" }; setAns(next); go(next); }}>건너뛰기</button>}
           </div>
@@ -10721,26 +10730,27 @@ function WelfarePointsSection() {
   );
 
   // 진단 문답이 끝나면: 답을 프로필(diag)에 남기고, 답 + 프로필 + 학습 기록(문장·교정·영역 숫자)으로 사수가 리포트를 쓴다
-  const ask = (answers) => {
-    if (!svc) return;
-    const labels = _wpAnswerLabels(svc.id, answers);
+  const ask = (answers, service) => {
+    const sv = service || svc;
+    if (!sv) return;
+    const labels = _wpAnswerLabels(sv.id, answers);
     if (!labels.length) { setErr("답을 하나라도 골라주세요"); return; }
-    const prof = { ...(profile || {}), diag: { ...((profile && profile.diag) || {}), [svc.id]: { answers, labels, at: new Date().toISOString() } } };
-    if (svc.id === "english") { if (answers.confidence) prof.confidence = answers.confidence; if (answers.wish && !prof.goal) prof.goal = answers.wish; if (answers.pattern && !prof.stuck) prof.stuck = answers.pattern; }
+    const prof = { ...(profile || {}), diag: { ...((profile && profile.diag) || {}), [sv.id]: { answers, labels, at: new Date().toISOString() } } };
+    if (sv.id === "english") { if (answers.confidence) prof.confidence = answers.confidence; if (answers.wish && !prof.goal) prof.goal = answers.wish; if (answers.pattern && !prof.stuck) prof.stuck = answers.pattern; }
     _saveProfile(em, prof);
     setBusy(true); setErr("");
     const rp = _reportPayload(prof);
     const fixed = (rp.sentences || []).filter(x => x.fixed).slice(-6).map(x => ({ word: x.word, mine: x.text }));
-    const payload = { topic: svc.id, title: svc.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
+    const payload = { topic: sv.id, title: sv.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
       stats: { learned: rp.words.length, mine: rp.sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 6) })), recentQuestions: (rp.questions || []).slice(-5), fixed, recentSentences: (rp.sentences || []).slice(-8).map(x => ({ word: x.word, text: x.text })) } };
-    const isSample = !balanceOk(svc);
+    const isSample = !balanceOk(sv);
     const done = (ans, sample, why) => {
-      const out = { ...ans, topic: svc.id, title: svc.title, answers: labels, question: payload.question, cost: sample ? 0 : svc.cost, sample: !!sample, sampleWhy: sample ? (why || "") : "", at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
-      _wpAddNote("consult", svc.title, out);
-      if (!sample) _wpAddNote("points", "복지포인트 사용 · " + svc.title, { type: "spend", item: svc.id, title: svc.title, cost: svc.cost, at: out.at });
+      const out = { ...ans, topic: sv.id, title: sv.title, answers: labels, question: payload.question, cost: sample ? 0 : sv.cost, sample: !!sample, sampleWhy: sample ? (why || "") : "", at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
+      _wpAddNote("consult", sv.title, out);
+      if (!sample) _wpAddNote("points", "복지포인트 사용 · " + sv.title, { type: "spend", item: sv.id, title: sv.title, cost: sv.cost, at: out.at });
       setBusy(false); setSvc(null); setView(out); setTick(t => t + 1);
     };
-    const sample = svc.id === "english" ? _WP_SAMPLE_ENGLISH : (_WP_SAMPLES[svc.id] || _WP_SAMPLE);
+    const sample = sv.id === "english" ? _WP_SAMPLE_ENGLISH : (_WP_SAMPLES[sv.id] || _WP_SAMPLE);
     if (isSample) { done(sample, true, "포인트 부족"); return; }
     if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(sample, true, "서버 연결 없음"); return; }
     window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: CHARACTERS.mentor.name, word: "consult" })
@@ -10785,7 +10795,11 @@ function WelfarePointsSection() {
           <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요" + (view.sampleWhy ? " · " + view.sampleWhy : "") + ")" : " · " + _wpFmt(view.cost) + " 사용"}</div>
           {view.question && <div className="wp-result-q">{view.topic === "english" ? "🎯 30일 뒤 바라는 모습: " : "❓ "}{view.question}</div>}
           <ConsultReportView view={view} mentor={CHARACTERS.mentor.name} />
-          <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setView(null)}>닫기</button>
+          <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <button className="btn btn-ghost" onClick={() => setView(null)}>닫기</button>
+            {(() => { const sv = WP_SERVICES.find(x => x.id === view.topic); const a = profile && profile.diag && profile.diag[view.topic] && profile.diag[view.topic].answers; if (!sv || !a) return null; return <button className="btn btn-primary" disabled={busy} onClick={() => { setView(null); setSvc(sv); ask(a, sv); }}>{busy ? "쓰는 중…" : "같은 답으로 다시 받기 · " + _wpFmt(sv.cost)}</button>; })()}
+            {(() => { const sv = WP_SERVICES.find(x => x.id === view.topic); if (!sv) return null; return <button className="btn btn-ghost" onClick={() => { setView(null); setSvc(sv); }}>답 바꿔서 다시</button>; })()}
+          </div>
         </div>
       )}
       {consults.length > 0 && !view && (
