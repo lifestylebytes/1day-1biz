@@ -4714,7 +4714,10 @@ const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
 //  운영자 계정이 Day 1에 고정되는 버그가 있었음. 기본값 1은 무시하고 가입일 기준 auto-day 사용.)
 // devDayOverride: dev 패널로 day를 "명시적으로" 바꿨다는 표시. 이게 있으면 Day 1도 override 가능.
 // (예전엔 dayInCompany > 1 만 봐서, 운영자가 Day 1로 점프하면 auto-day로 튕겨 테스트가 불가능했음)
-const _resolvedDay = (_isInternal && (_localUser?.devDayOverride === true || _localUser?.dayInCompany > 1))
+// ★ 2026-09-05 수정: 운영자도 dev 패널로 "명시적으로" 점프했을 때(devDayOverride)만 고정.
+//   예전엔 dayInCompany > 1 이기만 하면 그 값에 묶여서, 회원으로 며칠 진행하다 운영자가 된 계정은
+//   (DB day_in_company 가 그 시점 값으로 남아) 매일 끝내도 같은 Day 에 갇혔다 (2026-09-05 신고).
+const _resolvedDay = (_isInternal && _localUser?.devDayOverride === true)
   ? Math.max(1, _localUser.dayInCompany || 1)
   : _gatedDay;
 
@@ -4828,8 +4831,8 @@ const USER = {
 };
 
 // ── auto-day가 저장된 dayInCompany보다 진척했으면 localStorage·DB 둘 다 업데이트 ──
-// (외부 사용자만, operator/dev는 수동 override 우선)
-if (_localUser && !_isInternal && _gatedDay > (_localUser.dayInCompany || 1)) {
+// (dev 패널로 Day 를 고정한 운영자만 제외. 고정 안 한 운영자는 회원과 똑같이 게이트를 따른다)
+if (_localUser && !(_isInternal && _localUser.devDayOverride === true) && _gatedDay > (_localUser.dayInCompany || 1)) {
   try {
     _localUser.dayInCompany = _gatedDay;
     localStorage.setItem('__OD_USER', JSON.stringify(_localUser));
@@ -14680,6 +14683,9 @@ window.SimApp = App;
         <button class="dp-btn" data-act="d-7">-7일</button>
         <button class="dp-btn" data-act="set" style="grid-column: span 2">Day로 점프</button>
       </div>
+      <div class="dp-row">
+        <button class="dp-btn" data-act="d-auto" style="grid-column: span 3" title="점프 고정을 풀고 회원과 똑같이 가입일·학습 게이트로 계산">↺ 자동 Day로 복귀${u.devDayOverride ? ' (지금 고정됨)' : ''}</button>
+      </div>
 
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
         <div class="muted" style="margin-bottom:4px;">베타 만료 미리보기 (Day 15+ PILOT)</div>
@@ -14754,6 +14760,7 @@ window.SimApp = App;
       case 'd-1': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 1); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
       case 'd+7': u.dayInCompany = Math.min(365, (u.dayInCompany || 1) + 7); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
       case 'd-7': u.dayInCompany = Math.max(1, (u.dayInCompany || 1) - 7); u.devDayOverride = true; save(u); reloadCleanUrl(); break;
+      case 'd-auto': delete u.devDayOverride; save(u); reloadCleanUrl(); break;
       case 'set': {
         const v = prompt('이동할 Day (1-365):', String(u.dayInCompany || 1));
         if (!v) return;
