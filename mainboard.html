@@ -298,6 +298,13 @@ body::before {
   text-transform: uppercase;
 }
 .scene-card-body { padding: 24px 28px 28px; }
+/* 단순 시추에이션 카드 (개발 뷰): 표현·뜻·버튼 둘 */
+.scene-card-simple .scene-card-body { padding: 22px 28px 26px; }
+.scs-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px; }
+.scs-word { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; color: var(--ink); }
+.scs-mean { font-size: 15px; color: var(--ink-soft); margin-top: 6px; font-weight: 600; }
+.scs-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+@media (max-width: 880px) { .scene-card-simple .scene-card-body { padding: 18px 18px 20px; } .scs-word { font-size: 28px; } .scs-actions .btn { flex: 1 1 auto; justify-content: center; } }
 .scene-card-time {
   font-size: 11px; letter-spacing: 0.16em; font-weight: 700;
   color: var(--ink-mute); margin-top: 16px;
@@ -7568,6 +7575,48 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
   // ★ 피드백 #15 후속 (정주혜): 출근(단어 받기) 전엔 '오늘 일정 시작하기'로 안내.
   //   하루의 첫 동선이 출근 → 단어 → 시추에이션 순서로 자연스럽게 잡히도록.
   const needCheckin = checkinDone === false && typeof onStartDay === "function";
+
+  // ★ 2026-09-05 (개발 뷰): 시추에이션 카드를 표현·뜻·버튼 둘로만. 상황, 대사, 미션 문구는 모달 안에서 본다.
+  //   "이미 알아요"는 아는 단어 기록(__OD_KNOWN_WORDS) 후 모달을 열고 바로 작성란으로 내려간다.
+  if (_isNextFeature()) {
+    const _markKnown = () => {
+      try {
+        const k = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]");
+        if (!k.some(x => x.day === scenario.day)) { k.push({ day: scenario.day, word: scenario.word, at: new Date().toISOString() }); localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(k)); }
+      } catch (e) {}
+      try { sessionStorage.setItem("__OD_KNOWN_JUMP", String(scenario.day)); } catch (e) {}
+      onOpen();
+    };
+    return (
+      <div className="scene-card scene-card-simple">
+        <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2 }}>
+          <div className={"stamp small" + (done ? " blue" : "")} style={{ fontSize: done ? "10px" : "7px", letterSpacing: "0.02em" }}>{done ? "DONE" : "PENDING"}</div>
+        </div>
+        <div className="scene-card-tag">{scenario._tfInfo ? `오늘의 시추에이션 · ${scenario._tfInfo.name} DAY ${scenario._tfInfo.tfDay}/30` : `오늘의 시추에이션 · DAY ${scenario.day}`}</div>
+        <div className="scene-card-body">
+          <div className="scs-label">오늘의 표현</div>
+          <div className="scs-word">{scenario.word}</div>
+          <div className="scs-mean">{scenario.meaning}</div>
+          <div className="scene-actions scs-actions">
+            {needCheckin ? (
+              <>
+                <button className="btn btn-primary" onClick={onStartDay}>☀️ 오늘 일정 시작하기 →</button>
+                <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>출근 도장 + 오늘의 단어부터 받아요</span>
+              </>
+            ) : done ? (
+              <button className="btn btn-ghost" onClick={onOpen}>✓ 오늘 문장 제출 완료 · 다시 보기</button>
+            ) : (
+              <>
+                <button className="btn btn-primary" onClick={onOpen}>▶ 시작하러 가기</button>
+                <button className="btn btn-ghost" onClick={_markKnown} title="아는 표현이면 설명 건너뛰고 바로 한 줄 써요">✓ 이미 알아요</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="scene-card">
       <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2 }}>
@@ -9149,6 +9198,17 @@ function SceneModal({ scenario, onClose }) {
   const [draft, setDraft] = useState(saved?.sentence || "");
   const [submitted, setSubmitted] = useState(!!saved);
   const [feedback, setFeedback] = useState(saved?.feedback || null);
+  // "이미 알아요"로 들어온 경우: 설명 건너뛰고 작성란으로 (홈 단순 카드에서 세팅)
+  React.useEffect(() => {
+    try {
+      if (sessionStorage.getItem("__OD_KNOWN_JUMP") !== String(scenario.day)) return;
+      sessionStorage.removeItem("__OD_KNOWN_JUMP");
+      setTimeout(() => {
+        const ta = document.querySelector(".modal-doc-body textarea.scene-input");
+        if (ta) { ta.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => ta.focus(), 350); }
+      }, 300);
+    } catch (e) {}
+  }, []);
   const [editing, setEditing] = useState(false);
   // ★ AI 사수 피드백 (4구획: fix/nuance/vocab/praise). 저장된 것 복원.
   const [aiFb, setAiFb] = useState(saved?.feedback?.aiFb || null);
