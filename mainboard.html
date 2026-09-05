@@ -1173,6 +1173,16 @@ body::before {
 .next-cta.done { background: var(--paper-warm); color: var(--ink-soft); box-shadow: none; border: 1px dashed var(--line); cursor: default; }
 .locked-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 8px; color: var(--ink-mute); font-size: 12px; background: rgba(255,255,255,0.35); margin-top: 12px; }
 .locked-card b { color: var(--ink-soft); font-weight: 700; }
+/* 해금 사다리 (개발 뷰): 잠긴 카드들을 한 곳에 모아 "언제 열리는지"만 보여준다 */
+.unlock-ladder { margin-top: 14px; border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; background: rgba(255,255,255,0.35); }
+.unlock-ladder-head { font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; color: var(--ink-mute); margin-bottom: 8px; }
+.unlock-row { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; color: var(--ink-mute); padding: 5px 0; border-top: 1px dotted var(--line); }
+.unlock-row:first-of-type { border-top: none; }
+.unlock-row b { flex: none; width: 52px; font-weight: 800; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.unlock-row span { flex: 1; }
+.unlock-row i { flex: none; font-style: normal; font-size: 11px; white-space: nowrap; }
+.unlock-row.next { color: var(--ink); }
+.unlock-row.next b, .unlock-row.next i { color: var(--orange); }
 .locked-card .locked-when { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--orange); white-space: nowrap; }
 .unlock-chip { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; color: #fff; background: var(--orange); padding: 2px 7px; border-radius: 999px; vertical-align: middle; }
 @media (max-width: 880px) { .next-cta { padding: 14px 16px; } .next-cta .next-cta-main { font-size: 15.5px; } }
@@ -1491,6 +1501,7 @@ body::before {
   .desk-grid.next-home .skillgrid { order: 5; }
   .desk-grid.next-home .ty-member { order: 7; }
   .desk-grid.next-home .locked-card { order: 8; }      /* 잠긴 카드는 맨 아래 */
+  .desk-grid.next-home .unlock-ladder { order: 9; }    /* 해금 사다리는 맨 아래 */
   .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
 
   /* 시추에이션 카드 */
@@ -5809,18 +5820,29 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // ── 신입 모드 해금 사다리 (2026-09-04, 개발 뷰) ──
 // 핵심 루프(출근→시추에이션→미션→퇴근)는 Day 1부터 그대로. 주변 카드만 Day 에 따라 연다.
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
-const _UNLOCK_AT = { promo: 4, attendance: 4, skills: 4, memo: 8, errands: 8 };
-const _UNLOCK_LABEL = { promo: "승진 마일스톤", attendance: "출근부", skills: "내 역량 스탯", memo: "사내 메모", errands: "오늘의 심부름" };
+// ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
+//   Day 2 오늘 일정표 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 사내 메모·심부름
+const _UNLOCK_AT = { schedule: 2, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 8, errands: 8 };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름" };
 function _lockedNext(key, rd, viewingPast) {
   return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
 }
-function LockedCard({ k, rd }) {
-  const at = _UNLOCK_AT[k];
+// 잠긴 카드를 자리마다 하나씩 그리면 Day 1 이 자물쇠 벽이 된다. 한 곳(UnlockLadder)에 모아서 보여준다.
+function LockedCard() { return null; }
+function UnlockLadder({ rd, viewingPast }) {
+  if (!_isNextFeature() || viewingPast) return null;
+  const days = [...new Set(Object.values(_UNLOCK_AT))].filter(d => d > rd).sort((a, b) => a - b);
+  if (!days.length) return null;
   return (
-    <div className="locked-card" title={"Day " + at + "부터 열려요"}>
-      <span>🔒</span>
-      <b>{_UNLOCK_LABEL[k]}</b>
-      <span className="locked-when">Day {at}에 열려요 · {Math.max(0, at - rd)}일 남음</span>
+    <div className="unlock-ladder">
+      <div className="unlock-ladder-head">🔒 앞으로 열리는 것</div>
+      {days.map(d => (
+        <div key={d} className={"unlock-row" + (d === days[0] ? " next" : "")}>
+          <b>Day {d}</b>
+          <span>{Object.keys(_UNLOCK_AT).filter(k => _UNLOCK_AT[k] === d).map(k => _UNLOCK_LABEL[k]).join(" · ")}</span>
+          <i>{d - rd === 1 ? "내일 열려요" : (d - rd) + "일 뒤에 열려요"}</i>
+        </div>
+      ))}
     </div>
   );
 }
@@ -6395,7 +6417,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           </div>
         )
       )}
-      <div className={"home-appline" + (_isNextFeature() ? " next" : "")} style={_isNextFeature() && _rdNow <= 3 ? { display: "none" } : undefined}><ApplicationLine /></div>
+      <div className={"home-appline" + (_isNextFeature() ? " next" : "")} style={_lockedNext("doc", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}><ApplicationLine /></div>
 
       {/* ★ 오랜만에 온 회원 안내: 달력은 흘렀지만 진도는 그대로일 때, 뭐부터 할지 한 줄로. */}
       {(() => {
@@ -6418,7 +6440,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
       <div className={"desk-grid" + (_isNextFeature() ? " next-home" : "")}>
         <div className="col">
-          {_isNextFeature() && (
+          {_isNextFeature() && !_lockedNext("accum", _rdNow, USER.isViewingPast) && (
             <div className="today-accum">
               <div className="today-accum-big">지금까지 표현 <b>{USER.wordsCollected}개</b> 모았어요</div>
               <div className="today-accum-sub">🔥 출근 {USER.streak}일 · {USER.isFulltime ? "" : ("사원 승진까지 " + Math.max(0, 30 - (USER.realCurrentDay || USER.currentDay)) + "일")}</div>
@@ -6433,7 +6455,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             done={_sceneDone}
           />
 
-          <div className="schedule">
+          <div className="schedule" style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
               <span>오늘 일정 · DAY {USER.currentDay}</span>
               <span style={{ color: "var(--orange)" }}>● 진행 중</span>
@@ -6460,6 +6482,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </div>
             ))}
           </div>
+          <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />
         </div>
 
         <div className="col">
