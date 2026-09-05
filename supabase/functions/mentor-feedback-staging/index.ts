@@ -19,6 +19,35 @@
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
 const MODEL = Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";  // 첨삭·Q&A: 싸고 빠름
 const MODEL_RICH = Deno.env.get("OPENAI_MODEL_RICH") || "gpt-4.1";  // 리포트·코칭·상담: 한 장짜리 리포트는 큰 모델로 (secret OPENAI_MODEL_RICH 로 바꿈)
+const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "";   // MODEL_RICH 가 claude-* 면 Anthropic 으로 (예: OPENAI_MODEL_RICH=claude-sonnet-4-5)
+
+// 큰 모델 호출 한 곳: OpenAI(gpt-*) / Anthropic(claude-*) 둘 다 JSON 객체를 돌려준다.
+// gpt-5 계열은 temperature 를 안 받고 max_completion_tokens 를 쓴다.
+async function callRich(system: string, user: string, opts: { temperature: number; maxTokens: number }): Promise<{ ok: boolean; data?: any; error?: string; usage?: any }> {
+  const isClaude = /^claude/i.test(MODEL_RICH);
+  const isGpt5 = /^(gpt-5|o\d)/i.test(MODEL_RICH);
+  try {
+    if (isClaude) {
+      if (!ANTHROPIC_API_KEY) return { ok: false, error: "no_anthropic_key" };
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+        body: JSON.stringify({ model: MODEL_RICH, max_tokens: opts.maxTokens, temperature: opts.temperature, system: system + "\n\n출력은 JSON 객체 하나만. 코드 펜스나 설명 없이.", messages: [{ role: "user", content: user }] }),
+      });
+      if (!r.ok) return { ok: false, error: "anthropic_" + r.status };
+      const d = await r.json();
+      const text = (d?.content || []).map((c: any) => c.text || "").join("");
+      const m = text.match(/\{[\s\S]*\}/);
+      try { return { ok: true, data: JSON.parse(m ? m[0] : text), usage: d?.usage || null }; } catch { return { ok: false, error: "bad_json" }; }
+    }
+    const body: any = { model: MODEL_RICH, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: user }] };
+    if (isGpt5) body.max_completion_tokens = opts.maxTokens; else { body.temperature = opts.temperature; body.max_tokens = opts.maxTokens; }
+    const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) return { ok: false, error: "openai_" + r.status };
+    const d = await r.json();
+    try { return { ok: true, data: JSON.parse(d?.choices?.[0]?.message?.content || "{}"), usage: d?.usage || null }; } catch { return { ok: false, error: "bad_json" }; }
+  } catch (e) { return { ok: false, error: "exception" }; }
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -75,26 +104,12 @@ Deno.serve(async (req) => {
       `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","strengths":["잘하는 것 2개, 각 한 문장"],"patterns":["반복되는 습관이나 아직 안 써본 표현 2개, 각 한 문장"],"next":["다음 10일 할 것 1~2개, 각 한 문장"],"forYou":["이 직종·상황에 맞춘 조언 1~2개, 실제 쓸 영어 문장 하나 포함"],"oneLiner":"사수가 남기는 응원 한 줄(동사로 끝남)"}`,
       `규칙: 따뜻한 존댓말. 모든 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
-    try {
-      const r = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL_RICH, temperature: 0.4, response_format: { type: "json_object" }, max_tokens: 2500,
-          messages: [
-            { role: "system", content: rsys },
-            { role: "user", content: JSON.stringify(compact) },
-          ],
-        }),
-      });
-      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
-      const d = await r.json();
-      let report: any = {};
-      try { report = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { report = {}; }
+    {
+      const rr = await callRich(rsys, JSON.stringify(compact), { temperature: 0.4, maxTokens: 2500 });
+      if (!rr.ok) return json({ ok: false, error: rr.error }, 200);
+      const report: any = rr.data || {};
       if (!report.headline) return json({ ok: false, error: "empty" }, 200);
-      return json({ ok: true, report, usage: d?.usage || null });
-    } catch (e) {
-      return json({ ok: false, error: "exception" }, 200);
+      return json({ ok: true, report, model: MODEL_RICH, usage: rr.usage || null });
     }
   }
 
@@ -122,30 +137,16 @@ Deno.serve(async (req) => {
       `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","pattern":"2~3문장","set":[{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""}],"task":"이번 주에 실제로 해볼 과제 한 문장(동사로 끝남)"}`,
       `규칙: 따뜻한 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
-    try {
-      const r = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL_RICH, temperature: 0.5, response_format: { type: "json_object" }, max_tokens: 1800,
-          messages: [
-            { role: "system", content: isys },
-            { role: "user", content: JSON.stringify(compact) },
-          ],
-        }),
-      });
-      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
-      const d = await r.json();
-      let insight: any = {};
-      try { insight = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { insight = {}; }
+    {
+      const rr = await callRich(isys, JSON.stringify(compact), { temperature: 0.5, maxTokens: 1800 });
+      if (!rr.ok) return json({ ok: false, error: rr.error }, 200);
+      const insight: any = rr.data || {};
       if (!insight.headline) return json({ ok: false, error: "empty" }, 200);
       // set 은 실제 weak 표현만 남긴다 (지어낸 표현 방지)
       const allowed = new Set(compact.weak.map((x: any) => x.word.toLowerCase()));
       insight.set = (Array.isArray(insight.set) ? insight.set : []).filter((x: any) => x && allowed.has(String(x.word || "").toLowerCase())).slice(0, 3)
         .map((x: any) => ({ word: String(x.word || "").slice(0, 40), why: String(x.why || "").slice(0, 160), sentence: String(x.sentence || "").slice(0, 200) }));
-      return json({ ok: true, insight, usage: d?.usage || null });
-    } catch (e) {
-      return json({ ok: false, error: "exception" }, 200);
+      return json({ ok: true, insight, model: MODEL_RICH, usage: rr.usage || null });
     }
   }
 
@@ -196,22 +197,10 @@ Deno.serve(async (req) => {
       `JSON 으로만: {"headline":"이 사람의 상황을 한 줄로 뒤집어 주는 문장(35자 안팎, 동사로 끝남. '나아가다/극복하다/노력하다' 같은 뻔한 말 금지)","oneLine":"기록에서 찾은 구체적 성취 한 줄(숫자와 실제 표현 포함)","readings":[{"title":"기록에서 읽히는 나 (제목 8자 안팎)","body":"2~3문장. 이 사람의 문장 습관·일하는 방식·영어 성향 중 하나","evidence":"근거가 되는 실제 문장 하나 그대로 인용"}] 3개,"diagnosis":["사수가 드리는 말 2~3문단, 각 3~4문장. 답·기록·덧붙인 한 줄을 근거로 진짜 원인을 짚고 지금 필요한 게 뭔지"],"strengths":["기록에 근거한 잘하는 것 2개, 각각 실제 문장이나 숫자 인용"],"expressions":[{"en":"이번에 가져갈 표현","ko":"뜻","use":"이 사람 상황에서 언제 쓰는지 한 줄"}] 3개,"qa":[{"q":"진단 질문","a":"신입의 답","coach":"그 답에 대한 사수 코멘트 1~2문장, 기록과 연결"}] 3개,"fixes":[{"blank":"${T.fixesLabel}: 원문 또는 빈칸 문장","answer":"고친 문장 또는 정답","why":"왜 그게 통하는지"}] 4개,"jobTerms":[{"term":"${T.termsLabel}","ko":"뜻","ex":"예문"}] 4개,"culture":[{"title":"외국계에서 더 잘 통하는 방식","body":"1~2문장"}] 3개,"actions":[{"task":"할 것","how":"어떻게(구체적 산출물. 1일1비 기능 활용 포함: 야근 3문장, 복습 탭 흔들리는 카드, 사수 Q&A)","when":"언제"}] 5개,"goals":[{"goal":"다음 30일 목표","measure":"측정 방법"}] 3개,"vision":"1년 뒤의 모습 2~3문장, 이 사람 직무와 목표 기준","closing":"닫는 말 2~3문장","oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
       `규칙: 따뜻하지만 날카로운 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). "중요합니다/도움이 될 것입니다/고민해보세요/노력하세요" 같은 빈 말 금지. 모든 조언은 이 사람의 문장·숫자·답을 근거로 대고, 근거를 문장 안에 보여준다. em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
-    try {
-      const r = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: MODEL_RICH, temperature: 0.6, response_format: { type: "json_object" }, max_tokens: 4500,
-          messages: [
-            { role: "system", content: sysReport },
-            { role: "user", content: JSON.stringify(compact) },
-          ],
-        }),
-      });
-      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
-      const d = await r.json();
-      let consult: any = {};
-      try { consult = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { consult = {}; }
+    {
+      const rr = await callRich(sysReport, JSON.stringify(compact), { temperature: 0.6, maxTokens: 4500 });
+      if (!rr.ok) return json({ ok: false, error: rr.error }, 200);
+      const consult: any = rr.data || {};
       if (!consult.headline) return json({ ok: false, error: "empty" }, 200);
       consult.readings = clip(consult.readings, 3).map((x: any) => ({ title: str(x.title, 40), body: str(x.body, 500), evidence: str(x.evidence, 220) }));
       consult.diagnosis = clip(consult.diagnosis, 3).map((x: any) => str(x, 900));
@@ -225,9 +214,7 @@ Deno.serve(async (req) => {
       consult.goals = clip(consult.goals, 3).map((x: any) => ({ goal: str(x.goal, 120), measure: str(x.measure, 160) }));
       consult.vision = str(consult.vision, 500); consult.closing = str(consult.closing, 500); consult.oneLine = str(consult.oneLine, 240); consult.oneLiner = str(consult.oneLiner, 160);
       consult.labels = { fixes: T.fixesLabel, terms: T.termsLabel, actions: T.actionsLabel };
-      return json({ ok: true, consult, model: MODEL_RICH, usage: d?.usage || null });
-    } catch (e) {
-      return json({ ok: false, error: "exception" }, 200);
+      return json({ ok: true, consult, model: MODEL_RICH, usage: rr.usage || null });
     }
   }
 

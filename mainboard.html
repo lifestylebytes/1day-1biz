@@ -478,6 +478,10 @@ body::before {
 #wp-toast-host { position: fixed; top: 14px; right: 14px; z-index: 9000; display: grid; gap: 6px; pointer-events: none; }
 .wp-toast { display: flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); border-radius: 999px; padding: 8px 14px 8px 10px; box-shadow: 0 8px 24px rgba(42,31,20,0.28); font-size: 13px; transform: translateY(-16px) scale(0.96); opacity: 0; transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25), opacity 0.2s; }
 .wp-toast.in { transform: none; opacity: 1; }
+.wp-toast-click { pointer-events: auto; cursor: pointer; padding-right: 10px; }
+.wp-toast-click:hover { box-shadow: 0 10px 28px rgba(42,31,20,0.4); }
+.wp-toast-x { font-style: normal; margin-left: 4px; opacity: 0.6; font-size: 16px; padding: 0 4px; }
+.wp-toast-x:hover { opacity: 1; }
 .wp-toast.out { opacity: 0; transform: translateY(-10px); transition: opacity 0.35s, transform 0.35s; }
 .wp-toast-ico { font-size: 18px; animation: wpPop 0.6s ease-out; }
 .wp-toast b { color: #F5B08A; font-weight: 900; }
@@ -10740,6 +10744,41 @@ function ConsultReportView({ view, mentor }) {
   );
 }
 
+// 리포트 생성 작업 (전역). 탭을 옮겨도 계속 돌고, 끝나면 notes 저장 + 알림(앱 안 토스트 + 브라우저 알림) + od-consult-done 이벤트.
+window.__wpJobs = window.__wpJobs || {};
+function _wpNotifyDone(out) {
+  try {
+    let host = document.getElementById("wp-toast-host");
+    if (!host) { host = document.createElement("div"); host.id = "wp-toast-host"; document.body.appendChild(host); }
+    const el = document.createElement("div"); el.className = "wp-toast wp-toast-click";
+    el.innerHTML = '<span class="wp-toast-ico">📋</span><b>' + out.title + '가 도착했어요</b><small>눌러서 보기</small><i class="wp-toast-x">×</i>';
+    el.querySelector(".wp-toast-x").onclick = (e) => { e.stopPropagation(); el.remove(); };
+    el.onclick = () => { el.remove(); window.__wpOpen = out; window.dispatchEvent(new CustomEvent("od-goto", { detail: "mypage" })); setTimeout(() => window.dispatchEvent(new CustomEvent("od-consult-open", { detail: out })), 300); };
+    host.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("in")));
+  } catch (e) {}
+  try { if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") new Notification("1일1비 · " + out.title, { body: out.headline || "사수가 리포트를 다 썼어요. 사원증/인사에서 보세요." }); } catch (e) {}
+}
+function _wpRunConsult(sv, payload, labels, mentor, sample) {
+  const key = sv.id;
+  const finish = (ans, isSample, why) => {
+    const out = { ...ans, topic: sv.id, title: sv.title, answers: labels, question: payload.question, cost: isSample ? 0 : sv.cost, sample: !!isSample, sampleWhy: isSample ? (why || "") : "", at: new Date().toISOString(), mentor };
+    _wpAddNote("consult", sv.title, out);
+    if (!isSample) _wpAddNote("points", "복지포인트 사용 · " + sv.title, { type: "spend", item: sv.id, title: sv.title, cost: sv.cost, at: out.at });
+    delete window.__wpJobs[key];
+    window.__wpLastDone = out;
+    window.dispatchEvent(new CustomEvent("od-consult-done", { detail: out }));
+    _wpNotifyDone(out);
+  };
+  window.__wpJobs[key] = { at: Date.now(), title: sv.title };
+  try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch (e) {}
+  if (sample.why) { setTimeout(() => finish(sample.data, true, sample.why), 600); return; }
+  if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { setTimeout(() => finish(sample.data, true, "서버 연결 없음"), 600); return; }
+  window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: mentor, word: "consult" })
+    .then(r => { if (r && r.ok && r.consult && r.consult.headline) finish(r.consult, false); else finish(sample.data, true, "서버 응답 " + ((r && r.error) || "없음") + " · mentor-feedback 배포 확인"); })
+    .catch(() => finish(sample.data, true, "서버 호출 실패 · mentor-feedback 배포 확인"));
+}
+
 function WelfarePointsSection() {
   const { USER, CHARACTERS } = window.__SIM;
   const em = USER.email || "guest";
@@ -10752,6 +10791,15 @@ function WelfarePointsSection() {
   const [showLedger, setShowLedger] = useState(false);
   void tick;
   const open = USER.isFulltime || rd >= 30;
+  // 진행 중인 작업 / 방금 끝난 리포트 이어받기 (다른 탭에 갔다 와도)
+  useEffect(() => {
+    const onDone = (e) => { setBusy(false); setTick(t => t + 1); if (e.detail) setView(e.detail); };
+    const onOpen = (e) => { if (e.detail) { setView(e.detail); setTimeout(() => document.querySelector(".wp-result")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80); } };
+    window.addEventListener("od-consult-done", onDone); window.addEventListener("od-consult-open", onOpen);
+    if (Object.keys(window.__wpJobs || {}).length) setBusy(true);
+    if (window.__wpOpen) { const o = window.__wpOpen; window.__wpOpen = null; setView(o); setTimeout(() => document.querySelector(".wp-result")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120); }
+    return () => { window.removeEventListener("od-consult-done", onDone); window.removeEventListener("od-consult-open", onOpen); };
+  }, []);
   const earned = _wpEarned(USER);
   const spends = _wpNotes("points").filter(x => x.type === "spend");
   const spent = spends.reduce((n, x) => n + (Number(x.cost) || 0), 0);
@@ -10790,19 +10838,9 @@ function WelfarePointsSection() {
     const payload = { topic: sv.id, title: sv.title, answers: labels, question: answers.note || answers.wish || "", profile: prof, name: USER.name, day: rd,
       stats: { learned: rp.words.length, mine: sentences.length, oneShot: rp.oneShot, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used, words: (a.words || []).slice(0, 12) })),
         sentences, ot: otAll.slice(-40), journals: (rp.journals || []).slice(-15), questions: (rp.questions || []).slice(-12), known: (rp.known || []).slice(0, 40), weak, reviews } };
-    const isSample = !balanceOk(sv);
-    const done = (ans, sample, why) => {
-      const out = { ...ans, topic: sv.id, title: sv.title, answers: labels, question: payload.question, cost: sample ? 0 : sv.cost, sample: !!sample, sampleWhy: sample ? (why || "") : "", at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
-      _wpAddNote("consult", sv.title, out);
-      if (!sample) _wpAddNote("points", "복지포인트 사용 · " + sv.title, { type: "spend", item: sv.id, title: sv.title, cost: sv.cost, at: out.at });
-      setBusy(false); setSvc(null); setView(out); setTick(t => t + 1);
-    };
-    const sample = sv.id === "english" ? _WP_SAMPLE_ENGLISH : (_WP_SAMPLES[sv.id] || _WP_SAMPLE);
-    if (isSample) { done(sample, true, "포인트 부족"); return; }
-    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(sample, true, "서버 연결 없음"); return; }
-    window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: CHARACTERS.mentor.name, word: "consult" })
-      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(sample, true, "서버 응답 " + ((r && r.error) || "없음") + " · mentor-feedback 배포 확인"); })
-      .catch(() => done(sample, true, "서버 호출 실패 · mentor-feedback 배포 확인"));
+    const sampleData = sv.id === "english" ? _WP_SAMPLE_ENGLISH : (_WP_SAMPLES[sv.id] || _WP_SAMPLE);
+    setSvc(null); setView(null); setBusy(true);
+    _wpRunConsult(sv, payload, labels, CHARACTERS.mentor.name, { data: sampleData, why: balanceOk(sv) ? "" : "포인트 부족" });
   };
   const balanceOk = (s) => balance >= s.cost;
 
@@ -10836,7 +10874,7 @@ function WelfarePointsSection() {
         <div className="wp-ask-head" style={{ margin: "0 18px 8px" }}><b>{svc.emoji} {svc.title}</b><span>{(WP_DIAG[svc.id] || []).length}문항 · {CHARACTERS.mentor.name} 사수가 답과 내 기록(문장·교정·영역별 숫자)을 같이 읽고 써요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"} · {busy ? "쓰는 중…" : _wpFmt(svc.cost) + (balance < svc.cost ? " (모자라서 샘플)" : " 사용")}</span>{err && <div className="air-err" style={{ marginTop: 4 }}>{err}</div>}</div>
       )}
       {svc && !busy && <DiagQuiz key={svc.id} topic={svc.id} initial={profile && profile.diag && profile.diag[svc.id] ? profile.diag[svc.id].answers : null} onDone={ask} onCancel={() => setSvc(null)} />}
-      {svc && busy && <div className="wb-done" style={{ margin: "0 18px 14px" }}><b>{CHARACTERS.mentor.name} 사수가 답과 기록을 읽고 있어요…</b><p>한 장짜리 리포트라 20초쯤 걸려요.</p></div>}
+      {busy && <div className="wb-done" style={{ margin: "0 18px 14px" }}><b>✍️ {CHARACTERS.mentor.name} 사수가 {Object.values(window.__wpJobs || {}).map(j => j.title).join(", ") || "리포트"}를 쓰고 있어요…</b><p>한 장짜리라 30초쯤 걸려요. 다른 탭에 가 있어도 되고, 다 되면 알림으로 알려드려요.</p></div>}
       {view && (
         <div className="wp-result">
           <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (포인트는 안 썼어요" + (view.sampleWhy ? " · " + view.sampleWhy : "") + ")" : " · " + _wpFmt(view.cost) + " 사용"}</div>
@@ -15869,6 +15907,7 @@ function PromotionCeremony({ realDay }) {
 
 function App() {
   const [active, setActive] = useState("home");
+  useEffect(() => { const h = (e) => { if (e.detail) setActive(e.detail); }; window.addEventListener("od-goto", h); return () => window.removeEventListener("od-goto", h); }, []);
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
