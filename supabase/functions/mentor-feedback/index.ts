@@ -148,6 +148,60 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ── 복지포인트 상담 모드 (2026-09-05, 개발 뷰): 커리어 / 직무 / 영어 공부법 / 직장생활 ──
+  // 클라이언트가 질문 + 직무 프로필 + 학습 요약(숫자만)을 보낸다. 상담 결과는 클라이언트가 notes(kind consult)에 보관.
+  if (mode === "consult") {
+    const cp = (b && typeof b.consult === "object" && b.consult) || null;
+    if (!cp) return json({ ok: false, error: "missing" }, 200);
+    const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
+    const topic = String(cp.topic || "").slice(0, 20);
+    const question = String(cp.question || "").slice(0, 800).trim();
+    if (!question) return json({ ok: false, error: "empty_input" }, 200);
+    const compact = {
+      name: String(cp.name || "").slice(0, 30), day: Number(cp.day) || 1, topic, question,
+      profile: cp.profile && typeof cp.profile === "object" ? { job: String(cp.profile.job || "").slice(0, 60), industry: String(cp.profile.industry || "").slice(0, 40), years: String(cp.profile.years || "").slice(0, 60), situ: clip(cp.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(cp.profile.who, 6).map((x: any) => String(x).slice(0, 30)), freq: String(cp.profile.freq || "").slice(0, 20), confidence: Number(cp.profile.confidence) || 0, stuck: String(cp.profile.stuck || "").slice(0, 120), goal: String(cp.profile.goal || "").slice(0, 120) } : null,
+      stats: cp.stats && typeof cp.stats === "object" ? { learned: Number(cp.stats.learned) || 0, mine: Number(cp.stats.mine) || 0, streak: Number(cp.stats.streak) || 0, areas: clip(cp.stats.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0 })), recentQuestions: clip(cp.stats.recentQuestions, 5).map((x: any) => String(x).slice(0, 80)) } : null,
+    };
+    const TOPIC: Record<string, string> = {
+      career: "커리어 상담: 이직·채용·면접·다음 스텝. 외국계 채용 관행(레퍼런스, 영어 면접, 링크드인)을 아는 선배로서 현실적인 선택지와 순서를 준다.",
+      job: "직무 고민 상담: 지금 맡은 일에서 막히는 것, 역할·우선순위·상사와의 합의. 외국계 협업 방식(비동기, 문서화, 기대치 조율)을 기준으로 구체적인 행동을 준다.",
+      english: "영어 공부법 처방: 이 사람의 학습 기록(배운 표현 수, 직접 쓴 문장 수, 영역별 비어 있는 곳)과 직무를 근거로, 지금 이 사람에게만 맞는 방법 2~3개를 고른다. 일반론 금지. 실제로 쓸 영어 문장 2개를 english 에 준다.",
+      work: "직장생활 고민 상담: 관계, 번아웃, 리모트 근무, 피드백 받는 법. 공감 먼저, 그다음 이번 주에 해볼 작은 행동. 의학적·심리치료적 진단은 하지 않는다. 자해·극단적 선택·심한 우울 신호가 보이면 전문가(정신건강 상담전화 1577-0199 등)와 가까운 사람에게 지금 이야기하라고 분명히 권한다.",
+    };
+    const csys = [
+      `너는 따뜻하고 현실적인 외국계 회사 선배 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)의 고민 하나에 답해.`,
+      TOPIC[topic] || "고민 상담: 공감 먼저, 그다음 구체적인 행동.",
+      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}${compact.profile.years ? " / " + compact.profile.years : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 빈도: ${compact.profile.freq || "미입력"}. 자신감 ${compact.profile.confidence || "?"}/5. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}.` : "직무 정보가 없다. 일반적인 외국계 회사 신입으로 가정하되, 필요하면 답 안에서 어떤 정보가 있으면 더 정확해지는지 한 줄로 말해.",
+      compact.stats ? `학습 기록: 배운 표현 ${compact.stats.learned}개, 직접 쓴 문장 ${compact.stats.mine}개, 연속 출근 ${compact.stats.streak}일. 영역별 배운/써본: ${(compact.stats.areas || []).map((a: any) => a.name + " " + a.used + "/" + a.learned).join(", ")}. 최근 질문: ${(compact.stats.recentQuestions || []).join(" / ") || "없음"}.` : "",
+      `JSON 으로만: {"headline":"고민을 한 줄로 다시 짚고 방향을 주는 문장(30자 안팎, 동사로 끝남)","answer":["본론 2~3문단, 각 2~3문장"],"steps":["이번 주 해볼 행동 2~3개, 각 한 문장"],"english":[{"en":"바로 쓸 영어 문장","ko":"뜻"}] (english 은 영어 공부법이나 영어로 말해야 하는 상황일 때만, 아니면 빈 배열),"oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
+      `규칙: 따뜻한 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). 일반론 대신 이 사람의 직무·기록에 붙는 말. em-dash(U+2014) 절대 금지.`,
+    ].filter(Boolean).join("\n");
+    try {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, temperature: 0.5, response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: csys },
+            { role: "user", content: JSON.stringify(compact) },
+          ],
+        }),
+      });
+      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
+      const d = await r.json();
+      let consult: any = {};
+      try { consult = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { consult = {}; }
+      if (!consult.headline) return json({ ok: false, error: "empty" }, 200);
+      consult.answer = clip(consult.answer, 4).map((x: any) => String(x).slice(0, 600));
+      consult.steps = clip(consult.steps, 4).map((x: any) => String(x).slice(0, 200));
+      consult.english = clip(consult.english, 3).filter((x: any) => x && x.en).map((x: any) => ({ en: String(x.en).slice(0, 200), ko: String(x.ko || "").slice(0, 120) }));
+      return json({ ok: true, consult, usage: d?.usage || null });
+    } catch (e) {
+      return json({ ok: false, error: "exception" }, 200);
+    }
+  }
+
   // ── AI Q&A 모드 ──
   // 학습 중인 표현에 대해 신입이 자유롭게 궁금한 걸 물으면, 사수가 짧고 따뜻하게 답한다.
   if (mode === "qa") {

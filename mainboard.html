@@ -474,6 +474,45 @@ body::before {
   .wb-rev-q { font-size: 18px; }
   .wb-card-actions > span { margin-left: 0; width: 100%; }
 }
+/* 🎁 복지포인트 (사원증/인사, 개발 뷰) */
+.wp-balance { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; background: var(--ink); color: var(--paper); flex-wrap: wrap; }
+.wp-balance-l small { display: block; font-size: 10.5px; letter-spacing: 0.12em; font-weight: 800; opacity: 0.6; text-transform: uppercase; }
+.wp-balance-l b { display: block; font-size: 30px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin: 4px 0 2px; color: #F5B08A; font-variant-numeric: tabular-nums; }
+.wp-balance-l span { font-size: 11.5px; opacity: 0.7; }
+.wp-balance-r { text-align: right; font-size: 11.5px; opacity: 0.9; display: grid; gap: 4px; justify-items: end; }
+.wp-rules b { color: #F5B08A; }
+.wp-balance .wb-link { color: #F5B08A; font-size: 11.5px; }
+.wp-ledger { padding: 8px 18px; background: var(--cream); border-bottom: 1px dashed var(--line); font-size: 12.5px; display: grid; gap: 4px; }
+.wp-ledger > div { display: flex; justify-content: space-between; gap: 10px; }
+.wp-ledger b { font-variant-numeric: tabular-nums; color: var(--green); }
+.wp-ledger b.minus { color: var(--stamp-red); }
+.wp-services { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 18px; }
+.wp-svc { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 12px; background: var(--paper); border: 1.5px solid var(--line); border-radius: 10px; font-family: inherit; text-align: left; cursor: pointer; color: var(--ink); }
+.wp-svc:hover, .wp-svc.active { border-color: var(--ink); }
+.wp-svc.active { background: var(--cream); }
+.wp-svc-emoji { font-size: 22px; }
+.wp-svc-body { min-width: 0; }
+.wp-svc-body b { display: block; font-size: 13.5px; font-weight: 900; }
+.wp-svc-body small { display: block; font-size: 11px; color: var(--ink-mute); margin-top: 2px; line-height: 1.4; }
+.wp-svc-cost { font-size: 12px; font-weight: 900; color: var(--orange); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wp-svc-cost.short { color: var(--ink-mute); text-decoration: line-through; }
+.wp-ask { margin: 0 18px 14px; padding: 14px; border: 1px dashed var(--line); border-radius: 10px; display: grid; gap: 8px; background: var(--cream); }
+.wp-ask-head b { font-size: 14px; }
+.wp-ask-head span { display: block; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; }
+.wp-ask textarea { font-family: inherit; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); resize: vertical; line-height: 1.55; }
+.wp-ask-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-mute); }
+.wp-ask-actions .btn { padding: 8px 14px; font-size: 12.5px; }
+.wp-result { margin: 0 18px 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.wp-result-meta { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--ink-mute); margin-bottom: 6px; }
+.wp-result-q { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 10px; white-space: pre-line; }
+.wp-result h3 { margin: 0 0 10px; font-size: 17px; font-weight: 900; line-height: 1.4; letter-spacing: -0.01em; }
+.wp-result p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.65; color: var(--ink); }
+.wp-result ol { margin: 6px 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+.wp-result-en p { display: grid; gap: 2px; }
+.wp-result-en small { color: var(--ink-mute); }
+.wp-result .mono { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+.wp-history-head { padding: 8px 18px 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--ink-mute); text-transform: uppercase; }
+@media (max-width: 880px) { .wp-services { grid-template-columns: 1fr; } .wp-balance-r { text-align: left; justify-items: start; } }
 /* 🧠 AI 성장 리포트 (나만의 노트 상단, 개발 뷰) */
 .air { margin: 14px 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .air-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
@@ -6553,11 +6592,11 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
-const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, aireport: 60 };
-const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: _isNextFeature() ? "복습 · 연봉협상 준비" : "나만의 노트", aireport: "AI 성장 리포트" };
-const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒", aireport: "🧠" };
+const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
+const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: _isNextFeature() ? "복습 · 연봉협상 준비" : "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
+const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠" };
 function _lockedNext(key, rd, viewingPast) {
-  if ((key === "errands" || key === "aireport") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
+  if ((key === "errands" || key === "aireport" || key === "points") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
   return _isHomeLive() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
 }
 // 나만의 노트 열림 기준 (2026-09-05 결정): Day 30 부터 (사원 승진과 같은 날). AI 성장 리포트는 Day 60 부터.
@@ -6571,7 +6610,7 @@ function _myNotesOpen(u) {
 function LockedCard() { return null; }
 function UnlockLadder({ rd, viewingPast }) {
   if (!_isHomeLive() || viewingPast) return null;
-  const _keys = Object.keys(_UNLOCK_AT).filter(k => (k !== "errands" && k !== "aireport") || _isNextFeature());
+  const _keys = Object.keys(_UNLOCK_AT).filter(k => (k !== "errands" && k !== "aireport" && k !== "points") || _isNextFeature());
   const days = [...new Set(_keys.map(k => _UNLOCK_AT[k]))].filter(d => d > rd).sort((a, b) => a - b);
   if (!days.length) return null;
   return (
@@ -6596,10 +6635,11 @@ const _UNLOCK_DESC = {
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
   mynotes: _isNextFeature() ? "복습이 열려요. 연봉협상 준비하듯 내가 쓴 표현을 복기하고 흔들리는 표현을 3분씩 다지면 협상 자리에서 꺼낼 카드가 늘어요. 사수의 주간 코칭도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
+  points: "복지포인트가 쌓이기 시작해요. 출근 완주 100P, 야근 50P, 복기 1장 10P. 모아서 사원증/인사에서 커리어·직무·영어·직장생활 상담을 받아요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
-  const keys = Object.keys(_UNLOCK_AT).filter(k => _UNLOCK_AT[k] === rd && ((k !== "errands" && k !== "aireport") || _isNextFeature()) && _UNLOCK_DESC[k]);
+  const keys = Object.keys(_UNLOCK_AT).filter(k => _UNLOCK_AT[k] === rd && ((k !== "errands" && k !== "aireport" && k !== "points") || _isNextFeature()) && _UNLOCK_DESC[k]);
   const KEY = "__OD_UNLOCK_POP_" + (email || "guest") + "_" + rd;
   const [show, setShow] = useState(false);
   React.useEffect(() => {
@@ -9642,7 +9682,7 @@ function MyNotesPage({ openScene }) {
     Object.keys(byDay).forEach(dayKey => {
       const sc = SCENARIOS.find(s => s.day === Number(dayKey));
       (byDay[dayKey] || []).forEach(n => {
-        if (n.kind === "report" || n.kind === "profile" || n.kind === "insight") return;   // 인사 기록(리포트·프로필)은 사원증에서, 주간 인사이트는 표현 사전에서 본다
+        if (n.kind === "report" || n.kind === "profile" || n.kind === "insight" || n.kind === "points" || n.kind === "consult") return;   // 인사 기록(리포트·프로필)은 사원증에서, 주간 인사이트는 표현 사전에서 본다
         allNotes.push({
           day: Number(dayKey),
           word: sc ? sc.word : "",
@@ -10390,6 +10430,157 @@ function InboxPage({ openMemo }) {
 // 사원증 = 마이페이지
 // ============================================================
 // 사원증 > 📋 인사 기록 (개발 뷰): 발급된 성장 리포트 + 직무 프로필. 다시 보기는 모달
+// ============================================================
+// 🎁 복지포인트 (2026-09-05, 개발 뷰, 사원부터): 출근·야근·복기가 포인트로 쌓이고, 커리어·직무·영어·직장생활 상담에 쓴다.
+//   적립은 기록에서 그때그때 계산(따로 저장 안 함). 사용 내역과 상담 결과는 notes(kind points / consult, day 0)에 남아 기기 간 복원되고 운영자도 본다.
+// ============================================================
+const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10 };
+const WP_SERVICES = [
+  { id: "career", emoji: "🧭", title: "커리어 상담", desc: "이직·채용·면접, 다음 스텝 고민", cost: 500, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
+  { id: "job", emoji: "💼", title: "직무 고민 상담", desc: "지금 일에서 막히는 것, 역할 정리", cost: 500, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
+  { id: "english", emoji: "🗣️", title: "영어 공부법 처방", desc: "내 기록을 읽고 나한테 맞는 방법만 골라줘요", cost: 300, ph: "예: 회의에서 듣기는 되는데 끼어들 타이밍을 못 잡아요." },
+  { id: "work", emoji: "☕", title: "직장생활 고민 상담", desc: "관계·번아웃·리모트 근무, 사수가 들어줘요", cost: 500, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
+];
+function _wpNotes(kind) { const u = _wbUser(); return ((u.savedNotes || {})["0"] || []).filter(n => n.kind === kind).map(n => { try { return { ...JSON.parse(n.text), savedAt: n.savedAt }; } catch (e) { return null; } }).filter(Boolean); }
+function _wpEarned(USER) {
+  const u = _wbUser(); const em = USER.email || "guest"; const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const items = [];
+  if (rd >= 30 || USER.isFulltime) items.push({ k: "promo", p: WP_RULES.promo, label: "사원 승진 축하" });
+  const done = Array.from(_odCompletedDaySet(u)).filter(d => d >= 30);
+  if (done.length) items.push({ k: "day", p: done.length * WP_RULES.day, label: "완주 " + done.length + "일 × " + WP_RULES.day });
+  let ot = 0;
+  try { Object.keys(localStorage).forEach(k => { if (k.startsWith("__OD_OT_" + em + "_")) { const d = Number(k.split("_").pop()); const v = _loadJSON(k); if (d >= 30 && v && Object.keys(v.sentences || {}).length >= 3) ot++; } }); } catch (e) {}
+  if (ot) items.push({ k: "ot", p: ot * WP_RULES.ot, label: "야근 " + ot + "번 × " + WP_RULES.ot });
+  const rev = _wbLoadRev(em); let reviews = 0; Object.values(rev).forEach(r => { reviews += (r && r.history ? r.history.length : 0); });
+  if (reviews) items.push({ k: "review", p: reviews * WP_RULES.review, label: "복기 " + reviews + "장 × " + WP_RULES.review });
+  return { items, total: items.reduce((n, x) => n + x.p, 0) };
+}
+function _wpAddNote(kind, label, obj) {
+  try {
+    const u = _wbUser(); u.savedNotes = u.savedNotes || {}; u.savedNotes["0"] = u.savedNotes["0"] || [];
+    const text = JSON.stringify(obj);
+    u.savedNotes["0"].push({ kind, label, text, savedAt: obj.at || new Date().toISOString() });
+    localStorage.setItem("__OD_USER", JSON.stringify(u));
+    if (u.email && window.OD?.enabled && window.OD.saveNoteRow) window.OD.saveNoteRow(u.email, 0, text, label, kind).catch(() => {});
+  } catch (e) {}
+}
+const _WP_SAMPLE = { headline: "질문의 핵심은 '내 의견을 먼저 꺼내도 되는가'예요. 돼요, 그리고 그게 기대돼요.", answer: ["외국계에서 침묵은 동의로 읽혀요. 반대든 질문이든 회의 안에서 한 번은 목소리를 내는 게 평가에 유리해요.", "지금 기록을 보면 회의 발언 표현은 튼튼한데 반대 의견 표현(push back, I see it differently)은 아직 한 번도 안 썼어요. 다음 회의에서 그 둘 중 하나를 준비해 가세요."], steps: ["회의 전 안건마다 내 입장을 한 줄 영어로 적어두세요.", "'I see it a bit differently. Could we…'로 시작하는 문장 하나를 외워 가세요.", "말한 뒤 슬랙에 요약을 남겨 기록으로 굳히세요."], oneLiner: "먼저 꺼낸 의견이 가장 오래 기억돼요. 이번 주 한 번만 해보세요." };
+function _wpFmt(n) { return Number(n || 0).toLocaleString("ko-KR") + "P"; }
+
+function WelfarePointsSection() {
+  const { USER, CHARACTERS } = window.__SIM;
+  const em = USER.email || "guest";
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const [tick, setTick] = useState(0);
+  const [svc, setSvc] = useState(null);
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [view, setView] = useState(null);
+  const [showLedger, setShowLedger] = useState(false);
+  void tick;
+  const open = USER.isFulltime || rd >= 30;
+  const earned = _wpEarned(USER);
+  const spends = _wpNotes("points").filter(x => x.type === "spend");
+  const spent = spends.reduce((n, x) => n + (Number(x.cost) || 0), 0);
+  const balance = earned.total - spent;
+  const consults = _wpNotes("consult").sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const profile = _loadProfile(em);
+  const devHead = <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6, textTransform: "none", letterSpacing: 0 }}>개발 뷰 · 사원부터</span>;
+
+  if (!open) return (
+    <div className="hr-section" style={{ marginTop: 16 }}>
+      <div className="hr-section-head">🎁 복지포인트 {devHead}</div>
+      <div className="hr-row"><span className="hr-row-label">🔒 사원이 되면 쌓이기 시작해요</span><span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day 30부터 출근·야근·복기마다 적립되고, 커리어·직무·영어 상담에 써요</span></div>
+    </div>
+  );
+
+  const ask = () => {
+    if (!svc) return;
+    const question = q.trim();
+    if (question.length < 5) { setErr("고민을 한 줄이라도 적어주세요"); return; }
+    if (balance < svc.cost) { setErr("포인트가 " + _wpFmt(svc.cost - balance) + " 모자라요. 내일 출근하면 " + WP_RULES.day + "P 쌓여요"); return; }
+    setBusy(true); setErr("");
+    const rp = _reportPayload(profile);
+    const payload = { topic: svc.id, title: svc.title, question, profile, name: USER.name, day: rd,
+      stats: { learned: rp.words.length, mine: rp.sentences.length, streak: rp.streak, areas: (rp.areas || []).map(a => ({ name: a.name, learned: a.learned, used: a.used })), recentQuestions: (rp.questions || []).slice(-5) } };
+    const done = (ans, sample) => {
+      const out = { ...ans, topic: svc.id, title: svc.title, question, cost: sample ? 0 : svc.cost, sample: !!sample, at: new Date().toISOString(), mentor: CHARACTERS.mentor.name };
+      _wpAddNote("consult", svc.title, out);
+      if (!sample) _wpAddNote("points", "복지포인트 사용 · " + svc.title, { type: "spend", item: svc.id, title: svc.title, cost: svc.cost, at: out.at });
+      setBusy(false); setSvc(null); setQ(""); setView(out); setTick(t => t + 1);
+    };
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { done(_WP_SAMPLE, true); return; }
+    window.OD.getMentorAiFeedback({ mode: "consult", consult: payload, mentorName: CHARACTERS.mentor.name, word: "consult" })
+      .then(r => { if (r && r.ok && r.consult && r.consult.headline) done(r.consult, false); else done(_WP_SAMPLE, true); })
+      .catch(() => done(_WP_SAMPLE, true));
+  };
+
+  return (
+    <div className="hr-section" style={{ marginTop: 16 }}>
+      <div className="hr-section-head">🎁 복지포인트 {devHead}</div>
+      <div className="wp-balance">
+        <div className="wp-balance-l"><small>지금 쓸 수 있는 포인트</small><b>{_wpFmt(balance)}</b><span>적립 {_wpFmt(earned.total)} · 사용 {_wpFmt(spent)}</span></div>
+        <div className="wp-balance-r">
+          <div className="wp-rules">출근 완주 <b>+{WP_RULES.day}</b> · 야근 <b>+{WP_RULES.ot}</b> · 복기 1장 <b>+{WP_RULES.review}</b></div>
+          <button className="wb-link" onClick={() => setShowLedger(v => !v)}>{showLedger ? "내역 닫기" : "적립·사용 내역"}</button>
+        </div>
+      </div>
+      {showLedger && (
+        <div className="wp-ledger">
+          {earned.items.map(x => <div key={x.k}><span>{x.label}</span><b>+{_wpFmt(x.p)}</b></div>)}
+          {spends.map((x, i) => <div key={"s" + i}><span>{String(x.at || "").slice(0, 10)} · {x.title}</span><b className="minus">-{_wpFmt(x.cost)}</b></div>)}
+          {earned.items.length === 0 && <div><span>아직 적립이 없어요. 오늘 완주하면 첫 포인트가 쌓여요.</span></div>}
+        </div>
+      )}
+      <div className="wp-services">
+        {WP_SERVICES.map(s => (
+          <button key={s.id} className={"wp-svc " + (svc && svc.id === s.id ? "active" : "")} onClick={() => { setSvc(svc && svc.id === s.id ? null : s); setErr(""); setView(null); }}>
+            <span className="wp-svc-emoji">{s.emoji}</span>
+            <span className="wp-svc-body"><b>{s.title}</b><small>{s.desc}</small></span>
+            <span className={"wp-svc-cost " + (balance < s.cost ? "short" : "")}>{_wpFmt(s.cost)}</span>
+          </button>
+        ))}
+      </div>
+      {svc && (
+        <div className="wp-ask">
+          <div className="wp-ask-head"><b>{svc.emoji} {svc.title}</b><span>{CHARACTERS.mentor.name} 사수가 내 기록과 직무 프로필을 같이 읽고 답해요{profile && profile.job ? " · " + profile.job : " · 직무 프로필을 먼저 적으면 더 정확해요"}</span></div>
+          <textarea value={q} onChange={e => setQ(e.target.value)} placeholder={svc.ph} rows={4} />
+          {err && <div className="air-err">{err}</div>}
+          <div className="wp-ask-actions">
+            <button className="btn btn-primary" onClick={ask} disabled={busy}>{busy ? "사수가 읽는 중…" : _wpFmt(svc.cost) + " 쓰고 상담 받기"}</button>
+            <button className="btn btn-ghost" onClick={() => { setSvc(null); setQ(""); setErr(""); }} disabled={busy}>취소</button>
+            <span>남는 포인트 {_wpFmt(balance - svc.cost)}</span>
+          </div>
+        </div>
+      )}
+      {view && (
+        <div className="wp-result">
+          <div className="wp-result-meta">{view.title} · {String(view.at || "").slice(0, 10)}{view.sample ? " · 샘플 (서버에 consult 모드가 아직 없어서 포인트는 안 썼어요)" : " · " + _wpFmt(view.cost) + " 사용"}</div>
+          <div className="wp-result-q">❓ {view.question}</div>
+          <h3>{view.headline}</h3>
+          {(view.answer || []).map((p, i) => <p key={i}>{p}</p>)}
+          {view.steps && view.steps.length > 0 && <ol>{view.steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+          {view.english && view.english.length > 0 && <div className="wp-result-en">{view.english.map((x, i) => <p key={i}><span className="mono">{x.en}</span><small>{x.ko}</small></p>)}</div>}
+          {view.oneLiner && <div className="air-sign">{view.oneLiner}<b>{view.mentor || CHARACTERS.mentor.name}</b></div>}
+          <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setView(null)}>닫기</button>
+        </div>
+      )}
+      {consults.length > 0 && !view && (
+        <div className="wp-history">
+          <div className="wp-history-head">상담 기록 {consults.length}건</div>
+          {consults.slice(0, 5).map((c, i) => (
+            <button key={i} className="hr-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px dashed var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setView(c)}>
+              <span className="hr-row-label">{(WP_SERVICES.find(s => s.id === c.topic) || {}).emoji} {c.title} <small style={{ color: "var(--ink-mute)" }}>· {String(c.question || "").slice(0, 28)}{String(c.question || "").length > 28 ? "…" : ""}</small></span>
+              <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700, fontSize: 12 }}>{String(c.at || "").slice(0, 10)} · 다시 보기 →</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HrRecordsSection() {
   const { USER } = window.__SIM;
   const reports = _reportsList();
@@ -10697,6 +10888,8 @@ function MyPage() {
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
         )}
       </div>
+
+      {_isNextFeature() && <WelfarePointsSection />}
 
       {/* 고객센터, 유버디 카카오톡 채널 */}
       <div className="hr-section" style={{ marginTop: 16 }}>
