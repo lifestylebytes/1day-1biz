@@ -97,6 +97,57 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ── 주간 인사이트 모드 (2026-09-05, 표현 사전/개발 뷰) ──
+  // 클라이언트가 약한 표현 8개(단어, 뜻, 내 문장, 강도, 영역), 튼튼한 표현 5개, 영역별 강도, 직무 프로필만 보낸다. 주 1회 캐시.
+  if (mode === "insight") {
+    const ip = (b && typeof b.insight === "object" && b.insight) || null;
+    if (!ip) return json({ ok: false, error: "missing" }, 200);
+    const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
+    const compact = {
+      name: String(ip.name || "").slice(0, 30), day: Number(ip.day) || 1, week: String(ip.week || "").slice(0, 12),
+      reviewedThisWeek: Number(ip.reviewedThisWeek) || 0,
+      weak: clip(ip.weak, 8).map((x: any) => ({ word: String(x.word || "").slice(0, 40), meaning: String(x.meaning || "").slice(0, 60), mine: String(x.mine || "").slice(0, 120), strength: Number(x.strength) || 0, area: String(x.area || "").slice(0, 20) })),
+      strong: clip(ip.strong, 5).map((w: any) => String(w).slice(0, 40)),
+      areas: clip(ip.areas, 6).map((a: any) => ({ name: String(a.name || "").slice(0, 20), learned: Number(a.learned) || 0, used: Number(a.used) || 0, avg: Number(a.avg) || 0 })),
+      profile: ip.profile && typeof ip.profile === "object" ? { job: String(ip.profile.job || "").slice(0, 60), industry: String(ip.profile.industry || "").slice(0, 40), situ: clip(ip.profile.situ, 8).map((x: any) => String(x).slice(0, 20)), who: clip(ip.profile.who, 6).map((x: any) => String(x).slice(0, 30)), stuck: String(ip.profile.stuck || "").slice(0, 120), goal: String(ip.profile.goal || "").slice(0, 120) } : null,
+    };
+    if (!compact.weak.length) return json({ ok: false, error: "empty_input" }, 200);
+    const isys = [
+      `너는 따뜻하고 구체적인 영어 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)의 표현 사전 기록을 읽고 이번 주 인사이트를 써.`,
+      `기록: 기억 강도가 낮은 표현(weak, 0~100 낮을수록 희미함)과 그 표현으로 신입이 쓴 문장(mine, 없으면 한 번도 안 써본 것), 튼튼한 표현(strong), 영역별 배운 수/써본 수/평균 강도(areas), 이번 주 복습 횟수(reviewedThisWeek).`,
+      compact.profile ? `신입의 일: ${compact.profile.job}${compact.profile.industry ? " / " + compact.profile.industry : ""}. 영어 쓰는 상황: ${(compact.profile.situ || []).join(", ") || "미입력"}. 상대: ${(compact.profile.who || []).join(", ") || "미입력"}. 막히는 순간: ${compact.profile.stuck || "미입력"}. 목표: ${compact.profile.goal || "미입력"}. 이 직종과 상황에서 실제로 통하는 문장으로 써.` : "직무 정보가 없으니 일반적인 외국계 회사 상황으로 써.",
+      `set 은 weak 안에 있는 표현 3개만 고른다(있는 표현만, 지어내지 마). 각 표현마다 이 신입의 일에서 언제 쓰는지 한 줄(why)과 바로 쓸 수 있는 자연스러운 영어 문장 하나(sentence, 12단어 안팎)를 쓴다. 신입이 이미 쓴 문장(mine)이 있으면 그 습관을 이어서 다듬는 방향으로.`,
+      `pattern 은 areas 와 weak 를 근거로 이번 주에 보이는 습관 하나를 숫자와 함께 짚는다(예: 어느 영역이 비었는지, 배웠지만 안 쓴 표현이 몇 개인지). 없는 숫자를 만들지 마.`,
+      `JSON 으로만: {"headline":"한 줄 총평(25자 안팎, 동사로 끝나는 문장)","pattern":"2~3문장","set":[{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""},{"word":"","why":"","sentence":""}],"task":"이번 주에 실제로 해볼 과제 한 문장(동사로 끝남)"}`,
+      `규칙: 따뜻한 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). em-dash(U+2014) 절대 금지.`,
+    ].filter(Boolean).join("\n");
+    try {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL, temperature: 0.5, response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: isys },
+            { role: "user", content: JSON.stringify(compact) },
+          ],
+        }),
+      });
+      if (!r.ok) return json({ ok: false, error: "openai_" + r.status }, 200);
+      const d = await r.json();
+      let insight: any = {};
+      try { insight = JSON.parse(d?.choices?.[0]?.message?.content || "{}"); } catch { insight = {}; }
+      if (!insight.headline) return json({ ok: false, error: "empty" }, 200);
+      // set 은 실제 weak 표현만 남긴다 (지어낸 표현 방지)
+      const allowed = new Set(compact.weak.map((x: any) => x.word.toLowerCase()));
+      insight.set = (Array.isArray(insight.set) ? insight.set : []).filter((x: any) => x && allowed.has(String(x.word || "").toLowerCase())).slice(0, 3)
+        .map((x: any) => ({ word: String(x.word || "").slice(0, 40), why: String(x.why || "").slice(0, 160), sentence: String(x.sentence || "").slice(0, 200) }));
+      return json({ ok: true, insight, usage: d?.usage || null });
+    } catch (e) {
+      return json({ ok: false, error: "exception" }, 200);
+    }
+  }
+
   // ── AI Q&A 모드 ──
   // 학습 중인 표현에 대해 신입이 자유롭게 궁금한 걸 물으면, 사수가 짧고 따뜻하게 답한다.
   if (mode === "qa") {

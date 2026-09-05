@@ -343,6 +343,134 @@ body::before {
   .lib-detail-grid { grid-template-columns: 1fr; }
   .lib-view { margin-left: 0; }
 }
+/* 📕 표현 사전 (WordBook, 나만의 노트 다음 버전, 개발 뷰) */
+.wb { --wb-fading: #DDB08F; --wb-shaky: #E9A67A; --wb-ok: #E8793F; --wb-solid: #B8431A; }
+.wb .mono { font-family: Georgia, 'Times New Roman', 'Noto Serif KR', serif; font-style: italic; letter-spacing: 0; }
+.wb-cover { position: relative; background: var(--ink); color: var(--paper); border-radius: 16px; padding: 26px 26px 20px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr auto; gap: 18px 24px; overflow: hidden; }
+.wb-cover::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 88% -10%, rgba(216,90,42,0.42), transparent 48%), radial-gradient(circle at 0% 110%, rgba(245,176,138,0.14), transparent 40%); pointer-events: none; }
+.wb-cover > * { position: relative; z-index: 1; }
+.wb-cover-eyebrow { font-size: 10px; letter-spacing: 0.24em; font-weight: 800; opacity: 0.6; text-transform: uppercase; margin-bottom: 8px; }
+.wb-cover-title { margin: 0; font-size: 30px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; color: var(--paper); }
+.wb-cover-title em { font-style: normal; color: #F5B08A; }
+.wb-cover-sub { margin-top: 8px; font-size: 12.5px; opacity: 0.75; }
+.wb-cover-btn { margin-top: 12px; font-family: inherit; font-size: 11.5px; font-weight: 800; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(244,239,227,0.35); background: transparent; color: var(--paper); cursor: pointer; }
+.wb-cover-btn:hover { background: rgba(244,239,227,0.12); }
+.wb-cover-r { display: grid; grid-template-columns: repeat(4, auto); gap: 18px; align-self: start; }
+.wb-cover-r > div { text-align: right; }
+.wb-cover-r b { display: block; font-size: 30px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.wb-cover-r span { display: block; font-size: 10.5px; opacity: 0.65; margin-top: 5px; }
+.wb-cover-r .hot b { color: #F5B08A; }
+.wb-grid { grid-column: 1 / -1; display: grid; gap: 4px; grid-template-columns: repeat(30, 1fr); }
+.wb-cell { aspect-ratio: 1; border-radius: 3px; border: none; padding: 0; cursor: pointer; background: rgba(244,239,227,0.07); transition: transform 0.12s; }
+.wb-cell.locked { cursor: default; background: rgba(244,239,227,0.05); }
+.wb-cell.fading, .wb-legend i.fading { background: rgba(216,90,42,0.3); }
+.wb-cell.shaky, .wb-legend i.shaky { background: #9A4E2C; }
+.wb-cell.ok, .wb-legend i.ok { background: #D85A2A; }
+.wb-cell.solid, .wb-legend i.solid { background: #FF9A5C; }
+.wb-cell:not(.locked):hover { transform: scale(1.3); }
+.wb-legend { grid-column: 1 / -1; display: flex; align-items: center; gap: 4px; font-size: 10.5px; opacity: 0.8; flex-wrap: wrap; }
+.wb-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin: 0 3px 0 8px; }
+.wb-legend i:first-child { margin-left: 0; }
+.wb-legend span { margin-left: auto; }
+.wb-sec { margin: 0 0 22px; }
+.wb-sec-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.wb-sec-head h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--ink); }
+.wb-sec-head h2 small { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-mute); margin-top: 3px; }
+.wb-sec-head .btn { padding: 6px 12px; font-size: 11.5px; flex-shrink: 0; }
+.wb-progress { font-size: 12px; font-weight: 800; color: var(--orange); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.wb-rev { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--orange); border-radius: 12px; padding: 18px 20px; }
+.wb-rev-top { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--ink-mute); margin-bottom: 12px; }
+.wb-rev-mode { color: var(--orange); }
+.wb-rev-q { font-size: 21px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.35; margin-bottom: 6px; color: var(--ink); }
+.wb-rev-q.mono { font-weight: 600; font-size: 19px; }
+.wb-rev-scene { font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 14px; }
+.wb-rev-input { display: flex; gap: 8px; }
+.wb-rev-input input { flex: 1; min-width: 0; font-family: inherit; font-size: 14px; padding: 10px 12px; border: 1.5px solid var(--ink); border-radius: 8px; background: #fff; color: var(--ink); }
+.wb-rev-a { margin-top: 4px; padding: 12px 14px; background: var(--cream); border: 1px dashed var(--line); border-radius: 10px; }
+.wb-rev-a > b { font-size: 18px; font-weight: 900; color: var(--orange); }
+.wb-rev-a.no > b { color: var(--ink); }
+.wb-rev-a p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+.wb-rev-typed { display: block; font-size: 12px; color: var(--stamp-red); font-weight: 700; margin-top: 4px; }
+.wb-rev-sample { color: var(--ink-soft); font-size: 12.5px !important; }
+.wb-rev-fb { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.wb-rev-fb p { font-size: 12.5px; color: var(--ink-soft); }
+.wb-grade { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 14px; }
+.wb-grade > span { width: 100%; font-size: 11.5px; color: var(--ink-mute); font-weight: 700; }
+.wb-grade button { flex: 1 1 auto; font-family: inherit; font-size: 12.5px; font-weight: 800; padding: 9px 10px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer; }
+.wb-grade button:hover { border-color: var(--ink); }
+.wb-done { background: var(--cream); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.wb-done b { font-size: 15px; color: var(--ink); }
+.wb-done p { margin: 6px 0 10px; font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+.wb-done p:last-child { margin-bottom: 0; }
+.wb-done.calm { border-style: dashed; }
+.wb-ins-form { display: grid; gap: 8px; background: var(--paper); border: 1px dashed var(--line); border-radius: 12px; padding: 16px; }
+.wb-ins-form p { margin: 0 0 2px; font-size: 13px; color: var(--ink-soft); }
+.wb-ins-form input { font-family: inherit; font-size: 13.5px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.wb-ins-form .btn { justify-self: start; }
+.wb-ins-empty { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.wb-ins-empty p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.55; flex: 1 1 260px; }
+.wb-ins { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.wb-ins h3 { margin: 0 0 8px; font-size: 18px; font-weight: 900; line-height: 1.4; letter-spacing: -0.01em; color: var(--ink); }
+.wb-ins-pattern { margin: 0 0 14px; font-size: 13.5px; line-height: 1.65; color: var(--ink-soft); }
+.wb-ins-set { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.wb-ins-item { background: var(--cream); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; display: grid; gap: 4px; align-content: start; }
+.wb-ins-item:hover { border-color: var(--ink); }
+.wb-ins-item b { font-size: 15px; color: var(--orange); }
+.wb-ins-item span { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+.wb-ins-item em { font-size: 13px; color: var(--ink); line-height: 1.5; }
+.wb-ins-task { margin-top: 12px; padding: 10px 14px; background: #FFF3B8; color: #3A2E10; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+.wb-areas .filter-chip small { font-weight: 800; opacity: 0.7; margin-left: 2px; }
+.wb-cards { display: grid; gap: 8px; margin-top: 8px; }
+.wb-card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.wb-card.open { border-color: var(--ink); }
+.wb-card-head { display: grid; grid-template-columns: 30px 1fr 150px auto; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; background: transparent; border: none; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink); }
+.wb-card-head:hover { background: var(--cream); }
+.wb-card-day { font-size: 11px; font-weight: 800; color: var(--ink-mute); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.wb-card-word { min-width: 0; }
+.wb-card-word b { display: block; font-size: 15.5px; font-weight: 900; letter-spacing: -0.01em; }
+.wb-card-word small { display: block; font-size: 11.5px; color: var(--ink-mute); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-card-mem i { display: block; height: 7px; border-radius: 999px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
+.wb-card-mem i em { display: block; height: 100%; border-radius: 999px; background: var(--wb-ok); }
+.wb-card-mem small { display: block; font-size: 10.5px; color: var(--ink-mute); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.wb-card.solid .wb-card-mem em { background: var(--wb-solid); }
+.wb-card.shaky .wb-card-mem em { background: var(--wb-shaky); }
+.wb-card.fading .wb-card-mem em { background: var(--wb-fading); }
+.wb-card-tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.wb-card-tags b { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); white-space: nowrap; }
+.wb-card-tags b.on, .wb-card-tags b.known { border-color: var(--green); color: var(--green); }
+.wb-card-tags b.off { border-style: dashed; color: var(--ink-mute); }
+.wb-card-body { padding: 4px 16px 16px; border-top: 1px dashed var(--line); }
+.wb-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; padding-top: 12px; }
+.wb-card-grid label { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: var(--orange); margin-bottom: 4px; }
+.wb-card-grid p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.wb-card-grid p + p { margin-top: 4px; }
+.wb-card-grid p small { color: var(--ink-mute); font-weight: 700; margin-right: 4px; font-style: normal; }
+.wb-syn { display: inline-block; margin-right: 10px; }
+.wb-fix { color: var(--green); }
+.wb-muted { color: var(--ink-mute); }
+.wb-hist { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--paper-warm); margin: 0 4px 4px 0; font-variant-numeric: tabular-nums; }
+.wb-hist.again { background: #F5DCC8; color: var(--stamp-red); }
+.wb-hist.good, .wb-hist.easy { background: rgba(74,124,89,0.12); color: var(--green); }
+.wb-card-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 11.5px; color: var(--ink-mute); }
+.wb-card-actions .btn { padding: 7px 12px; font-size: 12px; }
+.wb-card-actions > span { margin-left: auto; }
+.wb-foot { margin: 6px 0 20px; font-size: 11.5px; color: var(--ink-mute); line-height: 1.6; }
+@media (max-width: 880px) {
+  .wb-cover { grid-template-columns: 1fr; padding: 20px 18px 16px; gap: 14px; }
+  .wb-grid { grid-template-columns: repeat(15, 1fr); }
+  .wb-cover-title { font-size: 24px; }
+  .wb-cover-r { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .wb-cover-r > div { text-align: left; }
+  .wb-cover-r b { font-size: 22px; }
+  .wb-card-head { grid-template-columns: 26px 1fr; gap: 6px 10px; padding: 12px 14px; }
+  .wb-card-mem { grid-column: 2; }
+  .wb-card-tags { grid-column: 2; justify-content: flex-start; }
+  .wb-card-grid { grid-template-columns: 1fr; }
+  .wb-ins-set { grid-template-columns: 1fr; }
+  .wb-rev { padding: 16px; }
+  .wb-rev-q { font-size: 18px; }
+  .wb-card-actions > span { margin-left: 0; width: 100%; }
+}
 /* 🧠 AI 성장 리포트 (나만의 노트 상단, 개발 뷰) */
 .air { margin: 14px 0 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .air-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
@@ -6199,7 +6327,7 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
               <span style={{ fontSize: 20 }}>{_myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
                 <b style={{ fontSize: 14 }}>나만의 노트</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? "내가 저장한 표현, 메모" : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_isNextFeature() ? "내 표현 사전, 3분 복습" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -6464,7 +6592,7 @@ const _UNLOCK_DESC = {
   skills: "표현을 5개 영역으로 나눠 모아요. 회의·메일·관계·보고·협상 중 어디가 비었는지 보여요.",
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
   errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
-  mynotes: "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
+  mynotes: _isNextFeature() ? "내 표현 사전이 열려요. 표현마다 내 문장과 기억 강도가 붙고, 흔들리는 표현만 골라 3분 복습을 시켜줘요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
 };
 function UnlockPopup({ rd, email, onGo }) {
@@ -6576,6 +6704,28 @@ function SlackPing({ scn, npc, day, ready, onOpen }) {
 //   저장은 기기(localStorage). 서버 저장은 검증 뒤에.
 // ============================================================
 const _otKey = (email, day) => "__OD_OT_" + (email || "guest") + "_" + day;
+// task_progress.tasks 의 밑줄 메타(_rev 복습 기록, _known 이미 알아요)를 기기 간 복원 (2026-09-05). 완주 계산과 무관.
+function _odRestoreMetaFromTasks(email, task_progress) {
+  try {
+    if (!email || !task_progress) return;
+    const REV_KEY = "__OD_REV_" + email;
+    const rev = JSON.parse(localStorage.getItem(REV_KEY) || "{}") || {};
+    let known = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]") || [];
+    let revChanged = false, knownChanged = false;
+    Object.keys(task_progress).forEach(dayKey => {
+      const t = task_progress[dayKey] || {};
+      const d = Number(dayKey);
+      if (t._rev && typeof t._rev === "object" && (!rev[d] || String(t._rev.last || "") > String(rev[d].last || ""))) { rev[d] = t._rev; revChanged = true; }
+      if (t._known === true && !known.some(k => k.day === d)) {
+        const sc = (typeof SCENARIOS !== "undefined" ? SCENARIOS : []).find(x => x.day === d);
+        known.push({ day: d, word: sc ? sc.word : "", at: new Date().toISOString() }); knownChanged = true;
+      }
+      if (t._known === false && known.some(k => k.day === d)) { known = known.filter(k => k.day !== d); knownChanged = true; }
+    });
+    if (revChanged) localStorage.setItem(REV_KEY, JSON.stringify(rev));
+    if (knownChanged) localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(known));
+  } catch (e) {}
+}
 const _preKey = (email, day) => "__OD_PRE_" + (email || "guest") + "_" + day;
 function _loadJSON(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
 function _saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -8930,6 +9080,458 @@ function AiGrowthReport() {
   );
 }
 
+// ============================================================
+// 📕 표현 사전 (WordBook, 2026-09-05, 개발 뷰): 나만의 노트의 다음 모습.
+//   표현 하나 = 카드 하나. 카드 안에 내 문장, 사수 교정, 유의어, 야근 문장, Q&A, 저장한 노트, 기억 강도가 모인다.
+//   기억 강도(0~100)는 마지막으로 그 표현을 건드린 날부터 반감기로 줄고, 복습(SM-2 방식)으로 다시 올라간다.
+//   오늘 복습 = 흔들리는 표현만 골라 최대 7개. 인사이트 = 주 1회 AI (프로필 + 약한 표현 압축본만 전송).
+//   복습 기록은 task_progress.tasks._rev (밑줄 키라 완주 계산에서 제외) 로 서버에도 남아 기기가 바뀌어도 이어진다.
+// ============================================================
+const _WB_REV_KEY = (em) => "__OD_REV_" + (em || "guest");
+function _wbLoadRev(em) { try { return JSON.parse(localStorage.getItem(_WB_REV_KEY(em)) || "{}") || {}; } catch (e) { return {}; } }
+function _wbSaveRev(em, rev) { try { localStorage.setItem(_WB_REV_KEY(em), JSON.stringify(rev)); } catch (e) {} }
+function _wbTodayKST() { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); }
+function _wbDaysBetween(aISO, bISO) { return Math.max(0, Math.round((Date.parse(bISO) - Date.parse(aISO)) / 86400000)); }
+function _wbNorm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9']+/g, " ").trim(); }
+function _wbUser() { try { return JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) { return {}; } }
+const _WB_LEVEL = (st) => st >= 75 ? "solid" : st >= 55 ? "ok" : st >= 30 ? "shaky" : "fading";
+const _WB_LEVEL_KO = { solid: "튼튼해요", ok: "괜찮아요", shaky: "흔들려요", fading: "희미해요" };
+const _WB_GRADE_KO = { again: "몰랐음", hard: "가물가물", good: "떠올림", easy: "쉬움" };
+
+// 카드 모델: 표현마다 내 기록을 전부 모으고 기억 강도를 계산
+function _wbBuild(USER, SCENARIOS, rev) {
+  const em = USER.email || "guest";
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const today = _wbTodayKST();
+  const signup = (typeof _signupKST === "string" && _signupKST) || today;   // 가입일(KST), data 블록 전역
+  const u = _wbUser();
+  let known = []; try { known = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]"); } catch (e) {}
+  return SCENARIOS.filter(s => s.day <= rd).map(s => {
+    const c = _loadCompletion(s.day);
+    const aiFb = c && c.feedback && c.feedback.aiFb;
+    const corrected = aiFb && aiFb.corrected && c.sentence && _wbNorm(aiFb.corrected) !== _wbNorm(c.sentence) ? aiFb.corrected : "";
+    const ot = _loadJSON(_otKey(em, s.day)) || {};
+    const otSentences = Object.entries(ot.sentences || {}).map(([w, t]) => ({ w, t }));
+    const notes = ((u.savedNotes || {})[String(s.day)] || []).filter(n => n.kind !== "report" && n.kind !== "profile" && n.kind !== "insight");
+    const qa = notes.filter(n => n.kind === "qa");
+    const memos = notes.filter(n => n.kind !== "qa");
+    const isKnown = known.some(k => k.day === s.day);
+    const r = rev[s.day] || null;
+    const learnedAt = new Date(Date.parse(signup) + (s.day - 1) * 86400000).toISOString().slice(0, 10);
+    const touches = [learnedAt];
+    if (c && c.submittedAt) touches.push(String(c.submittedAt).slice(0, 10));
+    if (ot.preview && ot.preview.at) touches.push(String(ot.preview.at).slice(0, 10));
+    if (r && r.lastDay) touches.push(String(r.lastDay));
+    const lastTouch = touches.filter(Boolean).sort().pop() || learnedAt;
+    const since = _wbDaysBetween(lastTouch, today);
+    const used = !!(c && c.sentence);
+    const reps = (r && r.reps) || 0;
+    // 반감기: 기본 4일. 내 문장 +6, 이미 아는 표현 +14, 야근 문장 하나당 +3(최대 2개), 복습 간격이 있으면 그 1.5배까지
+    let half = 4 + (used ? 6 : 0) + (isKnown ? 14 : 0) + Math.min(2, otSentences.length) * 3;
+    if (r && r.interval) half = Math.max(half, r.interval * 1.5);
+    // 바닥값: 한 번 내 문장으로 쓴 표현은 15, 알던 표현은 +25, 복습에서 떠올린 횟수만큼 +10 (최대 55). 0까지 떨어지진 않는다.
+    const floor = Math.min(55, (used ? 15 : 0) + (isKnown ? 25 : 0) + Math.min(3, reps) * 10);
+    let strength = Math.max(floor, Math.round(100 * Math.exp(-Math.LN2 * since / half)));
+    if (!used && !isKnown && reps === 0) strength = Math.min(strength, 55);   // 한 번도 안 써본 표현은 튼튼할 수 없다
+    else if (!used && !isKnown && reps < 2) strength = Math.min(strength, 72); // 한 번 떠올린 걸로는 아직 "괜찮아요"까지
+    if (r && r.reps === 0 && r.lapses) strength = Math.min(strength, 40);      // 마지막 복습에서 몰랐던 표현
+    const dueByRev = !!(r && r.due && r.due <= today);
+    const reviewedToday = !!(r && r.lastDay === today);
+    const due = (strength < 55 || dueByRev) && !reviewedToday && s.day !== rd;
+    return {
+      day: s.day, word: s.word, meaning: s.meaning, scene: _sceneNoClock(s.scene), koSentence: (s.task && s.task.koSentence) || "", sample: s.sampleAnswer || "",
+      area: _areaOf(s.day), mine: c && c.sentence ? String(c.sentence) : "", corrected, used, isKnown, ot: otSentences, qa, memos, syn: SYNONYMS[s.day] || [],
+      nuance: _mentorNuanceLine(s), tip: _buddyTipText(s), scn: s,
+      strength, due, since, lastTouch, rev: r, reviewedToday,
+    };
+  });
+}
+// SM-2 변형: again / hard / good / easy. 복습에서 직접 쓴 문장도 같이 남긴다.
+function _wbGrade(rev, day, grade, extra) {
+  const today = _wbTodayKST();
+  const r = { ease: 2.5, interval: 0, reps: 0, lapses: 0, ...(rev[day] || {}) };
+  if (grade === "again") { r.reps = 0; r.lapses = (r.lapses || 0) + 1; r.interval = 1; r.ease = Math.max(1.3, r.ease - 0.2); }
+  else if (grade === "hard") { r.interval = Math.max(1, Math.round((r.interval || 1) * 1.2)); r.ease = Math.max(1.3, r.ease - 0.15); r.reps += 1; }
+  else if (grade === "good") { r.interval = r.reps === 0 ? 1 : r.reps === 1 ? 3 : Math.round((r.interval || 1) * r.ease); r.reps += 1; }
+  else { r.interval = Math.round(Math.max(2, (r.interval || 1)) * r.ease * 1.3); r.ease = r.ease + 0.15; r.reps += 1; }
+  r.last = new Date().toISOString();
+  r.lastDay = today;
+  r.due = new Date(Date.parse(today) + r.interval * 86400000).toISOString().slice(0, 10);
+  r.history = (r.history || []).concat([{ g: grade, at: today }]).slice(-20);
+  if (extra && extra.sentence) r.sentence = String(extra.sentence).slice(0, 160);
+  return { ...rev, [day]: r };
+}
+const _WB_SAMPLE_INSIGHT = {
+  headline: "회의 표현은 튼튼한데, 메일 표현이 이번 주에 희미해졌어요.",
+  pattern: "최근 2주 동안 쓴 문장 9개 중 7개가 회의 상황이에요. 메일 표현(follow up, keep you posted, loop in)은 배운 뒤 한 번도 안 써서 강도가 40 아래로 내려갔어요.",
+  set: [
+    { word: "keep you posted", why: "본사와 주고받는 메일 마지막 줄에 바로 써요.", sentence: "Nothing final on the Q3 numbers yet, but I'll keep you posted." },
+    { word: "loop in", why: "디자인팀을 스레드에 넣을 때 cc 대신 쓰면 자연스러워요.", sentence: "Looping in @design so we're aligned on the timeline." },
+    { word: "pencil in", why: "확정 전 콜 시간을 잡을 때 팀장 확인 여지를 남겨요.", sentence: "Let's pencil in Thursday 10am KST and confirm tomorrow." },
+  ],
+  task: "이번 주 메일 세 통의 마지막 줄을 오늘 표현 세트 중 하나로 닫아보세요.",
+};
+function _wbISOWeek() { const d = new Date(); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + "-W" + String(Math.ceil((((t - y0) / 86400000) + 1) / 7)).padStart(2, "0"); }
+// 이번 주 인사이트: 로컬 캐시 → 서버에서 복원된 노트(kind insight, day 0) 순으로 찾는다
+function _wbLoadInsight(em, week) {
+  try { const c = JSON.parse(localStorage.getItem("__OD_INSIGHT_" + em + "_" + week) || "null"); if (c && c.headline) return c; } catch (e) {}
+  try {
+    const u = _wbUser();
+    const hit = ((u.savedNotes || {})["0"] || []).filter(n => n.kind === "insight").map(n => { try { return JSON.parse(n.text); } catch (e) { return null; } }).find(x => x && x.week === week && x.headline);
+    if (hit) return hit;
+  } catch (e) {}
+  return null;
+}
+
+// ── 복습 카드 하나 (뜻→표현 / 내 문장 빈칸 / 상황에 한 줄) ──
+function WbReviewCard({ card, mode, onGrade, mentorName }) {
+  const [revealed, setRevealed] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [checked, setChecked] = useState(null);
+  const [fb, setFb] = useState(null);
+  const [fbLoading, setFbLoading] = useState(false);
+  const base = card.mine || card.sample || "";
+  const re = _wordHlRegex(card.word);
+  const cloze = base && re ? base.replace(re, (m) => "_".repeat(Math.max(5, Math.min(12, m.length)))) : "";
+  const check = () => {
+    const ok = _hasTargetWord(typed, card.word);
+    setChecked(ok); setRevealed(true);
+    // 상황에 한 줄: 표현이 들어갔으면 사수가 한 줄 봐준다 (오늘 첨삭과 같은 호출, 실패해도 조용히 넘어감)
+    if (mode === "use" && ok && typed.trim() && window.OD?.enabled && window.OD.getMentorAiFeedback) {
+      setFbLoading(true);
+      window.OD.getMentorAiFeedback({ sentence: typed.trim(), word: card.word, meaning: card.meaning, scene: card.scene, sampleAnswer: card.sample, koSentence: card.koSentence, promptKo: "", mentorName: mentorName || "사수", prevCorrected: "" })
+        .then(r => { setFbLoading(false); if (r && r.ok && r.fb) setFb(r.fb); })
+        .catch(() => setFbLoading(false));
+    }
+  };
+  const fixed = fb && fb.corrected && _wbNorm(fb.corrected) !== _wbNorm(typed);
+  return (
+    <div className="wb-rev">
+      <div className="wb-rev-top"><span className="wb-rev-mode">{mode === "recall" ? "뜻 보고 떠올리기" : mode === "cloze" ? "내 문장 빈칸" : "상황에 한 줄"}</span><span className="wb-rev-day">Day {card.day} · {_WB_LEVEL_KO[_WB_LEVEL(card.strength)]}</span></div>
+      {mode === "recall" && (
+        <>
+          <div className="wb-rev-q">{card.meaning}</div>
+          <div className="wb-rev-scene">{card.scene}</div>
+          {!revealed ? <button className="btn btn-primary" onClick={() => setRevealed(true)}>표현 확인</button> : (
+            <div className="wb-rev-a"><b>{card.word}</b>{card.mine ? <p className="mono">✏️ {card.mine}</p> : card.sample ? <p className="mono">{card.sample}</p> : null}</div>
+          )}
+        </>
+      )}
+      {mode === "cloze" && (
+        <>
+          <div className="wb-rev-q mono">{cloze || card.meaning}</div>
+          <div className="wb-rev-scene">{card.meaning}{card.mine ? " · 내가 쓴 문장이에요" : ""}</div>
+          {!revealed ? (
+            <div className="wb-rev-input"><input value={typed} onChange={e => setTyped(e.target.value)} placeholder="빈칸에 들어갈 표현" onKeyDown={e => { if (e.key === "Enter") check(); }} /><button className="btn btn-ink" onClick={check}>확인</button></div>
+          ) : (
+            <div className={"wb-rev-a" + (checked === false ? " no" : "")}><b>{card.word}</b>{checked === false && <span className="wb-rev-typed">내 답: {typed || "(빈칸)"}</span>}<p className="mono">{base}</p></div>
+          )}
+        </>
+      )}
+      {mode === "use" && (
+        <>
+          <div className="wb-rev-q">"{card.koSentence || card.meaning}"</div>
+          <div className="wb-rev-scene"><b>{card.word}</b>를 넣어 영어로 한 줄 써보세요. {card.scene}</div>
+          {!revealed ? (
+            <div className="wb-rev-input"><input value={typed} onChange={e => setTyped(e.target.value)} placeholder={card.word + " 를 넣어서"} onKeyDown={e => { if (e.key === "Enter") check(); }} /><button className="btn btn-ink" onClick={check}>확인</button></div>
+          ) : (
+            <div className={"wb-rev-a" + (checked === false ? " no" : "")}>
+              {checked === false && <span className="wb-rev-typed">표현이 안 들어갔어요: {typed || "(빈칸)"}</span>}
+              {checked && typed && <p className="mono">✏️ {typed}</p>}
+              {fbLoading && <p className="wb-muted">사수가 보는 중…</p>}
+              {fb && <div className="wb-rev-fb">{fixed ? <p className="mono wb-fix">→ {fb.corrected}</p> : <p className="wb-fix">✓ 그대로 써도 돼요.</p>}<p>{fb.grammar || fb.nuance || fb.praise}</p></div>}
+              <p className="wb-rev-sample">예시: <span className="mono">{card.sample}</span></p>
+            </div>
+          )}
+        </>
+      )}
+      {revealed && (
+        <div className="wb-grade">
+          <span>얼마나 떠올랐어요?</span>
+          <button onClick={() => onGrade("again", { sentence: checked ? typed : "" })}>😵 몰랐어요</button>
+          <button onClick={() => onGrade("hard", { sentence: checked ? typed : "" })}>🤔 가물가물</button>
+          <button onClick={() => onGrade("good", { sentence: checked ? typed : "" })}>🙂 떠올랐어요</button>
+          <button onClick={() => onGrade("easy", { sentence: checked ? typed : "" })}>😎 쉬웠어요</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WordBookPage({ openScene }) {
+  const { SCENARIOS, USER, CHARACTERS } = window.__SIM;
+  const em = USER.email || "guest";
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const week = _wbISOWeek();
+  const [rev, setRev] = useState(() => _wbLoadRev(em));
+  const [tick, setTick] = useState(0);
+  const [filter, setFilter] = useState("shaky");
+  const [area, setArea] = useState("all");
+  const [openDay, setOpenDay] = useState(null);
+  const [queueIdx, setQueueIdx] = useState(0);
+  const [session, setSession] = useState(() => ({ done: 0, up: 0, log: [] }));
+  const [queueSnapshot, setQueueSnapshot] = useState(null);   // 복습 시작 시 고정 (등급 매기면서 큐가 바뀌지 않게)
+  const [insight, setInsight] = useState(() => _wbLoadInsight(em, week));
+  const [insLoading, setInsLoading] = useState(false);
+  const profile = (() => { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + em) || "null"); } catch (e) { return null; } })();
+  const [pf, setPf] = useState({ job: "", situ: "", stuck: "" });
+  useEffect(() => { const bump = () => setTick(t => t + 1); window.addEventListener("focus", bump); return () => window.removeEventListener("focus", bump); }, []);
+
+  const cards = React.useMemo(() => _wbBuild(USER, SCENARIOS, rev), [rev, rd, tick]);
+  const byDay = React.useMemo(() => Object.fromEntries(cards.map(c => [c.day, c])), [cards]);
+  const stats = React.useMemo(() => ({
+    total: cards.length, used: cards.filter(c => c.used).length, solid: cards.filter(c => _WB_LEVEL(c.strength) === "solid").length,
+    due: cards.filter(c => c.due).length, avg: cards.length ? Math.round(cards.reduce((n, c) => n + c.strength, 0) / cards.length) : 0,
+    reviewedToday: cards.filter(c => c.reviewedToday).length,
+  }), [cards]);
+  const areaStats = React.useMemo(() => AREA_META.map(a => { const ds = cards.filter(c => c.area === a.id); return { ...a, n: ds.length, used: ds.filter(c => c.used).length, avg: ds.length ? Math.round(ds.reduce((n, c) => n + c.strength, 0) / ds.length) : 0 }; }), [cards]);
+  const queue = React.useMemo(() => cards.filter(c => c.due).sort((a, b) => a.strength - b.strength).slice(0, 7), [cards]);
+  const activeQueue = queueSnapshot || queue;
+  const cur = activeQueue[queueIdx];
+  const modeFor = (c) => {
+    const m = ["recall", "cloze", "use"][(((c.rev && c.rev.reps) || 0) + c.day) % 3];
+    if (m === "cloze") { const b = c.mine || c.sample; const re = _wordHlRegex(c.word); if (!(b && re && re.test(b))) return "recall"; }
+    if (m === "use" && !c.koSentence) return "recall";
+    return m;
+  };
+  const grade = (g, extra) => {
+    if (!cur) return;
+    const before = cur.strength;
+    const next = _wbGrade(rev, cur.day, g, extra);
+    setRev(next); _wbSaveRev(em, next);
+    // 서버에도 남긴다 (task_progress.tasks._rev, 기기 바뀌어도 복원)
+    try { if (USER.email && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, cur.day, { _rev: next[cur.day] }).catch(() => {}); } catch (e) {}
+    if (!queueSnapshot) setQueueSnapshot(activeQueue);
+    setSession(s => ({ done: s.done + 1, up: s.up + (g === "again" ? 0 : 1), log: s.log.concat([{ day: cur.day, word: cur.word, g, before }]) }));
+    setQueueIdx(i => i + 1);
+  };
+  const restartQueue = () => { setQueueSnapshot(null); setQueueIdx(0); setSession({ done: 0, up: 0, log: [] }); };
+  const jumpTo = (day) => { setFilter("all"); setArea("all"); setOpenDay(day); setTimeout(() => { const el = document.getElementById("wb-card-" + day); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 60); };
+
+  const filtered = cards.filter(c => {
+    if (area !== "all" && c.area !== area) return false;
+    if (filter === "shaky") return c.strength < 55;
+    if (filter === "unused") return !c.used;
+    if (filter === "solid") return c.strength >= 75;
+    return true;
+  }).sort((a, b) => filter === "solid" ? b.strength - a.strength : filter === "all" ? b.day - a.day : (a.strength - b.strength) || (b.day - a.day));
+
+  const runInsight = () => {
+    const weak = [...cards].filter(c => c.day !== rd).sort((a, b) => a.strength - b.strength).slice(0, 8).map(c => ({ word: c.word, meaning: c.meaning, mine: c.mine.slice(0, 120), strength: c.strength, area: (AREA_META.find(a => a.id === c.area) || {}).name || "" }));
+    const strong = [...cards].sort((a, b) => b.strength - a.strength).slice(0, 5).map(c => c.word);
+    const areas = areaStats.map(a => ({ name: a.name, learned: a.n, used: a.used, avg: a.avg }));
+    const payload = { name: USER.name, day: rd, profile, weak, strong, areas, week, reviewedThisWeek: Object.values(rev).filter(r => r && r.lastDay && r.lastDay >= new Date(Date.now() - 6 * 86400000).toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" })).length };
+    const save = (ins, sample) => {
+      const out = { ...ins, week, at: new Date().toISOString(), sample: !!sample };
+      setInsight(out); setInsLoading(false);
+      try { localStorage.setItem("__OD_INSIGHT_" + em + "_" + week, JSON.stringify(out)); } catch (e) {}
+      if (!sample) {
+        try {
+          const u = _wbUser(); u.savedNotes = u.savedNotes || {}; u.savedNotes["0"] = (u.savedNotes["0"] || []).filter(n => !(n.kind === "insight" && (() => { try { return JSON.parse(n.text).week === week; } catch (e) { return false; } })()));
+          u.savedNotes["0"].push({ kind: "insight", label: "주간 인사이트 " + week, text: JSON.stringify(out), savedAt: out.at });
+          localStorage.setItem("__OD_USER", JSON.stringify(u));
+          if (USER.email && window.OD?.enabled && window.OD.saveNoteRow) window.OD.saveNoteRow(USER.email, 0, JSON.stringify(out), "주간 인사이트 " + week, "insight").catch(() => {});
+        } catch (e) {}
+      }
+    };
+    setInsLoading(true);
+    if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) { save(_WB_SAMPLE_INSIGHT, true); return; }
+    window.OD.getMentorAiFeedback({ mode: "insight", insight: payload, mentorName: CHARACTERS.mentor.name, word: "insight" })
+      .then(r => { if (r && r.ok && r.insight && r.insight.headline) save(r.insight, false); else save(_WB_SAMPLE_INSIGHT, true); })
+      .catch(() => save(_WB_SAMPLE_INSIGHT, true));
+  };
+  const saveMiniProfile = () => {
+    if (!pf.job.trim()) return;
+    const p = { ...(profile || {}), job: pf.job.trim(), situ: pf.situ ? pf.situ.split(/[,\s]+/).filter(Boolean) : (profile && profile.situ) || [], stuck: pf.stuck.trim(), at: new Date().toISOString() };
+    try { localStorage.setItem("__OD_PROFILE_" + em, JSON.stringify(p)); } catch (e) {}
+    try { if (window.OD?.enabled && window.OD.saveNoteRow && USER.email) window.OD.saveNoteRow(USER.email, 0, JSON.stringify(p), "직무 프로필", "profile").catch(() => {}); } catch (e) {}
+    runInsight();
+  };
+  // 📄 PDF 소장: 깨끗한 새 창에 표지 + 카드 전부 (한글 폰트 안전, 나만의 노트 인쇄와 같은 방식)
+  const printBook = () => {
+    const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const list = [...cards].sort((a, b) => a.day - b.day);
+    const rows = list.map(c => `
+      <div class="card">
+        <div class="head"><span class="day">DAY ${c.day}</span><span class="word">${esc(c.word)}</span><span class="mean">${esc(c.meaning)}</span><span class="mem ${_WB_LEVEL(c.strength)}">${esc(_WB_LEVEL_KO[_WB_LEVEL(c.strength)])} ${c.strength}</span></div>
+        <div class="row"><label>상황</label><p>${esc(c.scene)}</p></div>
+        <div class="row"><label>사수</label><p>${esc(c.nuance)}</p></div>
+        ${c.mine ? `<div class="row"><label>내 문장</label><p class="en">${esc(c.mine)}${c.corrected ? `<br/><span class="fix">→ ${esc(c.corrected)}</span>` : ""}</p></div>` : `<div class="row"><label>예시</label><p class="en">${esc(c.sample)}</p></div>`}
+        ${c.syn.length ? `<div class="row"><label>유의어</label><p>${c.syn.map(x => `<b>${esc(x.w)}</b> ${esc(x.ko)}`).join(" · ")}</p></div>` : ""}
+        ${c.ot.length ? `<div class="row"><label>야근</label><p class="en">${c.ot.map(x => esc(x.t)).join("<br/>")}</p></div>` : ""}
+        ${c.rev && c.rev.sentence ? `<div class="row"><label>복습</label><p class="en">${esc(c.rev.sentence)}</p></div>` : ""}
+        ${c.qa.length ? `<div class="row"><label>Q&amp;A</label><p>${c.qa.map(n => esc(n.text).replace(/\n/g, "<br/>")).join("<br/><br/>")}</p></div>` : ""}
+        ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
+      </div>`).join("");
+    const w = window.open("", "_blank");
+    if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
+    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 표현 사전</title>
+      <style>
+        body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
+        .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
+        .cover .eyebrow { font-size: 10px; letter-spacing: .24em; opacity: .6; font-weight: 800; }
+        .cover h1 { margin: 6px 0 4px; font-size: 26px; }
+        .cover h1 em { font-style: normal; color: #F5B08A; }
+        .cover .sub { font-size: 12px; opacity: .75; }
+        .cover .nums { display: flex; gap: 26px; margin-top: 18px; }
+        .cover .nums b { display: block; font-size: 26px; }
+        .cover .nums span { font-size: 10.5px; opacity: .65; }
+        .card { border: 1px solid #E2D8C4; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+        .day { font-size: 10px; font-weight: 800; color: #8A7A66; letter-spacing: .06em; }
+        .word { font-weight: 900; font-size: 16px; }
+        .mean { color: #8A7A66; font-size: 12px; }
+        .mem { margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #ECE3CF; }
+        .mem.solid { background: #B8431A; color: #fff; } .mem.ok { background: #E8793F; color: #fff; } .mem.shaky { background: #F2B48A; }
+        .row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 12.5px; margin-top: 4px; }
+        .row label { font-size: 10px; font-weight: 800; color: #D85A2A; letter-spacing: .06em; padding-top: 3px; }
+        .row p { margin: 0; color: #4A3C2E; }
+        .en { font-family: Georgia, 'Times New Roman', serif; font-style: italic; color: #2A1F14; }
+        .fix { color: #4A7C59; }
+        @media print { body { padding: 0; } .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .mem { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      </style></head><body>
+      <div class="cover"><div class="eyebrow">MY WORD BOOK · 1일1비</div><h1><em>${esc(USER.name)}</em>의 표현 사전</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 표현</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
+      ${rows}
+      <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
+      </body></html>`);
+    w.document.close();
+  };
+  const gridCells = SCENARIOS.filter(s => s.day <= 90).map(s => byDay[s.day] || { day: s.day, locked: true });
+  const signupKo = USER.joinDate || "";
+  const reportDue = _REPORT_MILESTONES.some(m => rd >= m.at && !_reportsList().some(r => r.milestone === m.id));
+
+  return (
+    <div className="wb">
+      {/* ── 표지 ── */}
+      <div className="wb-cover">
+        <div className="wb-cover-l">
+          <div className="wb-cover-eyebrow">MY WORD BOOK · SINCE {signupKo || "2026"}</div>
+          <h1 className="wb-cover-title"><em>{USER.name}</em>의 표현 사전</h1>
+          <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
+          <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button>
+        </div>
+        <div className="wb-cover-r">
+          <div><b>{stats.total}</b><span>모은 표현</span></div>
+          <div><b>{stats.used}</b><span>내 문장으로</span></div>
+          <div><b>{stats.solid}</b><span>튼튼한 표현</span></div>
+          <div className={queue.length ? "hot" : ""}><b>{queue.length}</b><span>오늘 복습</span></div>
+        </div>
+        <div className="wb-grid">
+          {gridCells.map(c => (
+            <button key={c.day} className={"wb-cell " + (c.locked ? "locked" : _WB_LEVEL(c.strength))} title={c.locked ? "Day " + c.day + " · 아직 안 배웠어요" : "Day " + c.day + " · " + c.word + " · " + _WB_LEVEL_KO[_WB_LEVEL(c.strength)] + " " + c.strength}
+              onClick={() => { if (!c.locked) jumpTo(c.day); }} />
+          ))}
+        </div>
+        <div className="wb-legend"><i className="fading" />희미 <i className="shaky" />흔들림 <i className="ok" />괜찮음 <i className="solid" />튼튼 <span>{stats.due ? "흔들리는 표현 " + stats.due + "개 · " : ""}평균 기억 강도 {stats.avg}{stats.reviewedToday ? " · 오늘 복습 " + stats.reviewedToday + "개" : ""}</span></div>
+      </div>
+
+      {/* ── 오늘의 복습 ── */}
+      <section className="wb-sec">
+        <div className="wb-sec-head"><h2>🔁 오늘의 복습 <small>{queue.length ? `흔들리는 표현 ${queue.length}개 · 3분이면 돼요` : stats.reviewedToday ? `오늘 ${stats.reviewedToday}개 복습했어요` : "지금은 전부 괜찮아요"}</small></h2>{session.done > 0 && cur && <span className="wb-progress">{session.done} / {activeQueue.length}</span>}</div>
+        {cur ? (
+          <WbReviewCard key={cur.day + "-" + session.done} card={cur} mode={modeFor(cur)} onGrade={grade} mentorName={CHARACTERS.mentor.name} />
+        ) : session.done > 0 ? (
+          <div className="wb-done">
+            <b>오늘 복습 끝. {session.done}개 중 {session.up}개가 떠올랐어요.</b>
+            <p>{session.log.filter(l => l.g === "again").length ? "몰랐던 " + session.log.filter(l => l.g === "again").map(l => l.word).join(", ") + "은 내일 다시 나와요." : "전부 떠올렸어요. 이 표현들은 며칠 뒤에 다시 만나요."}</p>
+            <button className="btn btn-ghost" onClick={restartQueue}>더 복습할 게 있는지 보기</button>
+          </div>
+        ) : (
+          <div className="wb-done calm"><b>지금 흔들리는 표현이 없어요.</b><p>매일 한 표현씩 내 문장으로 쓰는 게 최고의 복습이에요. 흔들리는 표현이 생기면 여기서 알려드릴게요.</p></div>
+        )}
+      </section>
+
+      {/* ── 이번 주 인사이트 ── */}
+      <section className="wb-sec">
+        <div className="wb-sec-head"><h2>🧭 이번 주 인사이트 <small>{CHARACTERS.mentor.name} 사수가 내 기록을 읽고 주 1회 써줘요{insight && insight.sample ? " · 샘플" : ""}</small></h2>{insight && <button className="btn btn-ghost" onClick={runInsight} disabled={insLoading}>{insLoading ? "…" : "다시 받기"}</button>}</div>
+        {!profile || !profile.job ? (
+          <div className="wb-ins-form">
+            <p>내 일에 맞춰 나오게, 세 가지만 알려주세요.</p>
+            <input value={pf.job} onChange={e => setPf(f => ({ ...f, job: e.target.value }))} placeholder="직종·직무 (예: 마케팅 매니저)" />
+            <input value={pf.situ} onChange={e => setPf(f => ({ ...f, situ: e.target.value }))} placeholder="영어 쓰는 상황 (예: 회의, 메일)" />
+            <input value={pf.stuck} onChange={e => setPf(f => ({ ...f, stuck: e.target.value }))} placeholder="요즘 제일 막히는 순간 (선택)" />
+            <button className="btn btn-primary" onClick={saveMiniProfile} disabled={!pf.job.trim() || insLoading}>{insLoading ? "읽는 중…" : "저장하고 인사이트 받기"}</button>
+          </div>
+        ) : !insight ? (
+          <div className="wb-ins-empty"><p>👤 {profile.job}{profile.situ && profile.situ.length ? " · " + profile.situ.join(", ") : ""}. 약한 표현 8개와 영역별 강도만 압축해서 보내요. 한 번에 2천 토큰 안팎이에요.</p><button className="btn btn-primary" onClick={runInsight} disabled={insLoading}>{insLoading ? "사수가 읽는 중…" : "이번 주 인사이트 받기"}</button></div>
+        ) : (
+          <div className="wb-ins">
+            <h3>{insight.headline}</h3>
+            <p className="wb-ins-pattern">{insight.pattern}</p>
+            <div className="wb-ins-set">
+              {(insight.set || []).map((x, i) => (
+                <div key={i} className="wb-ins-item" onClick={() => { const c = cards.find(k => k.word === x.word); if (c) jumpTo(c.day); }}>
+                  <b>{x.word}</b><span>{x.why}</span><em className="mono">{x.sentence}</em>
+                </div>
+              ))}
+            </div>
+            {insight.task && <div className="wb-ins-task">🎯 이번 주 과제 · {insight.task}</div>}
+          </div>
+        )}
+      </section>
+
+      {/* ── 표현 카드 ── */}
+      <section className="wb-sec">
+        <div className="wb-sec-head"><h2>📇 표현 카드 <small>{filtered.length}개 · 눌러서 펼쳐요</small></h2></div>
+        <div className="filter-row" style={{ marginBottom: 6 }}>
+          {[["shaky", "흔들려요"], ["unused", "안 써봤어요"], ["solid", "튼튼해요"], ["all", "전체"]].map(([k, l]) => <button key={k} className={"filter-chip " + (filter === k ? "active" : "")} onClick={() => setFilter(k)}>{l}</button>)}
+        </div>
+        <div className="filter-row wb-areas" style={{ marginTop: -4 }}>
+          <button className={"filter-chip " + (area === "all" ? "active" : "")} onClick={() => setArea("all")}>모든 영역</button>
+          {areaStats.filter(a => a.n > 0).map(a => <button key={a.id} className={"filter-chip " + (area === a.id ? "active" : "")} onClick={() => setArea(a.id)} title={a.desc}>{a.emoji} {a.name} <small>{a.avg}</small></button>)}
+        </div>
+        {filtered.length === 0 && <div className="wb-done calm"><b>여기엔 아무것도 없어요.</b><p>다른 필터를 눌러보세요.</p></div>}
+        <div className="wb-cards">
+          {filtered.map(c => {
+            const lv = _WB_LEVEL(c.strength); const isOpen = openDay === c.day;
+            return (
+              <div key={c.day} id={"wb-card-" + c.day} className={"wb-card " + lv + (isOpen ? " open" : "")}>
+                <button className="wb-card-head" onClick={() => setOpenDay(isOpen ? null : c.day)}>
+                  <span className="wb-card-day">{String(c.day).padStart(2, "0")}</span>
+                  <span className="wb-card-word"><b>{c.word}</b><small>{c.meaning}</small></span>
+                  <span className="wb-card-mem"><i><em style={{ width: c.strength + "%" }} /></i><small>{_WB_LEVEL_KO[lv]} · {c.strength}</small></span>
+                  <span className="wb-card-tags">{c.isKnown && <b className="known">알아요</b>}{c.used ? <b className="on">내 문장</b> : <b className="off">안 써봄</b>}{c.qa.length > 0 && <b>Q&A {c.qa.length}</b>}{c.ot.length > 0 && <b>야근 {c.ot.length}</b>}{c.memos.length > 0 && <b>노트 {c.memos.length}</b>}</span>
+                </button>
+                {isOpen && (
+                  <div className="wb-card-body">
+                    <div className="wb-card-grid">
+                      <div><label>📍 상황</label><p>{c.scene}</p></div>
+                      <div><label>▶ 사수 · 언제 쓰는지</label><p>{c.nuance}</p></div>
+                      {c.mine ? <div><label>✏️ 내 문장 {c.corrected ? "· 사수 교정" : "· 한 번에 통과"}</label><p className="mono">{c.mine}</p>{c.corrected && <p className="mono wb-fix">→ {c.corrected}</p>}</div> : <div><label>✏️ 내 문장</label><p className="wb-muted">아직 없어요. 예시: <span className="mono">{c.sample}</span></p></div>}
+                      {c.syn.length > 0 && <div><label>🔁 같은 뜻 다른 표현</label><p>{c.syn.map(x => <span key={x.w} className="wb-syn"><b>{x.w}</b> {x.ko}</span>)}</p></div>}
+                      {c.ot.length > 0 && <div><label>🌙 야근에서 쓴 문장</label>{c.ot.map(x => <p key={x.w} className="mono"><small>{x.w}</small> {x.t}</p>)}</div>}
+                      {c.rev && c.rev.sentence && <div><label>🔁 복습에서 쓴 문장</label><p className="mono">{c.rev.sentence}</p></div>}
+                      {c.qa.length > 0 && <div><label>💬 유버디에게 물어본 것</label>{c.qa.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}>{n.text}</p>)}</div>}
+                      {c.memos.length > 0 && <div><label>📒 저장한 노트</label>{c.memos.map((n, i) => <p key={i} style={{ whiteSpace: "pre-line" }}><small>{n.label || "메모"}</small> {n.text}</p>)}</div>}
+                      <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{c.tip}</p></div>
+                      {c.rev && c.rev.history && c.rev.history.length > 0 && <div><label>📈 복습 기록</label><p>{c.rev.history.slice(-6).map((h, i) => <span key={i} className={"wb-hist " + h.g}>{h.at.slice(5)} {_WB_GRADE_KO[h.g]}</span>)}<span className="wb-muted">다음 복습 {c.rev.due}</span></p></div>}
+                    </div>
+                    <div className="wb-card-actions">
+                      <button className="btn btn-primary" onClick={() => { setQueueSnapshot([c]); setQueueIdx(0); setSession({ done: 0, up: 0, log: [] }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>지금 복습하기</button>
+                      <button className="btn btn-ghost" onClick={() => openScene(c.scn)}>시추에이션 다시 열기</button>
+                      <span>마지막으로 만난 날 {c.lastTouch} · {c.since === 0 ? "오늘" : c.since + "일 전"}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── 성장 리포트 (Day 30·60·90 발급, 사원증 인사 기록에 보관) ── */}
+      <section className="wb-sec">
+        <div className="wb-sec-head"><h2>🧠 성장 리포트 <small>Day 30·60·90에 사수가 숫자와 함께 발급하는 공식 기록이에요</small></h2></div>
+        {(rd >= AIREPORT_OPEN_DAY || reportDue) ? <AiGrowthReport /> : (
+          <div className="wb-done calm"><b>🔒 다음 리포트는 Day {_REPORT_MILESTONES.find(m => m.at > rd) ? _REPORT_MILESTONES.find(m => m.at > rd).at : 90}에 발급돼요.</b><p>그때까지 쌓인 문장과 복습 기록을 사수가 읽고 정리해 줘요. 발급된 리포트는 사원증 인사 기록에 남아요.</p></div>
+        )}
+      </section>
+      <div className="wb-foot">기억 강도는 마지막으로 그 표현을 쓴 날부터 조금씩 줄어요. 내 문장으로 쓰거나 복습에서 떠올리면 다시 올라가고, 다음 복습은 알아서 미뤄져요. 복습 기록은 계정에 남아서 기기를 바꿔도 이어져요.</div>
+    </div>
+  );
+}
+
 function MyNotesPage({ openScene }) {
   const { SCENARIOS, USER } = window.__SIM;
   const [kindFilter, setKindFilter] = useState("all");
@@ -9035,7 +9637,7 @@ function MyNotesPage({ openScene }) {
     Object.keys(byDay).forEach(dayKey => {
       const sc = SCENARIOS.find(s => s.day === Number(dayKey));
       (byDay[dayKey] || []).forEach(n => {
-        if (n.kind === "report" || n.kind === "profile") return;   // 인사 기록(리포트·프로필)은 사원증에서 본다
+        if (n.kind === "report" || n.kind === "profile" || n.kind === "insight") return;   // 인사 기록(리포트·프로필)은 사원증에서, 주간 인사이트는 표현 사전에서 본다
         allNotes.push({
           day: Number(dayKey),
           word: sc ? sc.word : "",
@@ -15408,7 +16010,7 @@ function App() {
           : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} setViewingDay={setViewingDay} />
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
-        {active === "mynotes" && <MyNotesPage openScene={setScene} />}
+        {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
         {active === "test" && <TestPage />}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "mypage" && <MyPage />}
@@ -15807,10 +16409,12 @@ window.SimApp = App;
             const existingT = JSON.parse(localStorage.getItem(k) || "{}");
             const merged = { ...existingT };
             Object.entries(task_progress[dayKey] || {}).forEach(([id, v]) => {
+              if (v && typeof v === "object") return;   // _rev 같은 객체 메타는 일정 체크가 아니다 (아래에서 따로 복원)
               merged[id] = !!(merged[id] || v);
             });
             localStorage.setItem(k, JSON.stringify(merged));
           });
+          _odRestoreMetaFromTasks(local.email, task_progress);
 
           // ★ localStorage → DB (localStorage에 있는데 DB에 없는 거 push, 누락 복구)
           const allTaskKeys = Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_"));
@@ -16061,10 +16665,12 @@ window.SimApp = App;
           // true는 false로 다운그레이드 안 됨 (양쪽 union, true 우선)
           const merged = { ...existing };
           Object.entries(task_progress[dayKey] || {}).forEach(([id, v]) => {
+            if (v && typeof v === "object") return;   // _rev 같은 객체 메타는 따로 복원
             merged[id] = !!(merged[id] || v);
           });
           localStorage.setItem(k, JSON.stringify(merged));
         });
+        _odRestoreMetaFromTasks(local.email, task_progress);
       } catch (e) {}
 
       console.log("[hydrate] DB → localStorage 복원 완료.",
@@ -16092,7 +16698,7 @@ window.SimApp = App;
           const existing = JSON.parse(localStorage.getItem(k) || "{}");
           const incoming = task_progress[dayKey] || {};
           for (const id of Object.keys(incoming)) {
-            if (incoming[id] && !existing[id]) { taskChanged = true; break; }
+            if (incoming[id] && typeof incoming[id] !== "object" && !existing[id]) { taskChanged = true; break; }
           }
         });
       } catch (e) {}
