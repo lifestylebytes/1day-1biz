@@ -298,6 +298,19 @@ body::before {
   text-transform: uppercase;
 }
 .scene-card-body { padding: 24px 28px 28px; }
+/* 🎁 첫 주 카드 다시 보기 (업무 노트 상단) */
+.fwc { margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
+.fwc-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 900; color: var(--ink); cursor: pointer; text-align: left; }
+.fwc-head small { font-weight: 600; font-size: 11.5px; color: var(--ink-mute); margin-left: 8px; }
+.fwc-head b { font-size: 12px; color: var(--ink-mute); }
+.fwc-body { padding: 0 16px 16px; }
+.fwc-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.fwc-card { background: #FBF3C9; border: 1px solid #E8D48A; border-radius: 10px; padding: 14px 15px; box-shadow: 0 6px 14px -8px rgba(58,40,18,0.35); }
+.fwc-title { font-size: 12.5px; font-weight: 900; color: #5C4A36; margin-bottom: 6px; }
+.fwc-tip { padding: 7px 0; border-top: 1px dashed #E0CF96; }
+.fwc-tip:first-of-type { border-top: none; }
+.fwc-en { font-size: 13.5px; font-weight: 800; color: #3D3222; }
+.fwc-ko { font-size: 11.5px; color: #7A6844; line-height: 1.55; margin-top: 2px; }
 /* 🌙 야근 카드 (개발 뷰) */
 .ot-card { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .ot-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
@@ -1561,7 +1574,7 @@ body::before {
   .desk-grid.next-home .locked-card { order: 8; }      /* 잠긴 카드는 맨 아래 */
   .desk-grid.next-home .unlock-ladder { order: 9; }    /* 해금 사다리는 맨 아래 */
   .desk-grid.next-home .pre-reveal { order: -4; }      /* 어제 예측 결과는 시추에이션 위 */
-  .desk-grid.next-home .ot-card { order: -2; }         /* 야근은 시추에이션 바로 아래 */
+  .desk-grid.next-home .ot-card { order: 0; }          /* 야근은 오늘 일정 바로 아래 */
   .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
 
   /* 시추에이션 카드 */
@@ -6220,8 +6233,8 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 // 핵심 루프(출근→시추에이션→미션→퇴근)는 Day 1부터 그대로. 주변 카드만 Day 에 따라 연다.
 // 숨기는 게 아니라 "Day N에 열려요"로 보여줘서 기대감을 남긴다.
 // ★ 2026-09-05 확장: Day 1은 시추에이션 카드 + 사수/유버디 메모만. 나머지는 날마다 하나씩 연다.
-//   Day 1 일정표는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 사내 메모·심부름
-const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 8, errands: 8 };
+//   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
+const _UNLOCK_AT = { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8 };
 const _UNLOCK_LABEL = { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름" };
 function _lockedNext(key, rd, viewingPast) {
   return _isNextFeature() && !viewingPast && rd < (_UNLOCK_AT[key] || 0);
@@ -7068,11 +7081,6 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             onStartDay={() => handleScheduleClick(scheduleWithStatus[0], 0)}
             done={_sceneDone}
           />
-          {_isNextFeature() && !USER.isViewingPast && today && today.day <= 90 && (
-            (allTodayDone || !!doneTasks.wrapup)
-              ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
-              : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}><span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span><b>🔒</b></div></div>
-          )}
 
           <div className="schedule" style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
@@ -7101,6 +7109,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </div>
             ))}
           </div>
+          {_isNextFeature() && !USER.isViewingPast && today && today.day <= 90 && (
+            (allTodayDone || !!doneTasks.wrapup)
+              ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
+              : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}><span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span><b>🔒</b></div></div>
+          )}
           <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />
         </div>
 
@@ -8640,6 +8653,38 @@ function MyNotesPage({ openScene }) {
   );
 }
 
+// 업무 노트 상단: 첫 주 카드(Day 1~5 표현 3개씩) 다시 보기. 받은 날짜 것만, 접힘 기본
+function FirstWeekCards({ days }) {
+  const [open, setOpen] = useState(() => { try { return localStorage.getItem("__OD_FWC_OPEN") === "1"; } catch (e) { return false; } });
+  const [pick, setPick] = useState(days[days.length - 1]);
+  const cfg = FWP_TIPS[pick];
+  const toggle = () => { setOpen(o => { try { localStorage.setItem("__OD_FWC_OPEN", o ? "0" : "1"); } catch (e) {} return !o; }); };
+  return (
+    <div className="fwc">
+      <button className="fwc-head" onClick={toggle}>
+        <span>🎁 첫 주 카드 <small>사수가 손글씨로 준 표현 {days.length * 3}개</small></span>
+        <b>{open ? "▲ 접기" : "▼ 펼치기"}</b>
+      </button>
+      {open && cfg && (
+        <div className="fwc-body">
+          <div className="fwc-tabs">
+            {days.map(d => <button key={d} className={"filter-chip " + (pick === d ? "active" : "")} onClick={() => setPick(d)}>Day {d}</button>)}
+          </div>
+          <div className="fwc-card">
+            <div className="fwc-title">{cfg.title}</div>
+            {cfg.tips.map((t, i) => (
+              <div key={i} className="fwc-tip">
+                <div className="fwc-en">{t[0]}</div>
+                <div className="fwc-ko">{t[1]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LibraryPage({ openScene }) {
   const { SCENARIOS, CHARACTERS, USER } = window.__SIM;
   const [filter, setFilter] = useState("all");
@@ -8667,6 +8712,14 @@ function LibraryPage({ openScene }) {
       </div>
 
       <ApprovalLine doc="YB-NOTE-2026" applicant={USER.name} status={`${accessible.length} / ${USER.totalDays} 수집`} />
+
+      {/* 첫 주 카드 다시 보기 (2026-09-05): 웰컴 키트 팝업의 표현 3개짜리 카드는 '나만의 노트'가 사원 전에 잠겨 있어 다시 볼 곳이 없었다 */}
+      {(() => {
+        const rd = USER.realCurrentDay || USER.currentDay || 1;
+        const days = Object.keys(FWP_TIPS).map(Number).filter(d => d <= rd).sort((a, b) => a - b);
+        if (!days.length) return null;
+        return <FirstWeekCards days={days} />;
+      })()}
 
       <div className="filter-row">
         <button className={"filter-chip " + (filter === "all" ? "active" : "")} onClick={() => setFilter("all")}>전체 {accessible.length}</button>
@@ -14856,9 +14909,11 @@ window.SimApp = App;
         }
         local.savedNotes = mergedNotes;
 
-        // journals
+        // journals ('학습 비우기' 이후 것만. dev 재테스트용 표식)
         const dbJournals = {};
+        const _jIgnore = (() => { try { return localStorage.getItem("__OD_JOURNAL_IGNORE_BEFORE_" + (local.email || "guest")) || ""; } catch (e) { return ""; } })();
         journals.forEach(j => {
+          if (_jIgnore && j.saved_at && String(j.saved_at) < _jIgnore) return;
           const k = String(j.day);
           dbJournals[k] = { day: j.day, text: j.text, savedAt: j.saved_at };
         });
@@ -15187,9 +15242,11 @@ window.SimApp = App;
         });
       });
 
-      // journals (DB rows) → dailyJournals (day별 단일 객체)
+      // journals (DB rows) → dailyJournals (day별 단일 객체). '학습 비우기' 표식 이전 것은 무시
       const dbJournals = {};
+      const _jIgnore2 = (() => { try { return localStorage.getItem("__OD_JOURNAL_IGNORE_BEFORE_" + (local.email || "guest")) || ""; } catch (e) { return ""; } })();
       journals.forEach(j => {
+        if (_jIgnore2 && j.saved_at && String(j.saved_at) < _jIgnore2) return;
         const k = String(j.day);
         dbJournals[k] = { day: j.day, text: j.text, savedAt: j.saved_at };
       });
@@ -15650,19 +15707,33 @@ window.SimApp = App;
         u.scenariosCompleted = [];
         u.dailyJournals = {};
         save(u);
+        // ★ 서버 사본까지 같이 비운다 (2026-09-05). 예전엔 로컬만 지워서 새로고침하면 DB(task_progress, journals)가
+        //   다시 채워 넣어 "비웠는데 그대로"가 됐다. task_progress 는 false 로 덮어쓰고(RPC 가 || 병합이라 {} 로는 안 지워짐),
+        //   journals 는 지우는 RPC 가 없어서 '이 시각 이전 저널은 무시' 표식을 남긴다.
+        const _days = [];
         try {
-          // 일정 체크(출근 도장 계산에 쓰임) + 팝업 1회 노출 기록 제거
-          const em = u.email || 'guest';
+          Object.keys(localStorage).filter(k => k.startsWith('__OD_TASKS_DAY_') && !k.endsWith('_ts')).forEach(k => { const n = Number(k.replace('__OD_TASKS_DAY_', '')); if (n) _days.push(n); });
+          Object.keys(u.dailyJournals || {}).forEach(d => { const n = Number(d); if (n && !_days.includes(n)) _days.push(n); });
+        } catch (e) {}
+        try {
+          // 일정 체크(출근 도장 계산에 쓰임) + 팝업 1회 노출 기록 + 슬랙 핑 + 야근 기록 제거
           Object.keys(localStorage).filter(k =>
             k.startsWith('__OD_TASKS_DAY_') ||
             k.startsWith('__OD_FWP_') ||
-            k.startsWith('__OD_MILESTONES_SEEN')
+            k.startsWith('__OD_MILESTONES_SEEN') ||
+            k.startsWith('__OD_PING_DAY_') ||
+            k.startsWith('__OD_OT_') || k.startsWith('__OD_PRE_') ||
+            k.startsWith('__OD_DAYGATE_')
           ).forEach(k => localStorage.removeItem(k));
+          localStorage.setItem('__OD_JOURNAL_IGNORE_BEFORE_' + (u.email || 'guest'), new Date().toISOString());
         } catch (e) {}
-        if (window.OD && window.OD.enabled && window.OD.updateProgress && u.email) {
-          window.OD.updateProgress(u.email, { scenarios_completed: [] }).catch(() => {});
+        const _falses = { checkin: false, scenario: false, mission: false, lunch: false, recap: false, afternoon: false, wrapup: false, journal: false };
+        const _pushes = [];
+        if (window.OD && window.OD.enabled && u.email) {
+          if (window.OD.updateProgress) _pushes.push(window.OD.updateProgress(u.email, { scenarios_completed: [] }).catch(() => {}));
+          if (window.OD.saveTaskProgress) _days.forEach(d => _pushes.push(window.OD.saveTaskProgress(u.email, d, _falses).catch(() => {})));
         }
-        location.reload();
+        Promise.all(_pushes).then(() => location.reload(), () => location.reload());
         break;
       }
       case 'reset-popups': {
