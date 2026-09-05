@@ -10995,6 +10995,9 @@ function SceneModal({ scenario, onClose }) {
                                 if (usingModel) {
                                   const recon = aiFb.segments.filter(s => s.type !== "removed").map(s => s.text).join("");
                                   if (_norm(recon) !== _norm(aiFb.corrected)) usingModel = false;
+                                  // ★ keep+removed 를 이으면 "내가 쓴 문장"이 나와야 한다. 모델이 원문에 없는 걸 취소선으로 지어내면 폴백.
+                                  const reconOrig = aiFb.segments.filter(s => s.type !== "added").map(s => s.text).join("");
+                                  if (_norm(reconOrig) !== _norm(draft)) usingModel = false;
                                 }
                                 const segs = usingModel ? aiFb.segments : _odWordDiff(draft, aiFb.corrected);
                                 if (!segs || !segs.length) return aiFb.corrected;
