@@ -4245,14 +4245,14 @@ const SCENARIOS = [
 // ============================================================
 // ★ 아직 미출시: 미리보기(?content=v2) 확인 뒤 출시일로 바꾼다. 출시일은 반드시 push 하는 날 이후여야 한다
 //   (그 사이 가입자가 v1 Day 1~3 을 보다가 v2 로 바뀌면 안 되니까).
-const CONTENT_CUTOVER = "2099-12-31";
+const CONTENT_CUTOVER = "2026-09-06";
 const SCENARIOS_V2 = {
-  1: { day: 1, word: "on my plate", pos: "phr.", meaning: "지금 맡고 있는 일", phonetic: "/ɑn maɪ pleɪt/",
+  1: { day: 1, word: "on someone's plate", pos: "phr.", meaning: "그 사람이 지금 맡고 있는 일", phonetic: "/ɑn ˈsʌmwʌnz pleɪt/",
     scene: "09:30, 첫 회의가 끝나고 김 팀장이 자리로 와서 지금 맡은 일이 얼마나 되는지 물어요.",
     npc: "manager", quote: "Before I hand you anything new, what's on your plate this week?",
     quoteKo: "새 일을 주기 전에, 이번 주에 맡은 일이 뭐예요?",
     youDo: "지금 맡은 일 두 가지를 정리해서 그 자리에서 답했다.",
-    mentorTip: "plate는 접시야. 내 접시에 올라온 음식이 내 일. '바빠요' 대신 '접시가 찼어요'라고 하면 프로처럼 들려.",
+    mentorTip: "plate는 접시야. 접시에 올라온 음식이 그 사람 일. someone's 자리에 my, your, his를 넣어서 써. '바빠요' 대신 '접시가 찼어요'라고 하면 프로처럼 들려.",
     mentorNuance: "일을 더 받을지 말지 얘기할 때 써. 팀장이 새 일을 주려 할 때 '지금 이만큼 있어요'라고 답하는 자리, 동료가 도와달라 할 때 '이번 주는 접시가 꽉 찼어요'라고 거절하는 자리에 딱 맞아.",
     sampleAnswer: "Right now I have the onboarding tasks and the client deck on my plate.", tags: ["meeting", "workload"], status: "studied",
     task: { to: "manager", channel: "face",
@@ -4264,11 +4264,11 @@ const SCENARIOS_V2 = {
       { text: "My current responsibilities comprise onboarding assignments and the client presentation.", kind: "formal",
         note: "이력서 문장이야. 회의실에서 팀장이 지나가듯 물었는데 'comprise'가 나오면 거리가 생겨. 말은 짧고 구체적으로." },
       { text: "I'm kind of busy this week with some stuff.", kind: "missing",
-        note: "❌ 오늘 표현이 빠졌고 'some stuff'는 아무 정보도 없어. 팀장은 '그래서 받을 수 있어, 없어?'를 알고 싶은 거야." },
+        note: "❌ 오늘 표현(on my plate)이 빠졌고 'some stuff'는 아무 정보도 없어. 팀장은 '그래서 받을 수 있어, 없어?'를 알고 싶은 거야." },
     ],
     buddyAnswers: {
       nuance:
-        "on my plate는 '지금 내가 맡아서 처리 중인 일'이야. busy가 상태라면 on my plate는 목록이야. 그래서 이 말 뒤에는 보통 뭐가 있는지가 따라와.\n\n\"I have a lot on my plate\"는 '바빠요'의 프로 버전. 핑계가 아니라 현황 보고로 들려.\n\n비슷한 말 정리:\n• workload = 업무량 (격식, 숫자로 말할 때)\n• swamped = 파묻혔다 (캐주얼, 감정 섞임)\n• on my plate = 지금 맡은 것들 (중립, 목록)",
+        "on someone's plate는 '그 사람이 지금 맡아서 처리 중인 일'이야. someone's 자리에 my, your, her를 넣어. busy가 상태라면 on my plate는 목록이야. 그래서 이 말 뒤에는 보통 뭐가 있는지가 따라와.\n\n\"I have a lot on my plate\"는 '바빠요'의 프로 버전. 핑계가 아니라 현황 보고로 들려.\n\n비슷한 말 정리:\n• workload = 업무량 (격식, 숫자로 말할 때)\n• swamped = 파묻혔다 (캐주얼, 감정 섞임)\n• on my plate = 지금 맡은 것들 (중립, 목록)",
       example:
         "🗣 회의: \"What's on your plate this week?\"\n💬 슬랙: \"Can't take that today, I've got too much on my plate.\"\n📧 메일: \"Once the audit is off my plate, I'll pick this up.\"\n\n자주 같이 쓰는 표현:\n• a lot on my plate (일이 많다)\n• take something off your plate (일을 덜어주다)\n• full plate (꽉 찬 접시, 여유 없음)",
       default:
@@ -4375,7 +4375,7 @@ const LUNCH_SCRIPTS_V2 = {
   },
 };
 const RECAP_DATA_V2 = {
-  1: { blank: `I've got a lot _____ this week, can we push it to Monday?`, explain: `이번 주에 맡은 일이 많아서 미루자는 맥락이에요. on my plate는 내 접시 위, 곧 지금 맡고 있는 일을 뜻한답니다!` },
+  1: { blank: `I've got a lot _____ this week, can we push it to Monday?`, explain: `이번 주에 맡은 일이 많아서 미루자는 맥락이에요. on someone's plate는 그 사람 접시 위, 곧 지금 맡고 있는 일이라 여기선 on my plate가 된답니다!` },
   2: { blank: `I'm _____ until 4, can we do 4:15?`, explain: `회의가 연달아 있어서 시간을 다시 잡는 상황이에요. back-to-back은 회의 사이에 틈이 없다는 뜻이랍니다!` },
   3: { blank: `Nothing final yet, but I'll _____ as things move.`, explain: `아직 결과는 없지만 소식을 계속 주겠다는 맥락이에요. keep you posted는 진행되면 계속 알려주겠다는 약속이랍니다!` },
   4: { blank: `Let's _____ Tuesday 10am and confirm tomorrow.`, explain: `확정 전에 일단 시간을 잡아두는 상황이에요. pencil in은 연필로 적어두듯 가안으로 잡는다는 뜻이랍니다!` },
@@ -4387,7 +4387,7 @@ const SYNONYMS_V2 = {
   4: [{ w: "tentatively book", ko: "가안으로 잡는다고 격식 있게 말할 때 써요." }, { w: "hold the slot", ko: "그 시간을 비워두겠다고 할 때 써요." }],
 };
 const _BUDDY_NUDGE_V2 = {
-  1: { tone: "morning", text: "첫 출근 축하해요! 오늘은 on my plate 한 표현만 입에 붙여도 충분해요. 천천히, 매일 5분이면 돼요." },
+  1: { tone: "morning", text: "첫 출근 축하해요! 오늘은 on my plate 한 표현만 입에 붙여도 충분해요. someone's 자리에 my만 넣으면 돼요." },
   2: { tone: "tip", text: "바쁜 날엔 back-to-back 한마디면 돼요. 일정표를 보여주는 말이라 상대가 알아서 시간을 다시 잡아줘요." },
   3: { tone: "tip", text: "답할 게 없을 때는 keep you posted로 메일을 닫으면 돼요. 침묵보다 백 배 나아요." },
   4: { tone: "tip", text: "확정 권한이 없을 땐 pencil in으로 잡아두면 돼요. 빠르면서도 안전해요." },
@@ -5254,7 +5254,7 @@ const _TY_UBCHALL_URL = "https://lifestylebytes.github.io/youbuddy-challenge/";
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
 // 첫 주 개정판 안내 (기존 회원 전용): 신규 가입자는 Day 1~4 로 만나니 이 공지는 v1 회원에게만 보인다
 const _V2_TIPS = [
-  ["on my plate", "지금 맡은 일. \"What's on your plate this week?\"라고 물으면 할 일 목록을 답하면 돼요."],
+  ["on someone's plate", "그 사람이 지금 맡은 일. \"What's on your plate this week?\"라고 물으면 할 일 목록을 답하면 돼요."],
   ["back-to-back", "회의가 연달아. \"I'm back-to-back until 4\"는 바쁘다는 핑계가 아니라 일정표예요."],
   ["keep you posted", "진행되면 계속 알릴게요. 줄 게 없을 때 메일을 닫는 한 줄이에요."],
   ["pencil in", "일단 잡아두기. 확정 권한이 없을 때 \"Let's pencil in Tuesday\"로 답하면 빠르고 안전해요."],
@@ -6425,7 +6425,7 @@ function PreReveal({ today, email }) {
   const [loading, setLoading] = useState(false);
   const [gone, setGone] = useState(() => !!(pre && pre.seenAt));
   if (!pre || !pre.text || gone) return null;
-  const hit = new RegExp(today.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s-]?"), "i").test(pre.text);
+  const hit = _hasTargetWord(pre.text, today.word);
   const ask = () => {
     if (!(window.OD?.enabled && window.OD.getMentorAiFeedback)) return;
     setLoading(true);
@@ -9486,6 +9486,11 @@ function _hasTargetWord(sentence, targetWord) {
   const target = (targetWord || "").toLowerCase().trim();
   if (!target) return false;
   if (lower.includes(target)) return true;
+  // 표제어에 자리표시(someone's, something)가 있거나 구동사 사이에 목적어가 끼는 경우
+  // (on someone's plate → on my plate, pencil in → pencilled you in) 하이라이트 정규식으로 한 번 더 판정
+  if (/\s/.test(target)) {
+    try { const re = typeof _wordHlRegex === "function" ? _wordHlRegex(target) : null; if (re && re.test(sentence)) return true; } catch (e) {}
+  }
   const tokens = target.split(/\s+/).filter(Boolean);
   if (!tokens.length) return false;
   const head = "(?:" + _verbForms(tokens[0]).map(_escapeRegex).join("|") + ")";

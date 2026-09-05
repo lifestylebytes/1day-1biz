@@ -633,12 +633,12 @@ export const SCENARIOS: Scn[] = [
  }
 ];
 // 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 를 아래로 교체
-export const CONTENT_CUTOVER = "2099-12-31";
+export const CONTENT_CUTOVER = "2026-09-06";
 export const SCENARIOS_V2: Scn[] = [
  {
   "day": 1,
-  "word": "on my plate",
-  "meaning": "지금 맡고 있는 일",
+  "word": "on someone's plate",
+  "meaning": "그 사람이 지금 맡고 있는 일",
   "scene": "첫 회의가 끝나고 김 팀장이 자리로 와서 지금 맡은 일이 얼마나 되는지 물어요.",
   "quoteKo": "새 일을 주기 전에, 이번 주에 맡은 일이 뭐예요?"
  },
