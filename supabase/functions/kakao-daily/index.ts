@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
     const add = (e: string, d: number) => { if (!done.has(e)) done.set(e, new Set()); done.get(e)!.add(d); };
     (journals || []).forEach((j: any) => add(j.email, Number(j.day)));
     (tasks || []).forEach((t: any) => {
-      const n = Object.values(t.tasks || {}).filter(Boolean).length;
+      const n = Object.entries(t.tasks || {}).filter(([k, v]) => v && !String(k).startsWith('_')).length;  // _known 같은 메타 키 제외
       if (n >= 4) add(t.email, Number(t.day));
     });
     const already = new Set((logs || []).map((l: any) => l.email));

@@ -416,6 +416,10 @@ body::before {
 .scs-word { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; color: var(--ink); }
 .scs-mean { font-size: 15px; color: var(--ink-soft); margin-top: 6px; font-weight: 600; }
 .scs-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.scs-known { border-color: var(--green) !important; color: var(--green) !important; background: rgba(74,124,89,0.08) !important; }
+.scs-new { background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 800; color: var(--orange); cursor: pointer; padding: 6px 4px; animation: scsBlink 1.1s ease-in-out infinite; }
+@keyframes scsBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .scs-new { animation: none; } }
 @media (max-width: 880px) { .scene-card-simple .scene-card-body { padding: 18px 18px 20px; } .scs-word { font-size: 28px; } .scs-actions .btn { flex: 1 1 auto; justify-content: center; } }
 .scene-card-time {
   font-size: 11px; letter-spacing: 0.16em; font-weight: 700;
@@ -4982,7 +4986,7 @@ const _gateDoneSet = (u) => {
   try {
     Object.keys(localStorage).filter(k => k.startsWith('__OD_TASKS_DAY_') && !k.endsWith('_ts')).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || '{}');
-      if (Object.values(t).filter(Boolean).length >= 4) {
+      if (Object.entries(t).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4) {
         const n = Number(k.replace('__OD_TASKS_DAY_', '')); if (n) days.add(n);
       }
     });
@@ -5220,7 +5224,7 @@ const _odCompletedDaySet = (u) => {
   try {
     Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 4) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
+      if (Object.entries(t).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
     });
   } catch (e) {}
   return days;
@@ -6834,7 +6838,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const _dayComplete = (day) => {
     try {
       const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + day) || "{}");
-      return Object.values(tasks).filter(Boolean).length >= 4;
+      return Object.entries(tasks).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4;
     } catch (e) { return false; }
   };
   // 일정(task) 완료 시각 (영작·일지 외에 일정만 늦게 채운 경우도 잡음)
@@ -8276,10 +8280,17 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
   // ★ 2026-09-05 (개발 뷰): 시추에이션 카드를 표현·뜻·버튼 둘로만. 상황, 대사, 미션 문구는 모달 안에서 본다.
   //   "이미 알아요"는 아는 단어 기록(__OD_KNOWN_WORDS) 후 모달을 열고 바로 작성란으로 내려간다.
   if (_isNextFeature()) {
+    const [known, setKnown] = useState(() => { try { return (JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]")).some(x => x.day === scenario.day); } catch (e) { return false; } });
     const _markKnown = () => {
       try {
         const k = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]");
         if (!k.some(x => x.day === scenario.day)) { k.push({ day: scenario.day, word: scenario.word, at: new Date().toISOString() }); localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(k)); }
+      } catch (e) {}
+      setKnown(true);
+      // 운영자가 볼 수 있게 서버에도 기록: task_progress.tasks 에 _known 메타 키 (밑줄 키는 완주 계산에서 제외)
+      try {
+        const em = (window.__SIM && window.__SIM.USER && window.__SIM.USER.email) || "";
+        if (em && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(em, scenario.day, { _known: true }).catch(() => {});
       } catch (e) {}
       try { sessionStorage.setItem("__OD_KNOWN_JUMP", String(scenario.day)); } catch (e) {}
       onOpen();
@@ -8305,7 +8316,8 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done }) {
             ) : (
               <>
                 <button className="btn btn-primary" onClick={onOpen}>▶ 시작하러 가기</button>
-                <button className="btn btn-ghost" onClick={_markKnown} title="아는 표현이면 설명 건너뛰고 바로 한 줄 써요">✓ 이미 알아요</button>
+                <button className={"btn btn-ghost" + (known ? " scs-known" : "")} onClick={_markKnown} title={known ? "아는 표현으로 기록됐어요. 눌러서 바로 한 줄 써요" : "아는 표현이면 설명 건너뛰고 바로 한 줄 써요"}>{known ? "✓ 이미 아는 표현" : "✓ 이미 알아요"}</button>
+                <button className="scs-new" onClick={onOpen} title="새 메시지가 와 있어요">● 새 메시지 1</button>
               </>
             )}
           </div>
@@ -12953,7 +12965,7 @@ function _statBestStreak(u) {
   try {
     Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 4) {
+      if (Object.entries(t).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4) {
         const n = Number(k.replace("__OD_TASKS_DAY_", ""));
         if (n) days.add(n);
       }
@@ -12977,7 +12989,7 @@ function _completedDayCount(u) {
   try {
     Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
       const t = JSON.parse(localStorage.getItem(k) || "{}");
-      if (Object.values(t).filter(Boolean).length >= 4) {
+      if (Object.entries(t).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4) {
         const n = Number(k.replace("__OD_TASKS_DAY_", ""));
         if (n) days.add(n);
       }

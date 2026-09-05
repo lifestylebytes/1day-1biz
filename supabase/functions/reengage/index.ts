@@ -339,7 +339,7 @@ Deno.serve(async (req) => {
       sb.from("task_progress").select("email, day, tasks").in("email", emails),
     ]);
     (js || []).forEach((j: any) => addDone(j.email, Number(j.day)));
-    (ts || []).forEach((t: any) => { if (Object.values(t.tasks || {}).filter(Boolean).length >= 4) addDone(t.email, Number(t.day)); });
+    (ts || []).forEach((t: any) => { if (Object.entries(t.tasks || {}).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4) addDone(t.email, Number(t.day)); });
   }
   const dayWord = (d: number, signupDate?: string) => wordFor(d, signupDate) || SCENARIO_WORDS[d] || "";
 
