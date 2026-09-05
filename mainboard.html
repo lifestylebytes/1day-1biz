@@ -301,7 +301,8 @@ body::before {
 /* 🌙 야근 카드 (개발 뷰) */
 .ot-card { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); overflow: hidden; }
 .ot-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: #2A1F14; color: #F4EFE3; border: none; font-family: inherit; font-size: 14px; font-weight: 900; cursor: pointer; text-align: left; }
-.ot-head small { font-weight: 600; font-size: 11px; opacity: 0.7; margin-left: 8px; }
+.ot-head small { display: block; font-weight: 600; font-size: 11px; opacity: 0.75; margin-top: 2px; }
+.ot-head > span { display: flex; flex-direction: column; }
 .ot-head b { font-size: 12px; font-weight: 800; color: #FFB380; }
 .ot-body { padding: 16px; display: grid; gap: 18px; }
 .ot-sec-title { font-size: 13.5px; font-weight: 900; margin-bottom: 3px; }
@@ -5051,6 +5052,28 @@ const _TY_UBCHALL_URL = "https://lifestylebytes.github.io/youbuddy-challenge/";
 // 사내 공지 (인트라넷 메모), currentDay 기준 동적 필터링
 const _mentorFirstName = (CHARACTERS.mentor.name || "사수").split(" ")[0];
 const _NOTICES_ALL = [
+  { id: "n-push-setup", from: "hr", to: "1일1비 멤버 여러분", date: "오늘", tag: "안내", unread: true, showFromDay: 1,
+    subject: "[안내] 출근 리마인드, 폰에서 알림으로 받는 법",
+    preview: "폰에 앱으로 추가하면 매일 잊지 않게 출근 알림을 받을 수 있어요. 1분이면 끝나요.",
+    body: [
+      "안녕하세요, 인사팀입니다.",
+      "",
+      "1일1비를 폰 홈 화면에 앱으로 추가하면 매일 정해진 시간에 출근 리마인드 알림을 받을 수 있어요. 하루 한 번 알림이 오면 빠지는 날이 확 줄어요.",
+      "",
+      "[켜는 순서, 1분이면 끝나요]",
+      "1. 폰 브라우저로 1일1비에 접속해요.",
+      "2. 공유 버튼을 누르고 \"홈 화면에 추가\"를 눌러요. 안드로이드는 메뉴에서 \"설치\" 또는 \"홈 화면에 추가\"를 눌러요.",
+      "3. 홈 화면에 생긴 1일1비 앱을 열어요.",
+      "4. 아래 탭에서 사원증·인사로 들어가 설정을 열어요.",
+      "5. 🔔 푸시 알림 켜기를 누르고, 알림 허용을 눌러요.",
+      "",
+      "[이런 경우엔]",
+      "아이폰은 홈 화면에 추가한 앱 안에서만 알림이 켜져요. 사파리 탭에서는 버튼이 안 보여요. iOS 16.4 이상이어야 해요.",
+      "알림이 안 오면 폰 설정에서 1일1비 앱의 알림 허용이 켜져 있는지 한 번만 확인해 주세요.",
+      "",
+      "매일 아침, 책상 위에 새 표현이 올라와 있을 거예요. 잊지 않게 알림이 도와드릴게요.",
+    ].join("\n"),
+  },
   { id: "n-welcome",    from: "hr",     to: "신입 사원",    date: "오늘",      subject: "[필수] 입사 첫 주 안내",       preview: "오리엔테이션 + 사옥 출입증 + 사내 시스템 접속 가이드. 첫 주 차근차근 안내드릴게요.", unread: true, tag: "필수",  showFromDay: 1 },
   { id: "n-mentor-hi",  from: "mentor", to: "당신",         date: "오늘",      subject: _mentorFirstName + "입니다, 잘 부탁해요", preview: "매일 아침 노란 포스트잇으로 단어 한 개씩 알려드릴게요. 모르는 거 부담 없이 물어봐요.", unread: true, tag: "사수",  showFromDay: 1 },
   { id: "n-eval",       from: "hr",     to: "수습 사원",    date: "사전 안내", subject: "수습 평가 안내 (Day 30 분기 평가)", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.",        unread: false, tag: "평가",  showFromDay: 1 },
@@ -6110,7 +6133,7 @@ function OvertimeCard({ today, tomorrow, email }) {
   return (
     <div className="ot-card">
       <button className="ot-head" onClick={() => setOpen(o => !o)}>
-        <span>🌙 야근 <small>선택 · 안 해도 하루는 완주예요</small></span>
+        <span>🌙 야근 <small>10분이면 오늘 표현이 세 문장 더 남고, 내일 아침 사수 확인이 기다려요</small></span>
         <b>{doneCount}/4 {open ? "▲" : "▼"}</b>
       </button>
       {open && (
@@ -6269,6 +6292,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [tourKind] = useState(() => {
     try {
       if (USER.isFulltime && !USER.isViewingPast && (USER.realCurrentDay || USER.currentDay) <= 60 && !localStorage.getItem(S2_TOUR_KEY)) return "s2";
+      // 사원증/인사 > "첫날 가이드 다시 보기"로 들어온 경우: 며칠째든 첫 출근 가이드를 한 번 더 돌린다
+      if (localStorage.getItem("__OD_TOUR_REPLAY") === "1" && !USER.isViewingPast) { localStorage.removeItem("__OD_TOUR_REPLAY"); return "day1"; }
       if (USER.currentDay === 1 && !localStorage.getItem(TOUR_KEY)) return "day1";
     } catch(e) {}
     return null;
@@ -9072,6 +9097,17 @@ function MyPage() {
             학습 오류, 진도 안 보임, 결제, 기타 문의
           </span>
         </div>
+        <button
+          className="hr-row"
+          style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}
+          onClick={() => {
+            try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {}
+            location.href = "mainboard.html";
+          }}
+        >
+          <span className="hr-row-label">🧭 첫날 가이드 다시 보기</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>오늘의 책상에서 한 번 더 →</span>
+        </button>
       </div>
 
       {/* 설정 (쓰기), 디스클로저 */}
@@ -13862,21 +13898,28 @@ function App() {
     handleOpenMemo(target);
   }, [dbNotices, readIds, _tourCleared, _tourPending]);
 
-  // ★ 하드코딩 공지(예: 유비챌 9기 오픈)도 한 번은 자동으로 띄운다.
-  //   DB 공지 자동팝업은 dbNotices만 봐서, _NOTICES_ALL의 이벤트 공지는 안 떴음.
+  // ★ 하드코딩 공지(예: 유비챌 9기 오픈, 푸시 알림 안내)도 한 번은 자동으로 띄운다.
+  //   DB 공지 자동팝업은 dbNotices만 봐서, _NOTICES_ALL의 공지는 안 떴음.
+  //   한 번 접속에 하나만: 아직 안 띄운 것 중 앞의 것부터. 다음 접속 때 다음 공지가 뜬다.
+  const _AUTOPOP_HARDCODED = ["n-push-setup", "n-ubchall-9"];
   const _promoPoppedRef = React.useRef(false);
   React.useEffect(() => {
     if (_promoPoppedRef.current) return;
     if (!_tourCleared && _tourPending()) return;   // 투어 먼저
     const list = (window.__SIM && window.__SIM.NOTICES) || [];
-    const promo = list.find(n => n.id === "n-ubchall-9");
-    if (!promo) return;
     let shown = [];
     try { shown = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); } catch (e) {}
-    if (shown.includes(promo.id)) return;
+    const promo = _AUTOPOP_HARDCODED.map(id => list.find(n => n.id === id)).find(n => n && !shown.includes(n.id));
+    if (!promo) return;
     _promoPoppedRef.current = true;
-    try { shown.push(promo.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
-    setTimeout(() => handleOpenMemo(promo), 900);
+    // 다른 팝업(마일스톤, 승급, 웰컴 키트)이 떠 있으면 닫힐 때까지 기다렸다가 띄운다. 겹쳐 뜨지 않게.
+    let tries = 0;
+    const tryPop = () => {
+      if (typeof _popupOpen === "function" && _popupOpen() && tries++ < 60) { setTimeout(tryPop, 1200); return; }
+      try { const cur = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); if (!cur.includes(promo.id)) { cur.push(promo.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(cur)); } } catch (e) {}
+      handleOpenMemo(promo);
+    };
+    setTimeout(tryPop, 900);
   }, [_tourCleared, _tourPending]);
 
   // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
