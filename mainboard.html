@@ -345,10 +345,17 @@ body::before {
 .lib-detail-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 11.5px; color: var(--ink-mute); }
 .lib-detail-actions .btn { padding: 7px 14px; font-size: 12.5px; }
 @media (max-width: 880px) {
-  .lib-table { min-width: 0; font-size: 12.5px; table-layout: fixed; width: 100%; }
+  /* 사파리에선 table-layout: fixed 가 숨긴 열 폭까지 잡아둬서 표가 반쪽이 된다. auto 로 두고 표현 열이 남는 폭을 다 먹게 */
+  .lib-table { min-width: 0; font-size: 12.5px; table-layout: auto; width: 100%; }
   .lib-table .col-npc, .lib-table .col-mean, .lib-table th:nth-child(3), .lib-table th:nth-child(4) { display: none; }
-  .lib-table th:first-child, .lib-table td.col-day { width: 46px; padding-left: 10px; padding-right: 4px; }
-  .lib-table th.col-st, .lib-table td.col-st { width: 64px; text-align: right; padding-right: 10px; white-space: nowrap; }
+  .lib-table th:first-child, .lib-table td.col-day { width: 44px; padding-left: 10px; padding-right: 4px; white-space: nowrap; }
+  .lib-table th:first-child small { display: none; }
+  .lib-table td.col-word, .lib-table th:nth-child(2) { width: 99%; }
+  .lib-table th.col-st, .lib-table td.col-st { width: 56px; text-align: right; padding-right: 10px; white-space: nowrap; }
+  .lib-detail td { padding: 12px 12px 14px; }
+  .lib-detail-actions { flex-wrap: wrap; gap: 8px; }
+  .lib-detail-actions .btn { width: 100%; justify-content: center; }
+  .lib-detail-actions > span { width: 100%; }
   .lib-table td.col-st .lib-st-text { display: none; }
   .lib-table td.col-st .lib-st-emoji { font-size: 14px; }
   .lib-table td.col-word { padding-right: 6px; }
@@ -357,7 +364,6 @@ body::before {
   .lib-table td.col-word small { display: none; }
   .lib-table .lib-mean-inline { display: block; font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; line-height: 1.35; }
   .lib-table th, .lib-table td { padding: 10px 8px; vertical-align: middle; }
-  .lib-table th.sortable small { display: block; font-size: 9px; margin: 0; }
   .lib-detail-grid { grid-template-columns: 1fr; }
   .lib-view { margin-left: 0; }
 }
@@ -10176,7 +10182,7 @@ function LibraryPage({ openScene }) {
                       <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
                     </tr>
                     {isOpen && (
-                      <tr className="lib-detail"><td colSpan={5}>
+                      <tr className="lib-detail"><td colSpan={(window.matchMedia && window.matchMedia("(max-width: 880px)").matches) ? 3 : 5}>
                         <div className="lib-detail-grid">
                           <div><label>상황</label><p>{_sceneNoClock(s.scene)}</p></div>
                           <div><label>{c.name} · {c.role}</label><p className="lib-quote">"{_hlQuote(s.quote, s.word)}"</p>{s.quoteKo && <p className="lib-ko">{s.quoteKo}</p>}</div>
