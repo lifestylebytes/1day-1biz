@@ -992,6 +992,15 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       .od-rise { animation: odRise 0.4s ease both; }
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
+      .od-bar-cta-short { display: none; }
+      @media (max-width: 600px) {
+        .od-bar-title { font-size: 12px !important; flex: 0 1 auto; }
+        .od-bar-sub { display: none; }
+        .od-bar-enter { padding: 8px 10px !important; }
+        .od-bar-cta { padding: 9px 12px !important; font-size: 12.5px !important; }
+        .od-bar-cta-long { display: none; } .od-bar-cta-short { display: inline; }
+      }
+      @media (max-width: 380px) { .od-bar-enter-t { display: none; } }
     `}</style>
 
     {/* ── 상단 고정: 흐르는 사내 전광판 + 바로 입사 바 ── */}
@@ -1003,16 +1012,16 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         </div>
       </div>
       <div style={{ background: "var(--paper, #F5EEDD)", borderBottom: "1.5px solid var(--line, #E2D8C4)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 14px", boxShadow: "0 6px 18px -12px rgba(58,40,18,0.35)" }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          1일1비 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
+        <div className="od-bar-title" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          1일1비 <span className="od-bar-sub" style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
         </div>
-        <button onClick={() => setShowEnter(true)}
-          style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto" }}>
-          🚪 입장하기
+        <button onClick={() => setShowEnter(true)} className="od-bar-enter"
+          style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto", whiteSpace: "nowrap" }}>
+          🚪 <span className="od-bar-enter-t">입장하기</span>
         </button>
-        <button onClick={() => _goDomestic("sticky")}
-          style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-          13,900원으로 시작하기 →
+        <button onClick={() => _goDomestic("sticky")} className="od-bar-cta"
+          style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          <span className="od-bar-cta-long">13,900원으로 시작하기 →</span><span className="od-bar-cta-short">13,900원 시작 →</span>
         </button>
       </div>
     </div>
