@@ -280,14 +280,11 @@ body::before {
   grid-template-columns: minmax(520px, 1.6fr) minmax(0, 1fr);
   gap: 22px;
 }
+/* 1240px 아래(사이드바 있는 좁은 창)에선 두 칸을 억지로 나누지 않고 오른쪽 보조 칸을 메인 아래로 내린다 (2026-09-06) */
 @media (max-width: 1240px) and (min-width: 881px) {
-  .desk { padding: 28px 24px 80px; }
-  .desk-grid { grid-template-columns: minmax(500px, 1.5fr) minmax(0, 1fr); gap: 16px; }
-}
-@media (max-width: 1080px) and (min-width: 881px) {
-  .office { grid-template-columns: 200px 1fr; }
-  .locker { padding: 20px 12px; }
-  .desk-grid { grid-template-columns: minmax(480px, 1.6fr) minmax(0, 1fr); gap: 14px; }
+  .desk { padding: 28px 28px 80px; }
+  .desk-grid { grid-template-columns: 1fr; gap: 16px; }
+  .desk-grid > .col { max-width: 760px; }
 }
 
 /* 시추에이션 카드 = 결재판 */
