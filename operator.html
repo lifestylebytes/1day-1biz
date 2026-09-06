@@ -161,6 +161,45 @@ function genCode() {
 // 구독 중 → 다음 결제일로 연장 + 해지마커 해제 / 구독 취소·종료 → 종료일 + 해지마커.
 // 미리보기에서 체크 해제 가능 (재량 연장해준 분은 해제하고 반영).
 // ============================================================
+// ★ ✋ 수동 재활성/연장 (2026-09-06): CSV 없이 이메일 하나만 풀 때. 복귀 회원(만료·해지 상태)도 여기서.
+//   반영 내용은 CSV 대조와 같다: 만료일 + cohort member + unlocked + 해지마커 해제. "Day 1부터"를 켜면 가입일을 오늘로 바꿔 새로 시작.
+function ManualMembershipPanel({ supaUsers, onDone }) {
+  const kstToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+  const plusMonth = (ymd) => { const d = new Date(ymd + "T00:00:00+09:00"); d.setMonth(d.getMonth() + 1); return d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); };
+  const [email, setEmail] = useState("");
+  const [end, setEnd] = useState(() => plusMonth(kstToday()));
+  const [restart, setRestart] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const u = (supaUsers || []).find(x => (x.email || "").toLowerCase() === email.trim().toLowerCase());
+  const apply = async () => {
+    if (!u) { setMsg("그 이메일의 계정이 DB에 없어요."); return; }
+    const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null };
+    if (restart) patch.signup_date = new Date().toISOString();
+    if (!confirm((u.name || u.email) + " 님을 " + end + " 까지 활성화할까요?" + (restart ? "\n가입일을 오늘로 바꿔 Day 1부터 다시 시작해요." : "\n진도는 그대로 이어져요."))) return;
+    setBusy(true); setMsg("");
+    const r = await window.OD.syncMembership(u.email, patch);
+    setBusy(false);
+    setMsg(r && r.ok ? "✅ " + (u.name || u.email) + " 활성화 · 만료 " + end + (restart ? " · Day 1부터" : "") : "실패: " + ((r && r.error) || "?"));
+    if (r && r.ok && onDone) onDone();
+  };
+  return (
+    <div className="card" style={{ marginTop: 14 }}>
+      <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>✋ 수동 재활성 · 연장 (복귀 회원, 개별 처리)</div>
+      <div style={{ fontSize: 12.5, color: "#6B5B4A", lineHeight: 1.6, marginBottom: 10 }}>결제를 따로 확인한 회원 한 명을 바로 풀 때 써요. 만료일은 기본 오늘 + 1개월이에요. 진도를 이어가려면 "Day 1부터"는 끄고 두세요.</div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <input list="mm-emails" value={email} onChange={e => setEmail(e.target.value)} placeholder="이메일 (이름으로 검색돼요)" style={{ flex: "1 1 260px", padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} />
+        <datalist id="mm-emails">{(supaUsers || []).map(x => <option key={x.email} value={x.email}>{(x.name || "") + (x.membership_ends_at ? " · 만료 " + String(x.membership_ends_at).slice(0, 10) : "")}</option>)}</datalist>
+        <input type="date" value={end} onChange={e => setEnd(e.target.value)} style={{ padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} />
+        <label style={{ fontSize: 12.5, display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={restart} onChange={e => setRestart(e.target.checked)} /> Day 1부터 다시 시작 (가입일을 오늘로)</label>
+        <button className="btn btn-primary" onClick={apply} disabled={busy || !email.trim()}>{busy ? "반영 중..." : "활성화"}</button>
+      </div>
+      {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
+      {msg && <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: msg.startsWith("✅") ? "#2D6E3A" : "#B23A2C" }}>{msg}</div>}
+    </div>
+  );
+}
+
 function CsvSyncPanel({ supaUsers, onDone }) {
   const [raw, setRaw] = useState("");
   const [plan, setPlan] = useState(null);
@@ -1796,6 +1835,7 @@ function App() {
               );
             })()}
             {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
+            {supaUsers.length > 0 && <ManualMembershipPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && (
               <details style={{ marginBottom: 16 }}>
                 <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 14, padding: '12px 16px', background: '#FFF3D6', color: '#8C6510', borderRadius: 8, userSelect: 'none' }}>
