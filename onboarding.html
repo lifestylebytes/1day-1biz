@@ -271,7 +271,8 @@ const MEMBER_CODES = {
 // 체험 코드: 가입 시점부터 N일 무료, 만료되면 자동으로 휴직 화면(복직=결제 안내).
 // 유비챌 7기 후기 이벤트 (2026-08). 코드 추가는 여기 한 줄이면 됨.
 const TRIAL_CODES = {
-  "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7" },
+  // 2026-09-07 종료. active:false 면 입력해도 "유효하지 않은 코드". 정의는 운영자 뷰 라벨용으로 남긴다.
+  "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7", active: false },
 };
 
 // ============================================================
@@ -357,6 +358,11 @@ function OnboardingApp() {
         const _isStaffCode = !!STAFF_CODES[code];
         const _isMemberCode = !!MEMBER_CODES[code];
         const _isTrialCode = !!TRIAL_CODES[code];
+        if (_isTrialCode && TRIAL_CODES[code].active === false) {
+          setSubmitError("이 코드는 사용 기간이 끝났어요. 멤버십 결제 후 받은 코드로 입장해주세요.");
+          setSubmitting(false);
+          return;
+        }
         let _cohort = null;
         if (!_isStaffCode && !_isMemberCode && !_isTrialCode) {
           const result = await window.OD.checkInviteCode(code);
@@ -469,7 +475,7 @@ function OnboardingApp() {
       totalSessions: 1,
       totalSessionMs: 0,
       // settings
-      preferences: { notifications: true, timezone: "Asia/Seoul" },
+      preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null },
       // 운영 메타
       onboardingMotivation: motivation.trim(),
       schemaVersion: 1,

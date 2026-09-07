@@ -2024,6 +2024,24 @@ function App() {
                     <div style={{ fontWeight: 700 }}>{u.name}</div>
                     <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.email}</div>
                     <div style={{ fontSize: 10, color: '#A8997F', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.emp_number || ''}</div>
+                    {(() => {
+                      // 가입 코드. 2026-09-07 이후 가입자는 preferences.signup_code 에 그대로 저장.
+                      // 그 전 가입자는 남은 흔적(cohort / plan / pilot)으로 추정해 "~(추정)" 으로 표시.
+                      const _pref = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {};
+                      let code = _pref.signup_code || null, guess = false;
+                      if (!code) {
+                        guess = true;
+                        if (u.cohort === 'trial-ubc7') code = 'UBC7-1DAY1BIZ';
+                        else if (u.cohort === 'member' && _pref.plan === 'part2') code = '1DAY1BIZ365-2';
+                        else if (u.cohort === 'member' && _pref.plan === 'part1') code = '1DAY1BIZ365';
+                        else if (u.cohort === 'member') code = '회원 코드';
+                        else if (u.cohort === 'staff' || u.is_tester) code = '내부 테스터';
+                        else if (u.is_pilot_hire) code = 'PILOT-****';
+                        else if (u.cohort && u.cohort.startsWith('trial')) code = '체험 코드';
+                      }
+                      if (!code) return null;
+                      return <div style={{ fontSize: 10, color: '#8A7964', marginTop: 3 }}>🎟 {code}{guess ? ' (추정)' : ''}</div>;
+                    })()}
                   </div>
 
                   {/* 학습 진도 */}
