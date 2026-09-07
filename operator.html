@@ -174,7 +174,7 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
   const u = (supaUsers || []).find(x => (x.email || "").toLowerCase() === email.trim().toLowerCase());
   const apply = async () => {
     if (!u) { setMsg("그 이메일의 계정이 DB에 없어요."); return; }
-    const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null };
+    const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null };
     if (restart) patch.signup_date = new Date().toISOString();
     if (!confirm((u.name || u.email) + " 님을 " + end + " 까지 활성화할까요?" + (restart ? "\n가입일을 오늘로 바꿔 Day 1부터 다시 시작해요." : "\n진도는 그대로 이어져요."))) return;
     setBusy(true); setMsg("");
@@ -194,7 +194,7 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
         <label style={{ fontSize: 12.5, display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={restart} onChange={e => setRestart(e.target.checked)} /> Day 1부터 다시 시작 (가입일을 오늘로)</label>
         <button className="btn btn-primary" onClick={apply} disabled={busy || !email.trim()}>{busy ? "반영 중..." : "활성화"}</button>
       </div>
-      {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
+      {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.membership_cancel_reason ? " · 퇴직 사유 남음(" + u.membership_cancel_reason + ")" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
       {msg && <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: msg.startsWith("✅") ? "#2D6E3A" : "#B23A2C" }}>{msg}</div>}
     </div>
   );
@@ -259,15 +259,15 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       matched++;
       if (u.is_operator || u.is_dev_mode) continue;
       const dbEnd = (u.membership_ends_at || "").slice(0, 10);
-      const hasCancel = !!u.membership_cancel_at;
+      const hasCancel = !!u.membership_cancel_at || !!u.membership_cancel_reason;   // 해지마커 또는 퇴직 사유가 남아 있으면 같이 지운다
       if (isPaymentSheet) {
         const paid = latestPaid[email];
         if (!paid || kdate(c[iPaidAt]) !== paid) continue;   // 같은 이메일의 옛 결제 행은 건너뜀
         const want = plusMonth(paid);
-        if (dbEnd < want || u.cohort !== "member" || u.unlocked === false || hasCancel) {
+        if (dbEnd < want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st: "결제 완료 " + (c[iAmount] || ""),
             detail: "결제 " + paid + " → 만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
-            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null },
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null },
             checked: true });
         }
         continue;
@@ -276,10 +276,10 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       if (st === "구독 중") {
         const want = kdate(c[iNext]);
         if (!want) continue;
-        if (dbEnd !== want || u.cohort !== "member" || u.unlocked === false || hasCancel) {
+        if (dbEnd !== want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st,
             detail: "만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
-            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null },
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null },
             checked: true });
         }
       } else if (st === "구독 취소" || st === "구독 종료") {
