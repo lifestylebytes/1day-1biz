@@ -179,7 +179,23 @@ Deno.serve(async (req) => {
       const g = computeGate(u, done.get(u.email) || new Set(), now);
       const idle = daysBetweenKST(u.last_active || u.signup_date, now);
       const s = scenarioFor(g.gated, u.signup_date);
-      const scene = s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
+      // #{상황}: 장면 한 줄 + 표현의 뜻 + 훅 한 줄. 라벨("오늘 상황:")은 템플릿에 고정이라 내용만 바꾼다.
+      //   예) 박 대리가 슬랙 DM으로 조용히 귀띔을 해줘요. 'heads up'(미리 알리는 말), 외국계 필수 표현인 거 아시죠?
+      const HOOKS = [
+        "외국계 필수 표현인 거 아시죠?",
+        "오늘 회의에서 한 번은 꼭 나와요.",
+        "이거 모르면 슬랙에서 잠깐 멈칫해요.",
+        "한 줄로 일 잘하는 사람처럼 보이는 표현이에요.",
+        "메일에도 회의에도 다 통하는 말이에요.",
+        "원어민 동료가 하루에 몇 번씩 쓰는 말이에요.",
+        "오늘 한 문장만 만들어보면 내 것이 돼요.",
+      ];
+      const baseScene = s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
+      const meaningKo = (s.meaning || "").trim();
+      const hook = HOOKS[(g.gated + (u.email || "").length) % HOOKS.length];
+      const scene = meaningKo
+        ? `${baseScene} '${s.word}'(${meaningKo}), ${hook}`
+        : `${baseScene} '${s.word}', ${hook}`;
       const variables: Record<string, string> = STYLE === "plain"
         ? {}
         : STYLE === "story"

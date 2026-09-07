@@ -11504,8 +11504,8 @@ function MyPage() {
               출근 잊지 않게 리마인드를 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
             </div>
 
-            {/* 카톡 출근 알림 (2026-09-03), 템플릿 심사 승인 후 게이트 제거 */}
-            {_isNextFeature() && <KakaoNotifyRow email={USER.email} />}
+            {/* 카톡 출근 알림 (2026-09-03). 2026-09-07 템플릿 승인 + 발송 확인 후 전 회원 공개 */}
+            <KakaoNotifyRow email={USER.email} />
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
             <a
