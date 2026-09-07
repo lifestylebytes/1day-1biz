@@ -163,6 +163,35 @@ function genCode() {
 // ============================================================
 // ★ ✋ 수동 재활성/연장 (2026-09-06): CSV 없이 이메일 하나만 풀 때. 복귀 회원(만료·해지 상태)도 여기서.
 //   반영 내용은 CSV 대조와 같다: 만료일 + cohort member + unlocked + 해지마커 해제. "Day 1부터"를 켜면 가입일을 오늘로 바꿔 새로 시작.
+// ★ 밀린 날 정확히 세기 (2026-09-07): 회원의 완주 기록(문장 제출·저널·일정 4개 완료)을 서버에서 가져와
+//   달력 Day 까지 중 완주 안 한 Day 를 센다. 앱이 마지막 접속 때 올린 day_in_company 와 달리 실제 기록 기준.
+function BacklogChip({ u, todayDay }) {
+  const [st, setSt] = useState(null);   // null | "loading" | {done, missing:[]}
+  const load = async () => {
+    setSt("loading");
+    try {
+      const r = await window.OD.fetchUserFullData(u.email);
+      if (!r || !r.ok || !r.data) { setSt({ err: (r && r.error) || "불러오기 실패" }); return; }
+      const d = r.data;
+      const done = new Set();
+      (d.submissions || []).forEach(x => { if (x.day && (x.answer_text || x.sentence || x.text)) done.add(Number(x.day)); });
+      (d.journals || []).forEach(x => { if (x.day) done.add(Number(x.day)); });
+      const tp = d.task_progress || {};
+      Object.keys(tp).forEach(k => { const t = tp[k] || {}; const n = Object.keys(t).filter(id => !id.startsWith("_") && t[id] === true).length; if (n >= 4) done.add(Number(k)); });
+      const missing = [];
+      for (let day = 1; day <= todayDay; day++) if (!done.has(day)) missing.push(day);
+      setSt({ done: todayDay - missing.length, missing });
+    } catch (e) { setSt({ err: e.message }); }
+  };
+  if (st === null) return <button onClick={load} style={{ marginTop: 3, background: "none", border: "none", padding: 0, fontSize: 11, color: "#3D4DA8", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>완주 기록으로 밀린 날 세기</button>;
+  if (st === "loading") return <div style={{ fontSize: 11, color: "#8A7964", marginTop: 3 }}>기록 읽는 중…</div>;
+  if (st.err) return <div style={{ fontSize: 11, color: "#B23A2C", marginTop: 3 }}>{st.err}</div>;
+  const m = st.missing;
+  if (!m.length) return <div style={{ fontSize: 11, color: "#2D6E3A", fontWeight: 700, marginTop: 3 }}>완주 {st.done}/{todayDay} · 안 한 Day 없음</div>;
+  const recent = m.slice(-6);
+  return <div style={{ fontSize: 11, color: "#B23A2C", fontWeight: 700, marginTop: 3 }}>완주 {st.done}/{todayDay} · 안 한 Day {m.length}일 <span style={{ fontWeight: 500, color: "#8A7964" }}>({m.length > 6 ? "… " : ""}{recent.join(", ")})</span></div>;
+}
+
 function ManualMembershipPanel({ supaUsers, onDone }) {
   const kstToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   const plusMonth = (ymd) => { const d = new Date(ymd + "T00:00:00+09:00"); d.setMonth(d.getMonth() + 1); return d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); };
@@ -2007,8 +2036,12 @@ function App() {
                       const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
                       const todayDay = Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1));
                       const behind = todayDay - (day || 1);
-                      if (behind <= 0) return <div style={{ fontSize: 11, color: '#2D6E3A', marginTop: 2 }}>달력 Day {todayDay} · 밀린 날 없음</div>;
-                      return <div style={{ fontSize: 11, color: '#B23A2C', fontWeight: 700, marginTop: 2 }}>달력 Day {todayDay} · 밀린 {behind}일 <span style={{ fontWeight: 500, color: '#8A7964' }}>(마지막 접속 기준)</span></div>;
+                      return (
+                        <>
+                          <div style={{ fontSize: 11, color: behind > 0 ? '#B23A2C' : '#8A7964', marginTop: 2 }}>달력 Day {todayDay}{behind > 0 ? ' · 앱은 Day ' + day + ' (' + behind + '일 차이)' : ''}</div>
+                          <BacklogChip u={u} todayDay={todayDay} />
+                        </>
+                      );
                     })()}
                     {(() => {
                       // TF 트랙 표시: 진행 중 트랙 + 수료 목록 (users.tf_track / tf_done)
