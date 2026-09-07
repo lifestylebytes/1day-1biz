@@ -11,6 +11,11 @@
 - push 전 필수: em-dash 0 확인 + esbuild JSX 파싱. push 후 배포 1-2분, 확인은 하드 리프레시.
 - Edge Function 배포(`supabase functions deploy`)와 SQL 마이그레이션은 여전히 사용자가 수동.
 
+## 🤝 협업 규칙 (CONTRIBUTING.md)
+- 두 사람 이상이 고치는 레포다. **작업 시작 전 반드시 `git pull origin main`** (다른 사람 PR이 merge돼 있을 수 있다).
+- 대표 계정 세션이 아니면 main에 직접 push하지 않고 브랜치 + PR로 올린다. 파일 담당과 충돌 해결 방법은 `CONTRIBUTING.md` 참조.
+- `mainboard.html`·`operator.html`은 개발 담당 전용. 다른 사람이 만지고 있다는 얘기가 있으면 그 파일은 건드리지 않는다.
+
 ## 📋 기획 백로그 (PLANNING.md) - 세션 넘어 기억할 것
 - **`PLANNING.md`가 살아있는 기획 백로그.** 매주 월요일 기획회의의 기준 문서.
 - 사용자가 새 아이디어·기능 요청을 말하거나, 사용자/이탈자 피드백 답장이 들어올 때마다
