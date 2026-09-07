@@ -1884,6 +1884,17 @@ function App() {
                 </div>
               );
             })()}
+            {(() => {
+              // 결제됐는데 만료일이 비어 있는 정식 회원 = 자동 만료도 안 되고 다음 결제일도 안 보이는 구멍. 눈에 띄게.
+              const holes = (supaUsers || []).filter(u => u.cohort === 'member' && !u.membership_ends_at && !u.withdrawn_at && !u.is_operator && !u.is_dev_mode && !u.is_tester);
+              if (!holes.length) return null;
+              return (
+                <div style={{ margin: '0 0 12px', padding: '12px 16px', background: '#FAEBE6', border: '1px solid #E5B7A6', borderRadius: 6, fontSize: 13, color: '#7A2E19', lineHeight: 1.6 }}>
+                  <b>⚠️ 만료일 없는 정식 회원 {holes.length}명</b> · {holes.map(u => u.name || u.email).join(', ')}
+                  <div style={{ fontSize: 12, color: '#993C1D', marginTop: 4 }}>결제는 됐는데 래피드 웹훅이 못 넣은 회원이에요. 아래 CSV 대조 패널에 래피드 결제 내역을 붙여넣거나 수동 활성화로 만료일을 채워주세요. 비워두면 결제가 끊겨도 계속 활성이에요.</div>
+                </div>
+              );
+            })()}
             {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && <ManualMembershipPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && (
@@ -2005,10 +2016,11 @@ function App() {
                       bg: '#DDEFD9', color: '#2D6E3A',
                     };
                   } else {
+                    // 정식 회원인데 만료일이 없다 = 결제는 됐는데 웹훅/CSV 어느 쪽도 안 들어온 것. 자동 만료도 안 되니 반드시 채워야 한다.
                     payStatus = {
-                      line1: '🟢 활성',
-                      line2: '갱신일 미설정',
-                      bg: '#FFF3D6', color: '#B8431A',
+                      line1: '⚠️ 만료일 없음',
+                      line2: '결제 확인 후 CSV 대조/수동 활성화로 채우기',
+                      bg: '#FAEBE6', color: '#993C1D',
                     };
                   }
                 } else if (isPaidCanceling) {
