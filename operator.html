@@ -1981,6 +1981,7 @@ function App() {
                 const isPaidMember = u.cohort === 'member';
                 const isInternal = u.is_operator || u.is_dev_mode;
                 const isPilot = !!u.is_pilot_hire && !isPaidMember && !isInternal;
+                const isTrial = !isPaidMember && !isInternal && typeof u.cohort === 'string' && u.cohort.startsWith('trial');
                 const cancelReason = u.membership_cancel_reason || null;
                 const day = u.day_in_company || 1;
 
@@ -2029,6 +2030,17 @@ function App() {
                     : { line1: '🟡 퇴직 처리됨', line2: `종료: ${endsAtMD} (D-${dLeft})`, bg: '#FAEBE6', color: '#993C1D' };
                 } else if (isPaidExpired) {
                   payStatus = { line1: '🔴 만료', line2: `종료일 ${endsAtMD}`, bg: '#FAEBE6', color: '#993C1D' };
+                } else if (isTrial) {
+                  // 체험 코드(UBC7 등) 회원: 종료일 기준. 퇴직 처리하면 cancel_reason 이 남아 구분된다.
+                  if (cancelReason && dLeft !== null && dLeft > 0) {
+                    payStatus = { line1: '🟡 퇴직 처리됨', line2: `종료: ${endsAtMD} (D-${dLeft})`, bg: '#FAEBE6', color: '#993C1D' };
+                  } else if (u.membership_ends_at && dLeft !== null && dLeft <= 0) {
+                    payStatus = { line1: '🔴 체험 종료', line2: `종료일 ${endsAtMD}${cancelReason ? ' · 퇴직 처리' : ''}`, bg: '#FAEBE6', color: '#993C1D' };
+                  } else if (u.membership_ends_at) {
+                    payStatus = { line1: '🧪 체험 중', line2: `~${endsAtMD} (D-${dLeft})`, bg: '#FFF3D6', color: '#B8431A' };
+                  } else {
+                    payStatus = { line1: '⚠️ 체험 · 종료일 없음', line2: '무기한 열림. 퇴직 처리로 닫거나 결제 확인 후 활성화', bg: '#FAEBE6', color: '#993C1D' };
+                  }
                 } else if (isPilot) {
                   if (u.membership_ends_at && dLeft > 0) {
                     payStatus = { line1: '🟢 베타 연장', line2: `~${endsAtMD} (D-${dLeft})`, bg: '#DDEFD9', color: '#2D6E3A' };
@@ -2167,7 +2179,7 @@ function App() {
                   {/* 작업 */}
                   <div>
                     {!u.is_operator && !isPilot && (
-                      isPaidCanceling || isPaidExpired ? (
+                      (isPaidCanceling || isPaidExpired || (isTrial && (cancelReason || (u.membership_ends_at && dLeft !== null && dLeft <= 0)))) ? (
                         <button
                           onClick={() => restoreUserMembership(u)}
                           style={{ fontSize: 11, padding: '6px 10px', background: 'transparent', color: '#2D8A3E', border: '1px solid #2D8A3E', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, width: '100%' }}
