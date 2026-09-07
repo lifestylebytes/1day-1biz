@@ -2002,6 +2002,15 @@ function App() {
                     <div className="progress-day">Day {day} / {(day || 0) > 90 ? 210 : ((day || 0) > 30 ? 90 : 30)}</div>
                     <div className="progress-last">마지막 {lastActiveMD}</div>
                     {(() => {
+                      // 밀린 Day = 달력상 오늘 Day(가입일 기준) - 지금 열려 있는 Day(마지막 접속 때 앱이 보낸 값). 접속해야 갱신돼요.
+                      if (!u.signup_date || isInternal) return null;
+                      const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+                      const todayDay = Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1));
+                      const behind = todayDay - (day || 1);
+                      if (behind <= 0) return <div style={{ fontSize: 11, color: '#2D6E3A', marginTop: 2 }}>달력 Day {todayDay} · 밀린 날 없음</div>;
+                      return <div style={{ fontSize: 11, color: '#B23A2C', fontWeight: 700, marginTop: 2 }}>달력 Day {todayDay} · 밀린 {behind}일 <span style={{ fontWeight: 500, color: '#8A7964' }}>(마지막 접속 기준)</span></div>;
+                    })()}
+                    {(() => {
                       // TF 트랙 표시: 진행 중 트랙 + 수료 목록 (users.tf_track / tf_done)
                       const TFM = { nego: ['🤝', '협상', '#B23A2C'], people: ['👥', '피플', '#2D6E3A'], docs: ['✉️', '문서', '#3D4DA8'], meeting: ['🎤', '미팅', '#8A5A2B'] };
                       const doneArr = Array.isArray(u.tf_done) ? u.tf_done : [];
