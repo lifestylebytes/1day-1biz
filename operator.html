@@ -168,30 +168,39 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
   const plusMonth = (ymd) => { const d = new Date(ymd + "T00:00:00+09:00"); d.setMonth(d.getMonth() + 1); return d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); };
   const [email, setEmail] = useState("");
   const [end, setEnd] = useState(() => plusMonth(kstToday()));
-  const [restart, setRestart] = useState(false);
+  const [mode, setMode] = useState("keep");   // keep: 진도 그대로(밀린 Day 유지) / day1: Day 1부터 / from: 지정 Day부터 오늘 이어서
+  const [fromDay, setFromDay] = useState(1);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const u = (supaUsers || []).find(x => (x.email || "").toLowerCase() === email.trim().toLowerCase());
   const apply = async () => {
     if (!u) { setMsg("그 이메일의 계정이 DB에 없어요."); return; }
     const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null };
-    if (restart) patch.signup_date = new Date().toISOString();
-    if (!confirm((u.name || u.email) + " 님을 " + end + " 까지 활성화할까요?" + (restart ? "\n가입일을 오늘로 바꿔 Day 1부터 다시 시작해요." : "\n진도는 그대로 이어져요."))) return;
+    // 가입일 = 오늘(KST) - (이어갈 Day - 1). Day 는 가입일부터 달력으로 세니까, 오늘이 그 Day 가 되게 가입일을 되돌린다
+    const startDay = mode === "day1" ? 1 : mode === "from" ? Math.max(1, Math.min(90, Number(fromDay) || 1)) : 0;
+    if (startDay) { const d = new Date(kstToday() + "T00:00:00+09:00"); d.setDate(d.getDate() - (startDay - 1)); patch.signup_date = d.toISOString(); }
+    const how = mode === "keep" ? "\n진도는 그대로예요. 쉰 날만큼 밀린 Day 가 그대로 보여요." : "\n가입일을 되돌려서 오늘이 Day " + startDay + " 이 돼요. 그 앞 Day 는 이미 완주한 것만 완료로 남고, 안 한 건 밀린 Day 로 보여요.";
+    if (!confirm((u.name || u.email) + " 님을 " + end + " 까지 활성화할까요?" + how)) return;
     setBusy(true); setMsg("");
     const r = await window.OD.syncMembership(u.email, patch);
     setBusy(false);
-    setMsg(r && r.ok ? "✅ " + (u.name || u.email) + " 활성화 · 만료 " + end + (restart ? " · Day 1부터" : "") : "실패: " + ((r && r.error) || "?"));
+    setMsg(r && r.ok ? "✅ " + (u.name || u.email) + " 활성화 · 만료 " + end + (startDay ? " · 오늘부터 Day " + startDay : " · 진도 그대로") : "실패: " + ((r && r.error) || "?"));
     if (r && r.ok && onDone) onDone();
   };
   return (
     <div className="card" style={{ marginTop: 14 }}>
       <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>✋ 수동 재활성 · 연장 (복귀 회원, 개별 처리)</div>
-      <div style={{ fontSize: 12.5, color: "#6B5B4A", lineHeight: 1.6, marginBottom: 10 }}>결제를 따로 확인한 회원 한 명을 바로 풀 때 써요. 만료일은 기본 오늘 + 1개월이에요. 진도를 이어가려면 "Day 1부터"는 끄고 두세요.</div>
+      <div style={{ fontSize: 12.5, color: "#6B5B4A", lineHeight: 1.6, marginBottom: 10 }}>결제를 따로 확인한 회원 한 명을 바로 풀 때 써요. 만료일은 기본 오늘 + 1개월이에요. 진도 옵션: 밀린 Day 를 그대로 보여주려면 "진도 그대로", 오래 쉬고 돌아온 분이 예전 Day 에서 바로 이어가게 하려면 "특정 Day 이어서"(예: Day 87).</div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <input list="mm-emails" value={email} onChange={e => setEmail(e.target.value)} placeholder="이메일 (이름으로 검색돼요)" style={{ flex: "1 1 260px", padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} />
         <datalist id="mm-emails">{(supaUsers || []).map(x => <option key={x.email} value={x.email}>{(x.name || "") + (x.membership_ends_at ? " · 만료 " + String(x.membership_ends_at).slice(0, 10) : "")}</option>)}</datalist>
         <input type="date" value={end} onChange={e => setEnd(e.target.value)} style={{ padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} />
-        <label style={{ fontSize: 12.5, display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={restart} onChange={e => setRestart(e.target.checked)} /> Day 1부터 다시 시작 (가입일을 오늘로)</label>
+        <select value={mode} onChange={e => setMode(e.target.value)} style={{ padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }}>
+          <option value="keep">진도 그대로 (쉰 만큼 밀린 Day 보임)</option>
+          <option value="day1">Day 1부터 다시 시작</option>
+          <option value="from">오늘부터 특정 Day 이어서</option>
+        </select>
+        {mode === "from" && <label style={{ fontSize: 12.5, display: "flex", gap: 6, alignItems: "center" }}>Day <input type="number" min={1} max={90} value={fromDay} onChange={e => setFromDay(e.target.value)} style={{ width: 64, padding: "7px 8px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} /> 부터</label>}
         <button className="btn btn-primary" onClick={apply} disabled={busy || !email.trim()}>{busy ? "반영 중..." : "활성화"}</button>
       </div>
       {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.membership_cancel_reason ? " · 퇴직 사유 남음(" + u.membership_cancel_reason + ")" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
