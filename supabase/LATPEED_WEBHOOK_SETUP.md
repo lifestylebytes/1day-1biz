@@ -44,7 +44,16 @@ https://<PROJECT_REF>.supabase.co/functions/v1/latpeed-webhook
 ## 5. 래피드에 웹훅 URL 등록
 
 래피드 → 상품(혹은 멤버십) 관리 → 외부 툴 연동 → Webhook 카드 [연결하기]
-→ 위에서 받은 함수 URL 붙여넣기 → 저장.
+→ 위에서 받은 함수 URL 뒤에 `?token=<LATPEED_WEBHOOK_TOKEN 값>` 을 붙여서 등록 → 저장.
+
+```
+https://<PROJECT_REF>.supabase.co/functions/v1/latpeed-webhook?token=여기에_비밀토큰
+```
+
+(2026-09-07 보안 점검) 래피드는 웹훅에 서명을 안 붙여서, 누구나 "결제됐다"는 가짜 요청을 보내
+멤버십을 열 수 있었다. 그래서 Supabase Secrets 에 `LATPEED_WEBHOOK_TOKEN` (긴 랜덤 문자열)을 등록하고,
+함수가 URL 의 token 과 비교해 다르면 403 으로 거절한다. Secret 이 없으면 503 으로 전부 거절(fail-closed)하니
+**Secret 등록 → 함수 재배포 → 래피드 URL 교체** 순서로 한다.
 
 ## 6. 동작 테스트
 

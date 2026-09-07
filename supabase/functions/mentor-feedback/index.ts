@@ -16,6 +16,46 @@
 //          앱은 이 경우 기존 규칙 기반 피드백만 보여줌 (폴백).
 // ============================================================
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { originOk } from "../_shared/gate.ts";
+
+// ── 남용 방지 (YB-SEC-002, 2026-09-07) ──
+// anon key 는 공개값이라 누구나 이 함수를 부를 수 있다. 그래서
+//  1) Origin 화이트리스트 (브라우저 요청만), 2) 이메일별 일일 상한, 3) 전체 일일 상한
+// 을 건다. 상한은 ai_usage 테이블 + ai_usage_bump RPC (migrations/20260907_security.sql).
+// 테이블이 아직 없으면(마이그레이션 전) 상한은 건너뛴다 (fail-open, 로그만).
+const _SB_URL  = Deno.env.get("SUPABASE_URL") || "";
+const _SB_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const _sb = (_SB_URL && _SB_ROLE) ? createClient(_SB_URL, _SB_ROLE, { auth: { persistSession: false } }) : null;
+const CAP_LIGHT_USER  = Number(Deno.env.get("AI_CAP_LIGHT_USER")  || 80);    // 첨삭·Q&A·일지: 사람당 하루
+const CAP_RICH_USER   = Number(Deno.env.get("AI_CAP_RICH_USER")   || 6);     // 리포트·인사이트·상담: 사람당 하루
+const CAP_LIGHT_ALL   = Number(Deno.env.get("AI_CAP_LIGHT_ALL")   || 3000);  // 전체 하루
+const CAP_RICH_ALL    = Number(Deno.env.get("AI_CAP_RICH_ALL")    || 200);
+const CAP_NOEMAIL_IP  = Number(Deno.env.get("AI_CAP_NOEMAIL_IP")  || 20);    // 이메일 없이 온 요청: IP당 하루
+async function _bump(key: string, kind: string): Promise<number | null> {
+  if (!_sb) return null;
+  try {
+    const { data, error } = await _sb.rpc("ai_usage_bump", { p_email: key, p_kind: kind });
+    if (error) { console.warn("[cap] rpc error", error.message); return null; }
+    return typeof data === "number" ? data : Number(data);
+  } catch (e) { console.warn("[cap] fail", String(e)); return null; }
+}
+// 허용이면 null, 거부면 사유 문자열
+async function rateGate(req: Request, email: string, rich: boolean): Promise<string | null> {
+  const kind = rich ? "rich" : "light";
+  const all = await _bump("*", kind);
+  if (all !== null && all > (rich ? CAP_RICH_ALL : CAP_LIGHT_ALL)) return "cap_all";
+  if (email) {
+    const n = await _bump(email, kind);
+    if (n !== null && n > (rich ? CAP_RICH_USER : CAP_LIGHT_USER)) return "cap_user";
+  } else {
+    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+    const n = await _bump("ip:" + ip, kind);
+    if (n !== null && n > CAP_NOEMAIL_IP) return "cap_ip";
+  }
+  return null;
+}
+
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
 const MODEL = Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";  // 첨삭·Q&A: 싸고 빠름
 const MODEL_RICH = Deno.env.get("OPENAI_MODEL_RICH") || "gpt-4.1";  // 리포트·코칭·상담: 한 장짜리 리포트는 큰 모델로 (secret OPENAI_MODEL_RICH 로 바꿈)
@@ -76,6 +116,17 @@ Deno.serve(async (req) => {
   const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
   const mentor     = String(b?.mentorName || "사수").slice(0, 20);
   const mode       = String(b?.mode || "").trim();
+  const email      = String(b?.email || "").slice(0, 120).trim().toLowerCase();
+
+  // ── 남용 방지 게이트 (YB-SEC-002) ──
+  if (!originOk(req)) return json({ ok: false, error: "origin" }, 200);
+  {
+    const rich = mode === "report" || mode === "insight" || mode === "consult";
+    const why = await rateGate(req, email, rich);
+    if (why) return json({ ok: false, error: why, message: rich
+      ? "오늘 받을 수 있는 리포트 횟수를 다 쓰셨어요. 내일 다시 받아보세요."
+      : "오늘은 AI 사수가 잠깐 쉬어요. 내일 다시 첨삭 받아보세요." }, 200);
+  }
   const question   = String(b?.question || "").slice(0, 300).trim();  // AI Q&A 자유 질문
   const prevCorrected = String(b?.prevCorrected || "").slice(0, 300).trim();  // 직전에 사수가 추천했던 문장 (재제출 시 왔다갔다 방지)
   // ── AI 성장 리포트 모드 (2026-09-05, 개발 뷰 프로토타입) ──

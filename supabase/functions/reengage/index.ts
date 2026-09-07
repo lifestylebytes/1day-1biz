@@ -26,6 +26,7 @@
 //   schedule: 0 1 * * *   (UTC 01:00 = KST 10:00)
 //   HTTP POST: https://<PROJECT_REF>.supabase.co/functions/v1/reengage
 //   Authorization: Bearer <ANON_KEY>
+//   x-cron-secret: <CRON_SECRET>   (2026-09-07 부터 필수. 없으면 403)
 //
 // 테스트: ?dry=1 붙이면 실제 발송 안 하고 대상자만 반환.
 // ============================================================
@@ -44,6 +45,7 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: fa
 
 // Day → 오늘 단어 (day1 메일 "내일 예고"용). scripts/gen_kakao_scenarios.py 가 만드는 scenarios.ts 와 같은 원본.
 import { SCENARIOS as _SCN, scenarioFor as _scnFor } from "../kakao-daily/scenarios.ts";
+import { cronGate } from "../_shared/gate.ts";
 const SCENARIO_WORDS: Record<number, string> = Object.fromEntries(_SCN.map((x: any) => [x.day, x.word]));
 // 첫 주 개정판 반영: 가입일(KST) >= CONTENT_CUTOVER 면 Day 1~4 단어가 다르다
 const wordFor = (d: number, signupDate?: string) => {
@@ -221,6 +223,7 @@ async function alreadySent(email: string, kind: string, sinceISO: string): Promi
 }
 
 Deno.serve(async (req) => {
+  { const _g = cronGate(req); if (_g) return _g; }  // 크론 비밀키 없으면 거부 (YB-SEC-002)
   const dry = new URL(req.url).searchParams.get("dry") === "1";
   const now = new Date();
 

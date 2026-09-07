@@ -8,9 +8,11 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (자동 주입됨)
 //
 // 배포: supabase functions deploy push-send --no-verify-jwt
+// 호출: 헤더 x-cron-secret: <CRON_SECRET> 필수 (2026-09-07). 크론 잡 헤더에 추가.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import { cronGate } from "../_shared/gate.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -34,6 +36,7 @@ const PUSH_POOL = [
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  { const _g = cronGate(req); if (_g) return _g; }  // 크론/운영자 비밀키 없으면 거부 (YB-SEC-002)
 
   try {
     const b = await req.json().catch(() => ({}));

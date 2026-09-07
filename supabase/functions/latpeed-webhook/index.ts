@@ -16,6 +16,7 @@
 // ============================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { tokenGate } from "../_shared/gate.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -35,6 +36,8 @@ function jsonResponse(body: unknown, status = 200) {
 Deno.serve(async (req) => {
   // 래피드는 POST만 보냄
   if (req.method !== "POST") return jsonResponse({ ok: false, error: "method_not_allowed" }, 405);
+  // 래피드는 서명을 안 주므로 웹훅 URL 의 ?token= 으로 확인 (Secret LATPEED_WEBHOOK_TOKEN, YB-SEC-002)
+  { const _g = tokenGate(req, "LATPEED_WEBHOOK_TOKEN"); if (_g) return _g; }
 
   let body: any;
   try {

@@ -16,10 +16,12 @@
 //   schedule: 0 22 * * *  (매일 UTC 22:00 = KST 07:00)
 //   HTTP POST: https://<PROJECT_REF>.supabase.co/functions/v1/morning-digest
 //   Authorization: Bearer <ANON_KEY>
+//   x-cron-secret: <CRON_SECRET>   (2026-09-07 부터 필수. 없으면 403)
 // ============================================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cronGate } from "../_shared/gate.ts";
 
 const SUPABASE_URL              = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -58,6 +60,7 @@ const FEEDBACK_LABEL: Record<string, string> = {
 };
 
 serve(async (_req) => {
+  { const _g = cronGate(_req); if (_g) return _g; }  // 크론 비밀키 없으면 거부 (YB-SEC-002)
   try {
     const { from, to } = kstYesterdayRange();
     const fromIso = from.toISOString();

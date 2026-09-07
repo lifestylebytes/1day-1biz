@@ -26,6 +26,7 @@
 //   schedule: 0 * * * *   (매시간 정각 UTC = KST 정각)
 //   HTTP POST: https://<PROJECT_REF>.supabase.co/functions/v1/kakao-daily
 //   Authorization: Bearer <ANON_KEY>
+//   x-cron-secret: <CRON_SECRET>   (2026-09-07 부터 필수. 없으면 403)
 //
 // 테스트 (실제 발송 없이 대상·문구만 보기):
 //   ?dry=1              대상자와 채워진 변수만 반환
@@ -36,6 +37,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { SCENARIOS, scenarioFor as _scnFor } from "./scenarios.ts";
+import { cronGate } from "../_shared/gate.ts";
 
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -127,6 +129,7 @@ async function sendAlimtalk(to: string, variables: Record<string, string>) {
 }
 
 Deno.serve(async (req) => {
+  { const _g = cronGate(req); if (_g) return _g; }  // 크론 비밀키 없으면 거부 (YB-SEC-002)
   try {
     const url = new URL(req.url);
     const dry = url.searchParams.get("dry") === "1";

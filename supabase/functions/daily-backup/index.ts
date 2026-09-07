@@ -20,6 +20,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cronGate } from "../_shared/gate.ts";
 
 const SUPABASE_URL              = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -45,6 +46,7 @@ function base64Encode(s: string) {
 }
 
 serve(async (_req) => {
+  { const _g = cronGate(_req); if (_g) return _g; }  // 크론 비밀키 없으면 거부 (YB-SEC-002)
   const startedAt = new Date().toISOString();
   try {
     const [users, submissions, history, notes, journals, noticeReads, notices] = await Promise.all([
