@@ -10628,10 +10628,10 @@ function _wpToast(amount, label) {
   } catch (e) {}
 }
 const WP_SERVICES = [
-  { id: "career", emoji: "🧭", title: "커리어 리포트", desc: "5문항 진단 + 내 문장 전부를 읽고 쓰는 한 장", cost: 500, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
-  { id: "job", emoji: "💼", title: "직무 고민 리포트", desc: "막히는 일 하나를 문장 단위로 풀어주는 한 장", cost: 500, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
-  { id: "english", emoji: "🗣️", title: "영어 학습 처방 리포트", desc: "8문항 진단 + 내 기록으로 한 장짜리 처방전", cost: 500, ph: "" },
-  { id: "work", emoji: "☕", title: "직장생활 리포트", desc: "관계·번아웃·리모트, 사수가 듣고 써주는 한 장", cost: 500, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
+  { id: "career", emoji: "🧭", title: "커리어 리포트", desc: "5문항 진단 + 내 문장 전부를 읽고 쓰는 한 장", cost: 1000, ph: "예: 외국계 2년차인데 본사 포지션에 지원해볼지 고민이에요." },
+  { id: "job", emoji: "💼", title: "직무 고민 리포트", desc: "막히는 일 하나를 문장 단위로 풀어주는 한 장", cost: 1000, ph: "예: 본사 PM이 계속 일정을 바꾸는데 어떻게 밀어붙여야 할지 모르겠어요." },
+  { id: "english", emoji: "🗣️", title: "영어 학습 처방 리포트", desc: "8문항 진단 + 내 기록으로 한 장짜리 처방전", cost: 1000, ph: "" },
+  { id: "work", emoji: "☕", title: "직장생활 리포트", desc: "관계·번아웃·리모트, 사수가 듣고 써주는 한 장", cost: 1000, ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요." },
 ];
 function _wpNotes(kind) { const u = _wbUser(); return ((u.savedNotes || {})["0"] || []).filter(n => n.kind === kind).map(n => { try { return { ...JSON.parse(n.text), savedAt: n.savedAt }; } catch (e) { return null; } }).filter(Boolean); }
 function _wpEarned(USER) {
@@ -11056,6 +11056,9 @@ function WelfarePointsSection() {
           {earned.items.length === 0 && <div><span>아직 적립이 없어요. 오늘 완주하면 첫 포인트가 쌓여요.</span></div>}
         </div>
       )}
+      <div className="wp-note" style={{ margin: "0 18px 10px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+        리포트는 한 번 사고 끝이 아니에요. 포인트만 있으면 같은 리포트를 언제든 다시 받을 수 있고(받을 때마다 차감), 그때의 내 문장과 기록으로 새로 써줘요. 쓸 수 있는 아이템은 차차 늘어나요.
+      </div>
       <div className="wp-services">
         {WP_SERVICES.map(s => (
           <button key={s.id} className={"wp-svc " + (svc && svc.id === s.id ? "active" : "")} onClick={() => { if (svc && svc.id === s.id) { setSvc(null); return; } setView(null); setErr(balance < s.cost ? "포인트가 " + _wpFmt(s.cost - balance) + " 모자라요. 내일 출근하면 " + WP_RULES.day + "P 쌓여요. (지금은 샘플로 볼 수 있어요)" : ""); setSvc(s); }}>
