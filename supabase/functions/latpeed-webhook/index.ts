@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       // 기존 상태 조회 (gap 계산용)
       const { data: existing } = await supabase
         .from("users")
-        .select("email, signup_date, membership_ends_at")
+        .select("email, signup_date, membership_ends_at, preferences")
         .eq("email", email)
         .maybeSingle();
 
@@ -95,6 +95,13 @@ Deno.serve(async (req) => {
       const updates: Record<string, unknown> = {
         cohort: "member",
         membership_cancel_reason: null,
+        // 운영자 뷰 "이용 내역"용: 어디서 결제됐는지 + 마지막 결제 시각 (preferences jsonb 에 병합)
+        preferences: {
+          ...((existing && existing.preferences && typeof existing.preferences === "object") ? existing.preferences : {}),
+          pay_source: "latpeed",
+          last_paid_at: eventAt.toISOString(),
+          pay_count: Number((existing?.preferences as any)?.pay_count || 0) + 1,
+        },
       };
 
       if (existing && existing.membership_ends_at && existing.signup_date) {

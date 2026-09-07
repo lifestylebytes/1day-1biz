@@ -204,7 +204,8 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
   const u = (supaUsers || []).find(x => (x.email || "").toLowerCase() === email.trim().toLowerCase());
   const apply = async () => {
     if (!u) { setMsg("그 이메일의 계정이 DB에 없어요."); return; }
-    const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null };
+    const patch = { membership_ends_at: end + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
+      preferences: { ...((u.preferences && typeof u.preferences === "object") ? u.preferences : {}), pay_source: "manual", last_paid_at: new Date().toISOString() } };
     // 가입일 = 오늘(KST) - (이어갈 Day - 1). Day 는 가입일부터 달력으로 세니까, 오늘이 그 Day 가 되게 가입일을 되돌린다
     const startDay = mode === "day1" ? 1 : mode === "from" ? Math.max(1, Math.min(90, Number(fromDay) || 1)) : 0;
     if (startDay) { const d = new Date(kstToday() + "T00:00:00+09:00"); d.setDate(d.getDate() - (startDay - 1)); patch.signup_date = d.toISOString(); }
@@ -305,7 +306,8 @@ function CsvSyncPanel({ supaUsers, onDone }) {
         if (dbEnd < want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st: "결제 완료 " + (c[iAmount] || ""),
             detail: "결제 " + paid + " → 만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
-            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null },
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
+              preferences: { ...((u.preferences && typeof u.preferences === "object") ? u.preferences : {}), pay_source: "latpeed_csv", last_paid_at: paid } },
             checked: true });
         }
         continue;
@@ -317,7 +319,8 @@ function CsvSyncPanel({ supaUsers, onDone }) {
         if (dbEnd !== want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st,
             detail: "만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
-            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null },
+            patch: { membership_ends_at: want + "T23:59:59+09:00", cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
+              preferences: { ...((u.preferences && typeof u.preferences === "object") ? u.preferences : {}), pay_source: "latpeed_csv" } },
             checked: true });
         }
       } else if (st === "구독 취소" || st === "구독 종료") {
@@ -1513,8 +1516,17 @@ function App() {
   const cancelUserMembership = async (u) => {
     if (!u || !u.email) return;
     if (u.is_operator) { alert("운영자 계정은 퇴직 처리할 수 없어요."); return; }
-    if (!confirm(`${u.name} (${u.email}) 님을 퇴직 처리할까요?\n\n· 인수인계 기간: 30일\n· 그동안은 평소처럼 사옥 출입 가능\n· 마지막 출근일이 지나면 자동으로 차단돼요`)) return;
-    const res = await window.OD.cancelMembership(u.email, 30);
+    // 마지막 출근일을 고른다. 기본값 = 결제 만료일(있으면), 없으면 30일 뒤. 오늘 날짜를 넣으면 즉시 퇴직.
+    const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+    const today = kst(new Date());
+    const dflt = (u.membership_ends_at && kst(u.membership_ends_at) > today) ? kst(u.membership_ends_at) : (() => { const d = new Date(); d.setDate(d.getDate() + 30); return kst(d); })();
+    const picked = prompt(`${u.name} (${u.email}) 님 퇴직 처리\n\n마지막 출근일을 YYYY-MM-DD 로 적어주세요.\n· 오늘(${today})을 넣으면 즉시 퇴직 (2일 유예 후 차단)\n· 결제 만료일까지 두려면 그대로 확인\n· 래피드 정기결제는 여기서 안 끊겨요. 래피드에서 따로 해지해야 해요.`, dflt);
+    if (picked === null) return;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(picked.trim());
+    if (!m) { alert("날짜 형식이 아니에요. 예: 2026-10-07"); return; }
+    const daysGrace = Math.max(0, Math.round((Date.parse(picked.trim()) - Date.parse(today)) / 86400000));
+    if (!confirm(`${u.name} 님 마지막 출근일: ${picked.trim()} (오늘부터 ${daysGrace}일)\n그날까지는 평소처럼 출근 가능하고, 지나면 자동으로 휴직 화면이 떠요. 진행할까요?`)) return;
+    const res = await window.OD.cancelMembership(u.email, daysGrace);
     if (res.ok) {
       const endDate = new Date(res.endsAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
       showToast(`${u.name} 퇴직 처리됨 · 마지막 출근일 ${endDate}`);
@@ -2039,8 +2051,28 @@ function App() {
                         else if (u.is_pilot_hire) code = 'PILOT-****';
                         else if (u.cohort && u.cohort.startsWith('trial')) code = '체험 코드';
                       }
-                      if (!code) return null;
-                      return <div style={{ fontSize: 10, color: '#8A7964', marginTop: 3 }}>🎟 {code}{guess ? ' (추정)' : ''}</div>;
+                      // 결제 방식. 웹훅/CSV/수동이 preferences.pay_source 에 남긴다. 없으면 흔적으로 추정.
+                      let pay = null, payGuess = false;
+                      const src = _pref.pay_source;
+                      if (src === 'latpeed') pay = '래피드 정기결제';
+                      else if (src === 'latpeed_csv') pay = '래피드 (CSV 대조)';
+                      else if (src === 'manual') pay = '운영자 수동 등록';
+                      else if (u.cohort === 'member') {
+                        payGuess = true;
+                        const cr = u.membership_cancel_reason || '';
+                        if (cr.startsWith('latpeed_')) pay = '래피드 정기결제';
+                        else if (u.membership_ends_at) pay = '래피드 정기결제';
+                        else pay = '코드 입장 (갱신일 없음)';
+                      } else if (u.cohort && u.cohort.startsWith('trial')) pay = '무료 체험';
+                      else if (u.cohort === 'staff' || u.is_tester) pay = '내부 (무료)';
+                      const paidAt = _pref.last_paid_at ? new Date(_pref.last_paid_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : null;
+                      if (!code && !pay) return null;
+                      return (
+                        <div style={{ fontSize: 10, color: '#8A7964', marginTop: 3, lineHeight: 1.5 }}>
+                          {code && <div>🎟 {code}{guess ? ' (추정)' : ''}</div>}
+                          {pay && <div>💳 {pay}{payGuess ? ' (추정)' : ''}{paidAt ? ' · 마지막 결제 ' + paidAt : ''}{_pref.pay_count ? ' · ' + _pref.pay_count + '회' : ''}</div>}
+                        </div>
+                      );
                     })()}
                   </div>
 
@@ -2133,7 +2165,7 @@ function App() {
                         <button
                           onClick={() => cancelUserMembership(u)}
                           style={{ fontSize: 11, padding: '6px 10px', background: 'transparent', color: '#993C1D', border: '1px solid #C9BBA0', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, width: '100%' }}
-                          title="퇴직 처리 예약 (30일 인수인계)"
+                          title="퇴직 처리 (마지막 출근일 직접 지정)"
                         >퇴직 처리</button>
                       )
                     )}
