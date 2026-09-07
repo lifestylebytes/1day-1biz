@@ -192,6 +192,116 @@ function BacklogChip({ u, todayDay }) {
   return <div style={{ fontSize: 11, color: "#B23A2C", fontWeight: 700, marginTop: 3 }}>완주 {st.done}/{todayDay} · 안 한 Day {m.length}일 <span style={{ fontWeight: 500, color: "#8A7964" }}>({m.length > 6 ? "… " : ""}{recent.join(", ")})</span></div>;
 }
 
+// ============================================================
+// ★ 인원 분류 요약 (2026-09-07 회의)
+//   운영자·무료체험·미결제·만료/퇴직 은 cohort 와 플래그만 보면 되니 바로 센다.
+//   직급(수습·사원·대리)은 "실제 완주 기록" 기준이라 회원 한 명당 서버를 한 번씩
+//   불러야 해서, 버튼을 눌렀을 때만 센다 (밀린 날 세기와 같은 기준).
+//   무료체험으로 들어왔다가 정기결제로 넘어온 회원은 그냥 직급으로 분류된다.
+//   TF 배정된 회원은 직급에서 빼고 아래 트랙별 줄에서 센다.
+// ============================================================
+function _memberBucket(u) {
+  if (u.is_operator || u.is_dev_mode || u.is_tester || u.cohort === "staff") return "internal";
+  const endsMs = u.membership_ends_at ? Date.parse(u.membership_ends_at) : null;
+  const left = endsMs === null ? null : Math.ceil((endsMs - Date.now()) / 86400000);
+  if (u.cohort === "member") {
+    if (left !== null && left <= 0) return "ended";                       // 만료
+    if (left !== null && u.membership_cancel_reason) return "ended";      // 퇴직 예정
+    return "active";                                                      // 갱신일 미설정도 활성으로 본다
+  }
+  const isTrial = (u.cohort && String(u.cohort).startsWith("trial")) || !!u.is_pilot_hire;
+  if (isTrial) {
+    if (endsMs !== null) return left > 0 ? "trial" : "unpaid";
+    // 파일럿 무료 14일: 만료일이 없으면 가입 후 14일까지만 진행 중으로 본다
+    const signedMs = u.signup_date ? Date.parse(u.signup_date) : null;
+    if (signedMs && (Date.now() - signedMs) / 86400000 > 14) return "unpaid";
+    return "trial";
+  }
+  return "unpaid";
+}
+// 완주한 Day 수. BacklogChip 과 같은 기준 (문장 제출 · 일지 · 일정 4개 완료).
+async function _doneCountOf(email) {
+  try {
+    const r = await window.OD.fetchUserFullData(email);
+    if (!r || !r.ok || !r.data) return null;
+    const d = r.data, done = new Set();
+    (d.submissions || []).forEach(x => { if (x.day && (x.answer_text || x.sentence || x.text)) done.add(Number(x.day)); });
+    (d.journals || []).forEach(x => { if (x.day) done.add(Number(x.day)); });
+    const tp = d.task_progress || {};
+    Object.keys(tp).forEach(k => { const t = tp[k] || {}; const n = Object.keys(t).filter(id => !id.startsWith("_") && t[id] === true).length; if (n >= 4) done.add(Number(k)); });
+    return done.size;
+  } catch (e) { return null; }
+}
+function MemberMixSummary({ supaUsers }) {
+  const [lv, setLv] = useState(null);       // null | "loading" | 집계 객체
+  const [prog, setProg] = useState("");
+
+  const g = { internal: [], trial: [], unpaid: [], ended: [], active: [] };
+  (supaUsers || []).forEach(u => { g[_memberBucket(u)].push(u); });
+  const targets = g.active.filter(u => !u.tf_track);   // TF 배정자는 아래 트랙 줄에서 센다
+
+  const countLevels = async () => {
+    setLv("loading"); setProg("0/" + targets.length);
+    const b = { probation: 0, fulltime: 0, senior: 0, tfWait: 0, failed: 0 };
+    let i = 0, fin = 0;
+    const worker = async () => {
+      while (i < targets.length) {
+        const n = await _doneCountOf(targets[i++].email);
+        if (n === null) b.failed++;
+        else if (n >= 90) b.tfWait++;
+        else if (n >= 60) b.senior++;
+        else if (n >= 30) b.fulltime++;
+        else b.probation++;
+        fin++; setProg(fin + "/" + targets.length);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, targets.length) || 1 }, worker));
+    setProg(""); setLv(b);
+  };
+
+  const chip = (label, n, color) => (
+    <span style={{ background: "#FFF", border: "1px solid #E8DFCB", borderRadius: 12, padding: "3px 10px", fontWeight: 700 }}>
+      {label} <b style={{ color: color || "#B8431A" }}>{n}명</b>
+    </span>
+  );
+
+  return (
+    <div style={{ margin: "4px 0 6px", fontSize: 12 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <b style={{ color: "#5C4A36" }}>👥 인원 분류</b>
+        {lv && lv !== "loading" ? (
+          <>
+            {chip("수습", lv.probation, "#B8431A")}
+            {chip("사원", lv.fulltime, "#B8431A")}
+            {chip("대리", lv.senior, "#B8431A")}
+            {lv.tfWait > 0 && chip("🎯 TF 미배정", lv.tfWait, "#3D4DA8")}
+            {lv.failed > 0 && chip("기록 못 읽음", lv.failed, "#993C1D")}
+          </>
+        ) : (
+          <>
+            {chip("정식 활성", g.active.length, "#2D6E3A")}
+            {lv === "loading"
+              ? <span style={{ color: "#8A7964" }}>직급 세는 중… {prog}</span>
+              : (targets.length > 0 &&
+                  <button onClick={countLevels} style={{ background: "none", border: "none", padding: 0, fontSize: 12, color: "#3D4DA8", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
+                    완주 기록으로 직급 나누기
+                  </button>)}
+          </>
+        )}
+        {chip("🎁 무료체험 중", g.trial.length, "#2D6E3A")}
+        {chip("⚪ 미결제", g.unpaid.length, "#8A7964")}
+        {chip("🔴 만료·퇴직", g.ended.length, "#993C1D")}
+        {chip("🛠 운영자·내부", g.internal.length, "#5C4A36")}
+      </div>
+      <div style={{ fontSize: 11, color: "#8A7964", marginTop: 4, lineHeight: 1.6 }}>
+        직급은 실제 완주 기록 기준이에요 (수습 30일 미만 · 사원 30~59 · 대리 60~89 · 그 위는 TF).
+        무료체험으로 시작해 정기결제로 넘어온 분도 직급으로 들어가요.
+        체험 기간이 끝났는데 결제를 안 한 분은 미결제로 세요.
+      </div>
+    </div>
+  );
+}
+
 function ManualMembershipPanel({ supaUsers, onDone }) {
   const kstToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   const plusMonth = (ymd) => { const d = new Date(ymd + "T00:00:00+09:00"); d.setMonth(d.getMonth() + 1); return d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); };
@@ -1932,6 +2042,7 @@ function App() {
                 </div>
               </details>
             )}
+            <MemberMixSummary supaUsers={supaUsers} />
             {(() => {
               // TF 트랙별 인원 요약 (트랙 진행 중인 사람이 있을 때만 표시)
               const TFM = { nego: ['🤝', '협상'], people: ['👥', '피플'], docs: ['✉️', '문서'], meeting: ['🎤', '미팅'] };
