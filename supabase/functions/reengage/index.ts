@@ -46,6 +46,7 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: fa
 // Day → 오늘 단어 (day1 메일 "내일 예고"용). scripts/gen_kakao_scenarios.py 가 만드는 scenarios.ts 와 같은 원본.
 import { SCENARIOS as _SCN, scenarioFor as _scnFor } from "../kakao-daily/scenarios.ts";
 import { cronGate } from "../_shared/gate.ts";
+import { isOptedOut, unsubFooter } from "../_shared/unsub.ts";
 const SCENARIO_WORDS: Record<number, string> = Object.fromEntries(_SCN.map((x: any) => [x.day, x.word]));
 // 첫 주 개정판 반영: 가입일(KST) >= CONTENT_CUTOVER 면 Day 1~4 단어가 다르다
 const wordFor = (d: number, signupDate?: string) => {
@@ -65,6 +66,9 @@ function daysBetweenKST(fromISO: string, toDate: Date): number {
 
 async function sendEmail(to: string, subject: string, html: string): Promise<{ ok: boolean; status?: number; error?: string }> {
   if (!RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY 미설정" };
+  // 수신거부한 주소는 어떤 종류의 메일도 보내지 않는다 (2026-09-07). 본문 끝에는 링크 한 번 수신거부 안내.
+  if (await isOptedOut(sb, to)) return { ok: false, error: "opted_out" };
+  html = html + await unsubFooter(to);
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
