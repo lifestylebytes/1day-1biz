@@ -185,7 +185,7 @@ Deno.serve(async (req) => {
       const meaningKo = (s.meaning || "").trim();
       const hint = ((s as any).hint || "").trim();
       const scene = meaningKo
-        ? (hint ? `${meaningKo}. ${hint}` : meaningKo)
+        ? (hint ? `${meaningKo}. (${hint})` : meaningKo)
         : (s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.");
       const variables: Record<string, string> = STYLE === "plain"
         ? {}
