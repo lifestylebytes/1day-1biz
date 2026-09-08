@@ -65,6 +65,9 @@ function daysBetweenKST(a: string | Date, b: Date): number {
 }
 
 // ── 게이트: mainboard.html _computeGatedDay 의 서버판 ──
+//   ※ 2026-09-07: 클라이언트에는 "하루에 최대 10 Day 까지만 연다"는 상한이 추가됐다.
+//     그 상한은 기기별 localStorage 기준이라 서버에서 재현하지 않는다.
+//     여기서 계산하는 backlog 는 예전과 같은 "전체 밀린 날"이라 안내 문구는 그대로 맞다.
 //   열리는 day = floor 에서 시작해 완주한 날은 지나가고, 완주 못 한 첫 날에서 멈춤.
 //   완주 = 그날 일지 제출 OR 일정 4개 전부 체크.
 //   floor = 게이트 도입(2026-08-16) 전 가입자는 당시 day_in_company, 아니면 1.

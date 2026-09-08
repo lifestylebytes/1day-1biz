@@ -5378,6 +5378,12 @@ const _gateDoneSet = (u) => {
   } catch (e) {}
   return days;
 };
+// ★ 2026-09-07 (회의 결정): 하루에 몰아서 할 수 있는 양을 10 Day 로 제한한다.
+//   밀린 Day 가 사라지는 건 아니다. 30일 비운 회원의 밀린 30일은 그대로 남고,
+//   다만 하루에 열리는 칸이 최대 10개라 나머지는 다음 날 이어서 한다.
+//   기준점은 "그날 처음 들어왔을 때의 게이트 값"이라 중간에 나갔다 돌아와도 남은 몫이 유지된다.
+//   (KST 날짜별로 localStorage 에 한 번만 기록한다.)
+const _DAILY_CATCHUP_CAP = 10;
 // 게이트 값 계산. 학습을 마칠 때마다 다시 불러 "밀린 Day 이어하기"를 즉시 열어준다.
 function _computeGatedDay() {
   if (!_localUser || !_localUser.email) return _autoDay;
@@ -5400,13 +5406,31 @@ function _computeGatedDay() {
   //   완주 기록 수로는 floor를 영영 못 넘어 그 자리에 갇혔다 (매일 끝내도 같은 날 반복,
   //   TF 회원은 같은 단어가 계속 나오는 증상. 2026-08-26 정주혜님 신고).
   const _doneSet = _gateDoneSet(_u);
-  let _d = Math.max(1, Math.min(_floor, _autoDay));
-  while (_d < _autoDay && _doneSet.has(_d)) _d++;
+  let _raw = Math.max(1, Math.min(_floor, _autoDay));
+  while (_raw < _autoDay && _doneSet.has(_raw)) _raw++;
+  // 오늘의 시작점(상한을 걸기 전 게이트 값)을 KST 날짜별로 한 번만 기록한다.
+  const _CK = '__OD_DAYCAP_' + _localUser.email;
+  let _start = 0;
+  try {
+    const _c = JSON.parse(localStorage.getItem(_CK) || 'null');
+    if (_c && _c.date === _todayKST && _c.start) _start = _c.start;
+  } catch (e) {}
+  if (!_start) {
+    _start = _raw;
+    try { localStorage.setItem(_CK, JSON.stringify({ date: _todayKST, start: _start })); } catch (e) {}
+  }
+  // 오늘 열 수 있는 마지막 칸. 밀린 게 10일 미만이면 예전과 똑같이 동작한다.
+  const _ceil = Math.min(_autoDay, _start + _DAILY_CATCHUP_CAP - 1);
+  const _d = Math.max(1, Math.min(_raw, _ceil));
+  try {
+    window.__odDayCap = { cap: _DAILY_CATCHUP_CAP, start: _start, ceil: _ceil, capped: _d < _raw };
+  } catch (e) {}
   return _d;
 }
 let _gatedDay = _computeGatedDay();
 window.__odGateNow = _computeGatedDay;
 window.__odAutoDay = _autoDay;
+window.__odCatchupCap = _DAILY_CATCHUP_CAP;
 
 // ── 레벨 (수습 → 사원 → ...) ──
 // users.level (jsonb) 동기화 값. 없으면 수습으로 간주.
@@ -7656,7 +7680,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           <div className="catchup" style={{ marginBottom: 14 }}>
             <div className="catchup-txt">
               📌 오늘은 <b>Day {_cur}</b>부터 이어서. 더 학습할 수 있는 Day가 <b>{_wait}일치</b> 기다리고 있어요.
-              하루를 마치면 다음 Day가 바로 열려서, 원하시면 오늘 몰아서 하셔도 돼요.
+              하루를 마치면 다음 Day가 바로 열려요. 하루에는 최대 <b>{Number(window.__odCatchupCap) || 10}일치</b>까지 몰아서 하실 수 있어요.
             </div>
           </div>
         );
@@ -8651,7 +8675,23 @@ function CatchUpBanner({ user }) {
     };
   }, [check]);
 
-  if (!next || user.isViewingPast) return null;
+  if (user.isViewingPast) return null;
+  // ★ 2026-09-07: 오늘 몰아서 할 수 있는 상한(10 Day)을 다 채운 경우.
+  //   이어하기 버튼 대신 남은 몫이 내일 열린다는 걸 알려준다.
+  const _capInfo = window.__odDayCap || null;
+  const _calAll = Number(window.__odAutoDay) || 0;
+  if (!next && _capInfo && _capInfo.capped && _calAll > _capInfo.ceil) {
+    const _left = Math.max(0, _calAll - _capInfo.ceil);
+    return (
+      <div className="catchup">
+        <div className="catchup-txt">
+          오늘 몰아서 하실 수 있는 <b>{_capInfo.cap}일치</b>를 다 채우셨어요.
+          남은 <b>{_left}일치</b>는 내일 이어서 여실 수 있어요.
+        </div>
+      </div>
+    );
+  }
+  if (!next) return null;
   const _cal = Number(window.__odAutoDay) || next;
   const backlog = Math.max(0, _cal - next + 1);
   return (
