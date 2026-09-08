@@ -181,8 +181,12 @@ Deno.serve(async (req) => {
       const s = scenarioFor(g.gated, u.signup_date);
       // #{상황}: 뜻만 짧게 (2026-09-07 운영자 결정: 장면·훅은 길어서 뺀다). 예) 산출물, 납품물
       //   뜻이 없으면 장면 한 줄로 대체. 라벨("오늘 상황:")은 템플릿에 고정이라 내용만 바꾼다.
+      //   + 뉘앙스 한 줄(hint, 60자 안쪽). 예) 산출물, 납품물. deliverable은 '결과물' 보다 무거운 단어.
       const meaningKo = (s.meaning || "").trim();
-      const scene = meaningKo || s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.";
+      const hint = ((s as any).hint || "").trim();
+      const scene = meaningKo
+        ? (hint ? `${meaningKo}. ${hint}` : meaningKo)
+        : (s.scene || s.quoteKo || "오늘 회의에서 이 말이 나와요.");
       const variables: Record<string, string> = STYLE === "plain"
         ? {}
         : STYLE === "story"

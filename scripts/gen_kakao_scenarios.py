@@ -9,9 +9,17 @@ def pick(b, key):
     mm = re.search(r"\b" + key + r": \"((?:[^\"\\]|\\.)*)\"", b)
     return json.loads('"' + mm.group(1) + '"') if mm else ""
 
+def hint_of(nuance):
+    # 알림톡 "오늘 상황"에 붙일 뉘앙스 한 줄: nuance 의 첫 줄(첫 문장)만, 60자 안쪽으로.
+    t = (nuance or "").strip().split("\n")[0].strip()
+    t = re.sub(r"^[^=]{1,30}=\s*", "", t) if t.count("=") >= 2 else t   # "heads up = '머리 들어' = '미리 알아둬'." 류의 앞머리 정리
+    t = re.split(r"(?<=[.!?。])\s", t)[0].strip()
+    if len(t) > 60: t = t[:57].rstrip() + "..."
+    return t
+
 def row(b, day, word):
     scene = re.sub(r"^\s*\d{1,2}:\d{2}\s*,?\s*", "", pick(b, "scene"))  # 앞머리 시각 제거 (mainboard 표시와 동일)
-    return {"day": day, "word": word, "meaning": pick(b, "meaning"), "scene": scene, "quoteKo": pick(b, "quoteKo")}
+    return {"day": day, "word": word, "meaning": pick(b, "meaning"), "scene": scene, "quoteKo": pick(b, "quoteKo"), "hint": hint_of(pick(b, "nuance"))}
 
 # 본편 90일
 main_src = re.search(r"const SCENARIOS\s*=\s*\[[\s\S]*?\n\];", src).group(0)
@@ -33,7 +41,7 @@ for b in re.split(r"\n(?=  \d+: \{ day: \d+, word: )", v2_src):
 cutover = re.search(r'const CONTENT_CUTOVER = "([^"]+)"', src).group(1)
 
 ts = "// 자동 생성: scripts/gen_kakao_scenarios.py (수정 금지, mainboard.html 이 원본)\n"
-ts += "export type Scn = { day: number; word: string; meaning: string; scene: string; quoteKo: string };\n"
+ts += "export type Scn = { day: number; word: string; meaning: string; scene: string; quoteKo: string; hint?: string };\n"
 ts += "export const SCENARIOS: Scn[] = " + json.dumps(rows, ensure_ascii=False, indent=1) + ";\n"
 ts += "// 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 를 아래로 교체\n"
 ts += "export const CONTENT_CUTOVER = " + json.dumps(cutover) + ";\n"
