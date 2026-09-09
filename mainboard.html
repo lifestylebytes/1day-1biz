@@ -5640,8 +5640,8 @@ function _useIsMobile() {
   }, []);
   return m;
 }
-// 모바일 홈 단순화 런칭 스위치: 지금은 개발 뷰에서만. 전원 공개할 때 `() => true` 로.
-const _isMobileHomeLive = () => _isNextFeature();
+// 모바일 홈 단순화 런칭 스위치 (2026-09-09 전원 라이브). 끄려면 `() => _isNextFeature()` 로.
+const _isMobileHomeLive = () => true;
 // 그날 4개 일정을 전부 끝냈는지 (출근부·시추에이션 도장·사원증 출근부가 같은 기준을 쓴다)
 function _odDayTasksDone(day) {
   try {
