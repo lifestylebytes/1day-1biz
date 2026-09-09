@@ -1836,6 +1836,11 @@ body::before {
 /* ===== 유틸 ===== */
 .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* 사수 메모 + 유버디 팁 묶음 (2026-09-09): PC 에선 상자 없이 자식만 흐른다 (예전 배치 그대로). 모바일 규칙은 880px 블록에. */
+.desk-tips, .desk-tips-body { display: contents; }
+.desk-tips-head { display: none; }
+/* 사원증 탭 근태·인사 묶음 (모바일 전용, 880px 블록에서 켠다) */
+.hr-panel-mobile { display: none; }
 .spacer { height: 24px; }
 .divider {
   border: none; border-top: 1.5px dashed var(--line);
@@ -2004,8 +2009,47 @@ body::before {
   .desk-grid.next-home .locked-card { order: 8; }      /* 잠긴 카드는 맨 아래 */
   .desk-grid.next-home .unlock-ladder { order: 9; }    /* 해금 사다리는 맨 아래 */
   .desk-grid.next-home .pre-reveal { order: -4; }      /* 어제 예측 결과는 시추에이션 위 */
-  .desk-grid.next-home .ot-card { order: 0; }          /* 야근은 오늘 일정 바로 아래 */
   .home-appline.next { display: none; }        /* 시안 B: 모바일에선 서류 카드 숨겨 오늘 학습을 위로 */
+
+  /* ── 모바일 홈 단순화 (2026-09-09): 오늘 일정 → 사수 메모·유버디 팁(접힘) → 야근. 그 아래는 없다. ──
+     마일스톤·출근부·역량 스탯·해금 사다리·사내 메모·분기 평가 버튼은 JSX 에서 모바일이면 안 그린다 (사원증/메모/평가 탭에). */
+  .desk-grid.next-home .desk-tips {
+    display: block; order: 1;
+    background: var(--cream); border: 1px solid var(--line); border-radius: 8px;
+    overflow: hidden;
+  }
+  .desk-grid.next-home .ot-card { order: 2; margin-top: 0; }   /* 야근은 메모·팁 아래 (칸 간격은 grid gap 으로) */
+  .desk-tips-head {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 11px 14px;
+    background: transparent; border: none;
+    font-family: inherit; font-size: 12.5px; font-weight: 800; color: var(--ink);
+    cursor: pointer; text-align: left;
+  }
+  .desk-tips-head small { flex: 1; font-size: 10.5px; font-weight: 700; color: var(--ink-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .desk-tips-head b { font-size: 10.5px; font-weight: 800; color: var(--orange); white-space: nowrap; }
+  .desk-tips-body { display: flex; flex-direction: column; gap: 12px; padding: 4px 12px 12px; }
+  .desk-tips-body .postit { transform: none; }
+  .desk-tips-body .buddy-card, .desk-tips-body .empty-slot { margin-bottom: 0; }
+  .desk-tips-body .buddy-card { margin-top: 8px; }   /* "BUDDY · 1:1" 라벨이 카드 위로 튀어나오는 만큼 */
+  .desk-grid.next-home .moved-hint {
+    order: 3;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+    padding: 9px 12px;
+    border: 1px dashed var(--line); border-radius: 8px; background: rgba(255,255,255,0.35);
+    font-size: 11.5px; line-height: 1.5; color: var(--ink-soft);
+  }
+  .moved-hint span { flex: 1 1 200px; }
+  .moved-hint b { color: var(--ink); }
+  .moved-hint-go { background: transparent; border: none; padding: 2px 0; font-family: inherit; font-size: 11.5px; font-weight: 800; color: var(--orange); cursor: pointer; }
+  .moved-hint-x { background: transparent; border: none; padding: 2px 4px; font-family: inherit; font-size: 12px; color: var(--ink-mute); cursor: pointer; }
+
+  /* 사원증 탭: 근태·인사 묶음 (마일스톤 → 역량 스탯 → 출근부 → 앞으로 열리는 것) */
+  .hr-panel-mobile { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; }
+  .hr-panel-mobile-head { font-size: 11px; letter-spacing: 0.18em; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; padding: 0 2px; margin-bottom: -4px; }
+  .hr-panel-mobile-head small { display: block; margin-top: 3px; font-size: 11px; letter-spacing: 0; font-weight: 600; color: var(--ink-mute); text-transform: none; }
+  .hr-panel-mobile .skillgrid { margin-bottom: 0; }
+  .hr-panel-mobile .unlock-ladder { margin-top: 0; }
 
   /* 시추에이션 카드 */
   .scene-card { box-shadow: 3px 3px 0 var(--ink); }
@@ -5577,6 +5621,35 @@ const _isNextFeature = () => {
 //   타이쿤(심부름·호봉·출근 스트립), 홈 2, AI 리포트, 사원증 개발 항목은 아직 _isNextFeature 로 남긴다.
 const _isHomeLive = () => true;
 
+// ★ 모바일 레이아웃 판정 (2026-09-09): CSS 의 880px 기준과 같은 값. 홈 탭을 모바일에서만 단순하게 만들 때 쓴다.
+//   모바일 홈 = 오늘 학습(CTA·시추에이션·일정) + 사수 메모/유버디 팁(접힘) + 야근까지만.
+//   마일스톤·출근부·역량 스탯·해금 사다리는 사원증 탭으로, 사내 메모·분기 평가 버튼은 각각 메모·평가 탭이 있으니 홈에서 뺀다. PC 는 그대로.
+const _MOBILE_MQ = "(max-width: 880px)";
+function _isMobileLayout() {
+  try { return !!(window.matchMedia && window.matchMedia(_MOBILE_MQ).matches); } catch (e) { return false; }
+}
+function _useIsMobile() {
+  const [m, setM] = React.useState(() => _isMobileLayout());
+  React.useEffect(() => {
+    let mq = null;
+    try { mq = window.matchMedia(_MOBILE_MQ); } catch (e) { return; }
+    if (!mq) return;
+    const h = (e) => setM(!!e.matches);
+    if (mq.addEventListener) mq.addEventListener("change", h); else if (mq.addListener) mq.addListener(h);
+    return () => { if (mq.removeEventListener) mq.removeEventListener("change", h); else if (mq.removeListener) mq.removeListener(h); };
+  }, []);
+  return m;
+}
+// 모바일 홈 단순화 런칭 스위치: 지금은 개발 뷰에서만. 전원 공개할 때 `() => true` 로.
+const _isMobileHomeLive = () => _isNextFeature();
+// 그날 4개 일정을 전부 끝냈는지 (출근부·시추에이션 도장·사원증 출근부가 같은 기준을 쓴다)
+function _odDayTasksDone(day) {
+  try {
+    const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + day) || "{}");
+    return Object.entries(tasks).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4;
+  } catch (e) { return false; }
+}
+
 // 문장 조립용 덩어리 나누기 (2026-09-05): 단어 하나씩이 아니라 자연스러운 구(2~4단어)로.
 //   전치사(from, to, by...)는 새 덩어리를 시작하고, 관사·조동사(the, I'll, let's) 뒤에서는 끊지 않는다.
 //   한 단어짜리 덩어리는 옆 덩어리에 붙인다. "I'll streamline the process | from eight steps | down to three."
@@ -7063,6 +7136,466 @@ function PreReveal({ today, email }) {
   );
 }
 
+// ============================================================
+// 인사 발령 · 마일스톤 카드 (2026-09-09, HomePage 에서 분리)
+//   수습: 사원 전환 로드맵 / 사원·대리: 특별 면담·대리 승진 로드맵 / 대리 + TF: 과장 승진 트랙.
+//   PC 는 홈 오른쪽 칸, 모바일은 사원증 탭에 그린다. 접힘은 그날 하루만 유지.
+// ============================================================
+function MilestoneCard() {
+  const { USER } = window.__SIM;
+  const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
+  // ★ 시즌 2: 정직원 마일스톤 카드 (닫기가 아니라 접기, 수시로 펼쳐볼 수 있음)
+  const _S2_CARD_KEY = "__OD_S2_WELCOME_DISMISSED_" + (USER.email || "guest");
+  // 접힘은 '그날 하루'만 유지. 새 day엔 다시 펼쳐서 로드맵(마일스톤)이 자주 보이게.
+  const _s2Today = String(USER.realCurrentDay || USER.currentDay || 1);
+  const [s2CardCollapsed, setS2CardCollapsed] = useState(() => {
+    try { return localStorage.getItem(_S2_CARD_KEY) === _s2Today; } catch (e) { return false; }
+  });
+  const toggleS2Card = () => {
+    setS2CardCollapsed(v => {
+      const nv = !v;
+      try { localStorage.setItem(_S2_CARD_KEY, nv ? _s2Today : "0"); } catch (e) {}
+      return nv;
+    });
+  };
+  return (
+    <>
+      {/* ★ 신입 모드: Day 4 전엔 마일스톤 카드 잠금 표시 */}
+      {_lockedNext("promo", _rdNow, USER.isViewingPast) && <LockedCard k="promo" rd={_rdNow} />}
+      {/* ★ 수습 마일스톤 카드: 사원 전환 기대감 + 보상 미리보기 (접기/펼치기) */}
+      {!USER.isFulltime && !USER.isViewingPast && !_lockedNext("promo", _rdNow, USER.isViewingPast) && (() => {
+        const _rd = USER.realCurrentDay || USER.currentDay;
+        const _pct = Math.max(3, Math.min(100, Math.round(_rd / 30 * 100)));
+        const _dLeft = Math.max(0, 30 - _rd);
+        const MILESTONES = _isHomeLive() ? [
+          { d: 1,  icon: "🪪", label: "첫 출근" },
+          { d: 3,  icon: "🔥", label: "3일 연속" },
+          { d: 7,  icon: "🌱", label: "1주 완주" },
+          { d: 15, icon: "⚡", label: "절반 돌파" },
+          { d: 21, icon: "🔥", label: "3주 달성" },
+          { d: 30, icon: "🎓", label: "정직원 전환" },
+        ] : [
+          { d: 7,  icon: "🌱", label: "1주 완주" },
+          { d: 15, icon: "⚡", label: "절반 돌파" },
+          { d: 21, icon: "🔥", label: "3주 달성" },
+          { d: 30, icon: "🎓", label: "정직원 전환" },
+        ];
+        // 접힌 상태: 슬림 바
+        if (s2CardCollapsed) {
+          return (
+            <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%",
+              background: "var(--cream)", border: "1px solid var(--orange)",
+              borderRadius: 8, padding: "10px 14px", cursor: "pointer",
+              fontFamily: "inherit", textAlign: "left",
+            }}>
+              <span style={{ fontSize: 14 }}>🎓</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>수습 마일스톤</span>
+              <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
+                <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
+                {_dLeft > 0 ? `사원 전환 D-${_dLeft}` : "전환 D-day 🎓"}
+              </span>
+              <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
+            </button>
+          );
+        }
+        // 펼친 상태: 풀 카드
+        return (
+          <div className="s2-welcome" style={{
+            background: "var(--cream)", border: "2px solid var(--orange)",
+            borderRadius: 10, padding: "16px 16px 14px", position: "relative",
+            boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
+          }}>
+            <button onClick={toggleS2Card} title="접기" style={{
+              position: "absolute", top: 8, right: 10, background: "transparent",
+              border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)",
+              cursor: "pointer", fontFamily: "inherit", padding: 4,
+            }}>▲ 접기</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+              <span style={{
+                fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
+                color: "var(--orange)", border: "2px solid var(--orange)",
+                padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
+              }}>수습 기간</span>
+              <b style={{ fontSize: 14.5, color: "var(--ink)" }}>30일 채우면 사원으로 승진해요 🎓</b>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+              수습 30일을 완주하면 <b style={{ color: "var(--ink)" }}>정직원 전환</b>, 사원(Associate) 발령이에요.
+              네이비 새 사원증과 <b style={{ color: "var(--ink)" }}>📒 나만의 노트 인쇄·PDF 내보내기</b>가 보상으로 열려요.
+              단, <b style={{ color: "var(--ink)" }}>그날 학습을 마쳐야 다음 Day가 열려요.</b> 하루 하나씩 채우는 게 규칙이에요.
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
+              {MILESTONES.map(m => {
+                const passed = _rd >= m.d;
+                return (
+                  <div key={m.d} style={{
+                    textAlign: "center", borderRadius: 8, padding: "8px 2px 6px",
+                    background: passed ? "rgba(216,90,42,0.10)" : "var(--paper-warm)",
+                    border: passed ? "1px solid var(--orange)" : "1px dashed var(--line)",
+                  }}>
+                    <div style={{ fontSize: 15, filter: passed ? "none" : "grayscale(1) opacity(0.6)" }}>{m.icon}</div>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2, color: passed ? "var(--orange)" : "var(--ink-mute)" }}>DAY {m.d}</div>
+                    <div style={{ fontSize: 9, color: "var(--ink-mute)" }}>{m.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, height: 6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
+              </div>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
+                {_dLeft > 0 ? `사원 전환까지 D-${_dLeft}` : "오늘 사원 전환! 🎓"}
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ★ 시즌 2/3: 사원 마일스톤 카드 (접기/펼치기). Day 31-60 면담 티저 / Day 61-90 대리 승진 로드맵 */}
+      {USER.isFulltime && !USER.isViewingPast && (() => {
+        const _rd = USER.realCurrentDay || USER.currentDay;
+        // ── 대리 + TF 배정: 과장 승진 트랙 카드로 교체 ──
+        const _tfNow = _tfState();
+        if (_rd >= 90 && _tfNow.track) {
+          const _curId = _tfNow.track.id || _tfNow.track;
+          const _doneN = (_tfNow.done || []).length;
+          const _tfPct = Math.max(6, Math.round((_doneN / 4) * 100));
+          if (s2CardCollapsed) {
+            return (
+              <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%",
+                background: "var(--cream)", border: "1px solid var(--orange)",
+                borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+              }}>
+                <span style={{ fontSize: 14 }}>🗂</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
+                <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
+                  <span style={{ display: "block", width: _tfPct + "%", height: "100%", background: "var(--orange)" }} />
+                </span>
+                <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>TF {_doneN}/4 수료</span>
+                <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
+              </button>
+            );
+          }
+          return (
+            <div className="s2-welcome" style={{
+              background: "var(--cream)", border: "2px solid var(--orange)",
+              borderRadius: 10, padding: "16px 16px 14px", position: "relative",
+              boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
+            }}>
+              <button onClick={toggleS2Card} title="접기" style={{ position: "absolute", top: 8, right: 10, background: "transparent", border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", cursor: "pointer", fontFamily: "inherit", padding: 4 }}>▲ 접기</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 10, letterSpacing: "0.16em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
+                <b style={{ fontSize: 14.5, color: "var(--ink)" }}>전문 TF 4개를 수료하면, 과장 🗂</b>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+                대리는 <b style={{ color: "var(--ink)" }}>전문성을 쌓는 시간</b>이에요. TF 하나당 30일, 순서는 자유.
+                4개를 모두 수료하면 <b style={{ color: "var(--ink)" }}>과장(Manager) 승진 심사</b>가 열려요.
+              </div>
+              <div style={{ display: "flex", alignItems: "stretch", gap: 7, marginBottom: 10 }}>
+                {TF_TRACKS.map(t => {
+                  const isDone = (_tfNow.done || []).includes(t.id);
+                  const isCur = t.id === _curId;
+                  return (
+                    <div key={t.id} style={{ flex: 1, textAlign: "center", background: isCur ? "var(--paper)" : "var(--paper-warm)",
+                      border: isDone ? `1.5px solid ${t.color}` : (isCur ? `2px solid ${t.color}` : "1px solid var(--line)"),
+                      borderRadius: 11, padding: "11px 4px", opacity: isDone || isCur ? 1 : 0.55 }}>
+                      <div style={{ fontSize: 19 }}>{t.emoji}</div>
+                      <div style={{ fontSize: 11, fontWeight: 900, color: t.color, marginTop: 3, wordBreak: "keep-all" }}>{t.name}</div>
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: isDone ? t.color : "var(--ink-mute)", marginTop: 2 }}>
+                        {isDone ? "수료 ✓" : (isCur ? "진행 중" : "대기")}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <span style={{ flex: 1, height: 7, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 5, overflow: "hidden" }}>
+                  <span style={{ display: "block", width: _tfPct + "%", height: "100%", background: "var(--orange)" }} />
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>과장 승진까지 TF {4 - _doneN}개</span>
+              </div>
+            </div>
+          );
+        }
+        const _s3 = _rd > 60;   // 시즌 3 (Day 61-90, 대리 승진 트랙)
+        const _target = _s3 ? 90 : 60;
+        const _base = _s3 ? 60 : 30;
+        const _pct = Math.max(3, Math.min(100, Math.round((_rd - _base) / 30 * 100)));
+        const _dLeft = Math.max(0, _target - _rd);
+        const MILESTONES = _s3 ? [
+          { d: 67, icon: "🌱", label: "첫 주 완주" },
+          { d: 74, icon: "⚡", label: "절반 돌파" },
+          { d: 81, icon: "🔥", label: "80일 달성" },
+          { d: 90, icon: "🎖️", label: "대리 승진" },
+        ] : [
+          { d: 37, icon: "🌱", label: "첫 주 완주" },
+          { d: 44, icon: "⚡", label: "절반 돌파" },
+          { d: 51, icon: "🔥", label: "50일 달성" },
+          { d: 60, icon: "🌟", label: "특별 면담" },
+        ];
+        // ── 접힌 상태: 슬림 바 (탭하면 펼침) ──
+        if (s2CardCollapsed) {
+          return (
+            <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%",
+              background: "var(--cream)", border: "1px solid var(--orange)",
+              borderRadius: 8, padding: "10px 14px", cursor: "pointer",
+              fontFamily: "inherit", textAlign: "left",
+            }}>
+              <span style={{ fontSize: 14 }}>{_s3 ? "🎖️" : "👔"}</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>{_s3 ? "대리 승진 트랙" : "사원 마일스톤"}</span>
+              <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
+                <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
+                {_dLeft > 0 ? (_s3 ? `대리 승진 D-${_dLeft}` : `면담 D-${_dLeft}`) : (_s3 ? "대리 승진 D-day 🎖️" : "면담 D-day 🌟")}
+              </span>
+              <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
+            </button>
+          );
+        }
+        // ── 펼친 상태: 풀 카드 ──
+        return (
+          <div className="s2-welcome" style={{
+            background: "var(--cream)", border: "2px solid var(--orange)",
+            borderRadius: 10, padding: "16px 16px 14px", position: "relative",
+            boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
+          }}>
+            <button onClick={toggleS2Card} title="접기" style={{
+              position: "absolute", top: 8, right: 10, background: "transparent",
+              border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)",
+              cursor: "pointer", fontFamily: "inherit", padding: 4,
+            }}>▲ 접기</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+              <span style={{
+                fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
+                color: "var(--orange)", border: "2px solid var(--orange)",
+                padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
+              }}>{_s3 ? "대리 승진 트랙" : "인사 발령"}</span>
+              <b style={{ fontSize: 14.5, color: "var(--ink)" }}>{_s3 ? "시즌 3, 대리 승진 트랙 🎖️" : "정직원 전환, 사원(Associate) 발령 🎉"}</b>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+              {_s3 ? (
+                <>이제 <b style={{ color: "var(--ink)" }}>주도하는 사람의 언어</b>예요. 협상, 설득, 이해관계자 관리, 갈등 중재.
+                Day 90을 완주하면 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b>로 승진해요.</>
+              ) : (
+                <>이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
+                30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
+                그리고 Day 90엔 다음 직급 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b> 승진까지.</>
+              )}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
+              {MILESTONES.map(m => {
+                const passed = _rd >= m.d;
+                return (
+                  <div key={m.d} style={{
+                    textAlign: "center", borderRadius: 8, padding: "8px 2px 6px",
+                    background: passed ? "rgba(216,90,42,0.10)" : "var(--paper-warm)",
+                    border: passed ? "1px solid var(--orange)" : "1px dashed var(--line)",
+                  }}>
+                    <div style={{ fontSize: 15, filter: passed ? "none" : "grayscale(1) opacity(0.6)" }}>{m.icon}</div>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2, color: passed ? "var(--orange)" : "var(--ink-mute)" }}>DAY {m.d}</div>
+                    <div style={{ fontSize: 9, color: "var(--ink-mute)" }}>{m.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, height: 6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
+              </div>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
+                {_dLeft > 0 ? (_s3 ? `대리 승진까지 D-${_dLeft}` : `특별 면담까지 D-${_dLeft}`) : (_s3 ? "오늘 대리 승진! 🎖️" : "특별 면담 날이에요! 🌟")}
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+    </>
+  );
+}
+
+// ============================================================
+// 출근부 카드 (2026-09-09, HomePage 에서 분리)
+//   기본 14일 창, "전체 보기" 토글하면 코스 전체 (수습 30 / 정직원 60 / 대리 90).
+//   ★ 실제로 학습 완료한 날만 done. 안 한 날은 missed (결근). 무조건 done 처리 금지.
+//   완료 판단 = __OD_TASKS_DAY_<day> 에 일정 4개 전부 체크 (_odDayTasksDone). 늦은 인증 = 완료했지만 해당일 이후.
+//   과거일 클릭하면 setViewingDay(day) 로 그날 학습 (저장은 그날 기준 정확히).
+//   todayDone: 홈에서는 doneTasks state 로 바로 반영, 사원증 탭에서는 localStorage 기준.
+// ============================================================
+function AttendanceCard({ setViewingDay, todayDone }) {
+  const { USER } = window.__SIM;
+  const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
+  const [showFullAttend, setShowFullAttend] = useState(false);
+  // ★ 기본은 "최근 14일" 슬라이딩 창. Day가 늘어나도(시즌 2, 60일) 출근부 높이 고정.
+  //   전체 보기 토글 시 코스 전체 (수습 30 / 정직원 60).
+  const _realCurrentDay = USER.realCurrentDay || USER.currentDay || 1;
+  const _attendEnd = showFullAttend
+    ? USER.totalDays
+    : Math.min(USER.totalDays, Math.max(14, _realCurrentDay));
+  const _attendStart = showFullAttend ? 1 : Math.max(1, _attendEnd - 13);
+  // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
+  const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
+  const _dayDeadline = (day) => {
+    if (!_signupDate || isNaN(_signupDate.getTime())) return null;
+    const d = new Date(_signupDate); d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + day); // day N 다음날 자정 = 그날 마감
+    return d.getTime();
+  };
+  // day별 가장 늦은 완료 시각 (영작·일지 기준, 늦은 인증 판정용)
+  const _lastAt = {};
+  (USER.scenariosCompleted || []).forEach(s => {
+    if (s && s.day && s.submittedAt) {
+      const t = new Date(s.submittedAt).getTime();
+      if (!_lastAt[s.day] || t > _lastAt[s.day]) _lastAt[s.day] = t;
+    }
+  });
+  Object.entries(USER.dailyJournals || {}).forEach(([k, j]) => {
+    const day = parseInt(k, 10);
+    if (day && j && j.savedAt) {
+      const t = new Date(j.savedAt).getTime();
+      if (!_lastAt[day] || t > _lastAt[day]) _lastAt[day] = t;
+    }
+  });
+  // 그날 4개 일정 모두 완료했는지
+  const _dayComplete = (day) => _odDayTasksDone(day);
+  // 일정(task) 완료 시각 (영작·일지 외에 일정만 늦게 채운 경우도 잡음)
+  const _taskTs = (day) => {
+    try {
+      const v = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts");
+      return v ? new Date(v).getTime() : null;
+    } catch (e) { return null; }
+  };
+  const _isLate = (day) => {
+    const dl = _dayDeadline(day);
+    if (!dl) return false;
+    const at = Math.max(_lastAt[day] || 0, _taskTs(day) || 0);
+    return !!(at && at > dl);
+  };
+  // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
+  const _realDay = USER.realCurrentDay || USER.currentDay;
+  const _realDayDone = (_realDay === USER.currentDay && typeof todayDone === "boolean") ? todayDone : _dayComplete(_realDay);
+  const cells = Array.from({ length: _attendEnd - _attendStart + 1 }, (_, i) => {
+    const day = _attendStart + i;
+    const isWk = _isWeekendDay(day);
+    if (day === _realDay) return { day, state: _realDayDone ? "stamped" : "today", weekend: isWk };
+    if (day < _realDay) {
+      if (_dayComplete(day)) return { day, state: _isLate(day) ? "late" : "done", weekend: isWk };
+      return { day, state: "missed", weekend: isWk };
+    }
+    return { day, state: "future", weekend: isWk };
+  });
+  return (
+    <>
+      {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
+      {_lockedNext("attendance", _rdNow, USER.isViewingPast) && <LockedCard k="attendance" rd={_rdNow} />}
+      <div className="attendance" style={_lockedNext("attendance", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
+        <div className="attendance-head">
+          <UnlockChip k="attendance" rd={_rdNow} /><span className="attendance-title">
+            {showFullAttend
+              ? `출근부 · 전체 ${USER.totalDays}일`
+              : (_attendStart > 1 ? `출근부 · DAY ${_attendStart}-${_attendEnd}` : "출근부 · 14일")}
+          </span>
+          <span className="attendance-num">{USER.streak}<small> / {USER.totalDays} 완주</small></span>
+        </div>
+        {/* ★ 달력 경과일과 진도가 다를 수 있다 (몰아서 하시는 분들). 사실만 담담하게. */}
+        {(() => {
+          const _cal = Number(window.__odAutoDay) || 0;
+          const _rdN = USER.realCurrentDay || USER.currentDay || 1;
+          if (!_cal || _cal <= _rdN) return null;
+          return (
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2, marginBottom: 2, letterSpacing: "0.01em" }}>
+              가입 후 {_cal}일째 · 진도 Day {_rdN}
+            </div>
+          );
+        })()}
+        {/* ★ 대리 승진 시험 응시 조건 안내: 출근 60일 미만이면 조건과 현재 진행을 보여줌 (silent trap 방지) */}
+        {(() => {
+          const _rdA = USER.realCurrentDay || USER.currentDay;
+          if (_rdA < 61 || USER.streak >= 60) return null;
+          return (
+            <div style={{ margin: "8px 0 10px", padding: "8px 11px", borderRadius: 8, background: "var(--paper-warm)", border: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+              {_rdA >= 90
+                ? <>🔒 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b>부터 응시할 수 있어요. 지금 <b style={{ color: "var(--orange)" }}>{USER.streak}/60</b> · 지나간 칸을 눌러 밀린 학습을 채우면 시험이 열려요.</>
+                : <>📌 Day 90의 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b> 이상이어야 응시할 수 있어요. 지금 <b style={{ color: "var(--orange)" }}>{USER.streak}/60</b> · 지나간 칸을 눌러 채울 수 있어요.</>}
+            </div>
+          );
+        })()}
+        <div
+          className={"attendance-cells" + (showFullAttend ? " full" : "")}
+        >
+          {cells.map(c => {
+            // 보안: 진짜 오늘(realCurrentDay)보다 이전 일자만 클릭 가능
+            const isClickable = c.day < USER.realCurrentDay && setViewingDay;
+            const handleClick = () => {
+              if (!isClickable) return;
+              // React state 갱신 → App 이 USER/SCENARIOS/TODAY_SCHEDULE mutate → 전체 리렌더
+              // 새로고침 없음, URL 안 건드림
+              setViewingDay(c.day);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            };
+            return (
+              <div
+                key={c.day}
+                className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
+                title={isClickable
+                  ? (c.state === "missed" ? `Day ${c.day}로 돌아가 학습하기` : `Day ${c.day} 다시 보기`)
+                  : `Day ${c.day}`}
+                onClick={handleClick}
+                style={{ cursor: isClickable ? "pointer" : "default" }}
+              >
+                {(c.state === "missed" || c.state === "future") ? c.day : ""}
+              </div>
+            );
+          })}
+        </div>
+        {/* ★ 범례, 한눈에 상태 구분 */}
+        <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-mute)", flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <i style={{ width: 12, height: 12, borderRadius: 3, background: "#D85A2A", display: "inline-block" }} />완료
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <i style={{ width: 12, height: 12, borderRadius: 3, background: "#E0A93D", display: "inline-block" }} />늦은 인증
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <i style={{ width: 12, height: 12, borderRadius: 3, border: "1.5px dashed var(--line)", display: "inline-block" }} />아직 안 함
+          </span>
+        </div>
+        {/* ★ 학습 게이트 도입 후: 안 한 날은 '놓친' 게 아니라 그 자리에 그대로 남아 있다. */}
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 6, lineHeight: 1.55 }}>
+          지나간 칸은 사라지지 않아요. 순서대로 이어서 채우시면 됩니다.
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 8 }}>
+          <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.5, flex: 1 }}>
+            {USER.isViewingPast
+              ? <>지난 출근부 칸을 누르면 그날로 이동해요. 학습 완료하면 그대로 저장됩니다.</>
+              : showFullAttend
+                ? <>지나간 칸을 누르면 그날 학습으로 돌아갈 수 있어요.</>
+                : <>4개 일정 다 끝낸 날만 출근 완료, {USER.totalDays}일 채우면 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
+            }
+          </div>
+          <button
+            onClick={() => setShowFullAttend(v => !v)}
+            style={{
+              fontSize: 11, padding: "4px 10px", fontWeight: 700,
+              background: "transparent", color: "var(--ink-soft)",
+              border: "1px solid var(--line)", borderRadius: 4,
+              cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+            }}
+          >
+            {showFullAttend ? "최근 14일만" : "📅 전체 보기"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+
 function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const { SCENARIOS, NOTICES, USER, TODAY_SCHEDULE, CHARACTERS, todayLabel } = window.__SIM;
 
@@ -7114,6 +7647,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     setToast(msg);
     setTimeout(() => setToast(null), ms || 2400);
   };
+  // ★ 모바일 홈 단순화 (2026-09-09): 폰에선 오늘 학습 + 야근까지만. 사수 메모·유버디 팁은 하나로 묶어 접어둔다 (야근 위).
+  //   ★ 2026-09-09: 우선 개발 뷰(운영자 '개발 뷰' 토글 / ?next=1)에서만. 확인 뒤 _isMobileHomeLive 를 true 로 바꾸면 전원 라이브.
+  const isMobile = _useIsMobile() && _isMobileHomeLive();
+  const [tipsOpen, setTipsOpen] = useState(false);
+  // 개편 전 회원에게만, 한 번: "출근부·마일스톤은 사원증 탭으로 옮겼어요" (닫으면 끝, 9월 말까지만).
+  const _MOVED_KEY = "__OD_HOME_MOVED_HINT_" + (USER.email || "guest");
+  const [movedHint, setMovedHint] = useState(() => {
+    try { return _signupKST < "2026-09-10" && _todayKST <= "2026-09-30" && localStorage.getItem(_MOVED_KEY) !== "1"; } catch (e) { return false; }
+  });
+  const dismissMovedHint = () => { setMovedHint(false); try { localStorage.setItem(_MOVED_KEY, "1"); } catch (e) {} };
 
   // 투어 (spotlight 엔진 공유): Day 1 첫 출근 가이드 + 시즌 2 정직원 모드 가이드
   const TOUR_KEY = "__OD_TOUR_DONE_DAY_" + USER.currentDay;
@@ -7129,24 +7672,35 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     return null;
   });
   const [tourStep, setTourStep] = useState(() => (tourKind ? 0 : -1));
+  // ★ 모바일에선 마일스톤 카드·출근부가 사원증 탭에 있어서, 그 단계는 하단 탭바의 사원증 버튼을 가리킨다.
+  const _MYPAGE_TAB_SEL = ".m-tabbar .m-tab:nth-child(5)";
   const TOUR_STEPS_S2 = [
     {
       selector: null,
       title: "정직원 전환, 사원이 됐어요 👔",
       body: "승진 축하해요! 수습 떼고 사원(Associate) 됐어요. 30초만 같이 둘러봐요, 책상이 어떻게 달라졌는지.",
     },
-    {
-      selector: ".s2-welcome",
-      placement: "left",
-      title: "사원 마일스톤 카드",
-      body: "Day 60 특별 면담까지의 여정이 여기 담겨요. 🌱37 → ⚡44 → 🔥51 → 🌟60. 접어두면 슬림 바로 D-day만 보여요.",
-    },
-    {
-      selector: ".attendance",
-      placement: "left",
-      title: "출근부가 60일로 늘었어요",
-      body: "기본은 최근 14일 창, '전체 보기'를 누르면 60일 전체가 펼쳐져요. 놓친 날은 점선 칸을 눌러 따라잡을 수 있어요.",
-    },
+    ...(isMobile ? [
+      {
+        selector: _MYPAGE_TAB_SEL,
+        placement: "top",
+        title: "마일스톤 카드와 60일 출근부는 사원증 탭에",
+        body: "Day 60 특별 면담까지의 여정(🌱37 → ⚡44 → 🔥51 → 🌟60)과 60일로 늘어난 출근부는 아래 사원증 탭에 모아뒀어요. 놓친 날은 출근부의 점선 칸을 눌러 따라잡을 수 있어요.",
+      },
+    ] : [
+      {
+        selector: ".s2-welcome",
+        placement: "left",
+        title: "사원 마일스톤 카드",
+        body: "Day 60 특별 면담까지의 여정이 여기 담겨요. 🌱37 → ⚡44 → 🔥51 → 🌟60. 접어두면 슬림 바로 D-day만 보여요.",
+      },
+      {
+        selector: ".attendance",
+        placement: "left",
+        title: "출근부가 60일로 늘었어요",
+        body: "기본은 최근 14일 창, '전체 보기'를 누르면 60일 전체가 펼쳐져요. 놓친 날은 점선 칸을 눌러 따라잡을 수 있어요.",
+      },
+    ]),
     {
       selector: ".scene-card",
       placement: "right",
@@ -7184,13 +7738,23 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       title: "오늘 일정, 9시부터 차례대로",
       body: "9시 출근 → 10시 시추에이션 → 14시 미션 → 17시 퇴근. 각 항목 클릭하면 어휘 연습 활동이 열려요. 위에서부터 한 칸씩 풀어가세요. 잠금된 건 이전 항목 끝나면 풀려요.",
     },
-    {
+    isMobile ? {
+      selector: ".desk-tips",
+      placement: "top",
+      title: "사수 메모 · 유버디 팁은 여기에",
+      body: "출근 도장 찍으면 사수가 노란 메모를, 시추에이션 풀면 유버디가 한 마디를 여기에 남겨요. 접혀 있으니 눌러서 펼쳐 보세요.",
+    } : {
       selector: ".empty-postit, .postit",
       placement: "left",
       title: "여긴 처음엔 비어있어요",
       body: "출근 도장 찍으면 사수가 노란 메모를, 시추에이션 풀면 유버디가 한 마디를 여기에 떨어뜨려요. 활동 풀수록 책상이 채워져요.",
     },
-    {
+    isMobile ? {
+      selector: _MYPAGE_TAB_SEL,
+      placement: "top",
+      title: "출근부는 사원증 탭에",
+      body: "오늘 일정 다 끝내면 출근부 '오늘' 칸에 빨간 출근 도장이 찍혀요. 출근부와 승진 마일스톤은 아래 사원증 탭에 모아뒀어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
+    } : {
       selector: ".attendance",
       placement: "left",
       title: "출근부 · 14일",
@@ -7233,6 +7797,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       const el = document.querySelector(step.selector);
       if (!el) { setTargetRect(null); return; }
       const r = el.getBoundingClientRect();
+      // 있긴 한데 안 보이는 요소(display: none 인 잠긴 카드)면 화면 구석에 0px 스포트라이트가 찍힌다. 타겟 없음으로 처리.
+      if (!r.width && !r.height) { setTargetRect(null); return; }
       setTargetRect({ left: r.left, top: r.top, width: r.width, height: r.height });
     };
     const el0 = document.querySelector(step.selector);
@@ -7328,98 +7894,15 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     );
   }
 
-  // 출근부 그리드. 기본 14일, "전체 보기" 토글하면 코스 전체 (30일).
-  // ★ 실제로 학습 완료한 날만 done. 안 한 날은 missed (결근). 무조건 done 처리 금지.
-  // 완료 판단 기준 (셋 중 하나라도 만족하면 출근 인정):
-  //   1. scenariosCompleted 에 그날 entry 있음 (시추에이션 문장 제출)
-  //   2. dailyJournals 에 그날 entry 있음 (내 시추에이션 제출)
-  //   3. __OD_TASKS_DAY_<day> 에 일정 4개 전부 체크됨
-  // 과거일 클릭하면 ?day=N URL로 이동해서 그날 학습 가능 (저장은 그날 기준 정확히)
-  const [showFullAttend, setShowFullAttend] = useState(false);
-  // ★ 시즌 2: 정직원 마일스톤 카드 (닫기가 아니라 접기, 수시로 펼쳐볼 수 있음)
-  const _S2_CARD_KEY = "__OD_S2_WELCOME_DISMISSED_" + (USER.email || "guest");
-  // 접힘은 '그날 하루'만 유지. 새 day엔 다시 펼쳐서 로드맵(마일스톤)이 자주 보이게.
-  const _s2Today = String(USER.realCurrentDay || USER.currentDay || 1);
-  const [s2CardCollapsed, setS2CardCollapsed] = useState(() => {
-    try { return localStorage.getItem(_S2_CARD_KEY) === _s2Today; } catch (e) { return false; }
-  });
-  const toggleS2Card = () => {
-    setS2CardCollapsed(v => {
-      const nv = !v;
-      try { localStorage.setItem(_S2_CARD_KEY, nv ? _s2Today : "0"); } catch (e) {}
-      return nv;
-    });
-  };
-  // ★ 기본은 "최근 14일" 슬라이딩 창. Day가 늘어나도(시즌 2, 60일) 출근부 높이 고정.
-  //   전체 보기 토글 시 코스 전체 (수습 30 / 정직원 60).
-  const _realCurrentDay = USER.realCurrentDay || USER.currentDay || 1;
-  const _attendEnd = showFullAttend
-    ? USER.totalDays
-    : Math.min(USER.totalDays, Math.max(14, _realCurrentDay));
-  const _attendStart = showFullAttend ? 1 : Math.max(1, _attendEnd - 13);
+  // 출근부·마일스톤 카드는 2026-09-09 부터 별도 컴포넌트 (AttendanceCard / MilestoneCard, HomePage 바로 위).
+  //   PC 홈 오른쪽 칸과 모바일 사원증 탭 두 곳에서 같은 걸 그린다.
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
   useEffect(() => {
     if (!allTodayDone || USER.isViewingPast) return;
     try { const k = "__OD_WP_DAY_TOAST_" + (USER.email || "guest") + "_" + (USER.realCurrentDay || 1); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); if ((USER.realCurrentDay || 1) >= 30) setTimeout(() => _wpToast(WP_RULES.day, "오늘 완주"), 900); } catch (e) {}
   }, [allTodayDone]);
-  // ★ 출근 완성 = 그날 4개 일정 모두 완료. 늦은 인증 = 완료했지만 해당일 이후.
-  const _signupDate = _localUser?.signupDate ? new Date(_localUser.signupDate) : null;
-  const _dayDeadline = (day) => {
-    if (!_signupDate || isNaN(_signupDate.getTime())) return null;
-    const d = new Date(_signupDate); d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + day); // day N 다음날 자정 = 그날 마감
-    return d.getTime();
-  };
-  // day별 가장 늦은 완료 시각 (영작·일지 기준, 늦은 인증 판정용)
-  const _lastAt = {};
-  (USER.scenariosCompleted || []).forEach(s => {
-    if (s && s.day && s.submittedAt) {
-      const t = new Date(s.submittedAt).getTime();
-      if (!_lastAt[s.day] || t > _lastAt[s.day]) _lastAt[s.day] = t;
-    }
-  });
-  Object.entries(USER.dailyJournals || {}).forEach(([k, j]) => {
-    const day = parseInt(k, 10);
-    if (day && j && j.savedAt) {
-      const t = new Date(j.savedAt).getTime();
-      if (!_lastAt[day] || t > _lastAt[day]) _lastAt[day] = t;
-    }
-  });
-  // 그날 4개 일정 모두 완료했는지
-  const _dayComplete = (day) => {
-    try {
-      const tasks = JSON.parse(localStorage.getItem("__OD_TASKS_DAY_" + day) || "{}");
-      return Object.entries(tasks).filter(([k, v]) => v && !String(k).startsWith('_')).length >= 4;
-    } catch (e) { return false; }
-  };
-  // 일정(task) 완료 시각 (영작·일지 외에 일정만 늦게 채운 경우도 잡음)
-  const _taskTs = (day) => {
-    try {
-      const v = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts");
-      return v ? new Date(v).getTime() : null;
-    } catch (e) { return null; }
-  };
-  const _isLate = (day) => {
-    const dl = _dayDeadline(day);
-    if (!dl) return false;
-    const at = Math.max(_lastAt[day] || 0, _taskTs(day) || 0);
-    return !!(at && at > dl);
-  };
-  // ★ 실제 오늘 기준으로 today 판정 (과거 보는 중에도 진짜 오늘만 "오늘" 표시)
-  const _realDay = USER.realCurrentDay || USER.currentDay;
-  const _realDayDone = (_realDay === USER.currentDay) ? allTodayDone : _dayComplete(_realDay);
   // 시추에이션 카드/모달 도장: 그날 일정 다 끝냈으면 DONE
-  const _sceneDone = (today && today.day === USER.currentDay) ? allTodayDone : _dayComplete(today ? today.day : 0);
-  const cells = Array.from({ length: _attendEnd - _attendStart + 1 }, (_, i) => {
-    const day = _attendStart + i;
-    const isWk = _isWeekendDay(day);
-    if (day === _realDay) return { day, state: _realDayDone ? "stamped" : "today", weekend: isWk };
-    if (day < _realDay) {
-      if (_dayComplete(day)) return { day, state: _isLate(day) ? "late" : "done", weekend: isWk };
-      return { day, state: "missed", weekend: isWk };
-    }
-    return { day, state: "future", weekend: isWk };
-  });
+  const _sceneDone = (today && today.day === USER.currentDay) ? allTodayDone : _odDayTasksDone(today ? today.day : 0);
 
   // 마지막 항목 완료 토스트
   const _maybeFinaleToast = (idx) => {
@@ -7619,7 +8102,17 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
       {_isHomeLive() && !USER.isViewingPast && (
-        <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => { if (k === "mynotes") setActive("mynotes"); else { const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k]; const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } }} />
+        <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => {
+          if (k === "mynotes") { setActive("mynotes"); return; }
+          const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k];
+          const el = sel && document.querySelector(sel);
+          if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+          // 모바일: 출근부·마일스톤·역량 스탯은 사원증 탭에 있다. 탭을 옮기고 그 카드로 스크롤.
+          if (isMobile && (k === "attendance" || k === "promo" || k === "skills")) {
+            setActive("mypage");
+            setTimeout(() => { try { const el2 = sel && document.querySelector(sel); if (el2) el2.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 350);
+          }
+        }} />
       )}
       {_isHomeLive() && !USER.isViewingPast && (
         <SlackPing scn={today} npc={npc} day={USER.currentDay} ready={!!doneTasks.checkin && !doneTasks.scenario} onOpen={() => openScene(today)} />
@@ -7718,421 +8211,95 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
               : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}><span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span><b>🔒</b></div></div>
           )}
-          <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />
+          {!isMobile && <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />}
+          {isMobile && movedHint && !USER.isViewingPast && _rdNow >= 3 && (
+            <div className="moved-hint">
+              <span>📌 출근부·승진 마일스톤·역량 스탯은 <b>사원증</b> 탭으로 옮겼어요.</span>
+              <button type="button" className="moved-hint-go" onClick={() => { dismissMovedHint(); setActive("mypage"); }}>보러 가기 →</button>
+              <button type="button" className="moved-hint-x" onClick={dismissMovedHint} aria-label="닫기">✕</button>
+            </div>
+          )}
         </div>
 
         <div className="col">
-          {/* ★ 신입 모드: Day 4 전엔 마일스톤 카드 잠금 표시 */}
-          {_lockedNext("promo", _rdNow, USER.isViewingPast) && <LockedCard k="promo" rd={_rdNow} />}
-          {/* ★ 수습 마일스톤 카드: 사원 전환 기대감 + 보상 미리보기 (접기/펼치기) */}
-          {!USER.isFulltime && !USER.isViewingPast && !_lockedNext("promo", _rdNow, USER.isViewingPast) && (() => {
-            const _rd = USER.realCurrentDay || USER.currentDay;
-            const _pct = Math.max(3, Math.min(100, Math.round(_rd / 30 * 100)));
-            const _dLeft = Math.max(0, 30 - _rd);
-            const MILESTONES = _isHomeLive() ? [
-              { d: 1,  icon: "🪪", label: "첫 출근" },
-              { d: 3,  icon: "🔥", label: "3일 연속" },
-              { d: 7,  icon: "🌱", label: "1주 완주" },
-              { d: 15, icon: "⚡", label: "절반 돌파" },
-              { d: 21, icon: "🔥", label: "3주 달성" },
-              { d: 30, icon: "🎓", label: "정직원 전환" },
-            ] : [
-              { d: 7,  icon: "🌱", label: "1주 완주" },
-              { d: 15, icon: "⚡", label: "절반 돌파" },
-              { d: 21, icon: "🔥", label: "3주 달성" },
-              { d: 30, icon: "🎓", label: "정직원 전환" },
-            ];
-            // 접힌 상태: 슬림 바
-            if (s2CardCollapsed) {
-              return (
-                <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
-                  display: "flex", alignItems: "center", gap: 10, width: "100%",
-                  background: "var(--cream)", border: "1px solid var(--orange)",
-                  borderRadius: 8, padding: "10px 14px", cursor: "pointer",
-                  fontFamily: "inherit", textAlign: "left",
-                }}>
-                  <span style={{ fontSize: 14 }}>🎓</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>수습 마일스톤</span>
-                  <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
-                    <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
-                  </span>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? `사원 전환 D-${_dLeft}` : "전환 D-day 🎓"}
-                  </span>
-                  <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
-                </button>
-              );
-            }
-            // 펼친 상태: 풀 카드
-            return (
-              <div className="s2-welcome" style={{
-                background: "var(--cream)", border: "2px solid var(--orange)",
-                borderRadius: 10, padding: "16px 16px 14px", position: "relative",
-                boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
-              }}>
-                <button onClick={toggleS2Card} title="접기" style={{
-                  position: "absolute", top: 8, right: 10, background: "transparent",
-                  border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)",
-                  cursor: "pointer", fontFamily: "inherit", padding: 4,
-                }}>▲ 접기</button>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                  <span style={{
-                    fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
-                    color: "var(--orange)", border: "2px solid var(--orange)",
-                    padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
-                  }}>수습 기간</span>
-                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>30일 채우면 사원으로 승진해요 🎓</b>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
-                  수습 30일을 완주하면 <b style={{ color: "var(--ink)" }}>정직원 전환</b>, 사원(Associate) 발령이에요.
-                  네이비 새 사원증과 <b style={{ color: "var(--ink)" }}>📒 나만의 노트 인쇄·PDF 내보내기</b>가 보상으로 열려요.
-                  단, <b style={{ color: "var(--ink)" }}>그날 학습을 마쳐야 다음 Day가 열려요.</b> 하루 하나씩 채우는 게 규칙이에요.
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
-                  {MILESTONES.map(m => {
-                    const passed = _rd >= m.d;
-                    return (
-                      <div key={m.d} style={{
-                        textAlign: "center", borderRadius: 8, padding: "8px 2px 6px",
-                        background: passed ? "rgba(216,90,42,0.10)" : "var(--paper-warm)",
-                        border: passed ? "1px solid var(--orange)" : "1px dashed var(--line)",
-                      }}>
-                        <div style={{ fontSize: 15, filter: passed ? "none" : "grayscale(1) opacity(0.6)" }}>{m.icon}</div>
-                        <div style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2, color: passed ? "var(--orange)" : "var(--ink-mute)" }}>DAY {m.d}</div>
-                        <div style={{ fontSize: 9, color: "var(--ink-mute)" }}>{m.label}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ flex: 1, height: 6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
+          {/* ★ 인사 발령·마일스톤 카드. 모바일에선 사원증 탭으로 (2026-09-09) */}
+          {!isMobile && <MilestoneCard />}
+
+          {/* 사수 메모 + 유버디 팁. 모바일에선 하나로 묶어 접어둔다 (오늘 일정 아래, 야근 위). PC 는 display: contents 라 전과 같다. */}
+          <div className={"desk-tips" + (isMobile && !tipsOpen ? " collapsed" : "")}>
+            {isMobile && (
+              <button type="button" className="desk-tips-head" onClick={() => setTipsOpen(v => !v)} aria-expanded={tipsOpen}>
+                <span>📝 사수 메모 · 💡 유버디 팁</span>
+                <small>{Object.keys(doneTasks).length >= 1 ? (Object.keys(doneTasks).length >= 2 ? "2개 도착" : "1개 도착") : "출근하면 도착해요"}</small>
+                <b>{tipsOpen ? "▲ 접기" : "▼ 펼치기"}</b>
+              </button>
+            )}
+            {(!isMobile || tipsOpen) && (
+              <div className="desk-tips-body">
+                {/* 사수 포스트잇, 첫 todo (출근/단어 받기) 끝나면 책상에 떨어짐 */}
+                {Object.keys(doneTasks).length >= 1 ? (
+                  <div key={"postit-" + USER.currentDay} className="appear-postit">
+                    <Postit mentor={CHARACTERS.mentor} text={_mentorNuanceLine(today)} word={today.word} />
                   </div>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? `사원 전환까지 D-${_dLeft}` : "오늘 사원 전환! 🎓"}
-                  </span>
-                </div>
+                ) : (
+                  <div className="empty-slot empty-postit">
+                    <span>📝 출근 도장 찍으면 사수가 노란 메모를 줘요</span>
+                  </div>
+                )}
+
+                {/* 유버디 1:1, 시추에이션(2번째 todo) 끝나면 등장 */}
+                {Object.keys(doneTasks).length >= 2 ? (
+                  <div key={"buddy-" + USER.currentDay} className="appear-buddy">
+                    <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} scn={today} />
+                  </div>
+                ) : (
+                  <div className="empty-slot empty-buddy">
+                    <span>💬 오늘 시추에이션 풀고 나면 유버디가 한 마디 줘요</span>
+                  </div>
+                )}
               </div>
-            );
-          })()}
-
-          {/* ★ 시즌 2/3: 사원 마일스톤 카드 (접기/펼치기). Day 31-60 면담 티저 / Day 61-90 대리 승진 로드맵 */}
-          {USER.isFulltime && !USER.isViewingPast && (() => {
-            const _rd = USER.realCurrentDay || USER.currentDay;
-            // ── 대리 + TF 배정: 과장 승진 트랙 카드로 교체 ──
-            const _tfNow = _tfState();
-            if (_rd >= 90 && _tfNow.track) {
-              const _curId = _tfNow.track.id || _tfNow.track;
-              const _doneN = (_tfNow.done || []).length;
-              const _tfPct = Math.max(6, Math.round((_doneN / 4) * 100));
-              if (s2CardCollapsed) {
-                return (
-                  <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
-                    display: "flex", alignItems: "center", gap: 10, width: "100%",
-                    background: "var(--cream)", border: "1px solid var(--orange)",
-                    borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-                  }}>
-                    <span style={{ fontSize: 14 }}>🗂</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
-                    <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
-                      <span style={{ display: "block", width: _tfPct + "%", height: "100%", background: "var(--orange)" }} />
-                    </span>
-                    <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>TF {_doneN}/4 수료</span>
-                    <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
-                  </button>
-                );
-              }
-              return (
-                <div className="s2-welcome" style={{
-                  background: "var(--cream)", border: "2px solid var(--orange)",
-                  borderRadius: 10, padding: "16px 16px 14px", position: "relative",
-                  boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
-                }}>
-                  <button onClick={toggleS2Card} title="접기" style={{ position: "absolute", top: 8, right: 10, background: "transparent", border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", cursor: "pointer", fontFamily: "inherit", padding: 4 }}>▲ 접기</button>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 10, letterSpacing: "0.16em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
-                    <b style={{ fontSize: 14.5, color: "var(--ink)" }}>전문 TF 4개를 수료하면, 과장 🗂</b>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
-                    대리는 <b style={{ color: "var(--ink)" }}>전문성을 쌓는 시간</b>이에요. TF 하나당 30일, 순서는 자유.
-                    4개를 모두 수료하면 <b style={{ color: "var(--ink)" }}>과장(Manager) 승진 심사</b>가 열려요.
-                  </div>
-                  <div style={{ display: "flex", alignItems: "stretch", gap: 7, marginBottom: 10 }}>
-                    {TF_TRACKS.map(t => {
-                      const isDone = (_tfNow.done || []).includes(t.id);
-                      const isCur = t.id === _curId;
-                      return (
-                        <div key={t.id} style={{ flex: 1, textAlign: "center", background: isCur ? "var(--paper)" : "var(--paper-warm)",
-                          border: isDone ? `1.5px solid ${t.color}` : (isCur ? `2px solid ${t.color}` : "1px solid var(--line)"),
-                          borderRadius: 11, padding: "11px 4px", opacity: isDone || isCur ? 1 : 0.55 }}>
-                          <div style={{ fontSize: 19 }}>{t.emoji}</div>
-                          <div style={{ fontSize: 11, fontWeight: 900, color: t.color, marginTop: 3, wordBreak: "keep-all" }}>{t.name}</div>
-                          <div style={{ fontSize: 9.5, fontWeight: 800, color: isDone ? t.color : "var(--ink-mute)", marginTop: 2 }}>
-                            {isDone ? "수료 ✓" : (isCur ? "진행 중" : "대기")}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                    <span style={{ flex: 1, height: 7, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 5, overflow: "hidden" }}>
-                      <span style={{ display: "block", width: _tfPct + "%", height: "100%", background: "var(--orange)" }} />
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>과장 승진까지 TF {4 - _doneN}개</span>
-                  </div>
-                </div>
-              );
-            }
-            const _s3 = _rd > 60;   // 시즌 3 (Day 61-90, 대리 승진 트랙)
-            const _target = _s3 ? 90 : 60;
-            const _base = _s3 ? 60 : 30;
-            const _pct = Math.max(3, Math.min(100, Math.round((_rd - _base) / 30 * 100)));
-            const _dLeft = Math.max(0, _target - _rd);
-            const MILESTONES = _s3 ? [
-              { d: 67, icon: "🌱", label: "첫 주 완주" },
-              { d: 74, icon: "⚡", label: "절반 돌파" },
-              { d: 81, icon: "🔥", label: "80일 달성" },
-              { d: 90, icon: "🎖️", label: "대리 승진" },
-            ] : [
-              { d: 37, icon: "🌱", label: "첫 주 완주" },
-              { d: 44, icon: "⚡", label: "절반 돌파" },
-              { d: 51, icon: "🔥", label: "50일 달성" },
-              { d: 60, icon: "🌟", label: "특별 면담" },
-            ];
-            // ── 접힌 상태: 슬림 바 (탭하면 펼침) ──
-            if (s2CardCollapsed) {
-              return (
-                <button className="s2-welcome" onClick={toggleS2Card} title="펼치기" style={{
-                  display: "flex", alignItems: "center", gap: 10, width: "100%",
-                  background: "var(--cream)", border: "1px solid var(--orange)",
-                  borderRadius: 8, padding: "10px 14px", cursor: "pointer",
-                  fontFamily: "inherit", textAlign: "left",
-                }}>
-                  <span style={{ fontSize: 14 }}>{_s3 ? "🎖️" : "👔"}</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>{_s3 ? "대리 승진 트랙" : "사원 마일스톤"}</span>
-                  <span style={{ flex: 1, height: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden", minWidth: 40 }}>
-                    <span style={{ display: "block", width: _pct + "%", height: "100%", background: "var(--orange)" }} />
-                  </span>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--orange)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? (_s3 ? `대리 승진 D-${_dLeft}` : `면담 D-${_dLeft}`) : (_s3 ? "대리 승진 D-day 🎖️" : "면담 D-day 🌟")}
-                  </span>
-                  <span style={{ fontSize: 10, color: "var(--ink-mute)" }}>▼ 펼치기</span>
-                </button>
-              );
-            }
-            // ── 펼친 상태: 풀 카드 ──
-            return (
-              <div className="s2-welcome" style={{
-                background: "var(--cream)", border: "2px solid var(--orange)",
-                borderRadius: 10, padding: "16px 16px 14px", position: "relative",
-                boxShadow: "3px 3px 0 rgba(216,90,42,0.22)",
-              }}>
-                <button onClick={toggleS2Card} title="접기" style={{
-                  position: "absolute", top: 8, right: 10, background: "transparent",
-                  border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)",
-                  cursor: "pointer", fontFamily: "inherit", padding: 4,
-                }}>▲ 접기</button>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                  <span style={{
-                    fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
-                    color: "var(--orange)", border: "2px solid var(--orange)",
-                    padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
-                  }}>{_s3 ? "대리 승진 트랙" : "인사 발령"}</span>
-                  <b style={{ fontSize: 14.5, color: "var(--ink)" }}>{_s3 ? "시즌 3, 대리 승진 트랙 🎖️" : "정직원 전환, 사원(Associate) 발령 🎉"}</b>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
-                  {_s3 ? (
-                    <>이제 <b style={{ color: "var(--ink)" }}>주도하는 사람의 언어</b>예요. 협상, 설득, 이해관계자 관리, 갈등 중재.
-                    Day 90을 완주하면 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b>로 승진해요.</>
-                  ) : (
-                    <>이제 회의를 <b style={{ color: "var(--ink)" }}>주도하는</b> 표현들을 만나요.
-                    30일을 더 채우면 Day 60에 <b style={{ color: "var(--ink)" }}>특별 면담</b>이 기다려요.
-                    그리고 Day 90엔 다음 직급 <b style={{ color: "var(--ink)" }}>대리(Senior Associate)</b> 승진까지.</>
-                  )}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
-                  {MILESTONES.map(m => {
-                    const passed = _rd >= m.d;
-                    return (
-                      <div key={m.d} style={{
-                        textAlign: "center", borderRadius: 8, padding: "8px 2px 6px",
-                        background: passed ? "rgba(216,90,42,0.10)" : "var(--paper-warm)",
-                        border: passed ? "1px solid var(--orange)" : "1px dashed var(--line)",
-                      }}>
-                        <div style={{ fontSize: 15, filter: passed ? "none" : "grayscale(1) opacity(0.6)" }}>{m.icon}</div>
-                        <div style={{ fontSize: 9.5, fontWeight: 800, marginTop: 2, color: passed ? "var(--orange)" : "var(--ink-mute)" }}>DAY {m.d}</div>
-                        <div style={{ fontSize: 9, color: "var(--ink-mute)" }}>{m.label}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ flex: 1, height: 6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ width: _pct + "%", height: "100%", background: "var(--orange)", transition: "width 0.4s" }} />
-                  </div>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>
-                    {_dLeft > 0 ? (_s3 ? `대리 승진까지 D-${_dLeft}` : `특별 면담까지 D-${_dLeft}`) : (_s3 ? "오늘 대리 승진! 🎖️" : "특별 면담 날이에요! 🌟")}
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* 사수 포스트잇, 첫 todo (출근/단어 받기) 끝나면 책상에 떨어짐 */}
-          {Object.keys(doneTasks).length >= 1 ? (
-            <div key={"postit-" + USER.currentDay} className="appear-postit">
-              <Postit mentor={CHARACTERS.mentor} text={_mentorNuanceLine(today)} word={today.word} />
-            </div>
-          ) : (
-            <div className="empty-slot empty-postit">
-              <span>📝 출근 도장 찍으면 사수가 노란 메모를 줘요</span>
-            </div>
-          )}
-
-          {/* 유버디 1:1, 시추에이션(2번째 todo) 끝나면 등장 */}
-          {Object.keys(doneTasks).length >= 2 ? (
-            <div key={"buddy-" + USER.currentDay} className="appear-buddy">
-              <BuddyCard buddy={CHARACTERS.buddy} day={USER.currentDay} scn={today} />
-            </div>
-          ) : (
-            <div className="empty-slot empty-buddy">
-              <span>💬 오늘 시추에이션 풀고 나면 유버디가 한 마디 줘요</span>
-            </div>
-          )}
+            )}
+          </div>
 
           <CatchUpBanner user={USER} />
           {_lockedNext("errands", _rdNow, USER.isViewingPast) && <LockedCard k="errands" rd={_rdNow} />}
           {_isNextFeature() && !_lockedNext("errands", _rdNow, USER.isViewingPast) && <ErrandsCard setActive={setActive} toast={showToast} />}
-          {_lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
-          {_isHomeLive() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
+          {/* ★ 역량 스탯 + 출근부. 모바일에선 사원증 탭으로 (2026-09-09) */}
+          {!isMobile && _lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
+          {!isMobile && _isHomeLive() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
+          {!isMobile && <AttendanceCard setViewingDay={setViewingDay} todayDone={allTodayDone} />}
 
-          {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
-          {_lockedNext("attendance", _rdNow, USER.isViewingPast) && <LockedCard k="attendance" rd={_rdNow} />}
-          <div className="attendance" style={_lockedNext("attendance", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
-            <div className="attendance-head">
-              <UnlockChip k="attendance" rd={_rdNow} /><span className="attendance-title">
-                {showFullAttend
-                  ? `출근부 · 전체 ${USER.totalDays}일`
-                  : (_attendStart > 1 ? `출근부 · DAY ${_attendStart}-${_attendEnd}` : "출근부 · 14일")}
-              </span>
-              <span className="attendance-num">{USER.streak}<small> / {USER.totalDays} 완주</small></span>
-            </div>
-            {/* ★ 달력 경과일과 진도가 다를 수 있다 (몰아서 하시는 분들). 사실만 담담하게. */}
-            {(() => {
-              const _cal = Number(window.__odAutoDay) || 0;
-              const _rdN = USER.realCurrentDay || USER.currentDay || 1;
-              if (!_cal || _cal <= _rdN) return null;
-              return (
-                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2, marginBottom: 2, letterSpacing: "0.01em" }}>
-                  가입 후 {_cal}일째 · 진도 Day {_rdN}
+          {/* ★ 사내 메모·분기 평가 버튼: 모바일엔 메모·평가 탭이 따로 있어 홈에서 뺀다 (2026-09-09) */}
+          {!isMobile && (
+            <>
+              {_lockedNext("memo", _rdNow, USER.isViewingPast) && <LockedCard k="memo" rd={_rdNow} />}
+              <div className="memo-box" style={_lockedNext("memo", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
+                <div className="memo-box-head"><UnlockChip k="memo" rd={_rdNow} />
+                  <span>사내 메모 · INTRANET</span>
+                  <b>{NOTICES.filter(n => n.unread).length}건</b>
                 </div>
-              );
-            })()}
-            {/* ★ 대리 승진 시험 응시 조건 안내: 출근 60일 미만이면 조건과 현재 진행을 보여줌 (silent trap 방지) */}
-            {(() => {
-              const _rdA = USER.realCurrentDay || USER.currentDay;
-              if (_rdA < 61 || USER.streak >= 60) return null;
-              return (
-                <div style={{ margin: "8px 0 10px", padding: "8px 11px", borderRadius: 8, background: "var(--paper-warm)", border: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
-                  {_rdA >= 90
-                    ? <>🔒 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b>부터 응시할 수 있어요. 지금 <b style={{ color: "var(--orange)" }}>{USER.streak}/60</b> · 지나간 칸을 눌러 밀린 학습을 채우면 시험이 열려요.</>
-                    : <>📌 Day 90의 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b> 이상이어야 응시할 수 있어요. 지금 <b style={{ color: "var(--orange)" }}>{USER.streak}/60</b> · 지나간 칸을 눌러 채울 수 있어요.</>}
-                </div>
-              );
-            })()}
-            <div
-              className={"attendance-cells" + (showFullAttend ? " full" : "")}
-            >
-              {cells.map(c => {
-                // 보안: 진짜 오늘(realCurrentDay)보다 이전 일자만 클릭 가능
-                const isClickable = c.day < USER.realCurrentDay && setViewingDay;
-                const handleClick = () => {
-                  if (!isClickable) return;
-                  // React state 갱신 → App 이 USER/SCENARIOS/TODAY_SCHEDULE mutate → 전체 리렌더
-                  // 새로고침 없음, URL 안 건드림
-                  setViewingDay(c.day);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                };
-                return (
-                  <div
-                    key={c.day}
-                    className={"att-cell " + c.state + (c.weekend ? " weekend" : "")}
-                    title={isClickable
-                      ? (c.state === "missed" ? `Day ${c.day}로 돌아가 학습하기` : `Day ${c.day} 다시 보기`)
-                      : `Day ${c.day}`}
-                    onClick={handleClick}
-                    style={{ cursor: isClickable ? "pointer" : "default" }}
-                  >
-                    {(c.state === "missed" || c.state === "future") ? c.day : ""}
-                  </div>
-                );
-              })}
-            </div>
-            {/* ★ 범례, 한눈에 상태 구분 */}
-            <div style={{ display: "flex", gap: 14, marginTop: 10, fontSize: 10.5, color: "var(--ink-mute)", flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <i style={{ width: 12, height: 12, borderRadius: 3, background: "#D85A2A", display: "inline-block" }} />완료
-              </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <i style={{ width: 12, height: 12, borderRadius: 3, background: "#E0A93D", display: "inline-block" }} />늦은 인증
-              </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <i style={{ width: 12, height: 12, borderRadius: 3, border: "1.5px dashed var(--line)", display: "inline-block" }} />아직 안 함
-              </span>
-            </div>
-            {/* ★ 학습 게이트 도입 후: 안 한 날은 '놓친' 게 아니라 그 자리에 그대로 남아 있다. */}
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 6, lineHeight: 1.55 }}>
-              지나간 칸은 사라지지 않아요. 순서대로 이어서 채우시면 됩니다.
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 8 }}>
-              <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.5, flex: 1 }}>
-                {USER.isViewingPast
-                  ? <>지난 출근부 칸을 누르면 그날로 이동해요. 학습 완료하면 그대로 저장됩니다.</>
-                  : showFullAttend
-                    ? <>지나간 칸을 누르면 그날 학습으로 돌아갈 수 있어요.</>
-                    : <>4개 일정 다 끝낸 날만 출근 완료, {USER.totalDays}일 채우면 <b style={{ color: "var(--stamp-red)" }}>완주 도장</b> 찍혀요.</>
-                }
+                {NOTICES.slice(0, 3).map(n => {
+                  const c = CHARACTERS[n.from];
+                  return (
+                    <button key={n.id} className={"memo-row " + (n.unread ? "unread" : "")} onClick={() => openMemo(n)}>
+                      <div className="memo-from-avatar" style={{ background: c.color }}>{c.avatar}</div>
+                      <div>
+                        <div className="memo-subject">
+                          <span className={"memo-tag " + (n.tag === "필수" ? "req" : "")}>{n.tag}</span>
+                          {n.subject}
+                        </div>
+                      </div>
+                      <div className="memo-meta">{n.date}</div>
+                    </button>
+                  );
+                })}
               </div>
-              <button
-                onClick={() => setShowFullAttend(v => !v)}
-                style={{
-                  fontSize: 11, padding: "4px 10px", fontWeight: 700,
-                  background: "transparent", color: "var(--ink-soft)",
-                  border: "1px solid var(--line)", borderRadius: 4,
-                  cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-                }}
-              >
-                {showFullAttend ? "최근 14일만" : "📅 전체 보기"}
+
+              <button className="btn btn-ink" style={{ width: "100%", justifyContent: "center" }} onClick={() => setActive("test")}>
+                ✍️ 분기 평가 응시하기 (Day 30 예정) →
               </button>
-            </div>
-          </div>
-
-          {_lockedNext("memo", _rdNow, USER.isViewingPast) && <LockedCard k="memo" rd={_rdNow} />}
-          <div className="memo-box" style={_lockedNext("memo", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
-            <div className="memo-box-head"><UnlockChip k="memo" rd={_rdNow} />
-              <span>사내 메모 · INTRANET</span>
-              <b>{NOTICES.filter(n => n.unread).length}건</b>
-            </div>
-            {NOTICES.slice(0, 3).map(n => {
-              const c = CHARACTERS[n.from];
-              return (
-                <button key={n.id} className={"memo-row " + (n.unread ? "unread" : "")} onClick={() => openMemo(n)}>
-                  <div className="memo-from-avatar" style={{ background: c.color }}>{c.avatar}</div>
-                  <div>
-                    <div className="memo-subject">
-                      <span className={"memo-tag " + (n.tag === "필수" ? "req" : "")}>{n.tag}</span>
-                      {n.subject}
-                    </div>
-                  </div>
-                  <div className="memo-meta">{n.date}</div>
-                </button>
-              );
-            })}
-          </div>
-
-          <button className="btn btn-ink" style={{ width: "100%", justifyContent: "center" }} onClick={() => setActive("test")}>
-            ✍️ 분기 평가 응시하기 (Day 30 예정) →
-          </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -8517,7 +8684,12 @@ function ErrandsCard({ setActive, toast }) {
   const [done, setDone] = React.useState(() => { try { return JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) { return {}; } });
   const go = (er) => {
     if (er.nav) setActive(er.nav);
-    else if (er.id === "attend") { try { document.querySelector(".attendance").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }
+    else if (er.id === "attend") {
+      // 모바일에선 출근부가 사원증 탭에 있다 (2026-09-09)
+      const el = document.querySelector(".attendance");
+      if (el) { try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }
+      else if (setActive) { setActive("mypage"); setTimeout(() => { try { const el2 = document.querySelector(".attendance"); if (el2) el2.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 350); }
+    }
   };
   const stamp = (er) => {
     if (done[er.id]) { go(er); return; }
@@ -11194,8 +11366,13 @@ function ReportIssuePopup({ rd, email, onGo }) {
   );
 }
 
-function MyPage() {
+function MyPage({ setActive, setViewingDay }) {
   const { USER, CHARACTERS } = window.__SIM;
+  // ★ 모바일 홈 단순화 (2026-09-09): 폰에선 인사 발령·마일스톤, 역량 스탯, 출근부, 앞으로 열리는 것이 여기(사원증)로 온다. PC 는 홈 오른쪽 칸 그대로.
+  const isMobile = _useIsMobile() && _isMobileHomeLive();
+  const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
+  // 출근부 지난 칸·역량 스탯에서 그날로 이동: 과거 Day 를 보여주는 건 홈 탭이므로 탭도 같이 옮긴다.
+  const _goDay = (d) => { if (setViewingDay) setViewingDay(d); if (setActive) setActive("home"); try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {} };
   const [notif, setNotif] = useState(true);
   const [notifTime, setNotifTime] = useState("09:00");
   const [paused, setPaused] = useState(false);
@@ -11346,6 +11523,18 @@ function MyPage() {
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
       </div>
+
+      {/* ★ 모바일 전용: 근태·인사 묶음. 홈에서 옮겨온 카드들 (PC 홈 오른쪽 칸과 같은 컴포넌트) */}
+      {isMobile && (
+        <div className="hr-panel-mobile">
+          <div className="hr-panel-mobile-head">근태 · 인사 기록 <small>출근 도장, 승진 마일스톤, 역량 스탯은 여기서 봐요.</small></div>
+          <MilestoneCard />
+          {_lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
+          {_isHomeLive() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={_goDay} />}
+          <AttendanceCard setViewingDay={_goDay} />
+          <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />
+        </div>
+      )}
 
       {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) */}
       {_isNextFeature() && (
@@ -16745,7 +16934,7 @@ function App() {
         {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
         {active === "test" && <TestPage />}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
-        {active === "mypage" && <MyPage />}
+        {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
       </main>
       <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
