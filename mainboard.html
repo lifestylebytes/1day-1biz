@@ -5646,6 +5646,11 @@ function _useIsMobile() {
 }
 // 모바일 홈 단순화 런칭 스위치 (2026-09-09 전원 라이브). 끄려면 `() => _isNextFeature()` 로.
 const _isMobileHomeLive = () => true;
+// ★ 운영자/Dev 가 dev 패널로 Day 를 "명시적으로" 점프하면 devDayOverride 가 켜지고 그 Day 에 고정된다.
+//   고정 중엔 하루를 다 끝내도 화면 Day 가 안 움직여서 "왜 안 넘어가지"가 된다 (2026-09-10 확인).
+function _devDayPinned() {
+  try { return !!(_isInternal && (JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}).devDayOverride === true); } catch (e) { return false; }
+}
 // 그날 4개 일정을 전부 끝냈는지 (출근부·시추에이션 도장·사원증 출근부가 같은 기준을 쓴다)
 function _odDayTasksDone(day) {
   try {
@@ -8212,7 +8217,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           <div className="catchup" style={{ marginBottom: 14 }}>
             <div className="catchup-txt">
               📌 오늘은 <b>Day {_cur}</b>부터 이어서. 더 학습할 수 있는 Day가 <b>{_wait}일치</b> 기다리고 있어요.
-              하루를 마치면 다음 Day가 바로 열려서, 원하시면 오늘 몰아서 하셔도 돼요.
+              {_devDayPinned()
+                ? <> 지금은 dev 패널로 <b>Day {_cur}</b>에 고정돼 있어서, 하루를 마쳐도 화면은 이 Day에 머물러요.</>
+                : <> 하루를 마치면 다음 Day가 바로 열려서, 원하시면 오늘 몰아서 하셔도 돼요.</>}
             </div>
           </div>
         );
@@ -8891,6 +8898,20 @@ function CatchUpBanner({ user }) {
   if (!next || user.isViewingPast) return null;
   const _cal = Number(window.__odAutoDay) || next;
   const backlog = Math.max(0, _cal - next + 1);
+  // ★ dev 패널 Day 고정 중: 게이트는 열렸는데 화면 Day 는 고정값이라 "이어서 하기"를 눌러도 제자리다.
+  //   운영자에게만 보이는 상황이니, 상황을 그대로 말하고 버튼은 고정 해제로 바꾼다.
+  if (_devDayPinned()) return (
+    <div className="catchup">
+      <div className="catchup-txt">
+        🛠 오늘 몫은 끝났어요. 학습은 <b>Day {next}</b>까지 열렸는데, dev 패널로 <b>Day {cur}</b>에 고정돼 있어서 화면이 안 넘어가요.
+      </div>
+      <button className="catchup-btn" onClick={() => {
+        try { const u = JSON.parse(localStorage.getItem("__OD_USER") || "{}"); delete u.devDayOverride; localStorage.setItem("__OD_USER", JSON.stringify(u)); } catch (e) {}
+        try { window.scrollTo(0, 0); } catch (e) {}
+        location.reload();
+      }}>↺ 고정 풀고 Day {next}로 →</button>
+    </div>
+  );
   return (
     <div className="catchup">
       <div className="catchup-txt">
