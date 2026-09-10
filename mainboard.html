@@ -328,6 +328,9 @@ body::before {
 .lib-row.today .col-day { color: var(--orange); }
 .lib-row.locked { cursor: default; color: var(--ink-mute); }
 .lib-table .col-day { font-variant-numeric: tabular-nums; font-weight: 800; width: 52px; color: var(--ink-soft); }
+.lib-table .col-fav { width: 30px; text-align: center; padding-left: 2px; padding-right: 2px; }
+.lib-table th.col-fav { font-size: 11px; letter-spacing: 0; }
+.lib-table .col-fav, .lib-table .col-fav + th, .lib-table .col-fav + td { border-left: none; }   /* 별은 Day 숫자에 붙여서 한 덩어리로 */
 .lib-table .col-word b { font-size: 14px; }
 .lib-table .col-word small { margin-left: 6px; font-size: 10.5px; color: var(--ink-mute); }
 .lib-table .col-mean { color: var(--ink-soft); }
@@ -347,10 +350,11 @@ body::before {
 @media (max-width: 880px) {
   /* 사파리에선 table-layout: fixed 가 숨긴 열 폭까지 잡아둬서 표가 반쪽이 된다. auto 로 두고 표현 열이 남는 폭을 다 먹게 */
   .lib-table { min-width: 0; font-size: 12.5px; table-layout: auto; width: 100%; }
-  .lib-table .col-npc, .lib-table .col-mean, .lib-table th:nth-child(3), .lib-table th:nth-child(4) { display: none; }
+  .lib-table .col-npc, .lib-table .col-mean { display: none; }
+  .lib-table .col-fav { width: 26px; }
   .lib-table th:first-child, .lib-table td.col-day { width: 44px; padding-left: 10px; padding-right: 4px; white-space: nowrap; }
   .lib-table th:first-child small { display: none; }
-  .lib-table td.col-word, .lib-table th:nth-child(2) { width: 99%; }
+  .lib-table td.col-word, .lib-table th.col-word { width: 99%; }
   .lib-table th.col-st, .lib-table td.col-st { width: 56px; text-align: right; padding-right: 10px; white-space: nowrap; }
   .lib-detail td { padding: 12px 12px 14px; }
   .lib-detail-actions { flex-wrap: wrap; gap: 8px; }
@@ -7048,6 +7052,12 @@ function OvertimeCard({ today, tomorrow, email }) {
   };
   const doneCount = _sideProject ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0)) : (Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0));
   const doneTotal = _sideProject ? 2 : 4;
+  // ★ 내일 미리 쓰기 (2026-09-10): 한국어 지시문에 내일 표현이 영어 그대로 박혀 있는 날이 있다
+  //   (예: "그분 인맥 leverage하는 방향으로 갈게요"). 그러면 위의 '내일 단어 미리 맞히기' 답이 그냥 보인다.
+  //   개발 뷰에선 그 표현만 빈칸으로 가리고, 정답은 내일 아침 사수 카드에서 공개한다.
+  const _tmKo = (tomorrow && tomorrow.task && tomorrow.task.koSentence) || "";
+  const _tmKoShown = (_sideProject && tomorrow && tomorrow.word) ? _blankWordEx(_tmKo, tomorrow.word).text : _tmKo;
+  const _tmKoHidden = _tmKoShown !== _tmKo;
 
   return (
     <div className="ot-card">
@@ -7116,13 +7126,14 @@ function OvertimeCard({ today, tomorrow, email }) {
               {_sideProject && (
                 <div style={{ margin: "6px 0 10px", padding: "10px 12px", background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 8 }}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink-soft)", marginBottom: 6 }}>🔮 내일 단어 미리 맞히기 · 뜻: <b style={{ color: "var(--ink)" }}>{tomorrow.meaning}</b></div>
+                  {_tmKoHidden && <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 6, lineHeight: 1.5 }}>아래 문장의 _____ 자리에 들어갈 표현이에요.</div>}
                   {preSaved
                     ? <div style={{ fontSize: 13, color: "var(--ink)" }}>내 답: <b>{(_loadJSON(_preKey(email, day + 1)) || {}).wordGuess || wordGuess || "(비움)"}</b> <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>· 정답은 내일 아침에</span></div>
                     : <input value={wordGuess} onChange={e => setWordGuess(e.target.value)} placeholder="이 뜻의 영어 표현을 아는 만큼 써보세요"
                         style={{ width: "100%", boxSizing: "border-box", fontFamily: "inherit", fontSize: 13.5, padding: "9px 11px", borderRadius: 8, border: "1px solid var(--line)", background: "var(--paper)" }} />}
                 </div>
               )}
-              <div className="ot-pre-ko">"{tomorrow.task.koSentence}"</div>
+              <div className="ot-pre-ko">"{_tmKoShown}"</div>
               {preSaved ? (
                 <div className="ot-pre-saved">
                   <div className="ot-pre-mine">{(_loadJSON(_preKey(email, day + 1)) || {}).text || pre}</div>
@@ -10318,9 +10329,9 @@ function LibraryPage({ openScene }) {
   const [favTick, setFavTick] = useState(0);
   const favSet = useMemo(() => _favWords(), [favTick]);
   const toggleFav = (e, word) => { e.stopPropagation(); _toggleFav(word); setFavTick(t => t + 1); };
-  const FavStar = ({ word, size }) => _favOn ? (
+  const FavStar = ({ word, size, inCell }) => _favOn ? (
     <span role="button" tabIndex={0} title={favSet.has(word) ? "즐겨찾기 해제" : "즐겨찾기"} onClick={(e) => toggleFav(e, word)}
-      style={{ cursor: "pointer", fontSize: size || 15, lineHeight: 1, marginRight: 6, color: favSet.has(word) ? "#E0A93D" : "var(--line)", userSelect: "none" }}>{favSet.has(word) ? "★" : "☆"}</span>
+      style={{ cursor: "pointer", fontSize: size || 15, lineHeight: 1, marginRight: inCell ? 0 : 6, color: favSet.has(word) ? "#E0A93D" : "var(--line)", userSelect: "none" }}>{favSet.has(word) ? "★" : "☆"}</span>
   ) : null;
   const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
   const filtered = accessible.filter(s => {
@@ -10393,9 +10404,10 @@ function LibraryPage({ openScene }) {
           <table className="lib-table">
             <thead>
               <tr>
-                <th className="sortable" onClick={toggleSort} title="클릭해서 정렬">DAY {sortDesc ? "▼" : "▲"}<small>{sortDesc ? "최신순" : "Day 1부터"}</small></th>
-                <th>표현</th>
-                <th>뜻</th>
+                <th className="col-day sortable" onClick={toggleSort} title="클릭해서 정렬">DAY {sortDesc ? "▼" : "▲"}<small>{sortDesc ? "최신순" : "Day 1부터"}</small></th>
+                {_favOn && <th className="col-fav" title="즐겨찾기한 표현은 미니 퀴즈에 자주 나와요">⭐</th>}
+                <th className="col-word">표현</th>
+                <th className="col-mean">뜻</th>
                 <th className="col-npc">상황</th>
                 <th className="col-st">상태</th>
               </tr>
@@ -10413,13 +10425,14 @@ function LibraryPage({ openScene }) {
                   <React.Fragment key={s.day}>
                     <tr className={"lib-row" + (isOpen ? " open" : "") + (s.status === "today" ? " today" : "")} onClick={() => setOpenDay(isOpen ? null : s.day)}>
                       <td className="col-day">{String(s.day).padStart(2, "0")}</td>
-                      <td className="col-word"><FavStar word={s.word} /><b>{s.word}</b><small>{s.pos}</small><span className="lib-mean-inline">{s.meaning}</span></td>
+                      {_favOn && <td className="col-fav" onClick={(e) => e.stopPropagation()}><FavStar word={s.word} inCell /></td>}
+                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small><span className="lib-mean-inline">{s.meaning}</span></td>
                       <td className="col-mean">{s.meaning}</td>
                       <td className="col-npc"><span className="lib-cat">{_libCatLabel(_libCategory(s))}</span></td>
                       <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
                     </tr>
                     {isOpen && (
-                      <tr className="lib-detail"><td colSpan={(window.matchMedia && window.matchMedia("(max-width: 880px)").matches) ? 3 : 5}>
+                      <tr className="lib-detail"><td colSpan={((window.matchMedia && window.matchMedia("(max-width: 880px)").matches) ? 3 : 5) + (_favOn ? 1 : 0)}>
                         <div className="lib-detail-grid">
                           <div><label>상황</label><p>{_sceneNoClock(s.scene)}</p></div>
                           <div><label>{c.name} · {c.role}</label><p className="lib-quote">"{_hlQuote(s.quote, s.word)}"</p>{s.quoteKo && <p className="lib-ko">{s.quoteKo}</p>}</div>
@@ -10439,11 +10452,12 @@ function LibraryPage({ openScene }) {
                 );
               })}
               {_favOn && filter === "fav" && filtered.length === 0 && (
-                <tr><td colSpan={5} style={{ padding: "16px 14px", fontSize: 12.5, color: "var(--ink-mute)", lineHeight: 1.6 }}>아직 즐겨찾기한 표현이 없어요. 표현 옆 ☆ 를 누르면 여기 모이고, 미니 퀴즈에도 자주 나와요.</td></tr>
+                <tr><td colSpan={6} style={{ padding: "16px 14px", fontSize: 12.5, color: "var(--ink-mute)", lineHeight: 1.6 }}>아직 즐겨찾기한 표현이 없어요. 표현 옆 ☆ 를 누르면 여기 모이고, 미니 퀴즈에도 자주 나와요.</td></tr>
               )}
               {locked.slice(0, 3).map(s => (
                 <tr key={"l" + s.day} className="lib-row locked">
                   <td className="col-day">{String(s.day).padStart(2, "0")}</td>
+                  {_favOn && <td className="col-fav"></td>}
                   <td className="col-word"><b>{"▒".repeat(Math.max(5, Math.min(12, (s.word || "").length)))}</b><span className="lib-mean-inline">Day {s.day}에 만나요</span></td>
                   <td className="col-mean">Day {s.day}에 만나요</td>
                   <td className="col-npc"></td>
@@ -15300,6 +15314,9 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
     fontWeight: state === "ok" ? 800 : 500, opacity: pick !== null && !state ? 0.6 : 1, transition: "all 0.15s",
   });
   const chosenOk = pick !== null && q.options && q.options[pick] && q.options[pick].ok;
+  // 밑줄 + 뜻 보기는 정답 공개 후에만. 문제를 푸는 중엔 밑줄이 힌트가 되고, 보기를 누르면 답이 아니라 뜻이 열려서 헷갈린다.
+  const revealed = pick !== null;
+  const gloss = (txt) => revealed ? <QzGloss text={txt} rd={rd} skipWord={word} /> : txt;
   // ok: 첫 시도 정답 / partial: 맞췄지만 힌트·재시도 (내일 다시) / 그 외: 오답
   const explainBox = (ok, correctText, extra, partial) => (
     <div style={{ marginTop: 12, padding: "11px 13px", borderRadius: 8, background: ok ? "rgba(74,124,89,0.08)" : partial ? "rgba(224,169,61,0.12)" : "rgba(178,58,44,0.07)", border: "1px solid " + (ok ? "rgba(74,124,89,0.35)" : partial ? "rgba(224,169,61,0.5)" : "rgba(178,58,44,0.3)"), fontSize: 12.5, lineHeight: 1.6, color: "var(--ink)" }}>
@@ -15319,12 +15336,12 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
         {q.sub ? <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 2 }}>{q.sub}</div> : null}
         {q.type === "blank" && (
           <div style={{ marginTop: 10, padding: 16, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 17, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>
-            <QzGloss text={q.sentence} rd={rd} skipWord={word} />
+            {gloss(q.sentence)}
           </div>
         )}
         {q.type === "lunch" && q.greet && (
           <div style={{ marginTop: 10, padding: "10px 13px", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 12px 12px 12px", fontSize: 13.5, lineHeight: 1.5 }}>
-            🍱 동료: "<QzGloss text={q.greet} rd={rd} skipWord={word} />"{q.greetKo ? <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 3 }}>{q.greetKo}</div> : null}
+            🍱 동료: "{gloss(q.greet)}"{q.greetKo ? <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 3 }}>{q.greetKo}</div> : null}
           </div>
         )}
         <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
@@ -15333,7 +15350,7 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
             return (
               <button key={i} type="button" style={optStyle(state)} onClick={() => { if (pick !== null) return; setPick(i); finish(!!o.ok); }}>
                 <span style={{ color: "var(--ink-mute)", fontWeight: 800, marginRight: 6 }}>{String.fromCharCode(65 + i)}.</span>
-                {(q.type === "slack" || q.type === "lunch" || q.type === "blank") ? <QzGloss text={o.t} rd={rd} skipWord={word} /> : o.t}
+                {(q.type === "slack" || q.type === "lunch" || q.type === "blank") ? gloss(o.t) : o.t}
                 {pick !== null && (o.ok || pick === i || q.type === "slack" || q.type === "lunch") && o.why ? <div style={{ marginTop: 5, fontSize: 11.5, color: o.ok ? "var(--green)" : "var(--stamp-red)", fontWeight: 600, lineHeight: 1.5 }}>{o.ok ? "✓ " : "✗ "}{o.why}</div> : null}
                 {pick !== null && o.ok && o.ko ? <div style={{ marginTop: 3, fontSize: 11.5, color: "var(--ink-mute)" }}>{o.ko}</div> : null}
               </button>
@@ -15487,7 +15504,7 @@ function MiniQuizActivity({ today, item, onClose, onComplete }) {
   }
   if (results) return <QzResult title="MINI QUIZ · 결과" results={results} onDone={onComplete} doneLabel="미니 퀴즈 완료 ✓" />;
   return <QuizRunner questions={questions} title="MINI QUIZ" eyebrow={`14:00 · 오늘 표현 ${questions.length}문제`} rd={rd} onFinish={onFinish} onClose={onClose}
-    footerNote="밑줄 친 표현을 누르면 뜻이 보여요. 틀린 단어는 내일 미니 퀴즈에 한 번 더 나와요." />;
+    footerNote="답을 고르면 문장 속 배운 표현에 밑줄이 생겨요. 눌러서 뜻을 보고 노트에 담을 수 있어요. 틀린 단어는 내일 미니 퀴즈에 한 번 더 나와요." />;
 }
 
 // ── 퇴근 후 Review Quiz (OvertimeCard 안에서 연다) ──
@@ -15529,7 +15546,7 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
   if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel="닫기" extraTop={attemptNo > 1 ? <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 800, textAlign: "center" }}>👏 오늘 {attemptNo}번째 응시! 반복이 실력이에요.</div> : null} />;
   if (!questions.length) return <ActivityShell title="REVIEW QUIZ" onClose={onClose}><div style={{ padding: 20, textAlign: "center", color: "var(--ink-mute)" }}>아직 복습할 표현이 없어요. 내일 다시 열어봐요.</div></ActivityShell>;
   return <QuizRunner questions={questions} title="REVIEW QUIZ" eyebrow={`복습 ${questions.length}문제${attemptNo > 1 ? " · " + attemptNo + "번째" : ""}`} rd={rd} onFinish={onFinish} onClose={onClose}
-    footerNote="복습 예정 표현은 최소 한 번씩 나와요. 밑줄 친 표현을 누르면 뜻이 보여요." />;
+    footerNote="복습 예정 표현은 최소 한 번씩 나와요. 답을 고르면 밑줄 친 표현을 눌러 뜻을 볼 수 있어요." />;
 }
 
 function ActivityModal({ item, today, onClose, onComplete }) {
