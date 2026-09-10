@@ -18478,6 +18478,13 @@ window.SimApp = App;
     // URL ?expired=1 상태 확인
     const _expiredOn = new URLSearchParams(location.search).get('expired') === '1';
 
+    // ★ Day 표시 (2026-09-10): 예전엔 저장된 dayInCompany 만 보여줘서, 고정을 푼 뒤에도 옛 숫자가 떠 헷갈렸다.
+    //   화면에 실제로 뜨는 Day, 회원과 같은 기준인 게이트 Day, 고정 여부를 나눠서 보여준다.
+    const _dpPinned = u.devDayOverride === true;
+    const _dpUser = (window.__SIM && window.__SIM.USER) || null;
+    const _dpScreenDay = (_dpUser && (_dpUser.realCurrentDay || _dpUser.currentDay)) || u.dayInCompany;
+    const _dpGateDay = (typeof window.__odGateNow === 'function') ? window.__odGateNow() : null;
+
     panel.innerHTML = `
       <div class="dp-head">
         <div class="dp-title">🛠 DEV PANEL</div>
@@ -18489,7 +18496,10 @@ window.SimApp = App;
         <div class="dp-badges">${badgesHtml}</div>
         ${u.cohort ? '<div class="dp-cohort">🎫 ' + u.cohort + '</div>' : ''}
         ${u.inviteCode ? '<div class="muted" style="margin-top:4px">코드: <strong>' + u.inviteCode + '</strong></div>' : ''}
-        <div style="margin-top:8px;">현재 <span class="day">Day ${u.dayInCompany}</span></div>
+        <div style="margin-top:8px;">화면 <span class="day">Day ${_dpScreenDay}</span>${_dpGateDay ? ' <span class="muted">· 공식(게이트) Day ' + _dpGateDay + '</span>' : ''}</div>
+        ${_dpPinned
+          ? '<div style="margin-top:5px;font-size:11px;line-height:1.5;color:#FFB380;">📌 dev 점프로 <strong>Day ' + u.dayInCompany + '</strong>에 고정 중이에요. 하루를 다 끝내도 화면 Day 는 안 넘어가요. 회원과 같은 기준으로 보려면 아래 <strong>자동 Day로 복귀</strong>.</div>'
+          : '<div style="margin-top:5px;font-size:11px;line-height:1.5;" class="muted">고정 없음 · 회원과 같은 학습 게이트 기준이에요. (저장된 dayInCompany ' + u.dayInCompany + ' 는 참고용 옛 값)</div>'}
       </div>
       <div class="dp-row">
         <button class="dp-btn" data-act="d-1">← Day -1</button>
