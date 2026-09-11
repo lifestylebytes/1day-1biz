@@ -716,7 +716,7 @@ body::before {
 .fwc-ko { font-size: 11.5px; color: #7A6844; line-height: 1.55; margin-top: 2px; }
 /* 🔓 해금 팝업 (개발 뷰) */
 .unlock-pop-bg { position: fixed; inset: 0; z-index: 9050; background: rgba(42,31,20,0.6); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.unlock-pop { width: 100%; max-width: 380px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px 18px; box-shadow: 0 30px 70px -10px rgba(0,0,0,0.45); animation: fadeUp 0.3s ease-out; }
+.unlock-pop { width: 100%; max-width: 380px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px 18px; box-shadow: 0 30px 70px -10px rgba(0,0,0,0.45); animation: fadeUpBlock 0.3s ease-out; }
 .unlock-pop-eyebrow { font-size: 10.5px; letter-spacing: 0.18em; font-weight: 800; color: var(--orange); text-transform: uppercase; margin-bottom: 8px; }
 .unlock-pop-title { font-size: 18px; font-weight: 900; margin-bottom: 12px; }
 .unlock-pop-list { display: grid; gap: 8px; margin-bottom: 14px; }
@@ -756,7 +756,9 @@ body::before {
 .ot-pre-mine { font-size: 14px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .ot-pre-saved .btn { justify-self: start; }
 /* 🔮 어제 미리 쓴 문장 vs 오늘 표현 */
-.pre-reveal { margin-bottom: 14px; border: 2px solid var(--orange); border-radius: 12px; background: var(--paper); padding: 14px 16px; box-shadow: 4px 4px 0 rgba(216,90,42,0.18); animation: fadeUp 0.3s ease-out; }
+/* ★ fadeUp 은 가운데 정렬 토스트 전용(translate(-50%) 포함). 일반 블록은 이걸 쓴다 */
+@keyframes fadeUpBlock { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.pre-reveal { margin-bottom: 14px; border: 2px solid var(--orange); border-radius: 12px; background: var(--paper); padding: 14px 16px; box-shadow: 4px 4px 0 rgba(216,90,42,0.18); animation: fadeUpBlock 0.3s ease-out; }
 .pre-reveal-head { font-size: 13.5px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pre-hit { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--green); border-radius: 999px; padding: 2px 8px; }
 .pre-cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -806,6 +808,7 @@ body::before {
 @keyframes scsBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @keyframes scsPulse { 0%, 100% { box-shadow: 0 10px 24px -14px rgba(0,0,0,0.6); } 50% { box-shadow: 0 10px 24px -14px rgba(0,0,0,0.6), 0 0 0 4px rgba(216,90,42,0.25); } }
 @media (prefers-reduced-motion: reduce) { .scs-msg, .scs-msg-dot { animation: none; } }
+.scs-mean-hidden { color: var(--ink-mute); font-weight: 600; font-size: 0.82em; letter-spacing: 0; }
 @media (max-width: 880px) { .scs-msg-cta { display: none; } }
 @media (max-width: 880px) { .scene-card-simple .scene-card-body { padding: 18px 18px 20px; } .scs-word { font-size: 28px; } .scs-actions .btn { flex: 1 1 auto; justify-content: center; } }
 .scene-card-time {
@@ -9125,7 +9128,9 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done, scena
         <div className="scene-card-body">
           <div className="scs-label">오늘의 표현</div>
           <div className="scs-word">{scenario.word}</div>
-          <div className="scs-mean">{scenario.meaning}</div>
+          {(!_isNextFeature() || !needCheckin)
+            ? <div className="scs-mean">{scenario.meaning}</div>
+            : <div className="scs-mean scs-mean-hidden">뜻은 출근하고 맞혀봐요 · 틀려도 바로 알려드려요</div>}
           {!needCheckin && !done && !scenarioDone && (
             <button className="scs-msg" onClick={onOpen} title="탭해서 답하기">
               <span className="scs-msg-avatar" style={{ background: npc.color }}>{npc.avatar}<i className="scs-msg-dot" /></span>
@@ -15063,6 +15068,7 @@ function _qzCollocations(s) {
     if (!m) return;
     const en = (m[1] || "").trim(), ko = (m[2] || "").trim();
     if (!/[A-Za-z]{2,}/.test(en) || en.indexOf(" + ") >= 0) return;   // "A + B | 대비" 같은 묶음은 제외
+    if (/[가-힣]/.test(en) || /[\[\]]/.test(en)) return;              // "park = 잠시 옆에 두다", "sign off on [무엇]" 같은 줄은 보기로 못 쓴다
     if (!/[가-힣]/.test(ko) || BAD_KO.test(ko)) return;               // 한국어 뜻이 아닌 줄 제외
     if (ko.length < 2 || ko.length > 24) return;                      // 너무 길면 문제 지문이 지저분해진다
     out.push({ en, ko });
@@ -15213,11 +15219,13 @@ function _qzMakeAll(s, pool, rd) {
   if (Array.isArray(s.mcOptions) && s.mcOptions.some(o => o.kind === "correct")) {
     // ★ 질문에 단어를 쓰면 '그 단어가 든 보기'가 곧 정답이 된다 (90일 중 78일이 보기 3개 중 1개만 단어 포함).
     //   단어를 빼고 톤을 고르는 문제로 바꾸고, 왜 정답·오답인지는 보기별 코멘트로 알려준다.
-    qs.push({ id: tag("slack"), type: "slack", day: s.day, word: s.word, prompt: "동료에게 슬랙으로 답장한다면, 가장 자연스러운 한 줄은?", sub: "톤·구체성·오늘 표현을 살렸는지로 골라요", options: _shuf(s.mcOptions.map(o => ({ t: o.text, ok: o.kind === "correct", why: o.note || "", kind: o.kind }))), explain: "" });
+    const _npcS = ((window.__SIM || {}).CHARACTERS || {})[s.npc] || {};
+    qs.push({ id: tag("slack"), type: "slack", day: s.day, word: s.word, prompt: "이 메시지에 슬랙으로 답장한다면, 가장 자연스러운 한 줄은?", sub: "톤·구체성·오늘 표현을 살렸는지로 골라요",
+      greet: s.quote, greetKo: s.quoteKo, who: _npcS.name || "동료", avatar: _npcS.avatar || "💬", color: _npcS.color || "var(--paper-warm)", options: _shuf(s.mcOptions.map(o => ({ t: o.text, ok: o.kind === "correct", why: o.note || "", kind: o.kind }))), explain: "" });
   }
   // 점심 대화 (lunchScript turn1)
   if (s.lunchScript && Array.isArray(s.lunchScript.turn1) && s.lunchScript.turn1.some(o => o.kind === "correct")) {
-    qs.push({ id: tag("lunch"), type: "lunch", day: s.day, word: s.word, greet: s.lunchScript.greet, greetKo: s.lunchScript.greetKo, prompt: "점심 가자는 동료에게 가장 자연스러운 답은?", options: _shuf(s.lunchScript.turn1.map(o => ({ t: o.text, ok: o.kind === "correct", why: o.note || "", ko: o.ko }))), explain: "" });
+    qs.push({ id: tag("lunch"), type: "lunch", day: s.day, word: s.word, greet: s.lunchScript.greet, greetKo: s.lunchScript.greetKo, who: "동료", avatar: "🍱", color: "var(--paper-warm)", prompt: "점심 가자는 동료에게 가장 자연스러운 답은?", options: _shuf(s.lunchScript.turn1.map(o => ({ t: o.text, ok: o.kind === "correct", why: o.note || "", ko: o.ko }))), explain: "" });
   }
   // 자주 같이 쓰는 표현 3개
   const cols = _qzCollocations(s);
@@ -15462,9 +15470,16 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
             {gloss(q.sentence)}
           </div>
         )}
-        {q.type === "lunch" && q.greet && (
-          <div style={{ marginTop: 10, padding: "10px 13px", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 12px 12px 12px", fontSize: 13.5, lineHeight: 1.5 }}>
-            🍱 동료: "{gloss(q.greet)}"{q.greetKo ? <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 3 }}>{q.greetKo}</div> : null}
+        {(q.type === "lunch" || q.type === "slack") && q.greet && (
+          <div style={{ display: "flex", gap: 9, marginTop: 11, alignItems: "flex-start" }}>
+            <span style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, display: "grid", placeItems: "center", background: q.color || "var(--paper-warm)", fontSize: 14 }}>{q.avatar || "💬"}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 11.5, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>{q.who || "동료"}</span>
+              <span style={{ display: "block", padding: "9px 12px", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 12px 12px 12px", fontSize: 13.5, lineHeight: 1.55 }}>
+                {gloss(q.greet)}
+                {q.greetKo ? <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-mute)", marginTop: 4 }}>{q.greetKo}</span> : null}
+              </span>
+            </span>
           </div>
         )}
         <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
@@ -15569,7 +15584,35 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
 }
 
 // ── 결과 화면 공통 ──
-function QzResult({ title, results, attempt, onDone, doneLabel, extraTop }) {
+// 퇴근하고 한 번 더 푼 사람에게 주는 도장. 점수대별로 등급이 다르고, 여러 번 풀수록 문구가 달라진다.
+function QzCelebrate({ pct, attempt, total }) {
+  const tier = pct === 100 ? { emoji: "🏆", stamp: "PERFECT", ko: "완벽해요", color: "#B8860B", bg: "#FFF6D6", line: "한 문제도 안 놓쳤어요. 오늘 표현들, 이제 진짜 내 거예요." }
+    : pct >= 80 ? { emoji: "🔥", stamp: "GREAT", ko: "거의 다 잡았어요", color: "#C2410C", bg: "#FFEEE3", line: "이 정도면 회의에서 바로 꺼내 쓸 수 있어요." }
+    : pct >= 50 ? { emoji: "👏", stamp: "GOOD", ko: "잘하고 있어요", color: "#2D7A3D", bg: "#EAF5EC", line: "절반 넘게 기억했어요. 틀린 건 내일 다시 만나요." }
+    : { emoji: "💪", stamp: "NICE TRY", ko: "그래도 하셨네요", color: "#7A6844", bg: "#F3EFE4", line: "퇴근하고 한 번 더 앉은 것부터가 실력이에요." };
+  return (
+    <div className="qz-celebrate" style={{ background: tier.bg, borderColor: tier.color }}>
+      <div className="qz-celebrate-emoji">{tier.emoji}</div>
+      <div className="qz-celebrate-stamp" style={{ color: tier.color, borderColor: tier.color }}>{tier.stamp}</div>
+      <div className="qz-celebrate-ko" style={{ color: tier.color }}>{tier.ko}</div>
+      <div className="qz-celebrate-line">{tier.line}</div>
+      {attempt > 1 && <div className="qz-celebrate-again">🔁 오늘 <b>{attempt}번째</b> 응시예요. 반복이 제일 빠른 길이에요.</div>}
+      <style>{`
+        .qz-celebrate { position: relative; margin: 2px 0 14px; padding: 20px 18px 18px; border: 2px solid; border-radius: 14px; text-align: center; overflow: hidden; animation: qzPop 0.45s cubic-bezier(.2,1.3,.4,1) both; }
+        .qz-celebrate-emoji { font-size: 52px; line-height: 1; animation: qzBounce 0.7s cubic-bezier(.2,1.4,.4,1) 0.12s both; }
+        .qz-celebrate-stamp { display: inline-block; margin-top: 10px; padding: 4px 12px; border: 2.5px solid; border-radius: 6px; font-size: 12px; font-weight: 900; letter-spacing: 0.18em; transform: rotate(-4deg); animation: qzStamp 0.5s cubic-bezier(.2,1.2,.4,1) 0.3s both; }
+        .qz-celebrate-ko { margin-top: 10px; font-size: 19px; font-weight: 900; letter-spacing: -0.02em; }
+        .qz-celebrate-line { margin-top: 7px; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
+        .qz-celebrate-again { margin-top: 11px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.12); font-size: 12px; color: var(--ink-soft); }
+        @keyframes qzPop { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: none; } }
+        @keyframes qzBounce { 0% { transform: scale(0.3) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+        @keyframes qzStamp { 0% { opacity: 0; transform: rotate(-22deg) scale(1.9); } 65% { opacity: 1; transform: rotate(-2deg) scale(0.94); } 100% { opacity: 1; transform: rotate(-4deg) scale(1); } }
+        @media (prefers-reduced-motion: reduce) { .qz-celebrate, .qz-celebrate-emoji, .qz-celebrate-stamp { animation: none; } }
+      `}</style>
+    </div>
+  );
+}
+function QzResult({ title, results, attempt, onDone, doneLabel, extraTop, celebrate }) {
   const scored = results.filter(r => !r.preview);
   const score = scored.filter(r => r.ok).length;
   const previewCount = results.length - scored.length;
@@ -15579,12 +15622,13 @@ function QzResult({ title, results, attempt, onDone, doneLabel, extraTop }) {
   return (
     <ActivityShell title={title} onClose={onDone}>
       {extraTop}
-      <div style={{ textAlign: "center", padding: "16px 0 8px" }}>
+      {celebrate && <QzCelebrate pct={pct} attempt={attempt || 1} total={results.length} />}
+      <div style={{ textAlign: "center", padding: celebrate ? "2px 0 8px" : "16px 0 8px" }}>
         {attempt ? <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>{attempt}번째 응시</div> : null}
         <div style={{ fontSize: 56, fontWeight: 900, color: "var(--orange)", lineHeight: 1, letterSpacing: "-0.04em", marginTop: 6 }}>
           {score}<span style={{ fontSize: 22, color: "var(--ink-mute)" }}> / {scored.length}</span>
         </div>
-        <div style={{ marginTop: 12, fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6 }}>{praise}</div>
+        {!celebrate && <div style={{ marginTop: 12, fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6 }}>{praise}</div>}
         {previewCount > 0 && (
           <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.5 }}>
             푼 문제는 {results.length}개예요. 아직 안 배운 <b>내일 단어 예습 {previewCount}문제</b>는 점수에서 빼요.
@@ -15684,7 +15728,7 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
       </ActivityShell>
     );
   }
-  if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel="닫기" extraTop={attemptNo > 1 ? <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 800, textAlign: "center" }}>👏 오늘 {attemptNo}번째 응시! 반복이 실력이에요.</div> : null} />;
+  if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel="닫기" celebrate />;
   if (!questions.length) return <ActivityShell title="REVIEW QUIZ" onClose={onClose}><div style={{ padding: 20, textAlign: "center", color: "var(--ink-mute)" }}>아직 복습할 표현이 없어요. 내일 다시 열어봐요.</div></ActivityShell>;
   return <QuizRunner questions={questions} title="REVIEW QUIZ" eyebrow={`복습 ${questions.length}문제${attemptNo > 1 ? " · " + attemptNo + "번째" : ""}`} rd={rd} onFinish={onFinish} onClose={onClose}
     footerNote="복습 예정 표현은 최소 한 번씩 나와요. 답을 고르면 밑줄 친 표현을 눌러 뜻을 볼 수 있어요." />;
@@ -16195,7 +16239,7 @@ function SetupPopup({ onClose }) {
   const [pushOn, setPushOn] = useState(false);
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
+      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUpBlock 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
         <button onClick={onClose} aria-label="닫기"
           style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent", color: "var(--ink-mute)", fontSize: 17, lineHeight: 1, cursor: "pointer", fontFamily: "inherit", zIndex: 2 }}>✕</button>
         <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>총무팀 · 출근 환경 세팅</div>
@@ -16259,7 +16303,7 @@ function FirstWeekPopup({ day, onClose }) {
   const nextScn = (window.__SIM?.SCENARIOS || []).find(x => x.day === day + 1);
   const shell = (inner, footer) => (
     <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUp 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
+      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUpBlock 0.3s ease-out", maxHeight: "88vh", overflowY: "auto" }}>
         <button onClick={onClose} aria-label="닫기"
           style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent", color: "var(--ink-mute)", fontSize: 17, lineHeight: 1, cursor: "pointer", fontFamily: "inherit", zIndex: 2 }}>✕</button>
         {inner}
