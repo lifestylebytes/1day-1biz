@@ -16436,16 +16436,21 @@ function _tfState() {
 
 // ── TF 트랙 시나리오 로더: 선택된 트랙의 30일 콘텐츠를 data/에서 로드 ──
 window.__TF_SCN = window.__TF_SCN || {};
-(function _tfLoadScenarios() {
+// ★ 2026-09-11: 예전엔 이 로더가 '페이지 로드 시 한 번' 만 돌았다. 그래서 그 자리에서 트랙을
+//   고른 회원은 콘텐츠가 안 불러와져 새로고침 전까지 Day 90 폴백('pay it forward')을 계속 봤다.
+//   (이규태님 "대리 심사 봤는데도 같은 단어" 신고.) 선택 직후에도 부를 수 있게 이름을 준다.
+function _tfLoadScenarios(forceId) {
   try {
-    const t = _tfState().track; if (!t) return;
+    const t = forceId || _tfState().track; if (!t) return;
     const id = t.id || t; if (window.__TF_SCN[id]) return;
     fetch('data/tf-scenarios-' + id + '.json')
       .then(r => r.ok ? r.json() : null)
       .then(d => { window.__TF_SCN[id] = d || 'missing'; window.dispatchEvent(new Event('tf-scn-loaded')); })
       .catch(() => { window.__TF_SCN[id] = 'missing'; window.dispatchEvent(new Event('tf-scn-loaded')); });
   } catch (e) {}
-})();
+}
+window.__odLoadTf = _tfLoadScenarios;
+_tfLoadScenarios();
 
 // ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
 // === 첫 주 웰컴 팝업 (Day 1~5): 프레임은 회사 첫 주, 내용물은 매일 하나씩 실전 꿀팁 ===
@@ -16812,6 +16817,7 @@ function TrackSelectModal({ done, onClose }) {
         window.OD.updateProgress(local.email, { tf_track: pick, tf_started_at: startedAt }).catch(() => {});
       }
     }
+    try { _tfLoadScenarios(pick); } catch (e) {}   // 새로고침 없이도 트랙 콘텐츠가 바로 뜨게
     try { if (window.gtag) window.gtag("event", "tf_select", { track: pick, nth }); } catch (e) {}
   };
   const picked = TF_TRACKS.find(t => t.id === pick);
@@ -16828,7 +16834,7 @@ function TrackSelectModal({ done, onClose }) {
               첫 임무가 책상에 도착하는 대로 시작됩니다.<br/>
               <span style={{ color: "var(--ink-mute)", fontSize: 12 }}>30일 완주하면 다음 TF를 고를 수 있어요. ({nth}/4)</span>
             </p>
-            <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>출근하기 →</button>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => { try { onClose(); } catch (e) {} location.reload(); }}>출근하기 →</button>
           </div>
         ) : (
           <>
