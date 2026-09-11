@@ -1027,10 +1027,11 @@ body::before {
 .ty-errand-head { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
 .ty-errand-head small { font-weight: 600; color: var(--ink-mute); font-size: 10.5px; }
 .ty-errand-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; color: var(--ink-soft); }
+.ty-errand-t { flex: 1; min-width: 0; line-height: 1.45; word-break: keep-all; }   /* 심부름 문구가 길어져서 (2026-09-11) */
 .ty-errand-row:hover { background: var(--paper-warm); }
 .ty-errand-row.done { opacity: 0.55; }
 .ty-errand-row.done .ty-errand-t { text-decoration: line-through; }
-.ty-errand-stamp { margin-left: auto; font-size: 11px; font-weight: 900; color: var(--orange); }
+.ty-errand-stamp { margin-left: auto; flex: none; white-space: nowrap; font-size: 11px; font-weight: 900; color: var(--orange); }
 .ty-promo { border: 1px solid var(--line); border-radius: 10px; background: var(--cream); padding: 16px 18px; margin-top: 20px; }
 .ty-promo-head { display: flex; gap: 10px; align-items: baseline; font-weight: 900; font-size: 13.5px; color: var(--ink); margin-bottom: 12px; flex-wrap: wrap; }
 .ty-promo-head span { font-size: 11px; color: var(--orange); font-weight: 800; }
@@ -6520,7 +6521,7 @@ function Locker({ active, setActive, user, unread }) {
       <div className="locker-section">
         <div className="locker-label">Membership</div>
         <button className="locker-link" onClick={_tyOpenUbchall} title="유비챌 상세페이지가 새 탭으로 열려요">
-          <span className="locker-link-l"><span className="locker-link-icon">🔥</span>유비챌 입장</span>
+          <span className="locker-link-l" data-errand="ubchall"><span className="locker-link-icon">🔥</span>유비챌 입장</span>
           <span className="locker-badge" style={{ background: "var(--orange)", color: "#fff" }}>9기 오픈</span>
         </button>
       </div>
@@ -8736,34 +8737,96 @@ function AwayReport({ user }) {
 }
 
 // 오늘의 심부름: 날짜+계정 시드로 매일 2개 고정. 안 해도 불이익 없음 (도장 맛 전용).
+// ── 오늘의 심부름 (개발 뷰) ──
+//   ★ 2026-09-11: 5개뿐이라 매일 같은 게 돌았다. 20개로 늘리고, 최근 6일에 나온 건 다시 안 뽑는다.
+//   minDay: 그 기능이 열린 뒤에만 나오게 (출근부 3, 역량 스탯·마일스톤 4, 복습 30)
+//   nav: 이동할 탭 / sel: 그 화면에서 스크롤할 곳 (모바일은 사원증 탭에 있는 카드들)
 const _TY_ERRANDS = [
-  { id: "library", icon: "📓", t: "업무 노트 1개 다시 읽기", nav: "library" },
-  { id: "mypage", icon: "🪪", t: "사원증 한번 확인하기", nav: "mypage" },
-  { id: "inbox", icon: "✉️", t: "사내 메모함 열어보기", nav: "inbox" },
-  { id: "attend", icon: "📅", t: "출근부 구경하기", nav: null },
-  { id: "recall", icon: "💭", t: "어제 표현 하나 소리 내서 말해보기", nav: null },
+  { id: "library",   icon: "📓", t: "업무 노트에서 지난 표현 하나 다시 읽기", nav: "library" },
+  { id: "libfav",    icon: "⭐", t: "업무 노트에서 마음에 드는 표현에 별 찍기", nav: "library" },
+  { id: "libsearch", icon: "🔎", t: "업무 노트 검색창에 아무 단어나 쳐보기", nav: "library" },
+  { id: "libcard",   icon: "🗂", t: "업무 노트를 '카드'로 바꿔서 훑어보기", nav: "library" },
+  { id: "fwc",       icon: "🎁", t: "첫 주 카드 다시 펼쳐보기", nav: "library", minDay: 2 },
+  { id: "mypage",    icon: "🪪", t: "사원증 한번 확인하기", nav: "mypage" },
+  { id: "skills",    icon: "📊", t: "역량 스탯에서 제일 빈 영역 찾아보기", sel: ".skillgrid", minDay: 4 },
+  { id: "attend",    icon: "📅", t: "출근부에서 이번 주 도장 세어보기", sel: ".attendance", minDay: 3 },
+  { id: "promo",     icon: "🏅", t: "승진 마일스톤에서 D-day 확인하기", sel: ".s2-welcome", minDay: 4 },
+  { id: "inbox",     icon: "✉️", t: "사내 메모함 열어보기", nav: "inbox" },
+  { id: "inbox2",    icon: "📌", t: "안 읽은 사내 메모 하나 읽기", nav: "inbox" },
+  { id: "test",      icon: "✍️", t: "분기 평가 화면 구경하기", nav: "test" },
+  { id: "mynotes",   icon: "📒", t: "복습에서 흔들리는 표현 하나 다지기", nav: "mynotes", minDay: 30 },
+  { id: "recall",    icon: "💭", t: "어제 표현 하나 소리 내서 말해보기", minDay: 2 },
+  { id: "aloud",     icon: "🗣", t: "오늘 표현 세 번 소리 내서 읽기" },
+  { id: "compose",   icon: "✏️", t: "오늘 표현으로 문장 하나 머릿속에서 만들기" },
+  { id: "useit",     icon: "📱", t: "오늘 표현을 동료나 친구한테 한 번 써보기" },
+  { id: "buddy",     icon: "💬", t: "유버디한테 궁금한 표현 하나 물어보기" },
+  { id: "notice",    icon: "📣", t: "1일1비 공지방 한번 들어가보기", nav: "mypage", sel: "[data-errand='notice']" },
+  { id: "desk",      icon: "☕️", t: "물 한 잔 마시고 책상 정리하기" },
+  // ── 숨어 있어서 찾아보지 않으면 모르는 것들 (2026-09-11 아이디어) ──
+  { id: "stealth",   icon: "🥸", t: "업무 위장 모드 켜보기 (탭 제목이 바뀌어요)", nav: "mypage", sel: "[data-errand='stealth']" },
+  { id: "profile",   icon: "👤", t: "직무 프로필 채워보기 (리포트가 더 정확해져요)", nav: "mypage", sel: "[data-errand='profile']" },
+  { id: "guide",     icon: "🧭", t: "첫날 가이드 다시 보기 눌러보기", nav: "mypage", sel: "[data-errand='guide']", minDay: 3 },
+  { id: "push",      icon: "🔔", t: "설정에서 푸시 알림 켜보기", nav: "mypage", sel: "[data-errand='push']", evt: "od-open-settings" },
+  { id: "kakao",     icon: "💌", t: "카톡 출근 알림 켜보기", nav: "mypage", sel: "[data-errand='kakao']", evt: "od-open-settings" },
+  { id: "ubchall",   icon: "🔥", t: "유비챌 입장 한번 눌러보기", sel: "[data-errand='ubchall']" },
+  { id: "ladder",    icon: "🔓", t: "앞으로 뭐가 열리는지 확인하기", sel: ".unlock-ladder" },
+  { id: "side",      icon: "🌙", t: "퇴근 후 사이드 프로젝트 열어보기", sel: ".ot-card", minDay: 2 },
 ];
+const _tyErrandHistKey = (email) => "__OD_ERRAND_HIST_" + (email || "guest");
+// 날짜+이메일 시드로 섞어서 같은 사람은 어느 기기에서나 같은 심부름을 본다
+function _tyPickErrands(email, today, rd, n) {
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem(_tyErrandHistKey(email)) || "[]") || []; } catch (e) {}
+  const saved = hist.find(h => h && h.d === today);
+  if (saved) {
+    const got = (saved.ids || []).map(id => _TY_ERRANDS.find(e => e.id === id)).filter(Boolean);
+    if (got.length) return got;
+  }
+  const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd);
+  const recent = new Set(hist.slice(-6).flatMap(h => (h && h.ids) || []));
+  let pool = avail.filter(e => !recent.has(e.id));
+  if (pool.length < n) pool = avail;                       // 한 바퀴 다 돌면 다시 처음부터
+  let r = [...(today + email)].reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7) >>> 0;
+  const rnd = () => (r = (r * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const sh = pool.slice();
+  for (let i = sh.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = sh[i]; sh[i] = sh[j]; sh[j] = t; }
+  const picked = sh.slice(0, n);
+  try {
+    const next = hist.filter(h => h && h.d !== today).concat([{ d: today, ids: picked.map(e => e.id) }]).slice(-14);
+    localStorage.setItem(_tyErrandHistKey(email), JSON.stringify(next));
+  } catch (e) {}
+  return picked;
+}
 function ErrandsCard({ setActive, toast }) {
-  const email = ((window.__SIM && window.__SIM.USER) ? window.__SIM.USER.email : "") || "";
+  const USER = (window.__SIM && window.__SIM.USER) || {};
+  const email = USER.email || "";
   const today = _tyTodayISO();
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
   const K = "__OD_ERRAND_" + today + "_" + email;
-  const seed = [...(today + email)].reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7);
-  const picked = React.useMemo(() => {
-    // ★ 2026-09-04 핫픽스: seed 가 2^31 이상이면 `seed >> 3` 이 음수가 돼 인덱스가 음수 → undefined 심부름 → 홈 전체가 하얀 화면.
-    //   부호 없는 시프트(>>>)로 바꾸고, 혹시 모를 undefined 는 걸러낸다.
-    const n = _TY_ERRANDS.length;
-    const i1 = seed % n;
-    const i2 = (i1 + 1 + ((seed >>> 3) % Math.max(1, n - 1))) % n;
-    return [_TY_ERRANDS[i1], _TY_ERRANDS[i2]].filter(Boolean);
-  }, [seed]);
+  const picked = React.useMemo(() => _tyPickErrands(email, today, rd, 2), [email, today, rd]);
   const [done, setDone] = React.useState(() => { try { return JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) { return {}; } });
+  const scrollTo = (sel) => { try { const el = document.querySelector(sel); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); return true; } } catch (e) {} return false; };
   const go = (er) => {
-    if (er.nav) setActive(er.nav);
-    else if (er.id === "attend") {
-      // 모바일에선 출근부가 사원증 탭에 있다 (2026-09-09)
-      const el = document.querySelector(".attendance");
-      if (el) { try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }
-      else if (setActive) { setActive("mypage"); setTimeout(() => { try { const el2 = document.querySelector(".attendance"); if (el2) el2.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 350); }
+    // 접혀 있어서 데려가도 안 보이는 것들은 먼저 펴준다
+    if (er.id === "fwc") { try { localStorage.setItem("__OD_FWC_OPEN", "1"); } catch (e) {} }
+    const fire = () => { if (er.evt) { try { window.dispatchEvent(new Event(er.evt)); } catch (e) {} } };
+    if (er.nav) {
+      if (setActive) setActive(er.nav);
+      setTimeout(fire, 200);
+      if (er.sel) setTimeout(() => scrollTo(er.sel), 450);
+      return;
+    }
+    if (er.sel) {
+      fire();
+      if (scrollTo(er.sel)) return;
+      if (!setActive) return;
+      // 지금 화면에 없으면 홈 → 사원증 순으로 (모바일은 출근부·마일스톤·역량 스탯이 사원증 탭에 있다)
+      setActive("home");
+      setTimeout(() => {
+        if (scrollTo(er.sel)) return;
+        setActive("mypage");
+        setTimeout(() => { fire(); setTimeout(() => scrollTo(er.sel), 220); }, 400);
+      }, 400);
     }
   };
   const stamp = (er) => {
@@ -11404,13 +11467,13 @@ function HrRecordsSection() {
         <div style={{ padding: "8px 0" }}><ProfileForm initial={profile || undefined} title="👤 직무 프로필" sub="복습 노트의 주간 인사이트와 성장 리포트가 이 프로필을 읽어요. 바뀌면 여기서 고쳐요." onSave={(p) => { _saveProfile(USER.email || "guest", p); setEditPf(false); }} onCancel={() => setEditPf(false)} /></div>
       ) : !profile ? (
         <button className="hr-row" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", fontSize: 12.5 }} onClick={() => setEditPf(true)}>
-          <span className="hr-row-label">👤 직무 프로필</span>
+          <span className="hr-row-label" data-errand="profile">👤 직무 프로필</span>
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>아직 없어요 · 입력하기 →</span>
         </button>
       ) : null}
       {profile && !editPf && (
         <button className="hr-row" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", fontSize: 12.5, textAlign: "left" }} onClick={() => setEditPf(true)} title="누르면 수정">
-          <span className="hr-row-label">👤 직무 프로필 <small style={{ color: "var(--ink-mute)", fontWeight: 600 }}>수정 →</small></span>
+          <span className="hr-row-label" data-errand="profile">👤 직무 프로필 <small style={{ color: "var(--ink-mute)", fontWeight: 600 }}>수정 →</small></span>
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", textAlign: "right" }}>{profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.freq ? " · 영어 " + profile.freq : ""}</span>
         </button>
       )}
@@ -11490,6 +11553,12 @@ function MyPage({ setActive, setViewingDay }) {
   const [notifTime, setNotifTime] = useState("09:00");
   const [paused, setPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  // 심부름("설정에서 푸시 알림 켜기" 등)이 데려올 때 설정 서랍을 열어준다
+  useEffect(() => {
+    const h = () => setShowSettings(true);
+    window.addEventListener("od-open-settings", h);
+    return () => window.removeEventListener("od-open-settings", h);
+  }, []);
   const [showPause, setShowPause] = useState(false);
   const [tyStealth, setTyStealth] = useState(() => _tyStealthOn());
   const _tyGlow = _isNextFeature() && (() => { try { const w = _tyWeek(0); return !!(w && w.due >= 3 && w.perfect); } catch (e) { return false; } })();
@@ -11652,7 +11721,7 @@ function MyPage({ setActive, setViewingDay }) {
       {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) */}
       {_isNextFeature() && (
         <div className="hr-section" style={{ marginTop: 28 }}>
-          <div className="hr-section-head">업무 위장 모드 🥸</div>
+          <div className="hr-section-head" data-errand="stealth">업무 위장 모드 🥸</div>
           <div style={{ padding: "14px 16px", fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7 }}>
             켜면 브라우저 탭 제목이 <b>"주간 보고_v3.xlsx"</b>로 바뀌어요. 회사에서 몰래 출근하는 분들을 위한 기능.
             <div style={{ marginTop: 10 }}>
@@ -11724,7 +11793,7 @@ function MyPage({ setActive, setViewingDay }) {
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
-          <span className="hr-row-label">📣 1일1비 공지방 입장</span>
+          <span className="hr-row-label" data-errand="notice">📣 1일1비 공지방 입장</span>
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>업데이트·이벤트 소식 받기 →</span>
         </a>
         <a
@@ -11751,7 +11820,7 @@ function MyPage({ setActive, setViewingDay }) {
             location.href = "mainboard.html";
           }}
         >
-          <span className="hr-row-label">🧭 첫날 가이드 다시 보기</span>
+          <span className="hr-row-label" data-errand="guide">🧭 첫날 가이드 다시 보기</span>
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>오늘의 책상에서 한 번 더 →</span>
         </button>
       </div>
@@ -11802,7 +11871,7 @@ function MyPage({ setActive, setViewingDay }) {
 
             {/* 푸시 알림 (PWA), 홈 화면에 추가한 앱에서 동작 */}
             <div className="hr-row">
-              <span className="hr-row-label">🔔 푸시 알림</span>
+              <span className="hr-row-label" data-errand="push">🔔 푸시 알림</span>
               <PushToggle email={USER.email} />
             </div>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", padding: "2px 18px 12px", lineHeight: 1.5 }}>
@@ -11810,7 +11879,7 @@ function MyPage({ setActive, setViewingDay }) {
             </div>
 
             {/* 카톡 출근 알림 (2026-09-03). 2026-09-07 템플릿 승인 + 발송 확인 후 전 회원 공개 */}
-            <KakaoNotifyRow email={USER.email} />
+            <div data-errand="kakao"><KakaoNotifyRow email={USER.email} /></div>
 
             {/* 휴직(구독 해지), 외부 안내 페이지 (Lapidi 결제 해지 가이드) */}
             <a
