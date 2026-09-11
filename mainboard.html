@@ -24,9 +24,20 @@
 /* ★ 2026-09-11: 모달(.modal-bg)·투어 딤이 DOM에 있으면 body 스크롤을 잠근다.
    공지 팝업을 스크롤하려다 뒤 화면이 밀려 올라가던 문제. 스크롤 위치도 되돌려준다. */
 (function(){
-  var SEL = '.modal-bg, .tour-dim', locked = false, savedY = 0;
+  var SEL = '.modal-bg, .tour-dim', locked = false, savedY = 0, pending = 0;
+  // 인라인 style 로 만든 전체화면 오버레이(승진 심사·트랙 신청·기념식 등)도 같이 잠근다.
+  function hasInlineOverlay(){
+    var els = document.querySelectorAll('div[style*="position: fixed"]');
+    for (var i = 0; i < els.length; i++) {
+      var st = getComputedStyle(els[i]);
+      if (st.position !== 'fixed' || st.display === 'none' || st.visibility === 'hidden') continue;
+      if ((Number(st.zIndex) || 0) < 100) continue;
+      if (els[i].offsetWidth >= window.innerWidth - 2 && els[i].offsetHeight >= window.innerHeight - 2) return true;
+    }
+    return false;
+  }
   function sync(){
-    var open = !!document.querySelector(SEL);
+    var open = !!document.querySelector(SEL) || hasInlineOverlay();
     if (open === locked) return;
     locked = open;
     var b = document.body;
@@ -42,7 +53,8 @@
     }
   }
   function start(){
-    try { new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); sync(); } catch (e) {}
+    var schedule = function(){ if (pending) return; pending = requestAnimationFrame(function(){ pending = 0; sync(); }); };
+    try { new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] }); sync(); } catch (e) {}
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
@@ -17788,7 +17800,11 @@ function App() {
   const _isInternalTester = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
   const _forceTest = (() => { try { return new URLSearchParams(location.search).get('forcetest'); } catch (e) { return null; } })();
   const [_tf, _setTf] = useState(_tfState());
-  const _studiedEnough = USER.streak >= 60 || _isInternalTester;
+  // ★ 2026-09-11: 완주 60일 조건만 보면, 게이트 도입(2026-08-16) 전 스냅샷 때문에 Day 가 먼저
+  //   90 을 넘어간 회원은 심사가 영영 안 뜨고 → 트랙도 못 고르고 → 매일 Day 90 콘텐츠
+  //   ('pay it forward') 만 반복해서 본다 (이규태님 Day 90·91·92 동일 단어 신고).
+  //   Day 90 을 넘겼으면 심사는 열어준다. 진짜 학습량은 심사·트랙 안에서 가려진다.
+  const _studiedEnough = USER.streak >= 60 || _realDay >= 90 || _isInternalTester;
   const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen && !_showCeremony && !_showD1Popup;
   // TF 신청서: 대리(90+) + 승진 심사를 이미 마쳤고 + 현재 트랙 없음 (반드시 _showS3Checkpoint 선언 이후!)
   const _showTfSelect = !!_localUserNow && _realDay >= 90 && _s3Seen && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
