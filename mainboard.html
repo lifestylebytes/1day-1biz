@@ -5632,6 +5632,10 @@ const _isHomeLive = () => true;
 // ★ 모바일 레이아웃 판정 (2026-09-09): CSS 의 880px 기준과 같은 값. 홈 탭을 모바일에서만 단순하게 만들 때 쓴다.
 //   모바일 홈 = 오늘 학습(CTA·시추에이션·일정) + 사수 메모/유버디 팁(접힘) + 야근까지만.
 //   마일스톤·출근부·역량 스탯·해금 사다리는 사원증 탭으로, 사내 메모·분기 평가 버튼은 각각 메모·평가 탭이 있으니 홈에서 뺀다. PC 는 그대로.
+// ★ 2026-09-11 런칭: 미니 퀴즈 · 퇴근 후 사이드 프로젝트 · 업무 노트 즐겨찾기만 전원 공개.
+//   심부름·호봉·AI 리포트 등 나머지 개발 중 기능은 그대로 _isNextFeature() 에 남겨둔다.
+//   되돌리려면 `() => _isNextFeature()` 로.
+const _isQuizLive = () => true;
 const _MOBILE_MQ = "(max-width: 880px)";
 function _isMobileLayout() {
   try { return !!(window.matchMedia && window.matchMedia(_MOBILE_MQ).matches); } catch (e) { return false; }
@@ -6068,7 +6072,7 @@ function getScheduleForDay(day) {
   })();
 
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): 14:00 은 매일 '미니 퀴즈' (오늘 단어 위주 최소 10문제). id 는 로테이션 것을 그대로 써서 완료 기록이 호환된다.
-  const slot3 = (typeof _isNextFeature === "function" && _isNextFeature() && day <= 90)
+  const slot3 = (typeof _isQuizLive === "function" && _isQuizLive() && day <= 90)
     ? { id: variantItem.id, time: "14:00", type: "mini_quiz", title: "미니 퀴즈, 오늘 표현 10문제", note: "뜻·스펠링·문장 조립 + 어제 단어", context: variantItem.context }
     : variantItem;
   // 4개 고정 슬롯, 출근+단어 / 시추에이션 / Day별 변동 / 일지+퇴근
@@ -6995,7 +6999,10 @@ function _odRestoreMetaFromTasks(email, task_progress) {
     const REV_KEY = "__OD_REV_" + email;
     const rev = JSON.parse(localStorage.getItem(REV_KEY) || "{}") || {};
     let known = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]") || [];
-    let revChanged = false, knownChanged = false;
+    let fav = JSON.parse(localStorage.getItem("__OD_QZ_FAV_" + email) || "[]") || [];
+    const wrong = JSON.parse(localStorage.getItem("__OD_QZ_WRONG_" + email) || "{}") || {};
+    const _wordOfDay = (d) => { const sc = (typeof SCENARIOS !== "undefined" ? SCENARIOS : []).find(x => x.day === d); return sc ? sc.word : ""; };
+    let revChanged = false, knownChanged = false, favChanged = false, wrongChanged = false;
     Object.keys(task_progress).forEach(dayKey => {
       const t = task_progress[dayKey] || {};
       const d = Number(dayKey);
@@ -7005,9 +7012,19 @@ function _odRestoreMetaFromTasks(email, task_progress) {
         known.push({ day: d, word: sc ? sc.word : "", at: new Date().toISOString() }); knownChanged = true;
       }
       if (t._known === false && known.some(k => k.day === d)) { known = known.filter(k => k.day !== d); knownChanged = true; }
+      // ★ 2026-09-11: 미니 퀴즈 즐겨찾기(_fav)·틀린 단어(_qzw) 도 같은 길로 복원
+      if (t._fav === true && !fav.includes(_wordOfDay(d))) { const w = _wordOfDay(d); if (w) { fav.push(w); favChanged = true; } }
+      if (t._fav === false) { const w = _wordOfDay(d); if (w && fav.includes(w)) { fav = fav.filter(x => x !== w); favChanged = true; } }
+      if (t._qzw && typeof t._qzw === "object") {
+        const w = _wordOfDay(d);
+        if (w && t._qzw.day && (!wrong[w] || Number(t._qzw.day) > Number(wrong[w].day || 0))) { wrong[w] = { day: Number(t._qzw.day), n: Number(t._qzw.n || 1) }; wrongChanged = true; }
+        if (w && t._qzw.cleared && wrong[w]) { delete wrong[w]; wrongChanged = true; }
+      }
     });
     if (revChanged) localStorage.setItem(REV_KEY, JSON.stringify(rev));
     if (knownChanged) localStorage.setItem("__OD_KNOWN_WORDS", JSON.stringify(known));
+    if (favChanged) localStorage.setItem("__OD_QZ_FAV_" + email, JSON.stringify(fav));
+    if (wrongChanged) localStorage.setItem("__OD_QZ_WRONG_" + email, JSON.stringify(wrong));
   } catch (e) {}
 }
 const _preKey = (email, day) => "__OD_PRE_" + (email || "guest") + "_" + day;
@@ -7026,7 +7043,7 @@ function OvertimeCard({ today, tomorrow, email }) {
   const [open, setOpen] = useState(() => !(saved.preview || Object.keys(saved.fb || {}).length));
   const persist = (next) => { setSaved(next); _saveJSON(_otKey(email, day), next); };
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): '같은 뜻 다른 표현 3문장' 대신 Review Quiz (복습 일정에 맞춘 이전 단어 테스트). 이름도 '퇴근 후 SIDE PROJECT'.
-  const _sideProject = _isNextFeature();
+  const _sideProject = _isQuizLive();
   const [reviewOpen, setReviewOpen] = useState(0);   // 0 = 닫힘, n = n번째 응시로 열림 (결과 화면에서 번호가 안 바뀌게 열 때 고정)
   const attempts = (saved.review && saved.review.attempts) || [];
   const onReviewFinished = (res) => {
@@ -8283,7 +8300,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {_isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
             (allTodayDone || !!doneTasks.wrapup)
               ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
-              : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}>{_isNextFeature()
+              : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}>{_isQuizLive()
                   ? <span>🌙 퇴근 후 SIDE PROJECT <small>퇴근까지 끝내면 열려요. 복습 퀴즈로 이전 표현을 다지고, 내일 문장을 미리 써두는 자리예요</small></span>
                   : <span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span>}<b>🔒</b></div></div>
           )}
@@ -9191,7 +9208,7 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done, scena
         <div className="scene-card-body">
           <div className="scs-label">오늘의 표현</div>
           <div className="scs-word">{scenario.word}</div>
-          {(!_isNextFeature() || !needCheckin)
+          {(!_isQuizLive() || !needCheckin)
             ? <div className="scs-mean">{scenario.meaning}</div>
             : <div className="scs-mean scs-mean-hidden">뜻은 출근하고 맞혀봐요 · 틀려도 바로 알려드려요</div>}
           {!needCheckin && !done && !scenarioDone && (
@@ -10414,7 +10431,7 @@ function LibraryPage({ openScene }) {
   const toggleSort = () => setSortDesc(d => { try { localStorage.setItem("__OD_LIB_SORT", d ? "asc" : "desc"); } catch (e) {} return !d; });
 
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): 표현마다 별(즐겨찾기). 즐겨찾기 필터, 즐겨찾기 단어는 미니 퀴즈에 자주 나온다.
-  const _favOn = _isNextFeature();
+  const _favOn = _isQuizLive();
   const [favTick, setFavTick] = useState(0);
   const favSet = useMemo(() => _favWords(), [favTick]);
   const toggleFav = (e, word) => { e.stopPropagation(); _toggleFav(word); setFavTick(t => t + 1); };
@@ -13450,16 +13467,16 @@ function CheckinActivity({ today, item, onClose, onComplete }) {
             <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{today.word}</div>
             <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 4 }}>{today.pos} · {today.phonetic}</div>
             {/* ★ 개발 뷰 (2026-09-10, 지흔 제안): 뜻을 알려주기 전에 아는 단어인지 먼저 체크. 뜻은 다음 단계 매칭에서 확인 */}
-            {_isNextFeature()
+            {_isQuizLive()
               ? <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 8, fontWeight: 700 }}>뜻은 아직 비밀. 아는 단어 같나요?</div>
               : <div style={{ fontSize: 14, color: "var(--ink)", marginTop: 8, fontWeight: 700 }}>{today.meaning}</div>}
             <button className="btn btn-soft" style={{ marginTop: 14 }} onClick={speak}>🔊 한 번 들어보기</button>
           </div>
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 14, lineHeight: 1.6 }}>
-            {_isNextFeature() ? "먼저 뜻을 맞혀볼까요? 틀려도 괜찮아요, 바로 알려드려요." : "한 번 들어봤다면 다음, 진짜 외웠는지 가벼운 매칭 테스트 한 번."}
+            {_isQuizLive() ? "먼저 뜻을 맞혀볼까요? 틀려도 괜찮아요, 바로 알려드려요." : "한 번 들어봤다면 다음, 진짜 외웠는지 가벼운 매칭 테스트 한 번."}
           </div>
           <div className="row" style={{ marginTop: 14, justifyContent: "flex-end" }}>
-            <button className="btn btn-primary" onClick={() => setStep(1)}>{_isNextFeature() ? "뜻 맞혀보기 →" : "들어봤어요 → 다음"}</button>
+            <button className="btn btn-primary" onClick={() => setStep(1)}>{_isQuizLive() ? "뜻 맞혀보기 →" : "들어봤어요 → 다음"}</button>
           </div>
         </>
       )}
@@ -15059,6 +15076,15 @@ function _qzEmail() { try { return ((window.__SIM || {}).USER || {}).email || "g
 const _qzKey = (k) => "__OD_QZ_" + k + "_" + _qzEmail();
 function _qzLoad(k, def) { const v = _loadJSON(_qzKey(k)); return (v === null || v === undefined) ? def : v; }
 function _qzSave(k, v) { _saveJSON(_qzKey(k), v); }
+// 기기가 바뀌어도 이어지게 서버에도 남긴다. 밑줄 키라 '오늘 4개 완주' 계산에는 안 잡힌다 (_odRestoreMetaFromTasks 가 복원).
+function _qzSyncMeta(day, meta) {
+  try {
+    const em = _qzEmail();
+    if (!em || em === "guest" || !day) return;
+    if (window.OD && window.OD.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(em, Number(day), meta).catch(() => {});
+  } catch (e) {}
+}
+function _qzDayOfWord(word) { const sc = ((window.__SIM || {}).SCENARIOS || []).find(x => x.word === word); return sc ? sc.day : 0; }
 function _qzNorm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9']+/g, " ").trim(); }
 function _qzScn(day) { return ((window.__SIM || {}).SCENARIOS || []).find(s => s.day === day) || null; }
 function _qzLearned(rd) { return ((window.__SIM || {}).SCENARIOS || []).filter(s => s.day <= rd && s.day >= 1 && s.word); }
@@ -15070,6 +15096,7 @@ function _toggleFav(word) {
   const s = _favWords();
   if (s.has(word)) s.delete(word); else s.add(word);
   _qzSave("FAV", [...s]);
+  _qzSyncMeta(_qzDayOfWord(word), { _fav: s.has(word) });
   try { window.dispatchEvent(new Event("od-fav-changed")); } catch (e) {}
   return s.has(word);
 }
@@ -15080,8 +15107,12 @@ function _qzMarkWrong(word, rd) {
   const m = _qzWrongMap();
   m[word] = { day: rd, n: ((m[word] || {}).n || 0) + 1 };
   _qzSave("WRONG", m);
+  _qzSyncMeta(_qzDayOfWord(word), { _qzw: { day: rd, n: m[word].n } });
 }
-function _qzClearWrong(word) { const m = _qzWrongMap(); if (m[word]) { delete m[word]; _qzSave("WRONG", m); } }
+function _qzClearWrong(word) {
+  const m = _qzWrongMap();
+  if (m[word]) { delete m[word]; _qzSave("WRONG", m); _qzSyncMeta(_qzDayOfWord(word), { _qzw: { cleared: true } }); }
+}
 // 어제(또는 그 전)에 틀려서 오늘 다시 나와야 하는 단어들
 function _qzCarryWords(rd) {
   const m = _qzWrongMap();
@@ -15123,6 +15154,7 @@ function _qzRevGrade(day, ok) {
   r.due = new Date(Date.parse(today) + r.interval * 86400000).toISOString().slice(0, 10);
   r.history = (r.history || []).concat([{ g: ok ? "good" : "again", at: today, src: "quiz" }]).slice(-20);
   _wbSaveRev(em, { ...rev, [day]: r });
+  _qzSyncMeta(day, { _rev: r });   // 복습 탭과 같은 자리에 남겨서 기기가 바뀌어도 일정이 이어진다
 }
 
 // ── 자주 같이 쓰는 표현 3개: 유버디 '예문 더 주세요'(buddyAnswers.example) 의 "• 표현 (뜻)" 줄 ──
@@ -16399,7 +16431,7 @@ function FirstWeekPopup({ day, onClose }) {
             <div style={{ fontSize: 11.5, color: "#7A6844", lineHeight: 1.55, marginTop: 2 }}>{t[1]}</div>
           </div>
         ))}
-        {_isNextFeature() && (
+        {_isQuizLive() && (
           <div style={{ marginTop: 9, paddingTop: 8, borderTop: "1px dashed #E0CF96", fontSize: 11.5, fontWeight: 700, color: "#8C6510", lineHeight: 1.5 }}>
             📝 이 표현들, 오늘 <b>미니 퀴즈</b>에서 다시 만나요. 지금 한 번만 읽어두면 돼요.
           </div>
