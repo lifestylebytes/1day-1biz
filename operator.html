@@ -2003,6 +2003,14 @@ function App() {
                 else if (isPaidMember)   typeBadges.push({ label: '정식',  bg: '#FFE9A6', color: '#8C6510' });
                 else if (isPilot)        typeBadges.push({ label: 'PILOT', bg: '#E7EAFC', color: '#3D4DA8' });
                 if (u.is_tester) typeBadges.push({ label: 'TEST', bg: '#EFE7D6', color: '#5C4A36' });
+                // ★ 2026-09-11: 자유 라벨 배지. preferences.badge 에 문자열을 넣으면 그대로 칩으로 뜬다.
+                //   (예: 8기 완주자 한달권처럼, 결제 상태와 상관없이 '누구인지' 를 표시하고 싶을 때)
+                {
+                  const _pb = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {};
+                  if (typeof _pb.badge === 'string' && _pb.badge.trim()) {
+                    typeBadges.push({ label: _pb.badge.trim(), bg: '#E8DFF5', color: '#5B3E8C' });
+                  }
+                }
 
                 // 결제 상태 (status 라인 + 메타 라인 2줄 구조)
                 let payStatus = { line1: '-', line2: '', bg: '#F4EFE3', color: '#5C4A36' };
