@@ -7111,7 +7111,18 @@ const _preKey = (email, day) => "__OD_PRE_" + (email || "guest") + "_" + day;
 function _loadJSON(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
 function _saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
-function OvertimeCard({ today, tomorrow, email }) {
+// ★ 2026-09-11 밀린 Day 정책:
+//   - 사이드 프로젝트는 '오늘 날짜 Day' 에서만 연다 (몰아치기 보상 방지).
+//   - 단 Review Quiz 는 예외. 밀린 사람일수록 복습이 필요하니, 달력 기준 하루 1번 허용.
+//   - '내일 미리 쓰기' 는 밀린 Day 에선 숨긴다 (바로 다음 Day 를 열 수 있어 컨닝이 됨).
+const _REVQ_DAYKEY = (email) => "__OD_REVQ_DATE_" + (email || "guest");
+function _revqDoneToday(email) {
+  try { return localStorage.getItem(_REVQ_DAYKEY(email)) === new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); } catch (e) { return false; }
+}
+function _revqMarkToday(email) {
+  try { localStorage.setItem(_REVQ_DAYKEY(email), new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" })); } catch (e) {}
+}
+function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const day = today.day;
   const syns = [{ w: today.word, ko: today.meaning, main: true }].concat(SYNONYMS[day] || []);
   const CTX = ["슬랙 DM", "메일 한 줄", "회의 한마디"];
@@ -7126,9 +7137,11 @@ function OvertimeCard({ today, tomorrow, email }) {
   const _sideProject = _isQuizLive();
   const [reviewOpen, setReviewOpen] = useState(0);   // 0 = 닫힘, n = n번째 응시로 열림 (결과 화면에서 번호가 안 바뀌게 열 때 고정)
   const attempts = (saved.review && saved.review.attempts) || [];
+  const [revqLockedToday, setRevqLockedToday] = useState(() => _revqDoneToday(email));
   const onReviewFinished = (res) => {
     const next = { ...saved, review: { attempts: [...attempts, res] } };
     persist(next);
+    if (catchUp) { _revqMarkToday(email); setRevqLockedToday(true); }
     try { if (attempts.length === 0 && day >= 30) _wpToast(WP_RULES.ot, "Review Quiz"); } catch (e) {}
   };
   // 내일 단어: 뜻 보고 영어 표현 써보기 (미리쓰기와 같이 저장, 내일 아침 정답과 나란히)
@@ -7156,8 +7169,10 @@ function OvertimeCard({ today, tomorrow, email }) {
     setPreSaved(true);
     persist({ ...saved, preview: { text, at: new Date().toISOString() } });
   };
-  const doneCount = _sideProject ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0)) : (Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0));
-  const doneTotal = _sideProject ? 2 : 4;
+  const doneCount = catchUp ? (attempts.length ? 1 : 0)
+    : _sideProject ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0))
+    : (Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0));
+  const doneTotal = catchUp ? 1 : (_sideProject ? 2 : 4);
   // ★ 내일 미리 쓰기 (2026-09-10): 한국어 지시문에 내일 표현이 영어 그대로 박혀 있는 날이 있다
   //   (예: "그분 인맥 leverage하는 방향으로 갈게요"). 그러면 위의 '내일 단어 미리 맞히기' 답이 그냥 보인다.
   //   개발 뷰에선 그 표현만 빈칸으로 가리고, 정답은 내일 아침 사수 카드에서 공개한다.
@@ -7168,7 +7183,9 @@ function OvertimeCard({ today, tomorrow, email }) {
   return (
     <div className="ot-card">
       <button className="ot-head" onClick={() => setOpen(o => !o)}>
-        {_sideProject
+        {catchUp
+          ? <span>🌙 퇴근 후 SIDE PROJECT <small>밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)</small></span>
+          : _sideProject
           ? <span>🌙 퇴근 후 SIDE PROJECT <small>10분이면 이전 표현이 복습되고, 내일 아침 사수 확인이 기다려요</small></span>
           : <span>🌙 야근 <small>10분이면 오늘 표현이 세 문장 더 남고, 내일 아침 사수 확인이 기다려요</small></span>}
         <b>{doneCount}/{doneTotal} {open ? "▲" : "▼"}</b>
@@ -7179,7 +7196,9 @@ function OvertimeCard({ today, tomorrow, email }) {
           {_sideProject && (
             <div className="ot-sec">
               <div className="ot-sec-title">🧠 Review Quiz</div>
-              <div className="ot-sec-sub">무작위가 아니라 복습 일정(1·3·7·14·30·60일)에 맞춘 나만의 테스트예요. 이전 표현 위주, 마지막 문제만 오늘 단어. 여러 번 풀어도 돼요.</div>
+              <div className="ot-sec-sub">{catchUp
+                ? "따라잡는 중엔 본업(오늘 일정)만 하시면 돼요. 복습은 몸에 남는 거라 하루 1번은 열어뒀어요. 나머지 사이드 프로젝트는 오늘 날짜까지 오시면 전부 열려요."
+                : "무작위가 아니라 복습 일정(1·3·7·14·30·60일)에 맞춘 나만의 테스트예요. 이전 표현 위주, 마지막 문제만 오늘 단어. 여러 번 풀어도 돼요."}</div>
               {attempts.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0 10px" }}>
                   {attempts.map((a, i) => (
@@ -7190,8 +7209,12 @@ function OvertimeCard({ today, tomorrow, email }) {
                 </div>
               )}
               <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <button className="btn btn-primary" onClick={() => setReviewOpen(attempts.length + 1)}>{attempts.length ? "한 번 더 풀기 →" : "Review Quiz 시작 →"}</button>
-                <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>오늘 복습 예정 표현 {_qzRevDueDays(day).length}개</span>
+                <button className="btn btn-primary" disabled={catchUp && revqLockedToday} onClick={() => setReviewOpen(attempts.length + 1)}>
+                  {(catchUp && revqLockedToday) ? "오늘 복습 완료 ✓" : attempts.length ? "한 번 더 풀기 →" : "Review Quiz 시작 →"}
+                </button>
+                <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
+                  {(catchUp && revqLockedToday) ? "내일 다시 열려요" : "오늘 복습 예정 표현 " + _qzRevDueDays(day).length + "개"}
+                </span>
               </div>
             </div>
           )}
@@ -7225,7 +7248,7 @@ function OvertimeCard({ today, tomorrow, email }) {
             })}
           </div>
 
-          {tomorrow && tomorrow.word && (
+          {!catchUp && tomorrow && tomorrow.word && (
             <div className="ot-sec">
               <div className="ot-sec-title">🔮 내일 미리 쓰기</div>
               <div className="ot-sec-sub">내일 이 말을 영어로 해야 해요. 지금 아는 표현으로 먼저 써두면, 내일 아침 사수가 정답 표현이랑 나란히 보여줘요.</div>
@@ -8021,7 +8044,17 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
   // === 모든 hooks 끝난 후, 데이터 lookup + 안전장치 early return ===
   // Day 91+ (코스 완주 이후, 주로 운영자 테스트)엔 시나리오가 없어 undefined 방지: 마지막 Day 90으로 폴백.
-  let today = SCENARIOS.find(s => s.day === USER.workingDay) || SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
+  // ★ 2026-09-11 (이규태님 신고: Day 91, "시추에이션 다 썼는데 완료가 안 돼요").
+  //   Day 91+ 인데 TF 트랙을 아직 안 고른 회원은 콘텐츠가 Day 90 으로 폴백되는데,
+  //   예전엔 그 시나리오 객체의 day(=90)가 그대로 쓰여서 제출은 __OD_TASKS_DAY_90 에 저장되고
+  //   홈은 __OD_TASKS_DAY_91 을 읽었다 → 아무리 써도 '완료'가 안 켜짐.
+  //   (같은 이유로 '내일 미리 쓰기'도 Day 91 을 못 찾아 사라졌다.)
+  //   폴백하더라도 day 는 실제 진행 Day 로 맞춘다.
+  let today = SCENARIOS.find(s => s.day === USER.workingDay);
+  if (!today) {
+    const _fbScn = SCENARIOS.find(s => s.day === Math.min(USER.workingDay || 1, 90)) || SCENARIOS[SCENARIOS.length - 1];
+    today = _fbScn ? { ..._fbScn, day: USER.workingDay || _fbScn.day } : _fbScn;
+  }
   // ── TF 트랙 라우팅: 대리 + 트랙 배정이면 오늘 콘텐츠를 트랙 시나리오로 교체 ──
   const _tfNow2 = _tfState();
   // ★ Day 90은 원래 피날레 콘텐츠 유지, TF 콘텐츠는 Day 91부터 (> 90)
@@ -8182,6 +8215,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const _noneDone = !scheduleWithStatus.some(r => r.computed === "done");
   // ★ 밀린 Day 를 다 끝냈지만 아직 '다음 Day 열기' 를 안 누른 상태면 그 Day 번호. (오늘 날짜면 0)
   const _advDay = (!USER.isViewingPast && typeof _odNeedsAdvance === "function" && allTodayDone) ? _odNeedsAdvance() : 0;
+  // 밀린 Day(달력보다 진도가 뒤) 여부. 사이드 프로젝트 정책이 여기서 갈린다.
+  const _catchUp = (() => {
+    if (USER.isViewingPast) return false;
+    const _cal = Number(window.__odAutoDay) || 0;
+    const _cur = USER.currentDay || 1;
+    return !!_cal && _cur < _cal;
+  })();
 
   // ★ 메인보드 2 (2026-09-05, 개발 뷰 전용): 기존 카드 전부 걷어내고 콘텐츠만.
   //   위에서부터 CTA 하나 → 4단계 진행 → 오늘의 표현 → 사수(언제 쓰는지)/유버디(쉽게 외우는 법).
@@ -8410,9 +8450,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           </div>
           {_isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
             (allTodayDone || !!doneTasks.wrapup)
-              ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} />
+              ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} catchUp={_catchUp} />
               : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}>{_isQuizLive()
-                  ? <span>🌙 퇴근 후 SIDE PROJECT <small>퇴근까지 끝내면 열려요. 복습 퀴즈로 이전 표현을 다지고, 내일 문장을 미리 써두는 자리예요</small></span>
+                  ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_catchUp
+                      ? "퇴근까지 끝내면 복습 퀴즈가 열려요. 나머지는 오늘 날짜까지 따라잡으시면 전부 열려요"
+                      : "퇴근까지 끝내면 열려요. 복습 퀴즈로 이전 표현을 다지고, 내일 문장을 미리 써두는 자리예요"}</small></span>
                   : <span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span>}<b>🔒</b></div></div>
           )}
           {!isMobile && <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />}
@@ -11088,7 +11130,7 @@ function InboxPage({ openMemo }) {
 // 🎁 복지포인트 (2026-09-05, 개발 뷰, 사원부터): 출근·야근·복기가 포인트로 쌓이고, 커리어·직무·영어·직장생활 상담에 쓴다.
 //   적립은 기록에서 그때그때 계산(따로 저장 안 함). 사용 내역과 상담 결과는 notes(kind points / consult, day 0)에 남아 기기 간 복원되고 운영자도 본다.
 // ============================================================
-const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10, reviewPerDay: 5, dayMax: 200 };   // 하루 최대 200P = 완주 100 + 야근 50 + 복기 5장 50
+const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10, reviewPerDay: 5, dayMax: 200, dayPerDate: 2 };   // 하루 최대 200P = 완주 100 + 야근 50 + 복기 5장 50
 function _wpOpenFor(u) { return !!u && (u.isFulltime || (u.realCurrentDay || u.currentDay || 1) >= 30); }
 // 🎁 적립 순간 알림 (우상단, 모바일은 하단). 사원 + 개발 뷰일 때만.
 function _wpToast(amount, label) {
@@ -11114,8 +11156,19 @@ function _wpEarned(USER) {
   const u = _wbUser(); const em = USER.email || "guest"; const rd = USER.realCurrentDay || USER.currentDay || 1;
   const items = [];
   if (rd >= 30 || USER.isFulltime) items.push({ k: "promo", p: WP_RULES.promo, label: "사원 승진 축하" });
-  const done = Array.from(_odCompletedDaySet(u)).filter(d => d >= 30);
-  if (done.length) items.push({ k: "day", p: done.length * WP_RULES.day, label: "완주 " + done.length + "일 × " + WP_RULES.day });
+  // ★ 2026-09-11: 밀린 Day 몰아치기 파밍 방지. 완주 포인트는 '실제 날짜' 하루에 2Day분까지만.
+  //   (완주 시각은 __OD_TASKS_DAY_<n>_ts 에 남는다. 기록이 없는 예전 완주는 그대로 인정.)
+  const _doneAll = Array.from(_odCompletedDaySet(u)).filter(d => d >= 30);
+  const _byDate = {}; let _noTs = 0;
+  _doneAll.forEach(d => {
+    let ts = null;
+    try { ts = localStorage.getItem("__OD_TASKS_DAY_" + d + "_ts"); } catch (e) {}
+    if (!ts) { _noTs++; return; }
+    const key = String(ts).slice(0, 10);
+    _byDate[key] = (_byDate[key] || 0) + 1;
+  });
+  const _capped = _noTs + Object.values(_byDate).reduce((n, c) => n + Math.min(WP_RULES.dayPerDate, c), 0);
+  if (_capped) items.push({ k: "day", p: _capped * WP_RULES.day, label: "완주 " + _capped + "일 × " + WP_RULES.day + (_capped < _doneAll.length ? " (하루 " + WP_RULES.dayPerDate + "일치까지)" : "") });
   let ot = 0;
   try { Object.keys(localStorage).forEach(k => { if (k.startsWith("__OD_OT_" + em + "_")) { const d = Number(k.split("_").pop()); const v = _loadJSON(k); if (d >= 30 && v && Object.keys(v.sentences || {}).length >= 3) ot++; } }); } catch (e) {}
   if (ot) items.push({ k: "ot", p: ot * WP_RULES.ot, label: "야근 " + ot + "번 × " + WP_RULES.ot });
