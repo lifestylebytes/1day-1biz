@@ -16554,6 +16554,111 @@ function _saveFwpTips(day) {
   } catch (e) { return false; }
 }
 // === 출근 환경 세팅 팝업: Day 1 학습을 끝낸 직후 1회 (홈 화면 추가 + 알림) ===
+// ★ 2026-09-12: 카톡 출근 알림을 켜둔 회원이 너무 적어서, 설정 화면까지 찾아가지 않아도
+//   팝업에서 바로 켤 수 있는 폼. Day 1 세팅 팝업(③)과 기존 회원 1회 안내 팝업이 같이 쓴다.
+function KakaoQuickSet({ email, compact }) {
+  const [loaded, setLoaded] = useState(false);
+  const [hasPhone, setHasPhone] = useState(false);
+  const [masked, setMasked] = useState("");
+  const [phone, setPhone] = useState("");
+  const [hour, setHour] = useState("9");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!email || !window.OD?.getKakaoNotify) { setLoaded(true); return; }
+      try {
+        const r = await window.OD.getKakaoNotify(email);
+        if (!alive) return;
+        if (r.ok && r.result) {
+          setHasPhone(!!r.result.has_phone);
+          setMasked(r.result.phone_masked || "");
+          if (r.result.hour != null) { setHour(String(r.result.hour)); setDone(true); }
+        }
+      } catch (e) {}
+      if (alive) setLoaded(true);
+    })();
+    return () => { alive = false; };
+  }, [email]);
+
+  const save = async () => {
+    if (!window.OD?.setKakaoNotify) { setMsg("지금은 저장할 수 없어요. 잠시 후 다시 시도해주세요."); return; }
+    if (!hasPhone && !phone.trim()) { setMsg("카톡 받을 번호를 적어주세요."); return; }
+    setBusy(true); setMsg("");
+    try {
+      const r = await window.OD.setKakaoNotify(email, phone.trim(), Number(hour));
+      setBusy(false);
+      if (!r.ok) {
+        const e = String(r.error || "");
+        setMsg(e.includes("invalid phone") ? "번호 형식을 확인해주세요 (010으로 시작)." : "저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      if (r.result?.phone_masked) { setMasked(r.result.phone_masked); setHasPhone(true); setPhone(""); }
+      setDone(true);
+    } catch (e) { setBusy(false); setMsg("저장에 실패했어요. 잠시 후 다시 시도해주세요."); }
+  };
+
+  if (!loaded) return <div style={{ fontSize: 12, color: "var(--ink-mute)" }}>불러오는 중…</div>;
+  if (done) {
+    return (
+      <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700, lineHeight: 1.6 }}>
+        ✓ 매일 {String(hour).padStart(2, "0")}:00 에 카톡으로 오늘 표현이 가요{masked ? " · " + masked : ""}
+      </div>
+    );
+  }
+  return (
+    <>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+        <input value={phone} onChange={e => setPhone(e.target.value)} inputMode="tel"
+          placeholder={hasPhone ? masked : "010-0000-0000"}
+          style={{ flex: "1 1 130px", minWidth: 0, fontFamily: "inherit", fontSize: 13, padding: "8px 10px", border: "1.2px solid var(--line)", borderRadius: 8, background: "var(--paper)" }} />
+        <select className="settings-select" value={hour} onChange={e => setHour(e.target.value)} disabled={busy}
+          style={{ fontFamily: "inherit", fontSize: 13, padding: "8px 6px", borderRadius: 8 }}>
+          {KAKAO_HOURS.map(h => <option key={h} value={String(h)}>{String(h).padStart(2, "0")}:00</option>)}
+        </select>
+        <button className="btn btn-primary" disabled={busy} onClick={save}
+          style={{ fontSize: 13, padding: "8px 14px" }}>{busy ? "저장 중…" : "켜기"}</button>
+      </div>
+      {msg ? <div style={{ fontSize: 11.5, color: "var(--stamp-red)", fontWeight: 700, marginTop: 6 }}>{msg}</div> : null}
+      {!compact && (
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 6, lineHeight: 1.55 }}>
+          하루 한 번, 그날 표현만 보내요. 나중에 <b>사원증 → 설정</b>에서 언제든 켜고 끌 수 있어요.
+        </div>
+      )}
+    </>
+  );
+}
+
+// 기존 회원용 1회 안내 팝업 (카톡 알림이 꺼져 있는 분에게만)
+function KakaoNudgePopup({ email, onClose }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9400, background: "rgba(42,31,20,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+      <div style={{ position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 380, width: "100%", padding: "24px 22px 20px", margin: "auto", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.45)", animation: "fadeUpBlock 0.3s ease-out" }}>
+        <button onClick={onClose} aria-label="닫기"
+          style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: "50%", border: "none", background: "transparent", color: "var(--ink-mute)", fontSize: 17, lineHeight: 1, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+        <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "var(--orange)", textTransform: "uppercase", marginBottom: 10 }}>총무팀 · 출근 알림</div>
+        <div style={{ textAlign: "center", marginBottom: 14 }}>
+          <div style={{ fontSize: 32, marginBottom: 6 }}>💬</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginBottom: 5 }}>카톡으로 출근 알림 받을래요?</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65 }}>
+            앱을 안 열어도 그날 표현이 카톡으로 와요.<br/>번호랑 시간만 정하면 10초면 끝나요.
+          </div>
+        </div>
+        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px" }}>
+          <KakaoQuickSet email={email} />
+        </div>
+        <button className="btn btn-ghost" style={{ width: "100%", marginTop: 12 }} onClick={onClose}>나중에 할게요</button>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 8, textAlign: "center", lineHeight: 1.5 }}>
+          이 안내는 한 번만 떠요. 나중엔 <b>사원증 → 설정</b>에서 켤 수 있어요.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SetupPopup({ onClose }) {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
   const isAndroid = /Android/.test(navigator.userAgent || "");
@@ -16569,7 +16674,7 @@ function SetupPopup({ onClose }) {
         <div style={{ textAlign: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 32, marginBottom: 6 }}>🎉</div>
           <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginBottom: 4 }}>첫 출근, 무사히 끝났어요</div>
-          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>내일도 편하게 오시게 딱 2개만 해둘까요? 30초면 끝나요.</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>내일도 편하게 오시게 딱 3개만 해둘까요? 30초면 끝나요.</div>
         </div>
 
         <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 8 }}>
@@ -16611,6 +16716,10 @@ function SetupPopup({ onClose }) {
               <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5, lineHeight: 1.5 }}>출근 잊지 않게 하루 한 번만 보내요. 언제든 끌 수 있어요.</div>
             </>
           )}
+        </div>
+        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginTop: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>③ 카톡으로 출근 알림 받기</div>
+          <KakaoQuickSet email={USER.email} />
         </div>
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>세팅 끝, 내일 봬요 →</button>
       </div>
@@ -17895,6 +18004,35 @@ function App() {
     window.addEventListener('od-day-finale', onDone);
     return () => window.removeEventListener('od-day-finale', onDone);
   }, []);
+  // ── 카톡 출근 알림 1회 안내 (2026-09-12): 아직 안 켠 회원에게만, 계정당 한 번 ──
+  //   Day 1 회원은 위 '출근 환경 세팅' 팝업 ③번에서 바로 켜므로 여기선 Day 2+ 만 본다.
+  const [_showKakao, _setShowKakao] = useState(false);
+  React.useEffect(() => {
+    const em = _localUserNow?.email;
+    if (!em) return;
+    const KEY = '__OD_KAKAO_NUDGE_' + em;
+    try { if (localStorage.getItem(KEY) === '1') return; } catch (e) { return; }
+    if ((_realDay || 1) < 2) return;
+    if (!(window.OD?.enabled && window.OD.getKakaoNotify)) return;
+    let alive = true;
+    const t = setTimeout(async () => {
+      try {
+        const r = await window.OD.getKakaoNotify(em);
+        if (!alive) return;
+        if (r && r.ok && r.result && r.result.hour != null) {
+          try { localStorage.setItem(KEY, '1'); } catch (e) {}   // 이미 켠 분은 다시 묻지 않는다
+          return;
+        }
+        _setShowKakao(true);
+      } catch (e) {}
+    }, 3500);
+    return () => { alive = false; clearTimeout(t); };
+  }, [_localUserNow?.email, _realDay]);
+  const _closeKakao = () => {
+    try { localStorage.setItem('__OD_KAKAO_NUDGE_' + (_localUserNow?.email || 'guest'), '1'); } catch (e) {}
+    _setShowKakao(false);
+  };
+
   const _closeSetup = () => {
     try { localStorage.setItem('__OD_SETUP_SEEN_' + (_localUserNow?.email || 'guest'), '1'); } catch (e) {}
     _setShowSetup(false);
@@ -18229,6 +18367,10 @@ function App() {
       {/* 출근 환경 세팅 (Day 1 학습 완료 직후) */}
       {_showSetup && !_showCeremony && !_showS3Checkpoint && !_showDay60 && (
         <SetupPopup onClose={_closeSetup} />
+      )}
+      {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
+      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && (
+        <KakaoNudgePopup email={_localUserNow?.email} onClose={_closeKakao} />
       )}
       {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
       {_fwpDay && !_showSetup && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_showSurvey && (
