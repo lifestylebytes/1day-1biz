@@ -16647,7 +16647,11 @@ function KakaoNudgePopup({ email, onClose }) {
             앱을 안 열어도 그날 표현이 카톡으로 와요.<br/>번호랑 시간만 정하면 10초면 끝나요.
           </div>
         </div>
-        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px" }}>
+        <div style={{ background: "#FFF6E8", border: "2px solid var(--orange)", borderRadius: 12, padding: "13px 14px", boxShadow: "0 6px 18px -10px rgba(216,90,42,0.55)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: "0.08em", color: "#fff", background: "var(--orange)", borderRadius: 999, padding: "3px 8px" }}>제일 추천</span>
+            <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>번호랑 시간만 정하면 끝</span>
+          </div>
           <KakaoQuickSet email={email} />
         </div>
         <button className="btn btn-ghost" style={{ width: "100%", marginTop: 12 }} onClick={onClose}>나중에 할게요</button>
@@ -16677,8 +16681,20 @@ function SetupPopup({ onClose }) {
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>내일도 편하게 오시게 딱 3개만 해둘까요? 30초면 끝나요.</div>
         </div>
 
+        {/* ★ 2026-09-12: 카톡 알림이 가장 효과가 좋아서 맨 위 + '제일 추천' 으로 강조 */}
+        <div style={{ background: "#FFF6E8", border: "2px solid var(--orange)", borderRadius: 12, padding: "13px 14px", marginBottom: 10, boxShadow: "0 6px 18px -10px rgba(216,90,42,0.55)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: "0.08em", color: "#fff", background: "var(--orange)", borderRadius: 999, padding: "3px 8px" }}>제일 추천</span>
+            <span style={{ fontSize: 13.5, fontWeight: 900, color: "var(--ink)" }}>💬 카톡으로 출근 알림 받기</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 8 }}>
+            앱을 안 열어도 <b>그날 표현이 카톡으로</b> 와요. 출근을 깜빡할 일이 없어져요.
+          </div>
+          <KakaoQuickSet email={USER.email} />
+        </div>
+
         <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>① 홈 화면에 1일1비 추가</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 홈 화면에 1일1비 추가</div>
           {isStandalone ? (
             <div style={{ fontSize: 12.5, color: "#2D7A3D", fontWeight: 700 }}>✓ 이미 홈 화면 앱으로 쓰고 계시네요. 완벽해요.</div>
           ) : isIOS ? (
@@ -16700,10 +16716,10 @@ function SetupPopup({ onClose }) {
         </div>
 
         <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginBottom: 4 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>② 출근 리마인드 알림 켜기</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>③ 브라우저 알림도 켜기 (선택)</div>
           {isIOS && !isStandalone ? (
             <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
-              아이폰은 <b>홈 화면에 추가한 앱</b>에서만 알림이 돼요.<br/>위 ①을 먼저 하고, 홈 화면 앱에서 [분기 평가] 탭에서 켜주세요!
+              아이폰은 <b>홈 화면에 추가한 앱</b>에서만 알림이 돼요.<br/>위 ②를 먼저 하고, 홈 화면 앱에서 [분기 평가] 탭에서 켜주세요!
             </div>
           ) : (
             <>
@@ -16716,10 +16732,6 @@ function SetupPopup({ onClose }) {
               <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5, lineHeight: 1.5 }}>출근 잊지 않게 하루 한 번만 보내요. 언제든 끌 수 있어요.</div>
             </>
           )}
-        </div>
-        <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 14px", marginTop: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", marginBottom: 6 }}>③ 카톡으로 출근 알림 받기</div>
-          <KakaoQuickSet email={USER.email} />
         </div>
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>세팅 끝, 내일 봬요 →</button>
       </div>
