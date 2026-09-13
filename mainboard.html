@@ -6433,7 +6433,8 @@ async function odDisablePush() {
 // 카톡 출근 알림 설정 (2026-09-03). 전화번호 + 받을 시각(KST)을 저장하면
 // kakao-daily Edge Function 이 매시간 그 시각 회원에게 오늘 표현/씬을 알림톡으로 보낸다.
 // 현재는 개발 뷰에서만 노출 (템플릿 심사 승인 후 _isNextFeature 게이트 제거).
-const KAKAO_HOURS = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+// ★ 2026-09-13: 24시간 전부 열어둔다. 알림톡은 자동 발송이고, 해외/시차 근무 멤버도 있다.
+const KAKAO_HOURS = Array.from({ length: 24 }, (_, h) => h);
 function KakaoNotifyRow({ email }) {
   const [loaded, setLoaded] = useState(false);
   const [hasPhone, setHasPhone] = useState(false);

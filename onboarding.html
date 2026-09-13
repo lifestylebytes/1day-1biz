@@ -1013,15 +1013,13 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
       .od-bar-cta-short { display: none; }
       /* ★ 2026-09-13: 하단 고정 CTA. 엄지가 닿는 자리라 모바일에서만 (데스크톱은 상단바로 충분) */
-      .od-bottom-cta { display: none; }
-      @media (max-width: 720px) {
-        .od-bottom-cta {
-          display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9200;
-          align-items: center; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-          background: rgba(245,238,221,0.97); border-top: 1.5px solid var(--line, #E2D8C4);
-          box-shadow: 0 -8px 22px -14px rgba(58,40,18,0.5); backdrop-filter: blur(6px);
-        }
+      .od-bottom-cta {
+        display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9200;
+        align-items: center; gap: 12px; padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(245,238,221,0.97); border-top: 1.5px solid var(--line, #E2D8C4);
+        box-shadow: 0 -8px 22px -14px rgba(58,40,18,0.5); backdrop-filter: blur(6px);
       }
+      .od-bottom-inner { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 720px; margin: 0 auto; }
       @media (max-width: 600px) {
         .od-bar-title { font-size: 12px !important; flex: 0 1 auto; }
         .od-bar-sub { display: none; }
@@ -1058,6 +1056,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
     {/* 하단 고정 CTA (모바일) */}
     <div className="od-bottom-cta">
+      <div className="od-bottom-inner">
       <div style={{ minWidth: 0, flex: 1, lineHeight: 1.35 }}>
         <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>월 13,900원 · 언제든 해지</div>
         <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>내일 아침 첫 표현이 도착해요</div>
@@ -1066,6 +1065,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 18px", fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 6px 16px -8px rgba(216,90,42,0.8)" }}>
         지금 바로 입사하기 →
       </button>
+      </div>
     </div>
 
     {showEnter && (
@@ -1130,7 +1130,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         </div>
       </div>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 9 }}>
-        앱을 안 열어도 와요. 받을 시간은 6시~22시 중에 직접 고르시면 돼요.
+        앱을 안 열어도 와요. 받을 시간은 <strong>24시간 중 원하는 시각</strong>으로 직접 고르시면 돼요. 해외 시차도 괜찮아요.
       </div>
 
       <Divider />
@@ -1702,6 +1702,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
         <a onClick={() => setShowLogin(true)} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}>이미 입사하셨어요? <strong>다시 출근하기 →</strong></a>
+        <div style={{ height: 74 }} />
       </div>
       <div className="fine-print" style={{ marginTop: 12 }}>
         해지는 결제 페이지에서 언제든 · 재구독 시 하던 Day 그대로 이어져요
