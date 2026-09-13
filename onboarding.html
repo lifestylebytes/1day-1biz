@@ -334,6 +334,9 @@ function OnboardingApp() {
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
   const [signupPw, setSignupPw] = useState("");  // 가입 시 비밀번호 (선택)
+  // ★ 2026-09-13: 카톡 출근 알림을 기본값으로. 번호는 선택이고, 적으면 매일 09:00 알림이 켜진다.
+  const [phone, setPhone] = useState("");
+  const [kakaoOptIn, setKakaoOptIn] = useState(true);
 
   // 코드 검증, 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
   const [submitting, setSubmitting] = useState(false);
@@ -476,6 +479,7 @@ function OnboardingApp() {
       totalSessionMs: 0,
       // settings
       preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null },
+      phone: (phone || "").trim() || null,
       // 운영 메타
       onboardingMotivation: motivation.trim(),
       schemaVersion: 1,
@@ -543,6 +547,13 @@ function OnboardingApp() {
           return;  // localStorage 도 안 건드림
         }
         console.log("[Supabase] 가입 동기화 완료");
+        // ★ 번호를 적고 동의하셨으면 매일 09:00 카톡 알림을 바로 켠다 (실패해도 가입은 계속)
+        try {
+          const _ph = (phone || "").trim();
+          if (_ph && kakaoOptIn && window.OD.setKakaoNotify) {
+            await window.OD.setKakaoNotify(email.trim().toLowerCase(), _ph, 9);
+          }
+        } catch (_) {}
         if (verifiedCode && window.OD.incrementCodeUsage) {
           try { await window.OD.incrementCodeUsage(verifiedCode); } catch (_) {}
         }
@@ -590,6 +601,8 @@ function OnboardingApp() {
           name={name} setName={setName}
           email={email} setEmail={setEmail}
           signupPw={signupPw} setSignupPw={setSignupPw}
+          phone={phone} setPhone={setPhone}
+          kakaoOptIn={kakaoOptIn} setKakaoOptIn={setKakaoOptIn}
           motivation={motivation} setMotivation={setMotivation}
           inviteCode={inviteCode} setInviteCode={setInviteCode}
           devMode={devMode} setDevMode={setDevMode}
@@ -1059,11 +1072,11 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, marginBottom: 12, letterSpacing: "-0.01em" }}>
         👔 회사에 입사한 것처럼, 매일 영어로 출근해요
       </div>
-      <div className="eyebrow">외국계 대기업 7년차가 선별합니다</div>
-      <h1 style={{ lineHeight: 1.25 }}>외국계 대기업 직장인<br/>유버디가 <em>선별한</em><br/>1일 1 비즈니스</h1>
+      <div className="eyebrow">하루 5분 · 혼자 · 매일</div>
+      <h1 style={{ lineHeight: 1.25 }}>검색하고 끝나는 표현 말고,<br/><em>쌓이는</em> 표현으로</h1>
       <p className="lead" style={{ marginBottom: 12 }}>
-        외국계 회의와 메일에서 실제로 오가는 표현만 골라, <strong>하루 하나</strong>씩 보내드려요.<br/>
-        읽고 흘려보내지 않게 그 자리에서 한 번 써보고, <strong>내 표현 라이브러리</strong>로 쌓아가요.
+        매일 아침 카톡으로, <strong>오늘 쓸 표현 하나</strong>와 그 말이 실제로 오가는 회의 장면을 보내드려요.<br/>
+        그 자리에서 한 번 써보면 <strong>내 비즈니스 어휘 사전</strong>에 한 칸이 채워져요.
       </p>
 
       <Divider />
@@ -1487,7 +1500,10 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <Divider />
 
       {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
-      <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="목적과 구조가 달라서 내용이 겹치지 않아요." />
+      <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요." />
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "11px 14px", marginBottom: 10 }}>
+        둘 다 <strong style={{ color: "var(--ink)" }}>비즈니스 영어에 꼭 필요한 단어</strong>만 모았어요. 다른 건 <strong style={{ color: "var(--ink)" }}>고르는 방식</strong>이에요. 1일1비는 직급이 올라가는 순서대로, 유비챌은 <strong style={{ color: "var(--ink)" }}>기수마다 주제를 새로 큐레이션</strong>해요.
+      </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup"
            target="_blank" rel="noopener"
@@ -1495,19 +1511,48 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
            style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px", textDecoration: "none", display: "block" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--ink-mute)", marginBottom: 6 }}>PROGRAM</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>↗</span></div>
-          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>20일 집중 챌린지</div>
-          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>정해진 기간 안에 비즈니스 어휘 60개를 <strong style={{ color: "var(--ink)" }}>루틴으로 완성</strong>하도록 환경을 세팅해드려요.</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>동료와 함께 · 4주 · 써보기</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>매일 인증하고 같은 기수 동료가 옆에 있어요. <strong style={{ color: "var(--ink)" }}>혼자선 자꾸 미루는 분</strong>께 끝까지 가는 힘을 붙여드려요.</div>
           <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 800, marginTop: 8 }}>유비챌 보러가기 →</div>
         </a>
         <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
-          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>매달 이어지는 멤버십</div>
-          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>혼자서도 매일 꾸준히, 실제 업무 상황으로 <strong style={{ color: "var(--ink)" }}>표현을 받아보는</strong> 출근 시뮬레이션이에요.</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>혼자 · 매일 5분 · 쌓기</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>단톡방도 인증 압박도 마감도 없어요. <strong style={{ color: "var(--ink)" }}>혼자 하는 게 편한 분</strong>이 내 속도로 어휘 사전을 채워가요.</div>
         </div>
       </div>
-      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px" }}>
-        👉 <strong style={{ color: "var(--ink)" }}>유비챌로 루틴을 세팅하고, 1일1비로 꾸준히 이어가는 흐름</strong>이에요. 목적이 달라서 함께 하셔도 좋고, 지금 유비챌 중이시라면 1일1비를 가볍게 먼저 경험해보셔도 좋아요.
+      {/* 한눈에 비교 */}
+      <div style={{ border: "1px solid var(--line)", borderRadius: 11, overflow: "hidden", marginBottom: 12 }}>
+        {[
+          ["방식", "혼자, 매일", "동료와 함께, 4주"],
+          ["하루 부담", "5분", "하루 3문장 인증"],
+          ["마감", "없음 · 내 속도대로", "4주 안에 끝내기"],
+          ["어휘 구성", "직급 순서대로 차곡차곡", "기수별 주제 큐레이션"],
+          ["난이도", "★★★☆☆ (3)", "★★★★☆ (4)"],
+          ["남는 것", "매일 채워지는 내 어휘 사전", "4주간 입으로 뱉어본 실전 경험"],
+          ["이런 분께", "혼자 하는 게 편한 분\n매일 조금씩 쌓고 싶은 분", "혼자선 자꾸 미루는 분\n끝까지 가는 힘이 필요한 분"],
+        ].map((r, i) => (
+          <div key={r[0]} style={{ display: "grid", gridTemplateColumns: "72px 1fr 1fr", borderTop: i === 0 ? "none" : "1px solid var(--line)" }}>
+            <div style={{ padding: "10px 10px", fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper-warm)", display: "flex", alignItems: "center" }}>{r[0]}</div>
+            <div style={{ padding: "10px 11px", fontSize: 12, color: "var(--ink)", lineHeight: 1.55, whiteSpace: "pre-line", background: "rgba(216,90,42,0.05)", fontWeight: 700 }}>{r[1]}</div>
+            <div style={{ padding: "10px 11px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.55, whiteSpace: "pre-line" }}>{r[2]}</div>
+          </div>
+        ))}
+        <div style={{ display: "grid", gridTemplateColumns: "72px 1fr 1fr", borderTop: "1px solid var(--line)", background: "var(--paper-warm)" }}>
+          <div />
+          <div style={{ padding: "7px 11px", fontSize: 10.5, fontWeight: 900, letterSpacing: "0.06em", color: "var(--accent)" }}>1일1비</div>
+          <div style={{ padding: "7px 11px", fontSize: 10.5, fontWeight: 900, letterSpacing: "0.06em", color: "var(--ink-mute)" }}>유비챌</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "13px 15px" }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>👉 둘 다 하시면 이런 분이에요</div>
+        아침에 담은 표현을 그 주에 바로 꺼내 쓰고 싶은 분. 1일1비로 매일 표현을 쌓고, 유비챌 4주 동안 그 표현을 실제 상황에서 입으로 뱉어보는 조합이에요.
+        <strong style={{ color: "var(--ink)" }}> 쌓기만 하고 안 써보면 입이 안 떨어지고, 써보기만 하고 안 쌓으면 4주 뒤에 남는 게 없어요.</strong>
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.65 }}>
+          다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 유비챌은 매일 인증이 있어서, 여유가 없을 땐 1일1비만으로도 충분해요.
+        </div>
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
@@ -2217,7 +2262,7 @@ function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, tot
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
   // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
   const [agreeAge, setAgreeAge] = React.useState(false);
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -2273,6 +2318,28 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         {signupPw && signupPw.length < 8 && (
           <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>비밀번호는 8자 이상으로 정해주세요.</div>
         )}
+      </div>
+      {/* ★ 카톡 출근 알림: 번호는 선택, 동의는 기본 체크 */}
+      <div className="form-row">
+        <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 선택</span></label>
+        <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
+        <label
+          onClick={() => setKakaoOptIn(v => !v)}
+          style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", marginTop: 9,
+                   fontSize: 12.5, fontWeight: 700, color: "var(--ink)", textTransform: "none", letterSpacing: "normal", lineHeight: 1.55 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                         width: 18, height: 18, marginTop: 1, borderRadius: 5,
+                         border: "1.6px solid " + (kakaoOptIn ? "var(--accent)" : "var(--line)"),
+                         background: kakaoOptIn ? "var(--accent)" : "transparent", color: "#fff", fontSize: 12, fontWeight: 900 }}>
+            {kakaoOptIn ? "✓" : ""}
+          </span>
+          <span>
+            이 번호로 <strong>매일 아침 9시</strong> 오늘의 표현 받기
+            <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", marginTop: 2 }}>
+              앱을 안 열어도 카톡으로 와요. 시간 변경·해제는 사원증 → 설정에서 언제든.
+            </span>
+          </span>
+        </label>
       </div>
       <div className="form-row">
         <label>지원 동기 (한 줄, 선택)</label>
