@@ -110,7 +110,13 @@ body {
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   line-height: 1.5;
+  /* ★ 2026-09-13: 한글은 기본이 글자 단위 줄바꿈이라 "말을 안 / 해." 처럼 끝 글자가 떨어진다.
+     어절 단위로 끊고(keep-all), 긴 영문/URL 만 강제 개행하고, 고아 줄은 pretty 로 막는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
 }
+h1, h2, h3, .btn, button, summary { text-wrap: balance; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
 input, textarea, select { font-family: inherit; }
 

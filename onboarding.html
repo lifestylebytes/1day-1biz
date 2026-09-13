@@ -180,11 +180,55 @@ textarea { resize: vertical; min-height: 70px; }
 
 /* 한글은 기본값이 글자 단위 줄바꿈이라 "가져왔어/요" 처럼 끝 글자가 떨어진다.
    어절 단위로 끊고, 긴 영문/URL 만 예외적으로 강제 개행. */
-body { word-break: keep-all; overflow-wrap: break-word; }
+body { word-break: keep-all; overflow-wrap: break-word; text-wrap: pretty; }
+/* ★ 2026-09-13: keep-all 만으로는 "말을 안 / 해." 처럼 짧은 어절 하나가 마지막 줄에 혼자
+   떨어지는 걸 못 막는다. 본문은 pretty(고아 줄 방지), 제목은 balance(줄 길이 고르게). */
+h1, h2, h3, .lead, .eyebrow, summary, .btn { text-wrap: balance; }
 .mb-toast-msg b { color: #FFE9A6; }
 .mb-toast-x { background: transparent; border: none; color: rgba(244,239,227,0.6);
   font-size: 15px; cursor: pointer; padding: 0 2px; flex: 0 0 auto; font-family: inherit; align-self: flex-start; }
 </style>
+<script>
+/* ★ 2026-09-13: 고아 줄 방지(widont).
+   keep-all 은 어절 중간 분리를, text-wrap:pretty 는 일부 브라우저만 막아준다.
+   마지막 어절이 짧으면 앞 어절과 줄바꿈 불가 공백(\u00A0)으로 묶어, 어떤 화면 폭에서도
+   "말을 안 / 해." 처럼 한 조각만 떨어지지 않게 한다. React 재렌더에도 다시 적용된다. */
+(function () {
+  var NB = "\u00A0", busy = false, queued = 0;
+  var SKIP = "code,pre,input,textarea,select,script,style,option,[data-nowidont]";
+  function fix(root) {
+    if (busy) return;
+    busy = true;
+    try {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var n, list = [];
+      while ((n = w.nextNode())) list.push(n);
+      for (var i = 0; i < list.length; i++) {
+        var node = list[i], t = node.textContent;
+        if (!t || t.length < 14 || t.indexOf(NB) >= 0) continue;
+        var el = node.parentElement;
+        if (!el || (el.closest && el.closest(SKIP))) continue;
+        var m = t.match(/^([\s\S]*\S)[ \t]+(\S{1,7})(\s*)$/);
+        if (!m) continue;
+        if (m[1].replace(/\s+/g, "").length < 8) continue;
+        node.textContent = m[1] + NB + m[2] + m[3];
+      }
+    } catch (e) {}
+    busy = false;
+  }
+  function schedule() {
+    if (queued) return;
+    queued = requestAnimationFrame(function () { queued = 0; fix(document.body); });
+  }
+  function start() {
+    fix(document.body);
+    try { new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
+    window.addEventListener("resize", schedule);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+</script>
 </head>
 <body>
 
