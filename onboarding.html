@@ -1274,7 +1274,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         </div>
       </div>
       <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, textAlign: "center", marginBottom: 4 }}>
-        입사 3주차쯤 되면 이런 게 옵니다. Day 90까지 가면 <strong style={{ color: "var(--ink)" }}>리더의 영어</strong>, 그 뒤 TF 트랙까지 210일치가 이어져요.<br/>
+        입사 3주차쯤 되면 이런 게 옵니다. Day 90까지 가면 <strong style={{ color: "var(--ink)" }}>리더의 영어</strong>, 그 뒤엔 TF 트랙으로 이어지고요.<br/>
         <span style={{ color: "var(--ink-mute)" }}>물론 Day 1은 훨씬 쉬운 것부터 시작해요. 직접 볼까요?</span>
       </div>
       {/* 책상을 본 직후: 이 화면이 매일 어떻게 굴러가는지 3단계 */}
@@ -1448,7 +1448,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
                 ["🌟", "Day 60 특별 면담", "런던 본사 Director와 1:1, 뭘 듣게 될까요"],
                 ["🎖️", "Day 90 대리 승진", "승진 시험 통과하면 레드 사원증"],
                 ["🔔", "저녁 출근 리마인드", "까먹지 않게 푸시가 살짝 찔러줘요"],
-                ["🚀", "대리부터 TF 트랙", "협상·피플·문서·미팅 중 골라 30일씩. 전부 210일치"],
+                ["🚀", "대리부터 TF 트랙", "협상·피플·문서·미팅 중 내 일에 맞는 쪽으로"],
               ].map(f => (
                 <div key={f[1]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 11px" }}>
                   <div style={{ fontSize: 16 }}>{f[0]}</div>
@@ -1472,9 +1472,9 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <Divider />
 
       {/* ── 3. 어떻게 진행되나 ── */}
-      <SectionTitle eyebrow="HOW IT WORKS" title="게임처럼 승진해요" sub="출근 도장이 쌓이면 직급이 올라요. 90일이 끝이 아니라, 대리부터 120일이 더 있어요." />
+      <SectionTitle eyebrow="HOW IT WORKS" title="게임처럼 승진해요" sub="출근 도장이 쌓이면 직급이 올라요. 90일이 끝이 아니라, 대리부터 트랙이 새로 열려요." />
       <div style={{ display: "flex", alignItems: "stretch", gap: 7, marginBottom: 12 }}>
-        {[["🌱", "수습", "Day 1-30", "기본 표현 30개"], ["👔", "사원", "Day 31-90", "회의를 주도하는 표현"], ["🎖️", "대리", "Day 91-210", "내 일에 맞는 트랙 4개"]].map(s => (
+        {[["🌱", "수습", "Day 1-30", "기본 표현 30개"], ["👔", "사원", "Day 31-90", "회의를 주도하는 표현"], ["🎖️", "대리", "Day 91~", "내 일에 맞는 트랙 선택"]].map(s => (
           <div key={s[1]} style={{ flex: 1, textAlign: "center", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 6px" }}>
             <div style={{ fontSize: 21 }}>{s[0]}</div>
             <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginTop: 4 }}>{s[1]}</div>
@@ -1485,7 +1485,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       </div>
       <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px", marginBottom: 10 }}>
         Day 30엔 <strong>정직원 전환 시험</strong>, Day 90엔 <strong>대리 승진 시험</strong>. 통과할 때마다 사원증이 바뀌어요.
-        대리가 되면 <strong>협상·피플·문서·미팅</strong> 네 개 TF 중에서 골라 30일씩 더 배우실 수 있어서, <strong>전부 210일치</strong>가 준비돼 있답니다.
+        대리가 되면 <strong>협상·피플·문서·미팅</strong> 중에서 내 일에 맞는 TF를 골라 이어가실 수 있고, 표현은 계속 업데이트되고 있답니다.
       </div>
       <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.75, background: "rgba(42,31,20,0.04)", border: "1px dashed var(--line)", borderRadius: 10, padding: "13px 15px" }}>
         🚪 그리고 대리 위로는 과장, 부장, 임원실이 이어져요.<br/>
