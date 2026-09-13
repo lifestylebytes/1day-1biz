@@ -7147,6 +7147,60 @@ function _revqDoneToday(email) {
 function _revqMarkToday(email) {
   try { localStorage.setItem(_REVQ_DAYKEY(email), new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" })); } catch (e) {}
 }
+// ── 오늘 출근한 동료 스트립 (실제 DB 기준, 이름은 성 한 글자만 마스킹해서 내려옴) ──
+//    RPC(get_office_today)가 없거나 인원이 2명 미만이면 아무것도 안 그린다.
+function OfficeTodayStrip() {
+  const [info, setInfo] = useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        if (!window.OD || !window.OD.getOfficeToday) return;
+        const r = await window.OD.getOfficeToday(10);
+        if (!alive || !r || !r.ok || !r.result) return;
+        const c = Number(r.result.count || 0);
+        const ppl = (Array.isArray(r.result.people) ? r.result.people : []).slice(0, 10);
+        if (c < 2 || ppl.length === 0) return;
+        setInfo({ count: c, people: ppl });
+      } catch (e) {}
+    })();
+    return () => { alive = false; };
+  }, []);
+  if (!info) return null;
+  const more = info.count - info.people.length;
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+      border: "1px solid var(--line)", borderRadius: 10, background: "var(--paper)",
+      padding: "10px 12px", margin: "10px 0 0",
+    }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        {info.people.map((p, i) => (
+          <div key={i} title={p.masked || ""} style={{
+            width: 26, height: 26, borderRadius: "50%",
+            background: "rgba(216,90,42,0.14)", border: "1.5px solid var(--paper)",
+            color: "var(--orange)", fontSize: 11.5, fontWeight: 900,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginLeft: i === 0 ? 0 : -7, flex: "0 0 auto",
+          }}>{p.initial || "·"}</div>
+        ))}
+        {more > 0 && (
+          <div style={{
+            width: 26, height: 26, borderRadius: "50%",
+            background: "var(--ink)", border: "1.5px solid var(--paper)",
+            color: "var(--paper)", fontSize: 10, fontWeight: 900,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            marginLeft: -7, flex: "0 0 auto",
+          }}>+{more > 99 ? 99 : more}</div>
+        )}
+      </div>
+      <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.5, minWidth: 0 }}>
+        오늘 <b style={{ color: "var(--orange)" }}>{info.count}명</b>이 같이 출근했어요.
+      </div>
+    </div>
+  );
+}
+
 function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const day = today.day;
   const syns = [{ w: today.word, ko: today.meaning, main: true }].concat(SYNONYMS[day] || []);
@@ -8473,6 +8527,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </div>
             ))}
           </div>
+          {!USER.isViewingPast && <OfficeTodayStrip />}
           {_isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
             (allTodayDone || !!doneTasks.wrapup)
               ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} catchUp={_catchUp} />
@@ -16319,6 +16374,11 @@ const _PROBATION_MILESTONES = [
   { at: 21, icon: "🔥", title: "3주 달성!", body: "21일이면 습관이 자리잡는다고 하죠. 이제 영어가 덜 어색하지 않나요? 사원까지 9일 남았어요." },
 ];
 
+// ── 사원(정직원) 구간 마일스톤: 대리 승진 시험 D-1 예고 ──
+const _FULLTIME_MILESTONES = [
+  { at: 89, icon: "📋", title: "내일, 대리 승진 시험", body: "89일 출근했어요. 내일 Day 90은 대리 승진 시험이에요. Day 61~90에서 직접 써본 표현으로 10문항이 나와요. 통과하면 내 일에 맞는 TF 트랙이 열려요.", cta: "오늘 복습하고 가기 →" },
+];
+
 // ── 마일스톤 축하 팝업 ──
 function MilestonePopup({ milestone, onClose }) {
   return (
@@ -16340,7 +16400,7 @@ function MilestonePopup({ milestone, onClose }) {
         }}>마일스톤 달성</div>
         <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", marginBottom: 12, letterSpacing: "-0.01em" }}>{milestone.title}</h2>
         <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 22 }}>{milestone.body}</p>
-        <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>계속 출근하기 →</button>
+        <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>{milestone.cta || "계속 출근하기 →"}</button>
       </div>
     </div>
   );
@@ -17925,6 +17985,7 @@ function App() {
   // 2) Day 30+ + 아직 수습: 인사팀 상담 강제 트리거 (Day 32+ 기존 사용자도 여기로 흡수)
   const _levelIdNow = (_localUserNow?.level?.id) || 'probation';
   const _isProbationNow = _levelIdNow === 'probation';
+  const _isFullTimeNow = _levelIdNow === 'fulltime';
   const _D1_KEY = '__OD_D1_SEEN_' + (_localUserNow?.email || 'guest');
   const [_d1Dismissed, _setD1Dismissed] = useState(() => {
     try { return localStorage.getItem(_D1_KEY) === '1'; } catch(e) { return false; }
@@ -18090,18 +18151,22 @@ function App() {
   // 여러 개 한꺼번에 넘기면 아직 안 본 것 중 가장 높은 하나만 표시.
   const [_milestonePopup, _setMilestonePopup] = useState(null);
   React.useEffect(() => {
-    if (!_isProbationNow || !_localUserNow || _showCeremony) return;
+    if (!_localUserNow || _showCeremony) return;
+    // 수습이면 수습 마일스톤, 사원이면 대리 승진 시험 예고. (대리 이상은 없음)
+    const _msList = _isProbationNow ? _PROBATION_MILESTONES : (_isFullTimeNow ? _FULLTIME_MILESTONES : []);
+    const _msKey = _isProbationNow ? '__OD_MILESTONES_SEEN' : '__OD_MILESTONES_SEEN_FT';
+    if (!_msList.length) return;
     let seen = [];
-    try { seen = JSON.parse(localStorage.getItem('__OD_MILESTONES_SEEN') || '[]'); } catch (e) {}
+    try { seen = JSON.parse(localStorage.getItem(_msKey) || '[]'); } catch (e) {}
     const done = _completedDayCount(_localUserNow);
     // 달성했는데 아직 안 본 마일스톤 중 가장 높은 것
-    const reached = _PROBATION_MILESTONES.filter(m => done >= m.at && !seen.includes(m.at));
+    const reached = _msList.filter(m => done >= m.at && !seen.includes(m.at));
     if (reached.length === 0) return;
     const top = reached[reached.length - 1];
     // 넘긴 모든 마일스톤을 본 것으로 기록 (한 번에 하나만 띄우되 나머지도 소진)
     try {
       const next = Array.from(new Set([...seen, ...reached.map(m => m.at)]));
-      localStorage.setItem('__OD_MILESTONES_SEEN', JSON.stringify(next));
+      localStorage.setItem(_msKey, JSON.stringify(next));
     } catch (e) {}
     _setMilestonePopup(top);
   }, []);
