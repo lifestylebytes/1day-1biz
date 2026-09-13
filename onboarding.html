@@ -1176,7 +1176,20 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <Divider />
 
       {/* ── 1.5 실제 화면 재현: 매일 받는 책상 (Day 88 그대로) ── */}
-      <SectionTitle eyebrow="REAL SCREEN" title="입사하면 매일, 이 책상을 받아요" sub="지금 멤버들이 보고 있는 화면 그대로예요." />
+      <SectionTitle eyebrow="REAL SCREEN" title="카톡이 끝이 아니에요" sub="알림을 받고 들어오면, 그 표현을 실제로 써보는 자리가 기다리고 있어요." />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))", gap: 8, marginBottom: 14 }}>
+        {[["💬", "카톡 알림", "오늘의 표현이 도착"], ["👔", "출근", "그 표현이 오가는 상황"], ["✍️", "한 줄 쓰기", "사수가 바로 첨삭"], ["📓", "내 어휘 사전", "오늘 것 한 칸 추가"]].map((x, i) => (
+          <div key={x[1]} style={{ position: "relative", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 10px 11px", textAlign: "center" }}>
+            <span style={{ position: "absolute", top: 7, left: 8, fontSize: 9.5, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{i + 1}</span>
+            <div style={{ fontSize: 20, marginBottom: 4 }}>{x[0]}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", lineHeight: 1.35 }}>{x[1]}</div>
+            <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 3, lineHeight: 1.45 }}>{x[2]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", marginBottom: 12 }}>
+        <strong>딱 5분이에요.</strong> 아래가 멤버들이 실제로 보는 화면이고요.
+      </div>
       <div style={{ border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "0 14px 34px -14px rgba(58,40,18,0.25)", marginBottom: 10 }}>
         <div style={{ background: "var(--paper-warm)", padding: "8px 14px", display: "flex", gap: 6, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
           <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#E8968B" }} />
