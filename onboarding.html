@@ -1504,7 +1504,40 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "11px 14px", marginBottom: 10 }}>
         둘 다 <strong style={{ color: "var(--ink)" }}>비즈니스 영어에 꼭 필요한 단어</strong>만 모았어요. 다른 건 <strong style={{ color: "var(--ink)" }}>고르는 방식</strong>이에요. 1일1비는 직급이 올라가는 순서대로, 유비챌은 <strong style={{ color: "var(--ink)" }}>기수마다 주제를 새로 큐레이션</strong>해요.
       </div>
+      {/* 자리 그림: 축이 달라서 안 겹친다는 걸 한눈에 */}
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 14px 10px", marginBottom: 10 }}>
+        <div style={{ position: "relative", height: 190, margin: "0 8px" }}>
+          {/* 축 */}
+          <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, background: "var(--line)" }} />
+          <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: 1, background: "var(--line)" }} />
+          {/* 축 라벨 */}
+          <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%) translateX(-2px)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "2px 3px" }}>혼자</div>
+          <div style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%) translateX(2px)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "2px 3px", textAlign: "right" }}>함께</div>
+          <div style={{ position: "absolute", left: "50%", top: -2, transform: "translateX(-50%)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "0 5px" }}>기간 안에 몰아서</div>
+          <div style={{ position: "absolute", left: "50%", bottom: -2, transform: "translateX(-50%)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "0 5px" }}>매일 조금씩</div>
+          {/* 1일1비: 혼자 + 매일 (좌하단) */}
+          <div style={{ position: "absolute", left: "13%", top: "70%", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 11, height: 11, borderRadius: "50%", background: "var(--accent)", flexShrink: 0, boxShadow: "0 0 0 4px rgba(216,90,42,0.16)" }} />
+            <span style={{ fontSize: 12.5, fontWeight: 900, color: "var(--accent)", whiteSpace: "nowrap" }}>1일1비</span>
+          </div>
+          {/* 유비챌: 함께 + 4주 (우상단) */}
+          <div style={{ position: "absolute", right: "13%", top: "22%", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--ink-soft)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>유비챌</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 6 }}>
+          같은 목적지인데 <strong style={{ color: "var(--ink-soft)" }}>가는 길이 정반대</strong>예요. 그래서 둘이 겹치지 않아요.
+        </div>
+      </div>
+
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>혼자 · 매일 5분 · 쌓기</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>단톡방도 인증 압박도 마감도 없어요. <strong style={{ color: "var(--ink)" }}>혼자 하는 게 편한 분</strong>이 내 속도로 어휘 사전을 채워가요.</div>
+        </div>
         <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup"
            target="_blank" rel="noopener"
            onClick={() => track("lineup_ubc_click")}
@@ -1515,13 +1548,8 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>매일 인증하고 같은 기수 동료가 옆에 있어요. <strong style={{ color: "var(--ink)" }}>혼자선 자꾸 미루는 분</strong>께 끝까지 가는 힘을 붙여드려요.</div>
           <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 800, marginTop: 8 }}>유비챌 보러가기 →</div>
         </a>
-        <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
-          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>혼자 · 매일 5분 · 쌓기</div>
-          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>단톡방도 인증 압박도 마감도 없어요. <strong style={{ color: "var(--ink)" }}>혼자 하는 게 편한 분</strong>이 내 속도로 어휘 사전을 채워가요.</div>
-        </div>
       </div>
+
       {/* 한눈에 비교 */}
       <div style={{ border: "1px solid var(--line)", borderRadius: 11, overflow: "hidden", marginBottom: 12 }}>
         {[
