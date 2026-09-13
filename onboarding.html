@@ -1012,6 +1012,16 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
       .od-bar-cta-short { display: none; }
+      /* ★ 2026-09-13: 하단 고정 CTA. 엄지가 닿는 자리라 모바일에서만 (데스크톱은 상단바로 충분) */
+      .od-bottom-cta { display: none; }
+      @media (max-width: 720px) {
+        .od-bottom-cta {
+          display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9200;
+          align-items: center; gap: 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+          background: rgba(245,238,221,0.97); border-top: 1.5px solid var(--line, #E2D8C4);
+          box-shadow: 0 -8px 22px -14px rgba(58,40,18,0.5); backdrop-filter: blur(6px);
+        }
+      }
       @media (max-width: 600px) {
         .od-bar-title { font-size: 12px !important; flex: 0 1 auto; }
         .od-bar-sub { display: none; }
@@ -1046,6 +1056,18 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
     </div>
     <div style={{ height: 86 }} />
 
+    {/* 하단 고정 CTA (모바일) */}
+    <div className="od-bottom-cta">
+      <div style={{ minWidth: 0, flex: 1, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>월 13,900원 · 언제든 해지</div>
+        <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>내일 아침 첫 표현이 도착해요</div>
+      </div>
+      <button onClick={() => _goDomestic("bottom_sticky")}
+        style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 18px", fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 6px 16px -8px rgba(216,90,42,0.8)" }}>
+        지금 바로 입사하기 →
+      </button>
+    </div>
+
     {showEnter && (
       <div onClick={() => setShowEnter(false)} style={{ position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div onClick={e => e.stopPropagation()} className="od-rise" style={{ background: "var(--paper)", border: "1.5px solid var(--ink)", borderRadius: 16, padding: "22px 22px 18px", width: "100%", maxWidth: 420, boxShadow: "6px 6px 0 var(--ink)" }}>
@@ -1078,6 +1100,38 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         그 상황에서 원어민이 실제로 쓰는 한마디를 <strong>매일 아침 카톡으로</strong> 하나씩 보내드려요.<br/>
         그 자리에서 한 번 써보면 <strong>내 비즈니스 어휘 사전</strong>에 한 칸이 채워져요.
       </p>
+
+      {/* ── 1.1 카톡 미리보기: '매일 아침 카톡으로' 를 말이 아니라 화면으로 ── */}
+      <div style={{ background: "#9FB4C7", borderRadius: 14, padding: "14px 12px 16px", marginTop: 2 }}>
+        <div style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 10, letterSpacing: "0.02em" }}>
+          내일 아침 9시, 카톡함에 이렇게 도착해요
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <span style={{ width: 32, height: 32, borderRadius: 11, background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 12.5, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>유</span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.95)", fontWeight: 700, marginBottom: 4 }}>1일1비</div>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
+              <div style={{ background: "#fff", borderRadius: "3px 13px 13px 13px", padding: "12px 13px", fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, boxShadow: "0 1px 2px rgba(0,0,0,0.08)", minWidth: 0 }}>
+                ☀️ 좋은 아침이에요! 오늘의 표현이 도착했어요.<br/><br/>
+                <strong style={{ fontSize: 14 }}>low-hanging fruit</strong><br/>
+                <span style={{ color: "var(--ink-soft)" }}>쉽게 얻을 수 있는 성과</span>
+                <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  💬 오늘 이런 자리에서 써요<br/>
+                  <span style={{ color: "var(--ink)" }}>"Let's knock out the low-hanging fruit first."</span><br/>
+                  <span style={{ fontSize: 11.5 }}>쉽게 처리할 수 있는 것부터 먼저 해치웁시다.</span>
+                </div>
+                <div style={{ marginTop: 10, textAlign: "center", background: "var(--accent)", color: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800 }}>
+                  출근해서 한 번 써보기 →
+                </div>
+              </div>
+              <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.85)", flexShrink: 0, paddingBottom: 2 }}>오전 9:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 9 }}>
+        앱을 안 열어도 와요. 받을 시간은 6시~22시 중에 직접 고르시면 돼요.
+      </div>
 
       <Divider />
 
@@ -1462,6 +1516,31 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       <Divider />
 
       {/* ── 5. 구성 + CTA ── */}
+      {/* ── 4.7 이런 분껜 안 맞아요 (결제 직전 자가 필터) ── */}
+      <SectionTitle eyebrow="BEFORE YOU JOIN" title="이런 분껜 안 맞아요" sub="솔직하게 먼저 말씀드릴게요. 아래에 해당되시면 지금은 안 하시는 게 나아요." />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["🎯", "토익·오픽 점수가 목표인 분", "시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았어요. 점수에는 도움이 안 돼요."],
+          ["🌱", "영어를 아예 안 쓰는 환경인 분", "회의·슬랙·메일에서 쓰는 표현이라, 써먹을 자리가 없으면 와닿지 않아요. 기초 문법부터라면 다른 걸 먼저 하세요."],
+          ["🗣️", "발음·스피킹 교정을 원하는 분", "말하기를 직접 봐드리진 않아요. 입으로 뱉는 연습이 필요하시면 유비챌 쪽이 맞아요."],
+          ["📚", "하루 30분 이상 제대로 파고 싶은 분", "5분 안에 끝나게 설계했어요. 더 깊게 하고 싶은 분껜 오히려 성에 안 찰 수 있어요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        반대로 <strong>영어로 일은 하는데 늘 쓰던 표현만 나오는 분</strong>이라면,<br/>
+        딱 그 자리를 메우려고 만든 서비스예요.
+      </div>
+
+      <Divider />
+
       <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
         {[["📩", "하루 하나, 새로운 Day 도착"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
@@ -1550,7 +1629,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
            style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px", textDecoration: "none", display: "block" }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--ink-mute)", marginBottom: 6 }}>PROGRAM</div>
           <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>↗</span></div>
-          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>동료와 함께 · 4주 · 써보기</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>동료와 함께 · 4주 · 문장 인증</div>
           <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>매일 인증하고 같은 기수 동료가 옆에 있어요. <strong style={{ color: "var(--ink)" }}>혼자선 자꾸 미루는 분</strong>께 끝까지 가는 힘을 붙여드려요.</div>
           <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 800, marginTop: 8 }}>유비챌 보러가기 →</div>
         </a>
@@ -1564,7 +1643,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           ["마감", "없음 · 내 속도대로", "4주 안에 끝내기"],
           ["어휘 구성", "직급 순서대로 차곡차곡", "기수별 주제 큐레이션"],
           ["난이도", "★★★☆☆ (3)", "★★★★☆ (4)"],
-          ["남는 것", "매일 채워지는 내 어휘 사전", "4주간 입으로 뱉어본 실전 경험"],
+          ["남는 것", "매일 채워지는 내 어휘 사전", "4주간 매일 직접 써낸 문장들"],
           ["이런 분께", "혼자 하는 게 편한 분\n매일 조금씩 쌓고 싶은 분", "혼자선 자꾸 미루는 분\n끝까지 가는 힘이 필요한 분"],
         ].map((r, i) => (
           <div key={r[0]} style={{ display: "grid", gridTemplateColumns: "72px 1fr 1fr", borderTop: i === 0 ? "none" : "1px solid var(--line)" }}>
@@ -1582,10 +1661,29 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "13px 15px" }}>
         <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>👉 둘 다 하시면 이런 분이에요</div>
-        아침에 담은 표현을 그 주에 바로 꺼내 쓰고 싶은 분. 1일1비로 매일 표현을 쌓고, 유비챌 4주 동안 그 표현을 실제 상황에서 입으로 뱉어보는 조합이에요.
-        <strong style={{ color: "var(--ink)" }}> 쌓기만 하고 안 써보면 입이 안 떨어지고, 써보기만 하고 안 쌓으면 4주 뒤에 남는 게 없어요.</strong>
+        아침에 담은 표현을 그 주에 바로 꺼내 쓰고 싶은 분. 1일1비로 매일 표현을 쌓고, 유비챌 4주 동안 그 표현으로 직접 문장을 만들어 인증하는 조합이에요.
+        <strong style={{ color: "var(--ink)" }}> 쌓기만 하고 안 써보면 내 문장이 안 나오고, 써보기만 하고 안 쌓으면 4주 뒤에 남는 게 없어요.</strong>
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.65 }}>
           다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 유비챌은 매일 인증이 있어서, 여유가 없을 땐 1일1비만으로도 충분해요.
+        </div>
+      </div>
+
+      {/* ── 마지막 CTA ── */}
+      <div style={{ marginTop: 20, background: "var(--ink)", borderRadius: 14, padding: "24px 20px 22px", textAlign: "center" }}>
+        <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "rgba(245,238,221,0.65)", textTransform: "uppercase", marginBottom: 10 }}>NOW HIRING</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "var(--paper)", lineHeight: 1.45, marginBottom: 8 }}>
+          오늘 결제하면<br/><span style={{ color: "#F0A57A" }}>내일 아침 첫 표현</span>이 도착해요
+        </div>
+        <div style={{ fontSize: 12.5, color: "rgba(245,238,221,0.75)", lineHeight: 1.7, marginBottom: 16 }}>
+          하루 5분이면 돼요. 한 달 뒤엔 어휘 사전에 30칸이 채워져 있고요.<br/>
+          맞지 않으면 언제든 해지, 기록은 그대로 남아요.
+        </div>
+        <button onClick={() => _goDomestic("footer")}
+          style={{ width: "100%", background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 11, padding: "15px 18px", fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 24px -12px rgba(216,90,42,0.9)" }}>
+          🚪 지금 바로 입사하기 · 월 13,900원
+        </button>
+        <div style={{ fontSize: 11, color: "rgba(245,238,221,0.6)", marginTop: 10, lineHeight: 1.6 }}>
+          결제 완료 메일의 코드로 지원서를 쓰면 사번이 바로 나와요
         </div>
       </div>
 
