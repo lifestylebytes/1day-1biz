@@ -1672,12 +1672,19 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         </div>
       </div>
 
-      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "13px 15px" }}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginBottom: 6 }}>👉 둘 다 하시면 이런 분이에요</div>
-        아침에 담은 표현을 그 주에 바로 꺼내 쓰고 싶은 분. 1일1비로 매일 표현을 쌓고, 유비챌 4주 동안 그 표현으로 직접 문장을 만들어 인증하는 조합이에요.
-        <strong style={{ color: "var(--ink)" }}> 쌓기만 하고 안 써보면 내 문장이 안 나오고, 써보기만 하고 안 쌓으면 4주 뒤에 남는 게 없어요.</strong>
-        <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.65 }}>
-          다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 유비챌은 매일 인증이 있어서, 여유가 없을 땐 1일1비만으로도 충분해요.
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "14px 15px" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 900, color: "var(--ink)", marginBottom: 7 }}>👉 혼자선 자꾸 미뤄지시나요?</div>
+        솔직히 말하면, 매일 알림이 와도 안 여는 분들이 계세요. 의지 문제가 아니라 <strong style={{ color: "var(--ink)" }}>마감이 없으면 안 움직이는 타입</strong>인 거예요.<br/><br/>
+        그런 분껜 <strong style={{ color: "var(--ink)" }}>유비챌</strong>을 권해요. 4주 마감, 매일 인증, 같은 기수 동료가 있어서 <strong style={{ color: "var(--ink)" }}>안 하면 티가 나거든요.</strong> 그 강제성이 필요한 분이 분명히 있어요.
+        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=route_lazy"
+           target="_blank" rel="noopener"
+           onClick={() => track("lineup_ubc_route_click")}
+           style={{ display: "block", textAlign: "center", marginTop: 12, background: "var(--ink)", color: "var(--paper)", borderRadius: 9, padding: "12px 14px", fontSize: 13.5, fontWeight: 900, textDecoration: "none" }}>
+          유비챌 보러가기 →
+        </a>
+        <div style={{ marginTop: 10, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.65 }}>
+          반대로 매일 쌓는 게 잘 맞는 분이 4주 실전까지 더하고 싶다면 둘 다 하셔도 좋아요.
+          다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 여유가 없을 땐 1일1비만으로도 충분해요.
         </div>
       </div>
 
