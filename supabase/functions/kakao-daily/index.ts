@@ -91,11 +91,14 @@ function progressLine(g: Gate, idleDays: number): string {
   return `Day ${g.gated}. 오늘 출근 도장 찍고 시작해요.`;
 }
 
-function scenarioFor(day: number, signupDate?: string) {
-  // Day 91+ (TF 트랙) 은 별도 앵커 계산이 클라이언트에만 있어 우선 90일 순환으로 근사
+function scenarioFor(day: number, signupDate?: string, tfTrack?: string | null, tfDone?: unknown) {
+  // Day 91+ 는 회원이 고른 TF 트랙(nego|people|docs|meeting)과 완주한 트랙 수로 표현이 정해진다.
+  //   트랙 시작 day = 91 + 30 * 완주한 트랙 수.  앱(mainboard.html)의 _tfAnchor 와 같은 식.
+  //   ★ 2026-09-13 이전에는 이 구간을 90일 순환으로 "근사"해서 Day 91 -> Day 1, Day 92 -> Day 2 처럼
+  //     엉뚱한 단어를 보냈다. 이제는 특정 못 하면 null 을 돌려 보내지 않는다.
   // 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 가 다른 단어 (scenarios.ts 의 SCENARIOS_V2)
   const signupKst = signupDate ? kstDateStr(new Date(signupDate)) : undefined;
-  return _scnFor(day, signupKst);
+  return _scnFor(day, signupKst, tfTrack, tfDone);
 }
 
 // ── 솔라피 HMAC-SHA256 인증 헤더 ──
@@ -145,7 +148,7 @@ Deno.serve(async (req) => {
 
     // 1. 대상 회원
     let q = sb.from("users")
-      .select("email, name, phone, signup_date, last_active, day_in_company, kakao_notify_hour, membership_ends_at, withdrawn_at")
+      .select("email, name, phone, signup_date, last_active, day_in_company, kakao_notify_hour, membership_ends_at, withdrawn_at, tf_track, tf_done")
       .not("phone", "is", null)
       .is("withdrawn_at", null);
     q = onlyEmail ? q.eq("email", onlyEmail) : q.eq("kakao_notify_hour", hour);
@@ -178,7 +181,13 @@ Deno.serve(async (req) => {
       if (already.has(u.email) && !force) { results.push({ email: u.email, skipped: "already sent today" }); continue; }
       const g = computeGate(u, done.get(u.email) || new Set(), now);
       const idle = daysBetweenKST(u.last_active || u.signup_date, now);
-      const s = scenarioFor(g.gated, u.signup_date);
+      const s = scenarioFor(g.gated, u.signup_date, u.tf_track, u.tf_done);
+      // Day 91+ 인데 TF 트랙을 아직 안 골랐거나 트랙 30일을 다 쓴 경우 = 오늘 표현을 특정할 수 없음.
+      // 예전엔 여기서 SCENARIOS 를 되감아 Day 1~ 단어를 잘못 보냈다. 이제는 보내지 않는다.
+      if (!s) {
+        results.push({ email: u.email, day: g.gated, skipped: "no scenario (TF track missing or finished)", tfTrack: u.tf_track || null });
+        continue;
+      }
       // #{상황}: 뜻만 짧게 (2026-09-07 운영자 결정: 장면·훅은 길어서 뺀다). 예) 산출물, 납품물
       //   뜻이 없으면 장면 한 줄로 대체. 라벨("오늘 상황:")은 템플릿에 고정이라 내용만 바꾼다.
       //   + 뉘앙스 한 줄(hint, 60자 안쪽). 예) 산출물, 납품물. deliverable은 '결과물' 보다 무거운 단어.

@@ -67,16 +67,59 @@ for b in re.split(r"\n(?=  \d+: \{ day: \d+, word: )", v2_src):
     if m: v2.append(row(b, int(m.group(1)), m.group(2)))
 cutover = re.search(r'const CONTENT_CUTOVER = "([^"]+)"', src).group(1)
 
+# ── Day 91+ TF 트랙 (data/tf-scenarios-<id>.json, 트랙당 30일) ──
+# 알림톡이 Day 90을 넘으면 SCENARIOS 를 나머지연산으로 되감아 엉뚱한 단어를 보내던 버그(2026-09-13) 수정용.
+TF_IDS = ["nego", "people", "docs", "meeting"]
+tf = {}
+for _tid in TF_IDS:
+    try:
+        _d = json.load(io.open("data/tf-scenarios-%s.json" % _tid, encoding="utf-8"))
+    except IOError:
+        continue
+    _rows = []
+    for _s in (_d.get("scenarios") or []):
+        _scene = re.sub(r"^\s*\d{1,2}:\d{2}\s*[.,]?\s*", "", (_s.get("scene") or "").strip())
+        _scene = re.split(r"(?<=[.!?])\s", _scene)[0].strip()
+        if len(_scene) > 120: _scene = _scene[:117].rstrip() + "..."
+        _w = _s.get("word") or ""
+        _rows.append({
+            "day": int(_s.get("tfDay") or (len(_rows) + 1)),
+            "word": _w,
+            "meaning": (_s.get("meaning") or "").strip(),
+            "scene": _scene,
+            "quoteKo": (_s.get("quoteKo") or "").strip(),
+            "hint": HINTS.get(_w) or hint_of(_s.get("mentorNuance") or "", _w),
+        })
+    _rows.sort(key=lambda x: x["day"])
+    tf[_tid] = _rows
+
 ts = "// 자동 생성: scripts/gen_kakao_scenarios.py (수정 금지, mainboard.html 이 원본)\n"
 ts += "export type Scn = { day: number; word: string; meaning: string; scene: string; quoteKo: string; hint?: string };\n"
 ts += "export const SCENARIOS: Scn[] = " + json.dumps(rows, ensure_ascii=False, indent=1) + ";\n"
 ts += "// 첫 주 개정판: 가입일(KST) >= CONTENT_CUTOVER 인 회원은 Day 1~4 를 아래로 교체\n"
 ts += "export const CONTENT_CUTOVER = " + json.dumps(cutover) + ";\n"
 ts += "export const SCENARIOS_V2: Scn[] = " + json.dumps(v2, ensure_ascii=False, indent=1) + ";\n"
-ts += "export function scenarioFor(day: number, signupKst?: string): Scn {\n"
-ts += "  const d = Math.max(1, day);\n"
-ts += "  if (signupKst && signupKst >= CONTENT_CUTOVER) { const v = SCENARIOS_V2.find(x => x.day === d); if (v) return v; }\n"
-ts += "  return SCENARIOS[(d - 1) % SCENARIOS.length];\n"
-ts += "}\n"
+ts += "// Day 91+ TF 트랙 (트랙당 30일). 트랙 시작 day = 91 + 30 * (완주한 트랙 수)\n"
+ts += "export const TF_SCENARIOS: Record<string, Scn[]> = " + json.dumps(tf, ensure_ascii=False, indent=1) + ";\n"
+ts += "export const TF_LEN = 30;\n"
+ts += "export const TF_START = 91;\n"
+ts += """
+// Day 91 이상은 사람마다 고른 TF 트랙이 달라서, 트랙/완주수 없이는 오늘 표현을 알 수 없다.
+// 알 수 없으면 null 을 돌려주고 발송을 거른다. (예전엔 SCENARIOS 를 되감아 Day 1~ 단어를 잘못 보냈음)
+export function scenarioFor(day: number, signupKst?: string, tfTrack?: string | null, tfDone?: unknown): Scn | null {
+  const d = Math.max(1, day);
+  if (d >= TF_START) {
+    const doneN = Array.isArray(tfDone) ? tfDone.length : 0;
+    const list = tfTrack ? TF_SCENARIOS[tfTrack] : null;
+    if (!list || !list.length) return null;
+    const idx = d - (TF_START + TF_LEN * doneN);
+    if (idx < 0 || idx >= list.length) return null;
+    return list[idx];
+  }
+  if (signupKst && signupKst >= CONTENT_CUTOVER) { const v = SCENARIOS_V2.find(x => x.day === d); if (v) return v; }
+  return SCENARIOS[(d - 1) % SCENARIOS.length];
+}
+"""
 io.open("supabase/functions/kakao-daily/scenarios.ts", "w", encoding="utf-8").write(ts)
+print("tf:", {k: len(v) for k, v in tf.items()})
 print("days:", len(rows), "with scene:", sum(1 for r in rows if r["scene"]), "range", rows[0]["day"], "-", rows[-1]["day"], "| v2:", [(r["day"], r["word"]) for r in v2], "cutover", cutover)
