@@ -239,6 +239,125 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
   );
 }
 
+// ── 이탈 분석 + 재입사 컨택 명단 ──────────────────────────────
+// 이탈자를 "어디까지 갔다가 나갔는지"로 나눠서, 세그먼트별로 다른 멘트를 쓰게 한다.
+const CHURN_SEGMENTS = [
+  { id: "A", label: "시작 못 함", min: 0,  max: 1,  color: "#993C1D",
+    why: "결제하고 거의 안 들어왔어요. 온보딩에서 막힌 층.",
+    ment: "결제는 하셨는데 시작이 잘 안 되셨죠. 첫 주만 같이 넘겨보실래요? 사번 그대로 살려뒀어요." },
+  { id: "B", label: "첫 주 이탈", min: 2,  max: 7,  color: "#B8431A",
+    why: "며칠 하다 끊겼어요. 습관이 안 잡힌 층.",
+    ment: "Day {D}까지 하시고 멈추셨더라고요. 그때 쓰신 문장들 그대로 있어요. 이어서 가시면 Day {N}부터예요." },
+  { id: "C", label: "2~4주 이탈", min: 8,  max: 29, color: "#8C6510",
+    why: "제법 하다 끊긴 층. 제일 아깝고 제일 잘 돌아옴.",
+    ment: "Day {D}까지 가셨어요. 정직원 전환까지 {R}일 남았던 거 아세요? 사번 #{S} 그대로 있어요." },
+  { id: "D", label: "수습 통과 후", min: 30, max: 9999, color: "#2D6E3A",
+    why: "30일 넘게 하고 나간 층. 제품은 통했고 다른 이유로 나감.",
+    ment: "Day {D}까지 완주하신 분이라 그냥 두기 아쉬워서요. 그동안 모은 표현 {D}개 그대로 있어요." },
+];
+
+function ChurnPanel({ supaUsers }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState("");
+  const now = new Date();
+  const real = (supaUsers || []).filter(u => !u.is_operator && !u.is_dev_mode && !u.is_tester);
+  const ends = u => u.membership_ends_at ? new Date(u.membership_ends_at) : null;
+  const churned = real.filter(u => u.cohort === 'member' && ends(u) && ends(u) <= now);
+  if (!churned.length) return null;
+
+  const doneOf = u => {
+    try { const a = u.scenarios_completed; return Array.isArray(a) ? a.length : 0; } catch (e) { return 0; }
+  };
+  const rows = churned.map(u => {
+    const done = doneOf(u);
+    const day = Number(u.day_in_company || 0) || done;
+    const e = ends(u), j = u.signup_date ? new Date(u.signup_date) : null;
+    const la = u.last_active ? new Date(u.last_active) : null;
+    const heldDays = (e && j) ? Math.max(0, Math.round((e - j) / 86400000)) : null;
+    const goneDays = e ? Math.round((now - e) / 86400000) : null;
+    const seg = CHURN_SEGMENTS.find(x => done >= x.min && done <= x.max) || CHURN_SEGMENTS[0];
+    return { u, done, day, ends: e, joined: j, lastActive: la, heldDays, goneDays, seg };
+  }).sort((a, b) => (b.ends || 0) - (a.ends || 0));
+
+  const bySeg = CHURN_SEGMENTS.map(sg => ({ sg, list: rows.filter(r => r.seg.id === sg.id) }));
+  const fmt = d => d ? d.toISOString().slice(0, 10) : "-";
+  const pct = n => churned.length ? Math.round(n / churned.length * 100) : 0;
+  const medianHeld = (() => {
+    const v = rows.map(r => r.heldDays).filter(x => x != null).sort((a, b) => a - b);
+    return v.length ? v[Math.floor(v.length / 2)] : null;
+  })();
+
+  const csv = () => {
+    const head = "세그먼트,이름,이메일,전화,완주Day,진도Day,가입일,만료일,마지막접속,유지일수,만료후경과일";
+    const body = rows.map(r => [
+      r.seg.id + "-" + r.seg.label, r.u.name || "", r.u.email || "", r.u.phone || "",
+      r.done, r.day, fmt(r.joined), fmt(r.ends), fmt(r.lastActive),
+      r.heldDays == null ? "" : r.heldDays, r.goneDays == null ? "" : r.goneDays,
+    ].join(","));
+    return [head].concat(body).join("\n");
+  };
+  const copy = (txt, tag) => {
+    try { navigator.clipboard.writeText(txt); setCopied(tag); setTimeout(() => setCopied(""), 1500); } catch (e) {}
+  };
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: '#8A7964' }}>📉 이탈 분석 · 재입사 컨택 명단 ({churned.length}명)</div>
+        <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={() => copy(csv(), 'csv')}>
+          {copied === 'csv' ? '복사됨' : '⧉ CSV 복사'}
+        </button>
+        <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={() => setOpen(!open)}>
+          {open ? '명단 접기' : '명단 펼치기'}
+        </button>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+        {bySeg.map(({ sg, list }) => (
+          <div key={sg.id} style={{ flex: '1 1 150px', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8, padding: '12px 14px' }}>
+            <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{sg.id}. {sg.label} <span style={{ color: '#A8997F' }}>({sg.min}~{sg.max > 100 ? '' : sg.max}일 완주)</span></div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: sg.color }}>{list.length}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명 · {pct(list.length)}%</span></div>
+            <div style={{ fontSize: 11, color: '#8A7964', marginTop: 6, lineHeight: 1.5 }}>{sg.why}</div>
+          </div>
+        ))}
+      </div>
+      {medianHeld != null && (
+        <div style={{ fontSize: 12, color: '#8A7964', marginBottom: 10 }}>
+          중앙값 구독 유지 <b style={{ color: '#5C4A2E' }}>{medianHeld}일</b> · 완주 0~1일이 <b style={{ color: '#993C1D' }}>{pct(bySeg[0].list.length)}%</b> 면 문제는 상품이 아니라 <b>첫 주 온보딩</b>이에요.
+        </div>
+      )}
+      {open && (
+        <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: '#F6F0E2' }}>
+                {['세그', '이름', '완주', '진도', '가입', '만료', '마지막접속', '유지', '경과', '연락처'].map(h => (
+                  <th key={h} style={{ textAlign: 'left', padding: '8px 10px', fontWeight: 800, color: '#8A7964', whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i} style={{ borderTop: '1px solid #EFE7D5' }}>
+                  <td style={{ padding: '7px 10px', fontWeight: 800, color: r.seg.color, whiteSpace: 'nowrap' }}>{r.seg.id}</td>
+                  <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>{r.u.name || r.u.email}</td>
+                  <td style={{ padding: '7px 10px', fontWeight: 800 }}>{r.done}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964' }}>{r.day}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964', whiteSpace: 'nowrap' }}>{fmt(r.joined)}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964', whiteSpace: 'nowrap' }}>{fmt(r.ends)}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964', whiteSpace: 'nowrap' }}>{fmt(r.lastActive)}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964' }}>{r.heldDays == null ? '-' : r.heldDays + '일'}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964' }}>{r.goneDays == null ? '-' : r.goneDays + '일 전'}</td>
+                  <td style={{ padding: '7px 10px', color: '#8A7964', whiteSpace: 'nowrap' }}>{r.u.phone || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CsvSyncPanel({ supaUsers, onDone }) {
   const [raw, setRaw] = useState("");
   const [plan, setPlan] = useState(null);
@@ -1895,6 +2014,7 @@ function App() {
                 </div>
               );
             })()}
+            {supaUsers.length > 0 && <ChurnPanel supaUsers={supaUsers} />}
             {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && <ManualMembershipPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && (
