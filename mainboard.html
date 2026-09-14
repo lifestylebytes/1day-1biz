@@ -1015,6 +1015,7 @@ body::before {
 .ret-pop.debuff { text-align: left; max-width: 460px; }
 .ret-deb-from { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
 .ret-deb-from b { display: block; font-size: 13px; } .ret-deb-from small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-deb-wp { margin-left: auto; font-size: 12.5px; font-weight: 900; color: var(--orange); background: rgba(216,90,42,0.10); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 .ret-deb-title { font-size: 20px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
 .ret-deb-msg { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 8px; }
 .ret-deb-box { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); font-size: 13px; line-height: 1.6; }
@@ -1086,6 +1087,19 @@ body::before {
 .ret-consult-body { padding: 12px 14px 14px; font-size: 13px; line-height: 1.7; color: var(--ink-soft); border-top: 1px dashed var(--line); }
 .ret-consult-hl { font-size: 14px; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
 .ret-consult-one { margin-top: 8px; font-weight: 800; color: var(--orange); }
+.ret-nego-intro { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--paper); }
+.ret-nego-npc { display: flex; gap: 10px; align-items: center; } .ret-nego-npc b { display: block; font-size: 13px; } .ret-nego-npc small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-nego-ko { font-size: 12.5px; color: var(--ink-mute); margin-top: 6px; }
+.ret-nego-est { margin-top: 12px; font-size: 13px; color: var(--ink-soft); line-height: 1.6; padding: 10px 12px; background: var(--cream); border-radius: 8px; }
+.ret-grade { display: inline-block; font-weight: 900; padding: 0 8px; border-radius: 6px; color: #fff; background: var(--ink-mute); }
+.ret-grade.S { background: var(--orange); } .ret-grade.A { background: #2D6E3A; } .ret-grade.B { background: #8A7964; }
+.ret-grade.big { font-size: 26px; padding: 4px 14px; border-radius: 10px; }
+.ret-nego-progress { display: flex; gap: 6px; margin: 4px 0 12px; } .ret-nego-progress span { flex: 1; height: 5px; border-radius: 999px; background: var(--line-soft); } .ret-nego-progress span.on { background: var(--orange); }
+.ret-nego-lines { margin-top: 12px; display: grid; gap: 6px; font-size: 13px; color: var(--ink); } .ret-nego-lines span { display: inline-block; min-width: 46px; font-size: 10.5px; font-weight: 900; color: var(--orange); letter-spacing: .06em; }
+.ret-peek { margin-top: 12px; border: 1px dashed var(--orange); border-radius: 10px; padding: 12px 14px; background: rgba(216,90,42,0.05); }
+.ret-peek-head { font-size: 12.5px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ret-peek-row { font-size: 13.5px; color: var(--ink); line-height: 1.55; padding: 6px 0; border-top: 1px dashed var(--line-soft); } .ret-peek-row small { display: block; font-size: 10.5px; color: var(--ink-mute); font-weight: 700; }
+
 .ret-preview-banner { margin: 0 0 14px; padding: 10px 14px; border-radius: 8px; background: #FFF3D6; border: 1px solid #E0C070; font-size: 13px; font-weight: 700; color: #8C6510; }
 @media (max-width: 880px) {
   .ret-goal-pick { grid-template-columns: repeat(2, 1fr); }
@@ -9113,7 +9127,8 @@ function _tyHobong() {
     const st = rank === "senior" ? 61 : (rank === "fulltime" ? 31 : 1);
     const en = rank === "senior" ? 90 : (rank === "fulltime" ? 60 : 30);
     const cnt = [..._tyDone()].filter(d => d >= st && d <= en).length;
-    return Math.min(6, Math.floor(cnt / 5) + 1);
+    const bonus = (typeof _RET_ON === "function" && _RET_ON() && typeof _retHobongBonus === "function") ? _retHobongBonus(_retEmail()) : 0;   // 분기 협상 결과
+    return Math.min(6, Math.floor(cnt / 5) + 1 + bonus);
   } catch (e) { return 1; }
 }
 // 공채 1기: 가격 인상 전 가입자 (인상일 확정 시 날짜만 조정)
@@ -9286,6 +9301,8 @@ const RET_PERKS = [
   { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true },
   { id: "report",  icon: "🧭", name: "커리어 리포트",     cost: 1000, rank: "senior",    desc: "지금까지 내 기록으로 성향·약한 부분·보완할 점을 사수가 한 장으로 써줘요. 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", desc: "지금까지 모은 표현을 PDF로 소장해요.", stack: false },
+  { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 150,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요. 새벽 3시까지는 자동으로 써져요.", stack: true },
+  { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 시추에이션 보내고 나면 열려요.", stack: true },
 ];
 const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
 const _retRankOk = (need) => { const u = (window.__SIM && window.__SIM.USER) || {}; return (_RET_RANK_N[u.rankId] || 0) >= (_RET_RANK_N[need] || 0); };
@@ -9463,7 +9480,9 @@ function _retEvalDebuff(email) {
   const level = _retDebuffLevel(gap);
   const rec = { date: today, gap, level, defended: false, quizDone: false, surveyDone: false, seen: false, forced: forced !== null };
   // 방어 아이템 자동 사용: 2일 → 연차, 3일+ → 휴가(없으면 연차 2장도 안 됨. 휴가만)
-  if (level === 2 && _retInvUse(email, "annual")) rec.defended = "annual";
+  const kstHour = new Date(Date.now() + 9 * 3600000).getUTCHours();
+  if (level === 1 && kstHour < 3 && _retInvUse(email, "extend")) rec.defended = "extend";
+  else if (level === 2 && _retInvUse(email, "annual")) rec.defended = "annual";
   else if (level === 3 && _retInvUse(email, "vacay")) rec.defended = "vacay";
   _retSave("DEBUFF", email, rec);
   // 목표 판정 (방어했으면 목표도 유지: 결근일을 출근으로 채워 넣는다)
@@ -9645,10 +9664,10 @@ function RetGoalCard({ compact }) {
 
 // ── 디버프 팝업 (출근했을 때 1회) ──
 const _RET_ENCOURAGE = {
-  1: { t: "이런, 어제 많이 바빴구나!", m: "하루 빠진 건 아무 일도 아니에요. 오늘 다시 출근했잖아요. 그게 제일 중요해요." },
-  2: { t: "이틀 못 봤네요. 괜찮아요?", m: "이틀 비면 표현이 슬슬 빠져나가요. 오늘 일정 전에 Review Quiz 로 한 번만 잡고 가요." },
-  3: { t: "요즘 많이 바빠요?", m: "며칠 비었어요. 뭐가 힘든지 한 줄만 남겨주면 제가 방식을 바꿔볼게요. 오늘은 Review Quiz 먼저 하고 들어가요." },
-  4: { t: "한 달 넘게 못 봤어요.", m: "혼자서는 다시 시작이 제일 어려워요. 습관부터 잡으려면 유비챌이 맞을 수도 있어요. 4주 동안 매일 인증하면서 같이 가는 방이에요." },
+  1: { t: "어제 많이 바쁘셨죠?", m: "하루 쉰 건 괜찮아요. 오늘 다시 오신 게 제일 중요하죠! 오늘 표현부터 가볍게 시작해요." },
+  2: { t: "이틀 못 봤네요..", m: "이틀 결근하면 열심히 외운 표현이 서서히 잊혀져요.. Review Quiz 보면서 다시 복습해볼까요?" },
+  3: { t: "요즘 많이 바쁘신가 봐요?", m: "며칠 비었네요.. 어떤 게 힘드셨는지 한 줄만 남겨주시면 제가 방식을 바꿔볼게요. 오늘은 Review Quiz로 감 먼저 찾고 들어가요." },
+  4: { t: "한 달 넘게 못 봤어요..", m: "혼자 다시 시작하는 게 제일 어렵더라고요. 습관부터 잡는 게 먼저라면 유비챌이 더 맞을 수도 있어요. 4주 동안 같이 인증하면서 가는 방이에요." },
 };
 const RET_REASONS = ["바빠서 시간이 없었어요", "그냥 까먹었어요", "재미가 없어졌어요", "어려워서 부담됐어요", "효과가 있는지 모르겠어요"];
 function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
@@ -9661,15 +9680,21 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
   const [reason, setReason] = React.useState(null);
   const [memo, setMemo] = React.useState("");
   const inv = _retInv(email);
-  const item = lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null);
+  const item = lv === 1 ? RET_PERKS.find(x => x.id === "extend") : (lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null));
   const wp = _retWpBalance(email);
   const needQuiz = _retNeedsQuizFirst(email);
+  const defendWith = (id) => {
+    _retInvUse(email, id);
+    // 방어했으면 결근일을 출근으로 채워 목표·연속 기록을 지킨다
+    try { const att = _retLoad("ATT", email, { dates: [] }); if (!Array.isArray(att.dates)) att.dates = []; const today = _tyTodayISO(); for (let i = 1; i <= rec.gap; i++) { const d = _retAddDays(today, -i); if (att.dates.indexOf(d) < 0) att.dates.push(d); } _retSave("ATT", email, att); } catch (e) {}
+    const g = _retGoal(email); if (g && g.status === "failed" && g.failedAt && String(g.failedAt).slice(0, 10) === _tyTodayISO()) { g.status = "active"; delete g.failedAt; _retSave("GOAL", email, g); }
+    _retDebuffPatch(email, { defended: id, seen: true });
+    onClose();
+  };
   const buyNow = () => {
     const r = _retBuy(email, item.id);
     if (!r.ok) { alert(r.why); return; }
-    _retInvUse(email, item.id);
-    _retDebuffPatch(email, { defended: item.id });
-    onClose();
+    defendWith(item.id);
   };
   const submitSurvey = () => {
     const payload = { reason, memo: memo.trim(), gap: rec.gap, at: new Date().toISOString() };
@@ -9680,20 +9705,20 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
   return (
     <div className="modal-bg" style={{ zIndex: 9175 }}>
       <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
-        <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap}일 결근 후 출근</small></div></div>
+        <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap}일 결근 후 출근</small></div><span className="ret-deb-wp">🎁 {wp.toLocaleString()}P</span></div>
         <div className="ret-deb-title">{enc.t}</div>
         <div className="ret-deb-msg">{enc.m}</div>
 
         {rec.defended && (
-          <div className="ret-deb-box ok">🌴 <b>{rec.defended === "annual" ? "연차" : "휴가"}</b>를 썼어요. 디버프 없이 그대로 이어가요. 연속 출근 기록도 지켜졌어요.</div>
+          <div className="ret-deb-box ok">{rec.defended === "extend" ? "🕐 " : "🌴 "}<b>{rec.defended === "annual" ? "연차" : rec.defended === "vacay" ? "휴가" : "출근 시간 연장권"}</b>{rec.defended === "extend" ? "이 자동으로 써졌어요! 어제도 출근한 걸로 인정됐고 연속 출근 기록도 그대로예요." : "를 썼어요! 복습 없이 바로 들어가도 되고, 연속 출근 기록도 그대로예요."}</div>
         )}
         {gp && gp.status === "failed" && !rec.defended && (
-          <div className="ret-deb-box warn">🎯 내 목표({gp.days}일)가 끊겼어요. 홈에서 다시 잡을 수 있어요.</div>
+          <div className="ret-deb-box warn">🎯 내 목표({gp.days}일)가 여기서 끊겼어요.. 홈에서 다시 잡으면 돼요.</div>
         )}
 
         {lv === 3 && !rec.defended && !rec.surveyDone && (
           <div className="ret-deb-survey">
-            <div className="ret-deb-q">사유서 · 왜 못 오셨어요? <small>고치는 데 써요</small></div>
+            <div className="ret-deb-q">사유서.. 라고 하니 무겁지만 <small>왜 못 오셨는지만 알려주세요. 제가 고치는 데 써요</small></div>
             <div className="ret-deb-opts">{RET_REASONS.map(r => <button key={r} className={"ret-deb-opt" + (reason === r ? " on" : "")} onClick={() => setReason(r)}>{r}</button>)}</div>
             <textarea className="ret-deb-memo" rows={2} placeholder="한 줄 더 (선택)" value={memo} onChange={e => setMemo(e.target.value)} />
             <button className="btn btn-ghost" style={{ marginTop: 6 }} disabled={!reason} onClick={submitSurvey}>사유서 제출</button>
@@ -9702,28 +9727,28 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
 
         {item && !rec.defended && (
           <div className="ret-deb-box">
-            <div><b>{item.icon} {item.name}</b> ({item.cost}P) 를 쓰면 디버프 없이 바로 들어가요. 지금 <b>{wp.toLocaleString()}P</b>{(Number(inv[item.id]) || 0) > 0 ? " · 보유 " + inv[item.id] + "장" : ""}</div>
+            <div><b>{item.icon} {item.name}</b> ({item.cost}P){lv === 1 ? "을 쓰면 어제도 출근한 걸로 인정돼요. 연속 출근이 안 끊겨요." : "가 있으면 복습 없이 바로 들어갈 수 있어요."} 지금 <b>{wp.toLocaleString()}P</b> 있어요{(Number(inv[item.id]) || 0) > 0 ? " · " + item.name + " " + inv[item.id] + "장 보유" : ""}</div>
             <div className="ret-deb-actions">
               {(Number(inv[item.id]) || 0) > 0
-                ? <button className="btn btn-primary" onClick={() => { _retInvUse(email, item.id); _retDebuffPatch(email, { defended: item.id }); onClose(); }}>{item.name} 쓰기</button>
+                ? <button className="btn btn-primary" onClick={() => defendWith(item.id)}>{item.name} 쓰기</button>
                 : <button className="btn btn-primary" disabled={wp < item.cost} onClick={buyNow}>{item.name} 사서 쓰기 ({item.cost}P)</button>}
-              {wp < item.cost && (Number(inv[item.id]) || 0) === 0 && <span className="ret-deb-note">포인트가 모자라요. Review Quiz 먼저 하고 들어가면 돼요.</span>}
+              {wp < item.cost && (Number(inv[item.id]) || 0) === 0 && <span className="ret-deb-note">{lv === 1 ? "지금은 포인트가 조금 모자라네요.. 오늘부터 다시 세면 돼요!" : "지금은 포인트가 조금 모자라네요.. Review Quiz 하고 들어가면 돼요!"}</span>}
             </div>
           </div>
         )}
 
         {lv === 4 && (
           <div className="ret-deb-box">
-            <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>유비챌은 <b>4주 · 매일 인증 · 같이 하는 방</b>이에요. 혼자 매일이 안 될 때는 함께가 답이었어요. 1일1비 기록은 그대로 남아요.</div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>유비챌은 <b>4주 · 매일 인증 · 같이 하는 방</b>이에요. 혼자 매일이 안 될 땐 같이 하는 게 답이더라고요. 1일1비 기록은 그대로 남아 있으니 걱정 마세요.</div>
             <a className="btn btn-primary" style={{ marginTop: 8, display: "inline-flex" }} href={_TY_UBCHALL_URL} target="_blank" rel="noopener">유비챌 보러 가기 →</a>
           </div>
         )}
 
         <div className="ret-deb-foot">
           {needQuiz
-            ? <button className="btn btn-primary" style={{ width: "100%" }} onClick={onOpenQuiz}>Review Quiz 먼저 하기 → 오늘 일정 열기</button>
-            : <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>{lv === 4 ? "그래도 오늘 출근하기" : "오늘 일정 시작하기 →"}</button>}
-          {needQuiz && (lv === 3 && !rec.surveyDone) && <div className="ret-deb-note" style={{ marginTop: 6 }}>사유서는 안 써도 돼요. Quiz 만 하면 열려요.</div>}
+            ? <button className="btn btn-primary" style={{ width: "100%" }} onClick={onOpenQuiz}>Review Quiz 하고 출근하기 →</button>
+            : <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>{lv === 4 ? "그래도 오늘은 출근할래요" : "오늘 출근하기 →"}</button>}
+          {needQuiz && (lv === 3 && !rec.surveyDone) && <div className="ret-deb-note" style={{ marginTop: 6 }}>사유서는 안 쓰셔도 괜찮아요. Quiz만 하면 열려요.</div>}
         </div>
       </div>
     </div>
@@ -9927,6 +9952,9 @@ function RetGrowthReports() {
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
       {sample && <RetPromoReportCard r={sample} sample />}
       {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
+      <div className="ret-growth-head" style={{ marginTop: 18 }}>🤝 분기 협상 리포트 <small>분기 평가 탭에서 협상하면 여기 남아요</small></div>
+      {_retNegoList(email).filter(r => !r.preview).length === 0 && <div className="ret-growth-note">아직 협상 기록이 없어요. 분기 평가 탭에서 이번 분기 협상을 해보세요.</div>}
+      {_retNegoList(email).filter(r => !r.preview).slice().reverse().map((r, i) => <RetNegoResultCard key={i} r={r} />)}
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 커리어 리포트 <small>PERK SHOP · 사원증에서 받은 리포트</small></div>
       {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 PERK SHOP 에서 1,000P 로 받아요.</div>}
       {consults.map((c, i) => (
@@ -9944,6 +9972,200 @@ function RetGrowthReports() {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── 분기 협상 (A안, 2026-09-14): 분기 평가를 '연봉 협상' 시뮬레이션으로. 지난 분기 기록이 협상 카드가 된다. ──
+//   결과: S(출근율 90%↑ + 3문장) 호봉 +2 · 500P / A(70%↑) +1 · 300P / B +0 · 100P. 분기에 1회. Preview Ticket 은 연습(보상·기록 없음).
+function _retQuarterKey(d) { const x = d ? new Date(d) : new Date(Date.now() + 9 * 3600000); return x.getUTCFullYear() + "-Q" + (Math.floor(x.getUTCMonth() / 3) + 1); }
+function _retQuarterRange() {
+  const n = new Date(Date.now() + 9 * 3600000); const q = Math.floor(n.getUTCMonth() / 3);
+  const start = new Date(Date.UTC(n.getUTCFullYear(), q * 3, 1)); const end = new Date(Date.UTC(n.getUTCFullYear(), q * 3 + 3, 0));
+  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10), key: _retQuarterKey() };
+}
+function _retNegoList(email) { return (_retLoad("NEGO", email, { list: [] }).list || []); }
+function _retNegoDoneThisQuarter(email) { return _retNegoList(email).find(r => r.quarter === _retQuarterKey() && !r.preview) || null; }
+function _retHobongBonus(email) { return Number(_retLoad("HOBONG", email, { bonus: 0 }).bonus) || 0; }
+function _retNegoCards(email) {
+  const q = _retQuarterRange(); const end = q.end;
+  // 분기 시작 · 가입일 · 도입일 중 가장 늦은 날부터 센다 (가입 전·도입 전 공백으로 결근 처리하지 않기)
+  let start = q.start;
+  try { const u0 = _wbUser(); if (u0.signupDate) { const sd = _retISO(new Date(u0.signupDate)); if (sd > start) start = sd; } } catch (e) {}
+  if (_RET_EPOCH > start) start = _RET_EPOCH;
+  const dates = _retActivityDates(email);
+  let attended = 0, span = 0; let d = start; const today = _tyTodayISO();
+  while (d <= today && d <= end) { span++; if (dates.has(d)) attended++; d = _retAddDays(d, 1); }
+  const u = _wbUser();
+  const sentences = (u.scenariosCompleted || []).filter(s => s && s.submittedAt && String(s.submittedAt).slice(0, 10) >= start).length || (u.scenariosCompleted || []).length;
+  const exp = _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= start).reduce((n, e) => n + (Number(e.exp) || 0), 0);
+  const goals = _retWpLedger(email).earn.filter(e => e.key.startsWith("goal:") && String(e.at || "").slice(0, 10) >= start).length;
+  const rate = span ? Math.round(100 * attended / span) : 0;
+  const done = _odCompletedDaySet(u); const tagN = {};
+  try { SCENARIOS.forEach(s => { if (done.has(s.day)) (s.tags || []).forEach(t => { tagN[t] = (tagN[t] || 0) + 1; }); }); } catch (e) {}
+  const topTags = Object.entries(tagN).sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => _RET_TAG_KO[x[0]] || x[0]);
+  return { start, end, span, attended, absent: Math.max(0, span - attended), rate, sentences, exp, goals, topTags };
+}
+const _RET_NEGO_STEPS = [
+  { id: "win", npc: "Let's go over your quarter. What's the one thing you're most proud of delivering?", npcKo: "이번 분기 얘기해 봅시다. 제일 자신 있게 해냈다고 말할 수 있는 게 뭐예요?",
+    hint: "이번 분기 내가 해낸 것 한 줄. 숫자나 구체적인 장면이 들어가면 강해져요.", ko: "예: 본사 콜에서 처음으로 제 의견을 먼저 꺼냈고, 그 뒤로 매주 어젠다를 제가 정리하고 있어요.", sample: "I started leading the weekly sync with HQ, and I've owned the agenda every week since." },
+  { id: "ask", npc: "Fair enough. So what are you asking for?", npcKo: "좋아요. 그래서 원하는 게 뭐예요?",
+    hint: "원하는 것 한 줄. 호봉, 역할, 기회. 돌려 말하지 말고 바로.", ko: "예: 다음 분기엔 클라이언트 미팅을 제가 직접 리드하고 싶고, 그에 맞는 호봉 조정을 요청드려요.", sample: "I'd like to lead client meetings next quarter, and I'm asking for a grade adjustment to match that scope." },
+  { id: "close", npc: "Okay. Anything else before we wrap up?", npcKo: "알겠어요. 마무리 전에 더 할 말 있어요?",
+    hint: "마무리 한 줄. 감사 + 다음 행동 하나.", ko: "예: 시간 내주셔서 감사해요. 오늘 얘기한 걸 정리해서 내일 아침에 슬랙으로 보내드릴게요.", sample: "Thanks for the time. I'll summarize what we agreed on and send it over on Slack tomorrow morning." },
+];
+function _retNegoGrade(cards, lines) {
+  const okLines = lines.filter(l => (l || "").trim().split(/\s+/).length >= 6).length;
+  if (cards.rate >= 90 && okLines === 3) return { g: "S", hobong: 2, wp: 500, line: "출근율 90% 위에 문장 세 개 다 준비해 왔어요. 이 분기는 할 말이 없네요. 올려드릴게요." };
+  if (cards.rate >= 70 && okLines >= 2) return { g: "A", hobong: 1, wp: 300, line: "빈 날이 좀 있었지만 카드는 분명해요. 한 단계 올리고, 다음 분기엔 출근율로 더 밀어붙여 봐요." };
+  return { g: "B", hobong: 0, wp: 100, line: "이번 분기는 카드가 조금 약했어요. 협상은 기록이 하는 거라서요. 다음 분기 출근율부터 같이 만들어 봐요." };
+}
+function RetNegotiationPage() {
+  _useRetTick();
+  const { USER, CHARACTERS } = window.__SIM;
+  const email = _retEmail();
+  const preview = (() => { try { return sessionStorage.getItem("__OD_RET_PREVIEW") === "1"; } catch (e) { return false; } })();
+  const done = _retNegoDoneThisQuarter(email);
+  const cards = React.useMemo(() => _retNegoCards(email), [email]);
+  const [step, setStep] = React.useState(0);           // 0 카드 · 1~3 문장 · 4 결과
+  const [lines, setLines] = React.useState(["", "", ""]);
+  const [result, setResult] = React.useState(null);
+  const q = _retQuarterRange();
+  const manager = CHARACTERS.manager;
+  const finish = () => {
+    const g = _retNegoGrade(cards, lines);
+    const rec = { quarter: q.key, at: new Date().toISOString(), grade: g.g, hobong: g.hobong, wp: g.wp, cards, lines: lines.slice(), preview, mentorLine: g.line };
+    if (!preview) {
+      const l = _retLoad("NEGO", email, { list: [] }); l.list = (l.list || []).concat([rec]); _retSave("NEGO", email, l);
+      _retAwardWp(email, "nego:" + q.key, g.wp, q.key + " 분기 협상 " + g.g);
+      if (g.hobong) { const h = _retLoad("HOBONG", email, { bonus: 0 }); h.bonus = (Number(h.bonus) || 0) + g.hobong; _retSave("HOBONG", email, h); }
+    } else { try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e) {} }
+    setResult(rec); setStep(4); _retPing();
+  };
+  const Head = () => (
+    <div className="desk-header">
+      <div><div className="desk-eyebrow">QUARTERLY REVIEW · {q.key}</div><h1 className="desk-title"><em>분기</em> 협상</h1></div>
+      <div className="desk-meta"><b>{q.start.slice(5).replace("-", ".")} ~ {q.end.slice(5).replace("-", ".")}</b><br/>{preview ? "🎟️ Preview Ticket 연습" : done ? "이번 분기 협상 완료" : "분기 1회"}</div>
+    </div>
+  );
+  if (done && !preview && step === 0) {
+    return (
+      <div><Head />
+        {preview && <div className="ret-preview-banner">🎟️ Preview Ticket 사용 중 · 연습이라 보상과 기록은 없어요.</div>}
+        <RetNegoResultCard r={done} />
+        <div className="ret-growth-note" style={{ marginTop: 12 }}>다음 협상은 다음 분기 첫날부터 열려요. 그때까지 카드(출근율·EXP·문장)를 쌓아두면 등급이 올라가요. 지금 미리 연습해 보고 싶으면 PERK SHOP 의 Preview Ticket 을 써요.</div>
+      </div>
+    );
+  }
+  if (step === 4 && result) return (<div><Head /><RetNegoResultCard r={result} fresh /><button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={() => { setStep(0); setResult(null); setLines(["", "", ""]); }}>처음으로</button></div>);
+  if (step === 0) {
+    const g = _retNegoGrade(cards, ["a b c d e f", "a b c d e f", "a b c d e f"]);
+    return (
+      <div><Head />
+        {preview && <div className="ret-preview-banner">🎟️ Preview Ticket 사용 중 · 연습이라 보상과 기록은 없어요. 본 협상 때 같은 흐름이에요.</div>}
+        <div className="ret-nego-intro">
+          <div className="ret-nego-npc"><span className="scene-avatar" style={{ background: manager.color, width: 36, height: 36, fontSize: 13 }}>{manager.avatar}</span><div><b>{manager.name}</b><small>분기 협상 · 회의실 B</small></div></div>
+          <div className="scene-quote-bubble" style={{ marginTop: 8 }}>"Come in, sit down. Let's talk about this quarter, and what you want next."</div>
+          <div className="ret-nego-ko">들어와요, 앉아요. 이번 분기 얘기하고, 다음에 뭘 원하는지 들어봅시다.</div>
+        </div>
+        <div className="ret-growth-head" style={{ marginTop: 18 }}>🃏 내 협상 카드 <small>이번 분기 기록이 그대로 카드예요</small></div>
+        <div className="ret-promo-grid" style={{ marginTop: 6 }}>
+          <div><small>출근</small><b>{cards.attended}일</b></div>
+          <div><small>결근</small><b className={cards.absent > 0 ? "neg" : ""}>{cards.absent}일</b></div>
+          <div><small>출근율</small><b>{cards.rate}%</b></div>
+          <div><small>EXP</small><b>{cards.exp.toLocaleString()}</b></div>
+          <div><small>쓴 문장</small><b>{cards.sentences}개</b></div>
+          <div><small>내 목표 달성</small><b>{cards.goals}회</b></div>
+          <div style={{ gridColumn: "span 2" }}><small>강한 영역</small><b>{cards.topTags.join(" · ") || "-"}</b></div>
+        </div>
+        <div className="ret-nego-est">지금 카드로 예상 등급 <b className={"ret-grade " + g.g}>{g.g}</b> · 문장 세 개를 다 준비하면 {g.g === "S" ? "S 유지" : "한 단계 위도 가능"}. 등급표: S 호봉 +2 · 500P / A +1 · 300P / B 100P</div>
+        <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={() => setStep(1)}>협상 시작 →</button>
+      </div>
+    );
+  }
+  const st = _RET_NEGO_STEPS[step - 1];
+  const val = lines[step - 1] || "";
+  const okLen = val.trim().split(/\s+/).filter(Boolean).length >= 6;
+  return (
+    <div><Head />
+      <div className="ret-nego-progress">{_RET_NEGO_STEPS.map((x, i) => <span key={x.id} className={i < step ? "on" : ""} />)}</div>
+      <div className="scene-thread">
+        <div className="scene-quote-row">
+          <div className="scene-avatar" style={{ background: manager.color }}>{manager.avatar}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="scene-npc-name">{manager.name} · {manager.role}<span className="scene-ch">🏢 회의실</span></div>
+            <div className="scene-quote-bubble">"{st.npc}"</div>
+            <KoPeek ko={st.npcKo} />
+          </div>
+        </div>
+        <div className="scene-reply-row">
+          <div className="scene-reply-col">
+            <div className="scene-reply-name">↩ <b>{manager.name}</b>에게 답하기 · {step}/3</div>
+            <div className="scene-reply-bubble">
+              <div className="scene-reply-hint">{st.hint}</div>
+              <div className="scene-reply-ko">{st.ko}</div>
+              <textarea className="scene-input" value={val} placeholder="영어로 한두 문장" onChange={e => { const n = lines.slice(); n[step - 1] = e.target.value; setLines(n); }} />
+              <div className="scene-actions">
+                <button className="btn btn-primary" disabled={!okLen} onClick={() => step === 3 ? finish() : setStep(step + 1)}>{step === 3 ? "협상 마무리 →" : "다음 →"}</button>
+                <button className="btn btn-ghost" onClick={() => { const n = lines.slice(); n[step - 1] = st.sample; setLines(n); }}>예문 보기</button>
+                {step > 1 && <button className="btn btn-ghost" onClick={() => setStep(step - 1)}>이전</button>}
+              </div>
+              {!okLen && val.trim() && <div className="scene-reply-foot">6단어 이상으로 조금만 더 써봐요</div>}
+            </div>
+          </div>
+          <div className="scene-avatar scene-avatar-me">{String(USER.name || "나").slice(0, 1)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ── 동기 문장 엿보기 (PERK 100P, Day 당 1장) ──
+function RetPeekBox({ day }) {
+  _useRetTick();
+  const email = _retEmail();
+  const store = _retLoad("PEEK", email, {});
+  const got = store[String(day)] || null;
+  const have = Number(_retInv(email).peek) || 0;
+  const [busy, setBusy] = React.useState(false); const [err, setErr] = React.useState("");
+  const use = async () => {
+    if (!(window.OD && window.OD.enabled && window.OD.peekDaySentences)) { setErr("서버 기능이 아직 안 켜졌어요 (peek SQL)"); return; }
+    setBusy(true); setErr("");
+    try {
+      const r = await window.OD.peekDaySentences(email, day, 3);
+      const list = (r && r.ok && Array.isArray(r.result)) ? r.result : [];
+      if (!list.length) { setErr("아직 이 Day 를 쓴 동기가 없어요. 티켓은 안 썼어요."); setBusy(false); return; }
+      if (!_retInvUse(email, "peek")) { setErr("티켓이 없어요"); setBusy(false); return; }
+      const st = _retLoad("PEEK", email, {}); st[String(day)] = { list, at: new Date().toISOString() }; _retSave("PEEK", email, st); _retPing();
+    } catch (e) { setErr("불러오지 못했어요"); }
+    setBusy(false);
+  };
+  return (
+    <div className="ret-peek">
+      <div className="ret-peek-head"><span>👀 동기 문장 엿보기 <small style={{ fontWeight: 700, color: "var(--ink-mute)" }}>같은 Day 다른 동기 3명 · 익명</small></span>
+        {!got && (have > 0 ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button> : <span className="ret-shop-lock">PERK SHOP 100P</span>)}
+      </div>
+      {err && <div className="ret-deb-note" style={{ marginTop: 6 }}>{err}</div>}
+      {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>동기 {i + 1} · {x.rank || ""}</small>"{x.text}"</div>)}
+    </div>
+  );
+}
+function RetNegoResultCard({ r, fresh }) {
+  const { CHARACTERS } = window.__SIM;
+  return (
+    <div className="ret-promo">
+      <div className="ret-promo-head">
+        <div><div className="ret-promo-eyebrow">NEGOTIATION RESULT{r.preview ? " · 연습" : ""}</div><div className="ret-promo-title">{r.quarter} 분기 협상</div></div>
+        <div className={"ret-grade big " + r.grade}>{r.grade}</div>
+      </div>
+      <div className="ret-promo-grid">
+        <div><small>출근율</small><b>{r.cards.rate}%</b></div>
+        <div><small>EXP</small><b>{Number(r.cards.exp).toLocaleString()}</b></div>
+        <div><small>호봉</small><b>{r.hobong ? "+" + r.hobong : "유지"}</b></div>
+        <div><small>복지포인트</small><b>{r.preview ? "연습" : "+" + r.wp + "P"}</b></div>
+      </div>
+      <div className="ret-nego-lines">{(r.lines || []).map((l, i) => <div key={i}><span>{["성과", "요청", "마무리"][i]}</span>"{l}"</div>)}</div>
+      <div className="ret-promo-mentor"><b>{CHARACTERS.manager.name}</b> {r.mentorLine}</div>
+      {fresh && !r.preview && <div className="ret-promo-foot">성장 리포트에 보관됐어요 · {String(r.at).slice(0, 10)}</div>}
     </div>
   );
 }
@@ -11091,9 +11313,31 @@ function WordBookPage({ openScene }) {
   const signupKo = USER.joinDate || "";
   const archive = React.useMemo(() => _wpArchiveList().sort((a, b) => String(b.at).localeCompare(String(a.at))), [tick]);
   useEffect(() => { const h = () => setTick(t => t + 1); window.addEventListener("od-archive", h); return () => window.removeEventListener("od-archive", h); }, []);
+  const [_gTab, _setGTab] = React.useState(() => { try { return sessionStorage.getItem("__OD_RET_GROWTH_TAB") || "reports"; } catch (e) { return "reports"; } });
+  const _pickG = (t) => { _setGTab(t); try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", t); } catch (e) {} };
+  if (_RET_ON() && _gTab === "reports") {
+    return (
+      <div className="wb">
+        <div className="desk-header">
+          <div><div className="desk-eyebrow">GROWTH REPORT</div><h1 className="desk-title"><em>{USER.name}</em>의 성장 리포트</h1></div>
+          <div className="desk-meta"><b>{USER.position}</b> · Day {rd}<br/>{USER.streak ? "🔥 " + USER.streak + "일 출근" : ""}</div>
+        </div>
+        <div className="ret-inbox-tabs">
+          <button className="ret-inbox-tab on" onClick={() => _pickG("reports")}>📑 리포트</button>
+          <button className="ret-inbox-tab" onClick={() => _pickG("cards")}>🃏 표현 카드 · 복습</button>
+        </div>
+        <RetGrowthReports />
+      </div>
+    );
+  }
   return (
     <div className="wb">
-      {_RET_ON() && <RetGrowthReports />}
+      {_RET_ON() && (
+        <div className="ret-inbox-tabs">
+          <button className="ret-inbox-tab" onClick={() => _pickG("reports")}>📑 리포트</button>
+          <button className="ret-inbox-tab on" onClick={() => _pickG("cards")}>🃏 표현 카드 · 복습</button>
+        </div>
+      )}
       {/* ── 표지 ── */}
       <div className="wb-cover">
         <div className="wb-cover-l">
@@ -12088,14 +12332,9 @@ function InboxPage({ openMemo }) {
         <div className="desk-meta"><b>{NOTICES.filter(n => n.unread).length}건</b> 미확인</div>
       </div>
       <ApprovalLine doc="YB-MEMO" applicant={USER.name} status={`${NOTICES.length}건 수신`} />
-      {ret && (
-        <div className="ret-inbox-tabs">
-          <button className={"ret-inbox-tab" + (tab === "memo" ? " on" : "")} onClick={() => pick("memo")}>✉️ 메모</button>
-          <button className={"ret-inbox-tab" + (tab === "board" ? " on" : "")} onClick={() => pick("board")}>🏆 WEEKLY BIZ SCORE</button>
-        </div>
-      )}
-      {ret && tab === "board" && <RetWeeklyBoard />}
-      {(!ret || tab === "memo") && (<>
+      {ret && <RetWeeklyBoard />}
+      {ret && <div className="ret-growth-head" style={{ marginTop: 22 }}>📣 공지글 <small>인사팀·유버디가 올린 안내</small></div>}
+      {(<>
 
       <div className="inbox-list">
         {NOTICES.map(n => {
@@ -13870,6 +14109,7 @@ function SceneModal({ scenario, onClose }) {
                   </div>
                   <div className="scene-avatar scene-avatar-me">{myInitial}</div>
                 </div>
+                {!composing && _RET_ON() && <RetPeekBox day={scenario.day} />}
               </div>
             );
           })()}
@@ -19284,7 +19524,7 @@ function App() {
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
         {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
-        {active === "test" && <TestPage />}
+        {active === "test" && (_RET_ON() ? <RetNegotiationPage /> : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
