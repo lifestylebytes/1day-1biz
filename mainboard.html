@@ -2076,6 +2076,11 @@ body.od-modal-open { overflow: hidden !important; }
 .toggle.on::after { left: 19px; background: #fff; }
 
 /* ===== 미니 인박스 ===== */
+/* 사내 게시판 (개발 뷰): 순위판 | 공지글 좌우 배치. 좁으면 상하 */
+.ret-inbox-split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.ret-inbox-split .ret-board { margin-top: 0; }
+.ret-inbox-split .inbox-subject small { display: none; }
+@media (max-width: 900px) { .ret-inbox-split { grid-template-columns: 1fr; } }
 .inbox-list {
   background: var(--cream); border: 1px solid var(--line);
 }
@@ -6125,7 +6130,7 @@ const _todayLabel = _today.getFullYear() + "." +
   String(_today.getDate()).padStart(2,"0") + " · " + _weekdayKo + "요일";
 
 // 유비챌 상세페이지 URL (입장 버튼 + 9기 공지 CTA 공용. 기수 바뀌면 이 한 줄만 교체)
-const _TY_UBCHALL_URL = "https://youbuddy.co.kr/9th/";
+const _TY_UBCHALL_URL = "https://lifestylebytes.github.io/youbuddy-challenge/";   // 2026-09-14: 유비챌 앱으로 (상세페이지 X)
 // 1일1비 공지방 (카카오 오픈채팅, 공지 전용). 사원증/인사 · 사내 메모 · 푸시 안내에서 같이 씀
 const _KAKAO_NOTICE_ROOM = "https://open.kakao.com/o/gwgtrZti";
 
@@ -6775,8 +6780,8 @@ function Locker({ active, setActive, user, unread }) {
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
-    { id: "test", label: "분기 평가", icon: "✍️" },
-    { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "📋" : "✉️", badge: unread > 0 ? unread : null },
+    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? "🚧" : "✍️", locked: _RET_ON(), tag: _RET_ON() ? "준비 중" : undefined },
+    { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
   ];
@@ -9334,10 +9339,10 @@ const RET_GOALS = [
 const RET_PERKS = [
   { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "결근 1~2일 디버프를 막아줘요. 연속 출근 기록도 지켜져요.", stack: true },
   { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
-  { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true },
+  { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true, soon: true },
   { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "senior",    desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 사원증에서 고르고, 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "fulltime", desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.", stack: true },
-  { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 150,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요.", note: "⚠️ 자정~새벽 3시 사이에 접속하면 물어보지 않고 자동으로 써져요. 그 뒤엔 팝업에서 직접 써요.", stack: true },
+  { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 100,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요.", note: "⚠️ 자정~새벽 3시 사이에 접속하면 물어보지 않고 자동으로 써져요. 그 뒤엔 팝업에서 직접 써요.", stack: true },
   { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 시추에이션 보내고 나면 열려요.", stack: true },
 ];
 const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
@@ -9901,6 +9906,20 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
 }
 
 // ── PERK SHOP (OFFICE 하위 탭) ──
+function RetComingSoonPage({ title, desc, setActive }) {
+  return (
+    <div>
+      <div className="desk-header">
+        <div><div className="desk-eyebrow">COMING SOON · 준비 중</div><h1 className="desk-title"><em>{title}</em> 준비 중</h1></div>
+      </div>
+      <div style={{ marginTop: 24, padding: "40px 28px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
+        <div style={{ fontSize: 42, marginBottom: 14 }}>🚧</div>
+        <div style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, maxWidth: 460, margin: "0 auto" }}>{desc}</div>
+        {setActive && <div style={{ marginTop: 18 }}><button className="btn btn-primary" onClick={() => setActive("home")}>오늘 출근하러 가기 →</button></div>}
+      </div>
+    </div>
+  );
+}
 function RetPerkShopPage({ setActive }) {
   _useRetTick();
   const { USER } = window.__SIM;
@@ -9965,13 +9984,14 @@ function RetPerkShopPage({ setActive }) {
           const ok = _retRankOk(it.rank); const have = Number(inv[it.id]) || 0;
           const owned = !it.stack && have > 0;
           return (
-            <div key={it.id} className={"ret-shop-item" + (!ok ? " locked" : "")}>
+            <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")}>
               <div className="ret-shop-ico">{it.icon}</div>
               <div className="ret-shop-name">{it.name}{have > 0 && <span className="ret-shop-have">보유 {have}</span>}</div>
               <div className="ret-shop-desc">{it.desc}{it.note && <div className="ret-shop-note">{it.note}</div>}</div>
               <div className="ret-shop-foot">
                 <b>{it.cost.toLocaleString()}P</b>
-                {!ok ? <span className="ret-shop-lock">🔒 {_RET_RANK_LABEL[it.rank]}</span>
+                {it.soon ? <span className="ret-shop-lock">🚧 준비 중</span>
+                  : !ok ? <span className="ret-shop-lock">🔒 {_RET_RANK_LABEL[it.rank]}</span>
                   : it.id === "preview" && have > 0 ? <button className="btn btn-primary btn-mini" onClick={usePreview}>지금 미리보기</button>
                   : it.id === "pdf" && have > 0 ? <span style={{ display: "inline-flex", gap: 6 }}><button className="btn btn-ghost btn-mini" disabled={wp < it.cost} onClick={() => buy(it)}>{wp < it.cost ? (it.cost - wp).toLocaleString() + "P 부족" : "1장 더"}</button><button className="btn btn-primary btn-mini" onClick={() => { try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", "cards"); sessionStorage.setItem("__OD_RET_PDF_GO", "1"); } catch (e) {} setActive("mynotes"); }}>📄 PDF 받기 ({have}장)</button></span>
                   : it.id === "report" ? <button className="btn btn-primary btn-mini" onClick={() => buy(it)}>사원증에서 받기</button>
@@ -12586,9 +12606,10 @@ function InboxPage({ openMemo }) {
         <div className="desk-meta"><b>{NOTICES.filter(n => n.unread).length}건</b> 미확인</div>
       </div>
       <ApprovalLine doc="YB-MEMO" applicant={USER.name} status={`${NOTICES.length}건 수신`} />
-      {ret && <RetWeeklyBoard />}
-      {ret && <div className="ret-growth-head" style={{ marginTop: 22 }}>📣 공지글 <small>인사팀·유버디가 올린 안내</small></div>}
-      {(<>
+      <div className={ret ? "ret-inbox-split" : ""}>
+      {ret && <div className="ret-inbox-left"><RetWeeklyBoard /></div>}
+      {(<div className={ret ? "ret-inbox-right" : ""}>
+      {ret && <div className="ret-growth-head">📣 공지글 <small>인사팀·유버디가 올린 안내</small></div>}
 
       <div className="inbox-list">
         {NOTICES.map(n => {
@@ -12607,7 +12628,8 @@ function InboxPage({ openMemo }) {
           );
         })}
       </div>
-      </>)}
+      </div>)}
+      </div>
     </div>
   );
 }
@@ -19795,7 +19817,7 @@ function App() {
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
         {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
-        {active === "test" && (_RET_ON() ? <RetNegotiationPage /> : <TestPage />)}
+        {active === "test" && (_RET_ON() ? <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} /> : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}

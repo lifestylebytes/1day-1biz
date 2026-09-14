@@ -6,6 +6,16 @@
 -- 멱등키도 앱과 같아서(task:<day>:<k>, streak:<day>) 나중에 앱이 같은 걸 올려도 중복되지 않는다.
 -- 실행: Supabase Dashboard → SQL Editor → 통째로 RUN (마지막 select 가 백필 실행 + 결과 확인)
 
+-- 0) 같은 활동을 앱이 다시 올릴 때 시각이 더 최근이면 갱신 (예전 버전이 '가입일 + Day' 로 추정한 옛 날짜를 덮어씀)
+create or replace function add_exp_event(p_email text, p_key text, p_exp int, p_kind text, p_day int, p_at timestamptz)
+returns void
+language sql security definer set search_path = public
+as $$
+  insert into exp_events (email, key, exp, kind, day, at)
+  values (lower(p_email), p_key, coalesce(p_exp, 0), p_kind, p_day, coalesce(p_at, now()))
+  on conflict (email, key) do update set at = greatest(exp_events.at, excluded.at);
+$$;
+
 create or replace function backfill_exp_events(p_days int default 7)
 returns jsonb
 language plpgsql security definer set search_path = public
@@ -73,3 +83,10 @@ select backfill_exp_events(7);
 
 -- 확인: 순위판 상위 20
 select get_weekly_board(null, 20);
+
+-- 진단: 최근 7일 EXP 가 있는데 순위판에 안 보이는 사람 찾기 (is_tester 이거나 users 에 없는 이메일)
+select e.email, sum(e.exp) as exp7, u.name, u.is_tester, (u.email is null) as not_in_users
+  from exp_events e left join users u on lower(u.email) = e.email
+ where e.at >= now() - interval '7 days'
+ group by e.email, u.name, u.is_tester, u.email
+ order by exp7 desc;

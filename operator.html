@@ -45,7 +45,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .card.warn { background: #FFF7E8; border-color: #E8C99B; }
 .card .title { font-size: 13px; color: #8A7964; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-.user-row { display: grid; grid-template-columns: 1.4fr 130px 80px 200px 100px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row { display: grid; grid-template-columns: 1.2fr 250px 70px 230px 90px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
 .user-row .col-progress { font-size: 12px; line-height: 1.5; }
 .user-row .col-progress .progress-day { font-weight: 800; color: #2A1F14; font-size: 13px; }
 .user-row .col-progress .progress-last { font-size: 11px; color: #8A7964; margin-top: 2px; }
@@ -53,6 +53,16 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .user-row .col-payment { font-size: 12px; line-height: 1.5; }
 .user-row .col-payment .pay-status { font-weight: 800; font-size: 12px; }
 .user-row .col-payment .pay-meta { font-size: 11px; color: #5C4A36; margin-top: 2px; }
+.day-help { margin: 0 0 12px; padding: 12px 16px; background: #FFF8E6; border: 1px solid #EBD9A6; border-radius: 8px; font-size: 12.5px; line-height: 1.7; color: #5C4A36; }
+.day-help b { color: #2A1F14; }
+.prog-line1 { font-weight: 900; font-size: 14px; color: #2A1F14; }
+.prog-line1 .behind { color: #B23A2C; }
+.prog-line1 .rank { font-weight: 700; color: #8A7964; font-size: 12px; }
+.prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
+.prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
+.prog-line3.ok { color: #2D6E3A; }
+.prog-line4 { font-size: 11px; color: #8A7964; margin-top: 1px; }
+.prog-line4 a { color: #3D4DA8; text-decoration: underline; cursor: pointer; margin-left: 4px; }
 .user-row.head { font-weight: 700; font-size: 11px; color: #8A7964; text-transform: uppercase; letter-spacing: 0.06em; background: #FAF6EB; }
 .user-row .actions { display: flex; gap: 6px; }
 .empty { padding: 28px; text-align: center; color: #8A7964; font-size: 13px; }
@@ -1715,13 +1725,95 @@ function App() {
     }
     setSupaEnabled(true);
     setSupaLoading(true);
-    const [usersRes, statsRes] = await Promise.all([
+    const [usersRes, statsRes, progRes] = await Promise.all([
       window.OD.fetchAllUsers(),
       window.OD.fetchStats(),
+      (window.OD.fetchProgressOverview ? window.OD.fetchProgressOverview() : Promise.resolve({ ok: false, map: {} })),
     ]);
     if (usersRes.ok) setSupaUsers(usersRes.users);
     if (statsRes.ok) setSupaStats(statsRes.stats);
+    setProgMap(progRes && progRes.ok ? progRes.map : null);
     setSupaLoading(false);
+  };
+  // ★ 계정별 진도 현황 (2026-09-14): 모든 계정의 완주 Day 목록. null 이면 RPC(get_progress_overview)가 아직 없는 것.
+  const [progMap, setProgMap] = useState(null);
+  const [showDayHelp, setShowDayHelp] = useState(false);
+  const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
+  // 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 밀린·빠뜨린은 '-'.
+  const calcProgress = (u) => {
+    const appDay = u.day_in_company || 1;
+    const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+    const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
+    const rank = appDay >= 90 ? '대리' : appDay >= 30 ? '사원' : '수습';
+    const done = progMap ? new Set(progMap[String(u.email || '').toLowerCase()] || []) : null;
+    let missing = null, behind = null;
+    if (done) {
+      missing = []; for (let d = 1; d <= calDay; d++) if (!done.has(d)) missing.push(d);
+      behind = missing.filter(d => d >= appDay).length;
+    }
+    const lastStudy = u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
+    return { appDay, calDay, rank, missing, behind, lastStudy };
+  };
+  // 결제 상태 그룹 (정렬용): 0 만료일 없음 · 1 정상 활성/활성 · 2 내부 사용자 · 3 만료·종료
+  const payGroup = (u) => {
+    const internal = u.is_operator || u.is_dev_mode || u.is_tester;
+    if (internal) return 2;
+    const ends = u.membership_ends_at ? new Date(u.membership_ends_at) : null;
+    const alive = !ends || ends > new Date();
+    if (u.cohort === 'member' && !ends) return 0;
+    if (alive && (u.cohort === 'member' || (typeof u.cohort === 'string' && u.cohort.startsWith('trial')) || u.is_pilot_hire)) return 1;
+    return 3;
+  };
+  // 구글 스프레드시트로 받기 (CSV · UTF-8 BOM → 시트에서 바로 열림)
+  const downloadProgressCsv = () => {
+    const esc = (v) => { const t = String(v == null ? '' : v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
+    const rows = [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
+      const pr = calcProgress(u); const pi = payInfo(u);
+      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
+    });
+    const csv = '\ufeff' + head.join(',') + '\n' + rows.join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = '1일1비_계정별진도_' + new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) + '.csv'; a.click();
+    showToast('CSV 내려받음 · 구글 스프레드시트 → 파일 → 가져오기');
+  };
+  // 결제 상태 요약 (표 · CSV 공용): 상태 · 날짜 · 결제 횟수 · 코드
+  const payInfo = (u) => {
+    const pref = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {};
+    const ends = u.membership_ends_at ? new Date(u.membership_ends_at) : null;
+    const now = new Date(); const dLeft = ends ? Math.ceil((ends - now) / 86400000) : null;
+    const md = (d) => d ? new Date(d).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric' }) : '-';
+    const internal = u.is_operator || u.is_dev_mode || u.is_tester;
+    const cr = u.membership_cancel_reason || '';
+    let line1 = '-', dateLine = '', type = u.is_operator ? '운영자' : u.is_dev_mode ? 'DEV' : u.is_tester ? 'TEST' : u.cohort === 'member' ? '정식' : u.is_pilot_hire ? 'PILOT' : (u.cohort || '');
+    if (internal) { line1 = '🔧 내부 사용자'; dateLine = '결제 무관'; }
+    else if (u.cohort === 'member') {
+      if (!ends) { line1 = '⚠️ 만료일 없음'; dateLine = '갱신일 미설정'; }
+      else if (dLeft <= 0) { line1 = '🔴 만료'; dateLine = '종료일 ' + md(ends); }
+      else if (cr) { line1 = cr.startsWith('latpeed_') ? '🟡 취소 예정' : '🟡 퇴직 처리됨'; dateLine = '종료: ' + md(ends) + ' (D-' + dLeft + ')'; }
+      else { line1 = '🟢 정상 활성'; dateLine = '다음 결제 ' + md(ends) + ' (D-' + dLeft + ')'; }
+    } else if (typeof u.cohort === 'string' && u.cohort.startsWith('trial')) {
+      if (!ends) { line1 = '⚠️ 체험 · 종료일 없음'; dateLine = '무기한 열림'; }
+      else if (dLeft <= 0) { line1 = '🔴 체험 종료'; dateLine = '종료일 ' + md(ends); }
+      else if (cr) { line1 = '🟡 퇴직 처리됨'; dateLine = '종료: ' + md(ends) + ' (D-' + dLeft + ')'; }
+      else { line1 = '🧪 체험 중'; dateLine = '~' + md(ends) + ' (D-' + dLeft + ')'; }
+    } else if (u.is_pilot_hire) {
+      const day = u.day_in_company || 1;
+      if (ends && dLeft > 0) { line1 = '🟢 베타 연장'; dateLine = '~' + md(ends) + ' (D-' + dLeft + ')'; }
+      else if (ends) { line1 = '🔴 연장 만료'; dateLine = '종료일 ' + md(ends); }
+      else if (day > 14) { line1 = '🔴 베타 만료'; dateLine = '14일 무료 종료'; }
+      else { line1 = '🟡 베타 진행중'; dateLine = 'Day ' + day + ' / 14'; }
+    }
+    const count = Number(pref.pay_count || 0) || (pref.last_paid_at ? 1 : 0);
+    const lastPaid = pref.last_paid_at ? md(pref.last_paid_at) : '';
+    // 코드/쿠폰: 가입 코드 + 플랜 흔적 (여러 개면 모두)
+    const codes = [];
+    if (pref.signup_code) codes.push(pref.signup_code);
+    if (u.cohort === 'trial-ubc7' && !codes.includes('UBC7-1DAY1BIZ')) codes.push('UBC7-1DAY1BIZ');
+    if (pref.plan === 'part2' && !codes.includes('1DAY1BIZ365-2')) codes.push('1DAY1BIZ365-2');
+    if (pref.plan === 'part1' && !codes.includes('1DAY1BIZ365')) codes.push('1DAY1BIZ365');
+    if (Array.isArray(pref.codes_used)) pref.codes_used.forEach(c => { if (c && !codes.includes(c)) codes.push(c); });
+    return { line1, dateLine, count, lastPaid, codes, type };
   };
 
   // ★ 멤버십 퇴직 처리 (인수인계 30일 후 자동 만료)
@@ -2157,6 +2249,23 @@ function App() {
                 </div>
               </details>
             )}
+            <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 28 }}>📋 계정별 진도 현황
+              <button className="btn btn-ghost btn-mini" style={{ marginLeft: 4, padding: '2px 10px', fontSize: 11 }} onClick={refreshSupabase} disabled={supaLoading}>
+                {supaLoading ? "로딩…" : "↻ 새로고침"}
+              </button>
+              <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={downloadProgressCsv} disabled={!supaUsers.length} title="CSV 로 내려받아 구글 스프레드시트에서 가져오기">📗 구글 스프레드시트로 받기</button>
+              <button className="btn btn-ghost btn-mini" style={{ marginLeft: 'auto', padding: '2px 10px', fontSize: 11, background: showDayHelp ? '#FFF3D6' : undefined }} onClick={() => setShowDayHelp(v => !v)}>❓ DAY 설명</button>
+            </div>
+            {showDayHelp && (
+              <div className="day-help">
+                <div><b>앱 Day</b> = 지금 앱에 열려 있는 Day (마지막 접속 때 앱이 보낸 값. 접속해야 갱신돼요)</div>
+                <div><b>달력 Day</b> = 가입일 기준 원래 와 있어야 할 Day</div>
+                <div><b>밀린 Day</b> = 앱 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
+                <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day 포함)</div>
+                <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 앱 Day 기준 수습(~29) · 사원(30~89) · 대리(90~).</div>
+                {progMap === null && <div style={{ marginTop: 4, color: '#B23A2C' }}>⚠️ 완주 기록 RPC(get_progress_overview)가 아직 없어요. supabase/migrations/20260914_progress_overview.sql 을 실행하면 밀린·빠뜨린 Day 가 채워져요.</div>}
+              </div>
+            )}
             {(() => {
               // TF 트랙별 인원 요약 (트랙 진행 중인 사람이 있을 때만 표시)
               const TFM = { nego: ['🤝', '협상'], people: ['👥', '피플'], docs: ['✉️', '문서'], meeting: ['🎤', '미팅'] };
@@ -2190,10 +2299,10 @@ function App() {
               </div>
               {supaUsers.length === 0 ? (
                 <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
-              ) : [...supaUsers].sort((a, b) => new Date(b.last_active || 0) - new Date(a.last_active || 0)).map(u => {
+              ) : [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
                 const dLeft = daysUntilEnd(u.membership_ends_at);
                 const isPaidMember = u.cohort === 'member';
-                const isInternal = u.is_operator || u.is_dev_mode;
+                const isInternal = u.is_operator || u.is_dev_mode || u.is_tester;   // ★ 2026-09-14: 테스트 계정도 결제 상태는 '내부 사용자' (유형 배지는 그대로)
                 const isPilot = !!u.is_pilot_hire && !isPaidMember && !isInternal;
                 const isTrial = !isPaidMember && !isInternal && typeof u.cohort === 'string' && u.cohort.startsWith('trial');
                 const cancelReason = u.membership_cancel_reason || null;
@@ -2282,60 +2391,27 @@ function App() {
                     <div style={{ fontWeight: 700 }}>{u.name}</div>
                     <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.email}</div>
                     <div style={{ fontSize: 10, color: '#A8997F', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.emp_number || ''}</div>
-                    {(() => {
-                      // 가입 코드. 2026-09-07 이후 가입자는 preferences.signup_code 에 그대로 저장.
-                      // 그 전 가입자는 남은 흔적(cohort / plan / pilot)으로 추정해 "~(추정)" 으로 표시.
-                      const _pref = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {};
-                      let code = _pref.signup_code || null, guess = false;
-                      if (!code) {
-                        guess = true;
-                        if (u.cohort === 'trial-ubc7') code = 'UBC7-1DAY1BIZ';
-                        else if (u.cohort === 'member' && _pref.plan === 'part2') code = '1DAY1BIZ365-2';
-                        else if (u.cohort === 'member' && _pref.plan === 'part1') code = '1DAY1BIZ365';
-                        else if (u.cohort === 'member') code = '회원 코드';
-                        else if (u.cohort === 'staff' || u.is_tester) code = '내부 테스터';
-                        else if (u.is_pilot_hire) code = 'PILOT-****';
-                        else if (u.cohort && u.cohort.startsWith('trial')) code = '체험 코드';
-                      }
-                      // 결제 방식. 웹훅/CSV/수동이 preferences.pay_source 에 남긴다. 없으면 흔적으로 추정.
-                      let pay = null, payGuess = false;
-                      const src = _pref.pay_source;
-                      if (src === 'latpeed') pay = '래피드 정기결제';
-                      else if (src === 'latpeed_csv') pay = '래피드 (CSV 대조)';
-                      else if (src === 'manual') pay = '운영자 수동 등록';
-                      else if (u.cohort === 'member') {
-                        payGuess = true;
-                        const cr = u.membership_cancel_reason || '';
-                        if (cr.startsWith('latpeed_')) pay = '래피드 정기결제';
-                        else if (u.membership_ends_at) pay = '래피드 정기결제';
-                        else pay = '코드 입장 (갱신일 없음)';
-                      } else if (u.cohort && u.cohort.startsWith('trial')) pay = '무료 체험';
-                      else if (u.cohort === 'staff' || u.is_tester) pay = '내부 (무료)';
-                      const paidAt = _pref.last_paid_at ? new Date(_pref.last_paid_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : null;
-                      if (!code && !pay) return null;
-                      return (
-                        <div style={{ fontSize: 10, color: '#8A7964', marginTop: 3, lineHeight: 1.5 }}>
-                          {code && <div>🎟 {code}{guess ? ' (추정)' : ''}</div>}
-                          {pay && <div>💳 {pay}{payGuess ? ' (추정)' : ''}{paidAt ? ' · 마지막 결제 ' + paidAt : ''}{_pref.pay_count ? ' · ' + _pref.pay_count + '회' : ''}</div>}
-                        </div>
-                      );
-                    })()}
                   </div>
 
-                  {/* 학습 진도 */}
+                  {/* 학습 진도 · DAY 앱/달력 (밀린) [직급] */}
                   <div className="col-progress">
-                    <div className="progress-day">Day {day} / {(day || 0) > 90 ? 210 : ((day || 0) > 30 ? 90 : 30)}</div>
-                    <div className="progress-last">마지막 {lastActiveMD}</div>
                     {(() => {
-                      // 밀린 Day = 달력상 오늘 Day(가입일 기준) - 지금 열려 있는 Day(마지막 접속 때 앱이 보낸 값). 접속해야 갱신돼요.
-                      if (!u.signup_date || isInternal) return null;
-                      const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
-                      const todayDay = Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1));
-                      const behind = todayDay - (day || 1);
+                      const pr = calcProgress(u);
+                      const em = String(u.email || '').toLowerCase();
+                      const m = pr.missing;
+                      const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div style={{ fontSize: 11, color: behind > 0 ? '#B23A2C' : '#8A7964', marginTop: 2 }}>달력 Day {todayDay}{behind > 0 ? ' · 앱은 Day ' + day + ' (' + behind + '일 차이)' : ''}</div>
-                          <BacklogChip u={u} todayDay={todayDay} />
+                          <div className="prog-line1">DAY {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank">[{pr.rank}]</span></div>
+                          <div className="prog-line2">마지막 학습일 {pr.lastStudy} · 앱 Day {pr.appDay}</div>
+                          {m ? (
+                            <>
+                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
+                              <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
+                            </>
+                          ) : (
+                            <div className="prog-line4" style={{ color: '#B23A2C' }}>완주 기록 RPC 없음 · ❓ DAY 설명 참고</div>
+                          )}
                         </>
                       );
                     })()}
@@ -2396,6 +2472,16 @@ function App() {
                   <div className="col-payment" style={{ background: payStatus.bg, padding: '6px 10px', borderRadius: 6 }}>
                     <div className="pay-status" style={{ color: payStatus.color }}>{payStatus.line1}</div>
                     {payStatus.line2 && <div className="pay-meta">{payStatus.line2}</div>}
+                    {(() => {
+                      const pi = payInfo(u);
+                      if (isInternal) return null;
+                      return (
+                        <>
+                          <div className="pay-meta">{pi.count ? '총 ' + pi.count + '회 결제' + (pi.lastPaid ? ' · 마지막 ' + pi.lastPaid : '') : '결제 기록 없음'}</div>
+                          {pi.codes.length > 0 && <div className="pay-meta" style={{ color: '#8A7964' }}>🎟 {pi.codes.join(', ')}</div>}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* 작업 */}
