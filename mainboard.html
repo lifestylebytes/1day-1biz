@@ -10484,11 +10484,11 @@ function ErrandsCard({ setActive, toast }) {
   };
   return (
     <div className="ty-errand">
-      <div className="ty-errand-head">🧺 오늘의 심부름 <small>보너스 · 안 해도 불이익 없어요, 도장 맛으로만</small></div>
+      <div className="ty-errand-head">🧺 오늘의 심부름 <small>{_RET_ON() ? "보너스 · 하나에 +" + RET_EXP.errand + " EXP · 안 해도 불이익 없어요" : "보너스 · 안 해도 불이익 없어요, 도장 맛으로만"}</small></div>
       {picked.map(er => (
         <div key={er.id} className={"ty-errand-row" + (done[er.id] ? " done" : "")} onClick={() => stamp(er)}>
           <span>{er.icon}</span>
-          <span className="ty-errand-t">{er.t}</span>
+          <span className="ty-errand-t">{er.t}{_RET_ON() && <span className={"ret-exp-tag" + (done[er.id] ? " done" : "")}>{done[er.id] ? "✓ +" : "+"}{RET_EXP.errand} EXP</span>}</span>
           <span className="ty-errand-stamp">{done[er.id] ? "✓ 도장" : "하러 가기"}</span>
         </div>
       ))}
