@@ -975,6 +975,125 @@ body::before {
 .scene-reply-bubble .scene-input { background-color: #fff; }
 .scene-reply-foot { margin-top: 8px; font-size: 11px; color: var(--ink-mute); font-weight: 600; }
 .scene-reply-sent { font-size: 15.5px; font-weight: 600; line-height: 1.55; word-break: keep-all; }
+/* ===== 리텐션 엔진 (2026-09-14, 개발 뷰): EXP · 복지P · PERK SHOP · 디버프 · 내 목표 · 순위판 · 진급 리포트 ===== */
+#ret-toast-host { position: fixed; top: 16px; right: 16px; z-index: 9400; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.ret-toast { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.45); transform: translateX(24px); opacity: 0; transition: transform .25s, opacity .25s; min-width: 200px; }
+.ret-toast.in { transform: none; opacity: 1; }
+.ret-toast.out { transform: translateX(24px); opacity: 0; }
+.ret-toast b { font-size: 14px; font-weight: 900; }
+.ret-toast small { display: block; font-size: 11px; opacity: .8; margin-top: 1px; }
+.ret-toast-ico { font-size: 20px; }
+.ret-toast.exp { background: #2A1F14; }
+.ret-toast.wp { background: var(--orange); }
+.ret-exp-tag { display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 900; color: #C2311F; background: rgba(216,90,42,0.10); padding: 1px 6px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
+.ret-exp-tag.done { color: #2D6E3A; background: rgba(45,110,58,0.10); }
+.ret-hud { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
+.ret-hud-chip { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-family: inherit; cursor: pointer; text-align: left; color: var(--ink); }
+.ret-hud-chip b { font-size: 13.5px; font-weight: 900; }
+.ret-hud-chip small { font-size: 10px; color: var(--ink-mute); font-weight: 700; }
+.ret-hud-chip.exp b { color: #C2311F; } .ret-hud-chip.wp b { color: var(--orange); } .ret-hud-chip.streak { cursor: default; }
+.ret-pop { background: var(--paper); border: 2px solid var(--orange); border-radius: 14px; max-width: 420px; width: 100%; padding: 26px 24px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(58,40,18,0.5); margin: auto; }
+.ret-pop-burst { font-size: 44px; line-height: 1; }
+.ret-pop-big { font-size: 34px; font-weight: 900; color: #C2311F; letter-spacing: -0.02em; margin-top: 6px; }
+.ret-pop-sub { font-size: 12.5px; color: var(--ink-mute); font-weight: 700; margin-top: 4px; }
+.ret-pop-rows { margin-top: 14px; text-align: left; border-top: 1px dashed var(--line); padding-top: 10px; }
+.ret-pop-rows div { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: var(--ink-soft); }
+.ret-pop-rows b { color: var(--ink); }
+.ret-pop-foot { margin-top: 10px; font-size: 11.5px; color: var(--ink-mute); line-height: 1.5; text-align: left; }
+.ret-goal { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); padding: 12px 14px; margin: 10px 0 0; }
+.ret-goal-head { font-size: 13px; font-weight: 900; color: var(--ink); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ret-goal-head small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-goal-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.ret-goal-opt { border: 1.5px solid var(--line); background: var(--paper); border-radius: 8px; padding: 8px 4px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; color: var(--ink); }
+.ret-goal-opt b { font-size: 14px; font-weight: 900; } .ret-goal-opt small { font-size: 10.5px; color: var(--orange); font-weight: 800; }
+.ret-goal-opt.on { border-color: var(--orange); background: rgba(216,90,42,0.08); }
+.ret-goal-hint, .ret-goal-note { font-size: 11.5px; color: var(--ink-mute); margin-top: 8px; line-height: 1.5; }
+.ret-goal-bar { height: 8px; background: var(--line-soft); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.ret-goal-bar i { display: block; height: 100%; background: var(--orange); border-radius: 999px; transition: width .4s; }
+.ret-goal-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+.ret-goal.compact .ret-goal-pick { grid-template-columns: repeat(2, 1fr); }
+.ret-pop.debuff { text-align: left; max-width: 460px; }
+.ret-deb-from { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.ret-deb-from b { display: block; font-size: 13px; } .ret-deb-from small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-deb-title { font-size: 20px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
+.ret-deb-msg { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-top: 8px; }
+.ret-deb-box { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); font-size: 13px; line-height: 1.6; }
+.ret-deb-box.ok { border-color: #6FA84F; background: rgba(111,168,79,0.10); }
+.ret-deb-box.warn { border-color: #C79233; background: rgba(199,146,51,0.10); }
+.ret-deb-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.ret-deb-note { font-size: 11.5px; color: var(--ink-mute); }
+.ret-deb-survey { margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--orange); border-radius: 10px; }
+.ret-deb-q { font-size: 13px; font-weight: 900; } .ret-deb-q small { font-weight: 700; color: var(--ink-mute); margin-left: 6px; }
+.ret-deb-opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ret-deb-opt { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 11px; font-size: 12px; font-family: inherit; cursor: pointer; color: var(--ink-soft); }
+.ret-deb-opt.on { border-color: var(--orange); color: var(--orange); background: rgba(216,90,42,0.08); font-weight: 800; }
+.ret-deb-memo { width: 100%; box-sizing: border-box; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 12.5px; }
+.ret-deb-foot { margin-top: 14px; }
+.ret-shop-msg { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: var(--cream); border: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+.ret-shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.ret-shop-item { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.ret-shop-item.locked { opacity: .6; }
+.ret-shop-ico { font-size: 30px; line-height: 1; }
+.ret-shop-name { font-size: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ret-shop-have { font-size: 10.5px; font-weight: 800; color: var(--orange); background: rgba(216,90,42,0.10); padding: 1px 7px; border-radius: 999px; }
+.ret-shop-desc { font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; flex: 1; }
+.ret-shop-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; }
+.ret-shop-foot > b { font-size: 15px; color: var(--orange); }
+.ret-shop-lock { font-size: 11.5px; color: var(--ink-mute); font-weight: 800; }
+.ret-shop-how { margin-top: 18px; border-top: 1.5px solid var(--ink); padding-top: 14px; }
+.ret-shop-how-head { font-size: 11px; letter-spacing: .14em; font-weight: 900; color: var(--orange); margin-bottom: 6px; }
+.ret-shop-how ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.8; }
+.ret-shop-hist { display: grid; grid-template-columns: 90px 1fr auto; gap: 10px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px dashed var(--line-soft); color: var(--ink-soft); }
+.ret-shop-hist b { color: #2D6E3A; } .ret-shop-hist b.neg { color: #C2311F; } .ret-shop-hist.muted { color: var(--ink-mute); }
+.ret-inbox-tabs { display: flex; gap: 6px; margin: 0 0 14px; }
+.ret-inbox-tab { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 7px 14px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; color: var(--ink-soft); }
+.ret-inbox-tab.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ret-board { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 14px 16px; }
+.ret-board-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1.5px solid var(--ink); }
+.ret-board-head b { font-size: 15px; } .ret-board-head small { display: block; font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-board-me { text-align: right; } .ret-board-me b { color: #C2311F; font-size: 18px; }
+.ret-board-top { margin-top: 10px; padding: 8px 12px; background: #FFF3D6; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #8C6510; }
+.ret-board-row { display: grid; grid-template-columns: 34px 28px 1fr auto auto; gap: 10px; align-items: center; padding: 8px 4px; border-bottom: 1px dashed var(--line-soft); font-size: 13px; }
+.ret-board-row.me { background: rgba(216,90,42,0.07); border-radius: 8px; }
+.ret-board-rank { font-weight: 900; color: var(--ink-mute); text-align: center; }
+.ret-board-row.top .ret-board-rank { font-size: 16px; }
+.ret-board-name { font-weight: 800; color: var(--ink); display: flex; gap: 6px; align-items: center; min-width: 0; }
+.ret-board-badge { font-style: normal; font-size: 10px; background: var(--ink); color: var(--paper); padding: 1px 6px; border-radius: 999px; }
+.ret-board-day { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-board-exp { color: #C2311F; }
+.ret-board-err { padding: 14px; text-align: center; font-size: 12.5px; color: var(--ink-mute); line-height: 1.6; }
+.ret-board-foot { margin-top: 10px; font-size: 11px; color: var(--ink-mute); line-height: 1.5; }
+.ret-growth { margin-bottom: 20px; }
+.ret-growth-head { font-size: 14px; font-weight: 900; color: var(--ink); margin: 0 0 10px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.ret-growth-head small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-growth-note { font-size: 12px; color: var(--ink-mute); padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; line-height: 1.5; }
+.ret-promo { border: 1.5px solid var(--ink); border-radius: 12px; background: var(--paper); padding: 16px 18px; margin-bottom: 12px; position: relative; }
+.ret-promo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.ret-promo-eyebrow { font-size: 10px; letter-spacing: .18em; font-weight: 900; color: var(--orange); }
+.ret-promo-title { font-size: 17px; font-weight: 900; letter-spacing: -0.01em; margin-top: 2px; }
+.ret-promo-stamp { border: 2px solid var(--orange); color: var(--orange); font-weight: 900; font-size: 12px; padding: 4px 10px; transform: rotate(-4deg); letter-spacing: .1em; }
+.ret-promo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.ret-promo-grid div { background: var(--cream); border-radius: 8px; padding: 8px 10px; }
+.ret-promo-grid small { display: block; font-size: 10px; color: var(--ink-mute); font-weight: 800; letter-spacing: .04em; }
+.ret-promo-grid b { font-size: 15px; font-weight: 900; } .ret-promo-grid b.neg { color: #C2311F; }
+.ret-promo-tags { margin-top: 10px; font-size: 12px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.ret-promo-tags span { background: rgba(216,90,42,0.10); color: var(--orange); font-weight: 800; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; }
+.ret-promo-mentor { margin-top: 12px; padding: 10px 12px; background: #FFE9A6; border-radius: 6px; font-size: 13px; line-height: 1.6; }
+.ret-promo-foot { margin-top: 8px; font-size: 10.5px; color: var(--ink-mute); text-align: right; font-weight: 700; }
+.ret-consult { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.ret-consult-head { width: 100%; display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; background: var(--paper); border: none; font-family: inherit; text-align: left; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--ink); }
+.ret-consult-head small { font-size: 11px; color: var(--ink-mute); } .ret-consult-head i { font-style: normal; color: var(--ink-mute); font-size: 11px; }
+.ret-consult-body { padding: 12px 14px 14px; font-size: 13px; line-height: 1.7; color: var(--ink-soft); border-top: 1px dashed var(--line); }
+.ret-consult-hl { font-size: 14px; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
+.ret-consult-one { margin-top: 8px; font-weight: 800; color: var(--orange); }
+.ret-preview-banner { margin: 0 0 14px; padding: 10px 14px; border-radius: 8px; background: #FFF3D6; border: 1px solid #E0C070; font-size: 13px; font-weight: 700; color: #8C6510; }
+@media (max-width: 880px) {
+  .ret-goal-pick { grid-template-columns: repeat(2, 1fr); }
+  .ret-promo-grid { grid-template-columns: repeat(2, 1fr); }
+  .ret-board-row { grid-template-columns: 30px 28px 1fr auto; } .ret-board-day { display: none; }
+  #ret-toast-host { top: auto; bottom: 84px; right: 12px; left: 12px; }
+}
+
 
 /* 사수 포스트잇 */
 .postit {
@@ -6441,6 +6560,7 @@ async function odEnablePush(email) {
       });
     } catch (e) {}
     alert("알림이 켜졌어요! 방금 테스트 알림을 보냈어요.");
+    try { if (window.__odRetEvent) window.__odRetEvent("push"); } catch (e) {}
     return true;
   } catch (e) {
     console.warn("[push] odEnablePush 실패:", e);
@@ -6505,6 +6625,7 @@ function KakaoNotifyRow({ email }) {
     if (nextHour !== "" && !hasPhone && !phone.trim()) { setMsg("받을 휴대폰 번호를 먼저 적어주세요."); return; }
     setBusy(true); setMsg("");
     const r = await window.OD.setKakaoNotify(email, phone.trim(), nextHour === "" ? null : Number(nextHour));
+    try { if (r && r.ok && nextHour !== "" && window.__odRetEvent) window.__odRetEvent("kakao"); } catch (e) {}
     setBusy(false);
     if (!r.ok) {
       const e = String(r.error || "");
@@ -6608,9 +6729,10 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: _isNextFeature() ? "복습" : "나만의 노트", icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) ? "연봉협상 준비" : null },
+    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: "분기 평가", icon: "✍️" },
-    { id: "inbox", label: "사내 메모", icon: "✉️", badge: unread > 0 ? unread : null },
+    { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "📋" : "✉️", badge: unread > 0 ? unread : null },
+    ...(_RET_ON() ? [{ id: "perk", label: "PERK SHOP", icon: "🎁" }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
   ];
   return (
@@ -6712,7 +6834,7 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
     { id: "home", label: "오늘", icon: "📋" },
     { id: "notes", label: "노트", icon: "🗂️", isNotes: true },
     { id: "test", label: "평가", icon: "📝" },
-    { id: "inbox", label: "메모", icon: "📨", badge: unread },
+    { id: "inbox", label: _RET_ON() ? "게시판" : "메모", icon: _RET_ON() ? "📋" : "📨", badge: unread },
     { id: "mypage", label: "사원증", icon: "🪪" },
   ];
   const notesActive = active === "library" || active === "mynotes";
@@ -7245,7 +7367,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const [pre, setPre] = useState(() => (_loadJSON(_preKey(email, day + 1)) || {}).text || "");
   const [preSaved, setPreSaved] = useState(() => !!(_loadJSON(_preKey(email, day + 1)) || {}).text);
   const [open, setOpen] = useState(() => !(saved.preview || Object.keys(saved.fb || {}).length));
-  const persist = (next) => { setSaved(next); _saveJSON(_otKey(email, day), next); };
+  const persist = (next) => { setSaved(next); _saveJSON(_otKey(email, day), next); try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} };
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): '같은 뜻 다른 표현 3문장' 대신 Review Quiz (복습 일정에 맞춘 이전 단어 테스트). 이름도 '퇴근 후 SIDE PROJECT'.
   const _sideProject = _isQuizLive();
   const [reviewOpen, setReviewOpen] = useState(0);   // 0 = 닫힘, n = n번째 응시로 열림 (결과 화면에서 번호가 안 바뀌게 열 때 고정)
@@ -7279,6 +7401,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const savePre = () => {
     const text = pre.trim(); if (!text) return;
     _saveJSON(_preKey(email, day + 1), { text, at: new Date().toISOString(), fromDay: day, wordGuess: (wordGuess || "").trim() });
+    try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
     setPreSaved(true);
     persist({ ...saved, preview: { text, at: new Date().toISOString() } });
   };
@@ -7946,6 +8069,21 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     window.addEventListener("od-tasks-changed", onChanged);
     return () => window.removeEventListener("od-tasks-changed", onChanged);
   }, [taskKey]);
+  // ★ 리텐션 엔진 (2026-09-14, 개발 뷰): 기록 훑어서 EXP/복지P 지급 · 결근 판정 · 하루 완주 팝업
+  const [retDebuff, setRetDebuff] = useState(null);
+  const [retDayPop, setRetDayPop] = useState(false);
+  const [retQuiz, setRetQuiz] = useState(false);
+  React.useEffect(() => {
+    if (!_RET_ON() || USER.isViewingPast) return;
+    _retReconcile({ silent: true });
+    const rec = _retEvalDebuff(USER.email);
+    if (rec && rec.level > 0 && !rec.seen) setTimeout(() => setRetDebuff(rec), 700);
+    const onRecon = () => _retReconcile();
+    window.addEventListener("od-ret-recon", onRecon);
+    const iv = setInterval(() => _retReconcile(), 20000);
+    return () => { window.removeEventListener("od-ret-recon", onRecon); clearInterval(iv); };
+  }, []);
+  React.useEffect(() => { if (_RET_ON() && !USER.isViewingPast) _retReconcile(); }, [doneTasks]);
   // ★ 2026-09-11 (회원 피드백): "오늘의 시추에이션 다 썼는데 완료가 안 돼요".
   //   제출 기록(__OD_USER.scenariosCompleted)은 남았는데 일정 체크만 빠진 경우를 화면 뜰 때 스스로 메운다.
   React.useEffect(() => {
@@ -8235,6 +8373,10 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     if (!allTodayDone || USER.isViewingPast) return;
     try { const k = "__OD_WP_DAY_TOAST_" + (USER.email || "guest") + "_" + (USER.realCurrentDay || 1); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); if ((USER.realCurrentDay || 1) >= 30) setTimeout(() => _wpToast(WP_RULES.day, "오늘 완주"), 900); } catch (e) {}
   }, [allTodayDone]);
+  useEffect(() => {
+    if (!_RET_ON() || !allTodayDone || USER.isViewingPast) return;
+    try { const k = _retKey("DAYPOP", USER.email) + "_" + (USER.realCurrentDay || 1); if (localStorage.getItem(k)) return; localStorage.setItem(k, "1"); _retReconcile({ silent: true }); setTimeout(() => setRetDayPop(true), 600); } catch (e) {}
+  }, [allTodayDone]);
   // 시추에이션 카드/모달 도장: 그날 일정 다 끝냈으면 DONE
   const _sceneDone = (today && today.day === USER.currentDay) ? allTodayDone : _odDayTasksDone(today ? today.day : 0);
 
@@ -8264,6 +8406,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       }
       return;
     }
+    // ★ 리텐션 (2026-09-14): 2일 이상 결근 뒤 연차/휴가를 안 쓰면 Review Quiz 먼저 끝내야 오늘 일정이 열린다.
+    if (_retNeedsQuizFirst(USER.email)) { const rec = _retDebuff(USER.email); setRetDebuff(rec); return; }
     const prevDone = idx === 0 || doneTasks[TODAY_SCHEDULE[idx-1].id];
     if (!prevDone) {
       showToast("⏳ 이전 항목 먼저 끝내주세요");
@@ -8440,10 +8584,22 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {USER.team}
         </div>
       </div>
+      {!USER.isViewingPast && <RetHud setActive={setActive} />}
 
       {_isNextFeature() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
+      {retDebuff && !retQuiz && (
+        <RetDebuffPopup rec={retDebuff} onGoShop={() => { setRetDebuff(null); setActive("perk"); }}
+          onOpenQuiz={() => setRetQuiz(true)}
+          onClose={() => { _retDebuffPatch(USER.email, { seen: true }); setRetDebuff(null); }} />
+      )}
+      {retQuiz && today && (
+        <ReviewQuizModal today={today} email={USER.email} attemptNo={1}
+          onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
+          onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
+      )}
+      {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => setRetDayPop(false)} />}
       {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => {
           if (k === "mynotes") { setActive("mynotes"); return; }
@@ -8521,6 +8677,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               <div className="today-accum-sub">🔥 출근 {USER.streak}일 · {USER.isFulltime ? "" : ("사원 승진까지 " + Math.max(0, 30 - (USER.realCurrentDay || USER.currentDay)) + "일")}</div>
             </div>
           )}
+          {!USER.isViewingPast && <RetGoalCard />}
           {_isHomeLive() && !USER.isViewingPast && !!doneTasks.checkin && (
             <PreReveal key={"pre-" + USER.currentDay} today={today} email={USER.email} />
           )}
@@ -8552,7 +8709,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               >
                 <span className="schedule-time">{row.time}</span>
                 <span>
-                  <span className="schedule-title" style={{ textDecoration: row.computed === "done" ? "line-through" : "none" }}>{row.title}</span>
+                  <span className="schedule-title" style={{ textDecoration: row.computed === "done" ? "line-through" : "none" }}>{row.title}</span>{RET_EXP_BY_SLOT[i] ? <RetExpTag exp={RET_EXP_BY_SLOT[i]} done={row.computed === "done"} /> : null}
                   {row.note ? <div className="schedule-note">{row.note}</div> : null}
                 </span>
                 <span className={"schedule-status " + row.computed}>
@@ -9068,7 +9225,11 @@ function _tyPickErrands(email, today, rd, n) {
   }
   const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd);
   const recent = new Set(hist.slice(-6).flatMap(h => (h && h.ids) || []));
-  let pool = avail.filter(e => !recent.has(e.id));
+  // ★ 2026-09-14 (제안서): 이미 도장 찍은 심부름은 다시 안 나온다. 안 한 건 다시 나올 수 있다.
+  const doneEver = new Set();
+  try { Object.keys(localStorage).forEach(k => { if (k.startsWith("__OD_ERRAND_") && k.endsWith("_" + email) && !k.startsWith("__OD_ERRAND_HIST_")) { const v = JSON.parse(localStorage.getItem(k) || "{}"); Object.keys(v).forEach(id => { if (v[id]) doneEver.add(id); }); } }); } catch (e) {}
+  let pool = avail.filter(e => !recent.has(e.id) && !doneEver.has(e.id));
+  if (pool.length < n) pool = avail.filter(e => !doneEver.has(e.id));
   if (pool.length < n) pool = avail;                       // 한 바퀴 다 돌면 다시 처음부터
   let r = [...(today + email)].reduce((a, c) => ((a * 31 + c.charCodeAt(0)) >>> 0), 7) >>> 0;
   const rnd = () => (r = (r * 1664525 + 1013904223) >>> 0) / 4294967296;
@@ -9081,6 +9242,712 @@ function _tyPickErrands(email, today, rd, n) {
   } catch (e) {}
   return picked;
 }
+// ============================================================
+// ★ 리텐션 엔진 (2026-09-14, 개발 뷰 __OD_NEXT)
+//   출근률 장치 묶음: EXP · 복지포인트(이벤트형) · PERK SHOP · 디버프 · 내 목표 · 주간 순위판 · 진급 리포트
+//   제안서(1일1비 업데이트 제안) 규칙을 그대로 옮겼다. 전부 localStorage + (있으면) 서버 RPC fire-and-forget.
+//   라이브로 열 때는 _RET_ON 만 바꾼다.
+// ============================================================
+const _RET_ON = () => _isNextFeature();
+const _RET_EPOCH_DEFAULT = "2026-09-14";    // 이 날 이후 활동만 결근/목표 판정에 쓴다 (도입 전 공백으로 벌주지 않기)
+const _RET_EPOCH = (() => { try { return localStorage.getItem("__OD_RET_EPOCH") || _RET_EPOCH_DEFAULT; } catch (e) { return _RET_EPOCH_DEFAULT; } })();
+// 결근 시뮬레이터 (개발 뷰 전용): mainboard.html?retgap=2 → 오늘을 "2일 결근 뒤 첫 출근"으로 판정. ?retgap=0 으로 해제.
+function _retForcedGap() {
+  try {
+    if (!_isNextFeature()) return null;
+    const q = new URLSearchParams(location.search).get("retgap");
+    if (q !== null) { if (q === "" || q === "0") sessionStorage.removeItem("__OD_RET_GAP"); else sessionStorage.setItem("__OD_RET_GAP", String(Number(q) || 0)); }
+    const v = sessionStorage.getItem("__OD_RET_GAP"); return v === null ? null : Number(v);
+  } catch (e) { return null; }
+}
+const _retKey = (k, email) => "__OD_RET_" + k + "_" + (email || "guest");
+const _retEmail = () => { try { return ((window.__SIM && window.__SIM.USER && window.__SIM.USER.email) || _wbUser().email || "guest"); } catch (e) { return "guest"; } };
+const _retISO = (d) => new Date(d).toISOString().slice(0, 10);
+const _retDayDiff = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
+const _retAddDays = (iso, n) => _retISO(Date.parse(iso + "T00:00:00Z") + n * 86400000);
+
+// ── EXP 규칙 (제안서) ──
+const RET_EXP = { checkin: 25, scenario: 100, mission: 50, wrapup: 25, streak: 50, rev5: 10, rev10: 20, rev20: 50, pre: 50, errand: 20, survey: 50 };
+const _RET_SLOT3 = ["mission", "afternoon", "lunch", "recap"];       // 14:00 슬롯은 날마다 id 가 다르다 (로테이션). 어느 것이든 미니 퀴즈 50
+const RET_EXP_BY_SLOT = [RET_EXP.checkin, RET_EXP.scenario, RET_EXP.mission, RET_EXP.wrapup];
+const RET_EXP_DAY_TOTAL = RET_EXP.checkin + RET_EXP.scenario + RET_EXP.mission + RET_EXP.wrapup;   // 200
+// ── 복지포인트 규칙 (제안서) ──
+const RET_WP = { promo: 1000, ot: 25, kakao: 100, push: 50, room: 50 };
+const RET_GOALS = [
+  { days: 7,  p: 500,  label: "7일 연속 출근" },
+  { days: 14, p: 1200, label: "14일 연속 출근" },
+  { days: 30, p: 3000, label: "30일 연속 출근" },
+  { days: 60, p: 8000, label: "60일 연속 출근" },
+];
+// ── PERK SHOP ──
+const RET_PERKS = [
+  { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "결근 1~2일 디버프를 막아줘요. 연속 출근 기록도 지켜져요.", stack: true },
+  { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
+  { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true },
+  { id: "report",  icon: "🧭", name: "커리어 리포트",     cost: 1000, rank: "senior",    desc: "지금까지 내 기록으로 성향·약한 부분·보완할 점을 사수가 한 장으로 써줘요. 성장 리포트에 보관돼요.", stack: false },
+  { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", desc: "지금까지 모은 표현을 PDF로 소장해요.", stack: false },
+];
+const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
+const _retRankOk = (need) => { const u = (window.__SIM && window.__SIM.USER) || {}; return (_RET_RANK_N[u.rankId] || 0) >= (_RET_RANK_N[need] || 0); };
+const _RET_RANK_LABEL = { probation: "수습부터", fulltime: "사원 이상", senior: "대리 이상" };
+
+// ── 저장소 ──
+function _retLoad(k, email, def) { const v = _loadJSON(_retKey(k, email)); return (v && typeof v === "object") ? v : (def || {}); }
+function _retSave(k, email, v) { _saveJSON(_retKey(k, email), v); }
+function _retPing() { try { window.dispatchEvent(new Event("od-ret-changed")); } catch (e) {} }
+
+// ── EXP 장부 ──
+//   entries: { key, exp, label, at, day, kind }  key 는 멱등키 (같은 활동 두 번 안 줌)
+function _retExpLedger(email) { const l = _retLoad("EXP", email, { entries: [] }); if (!Array.isArray(l.entries)) l.entries = []; return l; }
+function _retExpTotal(email) { return _retExpLedger(email).entries.reduce((n, e) => n + (Number(e.exp) || 0), 0); }
+function _retWeekStart(iso) { const d = new Date(iso + "T00:00:00Z"); const dow = (d.getUTCDay() + 6) % 7; return _retAddDays(iso, -dow); }   // 월요일
+function _retExpThisWeek(email) {
+  const ws = _retWeekStart(_tyTodayISO());
+  return _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= ws).reduce((n, e) => n + (Number(e.exp) || 0), 0);
+}
+function _retAwardExp(email, key, exp, label, at, day, kind, opts) {
+  const l = _retExpLedger(email);
+  if (l.entries.some(e => e.key === key)) return false;
+  const entry = { key, exp, label, at: at || new Date().toISOString(), day: day || null, kind: kind || "" };
+  l.entries.push(entry);
+  if (l.entries.length > 3000) l.entries = l.entries.slice(-3000);
+  _retSave("EXP", email, l);
+  if (!(opts && opts.silent)) _retExpToast(exp, label);
+  try { if (window.OD && window.OD.enabled && window.OD.addExpEvent && email && email !== "guest") window.OD.addExpEvent(email, key, exp, kind || "", day || null, entry.at).catch(() => {}); } catch (e) {}
+  return true;
+}
+// ── 복지포인트 장부 (이벤트형). 사용은 기존 _wpNotes("points") spend 노트 + 여기 spend 둘 다 센다 ──
+function _retWpLedger(email) { const l = _retLoad("WP", email, { earn: [], spend: [] }); if (!Array.isArray(l.earn)) l.earn = []; if (!Array.isArray(l.spend)) l.spend = []; return l; }
+function _retAwardWp(email, key, p, label, at, opts) {
+  const l = _retWpLedger(email);
+  if (l.earn.some(e => e.key === key)) return false;
+  l.earn.push({ key, p, label, at: at || new Date().toISOString() });
+  _retSave("WP", email, l);
+  if (!(opts && opts.silent)) { try { _retWpToast(p, label); } catch (e) {} }
+  return true;
+}
+function _retWpEarnedTotal(email) { return _retWpLedger(email).earn.reduce((n, e) => n + (Number(e.p) || 0), 0); }
+function _retWpSpentTotal(email) {
+  let s = _retWpLedger(email).spend.reduce((n, e) => n + (Number(e.cost) || 0), 0);
+  try { s += _wpNotes("points").filter(n => n.type === "spend").reduce((n, x) => n + (Number(x.cost) || 0), 0); } catch (e) {}
+  return s;
+}
+function _retWpBalance(email) { return Math.max(0, _retWpEarnedTotal(email) - _retWpSpentTotal(email)); }
+function _retSpendWp(email, cost, item, title) {
+  if (_retWpBalance(email) < cost) return false;
+  const l = _retWpLedger(email);
+  l.spend.push({ cost, item, title, at: new Date().toISOString() });
+  _retSave("WP", email, l);
+  return true;
+}
+// ── 인벤토리 ──
+function _retInv(email) { return _retLoad("INV", email, {}); }
+function _retInvAdd(email, id, n) { const inv = _retInv(email); inv[id] = (Number(inv[id]) || 0) + (n || 1); _retSave("INV", email, inv); _retPing(); }
+function _retInvUse(email, id) { const inv = _retInv(email); if ((Number(inv[id]) || 0) <= 0) return false; inv[id] = inv[id] - 1; _retSave("INV", email, inv); _retPing(); return true; }
+function _retBuy(email, id) {
+  const it = RET_PERKS.find(x => x.id === id); if (!it) return { ok: false, why: "없는 아이템" };
+  if (!_retRankOk(it.rank)) return { ok: false, why: _RET_RANK_LABEL[it.rank] + " 살 수 있어요" };
+  if (!it.stack && (Number(_retInv(email)[id]) || 0) > 0) return { ok: false, why: "이미 갖고 있어요" };
+  if (!_retSpendWp(email, it.cost, id, it.name)) return { ok: false, why: "복지포인트가 모자라요" };
+  _retInvAdd(email, id, 1);
+  return { ok: true };
+}
+
+// ── 토스트 (EXP / 복지P) ──
+function _retToastHost() { let h = document.getElementById("ret-toast-host"); if (!h) { h = document.createElement("div"); h.id = "ret-toast-host"; document.body.appendChild(h); } return h; }
+function _retToast(cls, ico, big, small) {
+  try {
+    const el = document.createElement("div"); el.className = "ret-toast " + cls;
+    el.innerHTML = '<span class="ret-toast-ico">' + ico + '</span><b>' + big + '</b>' + (small ? '<small>' + small + '</small>' : '');
+    _retToastHost().appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("in")));
+    setTimeout(() => { el.classList.remove("in"); el.classList.add("out"); setTimeout(() => el.remove(), 420); }, 2200);
+  } catch (e) {}
+}
+function _retExpToast(exp, label) { if (_RET_ON()) _retToast("exp", "⚡", "+" + exp + " EXP", label); }
+function _retWpToast(p, label) { if (_RET_ON()) _retToast("wp", "🎁", "복지포인트 +" + p + "P", label); }
+
+// ── 출근 날짜 집합 (KST 날짜 문자열). 출근 도장(checkin)이 찍힌 날 기준. ──
+//   1) __OD_TASKS_DAY_<n>_ts (그 Day 마지막 저장 시각)  2) 리텐션 엔진이 직접 남기는 __OD_RET_ATT (정확)
+function _retActivityDates(email) {
+  const set = new Set();
+  try {
+    const att = _retLoad("ATT", email, { dates: [] });
+    (att.dates || []).forEach(d => set.add(d));
+    Object.keys(localStorage).forEach(k => {
+      if (!k.startsWith("__OD_TASKS_DAY_") || k.endsWith("_ts")) return;
+      const t = _loadJSON(k); if (!t || !t.checkin) return;
+      const ts = localStorage.getItem(k + "_ts"); if (!ts) return;
+      set.add(new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10));
+    });
+  } catch (e) {}
+  return set;
+}
+function _retMarkToday(email) {
+  const today = _tyTodayISO();
+  const att = _retLoad("ATT", email, { dates: [] });
+  if (!Array.isArray(att.dates)) att.dates = [];
+  if (att.dates.indexOf(today) < 0) { att.dates.push(today); att.dates = att.dates.slice(-400); _retSave("ATT", email, att); }
+}
+// 오늘 직전 연속 결근 일수 (어제부터 거꾸로 세서 출근한 날을 만나면 멈춤). 도입일·가입일 이전은 안 센다.
+function _retAbsenceGap(email) {
+  const dates = _retActivityDates(email);
+  const today = _tyTodayISO();
+  let floor = _RET_EPOCH;
+  try { const u = _wbUser(); if (u.signupDate) { const s = _retISO(new Date(u.signupDate)); if (s > floor) floor = s; } } catch (e) {}
+  let gap = 0; let d = _retAddDays(today, -1);
+  while (d >= floor && !dates.has(d) && gap < 400) { gap++; d = _retAddDays(d, -1); }
+  return gap;
+}
+// 오늘 포함 연속 출근 일수 (오늘 아직 안 찍었으면 어제까지)
+function _retStreakDays(email) {
+  const dates = _retActivityDates(email);
+  const today = _tyTodayISO();
+  let d = dates.has(today) ? today : _retAddDays(today, -1);
+  let n = 0;
+  while (dates.has(d) && n < 400) { n++; d = _retAddDays(d, -1); }
+  return n;
+}
+
+// ── 내 목표 (연속 출근 퀘스트) ──
+//   { days, startDate, status: "active"|"done"|"failed", doneAt, failedAt, streakAtFail }
+function _retGoal(email) { const g = _retLoad("GOAL", email, null); return (g && g.days) ? g : null; }
+function _retSetGoal(email, days) {
+  const cfg = RET_GOALS.find(g => g.days === days); if (!cfg) return;
+  const today = _tyTodayISO();
+  _retSave("GOAL", email, { days, startDate: today, status: "active", setAt: new Date().toISOString() });
+  _retPing();
+}
+function _retClearGoal(email) { _retSave("GOAL", email, {}); _retPing(); }
+// 목표 진행: 목표 설정일부터의 연속 출근. 오늘 출근했으면 오늘 포함.
+function _retGoalProgress(email) {
+  const g = _retGoal(email); if (!g || g.status !== "active") return null;
+  const dates = _retActivityDates(email);
+  const today = _tyTodayISO();
+  let n = 0, d = g.startDate;
+  while (d <= today && dates.has(d)) { n++; d = _retAddDays(d, 1); }
+  // 시작일부터 끊김 없이 이어졌는지: 마지막으로 센 날 다음날이 오늘(아직 안 찍음)이거나 오늘을 넘었으면 정상
+  const intact = d > today || (d === today);
+  return { goal: g, done: n, left: Math.max(0, g.days - n), intact, pct: Math.min(100, Math.round(100 * n / g.days)) };
+}
+function _retGoalCheck(email) {
+  const p = _retGoalProgress(email); if (!p) return;
+  const g = p.goal;
+  if (p.done >= g.days) {
+    const cfg = RET_GOALS.find(x => x.days === g.days);
+    g.status = "done"; g.doneAt = new Date().toISOString(); _retSave("GOAL", email, g);
+    _retAwardWp(email, "goal:" + g.days + ":" + g.startDate, cfg.p, cfg.label + " 달성");
+    _retPing();
+    return "done";
+  }
+  if (!p.intact) {
+    g.status = "failed"; g.failedAt = new Date().toISOString(); g.streakAtFail = p.done; _retSave("GOAL", email, g); _retPing();
+    return "failed";
+  }
+  return "active";
+}
+
+// ── 디버프 ──
+//   레벨: 1 = 1일 결근(격려만) · 2 = 2일(연차 권고, 미구매시 Review Quiz 먼저) · 3 = 3~29일(휴가 권고 + 사유서 + Quiz 먼저) · 4 = 30일+(유비챌 안내)
+//   { date, gap, level, defended, quizDone, surveyDone, seen }
+function _retDebuff(email) { const d = _retLoad("DEBUFF", email, null); return (d && d.date) ? d : null; }
+function _retDebuffLevel(gap) { return gap >= 30 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }
+function _retEvalDebuff(email) {
+  if (!_RET_ON()) return null;
+  const today = _tyTodayISO();
+  const cur = _retDebuff(email);
+  const forcedNow = _retForcedGap();
+  if (cur && cur.date === today && !(forcedNow !== null && cur.gap !== forcedNow)) return cur;   // 오늘 이미 판정 (시뮬레이터 값이 바뀌면 다시)
+  const forced = _retForcedGap();
+  const gap = forced !== null ? forced : _retAbsenceGap(email);
+  const level = _retDebuffLevel(gap);
+  const rec = { date: today, gap, level, defended: false, quizDone: false, surveyDone: false, seen: false, forced: forced !== null };
+  // 방어 아이템 자동 사용: 2일 → 연차, 3일+ → 휴가(없으면 연차 2장도 안 됨. 휴가만)
+  if (level === 2 && _retInvUse(email, "annual")) rec.defended = "annual";
+  else if (level === 3 && _retInvUse(email, "vacay")) rec.defended = "vacay";
+  _retSave("DEBUFF", email, rec);
+  // 목표 판정 (방어했으면 목표도 유지: 결근일을 출근으로 채워 넣는다)
+  if (rec.defended) {
+    const att = _retLoad("ATT", email, { dates: [] }); if (!Array.isArray(att.dates)) att.dates = [];
+    for (let i = 1; i <= gap; i++) { const d = _retAddDays(today, -i); if (att.dates.indexOf(d) < 0) att.dates.push(d); }
+    _retSave("ATT", email, att);
+  }
+  _retGoalCheck(email);
+  _retPing();
+  return rec;
+}
+function _retDebuffPatch(email, patch) { const d = _retDebuff(email); if (!d) return; Object.assign(d, patch); _retSave("DEBUFF", email, d); _retPing(); }
+// 오늘 일정 시작 전에 Review Quiz 를 먼저 해야 하나?
+function _retNeedsQuizFirst(email) {
+  if (!_RET_ON()) return false;
+  const d = _retDebuff(email); if (!d || d.date !== _tyTodayISO()) return false;
+  if (d.level !== 2 && d.level !== 3) return false;
+  if (d.defended || d.quizDone) return false;
+  return true;
+}
+function _retMarkQuizDone(email) { const d = _retDebuff(email); if (d && d.date === _tyTodayISO()) _retDebuffPatch(email, { quizDone: true }); }
+
+// ── 리컨실: 저장된 기록을 훑어서 아직 안 준 EXP/복지P 를 준다 (멱등). 홈이 뜰 때·일정이 바뀔 때 호출. ──
+function _retReconcile(opts) {
+  if (!_RET_ON()) return;
+  const email = _retEmail(); const u = _wbUser();
+  const today = _tyTodayISO();
+  const silent = !!(opts && opts.silent);
+  try {
+    // 1) 오늘 일정 4개 + 연속 출근
+    const days = new Set();
+    Object.keys(localStorage).forEach(k => { const m = /^__OD_TASKS_DAY_(\d+)$/.exec(k); if (m) days.add(Number(m[1])); });
+    const doneAll = _odCompletedDaySet(u);
+    [...days].sort((a, b) => a - b).forEach(day => {
+      const t = _loadJSON("__OD_TASKS_DAY_" + day) || {}; const ts = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts") || null;
+      const isToday = ts && new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10) === today;
+      ["checkin", "scenario", "wrapup"].forEach(k => {
+        if (!t[k] || !RET_EXP[k]) return;
+        _retAwardExp(email, "task:" + day + ":" + k, RET_EXP[k], { checkin: "출근", scenario: "오늘의 시추에이션", wrapup: "퇴근" }[k] + " · Day " + day, ts, day, "task", { silent: silent || !isToday });
+      });
+      if (_RET_SLOT3.some(k => t[k])) _retAwardExp(email, "task:" + day + ":quiz", RET_EXP.mission, "미니 퀴즈 · Day " + day, ts, day, "task", { silent: silent || !isToday });
+      if (t.checkin && isToday) _retMarkToday(email);
+      if (doneAll.has(day) && doneAll.has(day - 1)) _retAwardExp(email, "streak:" + day, RET_EXP.streak, "연속 출근 · Day " + day, ts, day, "streak", { silent: silent || !isToday });
+    });
+    // 2) 야근: Review Quiz (문제수별) · 내일 미리쓰기 · 야근 완료 복지P (하루 1회)
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith("__OD_OT_" + email + "_")) {
+        const day = Number(k.split("_").pop()); const v = _loadJSON(k) || {};
+        ((v.review && v.review.attempts) || []).forEach((a, i) => {
+          const n = Number(a.n || a.total || 0); const exp = n >= 20 ? RET_EXP.rev20 : (n >= 10 ? RET_EXP.rev10 : RET_EXP.rev5);
+          const atDate = String(a.at || "").slice(0, 10);
+          _retAwardExp(email, "rev:" + day + ":" + i, exp, "Review Quiz " + n + "문제", a.at, day, "review", { silent: silent || atDate !== today });
+          if (a.at) _retAwardWp(email, "ot:" + atDate, RET_WP.ot, "야근 컨텐츠 완료", a.at, { silent: silent || atDate !== today });
+        });
+      }
+      if (k.startsWith("__OD_PRE_" + email + "_")) {
+        const day = Number(k.split("_").pop()); const v = _loadJSON(k) || {};
+        if (v.text && String(v.text).trim()) {
+          const at = v.savedAt || v.at || null; const atDate = at ? String(at).slice(0, 10) : today;
+          _retAwardExp(email, "pre:" + day, RET_EXP.pre, "내일 미리 쓰기 · Day " + day, at, day, "pre", { silent: silent || atDate !== today });
+          _retAwardWp(email, "ot:" + atDate, RET_WP.ot, "야근 컨텐츠 완료", at, { silent: silent || atDate !== today });
+        }
+      }
+      // 3) 심부름
+      if (k.startsWith("__OD_ERRAND_") && k.endsWith("_" + email) && !k.startsWith("__OD_ERRAND_HIST_")) {
+        const d = k.slice("__OD_ERRAND_".length, "__OD_ERRAND_".length + 10);
+        const v = _loadJSON(k) || {};
+        Object.keys(v).forEach(id => { if (v[id]) _retAwardExp(email, "errand:" + d + ":" + id, RET_EXP.errand, "심부름 완료", d + "T12:00:00.000Z", null, "errand", { silent: silent || d !== today }); });
+      }
+    });
+    // 4) 진급 복지P (사원·대리)
+    const USER = (window.__SIM && window.__SIM.USER) || {};
+    if (USER.rankId === "fulltime" || USER.rankId === "senior") _retAwardWp(email, "promo:fulltime", RET_WP.promo, "사원 진급", null, { silent: true });
+    if (USER.rankId === "senior") _retAwardWp(email, "promo:senior", RET_WP.promo, "대리 진급", null, { silent: true });
+    // 5) 설정 이벤트 (카톡/푸시/공지방) 는 _retEvent 로 들어온다
+    // 6) 목표 판정
+    _retGoalCheck(email);
+  } catch (e) {}
+  _retPing();
+}
+// 설정 계열 이벤트: 카톡 출근 알림 켬 / 푸시 켬 / 공지방 입장 / 설문 참여
+function _retEvent(kind) {
+  if (!_RET_ON()) return;
+  const email = _retEmail();
+  if (kind === "kakao") _retAwardWp(email, "set:kakao", RET_WP.kakao, "카톡 출근 알림 설정");
+  if (kind === "push") _retAwardWp(email, "set:push", RET_WP.push, "푸시 알림 설정");
+  if (kind === "room") _retAwardWp(email, "set:room", RET_WP.room, "1일1비 공지방 입장");
+  if (kind === "survey") _retAwardExp(email, "survey:" + _tyTodayISO(), RET_EXP.survey, "설문 참여", null, null, "survey");
+  _retPing();
+}
+window.__odRetEvent = _retEvent;
+function _useRetTick() {
+  const [, setN] = React.useState(0);
+  React.useEffect(() => { const h = () => setN(n => n + 1); window.addEventListener("od-ret-changed", h); return () => window.removeEventListener("od-ret-changed", h); }, []);
+}
+
+// ── 작은 UI 조각 ──
+function RetExpTag({ exp, done }) {
+  if (!_RET_ON()) return null;
+  return <span className={"ret-exp-tag" + (done ? " done" : "")}>{done ? "✓ " : "+"}{exp} EXP</span>;
+}
+// 헤더용 칩: 이번 주 EXP · 복지P · 연속 출근
+function RetHud({ setActive }) {
+  _useRetTick();
+  if (!_RET_ON()) return null;
+  const email = _retEmail();
+  const week = _retExpThisWeek(email), total = _retExpTotal(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
+  return (
+    <div className="ret-hud">
+      <button className="ret-hud-chip exp" onClick={() => setActive && setActive("inbox")} title="이번 주 EXP · 순위판 보기"><b>⚡ {week.toLocaleString()}</b><small>이번 주 EXP · 누적 {total.toLocaleString()}</small></button>
+      <button className="ret-hud-chip wp" onClick={() => setActive && setActive("perk")} title="복지포인트 · PERK SHOP"><b>🎁 {wp.toLocaleString()}P</b><small>복지포인트</small></button>
+      <span className="ret-hud-chip streak"><b>🔥 {streak}일</b><small>연속 출근</small></span>
+    </div>
+  );
+}
+// 하루 완주 팝업 (1회): 오늘 받은 EXP 합계
+function RetDayPopup({ day, email, onClose }) {
+  const l = _retExpLedger(email);
+  const today = _tyTodayISO();
+  const rows = l.entries.filter(e => e.kind === "task" && e.day === day).concat(l.entries.filter(e => e.kind === "streak" && e.day === day));
+  const sum = rows.reduce((n, e) => n + e.exp, 0);
+  const streak = _retStreakDays(email);
+  const gp = _retGoalProgress(email);
+  return (
+    <div className="modal-bg" style={{ zIndex: 9170 }} onClick={onClose}>
+      <div className="ret-pop" onClick={e => e.stopPropagation()}>
+        <div className="ret-pop-burst">⚡</div>
+        <div className="ret-pop-big">+{sum} EXP</div>
+        <div className="ret-pop-sub">Day {day} 완주 · 연속 출근 {streak}일{gp ? " · 내 목표 " + gp.done + "/" + gp.goal.days : ""}</div>
+        <div className="ret-pop-rows">
+          {rows.map(e => <div key={e.key}><span>{e.label.replace(/ · Day \d+$/, "")}</span><b>+{e.exp}</b></div>)}
+        </div>
+        <div className="ret-pop-foot">EXP 는 매주 월요일 리셋되는 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 사내 게시판·PERK SHOP 에서 써요.</div>
+        <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>좋아요 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 내 목표 카드 (홈 · 사원증) ──
+function RetGoalCard({ compact }) {
+  _useRetTick();
+  if (!_RET_ON()) return null;
+  const email = _retEmail();
+  const g = _retGoal(email); const p = _retGoalProgress(email);
+  const streak = _retStreakDays(email);
+  const [pick, setPick] = React.useState(null);
+  const choose = (days) => { _retSetGoal(email, days); setPick(null); };
+  if (!g || g.status === "failed" || (g.status === "done" && !pick)) {
+    const failed = g && g.status === "failed";
+    const done = g && g.status === "done";
+    return (
+      <div className={"ret-goal" + (compact ? " compact" : "")}>
+        <div className="ret-goal-head">🎯 내 목표 <small>{failed ? "지난 목표가 끊겼어요. 다시 잡아요" : done ? "달성! 다음 목표를 잡아요" : "연속 출근 퀘스트 · 달성하면 복지포인트"}</small></div>
+        {failed && <div className="ret-goal-note">{g.days}일 목표, {g.streakAtFail || 0}일까지 갔어요. 괜찮아요. 오늘부터 다시 세면 돼요.</div>}
+        <div className="ret-goal-pick">
+          {RET_GOALS.map(x => (
+            <button key={x.days} className={"ret-goal-opt" + (pick === x.days ? " on" : "")} onClick={() => setPick(x.days)}>
+              <b>{x.days}일</b><small>+{x.p.toLocaleString()}P</small>
+            </button>
+          ))}
+        </div>
+        {pick && <button className="btn btn-primary" style={{ marginTop: 10, width: "100%" }} onClick={() => choose(pick)}>{pick}일 연속 출근, 오늘부터 시작 →</button>}
+        {!pick && <div className="ret-goal-hint">지금 연속 출근 {streak}일. 높은 목표일수록 보상이 커요.</div>}
+      </div>
+    );
+  }
+  const left = p ? p.left : 0;
+  return (
+    <div className={"ret-goal" + (compact ? " compact" : "")}>
+      <div className="ret-goal-head">🎯 내 목표 · {g.days}일 연속 출근 <small>{left === 0 ? "오늘 달성!" : "D-" + left}</small></div>
+      <div className="ret-goal-bar"><i style={{ width: (p ? p.pct : 0) + "%" }} /></div>
+      <div className="ret-goal-row"><span>{p ? p.done : 0} / {g.days}일</span><span>달성 시 <b>+{(RET_GOALS.find(x => x.days === g.days) || {}).p}P</b></span></div>
+      {!compact && <button className="btn btn-ghost" style={{ marginTop: 8, fontSize: 11.5, padding: "5px 10px" }} onClick={() => { if (confirm("목표를 다시 잡을까요? 지금 진행은 사라져요.")) _retClearGoal(email); }}>목표 바꾸기</button>}
+    </div>
+  );
+}
+
+// ── 디버프 팝업 (출근했을 때 1회) ──
+const _RET_ENCOURAGE = {
+  1: { t: "이런, 어제 많이 바빴구나!", m: "하루 빠진 건 아무 일도 아니에요. 오늘 다시 출근했잖아요. 그게 제일 중요해요." },
+  2: { t: "이틀 못 봤네요. 괜찮아요?", m: "이틀 비면 표현이 슬슬 빠져나가요. 오늘 일정 전에 Review Quiz 로 한 번만 잡고 가요." },
+  3: { t: "요즘 많이 바빠요?", m: "며칠 비었어요. 뭐가 힘든지 한 줄만 남겨주면 제가 방식을 바꿔볼게요. 오늘은 Review Quiz 먼저 하고 들어가요." },
+  4: { t: "한 달 넘게 못 봤어요.", m: "혼자서는 다시 시작이 제일 어려워요. 습관부터 잡으려면 유비챌이 맞을 수도 있어요. 4주 동안 매일 인증하면서 같이 가는 방이에요." },
+};
+const RET_REASONS = ["바빠서 시간이 없었어요", "그냥 까먹었어요", "재미가 없어졌어요", "어려워서 부담됐어요", "효과가 있는지 모르겠어요"];
+function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
+  const email = _retEmail();
+  const { CHARACTERS } = window.__SIM;
+  const mentor = CHARACTERS.mentor;
+  const lv = rec.level;
+  const enc = _RET_ENCOURAGE[lv] || _RET_ENCOURAGE[1];
+  const gp = _retGoal(email);
+  const [reason, setReason] = React.useState(null);
+  const [memo, setMemo] = React.useState("");
+  const inv = _retInv(email);
+  const item = lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null);
+  const wp = _retWpBalance(email);
+  const needQuiz = _retNeedsQuizFirst(email);
+  const buyNow = () => {
+    const r = _retBuy(email, item.id);
+    if (!r.ok) { alert(r.why); return; }
+    _retInvUse(email, item.id);
+    _retDebuffPatch(email, { defended: item.id });
+    onClose();
+  };
+  const submitSurvey = () => {
+    const payload = { reason, memo: memo.trim(), gap: rec.gap, at: new Date().toISOString() };
+    try { const l = _retLoad("REASONS", email, { list: [] }); l.list = (l.list || []).concat([payload]); _retSave("REASONS", email, l); } catch (e) {}
+    try { if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {}
+    _retDebuffPatch(email, { surveyDone: true });
+  };
+  return (
+    <div className="modal-bg" style={{ zIndex: 9175 }}>
+      <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
+        <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap}일 결근 후 출근</small></div></div>
+        <div className="ret-deb-title">{enc.t}</div>
+        <div className="ret-deb-msg">{enc.m}</div>
+
+        {rec.defended && (
+          <div className="ret-deb-box ok">🌴 <b>{rec.defended === "annual" ? "연차" : "휴가"}</b>를 썼어요. 디버프 없이 그대로 이어가요. 연속 출근 기록도 지켜졌어요.</div>
+        )}
+        {gp && gp.status === "failed" && !rec.defended && (
+          <div className="ret-deb-box warn">🎯 내 목표({gp.days}일)가 끊겼어요. 홈에서 다시 잡을 수 있어요.</div>
+        )}
+
+        {lv === 3 && !rec.defended && !rec.surveyDone && (
+          <div className="ret-deb-survey">
+            <div className="ret-deb-q">사유서 · 왜 못 오셨어요? <small>고치는 데 써요</small></div>
+            <div className="ret-deb-opts">{RET_REASONS.map(r => <button key={r} className={"ret-deb-opt" + (reason === r ? " on" : "")} onClick={() => setReason(r)}>{r}</button>)}</div>
+            <textarea className="ret-deb-memo" rows={2} placeholder="한 줄 더 (선택)" value={memo} onChange={e => setMemo(e.target.value)} />
+            <button className="btn btn-ghost" style={{ marginTop: 6 }} disabled={!reason} onClick={submitSurvey}>사유서 제출</button>
+          </div>
+        )}
+
+        {item && !rec.defended && (
+          <div className="ret-deb-box">
+            <div><b>{item.icon} {item.name}</b> ({item.cost}P) 를 쓰면 디버프 없이 바로 들어가요. 지금 <b>{wp.toLocaleString()}P</b>{(Number(inv[item.id]) || 0) > 0 ? " · 보유 " + inv[item.id] + "장" : ""}</div>
+            <div className="ret-deb-actions">
+              {(Number(inv[item.id]) || 0) > 0
+                ? <button className="btn btn-primary" onClick={() => { _retInvUse(email, item.id); _retDebuffPatch(email, { defended: item.id }); onClose(); }}>{item.name} 쓰기</button>
+                : <button className="btn btn-primary" disabled={wp < item.cost} onClick={buyNow}>{item.name} 사서 쓰기 ({item.cost}P)</button>}
+              {wp < item.cost && (Number(inv[item.id]) || 0) === 0 && <span className="ret-deb-note">포인트가 모자라요. Review Quiz 먼저 하고 들어가면 돼요.</span>}
+            </div>
+          </div>
+        )}
+
+        {lv === 4 && (
+          <div className="ret-deb-box">
+            <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>유비챌은 <b>4주 · 매일 인증 · 같이 하는 방</b>이에요. 혼자 매일이 안 될 때는 함께가 답이었어요. 1일1비 기록은 그대로 남아요.</div>
+            <a className="btn btn-primary" style={{ marginTop: 8, display: "inline-flex" }} href={_TY_UBCHALL_URL} target="_blank" rel="noopener">유비챌 보러 가기 →</a>
+          </div>
+        )}
+
+        <div className="ret-deb-foot">
+          {needQuiz
+            ? <button className="btn btn-primary" style={{ width: "100%" }} onClick={onOpenQuiz}>Review Quiz 먼저 하기 → 오늘 일정 열기</button>
+            : <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>{lv === 4 ? "그래도 오늘 출근하기" : "오늘 일정 시작하기 →"}</button>}
+          {needQuiz && (lv === 3 && !rec.surveyDone) && <div className="ret-deb-note" style={{ marginTop: 6 }}>사유서는 안 써도 돼요. Quiz 만 하면 열려요.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PERK SHOP (OFFICE 하위 탭) ──
+function RetPerkShopPage({ setActive }) {
+  _useRetTick();
+  const { USER } = window.__SIM;
+  const email = _retEmail();
+  const wp = _retWpBalance(email); const inv = _retInv(email);
+  const l = _retWpLedger(email);
+  const [msg, setMsg] = React.useState("");
+  const buy = (it) => {
+    if (it.id === "report") { setActive("mypage"); setTimeout(() => { try { document.querySelector(".hr-section-head")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 300); return; }
+    const r = _retBuy(email, it.id);
+    setMsg(r.ok ? "✅ " + it.name + " 구매했어요" : "⚠️ " + r.why);
+    setTimeout(() => setMsg(""), 2200);
+  };
+  const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} setActive("test"); };
+  const history = [...l.earn.map(e => ({ at: e.at, t: "+" + e.p + "P", label: e.label })), ...l.spend.map(e => ({ at: e.at, t: "-" + e.cost + "P", label: e.title }))]
+    .concat((() => { try { return _wpNotes("points").filter(n => n.type === "spend").map(n => ({ at: n.at, t: "-" + n.cost + "P", label: n.title })); } catch (e) { return []; } })())
+    .sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 12);
+  return (
+    <div>
+      <div className="desk-header">
+        <div>
+          <div className="desk-eyebrow">OFFICE · 복지몰</div>
+          <h1 className="desk-title"><em>PERK</em> SHOP</h1>
+        </div>
+        <div className="desk-meta"><b>🎁 {wp.toLocaleString()}P</b><br/>쓸 수 있는 복지포인트</div>
+      </div>
+      <ApprovalLine doc="YB-PERK" applicant={USER.name} status={"보유 " + Object.values(inv).reduce((n, x) => n + (Number(x) || 0), 0) + "개"} />
+      {msg && <div className="ret-shop-msg">{msg}</div>}
+      <div className="ret-shop-grid">
+        {RET_PERKS.map(it => {
+          const ok = _retRankOk(it.rank); const have = Number(inv[it.id]) || 0;
+          const owned = !it.stack && have > 0;
+          return (
+            <div key={it.id} className={"ret-shop-item" + (!ok ? " locked" : "")}>
+              <div className="ret-shop-ico">{it.icon}</div>
+              <div className="ret-shop-name">{it.name}{have > 0 && <span className="ret-shop-have">보유 {have}</span>}</div>
+              <div className="ret-shop-desc">{it.desc}</div>
+              <div className="ret-shop-foot">
+                <b>{it.cost.toLocaleString()}P</b>
+                {!ok ? <span className="ret-shop-lock">🔒 {_RET_RANK_LABEL[it.rank]}</span>
+                  : it.id === "preview" && have > 0 ? <button className="btn btn-primary btn-mini" onClick={usePreview}>지금 미리보기</button>
+                  : it.id === "pdf" && owned ? <button className="btn btn-ghost btn-mini" onClick={() => setActive("mynotes")}>성장 리포트에서 받기</button>
+                  : it.id === "report" ? <button className="btn btn-primary btn-mini" onClick={() => buy(it)}>사원증에서 받기</button>
+                  : <button className="btn btn-primary btn-mini" disabled={wp < it.cost || owned} onClick={() => buy(it)}>{owned ? "보유 중" : "구매"}</button>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="ret-shop-how">
+        <div className="ret-shop-how-head">복지포인트는 이렇게 쌓여요</div>
+        <ul>
+          <li>진급할 때 <b>+1,000P</b></li>
+          <li>🎯 내 목표 달성 시 <b>+500 ~ 8,000P</b> (7·14·30·60일)</li>
+          <li>퇴근 후 사이드 프로젝트 완료 <b>+25P</b> (하루 한 번)</li>
+          <li>카톡 출근 알림 켜기 <b>+100P</b> · 푸시 알림 <b>+50P</b> · 공지방 입장 <b>+50P</b> (각 최초 1회)</li>
+        </ul>
+        <div className="ret-shop-how-head" style={{ marginTop: 14 }}>최근 내역</div>
+        {history.length ? history.map((h, i) => <div key={i} className="ret-shop-hist"><span>{String(h.at).slice(0, 10)}</span><span>{h.label}</span><b className={h.t[0] === "-" ? "neg" : ""}>{h.t}</b></div>) : <div className="ret-shop-hist muted">아직 내역이 없어요</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── WEEKLY BIZ SCORE (사내 게시판 안 탭) ──
+function RetWeeklyBoard() {
+  _useRetTick();
+  const { USER } = window.__SIM;
+  const email = _retEmail();
+  const [rows, setRows] = React.useState(null); const [err, setErr] = React.useState("");
+  const mine = _retExpThisWeek(email);
+  const ws = _retWeekStart(_tyTodayISO());
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        if (!(window.OD && window.OD.enabled && window.OD.fetchWeeklyBoard)) { setErr("서버 순위 기능이 아직 안 켜졌어요 (SQL 미실행)"); return; }
+        const r = await window.OD.fetchWeeklyBoard(50);
+        if (!alive) return;
+        if (!r || !r.ok) { setErr("순위를 불러오지 못했어요"); return; }
+        setRows(Array.isArray(r.result) ? r.result : []);
+      } catch (e) { if (alive) setErr("순위를 불러오지 못했어요"); }
+    })();
+    return () => { alive = false; };
+  }, [ws]);
+  const myInitial = String(USER.name || "나").slice(0, 1);
+  const list = rows || [];
+  const myRow = list.find(r => r.is_me);
+  return (
+    <div className="ret-board">
+      <div className="ret-board-head">
+        <div><b>🏆 WEEKLY BIZ SCORE</b><small>매주 월요일 리셋 · {ws} ~</small></div>
+        <div className="ret-board-me"><b>⚡ {mine.toLocaleString()}</b><small>내 이번 주 EXP{myRow ? " · " + myRow.rank + "위" : ""}</small></div>
+      </div>
+      {list.length > 0 && list[0] && (
+        <div className="ret-board-top">👑 이번 주 1위 <b>{list[0].masked}</b> · {Number(list[0].exp).toLocaleString()} EXP{list[0].is_me ? " · 나예요!" : ""}</div>
+      )}
+      {err && <div className="ret-board-err">{err}<br/><small>내 EXP 는 이 기기에서 그대로 쌓이고 있어요.</small></div>}
+      {!err && rows === null && <div className="ret-board-err">불러오는 중…</div>}
+      {list.map(r => (
+        <div key={r.rank + r.masked} className={"ret-board-row" + (r.is_me ? " me" : "") + (r.rank <= 3 ? " top" : "")}>
+          <span className="ret-board-rank">{r.rank <= 3 ? ["🥇", "🥈", "🥉"][r.rank - 1] : r.rank}</span>
+          <span className="scene-avatar" style={{ width: 28, height: 28, fontSize: 11, background: r.is_me ? "var(--ink)" : "rgba(216,90,42,0.16)", color: r.is_me ? "#fff" : "var(--orange)", border: "none" }}>{r.is_me ? myInitial : String(r.masked || "?").slice(0, 1)}</span>
+          <span className="ret-board-name">{r.is_me ? USER.name + " (나)" : r.masked}{r.badge ? <i className="ret-board-badge">{r.badge}</i> : null}</span>
+          <span className="ret-board-day">Day {r.day || "-"}</span>
+          <b className="ret-board-exp">{Number(r.exp).toLocaleString()}</b>
+        </div>
+      ))}
+      {!err && rows && rows.length === 0 && <div className="ret-board-err">이번 주 아직 아무도 EXP 를 못 얻었어요. 첫 번째가 돼보세요.</div>}
+      <div className="ret-board-foot">EXP: 출근 25 · 시추에이션 100 · 미니 퀴즈 50 · 퇴근 25 (하루 200) · 연속 출근 +50 · Review Quiz 10/20/50 · 내일 미리 쓰기 50 · 심부름 20</div>
+    </div>
+  );
+}
+
+// ── 진급 리포트 ──
+//   수습→사원 (Day 30) / 사원→대리 (Day 90) 때 생성. 없으면 화면 열 때 조건 맞는 것만 만들어 둔다.
+function _retPromoStats(email, fromDay, toDay) {
+  const u = _wbUser();
+  const done = _odCompletedDaySet(u);
+  const days = []; for (let d = fromDay; d <= toDay; d++) days.push(d);
+  const attended = days.filter(d => done.has(d)).length;
+  const absent = days.length - attended;
+  let sentences = 0, corrected = 0;
+  (u.scenariosCompleted || []).forEach(s => { if (s && s.day >= fromDay && s.day <= toDay) { sentences++; if (s.feedback && s.feedback.aiFb && s.feedback.aiFb.corrected) corrected++; } });
+  let ot = 0, pre = 0, rev = 0;
+  try {
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith("__OD_OT_" + email + "_")) { const d = Number(k.split("_").pop()); if (d >= fromDay && d <= toDay) { const v = _loadJSON(k) || {}; rev += ((v.review && v.review.attempts) || []).length; if (Object.keys(v.sentences || {}).length >= 3) ot++; } }
+      if (k.startsWith("__OD_PRE_" + email + "_")) { const d = Number(k.split("_").pop()); if (d >= fromDay && d <= toDay) { const v = _loadJSON(k) || {}; if (v.text) pre++; } }
+    });
+  } catch (e) {}
+  // 강한 영역: 태그 집계
+  const tagN = {};
+  try { SCENARIOS.forEach(s => { if (done.has(s.day) && s.day >= fromDay && s.day <= toDay) (s.tags || []).forEach(t => { tagN[t] = (tagN[t] || 0) + 1; }); }); } catch (e) {}
+  const topTags = Object.entries(tagN).sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => x[0]);
+  const words = days.filter(d => done.has(d)).length;
+  return { from: fromDay, to: toDay, fromDay, toDay, total: days.length, attended, absent, rate: days.length ? Math.round(100 * attended / days.length) : 0, sentences, corrected, ot, pre, rev, topTags, words };
+}
+const _RET_TAG_KO = { meeting: "회의", project: "프로젝트", email: "메일", schedule: "일정", urgent: "긴급", client: "클라이언트", negotiation: "협상", report: "보고", feedback: "피드백", team: "팀", remote: "리모트", leadership: "리더십" };
+function _retPromoReports(email) { return (_retLoad("PROMO", email, { list: [] }).list || []); }
+function _retEnsurePromoReports(email) {
+  const USER = (window.__SIM && window.__SIM.USER) || {};
+  const l = _retLoad("PROMO", email, { list: [] }); if (!Array.isArray(l.list)) l.list = [];
+  const has = (id) => l.list.some(r => r.id === id);
+  const mk = (id, title, from, to, rankLabel) => {
+    const st = _retPromoStats(email, from, to);
+    const mentorLine = st.rate >= 90 ? "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요."
+      : st.rate >= 70 ? "한두 번 비긴 했지만 돌아왔어요. 돌아오는 힘이 제일 중요한 능력이에요."
+      : "빈 날이 꽤 있었어요. 그래도 여기까지 왔다는 게 중요해요. 다음 단계는 한 주 단위로 목표를 잡아봐요.";
+    return { id, title, rankLabel, from, to, at: new Date().toISOString(), stats: st, mentorLine };
+  };
+  if ((USER.rankId === "fulltime" || USER.rankId === "senior") && !has("p30")) l.list.push(mk("p30", "수습 → 사원 진급 리포트", 1, 30, "사원"));
+  if (USER.rankId === "senior" && !has("p90")) l.list.push(mk("p90", "사원 → 대리 진급 리포트", 31, 90, "대리"));
+  _retSave("PROMO", email, l);
+  return l.list;
+}
+function RetPromoReportCard({ r, sample }) {
+  const s = r.stats; const { CHARACTERS, USER } = window.__SIM;
+  return (
+    <div className="ret-promo">
+      <div className="ret-promo-head">
+        <div><div className="ret-promo-eyebrow">PROMOTION REPORT{sample ? " · 샘플" : ""}</div><div className="ret-promo-title">{r.title}</div></div>
+        <div className="ret-promo-stamp">{r.rankLabel}</div>
+      </div>
+      <div className="ret-promo-grid">
+        <div><small>기간</small><b>Day {s.from} ~ {s.to}</b></div>
+        <div><small>출근</small><b>{s.attended}일</b></div>
+        <div><small>결근</small><b className={s.absent > 0 ? "neg" : ""}>{s.absent}일</b></div>
+        <div><small>출근율</small><b>{s.rate}%</b></div>
+        <div><small>모은 표현</small><b>{s.words}개</b></div>
+        <div><small>쓴 문장</small><b>{s.sentences}개</b></div>
+        <div><small>사수 첨삭</small><b>{s.corrected}건</b></div>
+        <div><small>야근·복습</small><b>{s.ot + s.pre + s.rev}회</b></div>
+      </div>
+      {s.topTags.length > 0 && <div className="ret-promo-tags">강한 영역 · {s.topTags.map(t => <span key={t}>{_RET_TAG_KO[t] || t}</span>)}</div>}
+      <div className="ret-promo-mentor"><b>{CHARACTERS.mentor.name} 사수</b> {r.mentorLine}</div>
+      <div className="ret-promo-foot">{USER.name} · {String(r.at).slice(0, 10)} 발급</div>
+    </div>
+  );
+}
+function RetGrowthReports() {
+  _useRetTick();
+  if (!_RET_ON()) return null;
+  const email = _retEmail();
+  const list = _retEnsurePromoReports(email);
+  const consults = (() => { try { return _wpNotes("consult"); } catch (e) { return []; } })();
+  const [openC, setOpenC] = React.useState(null);
+  const sample = list.length ? null : { id: "sample", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(),
+    stats: { from: 1, to: 30, total: 30, attended: 27, absent: 3, rate: 90, words: 27, sentences: 27, corrected: 24, ot: 6, pre: 9, rev: 11, topTags: ["meeting", "email", "project"] },
+    mentorLine: "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요." };
+  return (
+    <div className="ret-growth">
+      <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
+      {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+      {sample && <RetPromoReportCard r={sample} sample />}
+      {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
+      <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 커리어 리포트 <small>PERK SHOP · 사원증에서 받은 리포트</small></div>
+      {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 PERK SHOP 에서 1,000P 로 받아요.</div>}
+      {consults.map((c, i) => (
+        <div key={i} className="ret-consult">
+          <button className="ret-consult-head" onClick={() => setOpenC(openC === i ? null : i)}>
+            <span>{c.title || c.label || "리포트"}</span><small>{String(c.savedAt || c.at || "").slice(0, 10)}</small><i>{openC === i ? "▲" : "▼"}</i>
+          </button>
+          {openC === i && c.headline && (
+            <div className="ret-consult-body">
+              <div className="ret-consult-hl">{c.headline}</div>
+              {(c.answer || []).map((p, j) => <p key={j}>{p}</p>)}
+              {(c.steps || []).length > 0 && <ol>{c.steps.map((s, j) => <li key={j}>{s}</li>)}</ol>}
+              {c.oneLiner && <div className="ret-consult-one">{c.oneLiner}</div>}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ErrandsCard({ setActive, toast }) {
   const USER = (window.__SIM && window.__SIM.USER) || {};
   const email = USER.email || "";
@@ -9119,6 +9986,7 @@ function ErrandsCard({ setActive, toast }) {
     setDone(next);
     try { localStorage.setItem(K, JSON.stringify(next)); } catch (e) {}
     go(er);
+    try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
     const left = picked.filter(x => !next[x.id]).length;
     if (toast) toast(left === 0 ? "🎖️ 오늘 심부름 완료! 가벼운 것도 챙기는 게 프로예요" : "✅ 심부름 하나 완료!", 2600);
   };
@@ -10225,13 +11093,14 @@ function WordBookPage({ openScene }) {
   useEffect(() => { const h = () => setTick(t => t + 1); window.addEventListener("od-archive", h); return () => window.removeEventListener("od-archive", h); }, []);
   return (
     <div className="wb">
+      {_RET_ON() && <RetGrowthReports />}
       {/* ── 표지 ── */}
       <div className="wb-cover">
         <div className="wb-cover-l">
-          <div className="wb-cover-eyebrow">SALARY REVIEW PREP · SINCE {signupKo || "2026"}</div>
-          <h1 className="wb-cover-title"><em>{USER.name}</em>의 협상 카드</h1>
+          <div className="wb-cover-eyebrow">{_RET_ON() ? "GROWTH REPORT" : "SALARY REVIEW PREP"} · SINCE {signupKo || "2026"}</div>
+          <h1 className="wb-cover-title"><em>{USER.name}</em>의 {_RET_ON() ? "표현 카드" : "협상 카드"}</h1>
           <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
-          <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button>
+          {(!_RET_ON() || (Number(_retInv(_retEmail()).pdf) || 0) > 0) ? <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button> : <button className="wb-cover-btn" onClick={() => alert("PERK SHOP 에서 '내 단어 모음 PDF' (200P) 를 사면 열려요.")} style={{ opacity: .7 }}>🔒 PDF 소장 · PERK SHOP 200P</button>}
         </div>
         <div className="wb-cover-r">
           <div><b>{stats.total}</b><span>모은 표현</span></div>
@@ -10969,9 +11838,11 @@ function TestPage() {
   }
 
   if (phase === "idle") {
-    return (
+    const _retPreview = (() => { try { return _RET_ON() && sessionStorage.getItem("__OD_RET_PREVIEW") === "1"; } catch (e) { return false; } })();
+  return (
       <div>
-        <div className="desk-header">
+        {_retPreview && <div className="ret-preview-banner">🎟️ Preview Ticket 사용 중 · 슬쩍 먼저 풀어보는 거예요. 본 평가 때 같은 유형이 나오면 유리해요.</div>}
+      <div className="desk-header">
           <div>
             <div className="desk-eyebrow">EVALUATION · 분기 평가</div>
             <h1 className="desk-title"><em>롤플레이</em> 시험 응시</h1>
@@ -11204,16 +12075,27 @@ function TestPage() {
 // ============================================================
 function InboxPage({ openMemo }) {
   const { NOTICES, CHARACTERS, USER } = window.__SIM;
+  const [tab, setTab] = useState(() => { try { return sessionStorage.getItem("__OD_RET_INBOX_TAB") || "memo"; } catch (e) { return "memo"; } });
+  const pick = (t) => { setTab(t); try { sessionStorage.setItem("__OD_RET_INBOX_TAB", t); } catch (e) {} };
+  const ret = _RET_ON();
   return (
     <div>
       <div className="desk-header">
         <div>
-          <div className="desk-eyebrow">INTRANET · 사내 메모함</div>
-          <h1 className="desk-title"><em>1일1비</em> 사내 메모</h1>
+          <div className="desk-eyebrow">INTRANET · {ret ? "사내 게시판" : "사내 메모함"}</div>
+          <h1 className="desk-title"><em>1일1비</em> {ret ? "사내 게시판" : "사내 메모"}</h1>
         </div>
         <div className="desk-meta"><b>{NOTICES.filter(n => n.unread).length}건</b> 미확인</div>
       </div>
       <ApprovalLine doc="YB-MEMO" applicant={USER.name} status={`${NOTICES.length}건 수신`} />
+      {ret && (
+        <div className="ret-inbox-tabs">
+          <button className={"ret-inbox-tab" + (tab === "memo" ? " on" : "")} onClick={() => pick("memo")}>✉️ 메모</button>
+          <button className={"ret-inbox-tab" + (tab === "board" ? " on" : "")} onClick={() => pick("board")}>🏆 WEEKLY BIZ SCORE</button>
+        </div>
+      )}
+      {ret && tab === "board" && <RetWeeklyBoard />}
+      {(!ret || tab === "memo") && (<>
 
       <div className="inbox-list">
         {NOTICES.map(n => {
@@ -11232,6 +12114,7 @@ function InboxPage({ openMemo }) {
           );
         })}
       </div>
+      </>)}
     </div>
   );
 }
@@ -11245,7 +12128,7 @@ function InboxPage({ openMemo }) {
 //   적립은 기록에서 그때그때 계산(따로 저장 안 함). 사용 내역과 상담 결과는 notes(kind points / consult, day 0)에 남아 기기 간 복원되고 운영자도 본다.
 // ============================================================
 const WP_RULES = { promo: 500, day: 100, ot: 50, review: 10, reviewPerDay: 5, dayMax: 200, dayPerDate: 2 };   // 하루 최대 200P = 완주 100 + 야근 50 + 복기 5장 50
-function _wpOpenFor(u) { return !!u && (u.isFulltime || (u.realCurrentDay || u.currentDay || 1) >= 30); }
+function _wpOpenFor(u) { if (_RET_ON()) return !!u; return !!u && (u.isFulltime || (u.realCurrentDay || u.currentDay || 1) >= 30); }
 // 🎁 적립 순간 알림 (우상단, 모바일은 하단). 사원 + 개발 뷰일 때만.
 function _wpToast(amount, label) {
   try {
@@ -11269,6 +12152,16 @@ function _wpNotes(kind) { const u = _wbUser(); return ((u.savedNotes || {})["0"]
 function _wpEarned(USER) {
   const u = _wbUser(); const em = USER.email || "guest"; const rd = USER.realCurrentDay || USER.currentDay || 1;
   const items = [];
+  // ★ 리텐션 엔진 (2026-09-14): 복지포인트는 이벤트형(진급·목표·야근·설정)으로. 완주/복기 포인트는 EXP 로 옮겨갔다.
+  if (_RET_ON()) {
+    const l = _retWpLedger(em);
+    const byKey = {};
+    l.earn.forEach(e => { const k = e.key.split(":")[0]; byKey[k] = (byKey[k] || 0) + (Number(e.p) || 0); });
+    const lab = { promo: "진급", goal: "내 목표 달성", ot: "야근 컨텐츠", set: "알림·공지방 설정" };
+    Object.keys(byKey).forEach(k => items.push({ k, p: byKey[k], label: lab[k] || k }));
+    const spentHere = l.spend.reduce((n, e) => n + (Number(e.cost) || 0), 0);
+    return { items, total: items.reduce((n, x) => n + x.p, 0) - spentHere };
+  }
   if (rd >= 30 || USER.isFulltime) items.push({ k: "promo", p: WP_RULES.promo, label: "사원 승진 축하" });
   // ★ 2026-09-11: 밀린 Day 몰아치기 파밍 방지. 완주 포인트는 '실제 날짜' 하루에 2Day분까지만.
   //   (완주 시각은 __OD_TASKS_DAY_<n>_ts 에 남는다. 기록이 없는 예전 완주는 그대로 인정.)
@@ -11648,6 +12541,7 @@ function WelfarePointsSection() {
 
   if (!open) return (
     <div className="hr-section" style={{ marginTop: 16 }}>
+      {_RET_ON() && <RetGoalCard compact />}
       <div className="hr-section-head">🎁 복지포인트 {devHead}</div>
       <div className="hr-row"><span className="hr-row-label">🔒 사원이 되면 쌓이기 시작해요</span><span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day 30부터 출근·야근·복기마다 적립되고, 커리어·직무·영어 상담에 써요</span></div>
     </div>
@@ -11684,6 +12578,7 @@ function WelfarePointsSection() {
 
   return (
     <div className="hr-section" style={{ marginTop: 16 }}>
+      {_RET_ON() && <RetGoalCard compact />}
       <div className="hr-section-head">🎁 복지포인트 {devHead}</div>
       <div className="wp-balance">
         <div className="wp-balance-l"><small>지금 쓸 수 있는 포인트</small><b>{_wpFmt(balance)}</b><span>적립 {_wpFmt(earned.total)} · 사용 {_wpFmt(spent)}</span></div>
@@ -12085,6 +12980,7 @@ function MyPage({ setActive, setViewingDay }) {
           href={_KAKAO_NOTICE_ROOM}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => { try { if (window.__odRetEvent) window.__odRetEvent("room"); } catch (e) {} }}
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
@@ -16676,6 +17572,7 @@ function KakaoQuickSet({ email, compact }) {
     setBusy(true); setMsg("");
     try {
       const r = await window.OD.setKakaoNotify(email, phone.trim(), Number(hour));
+      try { if (r && r.ok && window.__odRetEvent) window.__odRetEvent("kakao"); } catch (e) {}
       setBusy(false);
       if (!r.ok) {
         const e = String(r.error || "");
@@ -18389,6 +19286,7 @@ function App() {
         {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
         {active === "test" && <TestPage />}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
+        {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
       </main>
       <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />

@@ -47,6 +47,7 @@ const PFID          = Deno.env.get("SOLAPI_PFID") || "";
 const TEMPLATE_ID   = Deno.env.get("SOLAPI_TEMPLATE_ID") || "";
 const FROM          = Deno.env.get("SOLAPI_FROM") || "";
 const STYLE         = (Deno.env.get("SOLAPI_TEMPLATE_STYLE") || "safe").toLowerCase();
+const TEMPLATE_ID_ABSENT = Deno.env.get("SOLAPI_TEMPLATE_ID_ABSENT") || "";   // 결근 방지 알림 (별도 템플릿, 검수 후 설정)
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
@@ -114,11 +115,11 @@ async function solapiAuth(): Promise<string> {
   return `HMAC-SHA256 apiKey=${API_KEY}, date=${date}, salt=${salt}, signature=${hex}`;
 }
 
-async function sendAlimtalk(to: string, variables: Record<string, string>) {
+async function sendAlimtalk(to: string, variables: Record<string, string>, templateId?: string) {
   const msg: any = {
     to,
     type: "ATA",
-    kakaoOptions: { pfId: PFID, templateId: TEMPLATE_ID, variables, disableSms: !FROM },
+    kakaoOptions: { pfId: PFID, templateId: templateId || TEMPLATE_ID, variables, disableSms: !FROM },
   };
   if (FROM) msg.from = FROM;
   const res = await fetch("https://api.solapi.com/messages/v4/send-many/detail", {
@@ -144,6 +145,53 @@ Deno.serve(async (req) => {
 
     if (!dry && (!API_KEY || !API_SECRET || !PFID || !TEMPLATE_ID)) {
       return json({ ok: false, error: "SOLAPI_* secrets missing" }, 500);
+    }
+    // ★ 결근 방지 모드 (2026-09-14): ?mode=absent  → 그 시각(kakao_absent_hour)에 알림을 신청했고, 오늘 아직 출근 도장이 없는 회원에게만.
+    //   별도 템플릿(SOLAPI_TEMPLATE_ID_ABSENT), 별도 로그(kakao_absent_log, 하루 1회). 크론은 같은 함수에 ?mode=absent 로 하나 더.
+    if ((url.searchParams.get("mode") || "daily") === "absent") {
+      if (!dry && !TEMPLATE_ID_ABSENT) return json({ ok: false, error: "SOLAPI_TEMPLATE_ID_ABSENT missing" }, 500);
+      let qa = sb.from("users")
+        .select("email, name, phone, signup_date, last_active, day_in_company, kakao_absent_hour, membership_ends_at, withdrawn_at, tf_track, tf_done")
+        .not("phone", "is", null).is("withdrawn_at", null);
+      qa = onlyEmail ? qa.eq("email", onlyEmail) : qa.eq("kakao_absent_hour", hour);
+      const { data: ausers, error: aerr } = await qa;
+      if (aerr) throw aerr;
+      const aactive = (ausers || []).filter(u => !u.membership_ends_at || new Date(u.membership_ends_at).getTime() > now.getTime());
+      if (!aactive.length) return json({ ok: true, mode: "absent", hour, sent: 0, note: "no targets" });
+      const aemails = aactive.map(u => u.email);
+      const kstStart = new Date(Date.parse(today + "T00:00:00+09:00")).toISOString();
+      const [{ data: tp }, { data: alog }, { data: aj }, { data: at }] = await Promise.all([
+        sb.from("task_progress").select("email, tasks, updated_at").in("email", aemails).gte("updated_at", kstStart),
+        sb.from("kakao_absent_log").select("email").in("email", aemails).eq("sent_date", today),
+        sb.from("journals").select("email, day").in("email", aemails),
+        sb.from("task_progress").select("email, day, tasks").in("email", aemails),
+      ]);
+      const checkedIn = new Set((tp || []).filter((t: any) => t.tasks && t.tasks.checkin === true).map((t: any) => t.email));
+      const asent = new Set((alog || []).map((l: any) => l.email));
+      const adone = new Map<string, Set<number>>();
+      const aadd = (e: string, d: number) => { if (!adone.has(e)) adone.set(e, new Set()); adone.get(e)!.add(d); };
+      (aj || []).forEach((j: any) => aadd(j.email, Number(j.day)));
+      (at || []).forEach((t: any) => { const n = Object.entries(t.tasks || {}).filter(([k, v]) => v && !String(k).startsWith('_')).length; if (n >= 4) aadd(t.email, Number(t.day)); });
+      const aresults: any[] = [];
+      for (const u of aactive) {
+        if (checkedIn.has(u.email)) { aresults.push({ email: u.email, skipped: "already checked in today" }); continue; }
+        if (asent.has(u.email) && !force) { aresults.push({ email: u.email, skipped: "already sent today" }); continue; }
+        const g = computeGate(u, adone.get(u.email) || new Set(), now);
+        const s = scenarioFor(g.gated, u.signup_date, u.tf_track, u.tf_done);
+        if (!s) { aresults.push({ email: u.email, day: g.gated, skipped: "no scenario" }); continue; }
+        const variables: Record<string, string> = { "#{이름}": u.name || "사원", "#{표현}": s.word, "#{day}": String(g.gated), "#{연속}": String(g.streak) };
+        const row = { email: u.email, day: g.gated, word: s.word, variables, streak: g.streak };
+        if (dry) { aresults.push({ ...row, status: "dry" }); continue; }
+        try {
+          const r = await sendAlimtalk(u.phone, variables, TEMPLATE_ID_ABSENT);
+          await sb.from("kakao_absent_log").upsert({ email: u.email, sent_date: today, day: g.gated, word: s.word, status: "sent", detail: { groupId: r?.groupInfo?._id || null } }, { onConflict: "email,sent_date" });
+          aresults.push({ ...row, status: "sent" });
+        } catch (e) {
+          await sb.from("kakao_absent_log").upsert({ email: u.email, sent_date: today, day: g.gated, word: s.word, status: "failed", detail: { error: String(e).slice(0, 300) } }, { onConflict: "email,sent_date" });
+          aresults.push({ ...row, status: "failed", error: String(e).slice(0, 200) });
+        }
+      }
+      return json({ ok: true, mode: "absent", hour, today, dry, sent: aresults.filter(r => r.status === "sent").length, results: aresults });
     }
 
     // 1. 대상 회원
