@@ -10472,7 +10472,14 @@ function RetPeekBox({ day, exclude }) {
   return (
     <div className="ret-peek">
       <div className="ret-peek-head"><span>👀 동기 문장 엿보기 <small style={{ fontWeight: 700, color: "var(--ink-mute)" }}>같은 Day 다른 동기 3명 · 익명</small></span>
-        {!got && (have > 0 ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button> : <span className="ret-shop-lock">복지몰 SHOP 100P</span>)}
+        {!got && (have > 0
+          ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button>
+          : <button className="btn btn-primary btn-mini" disabled={busy || _retWpBalance(email) < 100} title={_retWpBalance(email) < 100 ? "복지포인트가 모자라요" : ""} onClick={() => {
+              const bal = _retWpBalance(email);
+              if (!confirm("👀 동기 문장 엿보기 · 100P\n\n지금 " + bal.toLocaleString() + "P → 보면 " + (bal - 100).toLocaleString() + "P 남아요.\n같은 Day 다른 동기 3명의 문장이 익명으로 열려요.\n\n볼까요?")) return;
+              const r = _retBuy(email, "peek"); if (!r.ok) { setErr(r.why); return; }
+              use();
+            }}>{busy ? "…" : (_retWpBalance(email) < 100 ? "🎁 100P (모자람)" : "🎁 100P 로 바로 보기")}</button>)}
       </div>
       {err && <div className="ret-deb-note" style={{ marginTop: 6 }}>{err}</div>}
       {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>{x.masked || ("동기 " + (i + 1))}{x.rank ? " · " + x.rank : ""}</small>"{x.text}"</div>)}
