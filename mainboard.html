@@ -7147,7 +7147,7 @@ function _revqDoneToday(email) {
 function _revqMarkToday(email) {
   try { localStorage.setItem(_REVQ_DAYKEY(email), new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" })); } catch (e) {}
 }
-// ── 오늘 출근한 동료 스트립 (실제 DB 기준, 이름은 성 한 글자만 마스킹해서 내려옴) ──
+// ── 이번 주 출근한 동료 스트립 (실제 DB 기준, 이름은 성 한 글자만 마스킹해서 내려옴) ──
 //    RPC(get_office_today)가 없거나 인원이 2명 미만이면 아무것도 안 그린다.
 function OfficeTodayStrip() {
   const [info, setInfo] = useState(null);
@@ -7203,7 +7203,7 @@ function OfficeTodayStrip() {
         )}
       </div>
       <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.5, minWidth: 0 }}>
-        오늘 <b style={{ color: "var(--orange)" }}>{info.count}명</b>이 같이 출근했어요.
+        이번 주에 <b style={{ color: "var(--orange)" }}>{info.count}명</b>이 출근했어요.
       </div>
     </div>
   );
