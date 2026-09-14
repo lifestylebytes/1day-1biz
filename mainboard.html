@@ -7155,14 +7155,6 @@ function OfficeTodayStrip() {
     let alive = true;
     (async () => {
       try {
-        // ★ 아직 내부 공개 단계: 운영자/Dev 계정 또는 ?office=1 일 때만 보인다.
-        let _internal = false;
-        try {
-          const _u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
-          _internal = !!(_u.isOperator || _u.isDevMode || _u.is_operator || _u.is_dev_mode);
-        } catch (e2) {}
-        try { if (new URLSearchParams(location.search).get("office") === "1") _internal = true; } catch (e2) {}
-        if (!_internal) return;
         if (!window.OD || !window.OD.getOfficeToday) return;
         const r = await window.OD.getOfficeToday(10);
         if (!alive || !r || !r.ok || !r.result) return;
