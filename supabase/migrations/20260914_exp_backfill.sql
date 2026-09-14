@@ -23,56 +23,64 @@ as $$
 declare
   n_task int := 0; n_streak int := 0;
 begin
-  -- 1) 일정 4개
+  -- v2: 그 Day 를 '한 시각' = 시추에이션 제출 시각 > 일지 저장 시각 > 일정 행 갱신 시각 순으로 고른다.
+  --     (일정 행 갱신 시각은 복기·'이미 알아요' 저장으로도 바뀌어서, 옛 Day 가 이번 주에 한 것처럼 잡히는 걸 막는다)
+  --     이미 들어간 항목도 더 이른(정확한) 시각으로 바로잡는다.
   with src as (
-    select lower(tp.email) as email, tp.day, tp.tasks, tp.updated_at
+    select lower(tp.email) as email, tp.day, tp.tasks,
+           coalesce(s.submitted_at, j.saved_at, tp.updated_at) as day_at
     from task_progress tp
     join users u on lower(u.email) = lower(tp.email)
+    left join submissions s on lower(s.email) = lower(tp.email) and s.day = tp.day
+    left join journals j on lower(j.email) = lower(tp.email) and j.day = tp.day
     where tp.updated_at >= now() - (p_days || ' days')::interval
       and coalesce(u.is_tester, false) = false
   ),
   rows_ as (
-    select email, day, 'task:' || day || ':checkin'  as key, 25  as exp, 'task' as kind, updated_at from src where coalesce(tasks->>'checkin','')  = 'true'
+    select email, day, 'task:' || day || ':checkin'  as key, 25  as exp, 'task' as kind, day_at from src where coalesce(tasks->>'checkin','')  = 'true'
     union all
-    select email, day, 'task:' || day || ':scenario' as key, 100 as exp, 'task', updated_at from src where coalesce(tasks->>'scenario','') = 'true'
+    select email, day, 'task:' || day || ':scenario' as key, 100 as exp, 'task', day_at from src where coalesce(tasks->>'scenario','') = 'true'
     union all
-    select email, day, 'task:' || day || ':wrapup'   as key, 25  as exp, 'task', updated_at from src where coalesce(tasks->>'wrapup','')   = 'true'
+    select email, day, 'task:' || day || ':wrapup'   as key, 25  as exp, 'task', day_at from src where coalesce(tasks->>'wrapup','')   = 'true'
     union all
-    select email, day, 'task:' || day || ':quiz'     as key, 50  as exp, 'task', updated_at from src
+    select email, day, 'task:' || day || ':quiz'     as key, 50  as exp, 'task', day_at from src
      where coalesce(tasks->>'mission','') = 'true' or coalesce(tasks->>'afternoon','') = 'true'
         or coalesce(tasks->>'lunch','') = 'true' or coalesce(tasks->>'recap','') = 'true'
   ),
   ins as (
     insert into exp_events (email, key, exp, kind, day, at)
-    select email, key, exp, kind, day, updated_at from rows_
-    on conflict (email, key) do nothing
+    select email, key, exp, kind, day, day_at from rows_
+    on conflict (email, key) do update set at = least(exp_events.at, excluded.at)
     returning 1
   )
   select count(*) into n_task from ins;
 
-  -- 2) 연속 출근: 그 Day 와 전날 Day 둘 다 완주(체크 4개 이상)
+  -- 연속 출근: 그 Day 와 전날 Day 둘 다 완주(체크 4개 이상)
   with done as (
-    select lower(tp.email) as email, tp.day, tp.updated_at
+    select lower(tp.email) as email, tp.day,
+           coalesce(s.submitted_at, j.saved_at, tp.updated_at) as day_at
     from task_progress tp
     join users u on lower(u.email) = lower(tp.email)
+    left join submissions s on lower(s.email) = lower(tp.email) and s.day = tp.day
+    left join journals j on lower(j.email) = lower(tp.email) and j.day = tp.day
     where coalesce(u.is_tester, false) = false
       and (select count(*) from jsonb_each_text(tp.tasks) t where t.value = 'true' and left(t.key, 1) <> '_') >= 4
   ),
   pairs as (
-    select d.email, d.day, d.updated_at
+    select d.email, d.day, d.day_at
     from done d
     join done p on p.email = d.email and p.day = d.day - 1
-    where d.updated_at >= now() - (p_days || ' days')::interval
+    where d.day_at >= now() - (p_days || ' days')::interval
   ),
   ins2 as (
     insert into exp_events (email, key, exp, kind, day, at)
-    select email, 'streak:' || day, 50, 'streak', day, updated_at from pairs
-    on conflict (email, key) do nothing
+    select email, 'streak:' || day, 50, 'streak', day, day_at from pairs
+    on conflict (email, key) do update set at = least(exp_events.at, excluded.at)
     returning 1
   )
   select count(*) into n_streak from ins2;
 
-  return jsonb_build_object('inserted_task', n_task, 'inserted_streak', n_streak,
+  return jsonb_build_object('touched_task', n_task, 'touched_streak', n_streak,
     'people_on_board', (select count(distinct email) from exp_events where at >= now() - interval '7 days'));
 end;
 $$;
