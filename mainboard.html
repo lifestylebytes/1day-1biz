@@ -975,6 +975,19 @@ body::before {
 .scene-reply-bubble .scene-input { background-color: #fff; }
 .scene-reply-foot { margin-top: 8px; font-size: 11px; color: var(--ink-mute); font-weight: 600; }
 .scene-reply-sent { font-size: 15.5px; font-weight: 600; line-height: 1.55; word-break: keep-all; }
+/* 작성 중: 말풍선 바로 아래 입력창 + 전송 (카톡식). 안내는 아래 노란 메모로 */
+.scene-composer { border: 1.5px solid var(--line); border-radius: 12px 0 12px 12px; background: #fff; overflow: hidden; transition: border-color .15s; }
+.scene-composer:focus-within { border-color: var(--orange); }
+.scene-composer-input { border: none !important; background: #fff !important; background-image: none !important; min-height: 74px; padding: 14px 16px; font-size: 15px; line-height: 1.6; }
+.scene-composer-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border-top: 1px solid var(--line-soft); background: var(--cream); }
+.scene-composer-to { flex: 1; font-size: 11.5px; color: var(--ink-mute); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scene-send { padding: 8px 16px; font-size: 13px; }
+.scene-hint-note { margin-top: 14px; background: #FFF3C4; border: 1px solid #EBD27A; border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; }
+.scene-hint-row { display: grid; grid-template-columns: 56px 1fr; gap: 8px; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.scene-hint-k { font-size: 10.5px; font-weight: 900; letter-spacing: .06em; color: #8C6510; padding-top: 3px; }
+.scene-hint-ko { font-style: italic; color: var(--ink-soft); }
+.scene-hint-word { background: var(--highlight); padding: 1px 6px; color: var(--ink); }
+.scene-hint-actions { display: flex; justify-content: flex-end; }
 /* ===== 리텐션 엔진 (2026-09-14, 개발 뷰): EXP · 복지P · PERK SHOP · 디버프 · 내 목표 · 순위판 · 진급 리포트 ===== */
 #ret-toast-host { position: fixed; top: 16px; right: 16px; z-index: 9400; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .ret-toast { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.45); transform: translateX(24px); opacity: 0; transition: transform .25s, opacity .25s; min-width: 200px; }
@@ -2301,6 +2314,8 @@ body.od-modal-open { overflow: hidden !important; }
   .scene-reply-row { gap: 10px; }
   .scene-reply-col { max-width: 100%; }
   .scene-reply-bubble { padding: 12px 12px; }
+  .scene-hint-row { grid-template-columns: 48px 1fr; font-size: 12.5px; }
+  .scene-composer-input { min-height: 64px; font-size: 14px; padding: 12px; }
 
   /* 포스트잇, 더 작게 */
   .postit { padding: 14px 14px 18px; font-size: 12px; }
@@ -14069,46 +14084,41 @@ function SceneModal({ scenario, onClose }) {
                   </div>
                 </div>
 
-                {/* 내 답장 */}
+                {/* 내 답장: 말풍선 바로 아래 입력창 + 전송. 힌트·뜻·표현은 아래 노란 메모로 분리 (2026-09-14 디자인 정리) */}
                 <div className="scene-reply-row">
                   <div className="scene-reply-col">
-                    <div className="scene-reply-name">
-                      ↩ <b>{toShort}</b>에게 답장{!sameAsSpeaker && <span className="scene-ch">{ch.icon} {ch.label}</span>}
-                    </div>
-                    <div className={"scene-reply-bubble" + (composing ? "" : " sent")}>
-                      {composing ? (
-                        <>
-                          {scenario.task && scenario.task.promptKo && (
-                            <div className="scene-reply-hint">{scenario.task.promptKo}</div>
-                          )}
-                          {scenario.task && scenario.task.koSentence && (
-                            <div className="scene-reply-ko">이 뜻으로 → "{scenario.task.koSentence}"</div>
-                          )}
-                          <div className="scene-reply-word"><b>{scenario.word}</b> 넣어서 영어 한 문장</div>
-                          <textarea
-                            className="scene-input"
-                            placeholder={`${scenario.word}을(를) 넣어서 ${toShort}에게 답하기…`}
-                            value={draft}
-                            onChange={e => setDraft(e.target.value)}
-                          />
-                          <div className="scene-actions">
-                            <button className="btn btn-primary" onClick={handleSubmit} disabled={!draft.trim()}>
-                              {editing ? "다시 보내기 → 새 피드백" : "답장 보내기 ➤"}
-                            </button>
-                            <button className="btn btn-ghost" onClick={() => setDraft(scenario.sampleAnswer)}>예문 보기</button>
-                            {editing && (
-                              <button className="btn btn-ghost" onClick={() => { setEditing(false); setDraft(saved?.sentence || draft); }}>취소</button>
-                            )}
-                          </div>
-                          <div className="scene-reply-foot">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</div>
-                        </>
-                      ) : (
-                        <div className="scene-reply-sent">"{draft}"</div>
-                      )}
-                    </div>
+                    {composing ? (
+                      <div className="scene-composer">
+                        <textarea
+                          className="scene-input scene-composer-input"
+                          placeholder={"영어 한 문장으로 " + toShort + "에게 답하기"}
+                          value={draft}
+                          onChange={e => setDraft(e.target.value)}
+                          onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && draft.trim()) handleSubmit(); }}
+                        />
+                        <div className="scene-composer-bar">
+                          <span className="scene-composer-to">↩ {toShort}{!sameAsSpeaker ? " · " + ch.icon + " " + ch.label : ""}</span>
+                          {editing && <button className="btn btn-ghost btn-mini" onClick={() => { setEditing(false); setDraft(saved?.sentence || draft); }}>취소</button>}
+                          <button className="btn btn-primary scene-send" onClick={handleSubmit} disabled={!draft.trim()}>{editing ? "다시 전송" : "전송"} ➤</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="scene-reply-name">↩ <b>{toShort}</b>에게 보냄</div>
+                        <div className="scene-reply-bubble sent"><div className="scene-reply-sent">"{draft}"</div></div>
+                      </>
+                    )}
                   </div>
                   <div className="scene-avatar scene-avatar-me">{myInitial}</div>
                 </div>
+                {composing && (
+                  <div className="scene-hint-note">
+                    <div className="scene-hint-row"><span className="scene-hint-k">힌트</span><span>{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</span></div>
+                    {scenario.task && scenario.task.koSentence && <div className="scene-hint-row"><span className="scene-hint-k">뜻</span><span className="scene-hint-ko">"{scenario.task.koSentence}"</span></div>}
+                    <div className="scene-hint-row"><span className="scene-hint-k">표현</span><span><b className="scene-hint-word">{scenario.word}</b> 을(를) 꼭 넣어서 · 보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span></div>
+                    <div className="scene-hint-actions"><button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button></div>
+                  </div>
+                )}
                 {!composing && _RET_ON() && <RetPeekBox day={scenario.day} />}
               </div>
             );
