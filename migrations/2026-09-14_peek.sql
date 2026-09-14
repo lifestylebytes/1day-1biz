@@ -1,13 +1,15 @@
--- 동기 문장 엿보기 (PERK, 2026-09-14): 같은 Day 다른 회원 문장 3개를 익명으로.
--- 이름·이메일은 안 나간다. 테스터 제외, 너무 짧은 문장 제외, 무작위.
+-- 동기 문장 엿보기 (PERK, 2026-09-14): 같은 Day 다른 회원 문장을 익명으로.
+-- v2: 성 한 글자 + ○○ (운○○) 로 표시, 예문(모범 답안)과 같은 문장은 앱에서 거른다 → 넉넉히 6개 뽑아 보낸다.
+-- 이름 전체·이메일은 안 나간다. 테스터 제외, 너무 짧은 문장 제외, 무작위.
 create or replace function peek_day_sentences(p_email text, p_day int, p_n int default 3)
 returns jsonb
 language sql security definer stable set search_path = public
 as $$
-  select coalesce(jsonb_agg(jsonb_build_object('text', answer_text, 'rank', rank_label)), '[]'::jsonb)
+  select coalesce(jsonb_agg(jsonb_build_object('text', answer_text, 'rank', rank_label, 'masked', masked)), '[]'::jsonb)
   from (
     select s.answer_text,
-           case when coalesce(u.level->>'id', 'probation') = 'senior' then '대리' when coalesce(u.level->>'id', 'probation') = 'fulltime' then '사원' else '수습' end as rank_label
+           case when coalesce(u.level->>'id', 'probation') = 'senior' then '대리' when coalesce(u.level->>'id', 'probation') = 'fulltime' then '사원' else '수습' end as rank_label,
+           case when coalesce(u.name, '') = '' then '동기' else left(u.name, 1) || '○○' end as masked
     from submissions s
     join users u on lower(u.email) = lower(s.email)
     where s.day = p_day

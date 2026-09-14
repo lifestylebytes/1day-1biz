@@ -982,12 +982,17 @@ body::before {
 .scene-composer-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border-top: 1px solid var(--line-soft); background: var(--cream); }
 .scene-composer-to { flex: 1; font-size: 11.5px; color: var(--ink-mute); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scene-send { padding: 8px 16px; font-size: 13px; }
-.scene-hint-note { margin-top: 14px; background: #FFF3C4; border: 1px solid #EBD27A; border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; }
-.scene-hint-row { display: grid; grid-template-columns: 56px 1fr; gap: 8px; font-size: 13px; line-height: 1.6; color: var(--ink); }
-.scene-hint-k { font-size: 10.5px; font-weight: 900; letter-spacing: .06em; color: #8C6510; padding-top: 3px; }
-.scene-hint-ko { font-style: italic; color: var(--ink-soft); }
-.scene-hint-word { background: var(--highlight); padding: 1px 6px; color: var(--ink); }
-.scene-hint-actions { display: flex; justify-content: flex-end; }
+/* 사수 메모 (2026-09-14): 노란 박스 → 인트라넷 메모지. 지시문 한 줄이 제목, 한국어 뜻은 인용, 표현은 칩 */
+.scene-hint-note { margin-top: 14px; background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--orange); border-radius: 10px; padding: 12px 16px 12px 16px; display: grid; gap: 8px; }
+.scene-hint-eyebrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 10px; font-weight: 800; letter-spacing: .18em; color: var(--ink-mute); text-transform: uppercase; }
+.scene-hint-chip { font-size: 11px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 5px; }
+.scene-hint-main { font-size: 14.5px; font-weight: 800; color: var(--ink); line-height: 1.5; }
+.scene-hint-quote { font-size: 13px; color: var(--ink-soft); line-height: 1.6; padding: 6px 10px; border-left: 2px solid var(--line); background: var(--paper-warm); border-radius: 0 6px 6px 0; }
+.scene-hint-quote::before { content: "“"; color: var(--orange); font-weight: 900; margin-right: 2px; }
+.scene-hint-quote::after { content: "”"; color: var(--orange); font-weight: 900; margin-left: 2px; }
+.scene-hint-word { background: var(--highlight); padding: 1px 7px; border-radius: 4px; color: var(--ink); font-size: 12.5px; }
+.scene-hint-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.scene-hint-sub { font-size: 11.5px; color: var(--ink-mute); }
 /* ===== 리텐션 엔진 (2026-09-14, 개발 뷰): EXP · 복지P · PERK SHOP · 디버프 · 내 목표 · 순위판 · 진급 리포트 ===== */
 #ret-toast-host { position: fixed; top: 16px; right: 16px; z-index: 9400; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .ret-toast { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.45); transform: translateX(24px); opacity: 0; transition: transform .25s, opacity .25s; min-width: 200px; }
@@ -1124,7 +1129,7 @@ span.ret-hud-item { cursor: default; }
 .ret-grade.big { font-size: 26px; padding: 4px 14px; border-radius: 10px; }
 .ret-nego-progress { display: flex; gap: 6px; margin: 4px 0 12px; } .ret-nego-progress span { flex: 1; height: 5px; border-radius: 999px; background: var(--line-soft); } .ret-nego-progress span.on { background: var(--orange); }
 .ret-nego-lines { margin-top: 12px; display: grid; gap: 6px; font-size: 13px; color: var(--ink); } .ret-nego-lines span { display: inline-block; min-width: 46px; font-size: 10.5px; font-weight: 900; color: var(--orange); letter-spacing: .06em; }
-.ret-peek { margin-top: 12px; border: 1px dashed var(--orange); border-radius: 10px; padding: 12px 14px; background: rgba(216,90,42,0.05); }
+.ret-peek { margin-top: 10px; border: 1px solid var(--line); border-left: 3px solid var(--ink-mute); border-radius: 10px; padding: 12px 16px; background: var(--paper); }
 .ret-peek-head { font-size: 12.5px; font-weight: 900; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ret-peek-row { font-size: 13.5px; color: var(--ink); line-height: 1.55; padding: 6px 0; border-top: 1px dashed var(--line-soft); } .ret-peek-row small { display: block; font-size: 10.5px; color: var(--ink-mute); font-weight: 700; }
 
@@ -2335,7 +2340,7 @@ body.od-modal-open { overflow: hidden !important; }
   .scene-reply-row { gap: 10px; }
   .scene-reply-col { max-width: 100%; }
   .scene-reply-bubble { padding: 12px 12px; }
-  .scene-hint-row { grid-template-columns: 48px 1fr; font-size: 12.5px; }
+  .scene-hint-main { font-size: 13.5px; }
   .scene-composer-input { min-height: 64px; font-size: 14px; padding: 12px; }
 
   /* 포스트잇, 더 작게 */
@@ -9343,7 +9348,7 @@ const RET_PERKS = [
   { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "senior",    desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 사원증에서 고르고, 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "fulltime", desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.", stack: true },
   { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 100,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요.", note: "⚠️ 자정~새벽 3시 사이에 접속하면 물어보지 않고 자동으로 써져요. 그 뒤엔 팝업에서 직접 써요.", stack: true },
-  { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 시추에이션 보내고 나면 열려요.", stack: true },
+  { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 쓰다 막힐 때 시추에이션 시트에서 바로 열어요.", stack: true },
 ];
 const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
 const _retRankOk = (need) => { const u = (window.__SIM && window.__SIM.USER) || {}; return (_RET_RANK_N[u.rankId] || 0) >= (_RET_RANK_N[need] || 0); };
@@ -10364,7 +10369,7 @@ function RetNegotiationPage() {
   );
 }
 // ── 동기 문장 엿보기 (PERK 100P, Day 당 1장) ──
-function RetPeekBox({ day }) {
+function RetPeekBox({ day, exclude }) {
   _useRetTick();
   const email = _retEmail();
   const store = _retLoad("PEEK", email, {});
@@ -10375,8 +10380,11 @@ function RetPeekBox({ day }) {
     if (!(window.OD && window.OD.enabled && window.OD.peekDaySentences)) { setErr("서버 기능이 아직 안 켜졌어요 (peek SQL)"); return; }
     setBusy(true); setErr("");
     try {
-      const r = await window.OD.peekDaySentences(email, day, 3);
-      const list = (r && r.ok && Array.isArray(r.result)) ? r.result : [];
+      const r = await window.OD.peekDaySentences(email, day, 8);
+      const norm = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const ex = norm(exclude);
+      const seen = new Set();
+      const list = ((r && r.ok && Array.isArray(r.result)) ? r.result : []).filter(x => { const n = norm(x.text); if (!n || (ex && n === ex) || seen.has(n)) return false; seen.add(n); return true; }).slice(0, 3);   // 예문과 같은 문장 · 중복 제외
       if (!list.length) { setErr("아직 이 Day 를 쓴 동기가 없어요. 티켓은 안 썼어요."); setBusy(false); return; }
       if (!_retInvUse(email, "peek")) { setErr("티켓이 없어요"); setBusy(false); return; }
       const st = _retLoad("PEEK", email, {}); st[String(day)] = { list, at: new Date().toISOString() }; _retSave("PEEK", email, st); _retPing();
@@ -10389,7 +10397,7 @@ function RetPeekBox({ day }) {
         {!got && (have > 0 ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button> : <span className="ret-shop-lock">복지몰 SHOP 100P</span>)}
       </div>
       {err && <div className="ret-deb-note" style={{ marginTop: 6 }}>{err}</div>}
-      {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>동기 {i + 1} · {x.rank || ""}</small>"{x.text}"</div>)}
+      {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>{x.masked || ("동기 " + (i + 1))}{x.rank ? " · " + x.rank : ""}</small>"{x.text}"</div>)}
     </div>
   );
 }
@@ -14383,10 +14391,11 @@ function SceneModal({ scenario, onClose }) {
                 </div>
                 {composing && (
                   <div className="scene-hint-note">
-                    <div className="scene-hint-row"><span className="scene-hint-k">힌트</span><span>{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</span></div>
-                    {scenario.task && scenario.task.koSentence && <div className="scene-hint-row"><span className="scene-hint-k">뜻</span><span className="scene-hint-ko">"{scenario.task.koSentence}"</span></div>}
-                    <div className="scene-hint-row"><span className="scene-hint-k">표현</span><span><b className="scene-hint-word">{scenario.word}</b> 을(를) 꼭 넣어서 · 보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span></div>
+                    <div className="scene-hint-eyebrow"><span>MEMO · {CHARACTERS.mentor.name} 사수</span><span className="scene-hint-chip"><b className="scene-hint-word">{scenario.word}</b> 꼭 넣기</span></div>
+                    <div className="scene-hint-main">{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</div>
+                    {scenario.task && scenario.task.koSentence && <div className="scene-hint-quote">{scenario.task.koSentence}</div>}
                     <div className="scene-hint-actions">
+                      <span className="scene-hint-sub">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span>
                       {_RET_ON() ? (() => {
                         const em = _retEmail(); const usedKey = "sample:" + scenario.day;
                         const used = _retWpLedger(em).spend.some(x => x.item === usedKey);
@@ -14401,7 +14410,7 @@ function SceneModal({ scenario, onClose }) {
                     </div>
                   </div>
                 )}
-                {!composing && _RET_ON() && <RetPeekBox day={scenario.day} />}
+                {_RET_ON() && <RetPeekBox day={scenario.day} exclude={scenario.sampleAnswer} />}
               </div>
             );
           })()}
