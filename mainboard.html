@@ -396,6 +396,22 @@ body::before {
 .lib-detail-grid p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink); }
 .lib-detail-grid .lib-ko { color: var(--ink-mute); font-size: 12px; margin-top: 2px; }
 .lib-detail-grid .lib-mine { font-style: italic; color: var(--ink-soft); }
+.lib-review { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.lib-review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+.lib-review-grid .lib-review-wide { grid-column: 1 / -1; }
+.lib-review-grid label { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; color: var(--orange); margin-bottom: 4px; }
+.lib-review-grid label small { font-weight: 600; letter-spacing: 0; color: var(--ink-mute); }
+.lib-review-grid p { margin: 0 0 3px; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.lib-review-grid .lib-mine { font-style: italic; color: var(--ink-soft); }
+.lib-review-grid .lib-fix { display: block; font-style: normal; color: #4A7C59; font-size: 12.5px; }
+.lib-review-grid .lib-empty { color: var(--ink-mute); font-size: 12px; }
+.lib-review-do { margin-top: 12px; background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.lib-review-do > label { display: block; font-size: 11.5px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.lib-review-input { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13.5px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); resize: vertical; }
+.lib-review-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.lib-review-q { font-size: 11.5px; color: var(--ink-mute); margin-right: auto; }
+.lib-review-done { font-size: 12.5px; color: #2D6E3A; font-weight: 700; } .lib-review-done a { color: var(--orange); text-decoration: underline; cursor: pointer; margin-left: 6px; font-weight: 600; }
+@media (max-width: 880px) { .lib-review-grid { grid-template-columns: 1fr; } }
 .lib-detail-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 11.5px; color: var(--ink-mute); }
 .lib-detail-actions .btn { padding: 7px 14px; font-size: 12.5px; }
 @media (max-width: 880px) {
@@ -11420,6 +11436,58 @@ function WbReviewCard({ card, mode, onGrade, mentorName }) {
   );
 }
 
+// ★ 업무 노트 안에서 바로 복습 (2026-09-14): 그날 내 문장·교정·노트·일지를 펼쳐 보고, 한 줄 다시 써서 복기까지 여기서.
+//   복기 기록은 복습 덱과 같은 저장소(_wbSaveRev + task_progress._rev)라 표현 카드 강도에도 그대로 반영된다.
+function LibReviewInline({ s, myAnswer, savedNotes, myJournal }) {
+  const { USER } = window.__SIM;
+  const em = USER.email || "guest";
+  const [tick, setTick] = React.useState(0);
+  const rev = _wbLoadRev(em); const r = rev[s.day] || null;
+  const [line, setLine] = React.useState("");
+  const [done, setDone] = React.useState(null);
+  const fb = myAnswer && myAnswer.feedback && myAnswer.feedback.aiFb;
+  const fixed = fb && fb.corrected && _wbNorm(fb.corrected) !== _wbNorm(myAnswer.sentence) ? fb.corrected : "";
+  const hasWord = line.toLowerCase().includes(String(s.word || "").toLowerCase().split(" ")[0]);
+  const grade = (g) => {
+    const next = _wbGrade(rev, s.day, g, line.trim() ? { sentence: line.trim() } : null);
+    _wbSaveRev(em, next);
+    try { if (USER.email && window.OD && window.OD.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, s.day, { _rev: next[s.day] }).catch(() => {}); } catch (e) {}
+    try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
+    setDone(g); setTick(t => t + 1);
+  };
+  const lastKo = r && r.lastDay ? r.lastDay.slice(5).replace("-", ".") : null;
+  return (
+    <div className="lib-review" onClick={(e) => e.stopPropagation()}>
+      <div className="lib-review-grid">
+        <div><label>✏️ 그날 내가 쓴 문장</label>{myAnswer && myAnswer.sentence ? <p className="lib-mine">"{myAnswer.sentence}"{fixed && <span className="lib-fix">→ {fixed}</span>}</p> : <p className="lib-empty">아직 안 썼어요 · 시추에이션에서 쓰면 여기 남아요</p>}</div>
+        <div><label>🔁 복기 문장 {lastKo && <small>· 마지막 복기 {lastKo}{r.history ? " · " + r.history.length + "회" : ""}</small>}</label>{r && r.sentence ? <p className="lib-mine">"{r.sentence}"</p> : <p className="lib-empty">아직 복기 안 했어요</p>}</div>
+        {(savedNotes.length > 0 || (myJournal && myJournal.text)) && (
+          <div className="lib-review-wide"><label>📒 내 노트 · 일지</label>
+            {savedNotes.map((n, i) => <p key={i}><b>{n.label || "메모"}</b> {n.text}</p>)}
+            {myJournal && myJournal.text && <p><b>퇴근 일지</b> {myJournal.text}</p>}
+          </div>
+        )}
+      </div>
+      <div className="lib-review-do">
+        <label>🃏 지금 복습 · <b>{s.word}</b> 넣어서 한 줄 다시 써보기</label>
+        {done ? (
+          <div className="lib-review-done">✅ 복기 저장했어요 ({_WB_GRADE_KO[done]}) · 표현 카드 강도에 반영됐어요 <a onClick={() => { setDone(null); setLine(""); }}>한 번 더</a></div>
+        ) : (
+          <>
+            <textarea className="lib-review-input" rows={2} value={line} onChange={(e) => setLine(e.target.value)} placeholder={"예: " + (s.sampleAnswer ? String(s.sampleAnswer).slice(0, 60) + (String(s.sampleAnswer).length > 60 ? "…" : "") : s.word + " 를 넣어 한 줄")} />
+            <div className="lib-review-btns">
+              <span className="lib-review-q">떠올리기 어땠어요?</span>
+              <button className="btn btn-ghost btn-mini" onClick={() => grade("again")}>몰랐음</button>
+              <button className="btn btn-ghost btn-mini" onClick={() => grade("hard")}>가물가물</button>
+              <button className="btn btn-primary btn-mini" disabled={line.trim() && !hasWord} title={line.trim() && !hasWord ? s.word + " 가 안 들어갔어요" : ""} onClick={() => grade("good")}>떠올림 · 저장</button>
+              <button className="btn btn-ghost btn-mini" disabled={line.trim() && !hasWord} onClick={() => grade("easy")}>쉬움</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 function WordBookPage({ openScene }) {
   _useRetTick();   // 1회권 사용 · 구매 즉시 버튼 갱신
   const { SCENARIOS, USER, CHARACTERS } = window.__SIM;
@@ -12208,9 +12276,10 @@ function LibraryPage({ openScene }) {
                           <div><label>💡 유버디 · 쉽게 외우는 법</label><p style={{ whiteSpace: "pre-line" }}>{_buddyTipText(s)}</p></div>
                           {!_isNextFeature() && myAnswer && myAnswer.sentence && <div><label>✏️ 그날 내가 쓴 문장</label><p className="lib-mine">"{myAnswer.sentence}"</p></div>}
                         </div>
+                        {_isNextFeature() && <LibReviewInline s={s} myAnswer={myAnswer} savedNotes={savedNotes} myJournal={myJournal} />}
                         <div className="lib-detail-actions">
                           <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); openScene(s); }}>시추에이션 다시 열기 →</button>
-                          {_isNextFeature() ? <span>✏️ 내 문장·복기·노트는 복습에서 봐요</span> : (savedNotes.length > 0 || (myJournal && myJournal.text)) && (
+                          {!_isNextFeature() && (savedNotes.length > 0 || (myJournal && myJournal.text)) && (
                             <span>📒 이 표현에 내 노트 {savedNotes.length + ((myJournal && myJournal.text) ? 1 : 0)}개 · 나만의 노트에서 봐요</span>
                           )}
                         </div>
