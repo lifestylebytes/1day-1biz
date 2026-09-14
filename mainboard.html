@@ -8119,16 +8119,18 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   const [retDayPop, setRetDayPop] = useState(false);
   const [retQuiz, setRetQuiz] = useState(false);
   React.useEffect(() => {
-    if (!_RET_ON() || USER.isViewingPast) return;
-    _retReconcile({ silent: true });
-    const rec = _retEvalDebuff(USER.email);
-    if (rec && rec.level > 0 && !rec.seen) setTimeout(() => setRetDebuff(rec), 700);
+    if (USER.isViewingPast) return;
+    _retReconcile({ silent: true });   // 그림자 모드: 개발 뷰가 아니어도 집계·동기화는 돈다
+    if (_RET_ON()) {
+      const rec = _retEvalDebuff(USER.email);
+      if (rec && rec.level > 0 && !rec.seen) setTimeout(() => setRetDebuff(rec), 700);
+    }
     const onRecon = () => _retReconcile();
     window.addEventListener("od-ret-recon", onRecon);
-    const iv = setInterval(() => _retReconcile(), 20000);
+    const iv = setInterval(() => _retReconcile(), _RET_ON() ? 20000 : 120000);
     return () => { window.removeEventListener("od-ret-recon", onRecon); clearInterval(iv); };
   }, []);
-  React.useEffect(() => { if (_RET_ON() && !USER.isViewingPast) _retReconcile(); }, [doneTasks]);
+  React.useEffect(() => { if (!USER.isViewingPast) _retReconcile(); }, [doneTasks]);
   // ★ 2026-09-11 (회원 피드백): "오늘의 시추에이션 다 썼는데 완료가 안 돼요".
   //   제출 기록(__OD_USER.scenariosCompleted)은 남았는데 일정 체크만 빠진 경우를 화면 뜰 때 스스로 메운다.
   React.useEffect(() => {
@@ -9295,6 +9297,9 @@ function _tyPickErrands(email, today, rd, n) {
 //   라이브로 열 때는 _RET_ON 만 바꾼다.
 // ============================================================
 const _RET_ON = () => _isNextFeature();
+// ★ 그림자 모드 (2026-09-14): EXP 집계 + 서버 동기화는 모든 회원 기기에서 조용히 돌린다 (알림·화면은 개발 뷰에서만).
+//   → 라이브 켜는 날 순위판이 비어 있지 않고, 야근(Review Quiz·미리쓰기)처럼 기기에만 있는 기록도 서버에 올라간다.
+const _RET_SHADOW = true;
 const _RET_EPOCH_DEFAULT = "2026-09-14";    // 이 날 이후 활동만 결근/목표 판정에 쓴다 (도입 전 공백으로 벌주지 않기)
 const _RET_EPOCH = (() => { try { return localStorage.getItem("__OD_RET_EPOCH") || _RET_EPOCH_DEFAULT; } catch (e) { return _RET_EPOCH_DEFAULT; } })();
 // 결근 시뮬레이터 (개발 뷰 전용): mainboard.html?retgap=2 → 오늘을 "2일 결근 뒤 첫 출근"으로 판정. ?retgap=0 으로 해제.
@@ -9331,7 +9336,7 @@ const RET_PERKS = [
   { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
   { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true },
   { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "senior",    desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 사원증에서 고르고, 성장 리포트에 보관돼요.", stack: false },
-  { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", desc: "지금까지 모은 표현을 PDF로 소장해요.", stack: false },
+  { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "fulltime", desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.", stack: true },
   { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 150,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요.", note: "⚠️ 자정~새벽 3시 사이에 접속하면 물어보지 않고 자동으로 써져요. 그 뒤엔 팝업에서 직접 써요.", stack: true },
   { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 시추에이션 보내고 나면 열려요.", stack: true },
 ];
@@ -9440,6 +9445,9 @@ function _retBuy(email, id) {
   return { ok: true };
 }
 
+// ── 받은 PDF 보관 (1회권을 쓸 때 그 시점의 PDF 를 통째로 저장 → 성장 리포트에서 무료로 다시 열기). 최근 6권 ──
+function _retPdfList(email) { const l = _retLoad("PDFS", email, { list: [] }); if (!Array.isArray(l.list)) l.list = []; return l.list; }
+function _retPdfSave(email, rec) { const l = { list: _retPdfList(email).concat([rec]).slice(-6) }; try { _retSave("PDFS", email, l); } catch (e) { l.list = l.list.slice(-2); try { _retSave("PDFS", email, l); } catch (e2) {} } _retPing(); }
 // ── 인쇄 (PDF 저장): 팝업 대신 숨은 iframe 으로. 브라우저 인쇄 창에서 '대상 → PDF로 저장' 을 고르면 다운로드된다 ──
 function _odPrintHtml(html) {
   try {
@@ -9593,7 +9601,7 @@ function _retMarkQuizDone(email) { const d = _retDebuff(email); if (d && d.date 
 
 // ── 리컨실: 저장된 기록을 훑어서 아직 안 준 EXP/복지P 를 준다 (멱등). 홈이 뜰 때·일정이 바뀔 때 호출. ──
 function _retReconcile(opts) {
-  if (!_RET_ON()) return;
+  if (!_RET_ON() && !_RET_SHADOW) return;
   const email = _retEmail(); const u = _wbUser();
   const today = _tyTodayISO();
   const silent = !!(opts && opts.silent);
@@ -9662,8 +9670,8 @@ function _retReconcile(opts) {
         if ("serviceWorker" in navigator && "PushManager" in window && Notification.permission === "granted") navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => { if (sub) _retAwardWp(email, "set:push", RET_WP.push, "푸시 알림 설정"); }).catch(() => {});
       }
     } catch (e) {}
-    // 6) 목표 판정
-    _retGoalCheck(email);
+    // 6) 목표 판정 (개발 뷰에서만)
+    if (_RET_ON()) _retGoalCheck(email);
   } catch (e) {}
   try {
     const col = Array.isArray(window.__odRetCollect) ? window.__odRetCollect : []; window.__odRetCollect = null;
@@ -9965,7 +9973,7 @@ function RetPerkShopPage({ setActive }) {
                 <b>{it.cost.toLocaleString()}P</b>
                 {!ok ? <span className="ret-shop-lock">🔒 {_RET_RANK_LABEL[it.rank]}</span>
                   : it.id === "preview" && have > 0 ? <button className="btn btn-primary btn-mini" onClick={usePreview}>지금 미리보기</button>
-                  : it.id === "pdf" && owned ? <button className="btn btn-primary btn-mini" onClick={() => { try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", "cards"); sessionStorage.setItem("__OD_RET_PDF_GO", "1"); } catch (e) {} setActive("mynotes"); }}>📄 PDF 받기</button>
+                  : it.id === "pdf" && have > 0 ? <span style={{ display: "inline-flex", gap: 6 }}><button className="btn btn-ghost btn-mini" disabled={wp < it.cost} onClick={() => buy(it)}>{wp < it.cost ? (it.cost - wp).toLocaleString() + "P 부족" : "1장 더"}</button><button className="btn btn-primary btn-mini" onClick={() => { try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", "cards"); sessionStorage.setItem("__OD_RET_PDF_GO", "1"); } catch (e) {} setActive("mynotes"); }}>📄 PDF 받기 ({have}장)</button></span>
                   : it.id === "report" ? <button className="btn btn-primary btn-mini" onClick={() => buy(it)}>사원증에서 받기</button>
                   : <button className="btn btn-primary btn-mini" disabled={wp < it.cost || owned} onClick={() => buy(it)}>{owned ? "보유 중" : (wp < it.cost ? (it.cost - wp).toLocaleString() + "P 부족" : "구매")}</button>}
               </div>
@@ -10123,6 +10131,7 @@ function RetGrowthReports() {
   const email = _retEmail();
   const list = _retEnsurePromoReports(email);
   const consults = (() => { try { return _wpNotes("consult"); } catch (e) { return []; } })();
+  const pdfs = _retPdfList(email);
   const [openC, setOpenC] = React.useState(null);
   const [legacyView, setLegacyView] = React.useState(null);
   const sample = list.length ? null : { id: "sample", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(),
@@ -10161,6 +10170,15 @@ function RetGrowthReports() {
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🤝 분기 협상 리포트 <small>분기 평가 탭에서 협상하면 여기 남아요</small></div>
       {_retNegoList(email).filter(r => !r.preview).length === 0 && <div className="ret-growth-note">아직 협상 기록이 없어요. 분기 평가 탭에서 이번 분기 협상을 해보세요.</div>}
       {_retNegoList(email).filter(r => !r.preview).slice().reverse().map((r, i) => <RetNegoResultCard key={i} r={r} />)}
+      <div className="ret-growth-head" style={{ marginTop: 18 }}>📄 받은 단어 모음 PDF <small>복지몰 1회권으로 받은 PDF · 무료로 다시 열기</small></div>
+      {pdfs.length === 0 && <div className="ret-growth-note">아직 받은 PDF 가 없어요. 복지몰 SHOP 에서 1회권(200P)을 사고 🃏 표현 카드 탭에서 받아요.</div>}
+      {pdfs.slice().reverse().map((r, i) => (
+        <div key={i} className="ret-consult">
+          <button className="ret-consult-head" onClick={() => _odPrintHtml(r.html)}>
+            <span>📄 {String(r.at).slice(0, 10)} · Day {r.day} · 표현 {r.n}개</span><small>다시 열기 (인쇄 → PDF 저장)</small><i>↗</i>
+          </button>
+        </div>
+      ))}
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 사수 리포트 <small>커리어 · 직무 · 영어 처방 · 직장생활 · 사원증에서 받은 리포트</small></div>
       {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 사원증에서 1,000P 로 받아요 (커리어 · 직무 · 영어 처방 · 직장생활).</div>}
       {consults.map((c, i) => (
@@ -11375,6 +11393,7 @@ function WbReviewCard({ card, mode, onGrade, mentorName }) {
 }
 
 function WordBookPage({ openScene }) {
+  _useRetTick();   // 1회권 사용 · 구매 즉시 버튼 갱신
   const { SCENARIOS, USER, CHARACTERS } = window.__SIM;
   const em = USER.email || "guest";
   const rd = USER.realCurrentDay || USER.currentDay || 1;
@@ -11465,7 +11484,14 @@ function WordBookPage({ openScene }) {
     runInsight();
   };
   // 📄 PDF 소장: 깨끗한 새 창에 표지 + 카드 전부 (한글 폰트 안전, 나만의 노트 인쇄와 같은 방식)
-  const printBook = () => {
+  const printBook = (opts) => {
+    const reopen = !!(opts && opts.reopenHtml);
+    if (_RET_ON() && !reopen) {
+      const em = _retEmail();
+      if ((Number(_retInv(em).pdf) || 0) <= 0) { alert("PDF 1회권이 없어요. 복지몰 SHOP 에서 200P 로 살 수 있어요. 예전에 받은 PDF 는 📑 리포트 탭에서 다시 열려요."); return; }
+      if (!confirm("PDF 1회권 1장을 써서 지금까지 모은 표현 " + cards.length + "개를 PDF 로 받을까요?\n받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.")) return;
+      _retInvUse(em, "pdf");
+    }
     const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const list = [...cards].sort((a, b) => a.day - b.day);
     const rows = list.map(c => `
@@ -11481,7 +11507,8 @@ function WordBookPage({ openScene }) {
         ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
       </div>`).join("");
     // ★ 2026-09-14: 새 창(팝업 차단에 걸림) 대신 숨은 iframe 으로 인쇄 → 인쇄 창에서 'PDF로 저장'
-    _odPrintHtml(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 1일1비 단어 모음</title>
+    if (reopen) { _odPrintHtml(opts.reopenHtml); return; }
+    const _html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 1일1비 단어 모음</title>
       <style>
         body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
         .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
@@ -11511,7 +11538,9 @@ function WordBookPage({ openScene }) {
       ${rows}
       ${archive.length ? `<div class="card"><div class="head"><span class="word">📌 리포트에서 건진 문장</span><span class="mean">${archive.length}개</span></div>${archive.map(x => `<div class="row"><label>${esc(String(x.src || "").slice(0, 6))}</label><p class="en">${esc(x.en)}${x.ko ? `<br/><span style="font-family:-apple-system,'Noto Sans KR',sans-serif;font-style:normal;color:#8A7A66">${esc(x.ko)}</span>` : ""}</p></div>`).join("")}</div>` : ""}
       <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
-      </body></html>`);
+      </body></html>`;
+    if (_RET_ON()) { try { _retPdfSave(_retEmail(), { at: new Date().toISOString(), day: rd, n: cards.length, html: _html }); } catch (e) {} }
+    _odPrintHtml(_html);
   };
   // 복지몰 SHOP 에서 '성장 리포트에서 받기' 로 넘어온 경우: 표현 카드 탭을 열고 바로 인쇄 창을 띄운다
   useEffect(() => {
@@ -11555,7 +11584,9 @@ function WordBookPage({ openScene }) {
           <div className="wb-cover-eyebrow">{_RET_ON() ? "GROWTH REPORT" : "SALARY REVIEW PREP"} · SINCE {signupKo || "2026"}</div>
           <h1 className="wb-cover-title"><em>{USER.name}</em>의 {_RET_ON() ? "표현 카드" : "협상 카드"}</h1>
           <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
-          {(!_RET_ON() || (Number(_retInv(_retEmail()).pdf) || 0) > 0) ? <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button> : <button className="wb-cover-btn" onClick={() => alert("복지몰 SHOP 에서 '내 단어 모음 PDF' (200P) 를 사면 열려요.")} style={{ opacity: .7 }}>🔒 PDF 소장 · 복지몰 SHOP 200P</button>}
+          {!_RET_ON() ? <button className="wb-cover-btn" onClick={() => printBook()}>📄 PDF로 소장하기</button>
+            : (Number(_retInv(_retEmail()).pdf) || 0) > 0 ? <button className="wb-cover-btn" onClick={() => printBook()}>📄 PDF로 소장하기 · 1회권 {Number(_retInv(_retEmail()).pdf)}장</button>
+            : <button className="wb-cover-btn" onClick={() => alert("복지몰 SHOP 에서 'PDF 1회권' (200P) 을 사면 받을 수 있어요." + (_retPdfList(_retEmail()).length ? "\n예전에 받은 PDF 는 📑 리포트 탭에서 무료로 다시 열려요." : ""))} style={{ opacity: .7 }}>🔒 PDF 소장 · 복지몰 SHOP 200P</button>}
         </div>
         <div className="wb-cover-r">
           <div><b>{stats.total}</b><span>모은 표현</span></div>
