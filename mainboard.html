@@ -6746,7 +6746,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "📋" : "✉️", badge: unread > 0 ? unread : null },
-    ...(_RET_ON() ? [{ id: "perk", label: "PERK SHOP", icon: "🎁" }] : []),
+    ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: "🎁" }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
   ];
   return (
@@ -9594,7 +9594,7 @@ function RetHud({ setActive }) {
   return (
     <div className="ret-hud">
       <button className="ret-hud-chip exp" onClick={() => setActive && setActive("inbox")} title="이번 주 EXP · 순위판 보기"><b>⚡ {week.toLocaleString()}</b><small>이번 주 EXP · 누적 {total.toLocaleString()}</small></button>
-      <button className="ret-hud-chip wp" onClick={() => setActive && setActive("perk")} title="복지포인트 · PERK SHOP"><b>🎁 {wp.toLocaleString()}P</b><small>복지포인트</small></button>
+      <button className="ret-hud-chip wp" onClick={() => setActive && setActive("perk")} title="복지포인트 · 복지몰 SHOP"><b>🎁 {wp.toLocaleString()}P</b><small>복지포인트</small></button>
       <span className="ret-hud-chip streak"><b>🔥 {streak}일</b><small>연속 출근</small></span>
     </div>
   );
@@ -9616,7 +9616,7 @@ function RetDayPopup({ day, email, onClose }) {
         <div className="ret-pop-rows">
           {rows.map(e => <div key={e.key}><span>{e.label.replace(/ · Day \d+$/, "")}</span><b>+{e.exp}</b></div>)}
         </div>
-        <div className="ret-pop-foot">EXP 는 매주 월요일 리셋되는 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 사내 게시판·PERK SHOP 에서 써요.</div>
+        <div className="ret-pop-foot">EXP 는 매주 월요일 리셋되는 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 사내 게시판·복지몰 SHOP 에서 써요.</div>
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>좋아요 →</button>
       </div>
     </div>
@@ -9777,8 +9777,8 @@ function RetPerkShopPage({ setActive }) {
     <div>
       <div className="desk-header">
         <div>
-          <div className="desk-eyebrow">OFFICE · 복지몰</div>
-          <h1 className="desk-title"><em>PERK</em> SHOP</h1>
+          <div className="desk-eyebrow">OFFICE · PERK SHOP · 복지몰</div>
+          <h1 className="desk-title"><em>복지몰</em> SHOP</h1>
         </div>
         <div className="desk-meta"><b>🎁 {wp.toLocaleString()}P</b><br/>쓸 수 있는 복지포인트</div>
       </div>
@@ -9955,8 +9955,8 @@ function RetGrowthReports() {
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🤝 분기 협상 리포트 <small>분기 평가 탭에서 협상하면 여기 남아요</small></div>
       {_retNegoList(email).filter(r => !r.preview).length === 0 && <div className="ret-growth-note">아직 협상 기록이 없어요. 분기 평가 탭에서 이번 분기 협상을 해보세요.</div>}
       {_retNegoList(email).filter(r => !r.preview).slice().reverse().map((r, i) => <RetNegoResultCard key={i} r={r} />)}
-      <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 커리어 리포트 <small>PERK SHOP · 사원증에서 받은 리포트</small></div>
-      {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 PERK SHOP 에서 1,000P 로 받아요.</div>}
+      <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 커리어 리포트 <small>복지몰 SHOP · 사원증에서 받은 리포트</small></div>
+      {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 복지몰 SHOP 에서 1,000P 로 받아요.</div>}
       {consults.map((c, i) => (
         <div key={i} className="ret-consult">
           <button className="ret-consult-head" onClick={() => setOpenC(openC === i ? null : i)}>
@@ -10053,7 +10053,7 @@ function RetNegotiationPage() {
       <div><Head />
         {preview && <div className="ret-preview-banner">🎟️ Preview Ticket 사용 중 · 연습이라 보상과 기록은 없어요.</div>}
         <RetNegoResultCard r={done} />
-        <div className="ret-growth-note" style={{ marginTop: 12 }}>다음 협상은 다음 분기 첫날부터 열려요. 그때까지 카드(출근율·EXP·문장)를 쌓아두면 등급이 올라가요. 지금 미리 연습해 보고 싶으면 PERK SHOP 의 Preview Ticket 을 써요.</div>
+        <div className="ret-growth-note" style={{ marginTop: 12 }}>다음 협상은 다음 분기 첫날부터 열려요. 그때까지 카드(출근율·EXP·문장)를 쌓아두면 등급이 올라가요. 지금 미리 연습해 보고 싶으면 복지몰 SHOP 의 Preview Ticket 을 써요.</div>
       </div>
     );
   }
@@ -10142,7 +10142,7 @@ function RetPeekBox({ day }) {
   return (
     <div className="ret-peek">
       <div className="ret-peek-head"><span>👀 동기 문장 엿보기 <small style={{ fontWeight: 700, color: "var(--ink-mute)" }}>같은 Day 다른 동기 3명 · 익명</small></span>
-        {!got && (have > 0 ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button> : <span className="ret-shop-lock">PERK SHOP 100P</span>)}
+        {!got && (have > 0 ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button> : <span className="ret-shop-lock">복지몰 SHOP 100P</span>)}
       </div>
       {err && <div className="ret-deb-note" style={{ marginTop: 6 }}>{err}</div>}
       {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>동기 {i + 1} · {x.rank || ""}</small>"{x.text}"</div>)}
@@ -11344,7 +11344,7 @@ function WordBookPage({ openScene }) {
           <div className="wb-cover-eyebrow">{_RET_ON() ? "GROWTH REPORT" : "SALARY REVIEW PREP"} · SINCE {signupKo || "2026"}</div>
           <h1 className="wb-cover-title"><em>{USER.name}</em>의 {_RET_ON() ? "표현 카드" : "협상 카드"}</h1>
           <div className="wb-cover-sub">{profile && profile.job ? profile.job + " · " : ""}{USER.position} · Day {rd}{USER.streak ? " · 🔥 " + USER.streak + "일 연속" : ""}</div>
-          {(!_RET_ON() || (Number(_retInv(_retEmail()).pdf) || 0) > 0) ? <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button> : <button className="wb-cover-btn" onClick={() => alert("PERK SHOP 에서 '내 단어 모음 PDF' (200P) 를 사면 열려요.")} style={{ opacity: .7 }}>🔒 PDF 소장 · PERK SHOP 200P</button>}
+          {(!_RET_ON() || (Number(_retInv(_retEmail()).pdf) || 0) > 0) ? <button className="wb-cover-btn" onClick={printBook}>📄 PDF로 소장하기</button> : <button className="wb-cover-btn" onClick={() => alert("복지몰 SHOP 에서 '내 단어 모음 PDF' (200P) 를 사면 열려요.")} style={{ opacity: .7 }}>🔒 PDF 소장 · 복지몰 SHOP 200P</button>}
         </div>
         <div className="wb-cover-r">
           <div><b>{stats.total}</b><span>모은 표현</span></div>
