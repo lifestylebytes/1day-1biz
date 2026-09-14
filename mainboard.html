@@ -1113,6 +1113,20 @@ span.ret-hud-item { cursor: default; }
 .ret-board-exp { color: #C2311F; }
 .ret-board-err { padding: 14px; text-align: center; font-size: 12.5px; color: var(--ink-mute); line-height: 1.6; }
 .ret-board-foot { margin-top: 10px; font-size: 11px; color: var(--ink-mute); line-height: 1.5; }
+.od-flash { animation: odFlash 1s ease-in-out 3; border-radius: 10px; }
+@keyframes odFlash { 0%, 100% { box-shadow: 0 0 0 0 rgba(216,90,42,0); background-color: transparent; } 50% { box-shadow: 0 0 0 4px rgba(216,90,42,0.45); background-color: rgba(216,90,42,0.10); } }
+.ret-exp-how { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-warm); }
+.ret-exp-how summary { cursor: pointer; padding: 10px 14px; font-size: 13px; font-weight: 800; color: var(--ink); list-style: none; display: flex; align-items: center; gap: 8px; }
+.ret-exp-how summary::-webkit-details-marker { display: none; }
+.ret-exp-how summary::after { content: "▼"; margin-left: auto; font-size: 10px; color: var(--ink-mute); }
+.ret-exp-how[open] summary::after { content: "▲"; }
+.ret-exp-how-body { padding: 4px 14px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; }
+.ret-exp-how-sec > b { display: block; font-size: 11px; letter-spacing: .06em; color: var(--orange); margin-bottom: 4px; }
+.ret-exp-how-sec ul { list-style: none; margin: 0; padding: 0; }
+.ret-exp-how-sec li { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink); padding: 4px 0; border-top: 1px dashed var(--line-soft); }
+.ret-exp-how-sec li em { font-style: normal; font-weight: 900; color: #C2311F; white-space: nowrap; }
+.ret-exp-how-note { grid-column: 1 / -1; font-size: 11px; color: var(--ink-mute); line-height: 1.6; padding-top: 4px; border-top: 1px solid var(--line); }
+@media (max-width: 640px) { .ret-exp-how-body { grid-template-columns: 1fr; } }
 .ret-growth { margin-bottom: 20px; }
 .ret-growth-head { font-size: 14px; font-weight: 900; color: var(--ink); margin: 0 0 10px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .ret-growth-head small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
@@ -6631,7 +6645,7 @@ async function odEnablePush(email) {
       });
     } catch (e) {}
     alert("알림이 켜졌어요! 방금 테스트 알림을 보냈어요.");
-    try { if (window.__odRetEvent) window.__odRetEvent("push"); } catch (e) {}
+    try { if (window.__odRetEvent) window.__odRetEvent("push"); if (window.__odErrandProof) window.__odErrandProof("push"); } catch (e) {}
     return true;
   } catch (e) {
     console.warn("[push] odEnablePush 실패:", e);
@@ -6696,7 +6710,7 @@ function KakaoNotifyRow({ email }) {
     if (nextHour !== "" && !hasPhone && !phone.trim()) { setMsg("받을 휴대폰 번호를 먼저 적어주세요."); return; }
     setBusy(true); setMsg("");
     const r = await window.OD.setKakaoNotify(email, phone.trim(), nextHour === "" ? null : Number(nextHour));
-    try { if (r && r.ok && nextHour !== "" && window.__odRetEvent) window.__odRetEvent("kakao"); } catch (e) {}
+    try { if (r && r.ok && nextHour !== "" && window.__odRetEvent) { window.__odRetEvent("kakao"); if (window.__odErrandProof) window.__odErrandProof("kakao"); } } catch (e) {}
     setBusy(false);
     if (!r.ok) {
       const e = String(r.error || "");
@@ -7489,7 +7503,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
 
   return (
     <div className="ot-card">
-      <button className="ot-head" onClick={() => setOpen(o => !o)}>
+      <button className="ot-head" onClick={() => setOpen(o => { if (!o) { try { _tyErrandProof("side"); } catch (e) {} } return !o; })}>
         {catchUp
           ? <span>🌙 퇴근 후 SIDE PROJECT <small>밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)</small></span>
           : _sideProject
@@ -9257,37 +9271,52 @@ function AwayReport({ user }) {
 //   minDay: 그 기능이 열린 뒤에만 나오게 (출근부 3, 역량 스탯·마일스톤 4, 복습 30)
 //   nav: 이동할 탭 / sel: 그 화면에서 스크롤할 곳 (모바일은 사원증 탭에 있는 카드들)
 const _TY_ERRANDS = [
-  { id: "library",   icon: "📓", t: "업무 노트에서 지난 표현 하나 다시 읽기", nav: "library" },
-  { id: "libfav",    icon: "⭐", t: "업무 노트에서 마음에 드는 표현에 별 찍기", nav: "library" },
-  { id: "libsearch", icon: "🔎", t: "업무 노트 검색창에 아무 단어나 쳐보기", nav: "library" },
-  { id: "libcard",   icon: "🗂", t: "업무 노트를 '카드'로 바꿔서 훑어보기", nav: "library" },
-  { id: "fwc",       icon: "🎁", t: "첫 주 카드 다시 펼쳐보기", nav: "library", minDay: 2 },
-  { id: "mypage",    icon: "🪪", t: "사원증 한번 확인하기", nav: "mypage" },
+  { id: "library",   icon: "📓", t: "업무 노트에서 지난 표현 하나 다시 읽기", verify: true, nav: "library" },
+  { id: "libfav",    icon: "⭐", t: "업무 노트에서 마음에 드는 표현에 별 찍기", verify: true, nav: "library" },
+  { id: "libsearch", icon: "🔎", t: "업무 노트 검색창에 아무 단어나 쳐보기", verify: true, nav: "library" },
+  { id: "libcard",   icon: "🗂", t: "업무 노트를 '카드'로 바꿔서 훑어보기", verify: true, nav: "library" },
+  { id: "fwc",       icon: "🎁", t: "첫 주 카드 다시 펼쳐보기", verify: true, nav: "library", minDay: 2 },
+  { id: "mypage",    icon: "🪪", t: "사원증 한번 확인하기", verify: true, nav: "mypage" },
   { id: "skills",    icon: "📊", t: "역량 스탯에서 제일 빈 영역 찾아보기", sel: ".skillgrid", minDay: 4 },
   { id: "attend",    icon: "📅", t: "출근부에서 이번 주 도장 세어보기", sel: ".attendance", minDay: 3 },
   { id: "promo",     icon: "🏅", t: "승진 마일스톤에서 D-day 확인하기", sel: ".s2-welcome", minDay: 4 },
-  { id: "inbox",     icon: "✉️", t: "사내 메모함 열어보기", nav: "inbox" },
-  { id: "inbox2",    icon: "📌", t: "안 읽은 사내 메모 하나 읽기", nav: "inbox" },
-  { id: "test",      icon: "✍️", t: "분기 평가 화면 구경하기", nav: "test" },
-  { id: "mynotes",   icon: "📒", t: "복습에서 흔들리는 표현 하나 다지기", nav: "mynotes", minDay: 30 },
+  { id: "inbox",     icon: "✉️", t: "사내 메모함 열어보기", verify: true, nav: "inbox" },
+  { id: "inbox2",    icon: "📌", t: "안 읽은 사내 메모 하나 읽기", verify: true, nav: "inbox" },
+  { id: "test",      icon: "✍️", t: "분기 평가 화면 구경하기", verify: true, nav: "test" },
+  { id: "mynotes",   icon: "📒", t: "복습에서 흔들리는 표현 하나 다지기", verify: true, nav: "mynotes", minDay: 30 },
   { id: "recall",    icon: "💭", t: "어제 표현 하나 소리 내서 말해보기", minDay: 2 },
   { id: "aloud",     icon: "🗣", t: "오늘 표현 세 번 소리 내서 읽기" },
   { id: "compose",   icon: "✏️", t: "오늘 표현으로 문장 하나 머릿속에서 만들기" },
   { id: "useit",     icon: "📱", t: "오늘 표현을 동료나 친구한테 한 번 써보기" },
   { id: "buddy",     icon: "💬", t: "유버디한테 궁금한 표현 하나 물어보기" },
-  { id: "notice",    icon: "📣", t: "1일1비 공지방 한번 들어가보기", nav: "mypage", sel: "[data-errand='notice']" },
+  { id: "notice",    icon: "📣", t: "1일1비 공지방 한번 들어가보기", verify: true, nav: "mypage", sel: "[data-errand='notice']" },
   { id: "desk",      icon: "☕️", t: "물 한 잔 마시고 책상 정리하기" },
   // ── 숨어 있어서 찾아보지 않으면 모르는 것들 (2026-09-11 아이디어) ──
-  { id: "stealth",   icon: "🥸", t: "업무 위장 모드 켜보기 (탭 제목이 바뀌어요)", nav: "mypage", sel: "[data-errand='stealth']" },
-  { id: "profile",   icon: "👤", t: "직무 프로필 채워보기 (리포트가 더 정확해져요)", nav: "mypage", sel: "[data-errand='profile']" },
-  { id: "guide",     icon: "🧭", t: "첫날 가이드 다시 보기 눌러보기", nav: "mypage", sel: "[data-errand='guide']", minDay: 3 },
-  { id: "push",      icon: "🔔", t: "설정에서 푸시 알림 켜보기", nav: "mypage", sel: "[data-errand='push']", evt: "od-open-settings" },
-  { id: "kakao",     icon: "💌", t: "카톡 출근 알림 켜보기", nav: "mypage", sel: "[data-errand='kakao']", evt: "od-open-settings" },
-  { id: "ubchall",   icon: "🔥", t: "유비챌 입장 한번 눌러보기", sel: "[data-errand='ubchall']" },
+  { id: "stealth",   icon: "🥸", t: "업무 위장 모드 켜보기 (탭 제목이 바뀌어요)", verify: true, nav: "mypage", sel: "[data-errand='stealth']" },
+  { id: "profile",   icon: "👤", t: "직무 프로필 채워보기 (리포트가 더 정확해져요)", verify: true, nav: "mypage", sel: "[data-errand='profile']" },
+  { id: "guide",     icon: "🧭", t: "첫날 가이드 다시 보기 눌러보기", verify: true, nav: "mypage", sel: "[data-errand='guide']", minDay: 3 },
+  { id: "push",      icon: "🔔", t: "설정에서 푸시 알림 켜보기", verify: true, nav: "mypage", sel: "[data-errand='push']", evt: "od-open-settings" },
+  { id: "kakao",     icon: "💌", t: "카톡 출근 알림 켜보기", verify: true, nav: "mypage", sel: "[data-errand='kakao']", evt: "od-open-settings" },
+  { id: "ubchall",   icon: "🔥", t: "유비챌 입장 한번 눌러보기", verify: true, sel: "[data-errand='ubchall']" },
   { id: "ladder",    icon: "🔓", t: "앞으로 뭐가 열리는지 확인하기", sel: ".unlock-ladder" },
-  { id: "side",      icon: "🌙", t: "퇴근 후 사이드 프로젝트 열어보기", sel: ".ot-card", minDay: 2 },
+  { id: "side",      icon: "🌙", t: "퇴근 후 사이드 프로젝트 열어보기", verify: true, sel: ".ot-card", minDay: 2 },
 ];
 const _tyErrandHistKey = (email) => "__OD_ERRAND_HIST_" + (email || "guest");
+// ★ 심부름 증빙 (2026-09-14): verify 가 붙은 심부름은 누른다고 도장이 안 찍힌다. 실제 그 행동이 일어난 곳에서 _tyErrandProof(id) 를 부르면 그날 심부름에 있을 때만 도장.
+function _tyErrandProof(id) {
+  try {
+    const USER = (window.__SIM && window.__SIM.USER) || {}; const email = USER.email || ""; if (!email) return;
+    const today = _tyTodayISO(); const rd = USER.realCurrentDay || USER.currentDay || 1;
+    const picked = _tyPickErrands(email, today, rd, 2);
+    if (!picked.some(e => e.id === id)) return;
+    const K = "__OD_ERRAND_" + today + "_" + email;
+    const cur = JSON.parse(localStorage.getItem(K) || "{}"); if (cur[id]) return;
+    cur[id] = true; localStorage.setItem(K, JSON.stringify(cur));
+    window.dispatchEvent(new CustomEvent("od-errand-proof", { detail: { id } }));
+    window.dispatchEvent(new Event("od-ret-recon"));
+  } catch (e) {}
+}
+window.__odErrandProof = _tyErrandProof;
 // 날짜+이메일 시드로 섞어서 같은 사람은 어느 기기에서나 같은 심부름을 본다
 function _tyPickErrands(email, today, rd, n) {
   let hist = [];
@@ -9474,6 +9503,10 @@ function _retBuy(email, id) {
 // ── 받은 PDF 보관 (1회권을 쓸 때 그 시점의 PDF 를 통째로 저장 → 성장 리포트에서 무료로 다시 열기). 최근 6권 ──
 function _retPdfList(email) { const l = _retLoad("PDFS", email, { list: [] }); if (!Array.isArray(l.list)) l.list = []; return l.list; }
 function _retPdfSave(email, rec) { const l = { list: _retPdfList(email).concat([rec]).slice(-6) }; try { _retSave("PDFS", email, l); } catch (e) { l.list = l.list.slice(-2); try { _retSave("PDFS", email, l); } catch (e2) {} } _retPing(); }
+// ── 데려간 곳 하이라이트 (2026-09-14): 링크로 이동한 뒤 3초 동안 그 자리를 반짝여서 '여기예요' ──
+function _odFlash(el, ms) {
+  try { if (!el) return; el.classList.add("od-flash"); setTimeout(() => { try { el.classList.remove("od-flash"); } catch (e) {} }, ms || 3000); } catch (e) {}
+}
 // ── 인쇄 (PDF 저장): 팝업 대신 숨은 iframe 으로. 브라우저 인쇄 창에서 '대상 → PDF로 저장' 을 고르면 다운로드된다 ──
 function _odPrintHtml(html) {
   try {
@@ -9963,7 +9996,7 @@ function RetPerkShopPage({ setActive }) {
   const go = (nav, sel, evt) => {
     setActive(nav);
     setTimeout(() => { try { if (evt) window.dispatchEvent(new Event(evt)); } catch (e) {} }, 250);
-    setTimeout(() => { try { const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 550);
+    setTimeout(() => { try { const el = sel && document.querySelector(sel); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); _odFlash(el.closest(".hr-row, .ret-goal, .ret-goal-slim, .ot-card, .hr-section") || el); } } catch (e) {} }, 550);
   };
   if (!_retShopOpen()) {
     const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
@@ -10049,6 +10082,8 @@ function RetWeeklyBoard() {
   const [rows, setRows] = React.useState(null); const [err, setErr] = React.useState("");
   const mine = _retExpThisWeek(email);
   const ws = _retAddDays(_tyTodayISO(), -6);
+  const [reload, setReload] = React.useState(0);
+  const load = () => setReload(n => n + 1);
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -10062,7 +10097,7 @@ function RetWeeklyBoard() {
       } catch (e) { if (alive) setErr("순위를 불러오지 못했어요"); }
     })();
     return () => { alive = false; };
-  }, [ws]);
+  }, [ws, reload]);
   React.useEffect(() => { try { _retReconcile({ silent: true }); } catch (e) {} }, []);
   const myInitial = String(USER.name || "나").slice(0, 1);
   const list = rows || [];
@@ -10090,12 +10125,37 @@ function RetWeeklyBoard() {
         </div>
       ))}
       {!err && rows && rows.length === 0 && <div className="ret-board-err">최근 7일 동안 쌓인 EXP 가 아직 없어요. 오늘 출근하면 첫 줄에 올라가요.</div>}
-      <div className="ret-board-foot">EXP: 출근 25 · 시추에이션 100 · 미니 퀴즈 50 · 퇴근 25 (하루 200) · 연속 출근 +50 · Review Quiz 10/20/50 · 내일 미리 쓰기 50 · 심부름 20</div>
+      <details className="ret-exp-how">
+        <summary>⚡️ EXP는 어디서 얻나요?</summary>
+        <div className="ret-exp-how-body">
+          <div className="ret-exp-how-sec">
+            <b>오늘 일정 4개 · 하루 200</b>
+            <ul>
+              <li><span>☀️ 출근 도장</span><em>+{RET_EXP.checkin}</em></li>
+              <li><span>💬 오늘의 시추에이션 (한 줄 보내기)</span><em>+{RET_EXP.scenario}</em></li>
+              <li><span>🧩 미니 퀴즈</span><em>+{RET_EXP.mission}</em></li>
+              <li><span>🌙 퇴근 (일지)</span><em>+{RET_EXP.wrapup}</em></li>
+              <li><span>🔥 어제도 완주했으면 연속 출근 보너스</span><em>+{RET_EXP.streak}</em></li>
+            </ul>
+          </div>
+          <div className="ret-exp-how-sec">
+            <b>퇴근 후 · 더 쌓기</b>
+            <ul>
+              <li><span>📝 Review Quiz 5 · 10 · 20문제</span><em>+{RET_EXP.rev5} · {RET_EXP.rev10} · {RET_EXP.rev20}</em></li>
+              <li><span>✍️ 내일 표현 미리 쓰기</span><em>+{RET_EXP.pre}</em></li>
+              <li><span>🧺 오늘의 심부름 (하나당)</span><em>+{RET_EXP.errand}</em></li>
+              <li><span>📋 설문 참여</span><em>+{RET_EXP.survey}</em></li>
+            </ul>
+          </div>
+          <div className="ret-exp-how-note">최근 7일치 합계로 순위가 매겨져요 · 밀린 Day 를 해도 '한 날' 기준으로 오늘 EXP 에 들어가요 · 복지포인트(P)는 따로 (복지몰 SHOP 에서 확인)</div>
+        </div>
+      </details>
       <button className="btn btn-ghost btn-mini" style={{ marginTop: 10 }} onClick={() => setShowMine(!showMine)}>{showMine ? "내 EXP 내역 접기" : "내 최근 7일 EXP 내역 보기 (" + mineRows.length + "건)"}</button>
       {showMine && (
         <div style={{ marginTop: 8 }}>
           {mineRows.length === 0 && <div className="ret-board-err">최근 7일에 기록된 EXP 가 없어요. 오늘 출근·시추에이션·퇴근을 하면 바로 쌓여요.</div>}
-          {mineRows.slice(0, 40).map(e => <div key={e.key} className="ret-shop-hist"><span>{String(e.at).slice(5, 10).replace("-", ".")}</span><span>{e.label}</span><b>+{e.exp}</b></div>)}
+          {myRow && myRow.exp !== mine && <div className="ret-board-err" style={{ marginBottom: 6 }}>이 기기 기준 {mine.toLocaleString()} · 순위판(서버) 기준 {Number(myRow.exp).toLocaleString()} — 아직 안 올라간 항목은 ⏳ 로 표시돼요. <a style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => { try { _retSyncExp(email, true); setTimeout(load, 2500); } catch (e) {} }}>지금 올리기</a></div>}
+          {mineRows.slice(0, 60).map(e => <div key={e.key} className="ret-shop-hist"><span>{String(e.at).slice(5, 10).replace("-", ".")}{e.s ? "" : " ⏳"}</span><span>{e.label}</span><b>+{e.exp}</b></div>)}
         </div>
       )}
     </div>
@@ -10448,7 +10508,7 @@ function ErrandsCard({ setActive, toast }) {
   const K = "__OD_ERRAND_" + today + "_" + email;
   const picked = React.useMemo(() => _tyPickErrands(email, today, rd, 2), [email, today, rd]);
   const [done, setDone] = React.useState(() => { try { return JSON.parse(localStorage.getItem(K) || "{}"); } catch (e) { return {}; } });
-  const scrollTo = (sel) => { try { const el = document.querySelector(sel); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); return true; } } catch (e) {} return false; };
+  const scrollTo = (sel) => { try { const el = document.querySelector(sel); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); _odFlash(el.closest(".hr-row, .hr-section, .ot-card, .unlock-ladder, .skillgrid, .attendance, .s2-welcome, .locker-link") || el); return true; } } catch (e) {} return false; };
   const go = (er) => {
     // 접혀 있어서 데려가도 안 보이는 것들은 먼저 펴준다
     if (er.id === "fwc") { try { localStorage.setItem("__OD_FWC_OPEN", "1"); } catch (e) {} }
@@ -10472,8 +10532,13 @@ function ErrandsCard({ setActive, toast }) {
       }, 400);
     }
   };
+  React.useEffect(() => {
+    const h = (ev) => { try { const cur = JSON.parse(localStorage.getItem(K) || "{}"); setDone(cur); const id = ev && ev.detail && ev.detail.id; const er = picked.find(x => x.id === id); if (er && toast) toast(picked.every(x => cur[x.id]) ? "🎖️ 오늘 심부름 완료! 가벼운 것도 챙기는 게 프로예요" : "✅ 심부름 도장! " + er.t, 2600); } catch (e) {} };
+    window.addEventListener("od-errand-proof", h); return () => window.removeEventListener("od-errand-proof", h);
+  }, [K, picked]);
   const stamp = (er) => {
     if (done[er.id]) { go(er); return; }
+    if (er.verify) { go(er); if (toast) toast("👉 가서 직접 하면 도장이 찍혀요", 2000); return; }   // 증빙형: 실제로 해야 도장
     const next = { ...done, [er.id]: true };
     setDone(next);
     try { localStorage.setItem(K, JSON.stringify(next)); } catch (e) {}
@@ -10489,7 +10554,7 @@ function ErrandsCard({ setActive, toast }) {
         <div key={er.id} className={"ty-errand-row" + (done[er.id] ? " done" : "")} onClick={() => stamp(er)}>
           <span>{er.icon}</span>
           <span className="ty-errand-t">{er.t}{_RET_ON() && <span className={"ret-exp-tag" + (done[er.id] ? " done" : "")}>{done[er.id] ? "✓ +" : "+"}{RET_EXP.errand} EXP</span>}</span>
-          <span className="ty-errand-stamp">{done[er.id] ? "✓ 도장" : "하러 가기"}</span>
+          <span className="ty-errand-stamp">{done[er.id] ? "✓ 도장" : (er.verify ? "하러 가기" : "했어요 ✓")}</span>
         </div>
       ))}
     </div>
@@ -10545,7 +10610,7 @@ function PromotionCard() {
 }
 
 // 멤버십: 유비챌 입장 = 상세페이지로 이동 (_TY_UBCHALL_URL은 위 _NOTICES_ALL 앞에서 정의)
-function _tyOpenUbchall() { try { window.open(_TY_UBCHALL_URL, "_blank", "noopener"); } catch (e) {} }
+function _tyOpenUbchall() { try { window.open(_TY_UBCHALL_URL, "_blank", "noopener"); _tyErrandProof("ubchall"); } catch (e) {} }
 // (2026-09-04 사용 안 함: '구독에 유비챌 포함'은 사실이 아니라 홈에서 제거. 유비챌 진입은 사이드바 버튼/공지로만)
 function MembershipCard() {
   return (
@@ -11134,7 +11199,7 @@ const _PROFILE_WHO = ["본사·해외 동료", "외국인 상사", "클라이언
 //   저장 위치: localStorage __OD_PROFILE_<email> + notes(kind profile, day 0). 수정은 사원증/인사 > 인사 기록에서 언제든.
 function _loadProfile(em) { try { return JSON.parse(localStorage.getItem("__OD_PROFILE_" + (em || "guest")) || "null"); } catch (e) { return null; } }
 function _saveProfile(em, p) {
-  try { localStorage.setItem("__OD_PROFILE_" + (em || "guest"), JSON.stringify(p)); } catch (e) {}
+  try { localStorage.setItem("__OD_PROFILE_" + (em || "guest"), JSON.stringify(p)); _tyErrandProof("profile"); } catch (e) {}
   try { if (em && em !== "guest" && window.OD?.enabled && window.OD.saveNoteRow) window.OD.saveNoteRow(em, 0, JSON.stringify(p), "직무 프로필", "profile").catch(() => {}); } catch (e) {}
   try { window.dispatchEvent(new CustomEvent("od-profile", { detail: p })); } catch (e) {}
 }
@@ -11452,7 +11517,7 @@ function LibReviewInline({ s, myAnswer, savedNotes, myJournal }) {
   const hasWord = line.toLowerCase().includes(String(s.word || "").toLowerCase().split(" ")[0]);
   const grade = (g) => {
     const next = _wbGrade(rev, s.day, g, line.trim() ? { sentence: line.trim() } : null);
-    _wbSaveRev(em, next);
+    _wbSaveRev(em, next); try { _tyErrandProof("mynotes"); } catch (e) {}
     try { if (USER.email && window.OD && window.OD.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, s.day, { _rev: next[s.day] }).catch(() => {}); } catch (e) {}
     try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
     setDone(g); setTick(t => t + 1);
@@ -11532,7 +11597,7 @@ function WordBookPage({ openScene }) {
     if (!cur) return;
     const before = cur.strength;
     const next = _wbGrade(rev, cur.day, g, extra);
-    setRev(next); _wbSaveRev(em, next);
+    setRev(next); _wbSaveRev(em, next); try { _tyErrandProof("mynotes"); } catch (e) {}
     try { const today = _wbTodayKST(); const n = Object.values(next).reduce((k, r) => k + ((r && r.history) || []).filter(h => h.at === today).length, 0); if (n <= WP_RULES.reviewPerDay) _wpToast(WP_RULES.review, "복기 " + n + "/" + WP_RULES.reviewPerDay); } catch (e) {}
     // 서버에도 남긴다 (task_progress.tasks._rev, 기기 바뀌어도 복원)
     try { if (USER.email && window.OD?.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, cur.day, { _rev: next[cur.day] }).catch(() => {}); } catch (e) {}
@@ -12104,7 +12169,7 @@ function FirstWeekCards({ days }) {
   const [open, setOpen] = useState(() => { try { return localStorage.getItem("__OD_FWC_OPEN") === "1"; } catch (e) { return false; } });
   const [pick, setPick] = useState(days[days.length - 1]);
   const cfg = FWP_TIPS[pick];
-  const toggle = () => { setOpen(o => { try { localStorage.setItem("__OD_FWC_OPEN", o ? "0" : "1"); } catch (e) {} return !o; }); };
+  const toggle = () => { setOpen(o => { try { localStorage.setItem("__OD_FWC_OPEN", o ? "0" : "1"); if (!o) _tyErrandProof("fwc"); } catch (e) {} return !o; }); };
   return (
     <div className="fwc">
       <button className="fwc-head" onClick={toggle}>
@@ -12159,7 +12224,7 @@ function LibraryPage({ openScene }) {
   const [view, setView] = useState(() => { try { return localStorage.getItem("__OD_LIB_VIEW") || "table"; } catch (e) { return "table"; } });
   const [sortDesc, setSortDesc] = useState(() => { try { return localStorage.getItem("__OD_LIB_SORT") !== "asc"; } catch (e) { return true; } });
   const [openDay, setOpenDay] = useState(null);
-  const pickView = (v) => { setView(v); try { localStorage.setItem("__OD_LIB_VIEW", v); } catch (e) {} };
+  const pickView = (v) => { setView(v); try { localStorage.setItem("__OD_LIB_VIEW", v); if (v !== "table") _tyErrandProof("libcard"); } catch (e) {} };
   const toggleSort = () => setSortDesc(d => { try { localStorage.setItem("__OD_LIB_SORT", d ? "asc" : "desc"); } catch (e) {} return !d; });
 
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): 표현마다 별(즐겨찾기). 즐겨찾기 필터, 즐겨찾기 단어는 미니 퀴즈에 자주 나온다.
@@ -12210,7 +12275,7 @@ function LibraryPage({ openScene }) {
         <button className={"filter-chip " + (filter === "unwritten" ? "active" : "")} onClick={() => setFilter("unwritten")}>아직 안 쓴 것</button>
         <button className={"filter-chip " + (filter === "today" ? "active" : "")} onClick={() => setFilter("today")}>오늘</button>
         {_favOn && <button className={"filter-chip " + (filter === "fav" ? "active" : "")} onClick={() => setFilter("fav")}>⭐ 즐겨찾기 {accessible.filter(s => favSet.has(s.word)).length}</button>}
-        <input className="filter-search" placeholder="단어 / 뜻 검색…" value={search} onChange={e => setSearch(e.target.value)} />
+        <input className="filter-search" placeholder="단어 / 뜻 검색…" value={search} onChange={e => { setSearch(e.target.value); if (e.target.value.trim().length >= 2) _tyErrandProof("libsearch"); }} />
         <span className="lib-view">
           <button className={view === "table" ? "on" : ""} onClick={() => pickView("table")} title="표로 보기">▤ 표</button>
           <button className={view === "cards" ? "on" : ""} onClick={() => pickView("cards")} title="카드로 보기">▦ 카드</button>
@@ -13115,7 +13180,7 @@ function WelfarePointsSection() {
   const [view, setView] = useState(null);
   const [showLedger, setShowLedger] = useState(false);
   void tick;
-  const open = USER.isFulltime || rd >= 30;
+  const open = _RET_ON() ? true : (USER.isFulltime || rd >= 30);   // 리텐션 엔진: 복지포인트는 Day 1 부터
   // 진행 중인 작업 / 방금 끝난 리포트 이어받기 (다른 탭에 갔다 와도)
   useEffect(() => {
     const onDone = (e) => { setBusy(false); setTick(t => t + 1); if (e.detail) setView(e.detail); };
@@ -13131,7 +13196,7 @@ function WelfarePointsSection() {
   const balance = earned.total - spent;
   const consults = _wpNotes("consult").sort((a, b) => String(b.at).localeCompare(String(a.at)));
   const profile = _loadProfile(em);
-  const devHead = <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6, textTransform: "none", letterSpacing: 0 }}>개발 뷰 · 사원부터</span>;
+  const devHead = <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6, textTransform: "none", letterSpacing: 0 }}>{_RET_ON() ? "개발 뷰 · Day 1부터 · 리포트는 대리부터" : "개발 뷰 · 사원부터"}</span>;
 
   if (!open) return (
     <div className="hr-section" style={{ marginTop: 16 }}>
@@ -13520,7 +13585,7 @@ function MyPage({ setActive, setViewingDay }) {
             <div style={{ marginTop: 10 }}>
               <button className="btn btn-ink" onClick={() => {
                 const on = !_tyStealthOn();
-                try { localStorage.setItem("__OD_STEALTH", on ? "1" : "0"); } catch (e) {}
+                try { localStorage.setItem("__OD_STEALTH", on ? "1" : "0"); if (on) _tyErrandProof("stealth"); } catch (e) {}
                 _tyApplyStealth(on);
                 setTyStealth(on);
               }}>{tyStealth ? "위장 해제하기" : "위장 켜기"}</button>
@@ -13583,7 +13648,7 @@ function MyPage({ setActive, setViewingDay }) {
           href={_KAKAO_NOTICE_ROOM}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => { try { if (window.__odRetEvent) window.__odRetEvent("room"); } catch (e) {} }}
+          onClick={() => { try { if (window.__odRetEvent) window.__odRetEvent("room"); _tyErrandProof("notice"); } catch (e) {} }}
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
@@ -13610,7 +13675,7 @@ function MyPage({ setActive, setViewingDay }) {
           className="hr-row"
           style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}
           onClick={() => {
-            try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {}
+            try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); _tyErrandProof("guide"); } catch (e) {}
             location.href = "mainboard.html";
           }}
         >
@@ -16892,7 +16957,7 @@ function _favWords() { return new Set(_qzLoad("FAV", [])); }
 function _isFav(word) { return _favWords().has(word); }
 function _toggleFav(word) {
   const s = _favWords();
-  if (s.has(word)) s.delete(word); else s.add(word);
+  if (s.has(word)) s.delete(word); else { s.add(word); try { _tyErrandProof("libfav"); } catch (e) {} }
   _qzSave("FAV", [...s]);
   _qzSyncMeta(_qzDayOfWord(word), { _fav: s.has(word) });
   try { window.dispatchEvent(new Event("od-fav-changed")); } catch (e) {}
@@ -18185,7 +18250,7 @@ function KakaoQuickSet({ email, compact }) {
     setBusy(true); setMsg("");
     try {
       const r = await window.OD.setKakaoNotify(email, phone.trim(), Number(hour));
-      try { if (r && r.ok && window.__odRetEvent) window.__odRetEvent("kakao"); } catch (e) {}
+      try { if (r && r.ok && window.__odRetEvent) { window.__odRetEvent("kakao"); if (window.__odErrandProof) window.__odErrandProof("kakao"); } } catch (e) {}
       setBusy(false);
       if (!r.ok) {
         const e = String(r.error || "");
@@ -19219,6 +19284,7 @@ function PromotionCeremony({ realDay }) {
 
 function App() {
   const [active, setActive] = useState("home");
+  React.useEffect(() => { try { if (active === "library") _tyErrandProof("library"); if (active === "mypage") _tyErrandProof("mypage"); if (active === "inbox") _tyErrandProof("inbox"); if (active === "test") _tyErrandProof("test"); } catch (e) {} }, [active]);
   useEffect(() => { const h = (e) => { if (e.detail) setActive(e.detail); }; window.addEventListener("od-goto", h); return () => window.removeEventListener("od-goto", h); }, []);
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
@@ -19365,7 +19431,7 @@ function App() {
   const unread = NOTICES.filter(n => n.unread).length;
 
   const handleOpenMemo = (n) => {
-    setMemo(n);
+    setMemo(n); try { _tyErrandProof("inbox2"); } catch (e) {}
     if (!readIds.has(n.id)) {
       setReadIds(prev => {
         const next = new Set(prev); next.add(n.id);
