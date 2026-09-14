@@ -9952,7 +9952,9 @@ function RetPerkShopPage({ setActive }) {
   const setMsg = (m) => { _setMsg(m); if (_msgT.current) clearTimeout(_msgT.current); if (m) _msgT.current = setTimeout(() => _setMsg(""), 2600); };
   const buy = (it) => {
     if (it.id === "report") { setActive("mypage"); setTimeout(() => { try { (document.querySelector(".wp-services") || document.querySelector(".hr-section-head"))?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 400); return; }
-    if (it.note && !confirm(it.name + " (" + it.cost + "P)\n\n" + it.note.replace(/^⚠️ /, "") + "\n\n살까요?")) return;
+    // 구매 전 확인 (모든 상품): 이름 · 가격 · 사고 난 뒤 잔액 · 주의사항
+    const left = wp - it.cost;
+    if (!confirm(it.icon + " " + it.name + " · " + it.cost.toLocaleString() + "P\n\n지금 " + wp.toLocaleString() + "P → 사면 " + Math.max(0, left).toLocaleString() + "P 남아요." + (it.note ? "\n\n" + it.note.replace(/^⚠️ /, "") : "") + "\n\n살까요?")) return;
     const r = _retBuy(email, it.id);
     setMsg(r.ok ? "✅ " + it.name + " 구매했어요" + (it.id === "pdf" ? " · 아래 'PDF 받기' 를 누르면 인쇄 창이 열려요" : it.note ? " · " + it.note.replace(/^⚠️ /, "") : "") : "⚠️ " + r.why);
   };
