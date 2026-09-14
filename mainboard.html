@@ -1000,6 +1000,7 @@ body::before {
 .ret-toast.wp { background: var(--orange); }
 .ret-exp-tag { display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 900; color: #C2311F; background: rgba(216,90,42,0.10); padding: 1px 6px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
 .ret-exp-tag.done { color: #2D6E3A; background: rgba(45,110,58,0.10); }
+.ret-hud.top { margin: 0 0 14px; }
 .ret-hud { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0 2px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-size: 12.5px; color: var(--ink-soft); flex-wrap: wrap; }
 .ret-hud i { width: 1px; height: 14px; background: var(--line); }
 .ret-hud-item { background: none; border: none; padding: 0; font-family: inherit; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
@@ -1026,6 +1027,11 @@ span.ret-hud-item { cursor: default; }
 .ret-goal-bar i { display: block; height: 100%; background: var(--orange); border-radius: 999px; transition: width .4s; }
 .ret-goal-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
 .ret-goal.compact .ret-goal-pick { grid-template-columns: repeat(2, 1fr); }
+.ret-goal-slim { display: flex; align-items: center; gap: 12px; margin: 10px 0 0; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); font-size: 12.5px; color: var(--ink-soft); }
+.ret-goal-slim .ret-goal-bar { flex: 1; margin: 0; height: 6px; }
+.ret-goal-slim b { color: var(--ink); font-weight: 900; }
+.ret-goal-slim-r { white-space: nowrap; }
+@media (max-width: 880px) { .ret-goal-slim { flex-wrap: wrap; } .ret-goal-slim .ret-goal-bar { order: 3; flex-basis: 100%; } }
 .ret-pop.debuff { text-align: left; max-width: 460px; }
 .ret-deb-from { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
 .ret-deb-from b { display: block; font-size: 13px; } .ret-deb-from small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
@@ -6771,7 +6777,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: "분기 평가", icon: "✍️" },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "📋" : "✉️", badge: unread > 0 ? unread : null },
-    ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: "🎁" }] : []),
+    ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
   ];
   return (
@@ -6809,7 +6815,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(1, 3).map(it => (
           <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.tag ? <span className="locker-tag">{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : "사원 ☆"}</span> : null}
+            {it.tag ? <span className="locker-tag">{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : it.id === "perk" ? "Day " + RET_SHOP_OPEN_DAY : "사원 ☆"}</span> : null}
           </button>
         ))}
       </div>
@@ -8611,6 +8617,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
   return (
     <div>
+      {!USER.isViewingPast && <RetHud setActive={setActive} top />}
       <div className="desk-header">
         <div>
           <div className="desk-eyebrow">
@@ -8623,7 +8630,6 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {USER.team}
         </div>
       </div>
-      {!USER.isViewingPast && <RetHud setActive={setActive} />}
 
       {_isNextFeature() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
@@ -8710,13 +8716,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
 
       <div className={"desk-grid" + (_isHomeLive() ? " next-home" : "")}>
         <div className="col">
-          {_isHomeLive() && !_lockedNext("accum", _rdNow, USER.isViewingPast) && (
+          {_isHomeLive() && !_RET_ON() && !_lockedNext("accum", _rdNow, USER.isViewingPast) && (
             <div className="today-accum">
               <div className="today-accum-big">지금까지 표현 <b>{USER.wordsCollected}개</b> 모았어요</div>
               <div className="today-accum-sub">🔥 출근 {USER.streak}일 · {USER.isFulltime ? "" : ("사원 승진까지 " + Math.max(0, 30 - (USER.realCurrentDay || USER.currentDay)) + "일")}</div>
             </div>
           )}
-          {!USER.isViewingPast && <RetGoalCard />}
+          {!USER.isViewingPast && <RetGoalCard slim />}
           {_isHomeLive() && !USER.isViewingPast && !!doneTasks.checkin && (
             <PreReveal key={"pre-" + USER.currentDay} today={today} email={USER.email} />
           )}
@@ -9324,7 +9330,7 @@ const RET_PERKS = [
   { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "결근 1~2일 디버프를 막아줘요. 연속 출근 기록도 지켜져요.", stack: true },
   { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
   { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true },
-  { id: "report",  icon: "🧭", name: "커리어 리포트",     cost: 1000, rank: "senior",    desc: "지금까지 내 기록으로 성향·약한 부분·보완할 점을 사수가 한 장으로 써줘요. 성장 리포트에 보관돼요.", stack: false },
+  { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "senior",    desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 사원증에서 고르고, 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", desc: "지금까지 모은 표현을 PDF로 소장해요.", stack: false },
   { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 150,  rank: "probation", desc: "자정을 넘겨 끝내도 전날 출근으로 인정해요. 야근하다 놓친 날을 살려요.", note: "⚠️ 자정~새벽 3시 사이에 접속하면 물어보지 않고 자동으로 써져요. 그 뒤엔 팝업에서 직접 써요.", stack: true },
   { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 시추에이션 보내고 나면 열려요.", stack: true },
@@ -9332,6 +9338,9 @@ const RET_PERKS = [
 const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
 const _retRankOk = (need) => { const u = (window.__SIM && window.__SIM.USER) || {}; return (_RET_RANK_N[u.rankId] || 0) >= (_RET_RANK_N[need] || 0); };
 const _RET_RANK_LABEL = { probation: "수습부터", fulltime: "사원 이상", senior: "대리 이상" };
+// 복지몰은 Day 7 부터 (첫 복지포인트가 7일 연속 출근 목표로 들어오는 날). 그 전엔 🔒 로 보여서 기대만 하게.
+const RET_SHOP_OPEN_DAY = 7;
+function _retShopOpen() { try { const u = (window.__SIM && window.__SIM.USER) || {}; return (Number(u.realCurrentDay || u.currentDay) || 1) >= RET_SHOP_OPEN_DAY; } catch (e) { return false; } }
 
 // ── 저장소 ──
 function _retLoad(k, email, def) { const v = _loadJSON(_retKey(k, email)); return (v && typeof v === "object") ? v : (def || {}); }
@@ -9340,7 +9349,7 @@ function _retPing() { try { window.dispatchEvent(new Event("od-ret-changed")); }
 
 // ── EXP 장부 ──
 //   entries: { key, exp, label, at, day, kind }  key 는 멱등키 (같은 활동 두 번 안 줌)
-const _RET_LEDGER_V = 2;
+const _RET_LEDGER_V = 3;   // v3 (2026-09-14): 첫 집계 뒤에 새로 발견된 기록은 '지금' 시각으로 (밀린 Day 하는 사람도 오늘 EXP 로 잡히게)
 function _retExpLedger(email) {
   let l = _retLoad("EXP", email, { entries: [] });
   if (!Array.isArray(l.entries)) l.entries = [];
@@ -9348,8 +9357,9 @@ function _retExpLedger(email) {
   return l;
 }
 // 그 Day 를 실제로 한 시각. 저장 시각(_ts)이 없으면 가입일 + (day-1) 로 추정 → 옛 기록이 '이번 주'로 잡히지 않게
-function _retDayAt(day, ts) {
+function _retDayAt(day, ts, live) {
   if (ts) return ts;
+  if (live) return new Date().toISOString();   // 첫 집계 이후 새로 생긴 기록 / 지금 하고 있는 Day → 지금
   try { const u = _wbUser(); if (u.signupDate) { const d = new Date(u.signupDate); d.setUTCDate(d.getUTCDate() + Math.max(0, (Number(day) || 1) - 1)); return d.toISOString(); } } catch (e) {}
   return "2020-01-01T00:00:00.000Z";
 }
@@ -9366,7 +9376,7 @@ function _retAwardExp(email, key, exp, label, at, day, kind, opts) {
   l.entries.push(entry);
   if (l.entries.length > 3000) l.entries = l.entries.slice(-3000);
   _retSave("EXP", email, l);
-  if (!(opts && opts.silent)) _retExpToast(exp, label);
+  if (!(opts && opts.silent)) { if (Array.isArray(window.__odRetCollect)) window.__odRetCollect.push({ exp, label }); else _retExpToast(exp, label); }
   _retSyncExp(email);
   return true;
 }
@@ -9380,8 +9390,16 @@ function _retSyncExp(email, force) {
     const todo = l.entries.filter(e => !e.s).slice(0, 60);
     if (!todo.length) return;
     _retSyncBusy = true;
-    Promise.all(todo.map(e => window.OD.addExpEvent(email, e.key, e.exp, e.kind || "", e.day || null, e.at).then(r => { if (r && r.ok) e.s = 1; }).catch(() => {})))
-      .then(() => { _retSave("EXP", email, l); _retSyncBusy = false; if (l.entries.some(e => !e.s)) setTimeout(() => _retSyncExp(email, true), 2000); })
+    const done = {};
+    Promise.all(todo.map(e => window.OD.addExpEvent(email, e.key, e.exp, e.kind || "", e.day || null, e.at).then(r => { if (r && r.ok) done[e.key] = 1; }).catch(() => {})))
+      .then(() => {
+        // ★ 저장은 '지금' 장부를 다시 읽어서 한다. (보내는 동안 새로 쌓인 항목을 옛 스냅샷으로 덮어쓰면 오늘 EXP 가 통째로 사라진다)
+        const now = _retExpLedger(email); let changed = false;
+        now.entries.forEach(e => { if (done[e.key] && !e.s) { e.s = 1; changed = true; } });
+        if (changed) _retSave("EXP", email, now);
+        _retSyncBusy = false;
+        if (now.entries.some(e => !e.s)) setTimeout(() => _retSyncExp(email, true), 2000);
+      })
       .catch(() => { _retSyncBusy = false; });
   } catch (e) { _retSyncBusy = false; }
 }
@@ -9422,6 +9440,20 @@ function _retBuy(email, id) {
   return { ok: true };
 }
 
+// ── 인쇄 (PDF 저장): 팝업 대신 숨은 iframe 으로. 브라우저 인쇄 창에서 '대상 → PDF로 저장' 을 고르면 다운로드된다 ──
+function _odPrintHtml(html) {
+  try {
+    const old = document.getElementById("od-print-frame"); if (old) old.remove();
+    const f = document.createElement("iframe"); f.id = "od-print-frame";
+    f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none";
+    document.body.appendChild(f);
+    const d = f.contentWindow.document; d.open(); d.write(html); d.close();
+    try { _retToast("wp", "📄", "인쇄 창이 열려요", "대상에서 'PDF로 저장' 을 고르면 다운로드돼요"); } catch (e) {}
+    window.__odLastPrint = { at: Date.now(), title: (d.title || "") };
+    setTimeout(() => { try { if (f.parentNode) f.remove(); } catch (e) {} }, 60000);
+  } catch (e) { alert("인쇄 창을 열지 못했어요. 다시 한 번 눌러주세요."); }
+}
 // ── 토스트 (EXP / 복지P) ──
 function _retToastHost() { let h = document.getElementById("ret-toast-host"); if (!h) { h = document.createElement("div"); h.id = "ret-toast-host"; document.body.appendChild(h); } return h; }
 function _retToast(cls, ico, big, small) {
@@ -9535,7 +9567,7 @@ function _retEvalDebuff(email) {
   // 방어 아이템 자동 사용: 2일 → 연차, 3일+ → 휴가(없으면 연차 2장도 안 됨. 휴가만)
   const kstHour = new Date(Date.now() + 9 * 3600000).getUTCHours();
   if (level === 1 && kstHour < 3 && _retInvUse(email, "extend")) rec.defended = "extend";
-  else if (level === 2 && _retInvUse(email, "annual")) rec.defended = "annual";
+  else if ((level === 1 || level === 2) && _retInvUse(email, "annual")) rec.defended = "annual";   // 연차는 1~2일 결근을 막아준다 (상품 설명과 동일)
   else if (level === 3 && _retInvUse(email, "vacay")) rec.defended = "vacay";
   _retSave("DEBUFF", email, rec);
   // 목표 판정 (방어했으면 목표도 유지: 결근일을 출근으로 채워 넣는다)
@@ -9565,22 +9597,31 @@ function _retReconcile(opts) {
   const email = _retEmail(); const u = _wbUser();
   const today = _tyTodayISO();
   const silent = !!(opts && opts.silent);
+  // 집계 중 생기는 EXP 알림은 모아서 한 번에 (처음 집계할 때는 아예 안 띄움)
+  window.__odRetCollect = [];
   try {
     // 1) 오늘 일정 4개 + 연속 출근
     const days = new Set();
     Object.keys(localStorage).forEach(k => { const m = /^__OD_TASKS_DAY_(\d+)$/.exec(k); if (m) days.add(Number(m[1])); });
     const doneAll = _odCompletedDaySet(u);
+    // 첫 집계(장부 비어 있음)에서는 저장 시각이 없는 옛 Day 를 가입일 기준으로 추정하고,
+    // 그 뒤로 새로 발견되는 기록은 '지금' 한 것으로 본다. 지금 진행 중인 Day(현재 Day 이상)도 오늘로.
+    const ledger0 = _retExpLedger(email); const fresh = !ledger0.seededAt;
+    // '지금 하고 있는 Day' = 기록이 있는 Day 중 가장 큰 것 (밀린 Day 를 하는 사람은 달력상 Day 와 다르다)
+    const maxDay = days.size ? Math.max(...days) : 0;
     [...days].sort((a, b) => a - b).forEach(day => {
       const t = _loadJSON("__OD_TASKS_DAY_" + day) || {}; const ts = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts") || null;
-      const isToday = ts && new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10) === today;
+      const live = !ts && (!fresh || day === maxDay);
+      const isToday = ts ? new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10) === today : live;
       ["checkin", "scenario", "wrapup"].forEach(k => {
         if (!t[k] || !RET_EXP[k]) return;
-        _retAwardExp(email, "task:" + day + ":" + k, RET_EXP[k], { checkin: "출근", scenario: "오늘의 시추에이션", wrapup: "퇴근" }[k] + " · Day " + day, _retDayAt(day, ts), day, "task", { silent: silent || !isToday });
+        _retAwardExp(email, "task:" + day + ":" + k, RET_EXP[k], { checkin: "출근", scenario: "오늘의 시추에이션", wrapup: "퇴근" }[k] + " · Day " + day, _retDayAt(day, ts, live), day, "task", { silent: silent || !isToday });
       });
-      if (_RET_SLOT3.some(k => t[k])) _retAwardExp(email, "task:" + day + ":quiz", RET_EXP.mission, "미니 퀴즈 · Day " + day, _retDayAt(day, ts), day, "task", { silent: silent || !isToday });
+      if (_RET_SLOT3.some(k => t[k])) _retAwardExp(email, "task:" + day + ":quiz", RET_EXP.mission, "미니 퀴즈 · Day " + day, _retDayAt(day, ts, live), day, "task", { silent: silent || !isToday });
       if (t.checkin && isToday) _retMarkToday(email);
-      if (doneAll.has(day) && doneAll.has(day - 1)) _retAwardExp(email, "streak:" + day, RET_EXP.streak, "연속 출근 · Day " + day, _retDayAt(day, ts), day, "streak", { silent: silent || !isToday });
+      if (doneAll.has(day) && doneAll.has(day - 1)) _retAwardExp(email, "streak:" + day, RET_EXP.streak, "연속 출근 · Day " + day, _retDayAt(day, ts, live), day, "streak", { silent: silent || !isToday });
     });
+    if (fresh) { const l2 = _retExpLedger(email); l2.seededAt = new Date().toISOString(); _retSave("EXP", email, l2); }
     // 2) 야근: Review Quiz (문제수별) · 내일 미리쓰기 · 야근 완료 복지P (하루 1회)
     Object.keys(localStorage).forEach(k => {
       if (k.startsWith("__OD_OT_" + email + "_")) {
@@ -9609,6 +9650,8 @@ function _retReconcile(opts) {
     });
     // 4) 진급 복지P (사원·대리)
     const USER = (window.__SIM && window.__SIM.USER) || {};
+    // 운영자 계정: 상품 전부 써볼 수 있게 10,000P (1회)
+    try { const lu = _wbUser(); if (lu && (lu.isOperator || lu.is_operator)) _retAwardWp(email, "op:bonus", 10000, "운영자 테스트 포인트", null, { silent: true }); } catch (e) {}
     if (USER.rankId === "fulltime" || USER.rankId === "senior") _retAwardWp(email, "promo:fulltime", RET_WP.promo, "사원 진급", null, { silent: true });
     if (USER.rankId === "senior") _retAwardWp(email, "promo:senior", RET_WP.promo, "대리 진급", null, { silent: true });
     // 5) 설정 이벤트 (카톡/푸시/공지방) 는 _retEvent 로 들어온다. 이미 켜둔 사람은 여기서 한 번 확인해서 준다 (세션당 1회).
@@ -9622,6 +9665,14 @@ function _retReconcile(opts) {
     // 6) 목표 판정
     _retGoalCheck(email);
   } catch (e) {}
+  try {
+    const col = Array.isArray(window.__odRetCollect) ? window.__odRetCollect : []; window.__odRetCollect = null;
+    const firstRun = !window.__odRetReconciled; window.__odRetReconciled = true;
+    if (col.length && !firstRun) {
+      if (col.length === 1) _retExpToast(col[0].exp, col[0].label);
+      else _retExpToast(col.reduce((n, x) => n + x.exp, 0), col.length + "건 · " + col[col.length - 1].label);
+    }
+  } catch (e) { window.__odRetCollect = null; }
   _retSyncStreak();
   _retPing();
 }
@@ -9658,19 +9709,21 @@ function RetExpTag({ exp, done }) {
   return <span className={"ret-exp-tag" + (done ? " done" : "")}>{done ? "✓ " : "+"}{exp} EXP</span>;
 }
 // 헤더용 칩: 이번 주 EXP · 복지P · 연속 출근
-function RetHud({ setActive }) {
+function RetHud({ setActive, top }) {
   _useRetTick();
   if (!_RET_ON()) return null;
   const email = _retEmail();
   const week = _retExpThisWeek(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
   const U = window.__SIM && window.__SIM.USER; const attended = (U && U.streak) || 0;
   return (
-    <div className="ret-hud">
+    <div className={"ret-hud" + (top ? " top" : "")}>
       <button className="ret-hud-item" onClick={() => setActive && setActive("inbox")} title="순위판 보기">⚡ <b>{week.toLocaleString()}</b> EXP <small>7일</small></button>
       <i />
       <button className="ret-hud-item" onClick={() => setActive && setActive("perk")} title="복지몰 SHOP">🎁 <b>{wp.toLocaleString()}</b>P</button>
       <i />
       <span className="ret-hud-item">🔥 출근 <b>{attended}</b>일{streak > 1 ? <small>연속 {streak}일</small> : null}</span>
+      <i />
+      <button className="ret-hud-item" onClick={() => setActive && setActive("library")} title="업무 노트">📚 표현 <b>{(U && U.wordsCollected) || 0}</b>개</button>
     </div>
   );
 }
@@ -9699,7 +9752,7 @@ function RetDayPopup({ day, email, onClose }) {
 }
 
 // ── 내 목표 카드 (홈 · 사원증) ──
-function RetGoalCard({ compact }) {
+function RetGoalCard({ compact, slim }) {
   _useRetTick();
   if (!_RET_ON()) return null;
   const email = _retEmail();
@@ -9727,6 +9780,15 @@ function RetGoalCard({ compact }) {
     );
   }
   const left = p ? p.left : 0;
+  if (slim) {
+    return (
+      <div className="ret-goal-slim" title="사원증 탭에서 목표를 바꿀 수 있어요">
+        <span>🎯 <b>{g.days}일 연속 출근</b></span>
+        <div className="ret-goal-bar"><i style={{ width: (p ? p.pct : 0) + "%" }} /></div>
+        <span className="ret-goal-slim-r">{p ? p.done : 0}/{g.days} · <b>{left === 0 ? "오늘 달성!" : "D-" + left}</b> · +{(RET_GOALS.find(x => x.days === g.days) || {}).p}P</span>
+      </div>
+    );
+  }
   return (
     <div className={"ret-goal" + (compact ? " compact" : "")}>
       <div className="ret-goal-head">🎯 내 목표 · {g.days}일 연속 출근 <small>{left === 0 ? "오늘 달성!" : "D-" + left}</small></div>
@@ -9755,7 +9817,7 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
   const [reason, setReason] = React.useState(null);
   const [memo, setMemo] = React.useState("");
   const inv = _retInv(email);
-  const item = lv === 1 ? RET_PERKS.find(x => x.id === "extend") : (lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null));
+  const item = lv === 1 ? ((Number(inv.extend) || 0) > 0 || (Number(inv.annual) || 0) === 0 ? RET_PERKS.find(x => x.id === "extend") : RET_PERKS[0]) : (lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null));
   const wp = _retWpBalance(email);
   const needQuiz = _retNeedsQuizFirst(email);
   const defendWith = (id) => {
@@ -9837,13 +9899,14 @@ function RetPerkShopPage({ setActive }) {
   const email = _retEmail();
   const wp = _retWpBalance(email); const inv = _retInv(email);
   const l = _retWpLedger(email);
-  const [msg, setMsg] = React.useState("");
+  const [msg, _setMsg] = React.useState("");
+  const _msgT = React.useRef(null);
+  const setMsg = (m) => { _setMsg(m); if (_msgT.current) clearTimeout(_msgT.current); if (m) _msgT.current = setTimeout(() => _setMsg(""), 2600); };
   const buy = (it) => {
-    if (it.id === "report") { setActive("mypage"); setTimeout(() => { try { document.querySelector(".hr-section-head")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 300); return; }
+    if (it.id === "report") { setActive("mypage"); setTimeout(() => { try { (document.querySelector(".wp-services") || document.querySelector(".hr-section-head"))?.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 400); return; }
     if (it.note && !confirm(it.name + " (" + it.cost + "P)\n\n" + it.note.replace(/^⚠️ /, "") + "\n\n살까요?")) return;
     const r = _retBuy(email, it.id);
-    setMsg(r.ok ? "✅ " + it.name + " 구매했어요" + (it.note ? " · " + it.note.replace(/^⚠️ /, "") : "") : "⚠️ " + r.why);
-    setTimeout(() => setMsg(""), 2200);
+    setMsg(r.ok ? "✅ " + it.name + " 구매했어요" + (it.id === "pdf" ? " · 아래 'PDF 받기' 를 누르면 인쇄 창이 열려요" : it.note ? " · " + it.note.replace(/^⚠️ /, "") : "") : "⚠️ " + r.why);
   };
   const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} setActive("test"); };
   // 적립 방법 → 그 화면으로 데려가기 (심부름 이동과 같은 방식)
@@ -9852,6 +9915,26 @@ function RetPerkShopPage({ setActive }) {
     setTimeout(() => { try { if (evt) window.dispatchEvent(new Event(evt)); } catch (e) {} }, 250);
     setTimeout(() => { try { const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 550);
   };
+  if (!_retShopOpen()) {
+    const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+    return (
+      <div>
+        <div className="desk-header">
+          <div><div className="desk-eyebrow">OFFICE · PERK SHOP · 복지몰 (준비 중)</div><h1 className="desk-title"><em>Day {RET_SHOP_OPEN_DAY}</em>에 열리는 복지몰</h1></div>
+          <div className="desk-meta"><b>🎁 {wp.toLocaleString()}P</b><br/>쌓이는 중</div>
+        </div>
+        <div style={{ marginTop: 24, padding: "40px 28px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
+          <div style={{ fontSize: 42, marginBottom: 14, filter: "grayscale(0.3)" }}>🔒</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>복지몰은 Day {RET_SHOP_OPEN_DAY}부터 열려요 · {Math.max(0, RET_SHOP_OPEN_DAY - rd)}일 남았어요</div>
+          <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, maxWidth: 440, margin: "0 auto" }}>
+            7일 연속 출근하면 첫 복지포인트 <b>500P</b>가 들어와요. 그걸로 연차·휴가·동기 문장 엿보기 같은 걸 살 수 있어요.<br/>
+            그 전에 쌓인 포인트는 그대로 남아 있으니 걱정 마세요.
+          </div>
+          <div style={{ marginTop: 18 }}><button className="btn btn-primary" onClick={() => setActive("home")}>오늘 출근하러 가기 →</button></div>
+        </div>
+      </div>
+    );
+  }
   const history = [...l.earn.map(e => ({ at: e.at, t: "+" + e.p + "P", label: e.label })), ...l.spend.map(e => ({ at: e.at, t: "-" + e.cost + "P", label: e.title }))]
     .concat((() => { try { return _wpNotes("points").filter(n => n.type === "spend").map(n => ({ at: n.at, t: "-" + n.cost + "P", label: n.title })); } catch (e) { return []; } })())
     .sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 12);
@@ -9882,7 +9965,7 @@ function RetPerkShopPage({ setActive }) {
                 <b>{it.cost.toLocaleString()}P</b>
                 {!ok ? <span className="ret-shop-lock">🔒 {_RET_RANK_LABEL[it.rank]}</span>
                   : it.id === "preview" && have > 0 ? <button className="btn btn-primary btn-mini" onClick={usePreview}>지금 미리보기</button>
-                  : it.id === "pdf" && owned ? <button className="btn btn-ghost btn-mini" onClick={() => setActive("mynotes")}>성장 리포트에서 받기</button>
+                  : it.id === "pdf" && owned ? <button className="btn btn-primary btn-mini" onClick={() => { try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", "cards"); sessionStorage.setItem("__OD_RET_PDF_GO", "1"); } catch (e) {} setActive("mynotes"); }}>📄 PDF 받기</button>
                   : it.id === "report" ? <button className="btn btn-primary btn-mini" onClick={() => buy(it)}>사원증에서 받기</button>
                   : <button className="btn btn-primary btn-mini" disabled={wp < it.cost || owned} onClick={() => buy(it)}>{owned ? "보유 중" : (wp < it.cost ? (it.cost - wp).toLocaleString() + "P 부족" : "구매")}</button>}
               </div>
@@ -9929,9 +10012,12 @@ function RetWeeklyBoard() {
     })();
     return () => { alive = false; };
   }, [ws]);
+  React.useEffect(() => { try { _retReconcile({ silent: true }); } catch (e) {} }, []);
   const myInitial = String(USER.name || "나").slice(0, 1);
   const list = rows || [];
   const myRow = list.find(r => r.is_me);
+  const [showMine, setShowMine] = React.useState(false);
+  const mineRows = _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= ws).sort((a, b) => String(b.at).localeCompare(String(a.at)));
   return (
     <div className="ret-board">
       <div className="ret-board-head">
@@ -9954,6 +10040,13 @@ function RetWeeklyBoard() {
       ))}
       {!err && rows && rows.length === 0 && <div className="ret-board-err">최근 7일 동안 쌓인 EXP 가 아직 없어요. 오늘 출근하면 첫 줄에 올라가요.</div>}
       <div className="ret-board-foot">EXP: 출근 25 · 시추에이션 100 · 미니 퀴즈 50 · 퇴근 25 (하루 200) · 연속 출근 +50 · Review Quiz 10/20/50 · 내일 미리 쓰기 50 · 심부름 20</div>
+      <button className="btn btn-ghost btn-mini" style={{ marginTop: 10 }} onClick={() => setShowMine(!showMine)}>{showMine ? "내 EXP 내역 접기" : "내 최근 7일 EXP 내역 보기 (" + mineRows.length + "건)"}</button>
+      {showMine && (
+        <div style={{ marginTop: 8 }}>
+          {mineRows.length === 0 && <div className="ret-board-err">최근 7일에 기록된 EXP 가 없어요. 오늘 출근·시추에이션·퇴근을 하면 바로 쌓여요.</div>}
+          {mineRows.slice(0, 40).map(e => <div key={e.key} className="ret-shop-hist"><span>{String(e.at).slice(5, 10).replace("-", ".")}</span><span>{e.label}</span><b>+{e.exp}</b></div>)}
+        </div>
+      )}
     </div>
   );
 }
@@ -10068,8 +10161,8 @@ function RetGrowthReports() {
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🤝 분기 협상 리포트 <small>분기 평가 탭에서 협상하면 여기 남아요</small></div>
       {_retNegoList(email).filter(r => !r.preview).length === 0 && <div className="ret-growth-note">아직 협상 기록이 없어요. 분기 평가 탭에서 이번 분기 협상을 해보세요.</div>}
       {_retNegoList(email).filter(r => !r.preview).slice().reverse().map((r, i) => <RetNegoResultCard key={i} r={r} />)}
-      <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 커리어 리포트 <small>복지몰 SHOP · 사원증에서 받은 리포트</small></div>
-      {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 복지몰 SHOP 에서 1,000P 로 받아요.</div>}
+      <div className="ret-growth-head" style={{ marginTop: 18 }}>🧭 사수 리포트 <small>커리어 · 직무 · 영어 처방 · 직장생활 · 사원증에서 받은 리포트</small></div>
+      {consults.length === 0 && <div className="ret-growth-note">아직 받은 리포트가 없어요. 대리부터 사원증에서 1,000P 로 받아요 (커리어 · 직무 · 영어 처방 · 직장생활).</div>}
       {consults.map((c, i) => (
         <div key={i} className="ret-consult">
           <button className="ret-consult-head" onClick={() => setOpenC(openC === i ? null : i)}>
@@ -11387,9 +11480,8 @@ function WordBookPage({ openScene }) {
         ${c.qa.length ? `<div class="row"><label>Q&amp;A</label><p>${c.qa.map(n => esc(n.text).replace(/\n/g, "<br/>")).join("<br/><br/>")}</p></div>` : ""}
         ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
       </div>`).join("");
-    const w = window.open("", "_blank");
-    if (!w) { alert("팝업이 차단됐어요. 팝업을 허용하면 PDF로 저장할 수 있어요."); return; }
-    w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 협상 카드</title>
+    // ★ 2026-09-14: 새 창(팝업 차단에 걸림) 대신 숨은 iframe 으로 인쇄 → 인쇄 창에서 'PDF로 저장'
+    _odPrintHtml(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 1일1비 단어 모음</title>
       <style>
         body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
         .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
@@ -11420,8 +11512,14 @@ function WordBookPage({ openScene }) {
       ${archive.length ? `<div class="card"><div class="head"><span class="word">📌 리포트에서 건진 문장</span><span class="mean">${archive.length}개</span></div>${archive.map(x => `<div class="row"><label>${esc(String(x.src || "").slice(0, 6))}</label><p class="en">${esc(x.en)}${x.ko ? `<br/><span style="font-family:-apple-system,'Noto Sans KR',sans-serif;font-style:normal;color:#8A7A66">${esc(x.ko)}</span>` : ""}</p></div>`).join("")}</div>` : ""}
       <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
       </body></html>`);
-    w.document.close();
   };
+  // 복지몰 SHOP 에서 '성장 리포트에서 받기' 로 넘어온 경우: 표현 카드 탭을 열고 바로 인쇄 창을 띄운다
+  useEffect(() => {
+    let go = false; try { go = sessionStorage.getItem("__OD_RET_PDF_GO") === "1"; if (go) sessionStorage.removeItem("__OD_RET_PDF_GO"); } catch (e) {}
+    if (!go) return;
+    const t = setTimeout(() => { try { printBook(); } catch (e) {} }, 700);
+    return () => clearTimeout(t);
+  }, []);
   const gridCells = SCENARIOS.filter(s => s.day <= 90).map(s => byDay[s.day] || { day: s.day, locked: true });
   const signupKo = USER.joinDate || "";
   const archive = React.useMemo(() => _wpArchiveList().sort((a, b) => String(b.at).localeCompare(String(a.at))), [tick]);
@@ -12947,7 +13045,7 @@ function WelfarePointsSection() {
       <div className="wp-balance">
         <div className="wp-balance-l"><small>지금 쓸 수 있는 포인트</small><b>{_wpFmt(balance)}</b><span>적립 {_wpFmt(earned.total)} · 사용 {_wpFmt(spent)}</span></div>
         <div className="wp-balance-r">
-          <div className="wp-rules">출근 완주 <b>+{WP_RULES.day}</b> · 야근 <b>+{WP_RULES.ot}</b> · 복기 1장 <b>+{WP_RULES.review}</b> (하루 {WP_RULES.reviewPerDay}장) · 하루 최대 <b>{WP_RULES.dayMax}P</b></div>
+          {_RET_ON() ? <div className="wp-rules">진급 <b>+1,000</b> · 목표 달성 <b>+500~8,000</b> · 사이드 프로젝트 <b>+25</b> · 알림·공지방 설정 <b>+50~100</b> · 자세한 건 복지몰 SHOP</div> : <div className="wp-rules">출근 완주 <b>+{WP_RULES.day}</b> · 야근 <b>+{WP_RULES.ot}</b> · 복기 1장 <b>+{WP_RULES.review}</b> (하루 {WP_RULES.reviewPerDay}장) · 하루 최대 <b>{WP_RULES.dayMax}P</b></div>}
           <button className="wb-link" onClick={() => setShowLedger(v => !v)}>{showLedger ? "내역 닫기" : "적립·사용 내역"}</button>
         </div>
       </div>
@@ -14188,7 +14286,7 @@ function SceneModal({ scenario, onClose }) {
               "video-call":    { icon: "📹", label: "화상 회의 중" },
             }[scenario.task && scenario.task.channel] || { icon: "💬", label: "메시지" };
             const sameAsSpeaker = toId === scenario.npc;
-            const toShort = sameAsSpeaker ? String(npc.name).split(" ")[0] : toChar.name;
+            const toShort = sameAsSpeaker ? (/[가-힣]/.test(String(npc.name)) ? String(npc.name) : String(npc.name).split(" ")[0]) : toChar.name;
             const myInitial = (((window.__SIM && window.__SIM.USER && window.__SIM.USER.name) || "나").trim().slice(0, 1)) || "나";
             const composing = !submitted || editing;
             return (
@@ -14235,7 +14333,19 @@ function SceneModal({ scenario, onClose }) {
                     <div className="scene-hint-row"><span className="scene-hint-k">힌트</span><span>{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</span></div>
                     {scenario.task && scenario.task.koSentence && <div className="scene-hint-row"><span className="scene-hint-k">뜻</span><span className="scene-hint-ko">"{scenario.task.koSentence}"</span></div>}
                     <div className="scene-hint-row"><span className="scene-hint-k">표현</span><span><b className="scene-hint-word">{scenario.word}</b> 을(를) 꼭 넣어서 · 보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span></div>
-                    <div className="scene-hint-actions"><button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button></div>
+                    <div className="scene-hint-actions">
+                      {_RET_ON() ? (() => {
+                        const em = _retEmail(); const usedKey = "sample:" + scenario.day;
+                        const used = _retWpLedger(em).spend.some(x => x.item === usedKey);
+                        const bal = _retWpBalance(em);
+                        if (used) return <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기 (오늘 구매함)</button>;
+                        return <button className="btn btn-ghost btn-mini" disabled={bal < 100} title={bal < 100 ? "복지포인트가 모자라요" : ""} onClick={() => {
+                          if (!confirm("예문 채우기는 복지포인트 100P 예요. 쓸까요? (지금 " + bal.toLocaleString() + "P)")) return;
+                          if (!_retSpendWp(em, 100, usedKey, "예문 채우기 · Day " + scenario.day)) { alert("복지포인트가 모자라요"); return; }
+                          _retPing(); setDraft(scenario.sampleAnswer);
+                        }}>예문 채우기 · 🎁 100P{bal < 100 ? " (모자람)" : ""}</button>;
+                      })() : <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button>}
+                    </div>
                   </div>
                 )}
                 {!composing && _RET_ON() && <RetPeekBox day={scenario.day} />}
