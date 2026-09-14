@@ -26,13 +26,13 @@ $$;
 revoke all on function add_exp_event(text, text, int, text, int, timestamptz) from public;
 grant execute on function add_exp_event(text, text, int, text, int, timestamptz) to anon, authenticated;
 
--- 이번 주(월요일 00:00 KST 기준) EXP 순위. 이름은 성 한 글자만. 내 행은 is_me 로 표시.
+-- 최근 7일(7일 전 ~ 지금) EXP 순위. 이름은 성 한 글자만. 내 행은 is_me 로 표시. (월요일 리셋 아님, 굴러가는 창)
 create or replace function get_weekly_board(p_email text, p_limit int default 50)
 returns jsonb
 language sql security definer stable set search_path = public
 as $$
   with wk as (
-    select (date_trunc('week', (now() at time zone 'Asia/Seoul'))) at time zone 'Asia/Seoul' as start_at
+    select now() - interval '7 days' as start_at
   ),
   agg as (
     select e.email, sum(e.exp) as exp
@@ -54,7 +54,7 @@ as $$
       'exp', exp,
       'day', day_in_company,
       'is_me', (p_email is not null and email = lower(p_email)),
-      'badge', case when rk = 1 then '이번 주 1위' else null end
+      'badge', case when rk = 1 then '1위' else null end
     ) order by rk
   ), '[]'::jsonb)
   from (select * from ranked where is_tester = false order by rk limit greatest(coalesce(p_limit, 50), 1)) x;

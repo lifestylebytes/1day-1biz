@@ -1000,11 +1000,12 @@ body::before {
 .ret-toast.wp { background: var(--orange); }
 .ret-exp-tag { display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 900; color: #C2311F; background: rgba(216,90,42,0.10); padding: 1px 6px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
 .ret-exp-tag.done { color: #2D6E3A; background: rgba(45,110,58,0.10); }
-.ret-hud { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
-.ret-hud-chip { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); font-family: inherit; cursor: pointer; text-align: left; color: var(--ink); }
-.ret-hud-chip b { font-size: 13.5px; font-weight: 900; }
-.ret-hud-chip small { font-size: 10px; color: var(--ink-mute); font-weight: 700; }
-.ret-hud-chip.exp b { color: #C2311F; } .ret-hud-chip.wp b { color: var(--orange); } .ret-hud-chip.streak { cursor: default; }
+.ret-hud { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0 2px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-size: 12.5px; color: var(--ink-soft); flex-wrap: wrap; }
+.ret-hud i { width: 1px; height: 14px; background: var(--line); }
+.ret-hud-item { background: none; border: none; padding: 0; font-family: inherit; font-size: 12.5px; color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.ret-hud-item b { font-weight: 900; color: var(--ink); font-size: 13.5px; }
+.ret-hud-item small { font-size: 10.5px; color: var(--ink-mute); font-weight: 700; margin-left: 2px; }
+span.ret-hud-item { cursor: default; }
 .ret-pop { background: var(--paper); border: 2px solid var(--orange); border-radius: 14px; max-width: 420px; width: 100%; padding: 26px 24px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(58,40,18,0.5); margin: auto; }
 .ret-pop-burst { font-size: 44px; line-height: 1; }
 .ret-pop-big { font-size: 34px; font-weight: 900; color: #C2311F; letter-spacing: -0.02em; margin-top: 6px; }
@@ -1064,6 +1065,7 @@ body::before {
 .ret-shop-how { margin-top: 18px; border-top: 1.5px solid var(--ink); padding-top: 14px; }
 .ret-shop-how-head { font-size: 11px; letter-spacing: .14em; font-weight: 900; color: var(--orange); margin-bottom: 6px; }
 .ret-shop-how ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.8; }
+.ret-shop-ways a { color: var(--orange); font-weight: 800; cursor: pointer; margin-left: 6px; white-space: nowrap; }
 .ret-shop-hist { display: grid; grid-template-columns: 90px 1fr auto; gap: 10px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px dashed var(--line-soft); color: var(--ink-soft); }
 .ret-shop-hist b { color: #2D6E3A; } .ret-shop-hist b.neg { color: #C2311F; } .ret-shop-hist.muted { color: var(--ink-mute); }
 .ret-inbox-tabs { display: flex; gap: 6px; margin: 0 0 14px; }
@@ -8683,7 +8685,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           </div>
         )
       )}
-      <div className={"home-appline" + (_isHomeLive() ? " next" : "")} style={_lockedNext("doc", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}><ApplicationLine /></div>
+      <div className={"home-appline" + (_isHomeLive() ? " next" : "")} style={(_lockedNext("doc", _rdNow, USER.isViewingPast) || _RET_ON()) ? { display: "none" } : undefined}><ApplicationLine /></div>
 
       {/* ★ 오랜만에 온 회원 안내: 달력은 흘렀지만 진도는 그대로일 때, 뭐부터 할지 한 줄로. */}
       {(() => {
@@ -9353,9 +9355,9 @@ function _retDayAt(day, ts) {
 }
 function _retExpTotal(email) { return _retExpLedger(email).entries.reduce((n, e) => n + (Number(e.exp) || 0), 0); }
 function _retWeekStart(iso) { const d = new Date(iso + "T00:00:00Z"); const dow = (d.getUTCDay() + 6) % 7; return _retAddDays(iso, -dow); }   // 월요일
-function _retExpThisWeek(email) {
-  const ws = _retWeekStart(_tyTodayISO());
-  return _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= ws).reduce((n, e) => n + (Number(e.exp) || 0), 0);
+function _retExpThisWeek(email) {   // 최근 7일 (7일 전 ~ 오늘). 월요일 리셋이 아니라 굴러가는 창
+  const from = _retAddDays(_tyTodayISO(), -6);
+  return _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= from).reduce((n, e) => n + (Number(e.exp) || 0), 0);
 }
 function _retAwardExp(email, key, exp, label, at, day, kind, opts) {
   const l = _retExpLedger(email);
@@ -9609,7 +9611,14 @@ function _retReconcile(opts) {
     const USER = (window.__SIM && window.__SIM.USER) || {};
     if (USER.rankId === "fulltime" || USER.rankId === "senior") _retAwardWp(email, "promo:fulltime", RET_WP.promo, "사원 진급", null, { silent: true });
     if (USER.rankId === "senior") _retAwardWp(email, "promo:senior", RET_WP.promo, "대리 진급", null, { silent: true });
-    // 5) 설정 이벤트 (카톡/푸시/공지방) 는 _retEvent 로 들어온다
+    // 5) 설정 이벤트 (카톡/푸시/공지방) 는 _retEvent 로 들어온다. 이미 켜둔 사람은 여기서 한 번 확인해서 준다 (세션당 1회).
+    try {
+      if (!window.__odRetSetChecked && email !== "guest") {
+        window.__odRetSetChecked = true;
+        if (window.OD && window.OD.enabled && window.OD.getKakaoNotify) window.OD.getKakaoNotify(email).then(r => { const h = r && r.ok && r.result && (r.result.hour ?? r.result.kakao_notify_hour); if (h !== null && h !== undefined) _retAwardWp(email, "set:kakao", RET_WP.kakao, "카톡 출근 알림 설정"); }).catch(() => {});
+        if ("serviceWorker" in navigator && "PushManager" in window && Notification.permission === "granted") navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => { if (sub) _retAwardWp(email, "set:push", RET_WP.push, "푸시 알림 설정"); }).catch(() => {});
+      }
+    } catch (e) {}
     // 6) 목표 판정
     _retGoalCheck(email);
   } catch (e) {}
@@ -9653,12 +9662,15 @@ function RetHud({ setActive }) {
   _useRetTick();
   if (!_RET_ON()) return null;
   const email = _retEmail();
-  const week = _retExpThisWeek(email), total = _retExpTotal(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
+  const week = _retExpThisWeek(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
+  const U = window.__SIM && window.__SIM.USER; const attended = (U && U.streak) || 0;
   return (
     <div className="ret-hud">
-      <button className="ret-hud-chip exp" onClick={() => setActive && setActive("inbox")} title="이번 주 EXP · 순위판 보기"><b>⚡ {week.toLocaleString()}</b><small>이번 주 EXP · 누적 {total.toLocaleString()}</small></button>
-      <button className="ret-hud-chip wp" onClick={() => setActive && setActive("perk")} title="복지포인트 · 복지몰 SHOP"><b>🎁 {wp.toLocaleString()}P</b><small>복지포인트</small></button>
-      <span className="ret-hud-chip streak"><b>🔥 {streak}일</b><small>연속 출근</small></span>
+      <button className="ret-hud-item" onClick={() => setActive && setActive("inbox")} title="순위판 보기">⚡ <b>{week.toLocaleString()}</b> EXP <small>7일</small></button>
+      <i />
+      <button className="ret-hud-item" onClick={() => setActive && setActive("perk")} title="복지몰 SHOP">🎁 <b>{wp.toLocaleString()}</b>P</button>
+      <i />
+      <span className="ret-hud-item">🔥 출근 <b>{attended}</b>일{streak > 1 ? <small>연속 {streak}일</small> : null}</span>
     </div>
   );
 }
@@ -9679,7 +9691,7 @@ function RetDayPopup({ day, email, onClose }) {
         <div className="ret-pop-rows">
           {rows.map(e => <div key={e.key}><span>{e.label.replace(/ · Day \d+$/, "")}</span><b>+{e.exp}</b></div>)}
         </div>
-        <div className="ret-pop-foot">EXP 는 매주 월요일 리셋되는 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 사내 게시판·복지몰 SHOP 에서 써요.</div>
+        <div className="ret-pop-foot">EXP 는 최근 7일 기준 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 복지몰 SHOP 에서 써요.</div>
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>좋아요 →</button>
       </div>
     </div>
@@ -9834,6 +9846,12 @@ function RetPerkShopPage({ setActive }) {
     setTimeout(() => setMsg(""), 2200);
   };
   const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} setActive("test"); };
+  // 적립 방법 → 그 화면으로 데려가기 (심부름 이동과 같은 방식)
+  const go = (nav, sel, evt) => {
+    setActive(nav);
+    setTimeout(() => { try { if (evt) window.dispatchEvent(new Event(evt)); } catch (e) {} }, 250);
+    setTimeout(() => { try { const el = sel && document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }, 550);
+  };
   const history = [...l.earn.map(e => ({ at: e.at, t: "+" + e.p + "P", label: e.label })), ...l.spend.map(e => ({ at: e.at, t: "-" + e.cost + "P", label: e.title }))]
     .concat((() => { try { return _wpNotes("points").filter(n => n.type === "spend").map(n => ({ at: n.at, t: "-" + n.cost + "P", label: n.title })); } catch (e) { return []; } })())
     .sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 12);
@@ -9874,11 +9892,13 @@ function RetPerkShopPage({ setActive }) {
       </div>
       <div className="ret-shop-how">
         <div className="ret-shop-how-head">복지포인트는 이렇게 쌓여요</div>
-        <ul>
+        <ul className="ret-shop-ways">
           <li>진급할 때 <b>+1,000P</b></li>
-          <li>🎯 내 목표 달성 시 <b>+500 ~ 8,000P</b> (7·14·30·60일)</li>
-          <li>퇴근 후 사이드 프로젝트 완료 <b>+25P</b> (하루 한 번)</li>
-          <li>카톡 출근 알림 켜기 <b>+100P</b> · 푸시 알림 <b>+50P</b> · 공지방 입장 <b>+50P</b> (각 최초 1회)</li>
+          <li>🎯 내 목표 달성 시 <b>+500 ~ 8,000P</b> (7·14·30·60일) <a onClick={() => go("home", ".ret-goal")}>목표 설정하러 가기 →</a></li>
+          <li>퇴근 후 사이드 프로젝트 완료 <b>+25P</b> (하루 한 번) <a onClick={() => go("home", ".ot-card")}>오늘 사이드 프로젝트 →</a></li>
+          <li>카톡 출근 알림 켜기 <b>+100P</b> <a onClick={() => go("mypage", "[data-errand='kakao']", "od-open-settings")}>켜러 가기 →</a></li>
+          <li>푸시 알림 켜기 <b>+50P</b> <a onClick={() => go("mypage", "[data-errand='push']", "od-open-settings")}>켜러 가기 →</a></li>
+          <li>1일1비 공지방 입장 <b>+50P</b> <a onClick={() => go("mypage", "[data-errand='notice']")}>입장하러 가기 →</a></li>
         </ul>
         <div className="ret-shop-how-head" style={{ marginTop: 14 }}>최근 내역</div>
         {history.length ? history.map((h, i) => <div key={i} className="ret-shop-hist"><span>{String(h.at).slice(0, 10)}</span><span>{h.label}</span><b className={h.t[0] === "-" ? "neg" : ""}>{h.t}</b></div>) : <div className="ret-shop-hist muted">아직 내역이 없어요</div>}
@@ -9894,7 +9914,7 @@ function RetWeeklyBoard() {
   const email = _retEmail();
   const [rows, setRows] = React.useState(null); const [err, setErr] = React.useState("");
   const mine = _retExpThisWeek(email);
-  const ws = _retWeekStart(_tyTodayISO());
+  const ws = _retAddDays(_tyTodayISO(), -6);
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -9915,11 +9935,11 @@ function RetWeeklyBoard() {
   return (
     <div className="ret-board">
       <div className="ret-board-head">
-        <div><b>🏆 WEEKLY BIZ SCORE</b><small>매주 월요일 리셋 · {ws} ~</small></div>
-        <div className="ret-board-me"><b>⚡ {mine.toLocaleString()}</b><small>내 이번 주 EXP{myRow ? " · " + myRow.rank + "위" : ""}</small></div>
+        <div><b>🏆 WEEKLY BIZ SCORE</b><small>최근 7일 · {ws.slice(5).replace("-", ".")} ~ 오늘</small></div>
+        <div className="ret-board-me"><b>⚡ {mine.toLocaleString()}</b><small>내 최근 7일 EXP{myRow ? " · " + myRow.rank + "위" : ""}</small></div>
       </div>
       {list.length > 0 && list[0] && (
-        <div className="ret-board-top">👑 이번 주 1위 <b>{list[0].masked}</b> · {Number(list[0].exp).toLocaleString()} EXP{list[0].is_me ? " · 나예요!" : ""}</div>
+        <div className="ret-board-top">👑 지금 1위 <b>{list[0].masked}</b> · {Number(list[0].exp).toLocaleString()} EXP{list[0].is_me ? " · 나예요!" : ""}</div>
       )}
       {err && <div className="ret-board-err">{err}<br/><small>내 EXP 는 이 기기에서 그대로 쌓이고 있어요.</small></div>}
       {!err && rows === null && <div className="ret-board-err">불러오는 중…</div>}
@@ -9932,7 +9952,7 @@ function RetWeeklyBoard() {
           <b className="ret-board-exp">{Number(r.exp).toLocaleString()}</b>
         </div>
       ))}
-      {!err && rows && rows.length === 0 && <div className="ret-board-err">이번 주 아직 아무도 EXP 를 못 얻었어요. 첫 번째가 돼보세요.</div>}
+      {!err && rows && rows.length === 0 && <div className="ret-board-err">최근 7일 동안 쌓인 EXP 가 아직 없어요. 오늘 출근하면 첫 줄에 올라가요.</div>}
       <div className="ret-board-foot">EXP: 출근 25 · 시추에이션 100 · 미니 퀴즈 50 · 퇴근 25 (하루 200) · 연속 출근 +50 · Review Quiz 10/20/50 · 내일 미리 쓰기 50 · 심부름 20</div>
     </div>
   );
@@ -10011,6 +10031,7 @@ function RetGrowthReports() {
   const list = _retEnsurePromoReports(email);
   const consults = (() => { try { return _wpNotes("consult"); } catch (e) { return []; } })();
   const [openC, setOpenC] = React.useState(null);
+  const [legacyView, setLegacyView] = React.useState(null);
   const sample = list.length ? null : { id: "sample", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(),
     stats: { from: 1, to: 30, total: 30, attended: 27, absent: 3, rate: 90, words: 27, sentences: 27, corrected: 24, ot: 6, pre: 9, rev: 11, topTags: ["meeting", "email", "project"] },
     mentorLine: "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요." };
@@ -10020,6 +10041,30 @@ function RetGrowthReports() {
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
       {sample && <RetPromoReportCard r={sample} sample />}
       {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
+      {(() => {
+        const legacy = (typeof _reportsList === "function") ? _reportsList() : [];
+        const rd = (window.__SIM && window.__SIM.USER && (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay)) || 1;
+        return (
+          <>
+            <div className="ret-growth-head" style={{ marginTop: 18 }}>🧠 AI 성장 리포트 · 승진 종합 리포트 <small>사수가 내 기록을 읽고 숫자와 함께 정리</small></div>
+            {legacy.length === 0 && <div className="ret-growth-note">아직 발급된 게 없어요. Day 60부터 받을 수 있어요.</div>}
+            {legacy.map(r => { const ms = r.milestone && _REPORT_MILESTONES.find(m => m.id === r.milestone); return (
+              <div key={r.day + (r.milestone || "")} className="ret-consult">
+                <button className="ret-consult-head" onClick={() => setLegacyView(r)}><span>📋 {ms ? ms.title : "AI 성장 리포트"} · Day {r.day}</span><small>{String(r.at || r.savedAt || "").slice(0, 10)}</small><i>보기</i></button>
+              </div>); })}
+            {rd >= AIREPORT_OPEN_DAY && <div style={{ padding: "6px 0 2px" }}><AiGrowthReport /></div>}
+            {legacyView && (
+              <div className="unlock-pop-bg" onClick={() => setLegacyView(null)}>
+                <div className="unlock-pop" style={{ maxWidth: 720, maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div className="unlock-pop-eyebrow">성장 리포트</div>
+                  <ReportView rep={legacyView} profile={_loadProfile(email)} />
+                  <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={() => setLegacyView(null)}>닫기</button>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
       <div className="ret-growth-head" style={{ marginTop: 18 }}>🤝 분기 협상 리포트 <small>분기 평가 탭에서 협상하면 여기 남아요</small></div>
       {_retNegoList(email).filter(r => !r.preview).length === 0 && <div className="ret-growth-note">아직 협상 기록이 없어요. 분기 평가 탭에서 이번 분기 협상을 해보세요.</div>}
       {_retNegoList(email).filter(r => !r.preview).slice().reverse().map((r, i) => <RetNegoResultCard key={i} r={r} />)}
@@ -12943,7 +12988,10 @@ function WelfarePointsSection() {
           </div>
         </div>
       )}
-      {consults.length > 0 && !view && (
+      {_RET_ON() && consults.length > 0 && !view && (
+        <div className="wp-history"><div className="hr-row" style={{ fontSize: 12.5 }}><span className="hr-row-label">📑 받은 리포트 {consults.length}건</span><span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>성장 리포트 탭에서 볼 수 있어요 →</span></div></div>
+      )}
+      {!_RET_ON() && consults.length > 0 && !view && (
         <div className="wp-history">
           <div className="wp-history-head">상담 기록 {consults.length}건</div>
           {consults.slice(0, 5).map((c, i) => (
@@ -12986,13 +13034,19 @@ function HrRecordsSection() {
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", textAlign: "right" }}>{profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.freq ? " · 영어 " + profile.freq : ""}</span>
         </button>
       )}
-      {reports.length === 0 && (
+      {_RET_ON() && (
+        <div className="hr-row" style={{ fontSize: 12.5 }}>
+          <span className="hr-row-label">📑 리포트</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>진급·협상·커리어 리포트는 성장 리포트 탭에 · 예전 리포트 {reports.length}건도 거기서 →</span>
+        </div>
+      )}
+      {!_RET_ON() && reports.length === 0 && (
         <div className="hr-row" style={{ fontSize: 12.5 }}>
           <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>발급된 리포트 없음</span>
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>{nextMs ? `Day ${nextMs.at}에 ${nextMs.title}가 발급돼요` : ""}</span>
         </div>
       )}
-      {reports.map(r => {
+      {!_RET_ON() && reports.map(r => {
         const ms = r.milestone && _REPORT_MILESTONES.find(m => m.id === r.milestone);
         return (
           <button key={r.day + (r.milestone || "")} className="hr-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setView(r)}>
@@ -13001,8 +13055,8 @@ function HrRecordsSection() {
           </button>
         );
       })}
-      {(rd >= AIREPORT_OPEN_DAY || (nextMs && rd >= nextMs.at)) && <div style={{ padding: "6px 0 2px" }}><AiGrowthReport /></div>}
-      {nextMs && reports.length > 0 && rd < nextMs.at && (
+      {!_RET_ON() && (rd >= AIREPORT_OPEN_DAY || (nextMs && rd >= nextMs.at)) && <div style={{ padding: "6px 0 2px" }}><AiGrowthReport /></div>}
+      {!_RET_ON() && nextMs && reports.length > 0 && rd < nextMs.at && (
         <div className="hr-row" style={{ fontSize: 12 }}>
           <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>다음 발급</span>
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>Day {nextMs.at} · {nextMs.title}</span>
@@ -17401,6 +17455,7 @@ function MemoModal({ memo, onClose }) {
           </div>
           {memo.ctaUrl && (
             <a href={memo.ctaUrl} target="_blank" rel="noopener noreferrer"
+               onClick={() => { try { if (memo.ctaUrl === _KAKAO_NOTICE_ROOM && window.__odRetEvent) window.__odRetEvent("room"); } catch (e) {} }}
                style={{ display: "block", textAlign: "center", marginTop: 20, background: "var(--orange)", color: "#fff",
                         borderRadius: 8, padding: "12px 16px", fontWeight: 900, fontSize: 14, textDecoration: "none" }}>
               {memo.ctaLabel || "자세히 보기 →"}
