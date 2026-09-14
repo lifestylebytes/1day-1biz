@@ -945,6 +945,37 @@ body::before {
 .scene-input:focus { border-color: var(--orange); }
 .scene-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
+/* 대화 스레드: 상대 말풍선(왼쪽) → 내 답장 말풍선(오른쪽). 답장하는 화면으로 바로 읽히게. */
+.scene-thread { margin-top: 16px; }
+.scene-ch { margin-left: 8px; font-weight: 700; color: var(--orange); white-space: nowrap; }
+.scene-reply-row { margin-top: 14px; display: flex; gap: 14px; align-items: flex-start; justify-content: flex-end; }
+.scene-reply-col { flex: 1; min-width: 0; max-width: 88%; }
+.scene-avatar-me { background: var(--ink); }
+.scene-reply-name { font-size: 11px; color: var(--ink-mute); margin-bottom: 4px; font-weight: 700; text-align: right; }
+.scene-reply-name b { color: var(--ink); }
+.scene-reply-bubble {
+  position: relative;
+  background: #FFF6E5;
+  border: 1.5px solid var(--orange);
+  border-radius: 12px 0 12px 12px;
+  padding: 14px 16px;
+}
+.scene-reply-bubble::before {
+  content: ""; position: absolute; top: 10px; right: -9px;
+  width: 0; height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid var(--orange);
+}
+.scene-reply-bubble.sent { background: var(--orange); color: #fff; }
+.scene-reply-hint { font-size: 13.5px; color: var(--ink); line-height: 1.55; font-weight: 700; margin-bottom: 8px; }
+.scene-reply-ko { font-size: 13.5px; color: var(--ink-soft); font-style: italic; line-height: 1.5; margin-bottom: 10px; }
+.scene-reply-word { font-size: 12px; color: var(--ink-mute); font-weight: 700; margin-bottom: 6px; }
+.scene-reply-word b { background: var(--highlight); padding: 1px 6px; color: var(--ink); }
+.scene-reply-bubble .scene-input { background-color: #fff; }
+.scene-reply-foot { margin-top: 8px; font-size: 11px; color: var(--ink-mute); font-weight: 600; }
+.scene-reply-sent { font-size: 15.5px; font-weight: 600; line-height: 1.55; word-break: keep-all; }
+
 /* 사수 포스트잇 */
 .postit {
   background: #FFE9A6;
@@ -2134,6 +2165,9 @@ body.od-modal-open { overflow: hidden !important; }
   .scene-task { padding-top: 14px; margin-top: 16px; }
   .scene-task-prompt { font-size: 13px; }
   .scene-input { min-height: 76px; font-size: 13px; padding: 10px 12px; }
+  .scene-reply-row { gap: 10px; }
+  .scene-reply-col { max-width: 100%; }
+  .scene-reply-bubble { padding: 12px 12px; }
 
   /* 포스트잇, 더 작게 */
   .postit { padding: 14px 14px 18px; font-size: 12px; }
@@ -12869,98 +12903,83 @@ function SceneModal({ scenario, onClose }) {
           <div className="label-doc">📍 시추에이션</div>
           <div style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-soft)", marginTop: 6 }}>{_sceneNoClock(scenario.scene)}</div>
 
-          <div className="scene-quote-row" style={{ marginTop: 16 }}>
-            <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
-            <div style={{ flex: 1 }}>
-              <div className="scene-npc-name">{npc.name} · {npc.role}</div>
-              <div className="scene-quote-bubble">"{_hlQuote(scenario.quote, scenario.word)}"</div>
-              <KoPeek ko={scenario.quoteKo} />
-            </div>
-          </div>
-
-          <div className="scene-task">
-            <div className="scene-task-label">▶ 오늘의 미션</div>
-
-            {/* task: 누구에게 어떤 채널로 보내나 명확히 (있을 때만) */}
-            {scenario.task && (() => {
-              const toId = scenario.task.to;
-              const toChar = toId === "team"
-                ? { name: "회의 참석자 전원", avatar: "👥", color: "var(--ink-soft)", role: "어제 미팅 참석한 동료들" }
-                : (CHARACTERS[toId] || { name: toId, avatar: "?", color: "var(--ink-mute)", role: "" });
-              const channelMeta = {
-                "face":         { icon: "🏢", label: "같은 자리에서 즉답" },
-                "slack-dm":     { icon: "💬", label: "슬랙 1:1 DM" },
-                "slack-channel":{ icon: "#",  label: "슬랙 채널" },
-                "email":        { icon: "📧", label: "이메일" },
-                "video-call":   { icon: "📹", label: "화상 회의 중 발언" },
-              }[scenario.task.channel] || { icon: "💬", label: "메시지" };
-              return (
-                <div style={{
-                  marginBottom: 14, padding: "12px 14px",
-                  background: "var(--cream)",
-                  border: "1px solid var(--line)",
-                  borderLeft: "3px solid var(--orange)",
-                  borderRadius: 6,
-                }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--ink-mute)", marginBottom: 8 }}>
-                    📨 누구에게 보내나요?
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: 6,
-                      background: toChar.color, color: "#fff",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontWeight: 800, fontSize: 14, flexShrink: 0,
-                    }}>{toChar.avatar}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>{toChar.name}</div>
-                      <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 1 }}>{toChar.role}</div>
-                      <div style={{ fontSize: 11.5, color: "var(--orange)", fontWeight: 700, marginTop: 4 }}>
-                        {channelMeta.icon} {channelMeta.label}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{
-                    marginTop: 10, paddingTop: 10, borderTop: "1px dashed var(--line)",
-                    fontSize: 13, color: "var(--ink)", lineHeight: 1.55, fontWeight: 500,
-                  }}>
-                    {scenario.task.promptKo}
+          {/* ── 대화 스레드 (2026-09-14): 상대 메시지 바로 아래에 "내 답장" 말풍선.
+                 예전엔 말풍선 → 구분선 → '오늘의 미션' 카드 → 입력란이라, 답장하는 화면인지 안 읽혔다.
+                 (피드백: "카톡 UI가 아니어서 바로 답장하는 것 같지가 않다") ── */}
+          {(() => {
+            const toId = (scenario.task && scenario.task.to) || scenario.npc;
+            const toChar = toId === "team"
+              ? { name: "회의 참석자 전원", avatar: "👥", color: "var(--ink-soft)", role: "어제 미팅 참석한 동료들" }
+              : (CHARACTERS[toId] || npc);
+            const ch = {
+              "face":          { icon: "🏢", label: "같은 자리에서 바로" },
+              "slack-dm":      { icon: "💬", label: "슬랙 DM" },
+              "slack-channel": { icon: "#",  label: "슬랙 채널" },
+              "email":         { icon: "📧", label: "이메일" },
+              "video-call":    { icon: "📹", label: "화상 회의 중" },
+            }[scenario.task && scenario.task.channel] || { icon: "💬", label: "메시지" };
+            const sameAsSpeaker = toId === scenario.npc;
+            const toShort = sameAsSpeaker ? String(npc.name).split(" ")[0] : toChar.name;
+            const myInitial = (((window.__SIM && window.__SIM.USER && window.__SIM.USER.name) || "나").trim().slice(0, 1)) || "나";
+            const composing = !submitted || editing;
+            return (
+              <div className="scene-thread">
+                {/* 상대 메시지 */}
+                <div className="scene-quote-row">
+                  <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="scene-npc-name">{npc.name} · {npc.role}<span className="scene-ch">{ch.icon} {ch.label}</span></div>
+                    <div className="scene-quote-bubble">"{_hlQuote(scenario.quote, scenario.word)}"</div>
+                    <KoPeek ko={scenario.quoteKo} />
                   </div>
                 </div>
-              );
-            })()}
 
-            <div className="scene-task-prompt">
-              <b>{scenario.word}</b> 을(를) 자연스럽게 써서 한 줄로 작성해보세요.
-            </div>
-            {scenario.task && scenario.task.koSentence && (
-              <div style={{
-                marginTop: 6, marginBottom: 4,
-                fontSize: 14, color: "var(--ink)",
-                fontWeight: 600, lineHeight: 1.55,
-                fontStyle: "italic",
-              }}>
-                "{scenario.task.koSentence}"
+                {/* 내 답장 */}
+                <div className="scene-reply-row">
+                  <div className="scene-reply-col">
+                    <div className="scene-reply-name">
+                      ↩ <b>{toShort}</b>에게 답장{!sameAsSpeaker && <span className="scene-ch">{ch.icon} {ch.label}</span>}
+                    </div>
+                    <div className={"scene-reply-bubble" + (composing ? "" : " sent")}>
+                      {composing ? (
+                        <>
+                          {scenario.task && scenario.task.promptKo && (
+                            <div className="scene-reply-hint">{scenario.task.promptKo}</div>
+                          )}
+                          {scenario.task && scenario.task.koSentence && (
+                            <div className="scene-reply-ko">이 뜻으로 → "{scenario.task.koSentence}"</div>
+                          )}
+                          <div className="scene-reply-word"><b>{scenario.word}</b> 넣어서 영어 한 문장</div>
+                          <textarea
+                            className="scene-input"
+                            placeholder={`${scenario.word}을(를) 넣어서 ${toShort}에게 답하기…`}
+                            value={draft}
+                            onChange={e => setDraft(e.target.value)}
+                          />
+                          <div className="scene-actions">
+                            <button className="btn btn-primary" onClick={handleSubmit} disabled={!draft.trim()}>
+                              {editing ? "다시 보내기 → 새 피드백" : "답장 보내기 ➤"}
+                            </button>
+                            <button className="btn btn-ghost" onClick={() => setDraft(scenario.sampleAnswer)}>예문 보기</button>
+                            {editing && (
+                              <button className="btn btn-ghost" onClick={() => { setEditing(false); setDraft(saved?.sentence || draft); }}>취소</button>
+                            )}
+                          </div>
+                          <div className="scene-reply-foot">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</div>
+                        </>
+                      ) : (
+                        <div className="scene-reply-sent">"{draft}"</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="scene-avatar scene-avatar-me">{myInitial}</div>
+                </div>
               </div>
-            )}
-            <textarea
-              className="scene-input"
-              placeholder={`${scenario.word}을(를) 포함한 영어 한 문장…`}
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              disabled={submitted && !editing}
-            />
-            {(!submitted || editing) ? (
-              <div className="row" style={{ marginTop: 12 }}>
-                <button className="btn btn-primary" onClick={handleSubmit} disabled={!draft.trim()}>
-                  {editing ? "다시 제출 → 새 피드백" : "제출 → 사수 피드백 받기"}
-                </button>
-                <button className="btn btn-ghost" onClick={() => setDraft(scenario.sampleAnswer)}>예문 보기</button>
-                {editing && (
-                  <button className="btn btn-ghost" onClick={() => { setEditing(false); setDraft(saved?.sentence || draft); }}>취소</button>
-                )}
-              </div>
-            ) : (
+            );
+          })()}
+
+          {submitted && !editing && (
+          <div className="scene-task">
               <>
                 {/* 사수 피드백, 헤드라인 + 체크 항목 + 예시 + 팁 */}
                 <div style={{ marginTop: 14, padding: 18, background: "#FFE9A6", border: "1px solid var(--line)", position: "relative" }}>
@@ -13171,8 +13190,8 @@ function SceneModal({ scenario, onClose }) {
                   <button className="btn btn-ghost" onClick={() => setEditing(true)}>✏️ 다시 쓰기</button>
                 </div>
               </>
-            )}
           </div>
+          )}
 
           {/* 버디한테 물어보기, 누르면 우하단 메신저 도크가 올라옴 (피드백 #23) */}
           <div className="buddy-chat">
