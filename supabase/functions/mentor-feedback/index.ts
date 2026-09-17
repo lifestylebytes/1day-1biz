@@ -237,6 +237,11 @@ Deno.serve(async (req) => {
       work: { role: "직장생활 고민 상담: 관계, 번아웃, 리모트 근무, 피드백 받는 법. 공감 먼저, 그다음 이번 주에 해볼 작은 행동. 의학적·심리치료적 진단은 하지 않는다. 자해·극단적 선택·심한 우울 신호가 보이면 전문가(정신건강 상담전화 1577-0199 등)와 가까운 사람에게 지금 이야기하라고 headline 과 diagnosis 첫 문단에 분명히 쓴다. fixes 에는 피드백을 받을 때·부탁할 때·거절할 때 이 사람이 실제로 쓸 문장을 넣는다.", fixesLabel: "그 순간에 쓸 문장, 이렇게", termsLabel: "외국계에서 이 상황을 말하는 법", actionsLabel: "다음 주 액션" },
     };
     const T = TOPIC[topic] || TOPIC.job;
+    // ★ 2026-09-17: '답 바꿔서 다시' (200P) - 이전 리포트와 비교해 바뀐 부분만 짧게
+    const delta = (cp.delta && typeof cp.delta === "object") ? {
+      prevAt: str(cp.delta.prevAt, 30), prevHeadline: str(cp.delta.prevHeadline, 120),
+      prevAnswers: clip(cp.delta.prevAnswers, 10).map((x: any) => str(x, 200)), prevActions: clip(cp.delta.prevActions, 5).map((x: any) => str(x, 100)),
+    } : null;
     const sysReport = [
       `너는 외국계 회사에서 10년 넘게 신입을 키운 선배 사수(${mentor})야. 신입 ${compact.name || ""}(${compact.day}일차)에게 한 장짜리 리포트를 써. 이 리포트는 유료(복지포인트)라서, 어디서나 읽을 수 있는 일반론이 한 줄이라도 있으면 실패야.`,
       T.role,
@@ -246,10 +251,11 @@ Deno.serve(async (req) => {
       compact.answers.length ? `진단 문답: ${compact.answers.map((x: any) => x.q + " → " + x.a).join(" / ")}. 답을 반복하지 말고 해석해서 써. 답과 기록이 다르면 그 차이가 이 리포트의 핵심이다.` : "",
       question ? `신입이 덧붙인 한 줄: "${question}". 이 문장이 이 리포트의 출발점이다. headline 과 diagnosis 첫 문단은 반드시 이 한 줄에 직접 답한다.` : "",
       `JSON 으로만: {"headline":"이 사람의 상황을 한 줄로 뒤집어 주는 문장(35자 안팎, 동사로 끝남. '나아가다/극복하다/노력하다' 같은 뻔한 말 금지)","oneLine":"기록에서 찾은 구체적 성취 한 줄(숫자와 실제 표현 포함)","readings":[{"title":"기록에서 읽히는 나 (제목 8자 안팎)","body":"2~3문장. 이 사람의 문장 습관·일하는 방식·영어 성향 중 하나","evidence":"근거가 되는 실제 문장 하나 그대로 인용"}] 3개,"diagnosis":["사수가 드리는 말 2~3문단, 각 3~4문장. 답·기록·덧붙인 한 줄을 근거로 진짜 원인을 짚고 지금 필요한 게 뭔지"],"strengths":["기록에 근거한 잘하는 것 2개, 각각 실제 문장이나 숫자 인용"],"expressions":[{"en":"이번에 가져갈 표현","ko":"뜻","use":"이 사람 상황에서 언제 쓰는지 한 줄"}] 3개,"qa":[{"q":"진단 질문","a":"신입의 답","coach":"그 답에 대한 사수 코멘트 1~2문장, 기록과 연결"}] 3개,"fixes":[{"blank":"${T.fixesLabel}: 원문 또는 빈칸 문장","answer":"고친 문장 또는 정답","why":"왜 그게 통하는지"}] 4개,"jobTerms":[{"term":"${T.termsLabel}","ko":"뜻","ex":"예문"}] 4개,"culture":[{"title":"외국계에서 더 잘 통하는 방식","body":"1~2문장"}] 3개,"actions":[{"task":"할 것","how":"어떻게(구체적 산출물. 1일1비 기능 활용 포함: 야근 3문장, 복습 탭 흔들리는 카드, 사수 Q&A)","when":"언제"}] 5개,"goals":[{"goal":"다음 30일 목표","measure":"측정 방법"}] 3개,"vision":"1년 뒤의 모습 2~3문장, 이 사람 직무와 목표 기준","closing":"닫는 말 2~3문장","oneLiner":"사수가 남기는 한 줄(동사로 끝남)"}`,
+      delta ? `이번엔 '답 바꿔서 다시' 요청이다. 이전 리포트(${delta.prevAt.slice(0, 10)}, 헤드라인 "${delta.prevHeadline}", 그때 답: ${delta.prevAnswers.join(" / ") || "없음"}, 그때 액션: ${delta.prevActions.join(" / ") || "없음"}) 와 지금 답을 비교해서, 바뀐 답과 그 사이 새로 쌓인 문장·기록만 근거로 짧게 쓴다. 안 바뀐 얘기는 반복하지 않는다. headline 첫머리는 "달라진 점:" 으로 시작. 분량은 처음 리포트의 1/3: readings 1개, diagnosis 1문단, strengths 1개, expressions 2개, qa 는 바뀐 답만(최대 2), fixes 2개, jobTerms 2개, culture 1개, actions 3개, goals 1개, vision 1문장, closing 1~2문장.` : "",
       `규칙: 따뜻하지만 날카로운 존댓말. 모든 한국어 문장은 동사로 끝낸다(명사로 끝나는 조각 문장 금지). "중요합니다/도움이 될 것입니다/고민해보세요/노력하세요" 같은 빈 말 금지. 모든 조언은 이 사람의 문장·숫자·답을 근거로 대고, 근거를 문장 안에 보여준다. em-dash(U+2014) 절대 금지.`,
     ].filter(Boolean).join("\n");
     {
-      const rr = await callRich(sysReport, JSON.stringify(compact), { temperature: 0.6, maxTokens: 4500 });
+      const rr = await callRich(sysReport, JSON.stringify(compact), { temperature: 0.6, maxTokens: delta ? 2200 : 4500 });
       if (!rr.ok) return json({ ok: false, error: rr.error }, 200);
       const consult: any = rr.data || {};
       if (!consult.headline) return json({ ok: false, error: "empty" }, 200);
