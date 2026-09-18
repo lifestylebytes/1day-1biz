@@ -1084,7 +1084,11 @@ span.ret-hud-item { cursor: default; }
 .ret-goal-slim .ret-goal-bar { flex: 1; margin: 0; height: 6px; }
 .ret-goal-slim b { color: var(--ink); font-weight: 900; }
 .ret-goal-slim-r { white-space: nowrap; }
-.office-strip.sib { border-radius: 999px !important; margin: 8px 0 0 !important; padding: 7px 14px !important; font-size: 12.5px; }
+.office-strip.sib { border-radius: 999px !important; margin: 6px 0 0 !important; padding: 6px 14px !important; font-size: 12px; }
+.ret-side-row { margin: 12px 0 0; }
+.ret-side-row .ret-goal, .ret-side-row .ret-goal-slim { margin-top: 0; }
+.desk-catch { display: block; width: fit-content; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.45); color: var(--green); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.desk-catch b { color: var(--green); font-weight: 900; }
 @media (max-width: 880px) { .ret-goal-slim { flex-wrap: wrap; } .ret-goal-slim .ret-goal-bar { order: 3; flex-basis: 100%; } }
 .ret-pop.debuff { text-align: left; max-width: 460px; }
 .ret-deb-from { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
@@ -2380,10 +2384,9 @@ body.od-modal-open { overflow: hidden !important; }
   .desk-grid.next-home .ot-card { order: 2; margin-top: 0; }   /* 야근은 메모·팁 아래 (칸 간격은 grid gap 으로) */
   /* ★ 2026-09-18 (개발 뷰): 시간표 → SIDE PROJECT → 초록 '다음 Day 열기' → 사수팁/메모 → … → 출근 인원 맨 끝 */
   .desk-grid.next-home.ret-home .ot-card { order: 1; }
-  .desk-grid.next-home.ret-home .ret-goal, .desk-grid.next-home.ret-home .ret-goal-slim { order: -5; }   /* 내 목표 카드는 시추에이션 위 */
   .desk-grid.next-home.ret-home .ret-nextday { order: 1; margin: 0; }
   .desk-grid.next-home.ret-home .desk-tips { order: 2; }
-  .desk-grid.next-home.ret-home .office-strip.sib { order: -5; }
+  .desk-grid.next-home.ret-home .ret-side-row { order: -1; }   /* 시추에이션(-3) 아래, 시간표(0) 위 */
   .desk-tips-head {
     display: flex; align-items: center; gap: 8px; width: 100%;
     padding: 11px 14px;
@@ -8790,6 +8793,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         <div className="desk-meta">
           <b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>
           {USER.team}
+          {(() => {
+            if (!_RET_ON() || USER.isViewingPast) return null;
+            const _cal = Number(window.__odAutoDay) || 0, _cur = USER.realCurrentDay || USER.currentDay || 1;
+            if (!_cal || _cal <= _cur || allTodayDone) return null;
+            return <div className="desk-catch">📌 이어서 · <b>+{_cal - _cur}일치</b>{_devDayPinned() ? " · dev 고정" : ""}</div>;
+          })()}
         </div>
       </div>
       {/* ★ 2026-09-18: HUD 는 '오늘의 책상 위' 헤더 줄 아래 */}
@@ -8865,12 +8874,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         if (USER.isViewingPast || !_cal || _cal <= _cur) return null;
         if (_RET_ON() && allTodayDone) return null;   // ★ 2026-09-18: 완주 후엔 시간표 아래 초록 버튼이 안내하니 위 문구는 감춘다
         const _wait = _cal - _cur;
-        if (_RET_ON()) return (
-          /* ★ 2026-09-18: 한 줄로 한눈에 */
-          <div className="catchup catchup-slim" style={{ marginBottom: 12 }}>
-            <div className="catchup-txt">📌 이어서 · <b>Day {_cur}</b> · <b>+{_wait}일치</b> 남음{_devDayPinned() ? " · dev 고정 중" : ""}</div>
-          </div>
-        );
+        if (_RET_ON()) return null;   // ★ 2026-09-18: 개발 뷰에선 헤더 오른쪽 칩(.desk-catch)으로 (본문 흐름에서 뺌)
         return (
           <div className="catchup" style={{ marginBottom: 14 }}>
             <div className="catchup-txt">
@@ -8896,9 +8900,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               <div className="today-accum-sub">🔥 출근 {USER.streak}일 · {USER.isFulltime ? "" : ("사원 승진까지 " + Math.max(0, 30 - (USER.realCurrentDay || USER.currentDay)) + "일")}</div>
             </div>
           )}
-          {!USER.isViewingPast && <RetGoalCard slim />}
-          {/* ★ 2026-09-18: 이번 주 출근 인원은 '내 목표' 바로 아래 형제 카테고리로 */}
-          {!USER.isViewingPast && _RET_ON() && <OfficeTodayStrip sib />}
+          {!USER.isViewingPast && !_RET_ON() && <RetGoalCard slim />}
           {_isHomeLive() && !USER.isViewingPast && !!doneTasks.checkin && (
             <PreReveal key={"pre-" + USER.currentDay} today={today} email={USER.email} />
           )}
@@ -8911,6 +8913,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             done={_sceneDone}
             scenarioDone={!!doneTasks.scenario}
           />
+          {/* ★ 2026-09-18 (개발 뷰): 시추에이션이 첫 화면 주인공. 내 목표 + 이번 주 출근 인원은 그 아래 한 묶음 */}
+          {!USER.isViewingPast && _RET_ON() && (
+            <div className="ret-side-row">
+              <RetGoalCard slim />
+              <OfficeTodayStrip sib />
+            </div>
+          )}
 
           <div className={"schedule" + (_RET_ON() && !USER.isViewingPast && _nextRow ? " schedule-live" : "")} style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
