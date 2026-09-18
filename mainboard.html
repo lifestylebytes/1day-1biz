@@ -8731,11 +8731,11 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {retDebuff && !retQuiz && (
         <RetDebuffPopup rec={retDebuff} onGoShop={() => { setRetDebuff(null); setActive("perk"); }}
           onOpenQuiz={() => setRetQuiz(true)}
-          onClose={() => { _retDebuffPatch(USER.email, { seen: true }); setRetDebuff(null); }} />
+          onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
       )}
       {retQuiz && today && (
         <ReviewQuizModal today={today} email={USER.email} attemptNo={1}
-          onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
+          onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
           onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
       )}
       {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => setRetDayPop(false)} />}
@@ -9681,6 +9681,8 @@ function _retGoalCheck(email) {
     return "done";
   }
   if (!p.intact) {
+    // ★ 2026-09-18: 결근 팝업을 아직 안 봤으면(아이템으로 막을 기회) 실패 확정을 미룬다. 팝업을 닫으면 그때 확정.
+    try { const d = _retDebuff(email); if (d && d.date === _tyTodayISO() && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended) return "pending"; } catch (e) {}
     g.status = "failed"; g.failedAt = new Date().toISOString(); g.streakAtFail = p.done; _retSave("GOAL", email, g); _retPing();
     return "failed";
   }
@@ -10054,6 +10056,9 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
         )}
         {gp && gp.status === "failed" && !rec.defended && (
           <div className="ret-deb-box warn">🎯 내 목표({gp.days}일)가 여기서 끊겼어요.. 홈에서 다시 잡으면 돼요.</div>
+        )}
+        {gp && gp.status === "active" && !rec.defended && lv >= 1 && lv <= 3 && (
+          <div className="ret-deb-box warn">⚠️ 결근이 생겨서 <b>내 목표({gp.days}일 · 지금 {(_retGoalProgress(email) || {}).done || 0}일째)</b>가 끊길 참이에요. {item ? <><b>{item.name}</b>를 쓰면 막을 수 있어요. </> : null}이 창을 그냥 닫으면 목표는 리셋돼요.</div>
         )}
 
         {lv === 3 && !rec.defended && !rec.surveyDone && (
@@ -17542,7 +17547,8 @@ function _qzBuildReview(today, n) {
     return true;
   };
   const hasPreview = !!_qzScn(rd + 1);
-  const wantReview = Math.max(1, n - 1 - (hasPreview ? 1 : 0));   // 오늘 단어 1 + (예습 1) 을 뺀 나머지
+  // ★ 2026-09-18: 5문제 고르면 점수 나가는 문제가 5개 (예습은 덤으로 +1). 전엔 예습이 한 자리를 차지해 3/4 처럼 분모가 어긋났다.
+  const wantReview = Math.max(1, n - 1);   // 오늘 단어 1 을 뺀 나머지
   const due = _shuf(_qzRevDueDays(rd));
   const rest = learned.filter(x => x.day < rd && due.indexOf(x.day) < 0).map(x => x.day).sort((a, b) => b - a);
   const order = due.concat(rest);   // 복습 예정 먼저, 그다음 최근 Day 순
@@ -17922,7 +17928,7 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
   }
   if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel="닫기" celebrate />;
   if (!questions.length) return <ActivityShell title="REVIEW QUIZ" onClose={onClose}><div style={{ padding: 20, textAlign: "center", color: "var(--ink-mute)" }}>아직 복습할 표현이 없어요. 내일 다시 열어봐요.</div></ActivityShell>;
-  return <QuizRunner questions={questions} title="REVIEW QUIZ" eyebrow={`복습 ${questions.length}문제${attemptNo > 1 ? " · " + attemptNo + "번째" : ""}`} rd={rd} onFinish={onFinish} onClose={onClose}
+  return <QuizRunner questions={questions} title="REVIEW QUIZ" eyebrow={`복습 ${questions.filter(q => !q.preview).length}문제${questions.some(q => q.preview) ? " + 예습 1" : ""}${attemptNo > 1 ? " · " + attemptNo + "번째" : ""}`} rd={rd} onFinish={onFinish} onClose={onClose}
     footerNote="복습 예정 표현은 최소 한 번씩 나와요. 답을 고르면 밑줄 친 표현을 눌러 뜻을 볼 수 있어요." />;
 }
 
@@ -20387,7 +20393,7 @@ window.SimApp = App;
     const raw = localStorage.getItem("__OD_USER");
     const local = raw ? JSON.parse(raw) : null;
     beforeSnapshot = raw || "";
-    if (local && local.email && window.OD?.fetchUserFullData) {
+    if (local && local.email && window.OD?.fetchUserFullData && !localStorage.getItem("__OD_TT_STASH")) {   // ⏪ 타임머신 중엔 서버 기록으로 되살리지 않는다
       const r = await Promise.race([
         window.OD.fetchUserFullData(local.email),
         new Promise(res => setTimeout(() => res({ ok: false, timeout: true }), MAX_WAIT_MS - (Date.now() - start))),
@@ -20733,6 +20739,14 @@ window.SimApp = App;
  * cross-device, 시크릿 모드, 캐시 클린, 신규 디바이스 모두 같은 경로로 복원.
  * 다른 기기에서 학습한 내역이 즉시 화면에 보임.
  */
+// ⏪ 타임머신(개발) 중엔 서버에 아무것도 쓰지 않는다 (숨긴 구간에서 한 활동이 진짜 기록을 덮지 않게)
+(function ttGuard() {
+  let stash = null; try { stash = localStorage.getItem("__OD_TT_STASH"); } catch (e) {}
+  if (!stash) return;
+  const noop = async () => ({ ok: true, tt: true });
+  const names = ["saveSubmission", "saveNoteRow", "deleteNoteRow", "saveJournalRow", "saveDayProgress", "saveTaskProgress", "updateProgress", "saveTfState", "addExpEvent", "saveSurveyResponse", "saveScenarioAtomic", "saveNoteAtomic", "markNoticeRead", "setKakaoNotify", "pushOutbox", "flushOutbox", "logEvent"];
+  let n = 0; const iv = setInterval(() => { if (window.OD) { names.forEach(k => { if (typeof window.OD[k] === "function") window.OD[k] = noop; }); clearInterval(iv); console.log("[tt] 서버 쓰기 차단"); } else if (n++ > 80) clearInterval(iv); }, 100);
+})();
 (function hydrateFromDb() {
   let tries = 0;
   const tick = async () => {
@@ -20740,6 +20754,7 @@ window.SimApp = App;
       if (tries++ < 20) setTimeout(tick, 250);
       return;
     }
+    try { if (localStorage.getItem("__OD_TT_STASH")) return; } catch (e) {}   // ⏪ 타임머신 중엔 서버 기록으로 되살리지 않는다
     try {
       const raw = localStorage.getItem("__OD_USER");
       const local = raw ? JSON.parse(raw) : null;
