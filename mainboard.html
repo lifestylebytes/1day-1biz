@@ -1678,6 +1678,15 @@ span.ret-hud-item { cursor: default; }
 }
 /* ★ 2026-09-11: 모달/공지 팝업이 떠 있을 때 뒤쪽 본문이 같이 스크롤되지 않게 */
 body.od-modal-open { overflow: hidden !important; }
+/* ★ 2026-09-18: 시간표 아래 '다음 Day 열기' (초록 + 깜박임) */
+.ret-nextday { display: block; width: 100%; margin: 12px 0 14px; padding: 16px 18px; text-align: left; cursor: pointer; font-family: inherit;
+  background: var(--green, #2E7D4F); color: #fff; border: 2px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);
+  animation: retNextBlink 1.4s ease-in-out infinite; }
+.ret-nextday:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+.ret-nextday-main { display: block; font-size: 17px; font-weight: 900; letter-spacing: -0.01em; }
+.ret-nextday-main small { font-size: 12px; font-weight: 800; opacity: 0.9; margin-left: 6px; background: rgba(255,255,255,0.18); padding: 2px 8px; border-radius: 999px; }
+.ret-nextday-sub { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 700; opacity: 0.92; }
+@keyframes retNextBlink { 0%, 100% { filter: brightness(1); box-shadow: 4px 4px 0 var(--ink), 0 0 0 0 rgba(46,125,79,0.55); } 50% { filter: brightness(1.14); box-shadow: 4px 4px 0 var(--ink), 0 0 0 10px rgba(46,125,79,0); } }
 /* 밀린 Day 따라잡기: '다음 Day 열기' 버튼은 눈에 띄게 */
 .next-cta-adv { background: var(--ink) !important; color: var(--paper) !important; border-color: var(--ink) !important; animation: advGlow 1.8s ease-in-out infinite; }
 .next-cta-adv .next-cta-main, .next-cta-adv .next-cta-sub, .next-cta-adv .next-cta-arrow { color: var(--paper) !important; }
@@ -2350,6 +2359,11 @@ body.od-modal-open { overflow: hidden !important; }
     overflow: hidden;
   }
   .desk-grid.next-home .ot-card { order: 2; margin-top: 0; }   /* 야근은 메모·팁 아래 (칸 간격은 grid gap 으로) */
+  /* ★ 2026-09-18 (개발 뷰): 시간표 → SIDE PROJECT → 초록 '다음 Day 열기' → 사수팁/메모 → … → 출근 인원 맨 끝 */
+  .desk-grid.next-home.ret-home .ot-card { order: 1; }
+  .desk-grid.next-home.ret-home .ret-nextday { order: 1; margin: 0; }
+  .desk-grid.next-home.ret-home .desk-tips { order: 2; }
+  .desk-grid.next-home.ret-home .office-strip { order: 99; margin: 0; }
   .desk-tips-head {
     display: flex; align-items: center; gap: 8px; width: 100%;
     padding: 11px 14px;
@@ -2530,6 +2544,8 @@ body.od-modal-open { overflow: hidden !important; }
     padding: 8px 4px calc(28px + env(safe-area-inset-bottom, 0px));
     z-index: 80;
     box-shadow: 0 -4px 12px rgba(58,40,18,0.06);
+    /* ★ 2026-09-18: 스크롤 중 탭바가 화면 중간에 떠 보이는 신고 → 자체 레이어로 분리해 iOS 툴바 전환·body 고정 전환 때 재배치가 밀리지 않게 */
+    transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden;
   }
   .m-tab {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -7461,7 +7477,7 @@ function OfficeTodayStrip() {
   if (!info) return null;
   const more = info.count - info.people.length;
   return (
-    <div style={{
+    <div className="office-strip" style={{
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
       border: "1px solid var(--line)", borderRadius: 10, background: "var(--paper)",
       padding: "10px 12px", margin: "10px 0 0",
@@ -7556,9 +7572,9 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
     <div className="ot-card">
       <button className="ot-head" onClick={() => setOpen(o => { if (!o) { try { _tyErrandProof("side"); } catch (e) {} } return !o; })}>
         {catchUp
-          ? <span>🌙 퇴근 후 SIDE PROJECT <small>밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)</small></span>
+          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "밀린 Day 따라잡는 중엔 복습 퀴즈만 · +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)"}</small></span>
           : _sideProject
-          ? <span>🌙 퇴근 후 SIDE PROJECT <small>10분이면 이전 표현이 복습되고, 내일 아침 사수 확인이 기다려요</small></span>
+          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 미리 쓰기 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "10분이면 이전 표현이 복습되고, 내일 아침 사수 확인이 기다려요"}</small></span>
           : <span>🌙 야근 <small>10분이면 오늘 표현이 세 문장 더 남고, 내일 아침 사수 확인이 기다려요</small></span>}
         <b>{doneCount}/{doneTotal} {open ? "▲" : "▼"}</b>
       </button>
@@ -8259,7 +8275,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 모바일 홈 단순화 (2026-09-09): 폰에선 오늘 학습 + 야근까지만. 사수 메모·유버디 팁은 하나로 묶어 접어둔다 (야근 위).
   //   ★ 2026-09-09: 우선 개발 뷰(운영자 '개발 뷰' 토글 / ?next=1)에서만. 확인 뒤 _isMobileHomeLive 를 true 로 바꾸면 전원 라이브.
   const isMobile = _useIsMobile() && _isMobileHomeLive();
-  const [tipsOpen, setTipsOpen] = useState(false);
+  const [tipsOpen, setTipsOpen] = useState(() => { try { return _RET_ON(); } catch (e) { return false; } });   // ★ 2026-09-18: 개발 뷰에선 사수팁/유버디 메모 펼쳐진 채로
   // 개편 전 회원에게만, 한 번: "출근부·마일스톤은 사원증 탭으로 옮겼어요" (닫으면 끝, 9월 말까지만).
   const _MOVED_KEY = "__OD_HOME_MOVED_HINT_" + (USER.email || "guest");
   const [movedHint, setMovedHint] = useState(() => {
@@ -8780,6 +8796,14 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </span>
             <span className="next-cta-arrow">→</span>
           </button>
+        ) : (_advDay && _RET_ON()) ? (
+          /* ★ 2026-09-18: 개발 뷰에선 '다음 Day 열기' 초록 버튼이 시간표 아래(퇴근 후 SIDE PROJECT 밑)에 있다. 위엔 완주 표시만. */
+          <div className="next-cta done">
+            <span>
+              <div className="next-cta-main">✓ Day {_advDay} 완주</div>
+              <div className="next-cta-sub">다음 Day는 <b>시간표 아래 초록 버튼</b>으로 열어요.</div>
+            </span>
+          </div>
         ) : _advDay ? (
           /* ★ 2026-09-11: 밀린 Day 따라잡기. 예전엔 완주하고 새로고침하면 저절로 다음 Day로 넘어가서
              "어? 방금 뭐였지?" 가 됐다. 이제는 이 버튼을 눌러야 넘어간다. */
@@ -8806,6 +8830,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         const _cal = Number(window.__odAutoDay) || 0;
         const _cur = USER.realCurrentDay || USER.currentDay || 1;
         if (USER.isViewingPast || !_cal || _cal <= _cur) return null;
+        if (_RET_ON() && allTodayDone) return null;   // ★ 2026-09-18: 완주 후엔 시간표 아래 초록 버튼이 안내하니 위 문구는 감춘다
         const _wait = _cal - _cur;
         return (
           <div className="catchup" style={{ marginBottom: 14 }}>
@@ -8813,6 +8838,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               📌 오늘은 <b>Day {_cur}</b>부터 이어서. 더 학습할 수 있는 Day가 <b>{_wait}일치</b> 기다리고 있어요.
               {_devDayPinned()
                 ? <> 지금은 dev 패널로 <b>Day {_cur}</b>에 고정돼 있어서, 하루를 마쳐도 화면은 이 Day에 머물러요.</>
+                : _RET_ON()
+                ? <> 오늘 일정을 마치면 <b>시간표 아래</b>에 초록색 <b>'다음 Day 열기'</b> 버튼이 떠요. 그걸 눌러야 다음 Day로 넘어가요.</>
                 : <> 하루를 마치면 위에 <b>'다음 Day 열기'</b> 버튼이 떠요. 그걸 눌러야 다음 Day로 넘어가요 (안 누르면 이 화면 그대로).</>}
             </div>
           </div>
@@ -8822,7 +8849,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {_isNextFeature() && <AwayReport user={USER} />}
       {_isNextFeature() && <TycoonBoot toast={showToast} />}
 
-      <div className={"desk-grid" + (_isHomeLive() ? " next-home" : "")}>
+      <div className={"desk-grid" + (_isHomeLive() ? " next-home" : "") + (_RET_ON() ? " ret-home" : "")}>
         <div className="col">
           {_isHomeLive() && !_RET_ON() && !_lockedNext("accum", _rdNow, USER.isViewingPast) && (
             <div className="today-accum">
@@ -8871,7 +8898,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </div>
             ))}
           </div>
-          {!USER.isViewingPast && <OfficeTodayStrip />}
+          {!USER.isViewingPast && !_RET_ON() && <OfficeTodayStrip />}
           {_isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
             (allTodayDone || !!doneTasks.wrapup)
               ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} catchUp={_catchUp} />
@@ -8881,6 +8908,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                       : "퇴근까지 끝내면 열려요. 복습 퀴즈로 이전 표현을 다지고, 내일 문장을 미리 써두는 자리예요"}</small></span>
                   : <span>🌙 야근 <small>퇴근까지 끝내면 열려요. 오늘 표현을 세 문장 더 남기고, 내일 문장을 미리 써두는 자리예요</small></span>}<b>🔒</b></div></div>
           )}
+          {/* ★ 2026-09-18: 다음 Day 열기: 시간표·SIDE PROJECT 바로 아래, 초록 + 깜박임. 남은 Day 수도 같이. */}
+          {_RET_ON() && !USER.isViewingPast && !!_advDay && (() => {
+            const _wait = Math.max(0, (Number(window.__odAutoDay) || 0) - _advDay - 1);
+            return (
+              <button type="button" className="ret-nextday" data-testid="ret-nextday" onClick={() => { try { _odAckAdvance(_advDay); } catch (e) {} location.reload(); }}>
+                <span className="ret-nextday-main">▶ 다음 Day 열기 <small>Day {_advDay + 1}</small></span>
+                <span className="ret-nextday-sub">{_wait > 0 ? `${_wait}일 더 남았어요! 눌러서 이어가요` : "오늘 날짜까지 다 따라잡았어요. 눌러서 Day " + (_advDay + 1) + " 열기"}</span>
+              </button>
+            );
+          })()}
           {!isMobile && <UnlockLadder rd={_rdNow} viewingPast={USER.isViewingPast} />}
           {isMobile && movedHint && !USER.isViewingPast && _rdNow >= 3 && (
             <div className="moved-hint">
@@ -8938,6 +8975,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           {!isMobile && _lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
           {!isMobile && _isHomeLive() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
           {!isMobile && <AttendanceCard setViewingDay={setViewingDay} todayDone={allTodayDone} />}
+          {/* ★ 2026-09-18: 출근 인원은 맨 마지막으로 (모바일에선 페이지 끝) */}
+          {!USER.isViewingPast && _RET_ON() && isMobile && <OfficeTodayStrip />}
 
           {/* ★ 사내 메모·분기 평가 버튼: 모바일엔 메모·평가 탭이 따로 있어 홈에서 뺀다 (2026-09-09) */}
           {!isMobile && (
@@ -8965,6 +9004,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 })}
               </div>
 
+              {!USER.isViewingPast && _RET_ON() && <OfficeTodayStrip />}
               <button className="btn btn-ink" style={{ width: "100%", justifyContent: "center" }} onClick={() => setActive("test")}>
                 ✍️ 분기 평가 응시하기 (Day 30 예정) →
               </button>
@@ -13531,6 +13571,7 @@ function HrRecordsSection() {
   const reports = _reportsList();
   const profile = _loadProfile(USER.email || "guest");
   const [view, setView] = useState(null);
+  const [promoOpen, setPromoOpen] = useState(false);   // ★ 2026-09-18: 진급 리포트 (성장 리포트 탭이 준비 중이어도 여기서 열린다)
   const [editPf, setEditPf] = useState(false);
   const [pfTick, setPfTick] = useState(0);
   useEffect(() => { const h = () => setPfTick(t => t + 1); window.addEventListener("od-profile", h); return () => window.removeEventListener("od-profile", h); }, []);
@@ -13554,12 +13595,41 @@ function HrRecordsSection() {
           <span className="hr-row-value" style={{ color: "var(--ink-soft)", textAlign: "right" }}>{profile.job}{profile.industry ? " · " + profile.industry : ""}{profile.freq ? " · 영어 " + profile.freq : ""}</span>
         </button>
       )}
-      {_RET_ON() && (
-        <div className="hr-row" style={{ fontSize: 12.5 }}>
-          <span className="hr-row-label">📑 리포트</span>
-          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>성장 리포트(진급·사수 리포트)는 준비 중 · 예전 리포트 {reports.length}건은 열리면 거기서</span>
-        </div>
-      )}
+      {_RET_ON() && (() => {
+        const _promo = (() => { try { return _retEnsurePromoReports(USER.email || "guest"); } catch (e) { return []; } })();
+        const _rk = USER.rankId;
+        const _nextAt = (_rk === "intern" || !_rk) ? 30 : _rk === "fulltime" ? 90 : 0;
+        return (
+          <>
+            <button type="button" className="hr-row" data-testid="hr-promo" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", textAlign: "left", fontSize: 12.5 }} onClick={() => setPromoOpen(true)}>
+              <span className="hr-row-label">📑 진급 리포트</span>
+              <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>{_promo.length ? `${_promo.length}건 발급 · 보기 →` : (_nextAt ? `Day ${_nextAt} 진급 때 발급 · 미리 보기 →` : "보기 →")}</span>
+            </button>
+            <div className="hr-row" style={{ fontSize: 12.5 }}>
+              <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>🧠 성장 리포트 · 사수 리포트</span>
+              <span className="hr-row-value" style={{ color: "var(--ink-soft)" }}>준비 중{reports.length ? ` · 예전 리포트 ${reports.length}건은 열리면 거기서` : ""}</span>
+            </div>
+            {promoOpen && (
+              <div className="modal-bg" onClick={() => setPromoOpen(false)}>
+                <div className="modal-doc" onClick={e => e.stopPropagation()}>
+                  <div className="modal-doc-head"><span>📑 진급 리포트</span><button type="button" onClick={() => setPromoOpen(false)} style={{ color: "var(--paper)", fontSize: 16 }} aria-label="닫기">✕</button></div>
+                  <div style={{ padding: 16 }}>
+                    {_promo.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+                    {!_promo.length && (
+                      <>
+                        <RetPromoReportCard sample r={{ id: "sample", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(),
+                          stats: { from: 1, to: 30, total: 30, attended: 27, absent: 3, rate: 90, words: 27, sentences: 27, corrected: 24, ot: 6, pre: 9, rev: 11, topTags: ["meeting", "email", "project"] },
+                          mentorLine: "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요." }} />
+                        <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
       {!_RET_ON() && reports.length === 0 && (
         <div className="hr-row" style={{ fontSize: 12.5 }}>
           <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>발급된 리포트 없음</span>
@@ -17429,7 +17499,8 @@ function _qzMakeAll(s, pool, rd) {
     if (seenTxt.has(key)) return; seenTxt.add(key);
     const kind = _suffixKindOf(s.word, c.surface);
     const others = _shuf(pool.filter(x => x.word !== s.word)).slice(0, 3).map(x => ({ t: kind ? _inflectFirstToken(x.word, kind) : x.word, ok: false, why: x.word + " 은(는) '" + x.meaning + "'. 이 문맥엔 안 맞아요." }));
-    qs.push({ id: tag("blank", i), type: "blank", day: s.day, word: s.word, sentence: c.text, ko: c.ko || "", prompt: "빈 칸에 들어갈 표현은?", options: _shuf([{ t: c.surface, ok: true, why: "" }, ...others]), explain: c.hint || why });
+    // ★ 2026-09-18: 예문 해석이 없는 문장은 '빈칸 표현의 뜻' 으로라도 한국어 힌트를 준다 (영어 답은 안 새게 한국어 부분만)
+    qs.push({ id: tag("blank", i), type: "blank", day: s.day, word: s.word, sentence: c.text, ko: c.ko || "", koHint: c.ko ? "" : (_mk ? "빈칸 표현의 뜻: " + _mk : ""), prompt: "빈 칸에 들어갈 표현은?", options: _shuf([{ t: c.surface, ok: true, why: "" }, ...others]), explain: c.hint || why });
   });
   // 슬랙 답장 (mcOptions): 가장 자연스러운 한 줄
   if (Array.isArray(s.mcOptions) && s.mcOptions.some(o => o.kind === "correct")) {
@@ -17459,7 +17530,9 @@ function _qzPicker(rd) {
   const usedSentences = new Set();
   const usedIds = new Set();
   const take = (cands, allowSeen) => {
-    for (const q of _shuf(cands)) {
+    // ★ 2026-09-18: 한국어 해석 없는 빈칸 문제는 맨 뒤로 → 해석 있는 문제가 먼저 뽑힌다
+    const _ordered = _shuf(cands).sort((a, b) => ((a.type === "blank" && !a.ko) ? 1 : 0) - ((b.type === "blank" && !b.ko) ? 1 : 0));
+    for (const q of _ordered) {
       if (!q || usedIds.has(q.id)) continue;
       if (!allowSeen && seen.has(q.id)) continue;
       const sk = q.sentence ? q.sentence.toLowerCase() : null;
@@ -17585,6 +17658,11 @@ function _qzBuildReview(today, n) {
   const rest = learned.filter(x => x.day < rd && due.indexOf(x.day) < 0).map(x => x.day).sort((a, b) => b - a);
   const order = due.concat(rest);   // 복습 예정 먼저, 그다음 최근 Day 순
   const label = (d) => (due.indexOf(d) >= 0 ? "복습 예정" : "복습");
+  // ★ 2026-09-18: 어제 틀린 단어는 Review Quiz 에도 먼저 나온다 (미니 퀴즈만 챙기던 걸 "틀리면 내일 나와요" 약속대로 둘 다)
+  _qzCarryWords(rd).slice(0, Math.max(0, Math.min(2, wantReview - 1))).forEach(w => {
+    const sd = learned.find(x => x.word === w);
+    if (sd && byDay[sd.day]) { const q = P.take(byDay[sd.day].filter(x => x.type !== "spell" && x.type !== "build"), true); if (q) { q.tag = "틀렸던 단어"; perDay[sd.day] = (perDay[sd.day] || 0) + 1; out.push(q); } }
+  });
   // 한 바퀴에 Day 당 한 문제씩 (최대 2바퀴) → 같은 단어가 몰리지 않는다
   for (const allowSeen of [false, true]) {
     for (let round = 0; round < _QZ_REVIEW_MAX_PER_DAY && out.length < wantReview; round++) {
@@ -17688,13 +17766,13 @@ function QzQuestion({ q, rd, onAnswer, onNext, isLast }) {
           <div style={{ marginTop: 10, padding: 16, background: "var(--cream)", border: "1px dashed var(--line)", borderRadius: 8, fontSize: 17, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>
             {gloss(q.sentence)}
             {/* ★ 2026-09-12: 정답을 고른 뒤에는 예문 한국어 해석도 같이 (문제일 땐 답이 새니까 안 보여준다) */}
-            {revealed && q.ko ? (
+            {revealed && (q.ko || q.koHint) ? (
               <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 13, fontWeight: 600, color: "var(--ink-soft)", lineHeight: 1.6 }}>
-                🇰🇷 {q.ko}
+                🇰🇷 {q.ko || q.koHint}
               </div>
-            ) : !revealed && q.ko ? (
+            ) : !revealed && (q.ko || q.koHint) ? (
               koHint
-                ? <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 13, fontWeight: 600, color: "var(--ink-soft)", lineHeight: 1.6 }}>🇰🇷 {_koMasked(q.ko, word)}</div>
+                ? <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 13, fontWeight: 600, color: "var(--ink-soft)", lineHeight: 1.6 }}>🇰🇷 {q.ko ? _koMasked(q.ko, word) : q.koHint}</div>
                 : <div style={{ marginTop: 8 }}><button type="button" className="wb-link" style={{ fontSize: 12, fontWeight: 700 }} onClick={() => setKoHint(true)}>🇰🇷 한국어 힌트 보기</button></div>
             ) : null}
           </div>
@@ -17923,6 +18001,8 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
       _qzRememberSeen(rd, res.map(r => r.id));
       res.forEach(r => { if (!r.preview && r.day < rd) _qzRevGrade(r.day, !!r.ok); });
       res.forEach(r => { if (!r.ok && !r.preview) _qzMarkWrong(r.word, rd); });
+      // 맞춘 '틀렸던 단어'는 목록에서 빼기 (미니 퀴즈와 같은 규칙)
+      res.forEach(r => { if (r.ok && r.word !== today.word) { const m = _qzWrongMap(); if (m[r.word] && m[r.word].day < rd) _qzClearWrong(r.word); } });
     } catch (e) {}
     if (onFinished) onFinished({ score: res.filter(r => r.ok && !r.preview).length, total: res.filter(r => !r.preview).length, at: new Date().toISOString(), n });
   };
