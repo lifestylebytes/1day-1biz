@@ -1104,6 +1104,7 @@ span.ret-hud-item { cursor: default; }
 .ret-shop-item { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
 .ret-shop-item.locked { opacity: .6; }
 .wp-svc.off { opacity: .45; cursor: not-allowed; }
+.ret-shop-pdfs { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; } .ret-shop-pdfs a { font-size: 11px; color: var(--orange); text-decoration: underline; cursor: pointer; }
 .ret-shop-btns { display: inline-flex; gap: 6px; align-items: center; }
 .ret-shop-foot .btn { white-space: nowrap; }
 .ret-shop-ico { font-size: 30px; line-height: 1; }
@@ -5848,6 +5849,7 @@ const LEVEL_FULLTIME = { id: "fulltime", ko: "사원", en: "Associate" };
 window.__OD_LEVEL_FULLTIME = LEVEL_FULLTIME;
 // 운영자/Dev만 dayInCompany 수동 override 가능, 일반 사용자는 자동 계산값 사용
 const _isInternal = !!(_localUser?.isOperator || _localUser?.isDevMode);
+const _canDevView = _isInternal;   // 개발 뷰 토글이 보이는 계정 (운영자·Dev). 테스트 계정은 회원과 동일
 // 운영자/Dev는 dev패널로 Day 2 이상으로 "명시적으로" 점프했을 때만 그 값을 override로 쓴다.
 // (로그인 코드가 dayInCompany를 항상 최소 1로 세팅해서, 예전엔 signup_date를 넣어도
 //  운영자 계정이 Day 1에 고정되는 버그가 있었음. 기본값 1은 무시하고 가입일 기준 auto-day 사용.)
@@ -5989,8 +5991,19 @@ if (typeof _contentV2 !== "undefined" && _contentV2) Object.assign(SYNONYMS, SYN
     if (q === "0") localStorage.removeItem("__OD_NEXT");
   } catch (e) {}
 })();
+// ★ 2026-09-18: 개발 뷰는 '기기 스위치(__OD_NEXT) + 계정 권한' 둘 다 있어야 켜진다.
+//   전엔 스위치만 봐서, 운영자가 켜둔 브라우저에 다른 계정(테스터·일반)으로 들어오면 개발 중 기능이 그대로 보였다.
+//   운영자 · Dev 모드 · 내부 테스트 계정(is_tester)만 켤 수 있고, 일반 회원은 스위치가 있어도 항상 꺼진다.
+// ★★ 2026-09-18 런칭 스위치: 리텐션 엔진(HUD·내 목표·심부름·복지몰·순위판·디버프…)을 전원에게 연다.
+//    성장 리포트 · 사수 리포트 4종 · 분기 평가는 _RET_SOON 으로 '준비 중' 잠금. 되돌리려면 false.
+const _RET_LIVE = false;   // ← true 로 바꾸면 라이브
 const _isNextFeature = () => {
-  try { return localStorage.getItem("__OD_NEXT") === "1"; } catch (e) { return false; }
+  if (_RET_LIVE) return true;
+  try {
+    if (localStorage.getItem("__OD_NEXT") !== "1") return false;
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    return !!(u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode));   // 테스트 계정(is_tester)은 회원과 똑같이 본다
+  } catch (e) { return false; }
 };
 // ★ 2026-09-05 런칭 스위치: '오늘의 책상'(홈) 개발 뷰 기능을 전원에게 연다.
 //   단순 시추에이션 카드, 슬랙 핑, 읽지 않은 메시지 행, 이어서 하기 CTA, 해금 사다리, 퇴근 화면, 야근, 어제 미리 쓴 문장, 스탯 접힘.
@@ -6840,7 +6853,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: _myNotesOpen(user) ? "📒" : "🔒", locked: !_myNotesOpen(user), tag: _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
+    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "🚧" : _myNotesOpen(user) ? "📒" : "🔒", locked: (_RET_ON() && _RET_SOON.mynotes) || !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "준비 중" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? "🚧" : "✍️", locked: _RET_ON(), tag: _RET_ON() ? "준비 중" : undefined },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
@@ -6970,14 +6983,14 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
               </span>
             </button>
             <button
-              onClick={() => { if (_myNotesOpen(user)) { setActive("mynotes"); setNotesOpen(false); } }}
-              disabled={!_myNotesOpen(user)}
-              style={{ ...optionStyle, cursor: _myNotesOpen(user) ? "pointer" : "not-allowed", opacity: _myNotesOpen(user) ? 1 : 0.65 }}
+              onClick={() => { if (_RET_ON() && _RET_SOON.mynotes) { setActive("mynotes"); setNotesOpen(false); return; } if (_myNotesOpen(user)) { setActive("mynotes"); setNotesOpen(false); } }}
+              disabled={!_myNotesOpen(user) && !(_RET_ON() && _RET_SOON.mynotes)}
+              style={{ ...optionStyle, cursor: (_myNotesOpen(user) || (_RET_ON() && _RET_SOON.mynotes)) ? "pointer" : "not-allowed", opacity: (_RET_ON() && _RET_SOON.mynotes) ? 0.75 : _myNotesOpen(user) ? 1 : 0.65 }}
             >
-              <span style={{ fontSize: 20 }}>{_myNotesOpen(user) ? "📒" : "🔒"}</span>
+              <span style={{ fontSize: 20 }}>{(_RET_ON() && _RET_SOON.mynotes) ? "🚧" : _myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
                 <b style={{ fontSize: 14 }}>{_RET_ON() ? "성장 리포트" : _isNextFeature() ? "복습" : "나만의 노트"}</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{_myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{(_RET_ON() && _RET_SOON.mynotes) ? "준비 중 · 지금은 업무 노트에서 복기해요" : _myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -7202,10 +7215,10 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 // ★ 2026-09-15 (리텐션 엔진): Day 3 출근부·내 목표 / Day 4 심부름 / Day 7 복지몰 / Day 30 성장 리포트·PDF·연봉협상 준비 / Day 60 사수 리포트 4종
 const _UNLOCK_AT = _isNextFeature()
-  ? { schedule: 1, memo: 1, attendance: 3, goal: 3, errands: 4, shop: 7, mynotes: 30, pdf: 30, nego: 30, reports: 30 }
+  ? { schedule: 1, memo: 1, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
   : { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
 const _UNLOCK_LABEL = _isNextFeature()
-  ? { schedule: "오늘 일정표", memo: "사내 게시판", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", mynotes: "성장 리포트", pdf: "내 단어 모음 PDF", nego: "연봉협상 준비", reports: "사수 리포트 4종" }
+  ? { schedule: "오늘 일정표", memo: "사내 게시판", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "성장 리포트 (준비 중)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
   : { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
 const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: "🤝", reports: "🧭" };
 function _lockedNext(key, rd, viewingPast) {
@@ -9419,7 +9432,7 @@ const _RET_ON = () => _isNextFeature();
 // ★ 그림자 모드 (2026-09-14): EXP 집계 + 서버 동기화는 모든 회원 기기에서 조용히 돌린다 (알림·화면은 개발 뷰에서만).
 //   → 라이브 켜는 날 순위판이 비어 있지 않고, 야근(Review Quiz·미리쓰기)처럼 기기에만 있는 기록도 서버에 올라간다.
 const _RET_SHADOW = true;
-const _RET_EPOCH_DEFAULT = "2026-09-14";    // 이 날 이후 활동만 결근/목표 판정에 쓴다 (도입 전 공백으로 벌주지 않기)
+const _RET_EPOCH_DEFAULT = "2026-09-18";    // 이 날 이후 활동만 결근/목표 판정에 쓴다 (도입 전 공백으로 벌주지 않기)
 const _RET_EPOCH = (() => { try { return localStorage.getItem("__OD_RET_EPOCH") || _RET_EPOCH_DEFAULT; } catch (e) { return _RET_EPOCH_DEFAULT; } })();
 // 결근 시뮬레이터 (개발 뷰 전용): mainboard.html?retgap=2 → 오늘을 "2일 결근 뒤 첫 출근"으로 판정. ?retgap=0 으로 해제.
 function _retForcedGap() {
@@ -9454,8 +9467,8 @@ const RET_PERKS = [
   { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "이틀 결근했을 때 써요. Review Quiz 먼저 안 풀어도 되고, 내 목표(연속 출근)도 안 끊겨요. 학습 진도는 그대로.", stack: true },
   { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
   { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true, soon: true },
-  { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "probation", minDay: 30, desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 아래에서 고르고, 성장 리포트에 보관돼요.", stack: false },
-  { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "fulltime", desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.", stack: true },
+  { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "probation", minDay: 30, soon: true, desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 아래에서 고르고, 성장 리포트에 보관돼요.", stack: false },
+  { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", minDay: 15, desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 이 카드에 남아서 언제든 다시 열 수 있어요.", stack: true },
   { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 100,  rank: "probation", desc: "하루 결근했을 때 써요. 어제도 출근한 걸로 인정돼서 내 목표(연속 출근)가 안 끊겨요. 학습 진도는 그대로. 다음 날 접속하면 팝업에서 물어봐요.", stack: true },
   { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 쓰다 막힐 때 시추에이션 시트에서 바로 열어요.", stack: true },
 ];
@@ -9575,6 +9588,23 @@ function _retPdfSave(email, rec) { const l = { list: _retPdfList(email).concat([
 // ── 데려간 곳 하이라이트 (2026-09-14): 링크로 이동한 뒤 3초 동안 그 자리를 반짝여서 '여기예요' ──
 function _odFlash(el, ms) {
   try { if (!el) return; el.classList.add("od-flash"); setTimeout(() => { try { el.classList.remove("od-flash"); } catch (e) {} }, ms || 3000); } catch (e) {}
+}
+// ── 내 단어 모음 PDF 받기 (리텐션): 1회권 차감 + 그 시점 PDF 보관 + 인쇄. 화면 어디서든 부를 수 있다 ──
+function _retPrintWordBook() {
+  try {
+    const { USER, SCENARIOS } = window.__SIM; const em = _retEmail();
+    if ((Number(_retInv(em).pdf) || 0) <= 0) { alert("PDF 1회권이 없어요. 복지몰 SHOP 에서 200P 로 살 수 있어요."); return false; }
+    const rd = USER.realCurrentDay || USER.currentDay || 1;
+    const cards = _wbBuild(USER, SCENARIOS, _wbLoadRev(em));
+    if (!confirm("PDF 1회권 1장을 써서 지금까지 모은 표현 " + cards.length + "개를 PDF 로 받을까요?\n받은 PDF 는 복지몰 카드에 남아서 언제든 다시 열 수 있어요.")) return false;
+    const stats = { total: cards.length, used: cards.filter(c => c.used).length, solid: cards.filter(c => _WB_LEVEL(c.strength) === "solid").length, avg: cards.length ? Math.round(cards.reduce((n, c) => n + c.strength, 0) / cards.length) : 0 };
+    let archive = []; try { archive = _wpArchiveList().sort((a, b) => String(b.at).localeCompare(String(a.at))); } catch (e) {}
+    const html = _wbPrintHtml({ cards, USER, profile: _loadProfile(em), rd, stats, archive });
+    _retInvUse(em, "pdf");
+    try { _retPdfSave(em, { at: new Date().toISOString(), day: rd, n: cards.length, html }); } catch (e) {}
+    _odPrintHtml(html);
+    return true;
+  } catch (e) { alert("PDF 를 만들지 못했어요. 다시 한 번 눌러주세요."); return false; }
 }
 // ── 인쇄 (PDF 저장): 팝업 대신 숨은 iframe 으로. 브라우저 인쇄 창에서 '대상 → PDF로 저장' 을 고르면 다운로드된다 ──
 function _odPrintHtml(html) {
@@ -9878,14 +9908,14 @@ const _RET_UNLOCK_GO = {
   shop: { nav: "perk", sel: ".ret-shop-grid", how: "사이드바 · 연차·휴가·엿보기 티켓을 복지포인트로 사요" },
   mynotes: { nav: "mynotes", sel: ".ret-growth", how: "사이드바 · 진급 리포트가 쌓이고 표현 카드를 복습해요" },
   pdf: { nav: "perk", sel: ".ret-shop-grid", how: "복지몰 · 1회권(200P)으로 지금까지 모은 표현을 PDF 로" },
-  nego: { nav: "test", sel: ".desk-header", how: "사이드바 · 분기마다 김 팀장과 협상 (준비 중)" },
-  reports: { nav: "perk", sel: ".wp-services", how: "복지몰 · 커리어·직무·영어 처방·직장생활 리포트 1,000P" },
 };
+// 성장 리포트 · 사수 리포트 4종 · 분기 평가는 '준비 중' (사다리엔 보이지만 열림 팝업은 안 띄운다)
+const _RET_SOON = { mynotes: true, reports: true, nego: true };
 function _retUnlockSeen(email) { const v = _retLoad("UNLOCK_SEEN", email, { ids: [] }); return Array.isArray(v.ids) ? v.ids : []; }
 function _retUnlockPending(email, rd) {
   if (!_RET_ON()) return [];
   const seen = new Set(_retUnlockSeen(email));
-  return Object.keys(_RET_UNLOCK_GO).filter(k => (_UNLOCK_AT[k] || 999) <= rd && (_UNLOCK_AT[k] || 0) > 1 && !seen.has(k)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b]);
+  return Object.keys(_RET_UNLOCK_GO).filter(k => !_RET_SOON[k] && (_UNLOCK_AT[k] || 999) <= rd && (_UNLOCK_AT[k] || 0) > 1 && !seen.has(k)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b]);
 }
 function RetUnlockPopup({ keys, rd, email, setActive, onClose, replay }) {
   const done = () => { if (!replay) { try { _retSave("UNLOCK_SEEN", email, { ids: [...new Set(_retUnlockSeen(email).concat(keys))] }); } catch (e) {} } onClose(); };
@@ -10184,13 +10214,17 @@ function RetPerkShopPage({ setActive }) {
             <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")}>
               <div className="ret-shop-ico">{it.icon}</div>
               <div className="ret-shop-name">{it.name}{have > 0 && <span className="ret-shop-have">보유 {have}</span>}</div>
-              <div className="ret-shop-desc">{it.desc}{it.note && <div className="ret-shop-note">{it.note}</div>}</div>
+              <div className="ret-shop-desc">{it.desc}{it.note && <div className="ret-shop-note">{it.note}</div>}
+                {it.id === "pdf" && _retPdfList(email).length > 0 && (
+                  <div className="ret-shop-pdfs">{_retPdfList(email).slice().reverse().slice(0, 3).map((r, i) => <a key={i} onClick={() => _odPrintHtml(r.html)} title="무료로 다시 열기">📄 {String(r.at).slice(5, 10).replace("-", ".")} · Day {r.day} · {r.n}개 ↗</a>)}</div>
+                )}
+              </div>
               <div className="ret-shop-foot">
                 <b>{it.cost.toLocaleString()}P</b>
                 {it.soon ? <span className="ret-shop-lock">🚧 준비 중</span>
                   : !ok ? <span className="ret-shop-lock">🔒 {_retItemLockLabel(it)}</span>
                   : it.id === "preview" && have > 0 ? <button className="btn btn-primary btn-mini" onClick={usePreview}>지금 미리보기</button>
-                  : it.id === "pdf" && have > 0 ? <span className="ret-shop-btns"><button className="btn btn-ghost btn-mini" disabled={wp < it.cost} onClick={() => buy(it)} title="1회권 한 장 더 사기">+1</button><button className="btn btn-primary btn-mini" onClick={() => { try { sessionStorage.setItem("__OD_RET_GROWTH_TAB", "cards"); sessionStorage.setItem("__OD_RET_PDF_GO", "1"); } catch (e) {} setActive("mynotes"); }}>📄 받기 · {have}장</button></span>
+                  : it.id === "pdf" && have > 0 ? <span className="ret-shop-btns"><button className="btn btn-ghost btn-mini" disabled={wp < it.cost} onClick={() => buy(it)} title="1회권 한 장 더 사기">+1</button><button className="btn btn-primary btn-mini" onClick={() => { if (_retPrintWordBook()) setMsg("📄 인쇄 창이 열렸어요 · 대상에서 'PDF로 저장'"); }}>📄 받기 · {have}장</button></span>
                   : it.id === "report" ? <button className="btn btn-primary btn-mini" onClick={() => buy(it)}>아래에서 고르기 ↓</button>
                   : <button className="btn btn-primary btn-mini" disabled={wp < it.cost || owned} onClick={() => buy(it)}>{owned ? "보유 중" : (wp < it.cost ? (it.cost - wp).toLocaleString() + "P 부족" : "구매")}</button>}
               </div>
@@ -10198,9 +10232,9 @@ function RetPerkShopPage({ setActive }) {
           );
         })}
       </div>
-      {_retDayNow() >= 30
+      {!_RET_SOON.reports && _retDayNow() >= 30
         ? <WelfarePointsSection embed />
-        : <div className="ret-growth-note" style={{ marginTop: 14 }}>🧭 사수 리포트 4종(커리어 · 직무 고민 · 영어 학습 처방 · 직장생활)은 <b>Day 30</b>부터 여기서 골라요. 일주일에 한 종만 · 그때까지 쓴 문장이 많을수록 리포트가 정확해져요.</div>}
+        : <div className="ret-growth-note" style={{ marginTop: 14 }}>🧭 사수 리포트 4종(커리어 · 직무 고민 · 영어 학습 처방 · 직장생활)은 <b>준비 중</b>이에요. 열리면 Day 30부터 일주일에 한 종씩 · 그때까지 쓴 문장이 많을수록 리포트가 정확해져요.</div>}
       <div className="ret-shop-how">
         <div className="ret-shop-how-head">복지포인트는 이렇게 쌓여요</div>
         <ul className="ret-shop-ways">
@@ -11683,6 +11717,56 @@ function WbReviewCard({ card, mode, onGrade, mentorName }) {
   );
 }
 
+// ── 내 단어 모음 PDF (HTML 조립). 표현 카드 탭과 복지몰 SHOP 양쪽에서 쓴다 ──
+function _wbPrintHtml({ cards, USER, profile, rd, stats, archive }) {
+    const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const list = [...cards].sort((a, b) => a.day - b.day);
+  const rows = list.map(c => `
+    <div class="card">
+      <div class="head"><span class="day">DAY ${c.day}</span><span class="word">${esc(c.word)}</span><span class="mean">${esc(c.meaning)}</span><span class="mem ${_WB_LEVEL(c.strength)}">${esc(_WB_LEVEL_KO[_WB_LEVEL(c.strength)])} ${c.strength}</span></div>
+      <div class="row"><label>상황</label><p>${esc(c.scene)}</p></div>
+      <div class="row"><label>사수</label><p>${esc(c.nuance)}</p></div>
+      ${c.mine ? `<div class="row"><label>내 문장</label><p class="en">${esc(c.mine)}${c.corrected ? `<br/><span class="fix">→ ${esc(c.corrected)}</span>` : ""}</p></div>` : `<div class="row"><label>예시</label><p class="en">${esc(c.sample)}</p></div>`}
+      ${c.syn.length ? `<div class="row"><label>유의어</label><p>${c.syn.map(x => `<b>${esc(x.w)}</b> ${esc(x.ko)}`).join(" · ")}</p></div>` : ""}
+      ${c.ot.length ? `<div class="row"><label>야근</label><p class="en">${c.ot.map(x => esc(x.t)).join("<br/>")}</p></div>` : ""}
+      ${c.rev && c.rev.sentence ? `<div class="row"><label>복기</label><p class="en">${esc(c.rev.sentence)}</p></div>` : ""}
+      ${c.qa.length ? `<div class="row"><label>Q&amp;A</label><p>${c.qa.map(n => esc(n.text).replace(/\n/g, "<br/>")).join("<br/><br/>")}</p></div>` : ""}
+      ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
+    </div>`).join("");
+  // ★ 2026-09-14: 새 창(팝업 차단에 걸림) 대신 숨은 iframe 으로 인쇄 → 인쇄 창에서 'PDF로 저장'
+  const _html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 1일1비 단어 모음</title>
+    <style>
+      body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
+      .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
+      .cover .eyebrow { font-size: 10px; letter-spacing: .24em; opacity: .6; font-weight: 800; }
+      .cover h1 { margin: 6px 0 4px; font-size: 26px; }
+      .cover h1 em { font-style: normal; color: #F5B08A; }
+      .cover .sub { font-size: 12px; opacity: .75; }
+      .cover .nums { display: flex; gap: 26px; margin-top: 18px; }
+      .cover .nums b { display: block; font-size: 26px; }
+      .cover .nums span { font-size: 10.5px; opacity: .65; }
+      .card { border: 1px solid #E2D8C4; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+      .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+      .day { font-size: 10px; font-weight: 800; color: #8A7A66; letter-spacing: .06em; }
+      .word { font-weight: 900; font-size: 16px; }
+      .mean { color: #8A7A66; font-size: 12px; }
+      .mem { margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #ECE3CF; }
+      .mem.solid { background: #B8431A; color: #fff; } .mem.ok { background: #E8793F; color: #fff; } .mem.shaky { background: #F2B48A; }
+      .row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 12.5px; margin-top: 4px; }
+      .row label { font-size: 10px; font-weight: 800; color: #D85A2A; letter-spacing: .06em; padding-top: 3px; }
+      .row p { margin: 0; color: #4A3C2E; }
+      .en { font-family: Georgia, 'Times New Roman', serif; font-style: italic; color: #2A1F14; }
+      .fix { color: #4A7C59; }
+      @media print { body { padding: 0; } .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .mem { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="cover"><div class="eyebrow">SALARY REVIEW PREP · 1일1비</div><h1><em>${esc(USER.name)}</em>의 협상 카드</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
+    <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 카드</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
+    ${rows}
+    ${archive.length ? `<div class="card"><div class="head"><span class="word">📌 리포트에서 건진 문장</span><span class="mean">${archive.length}개</span></div>${archive.map(x => `<div class="row"><label>${esc(String(x.src || "").slice(0, 6))}</label><p class="en">${esc(x.en)}${x.ko ? `<br/><span style="font-family:-apple-system,'Noto Sans KR',sans-serif;font-style:normal;color:#8A7A66">${esc(x.ko)}</span>` : ""}</p></div>`).join("")}</div>` : ""}
+    <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
+    </body></html>`;
+  return _html;
+}
 // ★ 업무 노트 안에서 바로 복습 (2026-09-14): 그날 내 문장·교정·노트·일지를 펼쳐 보고, 한 줄 다시 써서 복기까지 여기서.
 //   복기 기록은 복습 덱과 같은 저장소(_wbSaveRev + task_progress._rev)라 표현 카드 강도에도 그대로 반영된다.
 function LibReviewInline({ s, myAnswer, savedNotes, myJournal }) {
@@ -11829,61 +11913,9 @@ function WordBookPage({ openScene }) {
   // 📄 PDF 소장: 깨끗한 새 창에 표지 + 카드 전부 (한글 폰트 안전, 나만의 노트 인쇄와 같은 방식)
   const printBook = (opts) => {
     const reopen = !!(opts && opts.reopenHtml);
-    if (_RET_ON() && !reopen) {
-      const em = _retEmail();
-      if ((Number(_retInv(em).pdf) || 0) <= 0) { alert("PDF 1회권이 없어요. 복지몰 SHOP 에서 200P 로 살 수 있어요. 예전에 받은 PDF 는 📑 리포트 탭에서 다시 열려요."); return; }
-      if (!confirm("PDF 1회권 1장을 써서 지금까지 모은 표현 " + cards.length + "개를 PDF 로 받을까요?\n받은 PDF 는 성장 리포트에 남아서 언제든 다시 열 수 있어요.")) return;
-      _retInvUse(em, "pdf");
-    }
-    const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const list = [...cards].sort((a, b) => a.day - b.day);
-    const rows = list.map(c => `
-      <div class="card">
-        <div class="head"><span class="day">DAY ${c.day}</span><span class="word">${esc(c.word)}</span><span class="mean">${esc(c.meaning)}</span><span class="mem ${_WB_LEVEL(c.strength)}">${esc(_WB_LEVEL_KO[_WB_LEVEL(c.strength)])} ${c.strength}</span></div>
-        <div class="row"><label>상황</label><p>${esc(c.scene)}</p></div>
-        <div class="row"><label>사수</label><p>${esc(c.nuance)}</p></div>
-        ${c.mine ? `<div class="row"><label>내 문장</label><p class="en">${esc(c.mine)}${c.corrected ? `<br/><span class="fix">→ ${esc(c.corrected)}</span>` : ""}</p></div>` : `<div class="row"><label>예시</label><p class="en">${esc(c.sample)}</p></div>`}
-        ${c.syn.length ? `<div class="row"><label>유의어</label><p>${c.syn.map(x => `<b>${esc(x.w)}</b> ${esc(x.ko)}`).join(" · ")}</p></div>` : ""}
-        ${c.ot.length ? `<div class="row"><label>야근</label><p class="en">${c.ot.map(x => esc(x.t)).join("<br/>")}</p></div>` : ""}
-        ${c.rev && c.rev.sentence ? `<div class="row"><label>복기</label><p class="en">${esc(c.rev.sentence)}</p></div>` : ""}
-        ${c.qa.length ? `<div class="row"><label>Q&amp;A</label><p>${c.qa.map(n => esc(n.text).replace(/\n/g, "<br/>")).join("<br/><br/>")}</p></div>` : ""}
-        ${c.memos.length ? `<div class="row"><label>노트</label><p>${c.memos.map(n => "<b>" + esc(n.label || "메모") + "</b> " + esc(n.text).replace(/\n/g, "<br/>")).join("<br/>")}</p></div>` : ""}
-      </div>`).join("");
-    // ★ 2026-09-14: 새 창(팝업 차단에 걸림) 대신 숨은 iframe 으로 인쇄 → 인쇄 창에서 'PDF로 저장'
     if (reopen) { _odPrintHtml(opts.reopenHtml); return; }
-    const _html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(USER.name)}의 1일1비 단어 모음</title>
-      <style>
-        body { font-family: -apple-system, 'Noto Sans KR', sans-serif; color: #2A1F14; padding: 32px; line-height: 1.6; }
-        .cover { background: #2A1F14; color: #F4EFE3; border-radius: 14px; padding: 28px 30px; margin-bottom: 22px; }
-        .cover .eyebrow { font-size: 10px; letter-spacing: .24em; opacity: .6; font-weight: 800; }
-        .cover h1 { margin: 6px 0 4px; font-size: 26px; }
-        .cover h1 em { font-style: normal; color: #F5B08A; }
-        .cover .sub { font-size: 12px; opacity: .75; }
-        .cover .nums { display: flex; gap: 26px; margin-top: 18px; }
-        .cover .nums b { display: block; font-size: 26px; }
-        .cover .nums span { font-size: 10.5px; opacity: .65; }
-        .card { border: 1px solid #E2D8C4; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; page-break-inside: avoid; }
-        .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-        .day { font-size: 10px; font-weight: 800; color: #8A7A66; letter-spacing: .06em; }
-        .word { font-weight: 900; font-size: 16px; }
-        .mean { color: #8A7A66; font-size: 12px; }
-        .mem { margin-left: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #ECE3CF; }
-        .mem.solid { background: #B8431A; color: #fff; } .mem.ok { background: #E8793F; color: #fff; } .mem.shaky { background: #F2B48A; }
-        .row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; font-size: 12.5px; margin-top: 4px; }
-        .row label { font-size: 10px; font-weight: 800; color: #D85A2A; letter-spacing: .06em; padding-top: 3px; }
-        .row p { margin: 0; color: #4A3C2E; }
-        .en { font-family: Georgia, 'Times New Roman', serif; font-style: italic; color: #2A1F14; }
-        .fix { color: #4A7C59; }
-        @media print { body { padding: 0; } .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .mem { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-      </style></head><body>
-      <div class="cover"><div class="eyebrow">SALARY REVIEW PREP · 1일1비</div><h1><em>${esc(USER.name)}</em>의 협상 카드</h1><div class="sub">${esc(profile && profile.job ? profile.job + " · " : "")}${esc(USER.position)} · Day ${rd} · ${new Date().toLocaleDateString("ko-KR")}</div>
-      <div class="nums"><div><b>${stats.total}</b><span>모은 표현</span></div><div><b>${stats.used}</b><span>내 문장으로</span></div><div><b>${stats.solid}</b><span>튼튼한 카드</span></div><div><b>${stats.avg}</b><span>평균 기억 강도</span></div></div></div>
-      ${rows}
-      ${archive.length ? `<div class="card"><div class="head"><span class="word">📌 리포트에서 건진 문장</span><span class="mean">${archive.length}개</span></div>${archive.map(x => `<div class="row"><label>${esc(String(x.src || "").slice(0, 6))}</label><p class="en">${esc(x.en)}${x.ko ? `<br/><span style="font-family:-apple-system,'Noto Sans KR',sans-serif;font-style:normal;color:#8A7A66">${esc(x.ko)}</span>` : ""}</p></div>`).join("")}</div>` : ""}
-      <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
-      </body></html>`;
-    if (_RET_ON()) { try { _retPdfSave(_retEmail(), { at: new Date().toISOString(), day: rd, n: cards.length, html: _html }); } catch (e) {} }
-    _odPrintHtml(_html);
+    if (_RET_ON()) { _retPrintWordBook(); return; }
+    _odPrintHtml(_wbPrintHtml({ cards, USER, profile, rd, stats, archive }));
   };
   // 복지몰 SHOP 에서 '성장 리포트에서 받기' 로 넘어온 경우: 표현 카드 탭을 열고 바로 인쇄 창을 띄운다
   useEffect(() => {
@@ -13525,7 +13557,7 @@ function HrRecordsSection() {
       {_RET_ON() && (
         <div className="hr-row" style={{ fontSize: 12.5 }}>
           <span className="hr-row-label">📑 리포트</span>
-          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>진급·협상·커리어 리포트는 성장 리포트 탭에 · 예전 리포트 {reports.length}건도 거기서 →</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>성장 리포트(진급·사수 리포트)는 준비 중 · 예전 리포트 {reports.length}건은 열리면 거기서</span>
         </div>
       )}
       {!_RET_ON() && reports.length === 0 && (
@@ -13839,7 +13871,7 @@ function MyPage({ setActive, setViewingDay }) {
           <div className="hr-section-head">🎁 복지포인트 · 사수 리포트</div>
           <a className="hr-row" style={{ cursor: "pointer", textDecoration: "none" }} onClick={() => setActive && setActive("perk")}>
             <span className="hr-row-label">🎁 지금 쓸 수 있는 복지포인트 <b>{_retWpBalance(_retEmail()).toLocaleString()}P</b></span>
-            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>복지몰 SHOP 에서 쓰기 · 사수 리포트는 Day 30부터 주 1회 →</span>
+            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>복지몰 SHOP 에서 쓰기 →</span>
           </a>
         </div>
       )}
@@ -13892,7 +13924,7 @@ function MyPage({ setActive, setViewingDay }) {
             <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>Day 별로 열린 것 · 어디 있는지 →</span>
           </button>
         )}
-        {unlockReplay && <RetUnlockPopup replay keys={Object.keys(_RET_UNLOCK_GO).filter(k => (_UNLOCK_AT[k] || 999) <= (USER.realCurrentDay || USER.currentDay || 1)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b])} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setUnlockReplay(false)} />}
+        {unlockReplay && <RetUnlockPopup replay keys={Object.keys(_RET_UNLOCK_GO).filter(k => !_RET_SOON[k] && (_UNLOCK_AT[k] || 999) <= (USER.realCurrentDay || USER.currentDay || 1)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b])} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setUnlockReplay(false)} />}
       </div>
 
       {/* 설정 (쓰기), 디스클로저 */}
@@ -20188,7 +20220,8 @@ function App() {
           : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} setViewingDay={setViewingDay} />
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
-        {active === "mynotes" && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
+        {active === "mynotes" && (_RET_ON() && _RET_SOON.mynotes) && <RetComingSoonPage title="성장 리포트" desc="진급 리포트와 사수 리포트가 쌓이고, 표현 카드를 기억 강도별로 복습하는 곳이에요. 지금은 준비 중이에요. 그동안 쓴 문장과 복기는 업무 노트에서 그대로 볼 수 있어요." setActive={setActive} />}
+        {active === "mynotes" && !(_RET_ON() && _RET_SOON.mynotes) && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
         {active === "test" && (_RET_ON() ? <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} /> : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
@@ -20213,8 +20246,8 @@ function App() {
         }}
       >💬 피드백</button>
 
-      {/* ── 우상단 개발 뷰 토글 (운영자/Dev 전용). 켜면 개발 중 기능이 보이고, 끄면 멤버와 동일 ── */}
-      {_isInternal && (() => {
+      {/* ── 우상단 개발 뷰 토글 (운영자/Dev/내부 테스터). 켜면 개발 중 기능이 보이고, 끄면 멤버와 동일 ── */}
+      {_canDevView && !_RET_LIVE && (() => {
         const _devOn = _isNextFeature();
         return (
           <button
@@ -20493,6 +20526,8 @@ window.SimApp = App;
               local.is_operator = u.is_operator;
               local.isDevMode = u.is_dev_mode;
               local.is_dev_mode = u.is_dev_mode;
+              local.isTester = !!u.is_tester;
+              local.is_tester = !!u.is_tester;
               if (u.signup_date) { local.signupDate = u.signup_date; local.signup_date = u.signup_date; }
               if (u.name) local.name = u.name;
               // ★ 시즌 2: 레벨·승급 기록 동기화 (다른 기기에서 승급한 경우 반영)
