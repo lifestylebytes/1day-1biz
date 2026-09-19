@@ -1091,6 +1091,16 @@ span.ret-hud-item { cursor: default; }
 .desk-meta.with-hud .ret-hud-item { padding: 6px 4px 5px; }
 .desk-meta.with-hud .ret-hud-item b { font-size: 15px; }
 .desk-meta.with-hud .desk-catch { margin-top: 0; }
+.desk-meta.with-mini { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.ret-hud.compact { grid-template-columns: repeat(2, minmax(78px, auto)); margin: 0; border-radius: 10px; }
+.ret-hud.compact .ret-hud-item { padding: 5px 9px 4px; gap: 0; align-items: flex-start; border-right: 1px solid var(--line); }
+.ret-hud.compact .ret-hud-item:nth-child(2n) { border-right: none; }
+.ret-hud.compact .ret-hud-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+.ret-hud.compact .ret-hud-item small { font-size: 9.5px; }
+.ret-hud.compact .ret-hud-item b { font-size: 14px; }
+.desk-meta.with-mini .desk-catch { margin-top: 0; font-size: 10.5px; padding: 2px 8px; }
+.desk-sub { margin-top: 4px; font-size: 10.5px; color: var(--ink-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desk-sub b { color: var(--ink); font-weight: 800; }
 .ret-side-row { margin: 0 0 12px; }
 .desk-catch { display: block; width: fit-content; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.45); color: var(--green); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .desk-catch b { color: var(--green); font-weight: 900; }
@@ -1147,6 +1157,17 @@ span.ret-hud-item { cursor: default; }
 .ret-board { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 14px 16px; }
 .ret-board-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1.5px solid var(--ink); }
 .ret-board-head b { font-size: 15px; } .ret-board-head small { display: block; font-size: 11px; color: var(--ink-mute); font-weight: 700; }
+.ret-unlock-return { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 85; display: flex; align-items: center; gap: 4px; background: var(--ink); color: var(--paper); border-radius: 999px; padding: 4px 6px 4px 14px; box-shadow: 0 8px 24px rgba(42,31,20,0.28); }
+.ret-unlock-return-go { background: none; border: none; color: var(--paper); font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; padding: 6px 4px; }
+.ret-unlock-return-go b { display: inline-block; margin-left: 6px; background: var(--orange); color: #fff; border-radius: 999px; padding: 0 7px; font-size: 11px; }
+.ret-unlock-return-x { background: rgba(255,255,255,0.12); border: none; color: var(--paper); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 12px; }
+@media (max-width: 880px) { .ret-unlock-return { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
+.ret-deb-streak { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; padding: 10px 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+.ret-deb-streak > div { display: grid; gap: 2px; }
+.ret-deb-streak small { font-size: 10.5px; color: var(--ink-mute); font-weight: 700; }
+.ret-deb-streak b { font-size: 15px; font-weight: 900; color: var(--ink); white-space: nowrap; }
+.ret-deb-streak b.neg { color: #C2311F; }
+.ret-deb-streak-arrow { color: var(--ink-mute); font-weight: 900; }
 .ret-board-me { text-align: right; } .ret-board-me b { color: #C2311F; font-size: 18px; }
 .ret-board-top { margin-top: 10px; padding: 8px 12px; background: #FFF3D6; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #8C6510; }
 .ret-board-row { display: grid; grid-template-columns: 34px 28px 1fr auto auto; gap: 10px; align-items: center; padding: 8px 4px; border-bottom: 1px dashed var(--line-soft); font-size: 13px; }
@@ -1267,6 +1288,8 @@ span.ret-hud-item { cursor: default; }
 /* ★ 2026-09-18 (개발 뷰): 학습 중인 시간표는 굵은 테두리 + 그림자 → "여기를 누르면 된다" */
 .schedule.schedule-live { border: 2px solid var(--ink); border-radius: 10px; box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
 .schedule.schedule-live .schedule-head { background: var(--ink); color: var(--paper); align-items: center; gap: 10px; padding: 8px 12px 8px 16px; }
+.schedule-streak { font-style: normal; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(216,90,42,0.12); color: var(--orange); font-size: 10px; letter-spacing: 0; text-transform: none; font-weight: 800; white-space: nowrap; }
+.schedule-live .schedule-streak { background: rgba(255,255,255,0.14); color: #FFB380; }
 .schedule-go { font-family: inherit; font-size: 12px; font-weight: 800; letter-spacing: 0; text-transform: none; padding: 7px 12px; border-radius: 999px; border: none; background: var(--orange); color: #fff; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 62%; box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
 .schedule-go:active { transform: translateY(1px); box-shadow: none; }
 .schedule-row {
@@ -2335,6 +2358,11 @@ body.od-modal-open { overflow: hidden !important; }
   .desk-eyebrow { font-size: 9px; letter-spacing: 0.18em; }
   .desk-title { font-size: 19px; line-height: 1.2; }
   .desk-meta { text-align: left; font-size: 10.5px; }
+  /* ★ 2026-09-19 (개발 뷰): 제목 왼쪽 · 미니 스탯(2×2) 오른쪽, 한 줄 */
+  .desk-header:has(.desk-meta.with-mini) { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .desk-header:has(.desk-meta.with-mini) > div:first-child { min-width: 0; flex: 1; }
+  .desk-meta.with-mini { text-align: right; }
+  .desk-header:has(.desk-meta.with-mini) .desk-eyebrow { letter-spacing: 0.06em; font-size: 9px; }
 
   /* 결재 라인, 2열, 4번째 셀 풀폭 */
   .approval-line { grid-template-columns: 1fr 1fr; }
@@ -6903,7 +6931,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "🚧" : _myNotesOpen(user) ? "📒" : "🔒", locked: (_RET_ON() && _RET_SOON.mynotes) || !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "준비 중" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
+    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? "🚧" : "✍️", locked: _RET_ON(), tag: _RET_ON() ? "준비 중" : undefined },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
@@ -7035,12 +7063,12 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
             <button
               onClick={() => { if (_RET_ON() && _RET_SOON.mynotes) { setActive("mynotes"); setNotesOpen(false); return; } if (_myNotesOpen(user)) { setActive("mynotes"); setNotesOpen(false); } }}
               disabled={!_myNotesOpen(user) && !(_RET_ON() && _RET_SOON.mynotes)}
-              style={{ ...optionStyle, cursor: (_myNotesOpen(user) || (_RET_ON() && _RET_SOON.mynotes)) ? "pointer" : "not-allowed", opacity: (_RET_ON() && _RET_SOON.mynotes) ? 0.75 : _myNotesOpen(user) ? 1 : 0.65 }}
+              style={{ ...optionStyle, cursor: (_myNotesOpen(user) || (_RET_ON() && _RET_SOON.mynotes)) ? "pointer" : "not-allowed", opacity: (_RET_ON() && _RET_SOON.mynotes) ? 1 : _myNotesOpen(user) ? 1 : 0.65 }}
             >
-              <span style={{ fontSize: 20 }}>{(_RET_ON() && _RET_SOON.mynotes) ? "🚧" : _myNotesOpen(user) ? "📒" : "🔒"}</span>
+              <span style={{ fontSize: 20 }}>{(_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒"}</span>
               <span style={{ display: "grid" }}>
                 <b style={{ fontSize: 14 }}>{_RET_ON() ? "성장 리포트" : _isNextFeature() ? "복습" : "나만의 노트"}</b>
-                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{(_RET_ON() && _RET_SOON.mynotes) ? "준비 중 · 지금은 업무 노트에서 복기해요" : _myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
+                <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{(_RET_ON() && _RET_SOON.mynotes) ? "진급 리포트 · PDF 보관함 · 사수 리포트는 준비 중" : _myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
           </div>
@@ -7268,7 +7296,7 @@ const _UNLOCK_AT = _isNextFeature()
   ? { schedule: 1, memo: 1, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
   : { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
 const _UNLOCK_LABEL = _isNextFeature()
-  ? { schedule: "오늘 일정표", memo: "사내 게시판", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "성장 리포트 (준비 중)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
+  ? { schedule: "오늘 일정표", memo: "사내 게시판", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
   : { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
 const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: "🤝", reports: "🧭" };
 function _lockedNext(key, rd, viewingPast) {
@@ -8797,14 +8825,17 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       <div className="desk-header">
         <div>
           <div className="desk-eyebrow">
-            {todayLabel} · DAY {USER.currentDay} / {USER.totalDays} · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
+            {todayLabel} · DAY {USER.currentDay} / {USER.totalDays}{(_RET_ON() && isMobile) ? null : <> · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span></>}
             {_RET_ON() && !isMobile && <> · {USER.name} · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}</>}
           </div>
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
+          {_RET_ON() && isMobile && <div className="desk-sub"><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""} · {USER.team}</div>}
         </div>
-        <div className={"desk-meta" + (_RET_ON() && !isMobile ? " with-hud" : "")}>
+        <div className={"desk-meta" + (_RET_ON() && !isMobile ? " with-hud" : "") + (_RET_ON() && isMobile ? " with-mini" : "")}>
           {(_RET_ON() && !isMobile && !USER.isViewingPast)
             ? <RetHud setActive={setActive} />   /* ★ 2026-09-19 PC: HUD 는 헤더 오른쪽 */
+            : (_RET_ON() && isMobile && !USER.isViewingPast)
+            ? <RetHud setActive={setActive} compact />   /* 모바일: 헤더 오른쪽 2×2 미니 */
             : <><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>{USER.team}</>}
           {(() => {
             if (!_RET_ON() || USER.isViewingPast) return null;
@@ -8815,7 +8846,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         </div>
       </div>
       {/* ★ 2026-09-18: 모바일에선 HUD 를 '오늘의 책상 위' 헤더 줄 아래 (PC 는 헤더 오른쪽) */}
-      {!USER.isViewingPast && !(_RET_ON() && !isMobile) && <RetHud setActive={setActive} top />}
+      {!USER.isViewingPast && !_RET_ON() && <RetHud setActive={setActive} top />}
 
       {_isNextFeature() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
@@ -8935,7 +8966,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           />
           <div className={"schedule" + (_RET_ON() && !USER.isViewingPast && _nextRow ? " schedule-live" : "")} style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
-              <span>오늘 일정 · DAY {USER.currentDay}</span>
+              <span>오늘 일정 · DAY {USER.currentDay}{_RET_ON() && !USER.isViewingPast && (() => { const n = _retStreakDays(USER.email); return n > 0 ? <em className="schedule-streak" title="연속 출근">🔥 연속 {n}일</em> : null; })()}</span>
               {/* ★ 2026-09-18 (개발 뷰): '이어서 하기' 배너를 시간표 안으로. 학습 중엔 표 자체가 눌러야 할 것으로 보이게 */}
               {_RET_ON() && !USER.isViewingPast && _nextRow
                 ? <button type="button" className="schedule-go" onClick={() => handleScheduleClick(_nextRow, _nextIdx)}>{_noneDone ? "☀️ 오늘 일정 시작하기" : "▶ 이어서 하기 · " + _nextRow.title} →</button>
@@ -9796,6 +9827,14 @@ function _retAbsenceGap(email) {
   return gap;
 }
 // 오늘 포함 연속 출근 일수 (오늘 아직 안 찍었으면 어제까지)
+// 결근 직전까지의 연속 출근 (디버프 팝업에서 '지금 끊길 기록' 으로 보여준다)
+function _retStreakBefore(email, gap) {
+  const dates = _retActivityDates(email);
+  let d = _retAddDays(_tyTodayISO(), -(Number(gap) || 0) - 1);
+  let n = 0;
+  while (dates.has(d) && n < 400) { n++; d = _retAddDays(d, -1); }
+  return n;
+}
 function _retStreakDays(email) {
   const dates = _retActivityDates(email);
   const today = _tyTodayISO();
@@ -10009,12 +10048,21 @@ function RetExpTag({ exp, done }) {
   return <span className={"ret-exp-tag" + (done ? " done" : "")}>{done ? "✓ " : "+"}{exp} EXP</span>;
 }
 // 헤더용 칩: 이번 주 EXP · 복지P · 연속 출근
-function RetHud({ setActive, top }) {
+function RetHud({ setActive, top, compact }) {
   _useRetTick();
   if (!_RET_ON()) return null;
   const email = _retEmail();
   const week = _retExpThisWeek(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
   const U = window.__SIM && window.__SIM.USER; const attended = (U && U.streak) || 0;
+  if (compact) return (
+    /* ★ 2026-09-19 모바일: 헤더 오른쪽 2×2 미니 스탯 (라벨 + 숫자만) */
+    <div className="ret-hud compact">
+      <button className="ret-hud-item" onClick={() => setActive && setActive("inbox")} title="순위판"><small>⚡ EXP</small><b>{week.toLocaleString()}</b></button>
+      <button className="ret-hud-item" onClick={() => setActive && setActive("perk")} title="복지몰"><small>🎁 복지</small><b>{wp.toLocaleString()}<span>P</span></b></button>
+      <span className="ret-hud-item"><small>🔥 출근</small><b>{attended}<span>일</span></b></span>
+      <button className="ret-hud-item" onClick={() => setActive && setActive("library")} title="업무 노트"><small>📚 표현</small><b>{(U && U.wordsCollected) || 0}<span>개</span></b></button>
+    </div>
+  );
   return (
     <div className={"ret-hud" + (top ? " top" : "")}>
       <button className="ret-hud-item" onClick={() => setActive && setActive("inbox")} title="순위판 보기"><small>⚡ EXP · 7일</small><b>{week.toLocaleString()}</b><em>순위판</em></button>
@@ -10046,7 +10094,10 @@ function _retUnlockPending(email, rd) {
 function RetUnlockPopup({ keys, rd, email, setActive, onClose, replay }) {
   const done = () => { if (!replay) { try { _retSave("UNLOCK_SEEN", email, { ids: [...new Set(_retUnlockSeen(email).concat(keys))] }); } catch (e) {} } onClose(); };
   const go = (k) => {
-    const g = _RET_UNLOCK_GO[k]; done();
+    const g = _RET_UNLOCK_GO[k];
+    // ★ 2026-09-19: 하나 보러 가도 목록으로 돌아올 수 있게, 남은 항목을 세션에 남기고 하단 알약으로 다시 연다
+    try { const rest = keys.filter(x => x !== k); if (rest.length) { sessionStorage.setItem("__OD_UNLOCK_RETURN", JSON.stringify({ keys: rest, rd })); window.dispatchEvent(new Event("od-unlock-return")); } } catch (e) {}
+    done();
     if (!g) return;
     if (setActive) setActive(g.nav);
     setTimeout(() => { try { const el = document.querySelector(g.sel); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); _odFlash(el); } } catch (e) {} }, 500);
@@ -10071,6 +10122,26 @@ function RetUnlockPopup({ keys, rd, email, setActive, onClose, replay }) {
         <button className="btn btn-ghost" style={{ width: "100%", marginTop: 12 }} onClick={done}>나중에 볼게요</button>
       </div>
     </div>
+  );
+}
+// ★ 2026-09-19: '열린 기능' 팝업에서 하나 보러 간 뒤, 목록으로 돌아오는 하단 알약 (세션 동안만)
+function RetUnlockReturnPill({ setActive, email }) {
+  const read = () => { try { return JSON.parse(sessionStorage.getItem("__OD_UNLOCK_RETURN") || "null"); } catch (e) { return null; } };
+  const [st, setSt] = React.useState(read);
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => { const h = () => setSt(read()); window.addEventListener("od-unlock-return", h); return () => window.removeEventListener("od-unlock-return", h); }, []);
+  if (!st || !Array.isArray(st.keys) || !st.keys.length) return null;
+  const clear = () => { try { sessionStorage.removeItem("__OD_UNLOCK_RETURN"); } catch (e) {} setSt(null); setOpen(false); };
+  return (
+    <>
+      {!open && (
+        <div className="ret-unlock-return">
+          <button type="button" className="ret-unlock-return-go" onClick={() => setOpen(true)}>🔓 열린 기능 목록으로 <b>{st.keys.length}</b></button>
+          <button type="button" className="ret-unlock-return-x" onClick={clear} aria-label="닫기">✕</button>
+        </div>
+      )}
+      {open && <RetUnlockPopup replay keys={st.keys} rd={st.rd} email={email} setActive={setActive} onClose={() => { setOpen(false); const n = read(); if (!n || !n.keys || !n.keys.length) setSt(null); else setSt(n); }} />}
+    </>
   );
 }
 function RetDayPopup({ day, email, onClose }) {
@@ -10206,6 +10277,14 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
         <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap}일 결근 후 출근</small></div><span className="ret-deb-wp">🎁 {wp.toLocaleString()}P</span></div>
         <div className="ret-deb-title">{enc.t}</div>
         <div className="ret-deb-msg">{enc.m}</div>
+        {(() => { const before = _retStreakBefore(email, rec.gap); if (before <= 0) return null; return (
+          <div className="ret-deb-streak">
+            <div><small>결근 전 연속 출근</small><b>🔥 {before}일</b></div>
+            <span className="ret-deb-streak-arrow">→</span>
+            <div><small>{rec.defended ? "지금" : "그냥 닫으면"}</small><b className={rec.defended ? "" : "neg"}>{rec.defended ? "🔥 " + (before + rec.gap + 1) + "일 유지" : "1일부터 다시"}</b></div>
+            {!rec.defended && item && lv === 1 && <div><small>{item.name} 쓰면</small><b>🔥 {before + rec.gap + 1}일 유지</b></div>}
+          </div>
+        ); })()}
 
         {rec.defended && (
           <div className="ret-deb-box ok">{rec.defended === "extend" ? "🕐 " : "🌴 "}<b>{rec.defended === "annual" ? "연차" : rec.defended === "vacay" ? "휴가" : "출근 시간 연장권"}</b>{rec.defended === "extend" ? "을 썼어요! 어제도 출근한 걸로 인정됐고 연속 출근 기록도 그대로예요." : "를 썼어요! 복습 없이 바로 들어가도 되고, 연속 출근 기록도 그대로예요."}</div>
@@ -10257,6 +10336,66 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
 }
 
 // ── PERK SHOP (OFFICE 하위 탭) ──
+// ★ 2026-09-19: 성장 리포트 탭 '준비 중' 이어도 진급 리포트(Day 30 사원 진급)는 여기서 실제로 보여준다. 사수 리포트 4종만 준비 중.
+function RetReportsSoonPage({ setActive }) {
+  _useRetTick();
+  const { USER } = window.__SIM;
+  const email = _retEmail();
+  const list = _retEnsurePromoReports(email);
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const rk = USER.rankId;
+  const nextAt = (rk === "intern" || !rk) ? 30 : rk === "fulltime" ? 90 : 0;
+  const pdfs = _retPdfList(email);
+  const legacy = (typeof _reportsList === "function") ? _reportsList() : [];
+  const [legacyView, setLegacyView] = React.useState(null);
+  return (
+    <div>
+      <div className="desk-header">
+        <div><div className="desk-eyebrow">RECORDS · 성장 리포트 · 리포트 보관함</div><h1 className="desk-title"><em>성장</em> 리포트</h1></div>
+        <div className="desk-meta"><b>{USER.name}</b> · {USER.position}<br/>Day {rd}</div>
+      </div>
+      <div className="ret-growth">
+        <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
+        {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+        {!list.length && (
+          <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)" }}>
+            아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
+          </div>
+        )}
+        <div className="ret-growth-head" style={{ marginTop: 22 }}>🧭 사수 리포트 4종 <small>실전 대본 · 오늘 표현 첨삭 · 회의 리허설 · 이메일 교정</small></div>
+        <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 28 }}>🚧</span>
+          <span style={{ flex: 1, minWidth: 200 }}>사수가 내 기록을 읽고 써주는 리포트예요. <b>준비 중</b>이라 열리면 사내 게시판 공지로 알려드려요. 그동안 쓴 문장과 복기는 <b>업무 노트</b>에서 그대로 볼 수 있어요.</span>
+          {setActive && <button className="btn btn-ghost btn-mini" onClick={() => setActive("library")}>업무 노트 →</button>}
+        </div>
+        {legacy.length > 0 && (
+          <>
+            <div className="ret-growth-head" style={{ marginTop: 22 }}>📋 예전 AI 성장 리포트 <small>{legacy.length}건 · 발급된 그대로</small></div>
+            {legacy.map(r => { const ms = r.milestone && _REPORT_MILESTONES.find(m => m.id === r.milestone); return (
+              <div key={r.day + (r.milestone || "")} className="ret-consult">
+                <button className="ret-consult-head" onClick={() => setLegacyView(r)}><span>📋 {ms ? ms.title : "AI 성장 리포트"} · Day {r.day}</span><small>{String(r.at || r.savedAt || "").slice(0, 10)}</small><i>보기</i></button>
+              </div>); })}
+            {legacyView && (
+              <div className="unlock-pop-bg" onClick={() => setLegacyView(null)}>
+                <div className="unlock-pop" style={{ maxWidth: 720, maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div className="unlock-pop-eyebrow">성장 리포트</div>
+                  <ReportView rep={legacyView} profile={_loadProfile(email)} />
+                  <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={() => setLegacyView(null)}>닫기</button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        {pdfs.length > 0 && (
+          <>
+            <div className="ret-growth-head" style={{ marginTop: 22 }}>📄 받은 단어 모음 PDF <small>그때 그 PDF 그대로 다시</small></div>
+            <div className="ret-shop-pdfs">{pdfs.map(p => <button key={p.at} className="ret-shop-pdf" onClick={() => { try { _odPrintHtml(p.html); } catch (e) {} }}>{String(p.at).slice(0, 10)} · {p.title || "내 단어 모음"} · 다시 받기</button>)}</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 function RetComingSoonPage({ title, desc, setActive }) {
   return (
     <div>
@@ -20387,7 +20526,8 @@ function App() {
           : <HomePage setActive={setActive} openScene={setScene} openMemo={handleOpenMemo} setViewingDay={setViewingDay} />
         )}
         {active === "library" && <LibraryPage openScene={setScene} setViewingDay={setViewingDay} />}
-        {active === "mynotes" && (_RET_ON() && _RET_SOON.mynotes) && <RetComingSoonPage title="성장 리포트" desc="진급 리포트와 사수 리포트가 쌓이고, 표현 카드를 기억 강도별로 복습하는 곳이에요. 지금은 준비 중이에요. 그동안 쓴 문장과 복기는 업무 노트에서 그대로 볼 수 있어요." setActive={setActive} />}
+        {active === "mynotes" && (_RET_ON() && _RET_SOON.mynotes) && <RetReportsSoonPage setActive={setActive} />}
+        {false && <RetComingSoonPage title="성장 리포트" desc="진급 리포트와 사수 리포트가 쌓이고, 표현 카드를 기억 강도별로 복습하는 곳이에요. 지금은 준비 중이에요. 그동안 쓴 문장과 복기는 업무 노트에서 그대로 볼 수 있어요." setActive={setActive} />}
         {active === "mynotes" && !(_RET_ON() && _RET_SOON.mynotes) && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
         {active === "test" && (_RET_ON() ? <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} /> : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
@@ -20395,6 +20535,7 @@ function App() {
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
       </main>
       <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />
+      {_RET_ON() && <RetUnlockReturnPill setActive={setActive} email={USER.email} />}
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
       {memo ? <MemoModal memo={memo} onClose={() => { setMemo(null); _maybeSurveyAfterMemo(); }} /> : null}
 
