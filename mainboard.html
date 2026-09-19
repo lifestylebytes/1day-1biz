@@ -6368,7 +6368,6 @@ const _NOTICES_ALL = [
   { id: "n-mentor-hi",  from: "mentor", to: "당신",         date: "오늘",      subject: _mentorFirstName + "입니다, 잘 부탁해요", preview: "매일 아침 노란 포스트잇으로 단어 한 개씩 알려드릴게요. 모르는 거 부담 없이 물어봐요.", unread: true, tag: "사수",  showFromDay: 1 },
   { id: "n-eval",       from: "hr",     to: "수습 사원",    date: "사전 안내", subject: "수습 평가 안내 (Day 30 분기 평가)", preview: "수습 30일차에 진행되는 분기 평가는 5개 시추에이션 롤플레이로 구성됩니다.",        unread: false, tag: "평가",  showFromDay: 1 },
   { id: "n-park-lunch", from: "park",   to: "당신",         date: "Day 5",     subject: "오늘 점심 같이 갈래?",          preview: "1층 새로 생긴 김밥집 어때? 12시 30분에 봐.",                                       unread: true,  tag: "동기",  showFromDay: 5 },
-  { id: "n-workshop",   from: "hr",     to: "신입 사원 전원", date: "다음 주",   subject: "[전사] 5월 워크숍 일정 안내",   preview: "5월 둘째 주 워크숍 일정이 확정. 각자 일정표 확인 부탁드립니다.",                  unread: true,  tag: "이벤트", showFromDay: 7 },
   { id: "n-mid",        from: "mentor", to: "당신",         date: "최근",      subject: "수습 " + USER.currentDay + "일차, 잘 하고 있어요", preview: "이번 주 미팅에서 단어들 자연스럽게 쓰는 거 봤어요. 진짜 살아 움직이는 단어가 되고 있어요. by " + _mentorFirstName, unread: true, tag: "사수", showFromDay: 14 },
   { id: "n-ubchall-9",  ts: "2026-09-01T00:00:00Z", from: "hr",     to: "1일1비 멤버 여러분", date: "9월 1일",  tag: "이벤트", unread: false, showFromDay: 1,
     subject: "[멤버 전용] 유비챌 9기 오픈 · 지금이 딱 좋은 이유",
@@ -10948,6 +10947,24 @@ function RetPeekBox({ day, exclude }) {
   const got = store[String(day)] || null;
   const have = Number(_retInv(email).peek) || 0;
   const [busy, setBusy] = React.useState(false); const [err, setErr] = React.useState("");
+  // ★ 2026-09-19: 본 문장 3개를 한 번에 업무 노트(그 Day)에 저장
+  const [savedAll, setSavedAll] = React.useState(() => { try { const u = _wbUser(); const arr = (u.savedNotes || {})[String(day)] || []; return !!(got && got.list.length && got.list.every(x => arr.some(n => n.text === x.text))); } catch (e) { return false; } });
+  const saveAll = () => {
+    try {
+      const u = _wbUser(); u.savedNotes = u.savedNotes || {}; const dk = String(day); u.savedNotes[dk] = u.savedNotes[dk] || [];
+      let n = 0;
+      (got ? got.list : []).forEach(x => {
+        if (u.savedNotes[dk].some(k => k.text === x.text)) return;
+        const label = "동기 문장 · " + (x.masked || "동기") + (x.rank ? " " + x.rank : "");
+        u.savedNotes[dk].push({ kind: "peek", label, text: x.text, savedAt: new Date().toISOString() }); n++;
+        if (window.OD?.enabled && window.OD.saveNoteRow && u.email) window.OD.saveNoteRow(u.email, day, x.text, label, "peek").catch(() => {});
+      });
+      localStorage.setItem("__OD_USER", JSON.stringify(u));
+      setSavedAll(true); _retPing();
+      try { window.dispatchEvent(new Event("od-notes-changed")); } catch (e) {}
+      _retToast("wp", "📓", n ? "동기 문장 " + n + "개 저장" : "이미 노트에 있어요", "업무 노트 · Day " + day);
+    } catch (e) { setErr("저장하지 못했어요"); }
+  };
   const use = async () => {
     if (!(window.OD && window.OD.enabled && window.OD.peekDaySentences)) { setErr("서버 기능이 아직 안 켜졌어요 (peek SQL)"); return; }
     setBusy(true); setErr("");
@@ -10977,6 +10994,13 @@ function RetPeekBox({ day, exclude }) {
       </div>
       {err && <div className="ret-deb-note" style={{ marginTop: 6 }}>{err}</div>}
       {got && got.list.map((x, i) => <div key={i} className="ret-peek-row"><small>{x.masked || ("동기 " + (i + 1))}{x.rank ? " · " + x.rank : ""}</small>"{x.text}"</div>)}
+      {got && got.list.length > 0 && (
+        <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+          {savedAll
+            ? <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green)" }}>✓ 업무 노트 Day {day}에 담겼어요</span>
+            : <button type="button" className="btn btn-ghost btn-mini" onClick={saveAll}>📓 {got.list.length}개 모두 노트에 담기</button>}
+        </div>
+      )}
     </div>
   );
 }
@@ -19868,12 +19892,44 @@ function PromotionCeremony({ realDay }) {
   );
 }
 
+// ★ 2026-09-19: 탭마다 하위 주소(#) 를 붙여 브라우저 뒤로가기가 통하게. 시추에이션 시트·메모 팝업도 뒤로가기로 닫힌다.
+const _ROUTE_HASH = { home: "", library: "#notes", inbox: "#board", perk: "#shop", mypage: "#id", mynotes: "#reports", test: "#review" };
+const _routeFromHash = () => { const h = (location.hash || "").split("&")[0]; const k = Object.keys(_ROUTE_HASH).find(k => _ROUTE_HASH[k] === h); return (h && k) ? k : "home"; };
 function App() {
-  const [active, setActive] = useState("home");
+  const [active, setActive] = useState(() => { try { return _routeFromHash(); } catch (e) { return "home"; } });
   React.useEffect(() => { try { if (active === "library") _tyErrandProof("library"); if (active === "mypage") _tyErrandProof("mypage"); if (active === "inbox") _tyErrandProof("inbox"); if (active === "test") _tyErrandProof("test"); } catch (e) {} }, [active]);
   useEffect(() => { const h = (e) => { if (e.detail) setActive(e.detail); }; window.addEventListener("od-goto", h); return () => window.removeEventListener("od-goto", h); }, []);
   const [scene, setScene] = useState(null);
   const [memo, setMemo] = useState(null);
+  // ── 해시 라우팅: 탭 바뀌면 주소에 남기고, 뒤로가기(popstate)면 주소대로 탭을 되돌린다 ──
+  const _fromPop = React.useRef(false), _modalPop = React.useRef(false), _liveRef = React.useRef({});
+  _liveRef.current = { active, scene, memo };
+  React.useEffect(() => {
+    try {
+      const want = _ROUTE_HASH[active] || "";
+      if (_fromPop.current) { _fromPop.current = false; return; }
+      // 팝업(시트·메모) 항목이 맨 위에 있는 채로 탭이 바뀌면, 그 항목을 새 탭으로 덮어쓰고 팝업은 닫는다 (뒤로가기가 헛돌지 않게)
+      if (history.state && history.state.modal) { _modalPop.current = true; setScene(null); setMemo(null); history.replaceState({ tab: active }, "", location.pathname + location.search + want); return; }
+      if ((location.hash || "") !== want) history.pushState({ tab: active }, "", location.pathname + location.search + want);
+    } catch (e) {}
+  }, [active]);
+  const _modalOpen = !!(scene || memo);
+  React.useEffect(() => {
+    try {
+      if (_modalOpen) { if (!(history.state && history.state.modal)) history.pushState({ tab: active, modal: true }, "", location.pathname + location.search + (_ROUTE_HASH[active] || "")); }
+      else if (history.state && history.state.modal) { if (_modalPop.current) _modalPop.current = false; else history.back(); }
+    } catch (e) {}
+  }, [_modalOpen]);
+  React.useEffect(() => {
+    const onPop = () => {
+      const cur = _liveRef.current;
+      if (cur.scene || cur.memo) { _modalPop.current = true; setScene(null); setMemo(null); return; }
+      const t = _routeFromHash();
+      if (t !== cur.active) { _fromPop.current = true; setActive(t); }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   // ★ 과거일 임시 보기. URL 안 건드림. React state 만 바꾸고 USER 등 mutate → 자식 자동 갱신.
   const [viewingDay, setViewingDay] = useState(null);
