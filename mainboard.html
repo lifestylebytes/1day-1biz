@@ -11010,6 +11010,24 @@ function RetPeekBox({ day, exclude }) {
       _retToast("wp", "📓", n ? "동기 문장 " + n + "개 저장" : "이미 노트에 있어요", "업무 노트 · Day " + day);
     } catch (e) { setErr("저장하지 못했어요"); }
   };
+  // ★ 2026-09-19: 사기 전에 미리 세어본다. 동기 문장이 3개 미만이면 버튼 비활성 (돈 쓰고 빈손 방지)
+  const [avail, setAvail] = React.useState(null);   // null 모름 · 숫자 = 예문·중복 제외한 문장 수
+  React.useEffect(() => {
+    if (got) return;
+    let alive = true;
+    (async () => {
+      try {
+        if (!(window.OD && window.OD.enabled && window.OD.peekDaySentences)) { if (alive) setAvail(-1); return; }
+        const r = await window.OD.peekDaySentences(email, day, 8);
+        const norm = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        const ex = norm(exclude); const seen = new Set();
+        const n = ((r && r.ok && Array.isArray(r.result)) ? r.result : []).filter(x => { const k = norm(x.text); if (!k || (ex && k === ex) || seen.has(k)) return false; seen.add(k); return true; }).length;
+        if (alive) setAvail(n);
+      } catch (e) { if (alive) setAvail(-1); }
+    })();
+    return () => { alive = false; };
+  }, [day, !!got]);
+  const ready = avail !== null && avail >= 3;
   const use = async () => {
     if (!(window.OD && window.OD.enabled && window.OD.peekDaySentences)) { setErr("서버 기능이 아직 안 켜졌어요 (peek SQL)"); return; }
     setBusy(true); setErr("");
@@ -11028,7 +11046,11 @@ function RetPeekBox({ day, exclude }) {
   return (
     <div className="ret-peek">
       <div className="ret-peek-head"><span>👀 동기 문장 엿보기 <small style={{ fontWeight: 700, color: "var(--ink-mute)" }}>같은 Day 다른 동기 3명 · 익명</small></span>
-        {!got && (have > 0
+        {!got && avail !== null && !ready && (
+          <span className="btn btn-ghost btn-mini" style={{ opacity: .6, cursor: "default" }} title="같은 Day 를 쓴 동기가 3명 이상 모이면 열려요">{avail < 0 ? "🔒 준비 중" : "🔒 동기 문장 " + avail + "개 · 3개 모이면 열려요"}</span>
+        )}
+        {!got && avail === null && <span className="btn btn-ghost btn-mini" style={{ opacity: .6, cursor: "default" }}>…</span>}
+        {!got && ready && (have > 0
           ? <button className="btn btn-primary btn-mini" disabled={busy} onClick={use}>{busy ? "…" : "티켓 1장 쓰기 (" + have + "장)"}</button>
           : <button className="btn btn-primary btn-mini" disabled={busy || _retWpBalance(email) < 100} title={_retWpBalance(email) < 100 ? "복지포인트가 모자라요" : ""} onClick={() => {
               const bal = _retWpBalance(email);
