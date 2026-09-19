@@ -2004,14 +2004,18 @@ body.od-modal-open { overflow: hidden !important; }
   border-bottom: 1px solid var(--line);
 }
 .hr-row {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
   padding: 14px 18px;
   border-bottom: 1px dashed var(--line);
   font-size: 13px;
 }
 .hr-row:last-child { border-bottom: none; }
-.hr-row-label { color: var(--ink-soft); font-weight: 600; }
-.hr-row-value { font-weight: 800; color: var(--ink); }
+/* ★ 2026-09-19: 줄 겹침(실선+점선 더블) 방지 — 행 사이 구분은 점선 하나만 */
+.hr-section .hr-row + .hr-row, .hr-section .hr-row + button.hr-row, .hr-section button.hr-row + .hr-row { border-top: none; }
+.hr-row-label { color: var(--ink-soft); font-weight: 600; min-width: 0; }
+.hr-row-value { font-weight: 800; color: var(--ink); flex-shrink: 0; text-align: right; white-space: nowrap; }
+/* 사원증 섹션 안의 내 목표 카드: 자기 테두리 없이 행처럼 */
+.hr-section .ret-goal { margin: 0; border: none; border-radius: 0; border-bottom: 1px dashed var(--line); background: transparent; padding: 14px 18px; }
 .hr-row-value b { color: var(--orange); }
 
 /* ============================================================
@@ -10632,7 +10636,7 @@ function RetWeeklyBoard() {
           <span className="ret-board-rank">{r.rank <= 3 ? ["🥇", "🥈", "🥉"][r.rank - 1] : r.rank}</span>
           <span className="scene-avatar" style={{ width: 28, height: 28, fontSize: 11, background: r.is_me ? "var(--ink)" : "rgba(216,90,42,0.16)", color: r.is_me ? "#fff" : "var(--orange)", border: "none" }}>{r.is_me ? myInitial : String(r.masked || "?").slice(0, 1)}</span>
           <span className="ret-board-name">{r.is_me ? USER.name + " (나)" : r.masked}{_rankChip(r)}{r.badge ? <i className="ret-board-badge">{r.badge}</i> : null}</span>
-          <span className="ret-board-day">Day {r.day || "-"}</span>
+          <span className="ret-board-day">Day {r.day || "-"}{Number(r.streak) > 0 ? " · 🔥 " + r.streak + "일" : ""}</span>
           <b className="ret-board-exp">{Number(r.exp).toLocaleString()}</b>
         </div>
       ))}
@@ -10643,7 +10647,7 @@ function RetWeeklyBoard() {
             <span className="ret-board-rank">{myRow.rank}</span>
             <span className="scene-avatar" style={{ width: 28, height: 28, fontSize: 11, background: "var(--ink)", color: "#fff", border: "none" }}>{myInitial}</span>
             <span className="ret-board-name">{USER.name} (나){_rankChip(myRow)}</span>
-            <span className="ret-board-day">Day {myRow.day || "-"}</span>
+            <span className="ret-board-day">Day {myRow.day || "-"}{Number(myRow.streak) > 0 ? " · 🔥 " + myRow.streak + "일" : ""}</span>
             <b className="ret-board-exp">{Number(myRow.exp).toLocaleString()}</b>
           </div>
         </>
@@ -10661,7 +10665,7 @@ function RetWeeklyBoard() {
               <li><span>🌙 퇴근 (일지)</span><em>+{RET_EXP.wrapup}</em></li>
               <li><span>🔥 어제도 완주했으면 연속 출근 보너스</span><em>+{RET_EXP.streak}</em></li>
             </ul>
-            <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>밀린 Day 를 하루에 여러 개 따라잡아도 EXP 는 <b>하루 1 Day 만</b> 쌓여요. 매일 하는 사람이 항상 앞서도록.</div>
+            <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>밀린 Day 를 하루에 여러 개 따라잡아도 EXP 는 <b>하루 1 Day 만</b> 쌓여요. 매일 하는 사람이 항상 앞서도록. EXP 가 같으면 <b>연속 출근이 긴 사람</b>이 위, 7일 다 채우면 <b>이번 주 개근</b> 배지.</div>
           </div>
           <div className="ret-exp-how-sec">
             <b>퇴근 후 · 더 쌓기</b>
@@ -13919,7 +13923,7 @@ function HrRecordsSection() {
   const nextMs = _REPORT_MILESTONES.find(m => !reports.some(r => r.milestone === m.id));
   return (
     <>
-      <div className="hr-section-head">📋 인사 기록 <span style={{ fontWeight: 600, color: "var(--ink-mute)", fontSize: 11, marginLeft: 6 }}>개발 뷰</span></div>
+      <div className="hr-section-head">📋 인사 기록</div>
       {editPf ? (
         <div style={{ padding: "8px 0" }}><ProfileForm initial={profile || undefined} title="👤 직무 프로필" sub="복습 노트의 주간 인사이트와 성장 리포트가 이 프로필을 읽어요. 바뀌면 여기서 고쳐요." onSave={(p) => { _saveProfile(USER.email || "guest", p); setEditPf(false); }} onCancel={() => setEditPf(false)} /></div>
       ) : !profile ? (
@@ -13945,8 +13949,8 @@ function HrRecordsSection() {
               <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>{_promo.length ? `${_promo.length}건 발급 · 보기 →` : (_nextAt ? `Day ${_nextAt} 진급 때 발급 · 미리 보기 →` : "보기 →")}</span>
             </button>
             <div className="hr-row" style={{ fontSize: 12.5 }}>
-              <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>🧠 성장 리포트 · 사수 리포트</span>
-              <span className="hr-row-value" style={{ color: "var(--ink-soft)" }}>준비 중{reports.length ? ` · 예전 리포트 ${reports.length}건은 열리면 거기서` : ""}</span>
+              <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>🧭 사수 리포트{reports.length ? <small style={{ display: "block", fontWeight: 600, marginTop: 2 }}>예전 성장 리포트 {reports.length}건은 성장 리포트 탭에</small> : null}</span>
+              <span className="hr-row-value" style={{ color: "var(--ink-soft)" }}>준비 중</span>
             </div>
             {promoOpen && (
               <div className="modal-bg" onClick={() => setPromoOpen(false)}>
@@ -14276,11 +14280,11 @@ function MyPage({ setActive, setViewingDay }) {
       {_isNextFeature() && !_RET_ON() && <WelfarePointsSection />}
       {_RET_ON() && (
         <div className="hr-section" style={{ marginTop: 16 }}>
+          <div className="hr-section-head">🎯 내 목표 · 🎁 복지포인트</div>
           <RetGoalCard compact />
-          <div className="hr-section-head">🎁 복지포인트 · 사수 리포트</div>
           <a className="hr-row" style={{ cursor: "pointer", textDecoration: "none" }} onClick={() => setActive && setActive("perk")}>
-            <span className="hr-row-label">🎁 지금 쓸 수 있는 복지포인트 <b>{_retWpBalance(_retEmail()).toLocaleString()}P</b></span>
-            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>복지몰 SHOP 에서 쓰기 →</span>
+            <span className="hr-row-label">🎁 복지포인트 <b>{_retWpBalance(_retEmail()).toLocaleString()}P</b></span>
+            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>복지몰 →</span>
           </a>
         </div>
       )}
@@ -14297,7 +14301,7 @@ function MyPage({ setActive, setViewingDay }) {
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
-          <span className="hr-row-label" data-errand="notice">📣 1일1비 공지방 입장</span>
+          <span className="hr-row-label" data-errand="notice">📣 1일1비 공지방<small style={{ display: "block", fontWeight: 600, color: "var(--ink-mute)", marginTop: 2 }}>업데이트 · 이벤트 소식</small></span>
           <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>업데이트·이벤트 소식 받기 →</span>
         </a>
         <a
@@ -14307,30 +14311,24 @@ function MyPage({ setActive, setViewingDay }) {
           className="hr-row"
           style={{ textDecoration: "none", cursor: "pointer" }}
         >
-          <span className="hr-row-label">💬 1:1 문의하기</span>
-          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>카카오톡 채널 열기 →</span>
+          <span className="hr-row-label">💬 1:1 문의하기<small style={{ display: "block", fontWeight: 600, color: "var(--ink-mute)", marginTop: 2 }}>학습 오류 · 진도 · 결제 · 기타</small></span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>카카오톡 →</span>
         </a>
-        <div className="hr-row" style={{ fontSize: 12 }}>
-          <span className="hr-row-label" style={{ color: "var(--ink-mute)" }}>이런 거 문의해요</span>
-          <span className="hr-row-value" style={{ color: "var(--ink-soft)", fontSize: 12 }}>
-            학습 오류, 진도 안 보임, 결제, 기타 문의
-          </span>
-        </div>
         <button
           className="hr-row"
-          style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}
+          style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}
           onClick={() => {
             try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); _tyErrandProof("guide"); } catch (e) {}
             location.href = "mainboard.html";
           }}
         >
           <span className="hr-row-label" data-errand="guide">🧭 {_RET_ON() ? "가이드 다시 보기" : "첫날 가이드 다시 보기"}</span>
-          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>오늘의 책상에서 한 번 더 →</span>
+          <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>다시 보기 →</span>
         </button>
         {_RET_ON() && (
-          <button className="hr-row" style={{ width: "100%", background: "none", border: "none", borderTop: "1px solid var(--line)", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setUnlockReplay(true)}>
-            <span className="hr-row-label">🔓 열린 기능 다시 보기</span>
-            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>Day 별로 열린 것 · 어디 있는지 →</span>
+          <button className="hr-row" style={{ width: "100%", background: "none", border: "none", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }} onClick={() => setUnlockReplay(true)}>
+            <span className="hr-row-label">🔓 열린 기능 다시 보기<small style={{ display: "block", fontWeight: 600, color: "var(--ink-mute)", marginTop: 2 }}>Day 별로 열린 것 · 어디 있는지</small></span>
+            <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>목록 →</span>
           </button>
         )}
         {unlockReplay && <RetUnlockPopup replay keys={Object.keys(_RET_UNLOCK_GO).filter(k => !_RET_SOON[k] && (_UNLOCK_AT[k] || 999) <= (USER.realCurrentDay || USER.currentDay || 1)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b])} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setUnlockReplay(false)} />}
