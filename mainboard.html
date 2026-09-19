@@ -9697,7 +9697,9 @@ function _retWeekStart(iso) { const d = new Date(iso + "T00:00:00Z"); const dow 
 // ★ 2026-09-19: 순위판(서버)과 HUD(기기)가 다른 숫자를 보여주던 문제. 서버가 기준(백필·다른 기기 기록까지 다 있음).
 //   서버 합계를 받아 캐시해두고, 있으면 HUD 도 그 숫자를 쓴다. 없으면(오프라인·SQL 미실행) 기기 장부.
 function _retSvrWeek(email) { try { const v = _retLoad("SVR", email, null); return (v && typeof v.week === "number") ? v : null; } catch (e) { return null; } }
-function _retSvrWeekSet(email, week) { try { _retSave("SVR", email, { week: Number(week) || 0, at: new Date().toISOString() }); } catch (e) {} }
+function _retSvrWeekSet(email, week, streak) { try { const prev = _retLoad("SVR", email, null) || {}; _retSave("SVR", email, { week: Number(week) || 0, streak: (streak == null ? prev.streak : Number(streak) || 0), at: new Date().toISOString() }); } catch (e) {} }
+// 연속 출근도 서버(순위판 v4)가 기준: 기기마다 저장 시각(_ts)·연장권 기록이 달라 폰/웹이 다르게 세던 문제
+function _retSvrStreak(email) { try { const v = _retLoad("SVR", email, null); return (v && typeof v.streak === "number" && !localStorage.getItem("__OD_TT_STASH")) ? v.streak : null; } catch (e) { return null; } }
 async function _retSvrWeekPull(email) {   // 서버 순위판에서 내 7일 합계만 (limit 1 → 가볍다)
   try {
     if (!(window.OD && window.OD.enabled && window.OD.fetchWeeklyBoard) || !email || email === "guest") return null;
@@ -9707,7 +9709,7 @@ async function _retSvrWeekPull(email) {   // 서버 순위판에서 내 7일 합
     const rows = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []);
     const me = rows.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null;
     const week = me ? Number(me.exp) || 0 : 0;
-    _retSvrWeekSet(email, week); _retPing();
+    _retSvrWeekSet(email, week, me && me.streak != null ? Number(me.streak) : undefined); _retPing();
     return week;
   } catch (e) { return null; }
 }
@@ -9885,6 +9887,7 @@ function _retStreakBefore(email, gap) {
   return n;
 }
 function _retStreakDays(email) {
+  const svr = _retSvrStreak(email); if (svr !== null) return svr;
   const dates = _retActivityDates(email);
   const today = _tyTodayISO();
   let d = dates.has(today) ? today : _retAddDays(today, -1);
@@ -10323,7 +10326,7 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
   const defendWith = (id) => {
     _retInvUse(email, id);
     // 방어했으면 결근일을 출근으로 채워 목표·연속 기록을 지킨다
-    try { const att = _retLoad("ATT", email, { dates: [] }); if (!Array.isArray(att.dates)) att.dates = []; const today = _tyTodayISO(); for (let i = 1; i <= rec.gap; i++) { const d = _retAddDays(today, -i); if (att.dates.indexOf(d) < 0) att.dates.push(d); } _retSave("ATT", email, att); } catch (e) {}
+    try { const att = _retLoad("ATT", email, { dates: [] }); if (!Array.isArray(att.dates)) att.dates = []; const today = _tyTodayISO(); for (let i = 1; i <= rec.gap; i++) { const d = _retAddDays(today, -i); if (att.dates.indexOf(d) < 0) att.dates.push(d); try { _retAwardExp(email, "att:" + d, 0, "출근 인정 (" + id + ")", d + "T03:00:00.000Z", null, "task", { silent: true }); } catch (e2) {} } _retSave("ATT", email, att); } catch (e) {}
     const g = _retGoal(email); if (g && g.status === "failed" && g.failedAt && String(g.failedAt).slice(0, 10) === _tyTodayISO()) { g.status = "active"; delete g.failedAt; _retSave("GOAL", email, g); }
     _retDebuffPatch(email, { defended: id, seen: true });
     onClose();
@@ -10608,7 +10611,7 @@ function RetWeeklyBoard() {
         // v2 RPC 는 { rows, me } (me = 내가 목록 밖일 때 내 순위), 옛 RPC 는 배열
         if (Array.isArray(r.result)) { setRows(r.result); setMeOut(null); }
         else { setRows(Array.isArray(r.result && r.result.rows) ? r.result.rows : []); setMeOut((r.result && r.result.me) || null); }
-        try { const rs = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []); const me = rs.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null; _retSvrWeekSet(email, me ? Number(me.exp) || 0 : 0); } catch (e) {}
+        try { const rs = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []); const me = rs.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null; _retSvrWeekSet(email, me ? Number(me.exp) || 0 : 0, me && me.streak != null ? Number(me.streak) : undefined); } catch (e) {}
       } catch (e) { if (alive) setErr("순위를 불러오지 못했어요"); }
     })();
     return () => { alive = false; };
