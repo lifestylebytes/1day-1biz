@@ -1093,11 +1093,9 @@ span.ret-hud-item { cursor: default; }
 .ret-side-row .ret-goal-opt b { font-size: 13px; }
 .ret-side-row .ret-goal-hint { margin-top: 6px; }
 .ret-side-row .office-strip.sib { border: none !important; background: transparent !important; border-top: 1px dashed var(--line) !important; border-radius: 0 !important; margin: 0 !important; padding: 8px 0 0 !important; }
-.desk-meta.with-hud { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding-top: 48px; }   /* 위 고정 버튼(홈·개발 뷰·피드백) 아래로 */
-.desk-meta.with-hud .ret-hud { margin: 0; width: 460px; max-width: 52vw; }
-.desk-meta.with-hud .ret-hud-item { padding: 6px 4px 5px; }
-.desk-meta.with-hud .ret-hud-item b { font-size: 15px; }
-.desk-meta.with-hud .desk-catch { margin-top: 0; }
+.desk-meta.with-hud { text-align: right; display: flex; flex-direction: row; align-items: flex-end; gap: 10px; }
+.desk-meta.with-hud .ret-hud.compact { margin: 0; width: 400px; max-width: 46vw; }
+.desk-meta.with-hud .desk-catch { margin: 0 0 2px; }
 .desk-meta.with-mini { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
 .ret-hud.compact { grid-template-columns: repeat(4, 1fr); width: 100%; margin: 10px 0 0; border-radius: 10px; }
 .ret-hud.compact .ret-hud-item { padding: 6px 4px 5px; gap: 1px; }
@@ -8849,7 +8847,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         {_RET_ON() && isMobile && !USER.isViewingPast && <RetHud setActive={setActive} compact />}
         {!(_RET_ON() && isMobile) && <div className={"desk-meta" + (_RET_ON() && !isMobile ? " with-hud" : "")}>
           {(_RET_ON() && !isMobile && !USER.isViewingPast)
-            ? <RetHud setActive={setActive} />   /* ★ 2026-09-19 PC: HUD 는 헤더 오른쪽 */
+            ? <RetHud setActive={setActive} compact />   /* ★ 2026-09-19 PC: 헤더 오른쪽, 제목과 같은 높이의 얇은 4칸 */
             : <><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>{USER.team}</>}
           {(() => {
             if (!_RET_ON() || USER.isViewingPast) return null;
