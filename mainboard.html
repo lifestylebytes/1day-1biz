@@ -10109,7 +10109,7 @@ function RetUnlockPopup({ keys, rd, email, setActive, onClose, replay }) {
   const go = (k) => {
     const g = _RET_UNLOCK_GO[k];
     // ★ 2026-09-19: 하나 보러 가도 목록으로 돌아올 수 있게, 남은 항목을 세션에 남기고 하단 알약으로 다시 연다
-    try { const rest = keys.filter(x => x !== k); if (rest.length) { sessionStorage.setItem("__OD_UNLOCK_RETURN", JSON.stringify({ keys: rest, rd })); window.dispatchEvent(new Event("od-unlock-return")); } } catch (e) {}
+    try { const rest = keys.filter(x => x !== k); if (rest.length) sessionStorage.setItem("__OD_UNLOCK_RETURN", JSON.stringify({ keys: rest, rd })); else sessionStorage.removeItem("__OD_UNLOCK_RETURN"); window.dispatchEvent(new Event("od-unlock-return")); } catch (e) {}
     done();
     if (!g) return;
     if (setActive) setActive(g.nav);
@@ -10153,7 +10153,7 @@ function RetUnlockReturnPill({ setActive, email }) {
           <button type="button" className="ret-unlock-return-x" onClick={clear} aria-label="닫기">✕</button>
         </div>
       )}
-      {open && <RetUnlockPopup replay keys={st.keys} rd={st.rd} email={email} setActive={setActive} onClose={() => { setOpen(false); const n = read(); if (!n || !n.keys || !n.keys.length) setSt(null); else setSt(n); }} />}
+      {open && <RetUnlockPopup replay keys={st.keys} rd={st.rd} email={email} setActive={setActive} onClose={() => { setOpen(false); const n = read(); if (!n || !n.keys || !n.keys.length || n.keys.length === st.keys.length) clear(); else setSt(n); }} />}
     </>
   );
 }
