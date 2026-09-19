@@ -6077,7 +6077,16 @@ if (typeof _contentV2 !== "undefined" && _contentV2) Object.assign(SYNONYMS, SYN
 //   운영자 · Dev 모드 · 내부 테스트 계정(is_tester)만 켤 수 있고, 일반 회원은 스위치가 있어도 항상 꺼진다.
 // ★★ 2026-09-18 런칭 스위치: 리텐션 엔진(HUD·내 목표·심부름·복지몰·순위판·디버프…)을 전원에게 연다.
 //    성장 리포트 · 사수 리포트 4종 · 분기 평가는 _RET_SOON 으로 '준비 중' 잠금. 되돌리려면 false.
-const _RET_LIVE = false;   // ← true 로 바꾸면 라이브
+const _RET_LIVE = true;   // ★ 2026-09-19 라이브. false 로 바꾸면 개발 뷰 전용으로
+// ★ 2026-09-19 라이브 제외 항목 전용 게이트: 호봉 · 승진 심사 카드 · 공채 1기 뱃지 · 업무 위장 모드 · 리포트 발급 알림 팝업.
+//   _RET_LIVE 와 무관하게 운영자가 개발 뷰 토글을 켰을 때만 true.
+const _isDevNext = () => {
+  try {
+    if (localStorage.getItem("__OD_NEXT") !== "1") return false;
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    return !!(u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode));
+  } catch (e) { return false; }
+};
 const _isNextFeature = () => {
   if (_RET_LIVE) return true;
   try {
@@ -8829,12 +8838,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         <div>
           <div className="desk-eyebrow">
             {todayLabel} · DAY {USER.currentDay} / {USER.totalDays}{(_RET_ON() && isMobile) ? null : <> · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span></>}
-            {_RET_ON() && !isMobile && <> · {USER.name} · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}</>}
+            {_RET_ON() && !isMobile && <> · {USER.name} · {USER.position}{_isDevNext() ? " " + _tyHobong() + "호봉" : ""}</>}
           </div>
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
           {_RET_ON() && isMobile && (
             <div className="desk-sub">
-              <span><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""} · {USER.team}</span>
+              <span><b>{USER.name}</b> · {USER.position}{_isDevNext() ? " " + _tyHobong() + "호봉" : ""} · {USER.team}</span>
               {(() => {
                 if (USER.isViewingPast) return null;
                 const _cal = Number(window.__odAutoDay) || 0, _cur = USER.realCurrentDay || USER.currentDay || 1;
@@ -8848,7 +8857,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         {!(_RET_ON() && isMobile) && <div className={"desk-meta" + (_RET_ON() && !isMobile ? " with-hud" : "")}>
           {(_RET_ON() && !isMobile && !USER.isViewingPast)
             ? <RetHud setActive={setActive} compact />   /* ★ 2026-09-19 PC: 헤더 오른쪽, 제목과 같은 높이의 얇은 4칸 */
-            : <><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>{USER.team}</>}
+            : <><b>{USER.name}</b> · {USER.position}{_isDevNext() ? " " + _tyHobong() + "호봉" : ""}<br/>{USER.team}</>}
           {(() => {
             if (!_RET_ON() || USER.isViewingPast) return null;
             const _cal = Number(window.__odAutoDay) || 0, _cur = USER.realCurrentDay || USER.currentDay || 1;
@@ -8860,7 +8869,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {/* ★ 2026-09-18: 모바일에선 HUD 를 '오늘의 책상 위' 헤더 줄 아래 (PC 는 헤더 오른쪽) */}
       {!USER.isViewingPast && !_RET_ON() && <RetHud setActive={setActive} top />}
 
-      {_isNextFeature() && !USER.isViewingPast && (
+      {_isDevNext() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
       {retDebuff && !retQuiz && (
@@ -9458,7 +9467,7 @@ function _tyApplyStealth(on) {
     }
   } catch (e) {}
 }
-if (_isNextFeature() && _tyStealthOn()) _tyApplyStealth(true);
+if (_isDevNext() && _tyStealthOn()) _tyApplyStealth(true);
 
 // 부재중 리포트: 3일 이상 만에 돌아오면 벌 대신 정산 카드
 function AwayReport({ user }) {
@@ -11128,7 +11137,7 @@ function TycoonBoot({ toast }) {
       const h = _tyHobong();
       const prev = Number(localStorage.getItem(K) || "0");
       localStorage.setItem(K, String(h));
-      if (prev && h > prev) setTimeout(() => toast("🎖️ 호봉 승급! " + window.__SIM.USER.position + " " + h + "호봉이 됐어요", 4000), 800);
+      if (_isDevNext() && prev && h > prev) setTimeout(() => toast("🎖️ 호봉 승급! " + window.__SIM.USER.position + " " + h + "호봉이 됐어요", 4000), 800);
     } catch (e) {}
   }, []);
   return null;
@@ -13954,7 +13963,7 @@ function MyPage({ setActive, setViewingDay }) {
   }, []);
   const [showPause, setShowPause] = useState(false);
   const [tyStealth, setTyStealth] = useState(() => _tyStealthOn());
-  const _tyGlow = _isNextFeature() && (() => { try { const w = _tyWeek(0); return !!(w && w.due >= 3 && w.perfect); } catch (e) { return false; } })();
+  const _tyGlow = _isDevNext() && (() => { try { const w = _tyWeek(0); return !!(w && w.due >= 3 && w.perfect); } catch (e) { return false; } })();
 
   const handleLogout = () => {
     if (!confirm("로그아웃 하시겠어요?\n\n진도는 서버에 저장돼있어서 다음에 같은 이메일로 다시 들어오면 그대로 이어져요.")) return;
@@ -14036,14 +14045,14 @@ function MyPage({ setActive, setViewingDay }) {
       <div className={"id-card" + (_tyGlow ? " id-glow" : "")}>
         <div className="id-card-clip"></div>
         <div className="id-card-strip" style={_cardStripStyle}>
-          <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}{_isNextFeature() && _tyFounding() ? <span className="ty-founding">공채 1기</span> : null}</span>
+          <span>YOUBUDDY KOREA · {_cardIsFull ? card.en.toUpperCase() : "EMPLOYEE ID"}{_isDevNext() && _tyFounding() ? <span className="ty-founding">공채 1기</span> : null}</span>
           <b>NO. {_empNo}</b>
         </div>
         <div className="id-card-body">
           <div className="id-card-photo" style={_cardStripStyle}>{_cardIsFull ? "👔" : USER.name[0]}</div>
           <div className="id-card-fields" style={{ flex: 1 }}>
             <div className="id-field"><span className="id-field-label">성명</span><span className="id-field-value">{USER.name}</span></div>
-            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : (_isNextFeature() ? " · " + _tyHobong() + "호봉" : "")}</span></div>
+            <div className="id-field"><span className="id-field-label">직급</span><span className="id-field-value">{card.ko} · {card.en}{!_cardEarned ? " (이전 직급)" : (_isDevNext() ? " · " + _tyHobong() + "호봉" : "")}</span></div>
             {USER.email && (
               <div className="id-field">
                 <span className="id-field-label">로그인</span>
@@ -14093,7 +14102,7 @@ function MyPage({ setActive, setViewingDay }) {
         </div>
       )}
 
-      {_isNextFeature() && <PromotionCard />}
+      {_isDevNext() && <PromotionCard />}
 
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
@@ -14111,8 +14120,8 @@ function MyPage({ setActive, setViewingDay }) {
         </div>
       )}
 
-      {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) */}
-      {_isNextFeature() && (
+      {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) — 라이브 제외 */}
+      {_isDevNext() && (
         <div className="hr-section" style={{ marginTop: 28 }}>
           <div className="hr-section-head" data-errand="stealth">업무 위장 모드 🥸</div>
           <div style={{ padding: "14px 16px", fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7 }}>
@@ -20568,8 +20577,8 @@ function App() {
       >💬 피드백</button>
 
       {/* ── 우상단 개발 뷰 토글 (운영자/Dev/내부 테스터). 켜면 개발 중 기능이 보이고, 끄면 멤버와 동일 ── */}
-      {_canDevView && !_RET_LIVE && (() => {
-        const _devOn = _isNextFeature();
+      {_canDevView && (() => {
+        const _devOn = _RET_LIVE ? _isDevNext() : _isNextFeature();
         return (
           <button
             onClick={() => { try { if (_devOn) localStorage.removeItem("__OD_NEXT"); else localStorage.setItem("__OD_NEXT", "1"); } catch (e) {} location.reload(); }}
