@@ -1085,8 +1085,13 @@ span.ret-hud-item { cursor: default; }
 .ret-goal-slim b { color: var(--ink); font-weight: 900; }
 .ret-goal-slim-r { white-space: nowrap; }
 .office-strip.sib { border-radius: 999px !important; margin: 6px 0 0 !important; padding: 6px 14px !important; font-size: 12px; }
-.ret-side-row { margin: 12px 0 0; }
 .ret-side-row .ret-goal, .ret-side-row .ret-goal-slim { margin-top: 0; }
+.desk-meta.with-hud { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding-top: 48px; }   /* 위 고정 버튼(홈·개발 뷰·피드백) 아래로 */
+.desk-meta.with-hud .ret-hud { margin: 0; width: 460px; max-width: 52vw; }
+.desk-meta.with-hud .ret-hud-item { padding: 6px 4px 5px; }
+.desk-meta.with-hud .ret-hud-item b { font-size: 15px; }
+.desk-meta.with-hud .desk-catch { margin-top: 0; }
+.ret-side-row { margin: 0 0 12px; }
 .desk-catch { display: block; width: fit-content; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.45); color: var(--green); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .desk-catch b { color: var(--green); font-weight: 900; }
 @media (max-width: 880px) { .ret-goal-slim { flex-wrap: wrap; } .ret-goal-slim .ret-goal-bar { order: 3; flex-basis: 100%; } }
@@ -2392,7 +2397,7 @@ body.od-modal-open { overflow: hidden !important; }
   .desk-grid.next-home.ret-home .ot-card { order: 1; }
   .desk-grid.next-home.ret-home .ret-nextday { order: 1; margin: 0; }
   .desk-grid.next-home.ret-home .desk-tips { order: 2; }
-  .desk-grid.next-home.ret-home .ret-side-row { order: -1; }   /* 시추에이션(-3) 아래, 시간표(0) 위 */
+  .desk-grid.next-home.ret-home .ret-side-row { order: -1; margin: 0; }   /* 시추에이션(-3) 아래, 시간표(0) 위 */
   .desk-tips-head {
     display: flex; align-items: center; gap: 8px; width: 100%;
     padding: 11px 14px;
@@ -8793,12 +8798,14 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         <div>
           <div className="desk-eyebrow">
             {todayLabel} · DAY {USER.currentDay} / {USER.totalDays} · <span style={{ color: "var(--orange)" }}>수집 표현 {USER.wordsCollected}</span>
+            {_RET_ON() && !isMobile && <> · {USER.name} · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}</>}
           </div>
           <h1 className="desk-title"><em>오늘의</em> 책상 위</h1>
         </div>
-        <div className="desk-meta">
-          <b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>
-          {USER.team}
+        <div className={"desk-meta" + (_RET_ON() && !isMobile ? " with-hud" : "")}>
+          {(_RET_ON() && !isMobile && !USER.isViewingPast)
+            ? <RetHud setActive={setActive} />   /* ★ 2026-09-19 PC: HUD 는 헤더 오른쪽 */
+            : <><b>{USER.name}</b> · {USER.position}{_isNextFeature() ? " " + _tyHobong() + "호봉" : ""}<br/>{USER.team}</>}
           {(() => {
             if (!_RET_ON() || USER.isViewingPast) return null;
             const _cal = Number(window.__odAutoDay) || 0, _cur = USER.realCurrentDay || USER.currentDay || 1;
@@ -8807,8 +8814,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           })()}
         </div>
       </div>
-      {/* ★ 2026-09-18: HUD 는 '오늘의 책상 위' 헤더 줄 아래 */}
-      {!USER.isViewingPast && <RetHud setActive={setActive} top />}
+      {/* ★ 2026-09-18: 모바일에선 HUD 를 '오늘의 책상 위' 헤더 줄 아래 (PC 는 헤더 오른쪽) */}
+      {!USER.isViewingPast && !(_RET_ON() && !isMobile) && <RetHud setActive={setActive} top />}
 
       {_isNextFeature() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
@@ -8907,6 +8914,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             </div>
           )}
           {!USER.isViewingPast && !_RET_ON() && <RetGoalCard slim />}
+          {/* ★ 2026-09-19 (개발 뷰): 내 목표 + 이번 주 출근 인원. PC 는 시추에이션 위(HUD 옛 자리), 모바일은 CSS order 로 시추에이션 아래 */}
+          {!USER.isViewingPast && _RET_ON() && (
+            <div className="ret-side-row">
+              <RetGoalCard slim />
+              <OfficeTodayStrip sib />
+            </div>
+          )}
           {_isHomeLive() && !USER.isViewingPast && !!doneTasks.checkin && (
             <PreReveal key={"pre-" + USER.currentDay} today={today} email={USER.email} />
           )}
@@ -8919,14 +8933,6 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             done={_sceneDone}
             scenarioDone={!!doneTasks.scenario}
           />
-          {/* ★ 2026-09-18 (개발 뷰): 시추에이션이 첫 화면 주인공. 내 목표 + 이번 주 출근 인원은 그 아래 한 묶음 */}
-          {!USER.isViewingPast && _RET_ON() && (
-            <div className="ret-side-row">
-              <RetGoalCard slim />
-              <OfficeTodayStrip sib />
-            </div>
-          )}
-
           <div className={"schedule" + (_RET_ON() && !USER.isViewingPast && _nextRow ? " schedule-live" : "")} style={_lockedNext("schedule", _rdNow, USER.isViewingPast) ? { display: "none" } : undefined}>
             <div className="schedule-head">
               <span>오늘 일정 · DAY {USER.currentDay}</span>
