@@ -4,7 +4,7 @@
     "word": "stakeholder",
     "meaning": "이해관계자",
     "phonetic": "/ˈsteɪkˌhoʊldər/",
-    "quote": "OK team, let's start with the stakeholder map for this project. Who's who here?",
+    "quote": "Okay team, let's start with the stakeholder map for this project. I want to be clear on who's who here before we touch anything else.",
     "sampleAnswer": "I'll map out the key stakeholders by tomorrow morning.",
     "mentorTip": "주주, 클라이언트, 내부 부서까지, 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
     "buddyAnswers": {
@@ -18,7 +18,7 @@
     "word": "deadline",
     "meaning": "마감 기한",
     "phonetic": "/ˈdedlaɪn/",
-    "quote": "Can you confirm the deadline with Daniel one more time?",
+    "quote": "Hi Jiwon, could you confirm the deadline with Daniel one more time before we send this out? He's the main stakeholder on this one, so I'd rather double-check.",
     "sampleAnswer": "Just to confirm, the deadline for the draft is this Friday EOD?",
     "mentorTip": "deadline은 진짜 '죽는 선'이라는 어원. due date보다 무거운 뉘앙스라 협상이 어려워.",
     "buddyAnswers": {
@@ -32,7 +32,7 @@
     "word": "follow up",
     "meaning": "후속 조치하다",
     "phonetic": "/ˈfɑloʊ ʌp/",
-    "quote": "Did you send the follow-up email from yesterday's meeting?",
+    "quote": "Quick question, did you get a chance to send the follow-up email from yesterday's meeting? I want to make sure they have it before they plan their week.",
     "sampleAnswer": "Following up on yesterday's call, here are the action items.",
     "mentorTip": "회의가 끝나면 24시간 내 follow up. 이거 한 번만 챙겨도 신뢰가 달라져.",
     "buddyAnswers": {
@@ -46,7 +46,7 @@
     "word": "ASAP",
     "meaning": "최대한 빨리",
     "phonetic": "/ˌeɪ ɛs eɪ ˈpi/",
-    "quote": "Need the revised numbers ASAP, board meeting tomorrow.",
+    "quote": "I hate to rush you, but I need the revised numbers ASAP. The board meeting is tomorrow morning and I still have to build the deck around them.",
     "sampleAnswer": "On it, ASAP. Revised numbers coming within the hour.",
     "mentorTip": "ASAP는 강한 표현이야. 우리가 쓸 땐 'by EOD' 같은 구체적 시간이 더 프로페셔널해.",
     "buddyAnswers": {
@@ -60,7 +60,7 @@
     "word": "circle back",
     "meaning": "(나중에) 다시 얘기하다",
     "phonetic": "/ˈsɝkəl bæk/",
-    "quote": "Let's circle back on this next week, running short on time.",
+    "quote": "I think we're running short on time today, so let's circle back on this next week. I'd rather give it the attention it deserves than rush it now.",
     "sampleAnswer": "Sounds good, let's circle back Tuesday with the updated numbers.",
     "mentorTip": "회의를 자연스럽게 끊을 때 쓰는 마법의 표현. 한국말로 '이건 다음에' 보다 부드러워.",
     "buddyAnswers": {
@@ -74,7 +74,7 @@
     "word": "loop in",
     "meaning": "(메일/대화에) 포함시키다",
     "phonetic": "/luːp ɪn/",
-    "quote": "We should loop the design team in on this too, right?",
+    "quote": "Before we go any further, I think we should loop the design team in on this too. They'll have opinions on the layout, don't you think?",
     "sampleAnswer": "I'm looping in @design-lead, could you weigh in on this?",
     "mentorTip": "정보 공유의 동사. cc보다 '동참시킨다'는 뉘앙스가 강해서 협업할 때 자주 써.",
     "buddyAnswers": {
@@ -88,7 +88,7 @@
     "word": "deliverable",
     "meaning": "산출물, 납품물",
     "phonetic": "/dɪˈlɪvərəbl/",
-    "quote": "Let's narrow down to three core deliverables for this quarter.",
+    "quote": "I looked at the list, and it's a lot. Let's narrow it down to three core deliverables for this quarter so the team actually knows what to focus on.",
     "sampleAnswer": "The three key deliverables for Q2 are the report, prototype, and rollout plan.",
     "mentorTip": "'결과물' 보다 '약속한 산출물' 의 무게가 있어. 계약/프로젝트에서 자주 봐.",
     "buddyAnswers": {
@@ -102,7 +102,7 @@
     "word": "ramp up",
     "meaning": "(생산·활동을) 늘리다",
     "phonetic": "/ræmp ʌp/",
-    "quote": "What's the engineering team's ramp-up timeline looking like?",
+    "quote": "I've been meaning to ask, what does the engineering team's ramp-up timeline look like right now? I'd like to know when they'll be at full speed.",
     "sampleAnswer": "We're ramping up engineering hires from May through July.",
     "mentorTip": "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
     "buddyAnswers": {
@@ -116,7 +116,7 @@
     "word": "low-hanging fruit",
     "meaning": "쉽게 얻을 수 있는 성과",
     "phonetic": "/loʊ ˈhæŋɪŋ fruːt/",
-    "quote": "Let's start with the low-hanging fruit before the heavy lifting.",
+    "quote": "Here's what I'm thinking. Let's start with the low-hanging fruit this week and save the heavy lifting for when the whole team is back.",
     "sampleAnswer": "I've pulled out some low-hanging fruit we can ship this week.",
     "mentorTip": "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 셀 수 없는 관용표현이라 'three low-hanging fruits'처럼 개수를 세면 어색해. 'some low-hanging fruit'으로 뭉뚱그리거나, 개수를 말하고 싶으면 'a few quick wins'로 바꿔 말해.",
     "buddyAnswers": {
@@ -130,7 +130,7 @@
     "word": "touch base",
     "meaning": "잠깐 얘기하다, 안부 묻다",
     "phonetic": "/tʌtʃ beɪs/",
-    "quote": "Let's touch base for 15 minutes on Monday. I want to hear how things are going.",
+    "quote": "Let's touch base for fifteen minutes on Monday. I just want to hear how things are going on your side, nothing formal.",
     "sampleAnswer": "Sure, let's touch base Monday at 3, I'll have an update ready.",
     "mentorTip": "야구의 '베이스 터치' 에서 옴. 가볍게 점검하는 짧은 미팅을 잡을 때 부담 없이 써.",
     "buddyAnswers": {
@@ -144,7 +144,7 @@
     "word": "due diligence",
     "meaning": "실사, 충분한 검토",
     "phonetic": "/duː ˈdɪlɪdʒəns/",
-    "quote": "We can't sign off until due diligence wraps. Let's get it done this week.",
+    "quote": "We can't sign off until the due diligence wraps up, so let's push to get it done this week. I don't want this dragging into next month.",
     "sampleAnswer": "Due diligence will wrap by Thursday, we'll review findings Friday.",
     "mentorTip": "법률·재무 검토 전부. 이 한 단어가 며칠치 일을 함축해.",
     "buddyAnswers": {
@@ -158,7 +158,7 @@
     "word": "pivot",
     "meaning": "(전략을) 전환하다",
     "phonetic": "/ˈpɪvət/",
-    "quote": "Numbers aren't there. We may need to pivot.",
+    "quote": "I'll be honest with you, the numbers just aren't there. I think we may need to pivot, and I'd like your take before I say that to the director.",
     "sampleAnswer": "If conversion stays flat, we should consider a pivot to B2B.",
     "mentorTip": "스타트업 용어가 일반 비즈니스로 넘어온 사례. '방향 자체를 트는' 뉘앙스라 작은 변경엔 안 써.",
     "buddyAnswers": {
@@ -172,7 +172,7 @@
     "word": "actionable",
     "meaning": "실행 가능한, 바로 할 수 있는",
     "phonetic": "/ˈækʃənəbl/",
-    "quote": "The feedback is solid, but can you make it more actionable?",
+    "quote": "The feedback you wrote is solid, I mean that. But could you make it a bit more actionable? Right now it tells them what's wrong, not what to do next.",
     "sampleAnswer": "Here are three actionable items, owner and deadline included.",
     "mentorTip": "'그래서 뭐 해?' 라는 질문에 답이 되면 actionable. 보고서의 마지막 페이지에 꼭 들어가야 해.",
     "buddyAnswers": {
@@ -186,7 +186,7 @@
     "word": "ballpark",
     "meaning": "대략적인 추정치",
     "phonetic": "/ˈbɔːlpɑːrk/",
-    "quote": "Just a ballpark, what are we looking at, budget-wise?",
+    "quote": "I'm not asking for an exact figure yet. Just give me a ballpark, what are we looking at budget-wise for this project?",
     "sampleAnswer": "Ballpark, we're looking at 5 to 7 million won.",
     "mentorTip": "정확한 답을 줄 수 없을 때 시간을 버는 표현. 한국말 '대충 얼마' 보다 훨씬 프로페셔널해.",
     "buddyAnswers": {
@@ -200,7 +200,7 @@
     "word": "table",
     "meaning": "(논의를) 보류하다",
     "phonetic": "/ˈteɪbəl/",
-    "quote": "We're running short on time. Let's table the pricing discussion for now.",
+    "quote": "We're running short on time, so I'd like to table the pricing discussion for now. Let's get through the roadmap first and come back to pricing at the end.",
     "sampleAnswer": "Agreed. Let's table pricing and pick it up next week with the full deck.",
     "mentorTip": "재밌는 단어야. 미국식은 '보류', 영국식은 '정식 안건으로 올리다', 정반대! Daniel은 영국 본사라 헷갈릴 수 있어. 문맥으로 잡아야 해.",
     "buddyAnswers": {
@@ -214,7 +214,7 @@
     "word": "align",
     "meaning": "(의견·계획을) 정렬시키다, 합의를 맞추다",
     "phonetic": "/əˈlaɪn/",
-    "quote": "Before we wrap, let's make sure we're aligned on next steps. Anyone disagree?",
+    "quote": "Before we wrap up, I want to make sure we're all aligned on the next steps. Does anyone see it differently? Now's the time to say so.",
     "sampleAnswer": "I'm aligned, I'll own the rollout plan and circle back by Wednesday.",
     "mentorTip": "agree보다 부드러워. '동의'까진 아니어도 '같은 방향'이라는 뜻. 회의 끝에 빈번해.",
     "buddyAnswers": {
@@ -228,7 +228,7 @@
     "word": "sync up",
     "meaning": "(짧게) 동기화하다, 진행상황 맞추다",
     "phonetic": "/sɪŋk ʌp/",
-    "quote": "Let's sync up for 15 minutes tomorrow. I want to hear your progress.",
+    "quote": "Could we sync up for fifteen minutes tomorrow? I'd like to hear where you are on the project and see if you need anything from me.",
     "sampleAnswer": "Sounds good, I'll send a quick agenda before we sync up.",
     "mentorTip": "touch base의 짧은 버전. 격식 없이 쓰는 표현이라 사수·동기끼리 자주 써.",
     "buddyAnswers": {
@@ -242,7 +242,7 @@
     "word": "bandwidth",
     "meaning": "(업무) 처리 여력, 시간/에너지",
     "phonetic": "/ˈbændwɪdθ/",
-    "quote": "Got any bandwidth this week? It'd be great to put the design team's materials together with you.",
+    "quote": "Do you have any bandwidth this week? If you do, it'd be great to put the design team's materials together with you.",
     "sampleAnswer": "Honestly tight on bandwidth this week, can we sync up Monday?",
     "mentorTip": "'시간 있어?' 보다 자기 부담 인정하는 뉘앙스. 거절할 때 'I don't have the bandwidth'가 정중해.",
     "buddyAnswers": {
@@ -256,7 +256,7 @@
     "word": "scope",
     "meaning": "범위, 범위를 정하다",
     "phonetic": "/skoʊp/",
-    "quote": "Let's redefine the scope of this project. It's getting too big.",
+    "quote": "I think we need to redefine the scope of this project. It's getting too big, and I'd rather cut now than miss the deadline later.",
     "sampleAnswer": "I'll scope down to the MVP features and circulate by EOD.",
     "mentorTip": "프로젝트가 부풀어오를 때 (scope creep) 가장 중요한 단어. 'what's in / what's out' 명확히 적는 게 핵심.",
     "buddyAnswers": {
@@ -270,7 +270,7 @@
     "word": "step up",
     "meaning": "더 적극 나서다, 책임을 늘리다",
     "phonetic": "/stɛp ʌp/",
-    "quote": "You've really stepped up this quarter. First solo email, first meeting input, you took the lead on all of it.",
+    "quote": "You've really stepped up this quarter, and I wanted to say it out loud. First solo email, first meeting input, and you took the lead on all of it.",
     "sampleAnswer": "Thanks, didn't realize I was stepping up at the time, scary but worth it.",
     "mentorTip": "'레벨업' 같은 뉘앙스. 본인 책임을 한 단계 늘렸을 때 칭찬으로 자주 들어. 사수가 신입한테 해주는 최고의 한 마디.",
     "buddyAnswers": {
@@ -284,7 +284,7 @@
     "word": "heads up",
     "meaning": "미리 알리는 말, 사전 공유",
     "phonetic": "/hɛdz ʌp/",
-    "quote": "Heads up, the director is reviewing our team's KPIs tomorrow. Prep the materials in advance.",
+    "quote": "Just a heads up, the director is reviewing our team's KPIs tomorrow. It would help a lot if you could prep the materials in advance.",
     "sampleAnswer": "Thanks for the heads up, I'll have the deck ready by 9am.",
     "mentorTip": "warn보다 부드럽고, FYI보다 액션이 필요한 톤. 동료끼리 자주 주고받아.",
     "buddyAnswers": {
@@ -298,7 +298,7 @@
     "word": "take ownership",
     "meaning": "주도권을 갖다, 책임지다",
     "phonetic": "/teɪk ˈoʊnərʃɪp/",
-    "quote": "It's small but I want you to take ownership of this. You need the experience of seeing something through.",
+    "quote": "It's a small project, but I'd like you to take ownership of it. I think you need the experience of seeing something through from start to finish.",
     "sampleAnswer": "Got it, I'll take ownership and keep you posted weekly.",
     "mentorTip": "수습 단계에서 가장 중요한 표현. 'I'll handle it' 보다 책임감의 무게가 더해져.",
     "buddyAnswers": {
@@ -312,7 +312,7 @@
     "word": "buy-in",
     "meaning": "동의, 지지 확보",
     "phonetic": "/ˈbaɪɪn/",
-    "quote": "We need executive buy-in before we move on this. Can you pitch it Friday?",
+    "quote": "We need executive buy-in before we move on this. Do you think you could pitch it to them on Friday? I'll be in the room to back you up.",
     "sampleAnswer": "I'll prep a one-pager to get exec buy-in by Friday.",
     "mentorTip": "단순 동의가 아닌 '지지·납득'의 뉘앙스. 보고서 마지막 슬라이드의 핵심.",
     "buddyAnswers": {
@@ -326,7 +326,7 @@
     "word": "leverage",
     "meaning": "(자원·관계를) 최대한 활용하다",
     "phonetic": "/ˈlevərɪdʒ/",
-    "quote": "Let's leverage Sarah's network on the West Coast, she has the right contacts.",
+    "quote": "Let's leverage Sarah's network on the West Coast for this. She has exactly the right contacts, and she's offered to help.",
     "sampleAnswer": "Agreed, I'll loop Sarah in and leverage her intros.",
     "mentorTip": "'활용한다'의 비즈니스 버전. use보다 '있는 자원을 기회로 바꾼다'는 뉘앙스가 강해.",
     "buddyAnswers": {
@@ -340,7 +340,7 @@
     "word": "OOO",
     "meaning": "out of office, 부재 중, 휴가 중",
     "phonetic": "/aʊt əv ˈɔːfɪs/",
-    "quote": "I'll be OOO Monday and Tuesday next week. Anything urgent, ping Mr. Park.",
+    "quote": "Hi team, just a heads-up that I'll be OOO on Monday and Tuesday next week. If anything urgent comes up, please ping Mr. Park.",
     "sampleAnswer": "Noted, while you're OOO I'll loop in Mr. Park for anything urgent.",
     "mentorTip": "메일 자동응답에 거의 항상 등장. OOO만 써도 다 알아들어. 한국식 '휴가입니다'보다 가벼워.",
     "buddyAnswers": {
@@ -354,7 +354,7 @@
     "word": "north star",
     "meaning": "(전략의) 가장 중요한 지향점",
     "phonetic": "/nɔːrθ stɑːr/",
-    "quote": "Our north star is user retention. Every feature should earn its place against that.",
+    "quote": "Let me be clear about our north star this year: it's user retention. Every feature we build should have to earn its place against that.",
     "sampleAnswer": "If retention is our north star, this feature deprioritizes.",
     "mentorTip": "전략 회의·임원 보고에서 핵심 표현. 단 하나의 지향점이 north star. 여러 개면 의미 없어.",
     "buddyAnswers": {
@@ -368,7 +368,7 @@
     "word": "pushback",
     "meaning": "반대 의견, 저항",
     "phonetic": "/ˈpʊʃbæk/",
-    "quote": "I've decided to move on. Expecting some pushback from the director, but I'm sticking with my decision.",
+    "quote": "I've decided to move forward on this. I'm expecting some pushback from the director, but I'm sticking with my decision, and I wanted you to hear it from me.",
     "sampleAnswer": "There'll be some pushback, but if your mind's made up, just be clear and direct.",
     "mentorTip": "'반대 부딪힘' 정도. resistance보다 비즈니스 톤이고, 협상·이직에서 자주 나와.",
     "buddyAnswers": {
@@ -382,7 +382,7 @@
     "word": "in the weeds",
     "meaning": "세부에 파묻혀 큰 그림을 놓친 상태",
     "phonetic": "/ɪn ðə wiːdz/",
-    "quote": "Aren't you a bit too in the weeds? Take a step back, see the big picture, then come back.",
+    "quote": "Can I be honest? I think you're a bit too in the weeds right now. Take a step back, look at the big picture, and then come back to the details.",
     "sampleAnswer": "Yeah, I was getting in the weeds with formatting, let me zoom out and revisit.",
     "mentorTip": "'잡초 속' = 디테일에 매몰. 사수가 신입한테 자주 해주는 말. step back 하라는 신호.",
     "buddyAnswers": {
@@ -396,7 +396,7 @@
     "word": "take a stab",
     "meaning": "한 번 시도해보다",
     "phonetic": "/teɪk ə stæb/",
-    "quote": "Can you take a stab at tomorrow's deck? It's your first try, no pressure.",
+    "quote": "Would you be willing to take a stab at tomorrow's deck? It's your first try, so there's no pressure at all. I just want to see how you'd approach it.",
     "sampleAnswer": "Sure, I'll take a stab and share a draft by EOD.",
     "mentorTip": "'한 번 찔러봐' = 완벽 안 해도 OK. 신입한테 부담 줄여주는 표현. 정말 자주 들어.",
     "buddyAnswers": {
@@ -410,7 +410,7 @@
     "word": "milestone",
     "meaning": "수습 종료, 가장 큰 이정표 ⭐",
     "phonetic": "/ˈmaɪlstoʊn/",
-    "quote": "30-day milestone, your probation's done. Full-time conversion + you get to pick your team next quarter. Where do you want to go?",
+    "quote": "Today is your 30-day milestone, which means your probation is officially done. You're converting to full-time, and you get to pick your team next quarter. Where would you like to go?",
     "sampleAnswer": "Reaching this milestone means a lot. I'd like to stay in Marketing one more quarter, then explore BD.",
     "mentorTip": "수습 종료 = 가장 큰 milestone. 외국계는 부서 이동 자유로워서, 본인 의지로 다음 분기 결정 가능. 마음에 안 들면 다른 부서 갈 수 있어.",
     "buddyAnswers": {
@@ -424,7 +424,7 @@
     "word": "shelve it",
     "meaning": "보류하다 (격식)",
     "phonetic": "/ʃelv ɪt/",
-    "quote": "I like the idea, but Q3 is packed. Let's shelve it until next quarter and revisit.",
+    "quote": "I really like the idea, but Q3 is already packed. Let's shelve it until next quarter and revisit it when we have some room.",
     "sampleAnswer": "Makes sense. I'll shelve it for now and bring it back at Q4 planning.",
     "mentorTip": "shelve = '선반에 올려두다'. 버리는 게 아니라 보관. table보다 격식 있고 영미 양쪽에서 안전한 단어야.",
     "buddyAnswers": {
@@ -438,7 +438,7 @@
     "word": "escalate",
     "meaning": "상부에 보고하다",
     "phonetic": "/ˈeskəleɪt/",
-    "quote": "You've chased this twice already. If they push back again, escalate it to me directly.",
+    "quote": "You've already chased them on this twice, and that's enough. If they push back again, I want you to escalate it to me directly and I'll take it from there.",
     "sampleAnswer": "Will do. If there's no response by Thursday, I'll escalate it to you with a summary.",
     "mentorTip": "escalate는 '포기'가 아니라 '레벨을 올리는 프로세스'. 두 번 시도하고 막히면 올리는 게 정직원의 판단력이야.",
     "buddyAnswers": {
@@ -452,7 +452,7 @@
     "word": "de-risk",
     "meaning": "리스크를 줄이다",
     "phonetic": "/diːˈrɪsk/",
-    "quote": "The timeline is aggressive. How do we de-risk this launch? Walk me through plan B.",
+    "quote": "I'll be honest, the timeline feels aggressive to me. How do we de-risk this launch? I'd like you to walk me through plan B.",
     "sampleAnswer": "We can de-risk it by soft-launching to 10% of users first, then scaling if metrics hold.",
     "mentorTip": "de-risk는 '리스크 제거'가 아니라 '낮추기'. 단계 나누기, 백업 만들기, 작게 먼저 테스트가 전형적인 de-risk 액션이야.",
     "buddyAnswers": {
@@ -466,7 +466,7 @@
     "word": "contingency",
     "meaning": "비상 계획",
     "phonetic": "/kənˈtɪndʒənsi/",
-    "quote": "Love the plan. But what's your contingency if the vendor slips by a month?",
+    "quote": "I love the plan, I really do. But what's your contingency if the vendor slips by a month? I'd like to know we have something ready.",
     "sampleAnswer": "If the vendor slips, our contingency is to switch to the in-house template and keep the date.",
     "mentorTip": "contingency 질문은 공격이 아니라 '준비됐는지' 확인. plan B를 한 줄이라도 말하면 통과, 없으면 숙제로 받아.",
     "buddyAnswers": {
@@ -480,7 +480,7 @@
     "word": "moving the needle",
     "meaning": "의미있는 변화를 만들다",
     "phonetic": "/ˈmuːvɪŋ ðə ˈniːdl/",
-    "quote": "Nice charts. But which of these is actually moving the needle on retention?",
+    "quote": "These are nice charts, but I have one question. Which of these is actually moving the needle on retention? That's the only number I care about this quarter.",
     "sampleAnswer": "The onboarding email is moving the needle, retention is up 4 points. The rest is noise so far.",
     "mentorTip": "needle은 계기판 바늘. '바늘이 움직였냐'는 핵심 지표가 진짜 변했냐는 뜻. 바쁜 것과 needle 움직이는 건 달라.",
     "buddyAnswers": {
@@ -494,7 +494,7 @@
     "word": "iterate",
     "meaning": "반복하며 개선하다",
     "phonetic": "/ˈɪtəreɪt/",
-    "quote": "Don't polish this for three more days. Ship the rough version and iterate from feedback.",
+    "quote": "I don't think we should polish this for three more days. Let's ship the rough version now and iterate from the feedback we get. That'll teach us more than another round of edits.",
     "sampleAnswer": "Got it. I'll ship v1 today and iterate weekly based on what users say.",
     "mentorTip": "iterate는 '완성 후 공개'가 아니라 '공개 후 개선'. v1은 부끄러운 게 정상이야. 피드백이 다듬어줘.",
     "buddyAnswers": {
@@ -508,7 +508,7 @@
     "word": "hit the ground running",
     "meaning": "적응 기간 없이 바로 성과를 내다",
     "phonetic": "/hɪt ðə ɡraʊnd ˈrʌnɪŋ/",
-    "quote": "First week as a full-timer, and you hit the ground running. Honestly, the team noticed.",
+    "quote": "It's only your first week as a full-timer, and you've already hit the ground running. Honestly, the whole team noticed, and I wanted you to know that.",
     "sampleAnswer": "Thanks! The 30 days of probation made it easy to hit the ground running. More to come.",
     "mentorTip": "🎉 정직원 첫 주 완주! hit the ground running은 낙하산이 착지하자마자 달리는 그림. 신입 꼬리표 뗐다는 최고의 칭찬이야.",
     "buddyAnswers": {
@@ -522,7 +522,7 @@
     "word": "kickoff",
     "meaning": "시작 회의",
     "phonetic": "/ˈkɪkɔːf/",
-    "quote": "Let's schedule the kickoff for Monday. Jiwon, can you own the agenda this time?",
+    "quote": "Let's schedule the kickoff for Monday. Jiwon, would you be up for owning the agenda this time? I think you're ready for it.",
     "sampleAnswer": "On it. I'll draft the kickoff agenda by Friday and circulate it for input.",
     "mentorTip": "kickoff는 축구의 킥오프. 프로젝트의 공식 첫 회의야. 아젠다를 맡는다 = 그 프로젝트의 핵심 멤버가 됐다는 뜻.",
     "buddyAnswers": {
@@ -536,7 +536,7 @@
     "word": "standup",
     "meaning": "짧은 데일리 회의",
     "phonetic": "/ˈstændʌp/",
-    "quote": "Starting this sprint, we'll do a 10-minute standup at 9:30. Yesterday, today, blockers. That's it.",
+    "quote": "Starting this sprint, we're going to do a quick 10-minute standup at 9:30 every morning. Just share what you did yesterday, what you're doing today, and anything blocking you.",
     "sampleAnswer": "Yesterday I closed the vendor brief, today I'm drafting the kickoff agenda, no blockers.",
     "mentorTip": "standup은 서서(stand up) 할 만큼 짧게 하라는 회의. 어제 한 일 / 오늘 할 일 / 막힌 것, 딱 3줄이 공식이야.",
     "buddyAnswers": {
@@ -550,7 +550,7 @@
     "word": "sprint",
     "meaning": "집중 작업 주기",
     "phonetic": "/sprɪnt/",
-    "quote": "This sprint is two weeks. Don't load it up, pick what you can actually finish.",
+    "quote": "This sprint is two weeks, so please don't load it up. I'd rather you pick what you can actually finish than promise more and carry it over.",
     "sampleAnswer": "I'll commit to the onboarding flow this sprint and push the dashboard to the next one.",
     "mentorTip": "sprint는 단거리 전력질주. 2주 안에 '끝낼 수 있는 것'만 담는 게 핵심이야. 욕심 부리면 매번 이월돼.",
     "buddyAnswers": {
@@ -564,7 +564,7 @@
     "word": "post-mortem",
     "meaning": "사후 분석",
     "phonetic": "/poʊst ˈmɔːrtəm/",
-    "quote": "The launch slipped two days. Let's run a post-mortem Friday. No blame, just lessons.",
+    "quote": "The launch slipped by two days, so I'd like us to run a post-mortem on Friday. It's not about blame; I just want us to capture the lessons.",
     "sampleAnswer": "Good call. I'll prep a timeline of what happened so the post-mortem stays factual.",
     "mentorTip": "post-mortem은 원래 '부검'. 실패를 해부하되 사람을 해부하지 않는 게 룰이야. blameless가 붙는 이유.",
     "buddyAnswers": {
@@ -578,7 +578,7 @@
     "word": "workshop it",
     "meaning": "다 같이 논의해 발전시키다",
     "phonetic": "/ˈwɜːrkʃɑːp ɪt/",
-    "quote": "The direction is interesting, but it feels rough. Let's workshop it with your team this week.",
+    "quote": "The direction is interesting, but it still feels a little rough to me. Why don't we workshop it with your team this week and see where it lands?",
     "sampleAnswer": "Love that. I'll set up a 90-minute session Thursday so we can workshop it properly.",
     "mentorTip": "workshop이 동사가 되면 '여럿이 모여 아이디어를 두드려 발전시키다'. 거절이 아니라 '가능성 있으니 같이 다듬자'는 신호야.",
     "buddyAnswers": {
@@ -592,7 +592,7 @@
     "word": "noodle on it",
     "meaning": "천천히 생각해보다",
     "phonetic": "/ˈnuːdl ɑːn ɪt/",
-    "quote": "No need to answer now. Noodle on it over the weekend and come back to me Monday.",
+    "quote": "There's no need to answer right now. Noodle on it over the weekend, and come back to me on Monday with whatever you've got.",
     "sampleAnswer": "Appreciate the space. I'll noodle on it and bring you two options Monday morning.",
     "mentorTip": "noodle on it = 머리를 국수 가락처럼 천천히 굴려보라는 캐주얼 표현. 즉답 압박을 빼주는 따뜻한 말이야.",
     "buddyAnswers": {
@@ -606,7 +606,7 @@
     "word": "momentum",
     "meaning": "탄력, 추진력",
     "phonetic": "/moʊˈmentəm/",
-    "quote": "Look at this curve. We're halfway through the quarter and we've got real momentum. Let's not lose it.",
+    "quote": "Take a look at this curve. We're only halfway through the quarter and we've already got real momentum, so let's make sure we don't lose it.",
     "sampleAnswer": "The momentum is real. If we keep this weekly cadence, we'll hit the stretch goal early.",
     "mentorTip": "🎉 60일의 절반 돌파! momentum은 물리학의 '운동량'. 한 번 구르기 시작한 공은 계속 굴러. 지금 너의 학습 곡선이 그래.",
     "buddyAnswers": {
@@ -620,7 +620,7 @@
     "word": "read the room",
     "meaning": "분위기를 파악하다",
     "phonetic": "/riːd ðə ruːm/",
-    "quote": "Good ideas today, but read the room next time. The client was tense about budget from minute one.",
+    "quote": "You had good ideas today, but next time, read the room first. The client was tense about the budget from minute one, and we walked right past that.",
     "sampleAnswer": "You're right, I missed the tension. Next time I'll read the room first and time the pitch better.",
     "mentorTip": "read the room = 말하기 전에 공기 읽기. 같은 제안도 타이밍이 틀리면 죽어. 표정, 침묵, 자세가 다 데이터야.",
     "buddyAnswers": {
@@ -634,7 +634,7 @@
     "word": "own the room",
     "meaning": "회의를 주도하다",
     "phonetic": "/oʊn ðə ruːm/",
-    "quote": "Tomorrow's review is yours. Walk in prepared, and own the room. I'll just observe.",
+    "quote": "Tomorrow's review is all yours. Walk in prepared and own the room, and I'll just sit in the back and observe.",
     "sampleAnswer": "I'll be ready. Agenda's tight, data's solid, and I'll open with the one number that matters.",
     "mentorTip": "어제는 read, 오늘은 own. 공기를 읽은 다음엔 끌고 가는 거야. 준비량이 자신감이고, 자신감이 룸을 만들어.",
     "buddyAnswers": {
@@ -648,7 +648,7 @@
     "word": "elephant in the room",
     "meaning": "모두 알지만 말 안 하는 문제",
     "phonetic": "/ˈelɪfənt ɪn ðə ruːm/",
-    "quote": "OK, let's address the elephant in the room: the budget is double what we agreed in March.",
+    "quote": "Okay, I think we need to address the elephant in the room. The budget is now double what we agreed on in March, and nobody's said it out loud yet.",
     "sampleAnswer": "Glad you named it. Here's the breakdown of where it grew, and three options to bring it down.",
     "mentorTip": "회의실에 코끼리가 있는데 다들 날씨 얘기만 하는 그림. 먼저 코끼리를 말하는 사람이 그 회의의 신뢰를 가져가.",
     "buddyAnswers": {
@@ -662,7 +662,7 @@
     "word": "seat at the table",
     "meaning": "의사결정 참여 권한",
     "phonetic": "/siːt æt ðə ˈteɪbl/",
-    "quote": "You've earned a seat at the table. Join the quarterly planning from this cycle on.",
+    "quote": "You've earned a seat at the table. From this cycle on, I'd like you to join the quarterly planning with the leads.",
     "sampleAnswer": "Honored to have a seat at the table. I'll come with our team's top three priorities mapped out.",
     "mentorTip": "table은 결정이 내려지는 테이블. 거기 앉는다 = 듣는 사람에서 정하는 사람이 됐다는 뜻. 정직원 7주차에 받는 최고의 인정이야.",
     "buddyAnswers": {
@@ -676,7 +676,7 @@
     "word": "raise the bar",
     "meaning": "기준을 높이다",
     "phonetic": "/reɪz ðə bɑːr/",
-    "quote": "This deck raised the bar. From now on, this is what 'done' looks like for client reports.",
+    "quote": "This deck raised the bar, and I mean that. From now on, this is what 'done' looks like for our client reports.",
     "sampleAnswer": "Thanks! I'll document the template so the whole team can clear the new bar without extra hours.",
     "mentorTip": "bar는 높이뛰기 가로대. 네 결과물이 팀의 새 기준선이 됐다는 뜻. 칭찬이자 책임이야. 다음에도 그 높이를 넘어야 하거든.",
     "buddyAnswers": {
@@ -690,7 +690,7 @@
     "word": "track record",
     "meaning": "실적, 검증된 경력",
     "phonetic": "/træk ˈrekərd/",
-    "quote": "We picked your team because of your track record. Three launches, zero misses. Keep it that way.",
+    "quote": "We picked your team because of your track record. That's three launches without a single miss, and I'm counting on you to keep it that way.",
     "sampleAnswer": "That track record is the team's pride. We'll protect it on this launch with the same playbook.",
     "mentorTip": "track record는 육상 트랙의 기록. 말이 아니라 쌓인 결과의 목록이야. 신뢰는 약속이 아니라 기록에서 나와.",
     "buddyAnswers": {
@@ -704,7 +704,7 @@
     "word": "go the extra mile",
     "meaning": "기대 이상으로 한 발 더 뛰다",
     "phonetic": "/ɡoʊ ði ˈekstrə maɪl/",
-    "quote": "Fifty days in. You know what people say about you? You always go the extra mile. That's rare.",
+    "quote": "You've been here fifty days now, and do you know what people say about you? They say you always go the extra mile, and that's a rare thing.",
     "sampleAnswer": "That means a lot. Honestly, going the extra mile got easier once I stopped counting miles.",
     "mentorTip": "🎉 50일 돌파! extra mile은 부탁받은 1마일에 자발적 1마일을 보태는 것. 평판은 그 두 번째 마일에서 만들어져.",
     "buddyAnswers": {
@@ -718,7 +718,7 @@
     "word": "meet in the middle",
     "meaning": "중간에서 합의하다",
     "phonetic": "/miːt ɪn ðə ˈmɪdl/",
-    "quote": "Your price, our timeline. Neither of us gets everything. Can we meet in the middle?",
+    "quote": "You want your price and we want our timeline, and neither of us is going to get everything. Do you think we can meet in the middle?",
     "sampleAnswer": "Happy to meet in the middle: we hold the price, but we can pull the delivery up two weeks.",
     "mentorTip": "meet in the middle은 항복이 아니라 거래야. 양보할 것과 지킬 것을 미리 정해두면 중간 지점이 무섭지 않아.",
     "buddyAnswers": {
@@ -732,7 +732,7 @@
     "word": "skin in the game",
     "meaning": "실질적 이해관계, 직접 건 것",
     "phonetic": "/skɪn ɪn ðə ɡeɪm/",
-    "quote": "I'll back your proposal at the board. Remember, I've got skin in the game too now.",
+    "quote": "I'll back your proposal at the board meeting. Just remember that I've got skin in the game too now, so let's make sure it lands well.",
     "sampleAnswer": "I won't waste your skin in the game. I'll have the numbers triple-checked before the board sees them.",
     "mentorTip": "skin in the game = 말만 보태는 게 아니라 자기 살(skin)을 건 상태. Daniel이 네 제안에 자기 평판을 걸었다는 뜻이야.",
     "buddyAnswers": {
@@ -746,7 +746,7 @@
     "word": "visibility",
     "meaning": "(윗선에 대한) 가시성, 노출",
     "phonetic": "/ˌvɪzəˈbɪləti/",
-    "quote": "Good work stays invisible unless you give it visibility. Send a monthly summary up the chain.",
+    "quote": "Good work tends to stay invisible unless you give it visibility. I'd suggest sending a short monthly summary up the chain so people actually see what you're doing.",
     "sampleAnswer": "Will do. I'll start a monthly one-pager: wins, metrics, and what we need from leadership.",
     "mentorTip": "visibility는 자랑이 아니라 정보 유통이야. 윗선은 안 보이는 일을 평가할 수 없어. 잘한 일은 보이게 만드는 것까지가 일이야.",
     "buddyAnswers": {
@@ -760,7 +760,7 @@
     "word": "30,000 foot view",
     "meaning": "큰 그림에서 보기",
     "phonetic": "/ˈθɜːrti ˈθaʊznd fʊt vjuː/",
-    "quote": "Hold the details. Give me the 30,000 foot view first, then we'll zoom into what matters.",
+    "quote": "Hold the details for a moment. Give me the 30,000 foot view first, and then we'll zoom into whatever actually matters.",
     "sampleAnswer": "From the 30,000 foot view: we're on budget, two weeks ahead, and one vendor risk to watch.",
     "mentorTip": "비행기 순항 고도(30,000피트)에서 내려다보는 시야. 임원 보고의 철칙: 큰 그림 먼저, 디테일은 질문 받으면.",
     "buddyAnswers": {
@@ -774,7 +774,7 @@
     "word": "stretch goal",
     "meaning": "도전적 목표",
     "phonetic": "/stretʃ ɡoʊl/",
-    "quote": "Base target is 10% growth. Our stretch goal is 15. Plan for the base, aim for the stretch.",
+    "quote": "Our base target is 10% growth, and our stretch goal is 15. I want us to plan for the base but aim for the stretch.",
     "sampleAnswer": "Got it. I'll resource the base plan, and line up two bets to chase the stretch goal of 15.",
     "mentorTip": "stretch는 스트레칭의 그 stretch. 닿을 듯 안 닿는 높이까지 몸을 늘이는 목표야. 못 쳐도 벌점 없고, 치면 영웅.",
     "buddyAnswers": {
@@ -788,7 +788,7 @@
     "word": "gut check",
     "meaning": "직감으로 최종 점검",
     "phonetic": "/ɡʌt tʃek/",
-    "quote": "Numbers all pass. But do a gut check: would you put your own money on this product?",
+    "quote": "The numbers all pass, I can see that. But do a gut check for me: would you put your own money on this product? If you hesitate, that tells us something.",
     "sampleAnswer": "Honest gut check? Yes on the product, but the pricing still feels off. Let me re-run that piece.",
     "mentorTip": "gut은 직감이 사는 곳(배). 데이터가 다 통과해도 마지막엔 '내 돈이라면?'을 물어봐. 숫자가 못 잡는 위화감을 직감이 잡아.",
     "buddyAnswers": {
@@ -802,7 +802,7 @@
     "word": "pulse check",
     "meaning": "현황·상태 점검",
     "phonetic": "/pʌls tʃek/",
-    "quote": "Before crunch week starts, do a quick pulse check on the team. How's everyone holding up?",
+    "quote": "Before crunch week starts, could you do a quick pulse check on the team? I want to know how everyone's holding up before we push hard.",
     "sampleAnswer": "I'll run a pulse check today: quick 1:1s with each member, and flag anyone running hot.",
     "mentorTip": "pulse는 맥박. 팀의 맥박을 짚어보라는 건 일정표가 아니라 '사람'의 상태를 물은 거야. 네가 그걸 맡을 짬이 됐다는 뜻이기도 해.",
     "buddyAnswers": {
@@ -816,7 +816,7 @@
     "word": "crunch time",
     "meaning": "마감 직전 총력전 구간",
     "phonetic": "/krʌntʃ taɪm/",
-    "quote": "It's crunch time, folks. Two days left. Clear your calendars, and shout early if you're blocked.",
+    "quote": "Okay everyone, it's crunch time. We've got two days left, so please clear your calendars and shout early if you get blocked.",
     "sampleAnswer": "Calendar cleared. I'm on the final QA pass, and I'll flag blockers in the channel the minute they appear.",
     "mentorTip": "crunch는 '으드득' 소리. 모든 게 압축되는 마감 직전 구간이야. 핵심은 영웅 놀이가 아니라 빠른 블로커 공유야.",
     "buddyAnswers": {
@@ -830,7 +830,7 @@
     "word": "take it offline",
     "meaning": "그 얘긴 따로 하자",
     "phonetic": "/teɪk ɪt ˈɔːflaɪn/",
-    "quote": "Good point, but let's take it offline. And Jiwon, stop by my office at 4. It's been 60 days, we should talk.",
+    "quote": "That's a good point, but let's take it offline so we don't hold up the meeting. And Jiwon, could you stop by my office at four? It's been sixty days, and I think we should talk.",
     "sampleAnswer": "Happy to take it offline, I'll grab 15 minutes with you after this. And 4pm, I'll be there.",
     "mentorTip": "🌟 Day 60! take it offline = 전체 회의에서 빼서 1:1로. 회의 시간을 지키는 마법의 문장이야. 그리고 오후 4시, 특별 면담이 기다려.",
     "buddyAnswers": {
@@ -844,7 +844,7 @@
     "word": "on the same page",
     "meaning": "생각이 일치한, 합을 맞춘",
     "phonetic": "/ɒn ðə seɪm peɪdʒ/",
-    "quote": "Before we assign anything, I want the whole team on the same page about the goal. Can you frame it?",
+    "quote": "Before we assign anything, I want the whole team on the same page about the goal. Would you be able to frame it for us in a couple of sentences?",
     "sampleAnswer": "Sure. Let me restate the goal in one line so we're all on the same page before we split tasks.",
     "mentorTip": "on the same page는 '동의'가 아니라 '같은 이해'야. 사람들이 싸우는 건 대부분 목표가 달라서가 아니라 목표를 다르게 이해해서거든. 대리의 첫 일은 그림을 맞추는 것.",
     "buddyAnswers": {
@@ -858,7 +858,7 @@
     "word": "make the case",
     "meaning": "논거를 세워 설득하다",
     "phonetic": "/meɪk ðə keɪs/",
-    "quote": "I'm open to more budget, but you'll need to make the case. What's the return if I say yes?",
+    "quote": "I'm open to giving you more budget, but you'll need to make the case. What's the return if I say yes to this?",
     "sampleAnswer": "Fair. Let me make the case with numbers: this hire pays back in two quarters through faster delivery.",
     "mentorTip": "make the case는 '부탁'이 아니라 '증명'이야. 원하는 것 + 그걸 주면 생기는 결과를 숫자로 엮는 게 핵심. 감정이 아니라 근거로 미는 거지.",
     "buddyAnswers": {
@@ -872,7 +872,7 @@
     "word": "common ground",
     "meaning": "공통분모, 서로 동의하는 지점",
     "phonetic": "/ˈkɒmən ɡraʊnd/",
-    "quote": "They're talking past each other. Jiwon, help them find some common ground before this stalls.",
+    "quote": "Those two are talking past each other, and it's starting to stall the project. Jiwon, could you help them find some common ground before it gets worse?",
     "sampleAnswer": "On it. Let's start from common ground: both teams want a clean launch. I'll build the plan from there.",
     "mentorTip": "common ground는 '누가 이기냐'를 '무엇에는 둘 다 동의하냐'로 바꾸는 스위치야. 싸움이 풀리는 건 대부분 이미 합의된 작은 지점 하나를 찾을 때부터거든.",
     "buddyAnswers": {
@@ -886,7 +886,7 @@
     "word": "concession",
     "meaning": "양보 (협상에서)",
     "phonetic": "/kənˈseʃn/",
-    "quote": "Your price is higher than we planned. I need to bring something back to my team. What can you offer?",
+    "quote": "Your price is higher than we planned for, and I need to bring something back to my team. What can you offer me so this works for both sides?",
     "sampleAnswer": "I can't move on price, but as a concession I'll add onboarding support at no cost if we sign this week.",
     "mentorTip": "concession은 '지는 것'이 아니라 '전략적으로 내주는 것'. 큰 걸 지키려고 작은 걸 주는 카드야. 그냥 주지 말고 '대신 이건 확정'을 붙여.",
     "buddyAnswers": {
@@ -900,7 +900,7 @@
     "word": "trade-off",
     "meaning": "맞교환, 하나를 얻고 하나를 내줌",
     "phonetic": "/ˈtreɪd ɒf/",
-    "quote": "You want two more weeks, but launch is fixed. What's the trade-off if we hold the date?",
+    "quote": "I hear you on wanting two more weeks, but the launch date is fixed. So tell me, what's the trade-off if we hold the date as it is?",
     "sampleAnswer": "The trade-off is scope: we hold the date, but ship three core features and defer the rest to v2.",
     "mentorTip": "trade-off는 '희생'이 아니라 '선택을 눈에 보이게 만드는 말'. 다 가질 수 없을 때, 뭘 얻고 뭘 내주는지 명확히 하는 게 대리의 판단이야.",
     "buddyAnswers": {
@@ -914,7 +914,7 @@
     "word": "win-win",
     "meaning": "양쪽 다 이득인",
     "phonetic": "/ˌwɪn ˈwɪn/",
-    "quote": "Both teams feel they're losing. Can you reframe this as a win-win before it turns political?",
+    "quote": "Right now both teams feel like they're losing. Can you reframe this as a win-win before it turns political? I'd rather fix it now than in a bigger meeting.",
     "sampleAnswer": "It's a win-win: they get our data pipeline, we get their design hours. Both ship faster this quarter.",
     "mentorTip": "win-win은 '착한 척'이 아니라 '파이를 다시 그리는 것'. 나눠 먹는 싸움을 '같이 키우는' 문제로 바꾸면 둘 다 가져갈 게 생겨.",
     "buddyAnswers": {
@@ -928,7 +928,7 @@
     "word": "bring to the table",
     "meaning": "(협업에) 기여하다, 판에 내놓다",
     "phonetic": "/brɪŋ tə ðə ˈteɪbl/",
-    "quote": "You've been mediating all week. Don't forget what you bring to the table, not just what others need.",
+    "quote": "You've been mediating for everyone all week, and you're good at it. Just don't forget what you bring to the table yourself, not only what the others need.",
     "sampleAnswer": "Thanks. What I bring to the table is turning messy debates into a clear plan people can act on.",
     "mentorTip": "🌱 Week 1 완주! bring to the table = 네가 그 자리에 더하는 고유한 가치야. 대리는 남을 조율하다 자기 강점을 잊기 쉬워. 네가 뭘 가져오는지 한 줄로 말할 수 있어야 해.",
     "buddyAnswers": {
@@ -942,7 +942,7 @@
     "word": "friction",
     "meaning": "마찰, (팀 사이) 긴장",
     "phonetic": "/ˈfrɪkʃn/",
-    "quote": "There's friction between design and data lately. Before it grows, how would you smooth it out?",
+    "quote": "I've noticed some friction between design and data lately. Before it grows into something bigger, how would you go about smoothing it out?",
     "sampleAnswer": "I've noticed the friction too. Let me get both leads in a room and name the real blocker early.",
     "mentorTip": "friction은 '싸움'보다 앞 단계야. 아직 폭발 안 한 미세한 삐걱거림. 대리는 이걸 크기 전에 알아채고 이름 붙이는 사람이야. 작을 때 다뤄야 싸움이 안 돼.",
     "buddyAnswers": {
@@ -956,7 +956,7 @@
     "word": "de-escalate",
     "meaning": "진정시키다, 상황을 누그러뜨리다",
     "phonetic": "/diːˈeskəleɪt/",
-    "quote": "Honestly, I'm frustrated. This is the second delay. Why should I stay calm about this?",
+    "quote": "Honestly, I'm really frustrated right now. This is the second delay we've had, so tell me why I should stay calm about this.",
     "sampleAnswer": "You're right to be frustrated, and I won't downplay it. Here's exactly what I'm changing so it's the last.",
     "mentorTip": "de-escalate의 첫 수는 반박이 아니라 인정이야. 상대 감정을 먼저 받아주면 온도가 내려가. 변명부터 하면 불에 기름이야. 인정 다음에 계획을 줘.",
     "buddyAnswers": {
@@ -970,7 +970,7 @@
     "word": "air concerns",
     "meaning": "우려를 터놓고 말하다",
     "phonetic": "/eər kənˈsɜːnz/",
-    "quote": "Everyone's saying it's fine, but it clearly isn't. Can you get them to air their concerns?",
+    "quote": "Everyone keeps saying it's fine, but it clearly isn't. Do you think you could get them to actually air their concerns instead of nodding along?",
     "sampleAnswer": "Let's make it safe to air concerns. No wrong answers here, what's the one thing we're all avoiding?",
     "mentorTip": "air concerns는 '불만 받기'가 아니라 '숨은 리스크 꺼내기'야. 사람들이 말 안 하는 건 안 위험해서가 아니라 말해도 되는지 몰라서야. 먼저 안전하다고 신호를 줘.",
     "buddyAnswers": {
@@ -984,7 +984,7 @@
     "word": "hash out",
     "meaning": "끝까지 논의해 정리하다",
     "phonetic": "/hæʃ aʊt/",
-    "quote": "We keep going in circles on this. Can you hash it out with the leads and come back with one answer?",
+    "quote": "We keep going in circles on this one. Could you hash it out with the leads this week and come back to me with a single answer?",
     "sampleAnswer": "On it. I'll hash it out with the leads today and come back with one decision, owner, and date.",
     "mentorTip": "hash out은 '대충 합의'가 아니라 '엉킨 걸 끝까지 풀어 하나로 만드는 것'. 결론과 담당과 기한까지 나와야 hash out이 끝난 거야. 열어만 두면 다음에 또 맴돌아.",
     "buddyAnswers": {
@@ -998,7 +998,7 @@
     "word": "give and take",
     "meaning": "주고받기, 서로 양보하며 맞추기",
     "phonetic": "/ɡɪv ən ˈteɪk/",
-    "quote": "We're close. But this only works with some give and take. What are you flexible on?",
+    "quote": "I think we're close, but this only works if there's some give and take on both sides. So what are you flexible on?",
     "sampleAnswer": "Happy for some give and take. I can flex on the timeline if you can commit to a two-year term.",
     "mentorTip": "give and take는 '반씩 손해'가 아니라 '나에게 싼 걸 주고, 나에게 비싼 걸 지키는 것'. 내가 뭘 쉽게 내줄 수 있는지 미리 알아두면 협상이 부드러워져.",
     "buddyAnswers": {
@@ -1012,7 +1012,7 @@
     "word": "push for",
     "meaning": "강하게 요구·추진하다",
     "phonetic": "/pʊʃ fɔːr/",
-    "quote": "If you believe the extra week matters, don't just hint at it. Push for it. What's your actual ask?",
+    "quote": "If you really believe the extra week matters, don't just hint at it. Push for it properly, and tell me what your actual ask is.",
     "sampleAnswer": "Then I'll push for one more week. With it, we ship tested; without it, we risk a hotfix on launch day.",
     "mentorTip": "push for는 '떼쓰기'가 아니라 '근거를 갖고 분명히 요구하기'야. 대리는 돌려 말하다 원하는 걸 못 얻는 실수를 줄여야 해. 요구는 근거 + 분명한 액션으로.",
     "buddyAnswers": {
@@ -1026,7 +1026,7 @@
     "word": "hold the line",
     "meaning": "선을 지키다, 양보하지 않다",
     "phonetic": "/hoʊld ðə laɪn/",
-    "quote": "They'll pressure you to skip the review to hit the date. Sometimes you hold the line. Know which lines are yours.",
+    "quote": "They're going to pressure you to skip the review so we hit the date. Sometimes you have to hold the line, and part of the job is knowing which lines are yours to hold.",
     "sampleAnswer": "I hear the pressure, but I'll hold the line on the security review. We can cut scope, not that check.",
     "mentorTip": "⚡ Week 2 완주! hold the line은 '고집'이 아니라 '타협하면 안 되는 것을 지키는 것'. 다 양보할 순 없어. 품질, 안전, 신뢰 같은 선은 대리가 지켜야 팀이 무너지지 않아.",
     "buddyAnswers": {
@@ -1040,7 +1040,7 @@
     "word": "manage up",
     "meaning": "상사를 (거꾸로) 관리하다",
     "phonetic": "/ˈmænɪdʒ ʌp/",
-    "quote": "Your work is strong, but your manager hears about it too late. Learn to manage up, no surprises for her.",
+    "quote": "Your work is strong, but your manager keeps hearing about it too late. Learn to manage up a little: no surprises for her, and she'll trust you more.",
     "sampleAnswer": "Got it. I'll manage up with a two-line Friday update so she's never surprised in a meeting.",
     "mentorTip": "manage up은 '아부'가 아니라 '윗사람이 잘 판단하게 돕는 것'. 상사가 필요한 정보를 먼저, 짧게, 놀랄 일 없이 주는 거야. 대리의 핵심 생존 기술이지.",
     "buddyAnswers": {
@@ -1054,7 +1054,7 @@
     "word": "champion",
     "meaning": "적극 지지하다, 밀어주다",
     "phonetic": "/ˈtʃæmpiən/",
-    "quote": "The junior's idea is getting buried. If you believe in it, will you champion it to the committee?",
+    "quote": "The junior's idea is getting buried in all the noise. If you believe in it, would you be willing to champion it to the committee yourself?",
     "sampleAnswer": "I will. I'll champion her idea at the committee and frame the impact so it gets a fair hearing.",
     "mentorTip": "champion은 '칭찬'이 아니라 '내 신뢰를 걸고 밀어주는 것'. 대리가 되면 남의 좋은 아이디어를 위로 올려주는 힘이 생겨. 그 힘을 쓰는 사람이 진짜 리더야.",
     "buddyAnswers": {
@@ -1068,7 +1068,7 @@
     "word": "socialize an idea",
     "meaning": "(결정 전) 미리 의견을 돌리다",
     "phonetic": "/ˈsoʊʃəlaɪz ən aɪˈdɪə/",
-    "quote": "Don't drop this cold in the big meeting. Socialize it with the key people first, then present.",
+    "quote": "Please don't drop this cold in the big meeting. Socialize the idea with the key people first, one on one, and then present it once they've had time to warm up to it.",
     "sampleAnswer": "Good call. I'll socialize it with finance and design one-on-one first, then the meeting is just a yes.",
     "mentorTip": "socialize an idea는 '비밀 작업'이 아니라 '반대를 미리 만나 다듬는 것'. 회의에서 처음 듣는 사람은 방어부터 해. 미리 돌리면 회의는 확인 도장만 찍는 자리가 돼.",
     "buddyAnswers": {
@@ -1082,7 +1082,7 @@
     "word": "sign-off",
     "meaning": "최종 승인, 결재",
     "phonetic": "/ˈsaɪn ɒf/",
-    "quote": "Looks ready to me. But get sign-off from legal and finance before you ship. No surprises after launch.",
+    "quote": "This looks ready to me. That said, please get sign-off from legal and finance before you ship, because I don't want any surprises after launch.",
     "sampleAnswer": "Will do. I'll get written sign-off from legal and finance by Thursday and log it before we ship.",
     "mentorTip": "sign-off는 '형식 절차'가 아니라 '책임을 나눠 갖는 도장'이야. 관련 부서 승인을 미리 받아두면, 문제가 생겨도 '나 혼자 밀어붙인 것'이 안 돼. 대리의 안전벨트지.",
     "buddyAnswers": {
@@ -1096,7 +1096,7 @@
     "word": "manage expectations",
     "meaning": "기대치를 (현실적으로) 조율하다",
     "phonetic": "/ˈmænɪdʒ ɪkspekˈteɪʃnz/",
-    "quote": "My exec expects all of this delivered by Q3. Between us, is that realistic? I don't want to overpromise.",
+    "quote": "My exec is expecting all of this to be delivered by Q3. Just between us, is that realistic? I'd rather manage expectations now than overpromise.",
     "sampleAnswer": "Let me manage expectations honestly: two of the three by Q3 is solid; the third is realistic for Q4.",
     "mentorTip": "manage expectations는 '초 치기'가 아니라 '나중의 실망을 지금의 솔직함으로 막는 것'. 안 되는 걸 된다고 하면 신뢰가 한 번에 무너져. 지금 현실을 주면 오래 간다.",
     "buddyAnswers": {
@@ -1110,7 +1110,7 @@
     "word": "red flag",
     "meaning": "경고 신호, 위험 징후",
     "phonetic": "/red flæɡ/",
-    "quote": "If you spot a red flag with the vendor, I want to hear it early, not on launch day. What's your read?",
+    "quote": "If you spot a red flag with the vendor, I want to hear about it early, not on launch day. So tell me honestly, what's your read on them?",
     "sampleAnswer": "One red flag: their replies got slower this week. Not proof yet, but I'll verify the timeline by Friday.",
     "mentorTip": "red flag는 '증명된 문제'가 아니라 '아직 근거는 약하지만 느낌이 오는 위험'이야. 대리는 확신이 설 때까지 기다리지 않고, 신호 단계에서 올려. 늦게 올리면 이미 사고야.",
     "buddyAnswers": {
@@ -1124,7 +1124,7 @@
     "word": "rally",
     "meaning": "결집시키다, 사기를 끌어올리다",
     "phonetic": "/ˈræli/",
-    "quote": "Morale dipped after the delay. Before the final push, can you rally the team? They listen to you now.",
+    "quote": "Morale has dipped a bit since the delay. Before the final push, could you rally the team? They really listen to you now.",
     "sampleAnswer": "Let me rally them. I'll name what was hard, then show the finish line is closer than it feels.",
     "mentorTip": "🔥 Week 3 완주! rally는 '억지 응원'이 아니라 '흩어진 에너지를 하나의 목표로 다시 모으는 것'. 힘든 걸 인정하고, 남은 목표를 작게 보여주면 사람은 다시 움직여.",
     "buddyAnswers": {
@@ -1138,7 +1138,7 @@
     "word": "double down",
     "meaning": "더 강하게 밀어붙이다, 배팅을 키우다",
     "phonetic": "/ˈdʌbl daʊn/",
-    "quote": "The pilot is working better than expected. Do we double down and scale, or play it safe for now?",
+    "quote": "The pilot is working better than we expected. So here's the question: do we double down and scale it now, or play it safe for another quarter?",
     "sampleAnswer": "The numbers back it, so let's double down: shift two people onto it and scale to the next segment.",
     "mentorTip": "double down은 '무모한 올인'이 아니라 '증거가 나온 곳에 자원을 더 붓는 것'. 잘 되는 신호가 있을 때 망설이면 기회를 놓쳐. 단, 근거를 짚고 밀어야 도박이 아니야.",
     "buddyAnswers": {
@@ -1152,7 +1152,7 @@
     "word": "scope creep",
     "meaning": "범위가 슬금슬금 늘어남",
     "phonetic": "/skoʊp kriːp/",
-    "quote": "This project keeps growing. Every week there's one more thing. How do we stop the scope creep?",
+    "quote": "This project keeps growing on us. Every week there's one more thing added, so how do we stop the scope creep?",
     "sampleAnswer": "Let's stop the scope creep with a simple rule: any new ask has to replace something, not just add.",
     "mentorTip": "scope creep은 큰 결정이 아니라 '작은 예스들이 쌓여서' 생겨. 하나하나는 사소해 보이지만 합치면 기한이 무너지지. 대리는 새 요청마다 '무엇을 뺄지'를 같이 묻는 사람이야.",
     "buddyAnswers": {
@@ -1166,7 +1166,7 @@
     "word": "sunset",
     "meaning": "(제품/기능을) 단계적으로 종료하다",
     "phonetic": "/ˈsʌnset/",
-    "quote": "The old dashboard costs more than it earns. How would you sunset it without upsetting the users still on it?",
+    "quote": "The old dashboard costs more to maintain than it earns. How would you sunset it without upsetting the users who are still on it?",
     "sampleAnswer": "We sunset it in stages: announce now, give a migration path, and set a hard end date three months out.",
     "mentorTip": "sunset은 '갑자기 끄기'가 아니라 '해가 지듯 단계적으로 내리는 것'. 미리 알리고, 대안을 주고, 날짜를 박는 3단계가 핵심이야. 잘 끝내는 것도 대리의 능력이지.",
     "buddyAnswers": {
@@ -1180,7 +1180,7 @@
     "word": "delegate",
     "meaning": "(일을) 위임하다, 맡기다",
     "phonetic": "/ˈdelɪɡeɪt/",
-    "quote": "You're doing three people's work. A senior associate delegates. What can you hand off today, not someday?",
+    "quote": "You're doing the work of three people right now, and a senior associate needs to delegate. So what can you hand off today, not someday?",
     "sampleAnswer": "You're right. I'll delegate the weekly report to Minho with a clear template and a Friday check-in.",
     "mentorTip": "delegate는 '떠넘기기'가 아니라 '남을 키우면서 내 시간을 큰 일에 쓰는 것'. 잘하는 사람일수록 다 안고 병목이 돼. 맥락과 기준을 같이 주면 위임은 성장이 돼.",
     "buddyAnswers": {
@@ -1194,7 +1194,7 @@
     "word": "empower",
     "meaning": "권한을 주다, 스스로 결정하게 하다",
     "phonetic": "/ɪmˈpaʊər/",
-    "quote": "Every small decision waits on you. Stop being the bottleneck, empower your team. What can you push down?",
+    "quote": "Every small decision is waiting on you, and that's making you the bottleneck. I'd like you to empower your team, so what can you push down to them?",
     "sampleAnswer": "I'll empower the team: any spend under 500 dollars, they decide without me. I only weigh in above that.",
     "mentorTip": "empower는 delegate에서 한 걸음 더 나아간 거야. 일을 맡기는 게 delegate라면, '네가 직접 정해도 돼'라고 결정권을 주는 게 empower. 기준선만 정해주면 팀이 알아서 달려.",
     "buddyAnswers": {
@@ -1208,7 +1208,7 @@
     "word": "connect the dots",
     "meaning": "흩어진 정보를 이어 맥락을 만들다",
     "phonetic": "/kəˈnekt ðə dɒts/",
-    "quote": "Everyone has a piece, but no one sees the whole picture. Can you connect the dots for the room?",
+    "quote": "Everyone in that room has a piece of the picture, but nobody sees the whole thing. Could you connect the dots for them so we're all looking at the same story?",
     "sampleAnswer": "Let me connect the dots: design's delay feeds data's gap, which is why sales missed. One root cause.",
     "mentorTip": "connect the dots는 '정보 요약'이 아니라 '조각들 사이의 관계를 보여주는 것'. 대리는 각 팀의 단편을 하나의 이야기로 엮어, 다들 '아, 그래서 이게 이거구나' 하게 만드는 사람이야.",
     "buddyAnswers": {
@@ -1222,7 +1222,7 @@
     "word": "set the tone",
     "meaning": "분위기·기준을 정하다",
     "phonetic": "/set ðə toʊn/",
-    "quote": "People follow you now. You set the tone, whether you mean to or not. What tone do you want to set?",
+    "quote": "People follow you now, whether you notice it or not. You set the tone for this team, so I'll ask you directly: what tone do you want to set?",
     "sampleAnswer": "I want to set the tone of calm ownership: no blame when things break, just who fixes what by when.",
     "mentorTip": "set the tone은 '연설'이 아니라 '네가 매일 하는 행동이 곧 기준이 된다'는 뜻이야. 대리가 침착하면 팀이 침착하고, 대리가 대충하면 팀이 대충해. 톤은 말이 아니라 태도로 정해져.",
     "buddyAnswers": {
@@ -1236,7 +1236,7 @@
     "word": "lead by example",
     "meaning": "솔선수범하다, 행동으로 이끌다",
     "phonetic": "/liːd baɪ ɪɡˈzæmpl/",
-    "quote": "The team copies what you do, not what you say. On this final stretch, how will you lead by example?",
+    "quote": "The team copies what you do, not what you say. On this final stretch, how are you going to lead by example?",
     "sampleAnswer": "I'll lead by example: I ship my part first, reviewed and clean, and I log off on time so the team can too.",
     "mentorTip": "lead by example은 '더 오래 일하기'가 아니라 '내가 바라는 기준을 내가 먼저 지키는 것'. 정시 퇴근을 원하면 내가 먼저 퇴근하고, 꼼꼼함을 원하면 내 문서부터 깔끔해야 해.",
     "buddyAnswers": {
@@ -1250,7 +1250,7 @@
     "word": "pay it forward",
     "meaning": "받은 것을 다음 사람에게 갚다",
     "phonetic": "/peɪ ɪt ˈfɔːrwərd/",
-    "quote": "Ninety days ago, you needed a buddy. Now someone else does. Pay it forward, will you mentor them?",
+    "quote": "Ninety days ago you were the one who needed a buddy, and now someone else does. I'd love for you to pay it forward, so will you mentor them?",
     "sampleAnswer": "I'd be honored to pay it forward. I'll be their buddy, the one I needed on day one.",
     "mentorTip": "🌟 Day 90 완주! pay it forward = 내가 받은 도움을 준 사람이 아니라 '다음 사람'에게 갚는 것. 90개의 표현을 쌓은 너는 이제 누군가의 버디가 될 수 있어. 배움은 나눌 때 완성돼.",
     "buddyAnswers": {

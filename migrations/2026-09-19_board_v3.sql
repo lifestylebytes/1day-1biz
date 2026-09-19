@@ -2,12 +2,14 @@
 -- · 직급 표시를 앱과 같은 규칙으로: DB level 과 진도(day_in_company) 중 높은 쪽
 --   (앱: Day 31+ 사원, Day 90+ 대리. DB level 이 더 높으면 그걸 유지)
 --   v2 는 DB level 만 봐서, 승급 의례를 안 거친 회원이 Day 100 이어도 '사원/수습' 으로 나왔다.
+-- · 집계 창을 앱(HUD)과 같은 '한국 시간 오늘 포함 최근 7일' 로 맞춤 → HUD 숫자 = 순위판 숫자
 -- · 나머지(rows/me, 20위 밖 내 순위, 테스터 제외)는 v2 와 같다. 통째로 RUN.
 create or replace function get_weekly_board(p_email text, p_limit int default 50)
 returns jsonb
 language sql security definer stable set search_path = public
 as $$
-  with wk as (select now() - interval '7 days' as start_at),
+  -- 앱과 같은 창: 한국 시간 기준 6일 전 자정 ~ 지금 (오늘 포함 7일). v2 는 굴러가는 7×24h 라 HUD 와 숫자가 달랐다
+  with wk as (select ((date_trunc('day', now() at time zone 'Asia/Seoul') - interval '6 days') at time zone 'Asia/Seoul') as start_at),
   agg as (
     select e.email, sum(e.exp) as exp
     from exp_events e, wk

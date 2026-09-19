@@ -1044,8 +1044,9 @@ button.ret-hud-item:hover { background: var(--paper-warm); }
 .ret-hud-item em { font-style: normal; font-size: 10px; color: var(--orange); font-weight: 700; white-space: nowrap; }
 @media (max-width: 480px) { .ret-hud-item b { font-size: 15px; } .ret-hud-item small { font-size: 9.5px; } }
 span.ret-hud-item { cursor: default; }
-.ret-pop { background: var(--paper); border: 2px solid var(--orange); border-radius: 14px; max-width: 420px; width: 100%; padding: 26px 24px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(58,40,18,0.5); margin: auto; }
+.ret-pop { background: var(--paper); border: 2px solid var(--orange); border-radius: 14px; max-width: 420px; width: 100%; padding: 26px 24px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(58,40,18,0.5); margin: auto; max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }   /* ★ 2026-09-19: 긴 팝업(열린 기능 목록 등) 모바일에서 안 쪽 스크롤 */
 .ret-pop-burst { font-size: 44px; line-height: 1; }
+.ret-pop-rows-sum { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 6px; font-weight: 800; }
 .ret-unlock-list { display: grid; gap: 8px; margin-top: 14px; }
 .ret-unlock-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); font-family: inherit; cursor: pointer; }
 .ret-unlock-item:hover { border-color: var(--orange); background: rgba(216,90,42,0.05); }
@@ -2365,7 +2366,13 @@ body.od-modal-open { overflow: hidden !important; }
   .desk-title { font-size: 19px; line-height: 1.2; }
   .desk-meta { text-align: left; font-size: 10.5px; }
   .desk-header > .ret-hud.compact { align-self: stretch; }
-  .desk-header > div:first-child { width: 100%; }
+  .desk-header > div:first-child { width: 100%; min-width: 0; }
+  /* ★ 2026-09-19: 시간표 헤더가 화면보다 넓어져 페이지가 옆으로 밀리던 문제 → 제목 줄 + 버튼 줄로 나눈다 */
+  .schedule-head { min-width: 0; }
+  .schedule.schedule-live .schedule-head { gap: 8px; }
+  .schedule.schedule-live .schedule-head > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .schedule.schedule-live .schedule-go { flex-shrink: 0; padding: 7px 14px; }
+  .desk { overflow-x: hidden; }
 
   /* 결재 라인, 2열, 4번째 셀 풀폭 */
   .approval-line { grid-template-columns: 1fr 1fr; }
@@ -2811,8 +2818,8 @@ const CHARACTERS = {
 const SCENARIOS = [
   { day: 1, word: "stakeholder", pos: "n.", meaning: "이해관계자", phonetic: "/ˈsteɪkˌhoʊldər/",
     scene: "09:30, 입사 첫 회의실에서 김 팀장이 화이트보드에 도식을 그리며 말을 꺼내요.",
-    npc: "manager", quote: "OK team, let's start with the stakeholder map for this project. Who's who here?",
-    quoteKo: "자, 팀. 이 프로젝트의 이해관계자 지도부터 시작합시다. 여기서 누가 누구죠?",
+    npc: "manager", quote: "Okay team, let's start with the stakeholder map for this project. I want to be clear on who's who here before we touch anything else.",
+    quoteKo: "자, 팀. 이 프로젝트의 이해관계자 지도부터 시작합시다. 다른 걸 건드리기 전에 여기서 누가 누군지부터 분명히 하고 싶어요.",
     youDo: "회의 끝나고 사수에게 'stakeholder가 정확히 뭔가요'라고 물어봤다.",
     mentorTip: "주주, 클라이언트, 내부 부서까지, 이 일에 영향을 주거나 받는 사람 전부야. 한 단어가 회의 절반을 정리해줘.",
     mentorNuance: "프로젝트 첫 회의에서 '누가 관련된 사람인지'부터 정리할 때 쓰는 말이야. 이 단어를 먼저 꺼내는 사람이 회의 판을 잡아.",
@@ -2848,8 +2855,8 @@ const SCENARIOS = [
     } },
   { day: 2, word: "deadline", pos: "n.", meaning: "마감 기한", phonetic: "/ˈdedlaɪn/",
     scene: "18:40, 퇴근 무렵 김 팀장이 자리로 와서 마감 얘기를 꺼내요.", npc: "manager",
-    quote: "Can you confirm the deadline with Daniel one more time?",
-    quoteKo: "Daniel한테 마감일 한 번만 더 확인해줄래요?",
+    quote: "Hi Jiwon, could you confirm the deadline with Daniel one more time before we send this out? He's the main stakeholder on this one, so I'd rather double-check.",
+    quoteKo: "지원 씨, 이거 보내기 전에 Daniel한테 마감일 한 번만 더 확인해 줄래요? 이 건은 Daniel이 핵심 이해관계자라서 한 번 더 짚고 싶어요.",
     youDo: "Daniel에게 슬랙으로 마감일 재확인 메시지를 보냈다.",
     mentorTip: "deadline은 진짜 '죽는 선'이라는 어원. due date보다 무거운 뉘앙스라 협상이 어려워.",
     mentorNuance: "일정 확인할 때 쓰는데, due date보다 무거워. '언제까지요?'가 아니라 '이 선 넘으면 안 되죠?' 느낌이라 협상 여지가 거의 없을 때 골라 써.",
@@ -2872,8 +2879,8 @@ const SCENARIOS = [
     } },
   { day: 3, word: "follow up", pos: "phr.", meaning: "후속 조치하다", phonetic: "/ˈfɑloʊ ʌp/",
     scene: "11:00, 사수가 지나가다 어제 회의 후속 건을 물어요.", npc: "mentor",
-    quote: "Did you send the follow-up email from yesterday's meeting?",
-    quoteKo: "어제 회의 후속 메일은 보냈어요?",
+    quote: "Quick question, did you get a chance to send the follow-up email from yesterday's meeting? I want to make sure they have it before they plan their week.",
+    quoteKo: "잠깐 물어볼게요, 어제 회의 후속 메일은 보냈어요? 그쪽이 주간 계획 잡기 전에 받아봤으면 해서요.",
     youDo: "회의 액션 아이템을 정리해 참석자 전원에게 메일을 보냈다.",
     mentorTip: "회의가 끝나면 24시간 내 follow up. 이거 한 번만 챙겨도 신뢰가 달라져.",
     mentorNuance: "회의 끝나고 24시간 안에 보내는 메일 제목이나 첫 줄에 써. '어제 얘기한 거 이어서'라는 신호라, 이거 한 번만 챙겨도 일 챙기는 사람으로 보여.",
@@ -2896,8 +2903,8 @@ const SCENARIOS = [
     } },
   { day: 4, word: "ASAP", pos: "abbr.", meaning: "최대한 빨리", phonetic: "/ˌeɪ ɛs eɪ ˈpi/",
     scene: "16:00, Sarah가 슬랙으로 급한 메시지를 보내와요.", npc: "sarah",
-    quote: "Need the revised numbers ASAP, board meeting tomorrow.",
-    quoteKo: "수정된 숫자가 최대한 빨리 필요해요. 내일이 이사회예요.",
+    quote: "I hate to rush you, but I need the revised numbers ASAP. The board meeting is tomorrow morning and I still have to build the deck around them.",
+    quoteKo: "재촉해서 미안한데, 수정된 숫자가 최대한 빨리 필요해요. 내일 아침이 이사회라 그 숫자로 자료를 만들어야 하거든요.",
     youDo: "수치 다시 검토해서 1시간 안에 회신했다.",
     mentorTip: "ASAP는 강한 표현이야. 우리가 쓸 땐 'by EOD' 같은 구체적 시간이 더 프로페셔널해.",
     mentorNuance: "급한 부탁을 받았을 때 답으로는 잘 안 써. 상대가 ASAP라고 하면 나는 'by EOD'처럼 구체적인 시간으로 받아치는 게 프로다워.",
@@ -2920,8 +2927,8 @@ const SCENARIOS = [
     } },
   { day: 5, word: "circle back", pos: "phr.", meaning: "(나중에) 다시 얘기하다", phonetic: "/ˈsɝkəl bæk/",
     scene: "14:00, 회의 시간이 부족해지자 Daniel이 정리에 들어가요.", npc: "daniel",
-    quote: "Let's circle back on this next week, running short on time.",
-    quoteKo: "이건 다음 주에 다시 얘기합시다. 시간이 부족하네요.",
+    quote: "I think we're running short on time today, so let's circle back on this next week. I'd rather give it the attention it deserves than rush it now.",
+    quoteKo: "오늘은 시간이 부족한 것 같으니 이 건은 다음 주에 다시 얘기해요. 급하게 넘기기보다 제대로 시간 들여서 보고 싶어요.",
     youDo: "다음 주 화요일로 follow-up 미팅을 잡았다.",
     mentorTip: "회의를 자연스럽게 끊을 때 쓰는 마법의 표현. 한국말로 '이건 다음에' 보다 부드러워.",
     mentorNuance: "회의 시간이 부족해서 안건을 다음으로 넘길 때 써. '이건 다음에'보다 부드럽고, 나중에 진짜 다시 다룰 거라는 약속이 들어 있어.",
@@ -2944,8 +2951,8 @@ const SCENARIOS = [
     } },
   { day: 6, word: "loop in", pos: "phr.", meaning: "(메일/대화에) 포함시키다", phonetic: "/luːp ɪn/",
     scene: "10:00, 박 대리가 옆자리에서 슬랙 스레드를 보며 말을 걸어요.", npc: "park",
-    quote: "We should loop the design team in on this too, right?",
-    quoteKo: "디자인팀도 이 건에 포함시켜야 하지 않을까요?",
+    quote: "Before we go any further, I think we should loop the design team in on this too. They'll have opinions on the layout, don't you think?",
+    quoteKo: "더 진행하기 전에 디자인팀도 같이 끼워 넣는 게 좋을 것 같아요. 레이아웃에 대해 할 말이 있을 텐데, 안 그래요?",
     youDo: "디자인팀 리드를 cc에 추가해 메일을 다시 보냈다.",
     mentorTip: "정보 공유의 동사. cc보다 '동참시킨다'는 뉘앙스가 강해서 협업할 때 자주 써.",
     mentorNuance: "메일이나 슬랙에서 다른 팀을 대화에 끌어들일 때 써. cc보다 '같이 하자'는 뉘앙스가 강해서 협업 시작할 때 자연스러워.",
@@ -2968,8 +2975,8 @@ const SCENARIOS = [
     } },
   { day: 7, word: "deliverable", pos: "n.", meaning: "산출물, 납품물", phonetic: "/dɪˈlɪvərəbl/",
     scene: "09:30, 분기 리뷰 회의에서 김 팀장이 이번 분기 산출물을 정리해요.", npc: "manager",
-    quote: "Let's narrow down to three core deliverables for this quarter.",
-    quoteKo: "이번 분기 핵심 산출물 세 개로 좁혀봅시다.",
+    quote: "I looked at the list, and it's a lot. Let's narrow it down to three core deliverables for this quarter so the team actually knows what to focus on.",
+    quoteKo: "목록을 봤는데 너무 많아요. 이번 분기엔 핵심 산출물 세 개로 좁혀서 팀이 뭐에 집중할지 확실히 알게 합시다.",
     youDo: "팀의 핵심 산출물을 노션에 정리해 공유했다.",
     mentorTip: "'결과물' 보다 '약속한 산출물' 의 무게가 있어. 계약/프로젝트에서 자주 봐.",
     mentorNuance: "분기 계획이나 계약 얘기에서 '약속한 결과물'을 말할 때 써. 그냥 result가 아니라 납품하기로 한 것이라 무게가 있어.",
@@ -2992,8 +2999,8 @@ const SCENARIOS = [
     } },
   { day: 8, word: "ramp up", pos: "phr.", meaning: "(생산·활동을) 늘리다", phonetic: "/ræmp ʌp/",
     scene: "11:30, 채용 회의에서 김 팀장이 하반기 인력 계획을 설명해요.", npc: "manager",
-    quote: "What's the engineering team's ramp-up timeline looking like?",
-    quoteKo: "엔지니어링팀의 증원 일정은 어떻게 돼가고 있어요?",
+    quote: "I've been meaning to ask, what does the engineering team's ramp-up timeline look like right now? I'd like to know when they'll be at full speed.",
+    quoteKo: "물어보려던 건데, 지금 엔지니어링팀 램프업 일정이 어떻게 돼요? 언제쯤 풀 속도로 돌아갈지 알고 싶어서요.",
     youDo: "채용 일정과 온보딩 계획을 한 페이지로 정리해 공유했다.",
     mentorTip: "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
     mentorNuance: "채용이나 생산을 단계적으로 늘리는 계획을 말할 때 써. 한 번에 확 키우는 건 scale up이고, 이건 천천히 올리는 그림이야.",
@@ -3016,8 +3023,8 @@ const SCENARIOS = [
     } },
   { day: 9, word: "low-hanging fruit", pos: "phr.", meaning: "쉽게 얻을 수 있는 성과", phonetic: "/loʊ ˈhæŋɪŋ fruːt/",
     scene: "15:00, 전략 워크숍에서 Daniel이 이번 주에 바로 할 수 있는 걸 찾자고 해요.", npc: "daniel",
-    quote: "Let's start with the low-hanging fruit before the heavy lifting.",
-    quoteKo: "어렵고 무거운 일 전에, 쉽게 따낼 수 있는 것부터 시작합시다.",
+    quote: "Here's what I'm thinking. Let's start with the low-hanging fruit this week and save the heavy lifting for when the whole team is back.",
+    quoteKo: "제 생각은 이래요. 이번 주엔 쉽게 딸 수 있는 것부터 시작하고, 무거운 일은 팀이 다 돌아왔을 때 하자고요.",
     youDo: "당장 실행 가능한 3개 액션을 따로 빼서 to-do 리스트로 만들었다.",
     mentorTip: "'쉬운 거 먼저', 회의에서 우선순위 정할 때 거의 매번 등장. 셀 수 없는 관용표현이라 'three low-hanging fruits'처럼 개수를 세면 어색해. 'some low-hanging fruit'으로 뭉뚱그리거나, 개수를 말하고 싶으면 'a few quick wins'로 바꿔 말해.",
     mentorNuance: "우선순위 회의에서 '이거부터 하자'고 밀 때 쓰는 말이야. 큰 과제 앞에서 작은 승리부터 쌓자는 신호라, 팀 사기 올릴 때 특히 잘 먹혀.",
@@ -3040,8 +3047,8 @@ const SCENARIOS = [
     } },
   { day: 10, word: "touch base", pos: "phr.", meaning: "잠깐 얘기하다, 안부 묻다", phonetic: "/tʌtʃ beɪs/",
     scene: "17:00, 사수가 캘린더 초대를 보내면서 짧게 얘기하자고 해요.", npc: "mentor",
-    quote: "Let's touch base for 15 minutes on Monday. I want to hear how things are going.",
-    quoteKo: "월요일에 15분만 가볍게 얘기해요. 어떻게 지내는지 듣고 싶어요.",
+    quote: "Let's touch base for fifteen minutes on Monday. I just want to hear how things are going on your side, nothing formal.",
+    quoteKo: "월요일에 15분만 잠깐 얘기해요. 그쪽 상황이 어떤지 듣고 싶은 것뿐이에요, 격식 차릴 건 없어요.",
     youDo: "월요일까지 진행 상황을 한 페이지로 정리해뒀다.",
     mentorTip: "야구의 '베이스 터치' 에서 옴. 가볍게 점검하는 짧은 미팅을 잡을 때 부담 없이 써.",
     mentorNuance: "짧고 가벼운 점검 미팅을 잡을 때 써. 슬랙 DM으로 '잠깐 얘기해요' 정도라 부담이 없고, 정식 회의 초대보다 훨씬 부드러워.",
@@ -3064,8 +3071,8 @@ const SCENARIOS = [
     } },
   { day: 11, word: "due diligence", pos: "n.", meaning: "실사, 충분한 검토", phonetic: "/duː ˈdɪlɪdʒəns/",
     scene: "14:00, M&A 검토 회의에서 김 팀장이 검토 일정을 물어요.", npc: "manager",
-    quote: "We can't sign off until due diligence wraps. Let's get it done this week.",
-    quoteKo: "사전 검토가 끝나기 전엔 승인 못 해요. 이번 주 안에 끝냅시다.",
+    quote: "We can't sign off until the due diligence wraps up, so let's push to get it done this week. I don't want this dragging into next month.",
+    quoteKo: "실사가 끝나기 전엔 승인을 못 하니까 이번 주 안에 끝내도록 밀어붙여 봐요. 다음 달까지 끌고 가고 싶지 않아요.",
     youDo: "재무·법무·운영 체크리스트를 만들어 분담했다.",
     mentorTip: "법률·재무 검토 전부. 이 한 단어가 며칠치 일을 함축해.",
     mentorNuance: "계약이나 인수 검토 일정을 말할 때 써. '검토 다 했어요?'가 아니라 법률·재무까지 다 봤냐는 뜻이라 가볍게 쓰면 안 돼.",
@@ -3088,8 +3095,8 @@ const SCENARIOS = [
     } },
   { day: 12, word: "pivot", pos: "v./n.", meaning: "(전략을) 전환하다", phonetic: "/ˈpɪvət/",
     scene: "16:00, 임원 보고 자리에서 Daniel이 전환 카드를 꺼내요.", npc: "daniel",
-    quote: "Numbers aren't there. We may need to pivot.",
-    quoteKo: "숫자가 안 나오네요. 방향을 틀어야 할지도 모르겠어요.",
+    quote: "I'll be honest with you, the numbers just aren't there. I think we may need to pivot, and I'd like your take before I say that to the director.",
+    quoteKo: "솔직히 말할게요, 숫자가 안 나와요. 방향을 틀어야 할 것 같은데, 디렉터한테 말하기 전에 지원 씨 생각을 듣고 싶어요.",
     youDo: "B2C → B2B 전환 시나리오를 1페이지로 그려봤다.",
     mentorTip: "스타트업 용어가 일반 비즈니스로 넘어온 사례. '방향 자체를 트는' 뉘앙스라 작은 변경엔 안 써.",
     mentorNuance: "숫자가 안 나와서 방향 자체를 틀어야 할 때 임원 보고에서 써. 작은 수정에는 안 쓰고, 정말 전략을 바꿀 때만 꺼내는 단어야.",
@@ -3112,8 +3119,8 @@ const SCENARIOS = [
     } },
   { day: 13, word: "actionable", pos: "adj.", meaning: "실행 가능한, 바로 할 수 있는", phonetic: "/ˈækʃənəbl/",
     scene: "11:00, 사수가 내 초안을 리뷰하면서 다음 단계를 물어요.", npc: "mentor",
-    quote: "The feedback is solid, but can you make it more actionable?",
-    quoteKo: "피드백 내용은 탄탄한데, 좀 더 실행 가능하게 만들어줄래요?",
+    quote: "The feedback you wrote is solid, I mean that. But could you make it a bit more actionable? Right now it tells them what's wrong, not what to do next.",
+    quoteKo: "써준 피드백은 탄탄해요, 진심으로요. 다만 조금 더 실행 가능하게 만들어 줄 수 있을까요? 지금은 뭐가 틀렸는지만 있고, 다음에 뭘 해야 하는지가 없어요.",
     youDo: "추상적인 조언을 '담당자/기한/액션' 3열 표로 다시 썼다.",
     mentorTip: "'그래서 뭐 해?' 라는 질문에 답이 되면 actionable. 보고서의 마지막 페이지에 꼭 들어가야 해.",
     mentorNuance: "보고서 칭찬 중 최고 등급이야. '읽고 나서 바로 뭘 하면 되는지 보인다'는 뜻이라, 초안 내고 이 말 들으면 통과라고 보면 돼.",
@@ -3136,8 +3143,8 @@ const SCENARIOS = [
     } },
   { day: 14, word: "ballpark", pos: "n./adj.", meaning: "대략적인 추정치", phonetic: "/ˈbɔːlpɑːrk/",
     scene: "13:30, Sarah가 통화 중에 대략적인 예산 규모를 물어요.", npc: "sarah",
-    quote: "Just a ballpark, what are we looking at, budget-wise?",
-    quoteKo: "대략이라도 좋으니, 예산 규모가 어느 정도일까요?",
+    quote: "I'm not asking for an exact figure yet. Just give me a ballpark, what are we looking at budget-wise for this project?",
+    quoteKo: "아직 정확한 숫자를 달라는 건 아니에요. 대략만 알려줘요, 이 프로젝트 예산이 어느 정도로 보이나요?",
     youDo: "정확한 수치 대신 '500만~700만원 범위' 라고 답했다.",
     mentorTip: "정확한 답을 줄 수 없을 때 시간을 버는 표현. 한국말 '대충 얼마' 보다 훨씬 프로페셔널해.",
     mentorNuance: "정확한 숫자를 줄 수 없을 때 '대략 이 정도'라고 답하는 자리에 써. 확답을 피하면서도 프로답게 들려서 클라이언트 통화에서 자주 나와.",
@@ -3161,8 +3168,8 @@ const SCENARIOS = [
   { day: 15, word: "table", pos: "v.", meaning: "(논의를) 보류하다", phonetic: "/ˈteɪbəl/",
     scene: "10:00, 분기 전략 회의에서 Daniel이 시계를 보며 안건을 정리해요.",
     npc: "daniel",
-    quote: "We're running short on time. Let's table the pricing discussion for now.",
-    quoteKo: "시간이 부족하네요. 가격 논의는 일단 보류합시다.",
+    quote: "We're running short on time, so I'd like to table the pricing discussion for now. Let's get through the roadmap first and come back to pricing at the end.",
+    quoteKo: "시간이 부족하니 가격 얘기는 일단 미뤄두고 싶어요. 로드맵부터 다 보고, 마지막에 가격으로 돌아오죠.",
     youDo: null,
     mentorTip: "재밌는 단어야. 미국식은 '보류', 영국식은 '정식 안건으로 올리다', 정반대! Daniel은 영국 본사라 헷갈릴 수 있어. 문맥으로 잡아야 해.",
     mentorNuance: "회의 시간이 모자라 안건을 보류할 때 쓰는데, 미국식은 보류, 영국식은 정식 안건 상정이라 정반대야. 영국 본사 사람이랑 얘기할 땐 shelve로 바꿔 써.",
@@ -3188,8 +3195,8 @@ const SCENARIOS = [
   { day: 16, word: "align", pos: "v.", meaning: "(의견·계획을) 정렬시키다, 합의를 맞추다", phonetic: "/əˈlaɪn/",
     scene: "14:00, 분기 전략 회의를 마무리하며 Daniel이 화면 공유를 끄고 확인을 구해요.",
     npc: "daniel",
-    quote: "Before we wrap, let's make sure we're aligned on next steps. Anyone disagree?",
-    quoteKo: "마치기 전에 다음 단계에 대해 모두 같은 생각인지 확인합시다. 이견 있는 분?",
+    quote: "Before we wrap up, I want to make sure we're all aligned on the next steps. Does anyone see it differently? Now's the time to say so.",
+    quoteKo: "마무리하기 전에 다음 단계에 대해 다들 같은 그림인지 확인하고 싶어요. 다르게 보는 분 있어요? 지금 말해 주세요.",
     youDo: null,
     mentorTip: "agree보다 부드러워. '동의'까진 아니어도 '같은 방향'이라는 뜻. 회의 끝에 빈번해.",
     mentorNuance: "회의 마무리에 '다들 같은 방향 맞죠?' 확인할 때 써. agree보다 부드러워서 완전 동의는 아니어도 방향이 같으면 쓸 수 있어.",
@@ -3214,8 +3221,8 @@ const SCENARIOS = [
   { day: 17, word: "sync up", pos: "phr.", meaning: "(짧게) 동기화하다, 진행상황 맞추다", phonetic: "/sɪŋk ʌp/",
     scene: "09:30, 사수가 캘린더 초대를 보내며 진행 상황을 맞춰보자고 해요.",
     npc: "mentor",
-    quote: "Let's sync up for 15 minutes tomorrow. I want to hear your progress.",
-    quoteKo: "내일 15분만 맞춰봐요. 진행 상황을 듣고 싶어요.",
+    quote: "Could we sync up for fifteen minutes tomorrow? I'd like to hear where you are on the project and see if you need anything from me.",
+    quoteKo: "내일 15분만 맞춰볼 수 있을까요? 프로젝트가 어디까지 왔는지 듣고, 제가 도울 게 있는지 보고 싶어요.",
     youDo: null,
     mentorTip: "touch base의 짧은 버전. 격식 없이 쓰는 표현이라 사수·동기끼리 자주 써.",
     mentorNuance: "사수나 동기끼리 진행 상황 맞추자고 할 때 써. touch base보다 더 캐주얼해서 격식 있는 자리엔 안 어울려.",
@@ -3240,8 +3247,8 @@ const SCENARIOS = [
   { day: 18, word: "bandwidth", pos: "n.", meaning: "(업무) 처리 여력, 시간/에너지", phonetic: "/ˈbændwɪdθ/",
     scene: "11:00, 박 대리가 옆자리에서 일을 하나 부탁해요.",
     npc: "park",
-    quote: "Got any bandwidth this week? It'd be great to put the design team's materials together with you.",
-    quoteKo: "이번 주에 여력 좀 있어요? 디자인팀 자료를 같이 정리하면 좋을 것 같아서요.",
+    quote: "Do you have any bandwidth this week? If you do, it'd be great to put the design team's materials together with you.",
+    quoteKo: "이번 주에 여유 좀 있어요? 있으면 디자인팀 자료를 같이 정리하면 좋을 것 같아서요.",
     youDo: null,
     mentorTip: "'시간 있어?' 보다 자기 부담 인정하는 뉘앙스. 거절할 때 'I don't have the bandwidth'가 정중해.",
     mentorNuance: "일을 받기 어려울 때 거절하는 자리에 써. '시간 없어요' 대신 'I don't have the bandwidth'라고 하면 정중하면서 단호해.",
@@ -3266,8 +3273,8 @@ const SCENARIOS = [
   { day: 19, word: "scope", pos: "n./v.", meaning: "범위, 범위를 정하다", phonetic: "/skoʊp/",
     scene: "10:00, 김 팀장이 화이트보드 앞에서 이번 프로젝트 범위를 그려요.",
     npc: "manager",
-    quote: "Let's redefine the scope of this project. It's getting too big.",
-    quoteKo: "이 프로젝트 범위를 다시 정합시다. 너무 커지고 있어요.",
+    quote: "I think we need to redefine the scope of this project. It's getting too big, and I'd rather cut now than miss the deadline later.",
+    quoteKo: "이 프로젝트 범위를 다시 정해야 할 것 같아요. 너무 커지고 있는데, 나중에 마감을 놓치느니 지금 잘라내는 게 나아요.",
     youDo: null,
     mentorTip: "프로젝트가 부풀어오를 때 (scope creep) 가장 중요한 단어. 'what's in / what's out' 명확히 적는 게 핵심.",
     mentorNuance: "프로젝트가 자꾸 커질 때 범위를 다시 그을 때 써. 'what's in / what's out'을 같이 말하면 이 단어가 제대로 일해.",
@@ -3292,8 +3299,8 @@ const SCENARIOS = [
   { day: 20, word: "step up", pos: "phr.", meaning: "더 적극 나서다, 책임을 늘리다", phonetic: "/stɛp ʌp/",
     scene: "16:00, 사수와 분기 회고를 하다가 사수가 내 변화를 짚어줘요.",
     npc: "mentor",
-    quote: "You've really stepped up this quarter. First solo email, first meeting input, you took the lead on all of it.",
-    quoteKo: "이번 분기에 정말 한 단계 올라섰어요. 첫 단독 메일, 첫 회의 발언, 전부 주도적으로 해냈잖아요.",
+    quote: "You've really stepped up this quarter, and I wanted to say it out loud. First solo email, first meeting input, and you took the lead on all of it.",
+    quoteKo: "이번 분기에 정말 한 단계 올라섰어요, 직접 말해주고 싶었어요. 첫 단독 메일, 첫 회의 발언, 전부 지원 씨가 주도했잖아요.",
     youDo: null,
     mentorTip: "'레벨업' 같은 뉘앙스. 본인 책임을 한 단계 늘렸을 때 칭찬으로 자주 들어. 사수가 신입한테 해주는 최고의 한 마디.",
     mentorNuance: "사수가 후배 칭찬할 때 쓰는 말이야. 내가 남한테 쓸 일은 적고, 들으면 '책임이 한 단계 올라갔다'고 인정받은 거야.",
@@ -3318,8 +3325,8 @@ const SCENARIOS = [
   { day: 21, word: "heads up", pos: "phr.", meaning: "미리 알리는 말, 사전 공유", phonetic: "/hɛdz ʌp/",
     scene: "17:00, 박 대리가 슬랙 DM으로 조용히 귀띔을 해줘요.",
     npc: "park",
-    quote: "Heads up, the director is reviewing our team's KPIs tomorrow. Prep the materials in advance.",
-    quoteKo: "미리 알려둘게요. 내일 부장님이 우리 팀 KPI를 검토해요. 자료 미리 준비해두세요.",
+    quote: "Just a heads up, the director is reviewing our team's KPIs tomorrow. It would help a lot if you could prep the materials in advance.",
+    quoteKo: "미리 알려드리는데, 내일 디렉터가 우리 팀 KPI를 검토해요. 자료를 미리 준비해 두면 큰 도움이 될 거예요.",
     youDo: null,
     mentorTip: "warn보다 부드럽고, FYI보다 액션이 필요한 톤. 동료끼리 자주 주고받아.",
     mentorNuance: "공식 통보가 아니라 동료끼리 미리 귀띔할 때 쓰는 말이야. 슬랙 DM 맨 앞에 'Heads up' 한 줄 붙이면 상대가 긴장 안 하고 받아.",
@@ -3344,8 +3351,8 @@ const SCENARIOS = [
   { day: 22, word: "take ownership", pos: "phr.", meaning: "주도권을 갖다, 책임지다", phonetic: "/teɪk ˈoʊnərʃɪp/",
     scene: "11:00, 김 팀장이 작은 프로젝트를 나에게 맡겨요.",
     npc: "manager",
-    quote: "It's small but I want you to take ownership of this. You need the experience of seeing something through.",
-    quoteKo: "작은 건이지만 이건 당신이 주인의식을 갖고 맡아줬으면 해요. 끝까지 책임져보는 경험이 필요해요.",
+    quote: "It's a small project, but I'd like you to take ownership of it. I think you need the experience of seeing something through from start to finish.",
+    quoteKo: "작은 프로젝트지만 지원 씨가 온전히 맡아줬으면 해요. 처음부터 끝까지 하나를 책임져 보는 경험이 필요한 것 같아서요.",
     youDo: null,
     mentorTip: "수습 단계에서 가장 중요한 표현. 'I'll handle it' 보다 책임감의 무게가 더해져.",
     mentorNuance: "작은 프로젝트를 맡을 때 '제가 하겠습니다'보다 무겁게 답하는 자리에 써. 'I'll handle it'에 책임감을 더한 말이야.",
@@ -3370,8 +3377,8 @@ const SCENARIOS = [
   { day: 23, word: "buy-in", pos: "n.", meaning: "동의, 지지 확보", phonetic: "/ˈbaɪɪn/",
     scene: "14:00, Sarah와 화상 회의에서 경영진 설득 얘기가 나와요.",
     npc: "sarah",
-    quote: "We need executive buy-in before we move on this. Can you pitch it Friday?",
-    quoteKo: "진행하려면 임원들의 지지가 먼저 필요해요. 금요일에 발표해볼래요?",
+    quote: "We need executive buy-in before we move on this. Do you think you could pitch it to them on Friday? I'll be in the room to back you up.",
+    quoteKo: "이걸 진행하려면 임원 동의가 먼저 필요해요. 금요일에 임원진 앞에서 발표해 볼 수 있겠어요? 제가 옆에서 지원할게요.",
     youDo: null,
     mentorTip: "단순 동의가 아닌 '지지·납득'의 뉘앙스. 보고서 마지막 슬라이드의 핵심.",
     mentorNuance: "경영진 설득이 필요한 제안서나 보고 마지막에 써. 단순 동의가 아니라 '지지'를 얻어야 할 때라 pitch 얘기가 같이 나와.",
@@ -3393,8 +3400,8 @@ const SCENARIOS = [
   { day: 24, word: "leverage", pos: "v.", meaning: "(자원·관계를) 최대한 활용하다", phonetic: "/ˈlevərɪdʒ/",
     scene: "10:30, Daniel이 슬랙으로 아이디어 하나를 던져요.",
     npc: "daniel",
-    quote: "Let's leverage Sarah's network on the West Coast, she has the right contacts.",
-    quoteKo: "Sarah의 서부 인맥을 활용합시다. 딱 맞는 연결고리를 갖고 있어요.",
+    quote: "Let's leverage Sarah's network on the West Coast for this. She has exactly the right contacts, and she's offered to help.",
+    quoteKo: "이번 건은 Sarah의 서부 인맥을 활용합시다. 딱 맞는 사람들을 알고 있고, 본인이 돕겠다고도 했어요.",
     youDo: null,
     mentorTip: "'활용한다'의 비즈니스 버전. use보다 '있는 자원을 기회로 바꾼다'는 뉘앙스가 강해.",
     mentorNuance: "있는 자원이나 인맥을 기회로 바꾸자고 제안할 때 써. use보다 '이걸로 뭔가 얻어내자'는 뉘앙스라 전략 얘기에 어울려.",
@@ -3416,8 +3423,8 @@ const SCENARIOS = [
   { day: 25, word: "OOO", pos: "abbr.", meaning: "out of office, 부재 중, 휴가 중", phonetic: "/aʊt əv ˈɔːfɪs/",
     scene: "09:00, 사수가 단톡방에 휴가 안내를 올려요.",
     npc: "mentor",
-    quote: "I'll be OOO Monday and Tuesday next week. Anything urgent, ping Mr. Park.",
-    quoteKo: "다음 주 월·화에 자리를 비워요. 급한 건 박 대리한테 연락하세요.",
+    quote: "Hi team, just a heads-up that I'll be OOO on Monday and Tuesday next week. If anything urgent comes up, please ping Mr. Park.",
+    quoteKo: "팀 여러분, 미리 알려드려요. 다음 주 월·화에 제가 자리를 비워요. 급한 일이 생기면 박 대리에게 연락해 주세요.",
     youDo: null,
     mentorTip: "메일 자동응답에 거의 항상 등장. OOO만 써도 다 알아들어. 한국식 '휴가입니다'보다 가벼워.",
     mentorNuance: "휴가나 부재를 팀에 알릴 때 써. 메일 자동응답과 슬랙 상태에 OOO만 써도 다 알아듣고, '휴가입니다'보다 가벼워.",
@@ -3439,8 +3446,8 @@ const SCENARIOS = [
   { day: 26, word: "north star", pos: "n.", meaning: "(전략의) 가장 중요한 지향점", phonetic: "/nɔːrθ stɑːr/",
     scene: "10:00, 김 팀장이 전사 미팅에서 올해 가장 중요한 지표를 얘기해요.",
     npc: "manager",
-    quote: "Our north star is user retention. Every feature should earn its place against that.",
-    quoteKo: "우리의 북극성은 사용자 유지율이에요. 모든 기능은 그 기준을 통과해야 해요.",
+    quote: "Let me be clear about our north star this year: it's user retention. Every feature we build should have to earn its place against that.",
+    quoteKo: "올해 우리 북극성이 뭔지 분명히 할게요. 사용자 리텐션이에요. 우리가 만드는 모든 기능은 그 기준 앞에서 자기 자리를 증명해야 해요.",
     youDo: null,
     mentorTip: "전략 회의·임원 보고에서 핵심 표현. 단 하나의 지향점이 north star. 여러 개면 의미 없어.",
     mentorNuance: "여러 지표 중 딱 하나만 남길 때 쓰는 말이야. 팀장이 이 단어를 꺼내면 '나머진 뒤로 미루자'는 뜻이니까 그 하나에 맞춰 말하면 돼.",
@@ -3462,8 +3469,8 @@ const SCENARIOS = [
   { day: 27, word: "pushback", pos: "n.", meaning: "반대 의견, 저항", phonetic: "/ˈpʊʃbæk/",
     scene: "16:00, 박 대리가 평소답지 않게 자리로 와서 고민을 털어놓아요.",
     npc: "park",
-    quote: "I've decided to move on. Expecting some pushback from the director, but I'm sticking with my decision.",
-    quoteKo: "추진하기로 결정했어요. 부장님 반대가 좀 있겠지만, 내 결정대로 갑니다.",
+    quote: "I've decided to move forward on this. I'm expecting some pushback from the director, but I'm sticking with my decision, and I wanted you to hear it from me.",
+    quoteKo: "이 건은 진행하기로 결정했어요. 디렉터 쪽에서 반발이 좀 있을 것 같지만 제 결정을 밀고 갈 거예요. 지원 씨한텐 제가 직접 말해주고 싶었어요.",
     youDo: null,
     mentorTip: "'반대 부딪힘' 정도. resistance보다 비즈니스 톤이고, 협상·이직에서 자주 나와.",
     mentorNuance: "이직이나 결정 통보 앞에서 '반대가 좀 있을 거다'라고 말할 때 써. resistance보다 비즈니스 톤이라 협상 자리에 자연스러워.",
@@ -3485,8 +3492,8 @@ const SCENARIOS = [
   { day: 28, word: "in the weeds", pos: "phr.", meaning: "세부에 파묻혀 큰 그림을 놓친 상태", phonetic: "/ɪn ðə wiːdz/",
     scene: "18:30, 사수가 내 책상 옆을 지나가다 화면을 보고 한마디 해요.",
     npc: "mentor",
-    quote: "Aren't you a bit too in the weeds? Take a step back, see the big picture, then come back.",
-    quoteKo: "너무 디테일에 빠져있는 거 아니에요? 한 발 물러나서 큰 그림 보고 다시 와요.",
+    quote: "Can I be honest? I think you're a bit too in the weeds right now. Take a step back, look at the big picture, and then come back to the details.",
+    quoteKo: "솔직하게 말해도 될까요? 지금 지원 씨는 너무 세부사항에 파묻혀 있는 것 같아요. 한 발 물러나서 큰 그림을 보고, 그다음에 다시 디테일로 돌아와요.",
     youDo: null,
     mentorTip: "'잡초 속' = 디테일에 매몰. 사수가 신입한테 자주 해주는 말. step back 하라는 신호.",
     mentorNuance: "세부에 빠져 큰 그림을 놓친 후배한테 사수가 하는 말이야. 이 말을 들으면 반박 말고 한 발 물러나서 다시 보라는 신호로 받아.",
@@ -3508,8 +3515,8 @@ const SCENARIOS = [
   { day: 29, word: "take a stab", pos: "phr.", meaning: "한 번 시도해보다", phonetic: "/teɪk ə stæb/",
     scene: "09:30, 김 팀장이 나에게 새 업무를 시도해보라고 해요.",
     npc: "manager",
-    quote: "Can you take a stab at tomorrow's deck? It's your first try, no pressure.",
-    quoteKo: "내일 발표 자료, 한 번 시도해볼래요? 첫 시도니까 부담 갖지 말고요.",
+    quote: "Would you be willing to take a stab at tomorrow's deck? It's your first try, so there's no pressure at all. I just want to see how you'd approach it.",
+    quoteKo: "내일 발표 자료를 한번 시도해 볼래요? 처음이니까 부담은 전혀 없어요. 지원 씨가 어떻게 접근하는지 보고 싶을 뿐이에요.",
     youDo: null,
     mentorTip: "'한 번 찔러봐' = 완벽 안 해도 OK. 신입한테 부담 줄여주는 표현. 정말 자주 들어.",
     mentorNuance: "처음 맡는 일을 시켜볼 때 부담 덜어주면서 쓰는 말이야. '완벽 안 해도 돼, 한번 해봐'라 신입한테 자주 오고, 나도 후배한테 쓸 수 있어.",
@@ -3531,8 +3538,8 @@ const SCENARIOS = [
   { day: 30, word: "milestone", pos: "n.", meaning: "수습 종료, 가장 큰 이정표 ⭐", phonetic: "/ˈmaɪlstoʊn/",
     scene: "14:00, 부장실 1대1에서 김 팀장이 미소를 지어요. 책상 위엔 '수고했어' 손글씨 메모가 놓여 있어요.",
     npc: "manager",
-    quote: "30-day milestone, your probation's done. Full-time conversion + you get to pick your team next quarter. Where do you want to go?",
-    quoteKo: "30일 마일스톤, 수습 끝났어요. 정규직 전환에, 다음 분기 팀도 직접 고를 수 있어요. 어디로 가고 싶어요?",
+    quote: "Today is your 30-day milestone, which means your probation is officially done. You're converting to full-time, and you get to pick your team next quarter. Where would you like to go?",
+    quoteKo: "오늘이 30일 마일스톤이에요. 수습이 공식적으로 끝났다는 뜻이죠. 정직원으로 전환되고, 다음 분기엔 팀도 직접 고를 수 있어요. 어디로 가고 싶어요?",
     youDo: null,
     mentorTip: "수습 종료 = 가장 큰 milestone. 외국계는 부서 이동 자유로워서, 본인 의지로 다음 분기 결정 가능. 마음에 안 들면 다른 부서 갈 수 있어.",
     mentorNuance: "수습 종료처럼 큰 단계를 넘었을 때 써. 작은 완료엔 안 쓰고, 프로젝트나 커리어에서 '여기가 이정표다' 싶은 순간에만 꺼내.",
@@ -3559,8 +3566,8 @@ const SCENARIOS = [
   { day: 31, word: "shelve it", pos: "phr.", meaning: "보류하다 (격식)", phonetic: "/ʃelv ɪt/",
     scene: "10:00, 정직원 첫 회의에서 김 팀장이 아이디어 보드를 보며 우선순위를 정해요.",
     npc: "manager",
-    quote: "I like the idea, but Q3 is packed. Let's shelve it until next quarter and revisit.",
-    quoteKo: "아이디어는 좋은데 Q3가 꽉 찼어요. 다음 분기까지 보류해뒀다가 다시 봅시다.",
+    quote: "I really like the idea, but Q3 is already packed. Let's shelve it until next quarter and revisit it when we have some room.",
+    quoteKo: "아이디어는 정말 마음에 드는데, 3분기가 이미 꽉 찼어요. 다음 분기까지 잠시 보류해 두고, 여유가 생기면 다시 봐요.",
     youDo: null,
     mentorTip: "shelve = '선반에 올려두다'. 버리는 게 아니라 보관. table보다 격식 있고 영미 양쪽에서 안전한 단어야.",
     mentorNuance: "좋은 아이디어지만 지금은 못 한다고 정중히 미룰 때 써. 버리는 게 아니라 보관한다는 뜻이라 제안자가 상처 안 받아. 영미 양쪽에서 안전해.",
@@ -3585,8 +3592,8 @@ const SCENARIOS = [
   { day: 32, word: "escalate", pos: "v.", meaning: "상부에 보고하다", phonetic: "/ˈeskəleɪt/",
     scene: "11:30, Daniel과 화상 회의 중인데 클라이언트 이슈가 이틀째 안 풀리고 있어요.",
     npc: "daniel",
-    quote: "You've chased this twice already. If they push back again, escalate it to me directly.",
-    quoteKo: "이미 두 번이나 챙겼잖아요. 또 거절당하면 나한테 바로 올리세요.",
+    quote: "You've already chased them on this twice, and that's enough. If they push back again, I want you to escalate it to me directly and I'll take it from there.",
+    quoteKo: "이 건으로 벌써 두 번이나 재촉했잖아요, 그 정도면 충분해요. 또 미루면 저한테 바로 올려주세요. 그다음은 제가 맡을게요.",
     youDo: null,
     mentorTip: "escalate는 '포기'가 아니라 '레벨을 올리는 프로세스'. 두 번 시도하고 막히면 올리는 게 정직원의 판단력이야.",
     mentorNuance: "두 번 시도해도 안 풀릴 때 윗사람에게 올린다고 말할 때 써. 포기가 아니라 절차라서, '두 번 해봤는데 안 돼서 올립니다'가 정직원의 판단이야.",
@@ -3611,8 +3618,8 @@ const SCENARIOS = [
   { day: 33, word: "de-risk", pos: "v.", meaning: "리스크를 줄이다", phonetic: "/diːˈrɪsk/",
     scene: "14:00, 런칭 리뷰 회의에서 김 팀장이 일정표를 보다가 고개를 들어 물어요.",
     npc: "manager",
-    quote: "The timeline is aggressive. How do we de-risk this launch? Walk me through plan B.",
-    quoteKo: "일정이 공격적이네요. 이 런칭의 리스크를 어떻게 줄이죠? 플랜 B를 설명해봐요.",
+    quote: "I'll be honest, the timeline feels aggressive to me. How do we de-risk this launch? I'd like you to walk me through plan B.",
+    quoteKo: "솔직히 일정이 좀 빠듯해 보여요. 이 런칭의 리스크를 어떻게 줄일까요? 플랜 B를 한번 설명해 줬으면 해요.",
     youDo: null,
     mentorTip: "de-risk는 '리스크 제거'가 아니라 '낮추기'. 단계 나누기, 백업 만들기, 작게 먼저 테스트가 전형적인 de-risk 액션이야.",
     mentorNuance: "일정이 공격적일 때 '어떻게 위험을 줄일지' 답하는 자리에 써. 단계 나누기, 백업, 소규모 테스트를 같이 말해야 말이 돼.",
@@ -3637,8 +3644,8 @@ const SCENARIOS = [
   { day: 34, word: "contingency", pos: "n.", meaning: "비상 계획", phonetic: "/kənˈtɪndʒənsi/",
     scene: "15:00, Sarah와 분기 리뷰 콜에서 제안을 다 들은 Sarah가 만약의 경우를 물어요.",
     npc: "sarah",
-    quote: "Love the plan. But what's your contingency if the vendor slips by a month?",
-    quoteKo: "계획 좋네요. 그런데 벤더가 한 달 늦어지면 비상 계획은 뭐예요?",
+    quote: "I love the plan, I really do. But what's your contingency if the vendor slips by a month? I'd like to know we have something ready.",
+    quoteKo: "계획은 정말 마음에 들어요. 그런데 벤더가 한 달 늦어지면 대비책이 뭐예요? 준비된 게 있다는 걸 확인하고 싶어요.",
     youDo: null,
     mentorTip: "contingency 질문은 공격이 아니라 '준비됐는지' 확인. plan B를 한 줄이라도 말하면 통과, 없으면 숙제로 받아.",
     mentorNuance: "계획 발표 뒤 '만약 틀어지면?' 질문을 받을 때 써. plan B를 한 줄이라도 준비해 두면 이 질문이 무섭지 않아.",
@@ -3663,8 +3670,8 @@ const SCENARIOS = [
   { day: 35, word: "moving the needle", pos: "phr.", meaning: "의미있는 변화를 만들다", phonetic: "/ˈmuːvɪŋ ðə ˈniːdl/",
     scene: "09:30, 주간 리뷰에서 김 팀장이 대시보드를 넘기다 멈추고 물어요.",
     npc: "manager",
-    quote: "Nice charts. But which of these is actually moving the needle on retention?",
-    quoteKo: "차트는 예쁜데, 이 중에 실제로 유지율 지표를 움직이고 있는 건 뭐예요?",
+    quote: "These are nice charts, but I have one question. Which of these is actually moving the needle on retention? That's the only number I care about this quarter.",
+    quoteKo: "차트는 잘 만들었는데, 하나만 물을게요. 이 중에 실제로 리텐션을 움직이고 있는 게 뭐예요? 이번 분기에 제가 신경 쓰는 숫자는 그거 하나예요.",
     youDo: null,
     mentorTip: "needle은 계기판 바늘. '바늘이 움직였냐'는 핵심 지표가 진짜 변했냐는 뜻. 바쁜 것과 needle 움직이는 건 달라.",
     mentorNuance: "주간 리뷰에서 '진짜 지표를 움직인 게 뭐냐'고 물을 때 써. 바쁜 일과 효과 있는 일을 가르는 말이라 성과 보고에서 자주 나와.",
@@ -3689,8 +3696,8 @@ const SCENARIOS = [
   { day: 36, word: "iterate", pos: "v.", meaning: "반복하며 개선하다", phonetic: "/ˈɪtəreɪt/",
     scene: "11:00, 사수가 내 초안을 보다가 의자를 돌려 조언을 해요.",
     npc: "mentor",
-    quote: "Don't polish this for three more days. Ship the rough version and iterate from feedback.",
-    quoteKo: "3일 더 다듬지 마세요. 거친 버전이라도 내보내고 피드백 받으면서 개선합시다.",
+    quote: "I don't think we should polish this for three more days. Let's ship the rough version now and iterate from the feedback we get. That'll teach us more than another round of edits.",
+    quoteKo: "이걸 사흘 더 다듬을 필요는 없을 것 같아요. 거친 버전이라도 지금 내보내고, 받는 피드백으로 개선해 가요. 수정 한 번 더 하는 것보다 그게 더 많이 배워요.",
     youDo: null,
     mentorTip: "iterate는 '완성 후 공개'가 아니라 '공개 후 개선'. v1은 부끄러운 게 정상이야. 피드백이 다듬어줘.",
     mentorNuance: "초안을 오래 다듬는 후배한테 '일단 내고 고쳐'라고 할 때 써. v1은 거칠어도 되고, 피드백으로 다듬는 방식을 뜻해.",
@@ -3715,8 +3722,8 @@ const SCENARIOS = [
   { day: 37, word: "hit the ground running", pos: "phr.", meaning: "적응 기간 없이 바로 성과를 내다", phonetic: "/hɪt ðə ɡraʊnd ˈrʌnɪŋ/",
     scene: "17:30, 정직원 첫 주 마지막 날, 김 팀장이 퇴근길에 내 자리에 들러요.",
     npc: "manager",
-    quote: "First week as a full-timer, and you hit the ground running. Honestly, the team noticed.",
-    quoteKo: "정직원 첫 주인데 적응 기간도 없이 바로 성과를 냈네요. 진심으로, 팀이 다 알아봤어요.",
+    quote: "It's only your first week as a full-timer, and you've already hit the ground running. Honestly, the whole team noticed, and I wanted you to know that.",
+    quoteKo: "정직원으로 첫 주인데 벌써 바로 제 몫을 해내고 있네요. 솔직히 팀 전체가 알아봤어요. 지원 씨도 알았으면 해서요.",
     youDo: null,
     mentorTip: "🎉 정직원 첫 주 완주! hit the ground running은 낙하산이 착지하자마자 달리는 그림. 신입 꼬리표 뗐다는 최고의 칭찬이야.",
     mentorNuance: "첫날부터 바로 성과 냈다는 칭찬이야. 합류 직후나 복귀 직후에만 쓰는 말이라, 이걸 들으면 '준비하고 왔다'는 인상이 굳어진 거야.",
@@ -3745,8 +3752,8 @@ const SCENARIOS = [
   { day: 38, word: "kickoff", pos: "n.", meaning: "시작 회의", phonetic: "/ˈkɪkɔːf/",
     scene: "10:30, Daniel이 새 프로젝트 메일 스레드에 너를 태그해요.",
     npc: "daniel",
-    quote: "Let's schedule the kickoff for Monday. Jiwon, can you own the agenda this time?",
-    quoteKo: "킥오프를 월요일로 잡읍시다. 지원 씨, 이번엔 아젠다를 맡아줄래요?",
+    quote: "Let's schedule the kickoff for Monday. Jiwon, would you be up for owning the agenda this time? I think you're ready for it.",
+    quoteKo: "킥오프는 월요일로 잡죠. 지원 씨, 이번엔 아젠다를 직접 맡아볼래요? 충분히 준비됐다고 봐요.",
     youDo: null,
     mentorTip: "kickoff는 축구의 킥오프. 프로젝트의 공식 첫 회의야. 아젠다를 맡는다 = 그 프로젝트의 핵심 멤버가 됐다는 뜻.",
     mentorNuance: "프로젝트 공식 첫 회의를 잡을 때 써. 아젠다를 맡으라는 말이 붙으면 그 프로젝트의 핵심 멤버가 됐다는 뜻이야.",
@@ -3771,8 +3778,8 @@ const SCENARIOS = [
   { day: 39, word: "standup", pos: "n.", meaning: "짧은 데일리 회의", phonetic: "/ˈstændʌp/",
     scene: "09:25, 김 팀장이 팀 슬랙 채널에 새 규칙을 공지해요.",
     npc: "manager",
-    quote: "Starting this sprint, we'll do a 10-minute standup at 9:30. Yesterday, today, blockers. That's it.",
-    quoteKo: "이번 스프린트부터 9시 반에 10분 스탠드업 합니다. 어제 한 일, 오늘 할 일, 막힌 것. 그게 다예요.",
+    quote: "Starting this sprint, we're going to do a quick 10-minute standup at 9:30 every morning. Just share what you did yesterday, what you're doing today, and anything blocking you.",
+    quoteKo: "이번 스프린트부터 매일 아침 9시 반에 10분짜리 스탠드업을 해요. 어제 한 일, 오늘 할 일, 막히는 것만 간단히 공유하면 돼요.",
     youDo: null,
     mentorTip: "standup은 서서(stand up) 할 만큼 짧게 하라는 회의. 어제 한 일 / 오늘 할 일 / 막힌 것, 딱 3줄이 공식이야.",
     mentorNuance: "매일 짧게 하는 팀 회의를 말할 때 써. 어제 한 일, 오늘 할 일, 막힌 것 세 줄이 공식이라 길게 말하면 규칙을 깬 거야.",
@@ -3797,8 +3804,8 @@ const SCENARIOS = [
   { day: 40, word: "sprint", pos: "n.", meaning: "집중 작업 주기", phonetic: "/sprɪnt/",
     scene: "11:00, 사수와 분기 계획을 정리하는데 사수가 칠판에 2주 단위 선을 그어요.",
     npc: "mentor",
-    quote: "This sprint is two weeks. Don't load it up, pick what you can actually finish.",
-    quoteKo: "이번 스프린트는 2주예요. 욕심내지 말고, 실제로 끝낼 수 있는 것만 골라요.",
+    quote: "This sprint is two weeks, so please don't load it up. I'd rather you pick what you can actually finish than promise more and carry it over.",
+    quoteKo: "이번 스프린트는 2주예요. 그러니 너무 많이 담지 마세요. 더 약속하고 넘기는 것보다, 실제로 끝낼 수 있는 것만 고르는 게 나아요.",
     youDo: null,
     mentorTip: "sprint는 단거리 전력질주. 2주 안에 '끝낼 수 있는 것'만 담는 게 핵심이야. 욕심 부리면 매번 이월돼.",
     mentorNuance: "2주 단위 작업 계획을 짤 때 써. 끝낼 수 있는 것만 담는 게 핵심이라, 욕심내면 매번 이월된다는 걸 사수가 짚어줄 거야.",
@@ -3823,8 +3830,8 @@ const SCENARIOS = [
   { day: 41, word: "post-mortem", pos: "n.", meaning: "사후 분석", phonetic: "/poʊst ˈmɔːrtəm/",
     scene: "16:00, 런칭이 이틀 밀린 다음 날, 김 팀장이 회고 회의를 잡아요.",
     npc: "manager",
-    quote: "The launch slipped two days. Let's run a post-mortem Friday. No blame, just lessons.",
-    quoteKo: "런칭이 이틀 밀렸어요. 금요일에 사후 분석 회의 합시다. 비난은 없고, 교훈만 챙겨요.",
+    quote: "The launch slipped by two days, so I'd like us to run a post-mortem on Friday. It's not about blame; I just want us to capture the lessons.",
+    quoteKo: "런칭이 이틀 밀렸으니 금요일에 포스트모템을 해봤으면 해요. 탓하자는 게 아니라 배운 점을 정리하자는 거예요.",
     youDo: null,
     mentorTip: "post-mortem은 원래 '부검'. 실패를 해부하되 사람을 해부하지 않는 게 룰이야. blameless가 붙는 이유.",
     mentorNuance: "런칭이 밀린 뒤 원인을 돌아보는 회의를 잡을 때 써. 사람이 아니라 과정을 해부하는 자리라 blameless라는 말이 같이 붙어.",
@@ -3849,8 +3856,8 @@ const SCENARIOS = [
   { day: 42, word: "workshop it", pos: "phr.", meaning: "다 같이 논의해 발전시키다", phonetic: "/ˈwɜːrkʃɑːp ɪt/",
     scene: "14:30, Sarah가 내 컨셉 시안을 보고 콜에서 반응을 보여요.",
     npc: "sarah",
-    quote: "The direction is interesting, but it feels rough. Let's workshop it with your team this week.",
-    quoteKo: "방향은 흥미로운데 아직 거칠어요. 이번 주에 팀이랑 같이 다듬어봅시다.",
+    quote: "The direction is interesting, but it still feels a little rough to me. Why don't we workshop it with your team this week and see where it lands?",
+    quoteKo: "방향은 흥미로운데 아직 좀 거칠게 느껴져요. 이번 주에 팀이랑 같이 다듬어 보면서 어디까지 가는지 볼까요?",
     youDo: null,
     mentorTip: "workshop이 동사가 되면 '여럿이 모여 아이디어를 두드려 발전시키다'. 거절이 아니라 '가능성 있으니 같이 다듬자'는 신호야.",
     mentorNuance: "아이디어가 거칠지만 가능성 있을 때 '같이 다듬자'고 제안하는 자리에 써. 거절이 아니라 초대라서 클라이언트 콜에서 들으면 좋은 신호야.",
@@ -3875,8 +3882,8 @@ const SCENARIOS = [
   { day: 43, word: "noodle on it", pos: "phr.", meaning: "천천히 생각해보다", phonetic: "/ˈnuːdl ɑːn ɪt/",
     scene: "17:00, Daniel이 화상 회의를 마무리하며 가볍게 시간을 줘요.",
     npc: "daniel",
-    quote: "No need to answer now. Noodle on it over the weekend and come back to me Monday.",
-    quoteKo: "지금 답할 필요 없어요. 주말 동안 천천히 생각해보고 월요일에 다시 얘기해요.",
+    quote: "There's no need to answer right now. Noodle on it over the weekend, and come back to me on Monday with whatever you've got.",
+    quoteKo: "지금 당장 답할 필요 없어요. 주말 동안 곰곰이 생각해 보고, 월요일에 정리된 만큼 가져와서 얘기해 줘요.",
     youDo: null,
     mentorTip: "noodle on it = 머리를 국수 가락처럼 천천히 굴려보라는 캐주얼 표현. 즉답 압박을 빼주는 따뜻한 말이야.",
     mentorNuance: "즉답을 원하지 않을 때 '천천히 생각해 보고 알려줘'라고 말하는 자리에 써. 캐주얼한 표현이라 격식 있는 메일엔 안 어울려.",
@@ -3901,8 +3908,8 @@ const SCENARIOS = [
   { day: 44, word: "momentum", pos: "n.", meaning: "탄력, 추진력", phonetic: "/moʊˈmentəm/",
     scene: "09:30, 주간 회의에서 김 팀장이 화면에 진척 그래프를 띄워요.",
     npc: "manager",
-    quote: "Look at this curve. We're halfway through the quarter and we've got real momentum. Let's not lose it.",
-    quoteKo: "이 곡선 보세요. 분기 절반을 지났는데 진짜 탄력이 붙었어요. 이 흐름 놓치지 맙시다.",
+    quote: "Take a look at this curve. We're only halfway through the quarter and we've already got real momentum, so let's make sure we don't lose it.",
+    quoteKo: "이 그래프 좀 보세요. 분기 절반밖에 안 지났는데 벌써 탄력이 제대로 붙었어요. 이 흐름 놓치지 말자고요.",
     youDo: null,
     mentorTip: "🎉 60일의 절반 돌파! momentum은 물리학의 '운동량'. 한 번 구르기 시작한 공은 계속 굴러. 지금 너의 학습 곡선이 그래.",
     mentorNuance: "진척이 붙기 시작했을 때 팀을 격려하는 자리에 써. 그래프가 올라갈 때 '이 흐름 유지하자'라고 할 때 딱이야.",
@@ -3931,8 +3938,8 @@ const SCENARIOS = [
   { day: 45, word: "read the room", pos: "phr.", meaning: "분위기를 파악하다", phonetic: "/riːd ðə ruːm/",
     scene: "13:30, 클라이언트 미팅 직후 복도에서 사수가 작은 목소리로 짚어줘요.",
     npc: "mentor",
-    quote: "Good ideas today, but read the room next time. The client was tense about budget from minute one.",
-    quoteKo: "오늘 아이디어는 좋았는데, 다음엔 분위기 먼저 읽어요. 클라이언트는 시작부터 예산 때문에 예민했어요.",
+    quote: "You had good ideas today, but next time, read the room first. The client was tense about the budget from minute one, and we walked right past that.",
+    quoteKo: "오늘 아이디어는 좋았는데, 다음엔 분위기부터 읽어요. 클라이언트는 첫 1분부터 예산 때문에 긴장해 있었는데, 우린 그걸 그냥 지나쳤어요.",
     youDo: null,
     mentorTip: "read the room = 말하기 전에 공기 읽기. 같은 제안도 타이밍이 틀리면 죽어. 표정, 침묵, 자세가 다 데이터야.",
     mentorNuance: "제안 타이밍을 놓친 후배한테 사수가 하는 말이야. 말하기 전에 상대 표정과 침묵을 먼저 보라는 뜻이라, 클라이언트 미팅 뒤에 자주 들어.",
@@ -3957,8 +3964,8 @@ const SCENARIOS = [
   { day: 46, word: "own the room", pos: "phr.", meaning: "회의를 주도하다", phonetic: "/oʊn ðə ruːm/",
     scene: "17:40, 퇴근 전 김 팀장이 내일 리뷰 미팅 얘기를 꺼내요.",
     npc: "manager",
-    quote: "Tomorrow's review is yours. Walk in prepared, and own the room. I'll just observe.",
-    quoteKo: "내일 리뷰는 당신 거예요. 준비해서 들어가서, 회의를 주도하세요. 난 지켜보기만 할게요.",
+    quote: "Tomorrow's review is all yours. Walk in prepared and own the room, and I'll just sit in the back and observe.",
+    quoteKo: "내일 리뷰는 전적으로 지원 씨 무대예요. 준비 잘 해서 그 자리를 주도해 보세요. 저는 뒤에서 지켜보기만 할게요.",
     youDo: null,
     mentorTip: "어제는 read, 오늘은 own. 공기를 읽은 다음엔 끌고 가는 거야. 준비량이 자신감이고, 자신감이 룸을 만들어.",
     mentorNuance: "내일 회의를 맡길 때 '네가 끌고 가라'는 뜻으로 써. 준비량이 자신감이 되는 자리라, 발표나 리뷰 앞에 나오는 말이야.",
@@ -3983,8 +3990,8 @@ const SCENARIOS = [
   { day: 47, word: "elephant in the room", pos: "phr.", meaning: "모두 알지만 말 안 하는 문제", phonetic: "/ˈelɪfənt ɪn ðə ruːm/",
     scene: "15:00, 분기 예산 콜에서 어색한 침묵이 흐르자 Sarah가 먼저 입을 열어요.",
     npc: "sarah",
-    quote: "OK, let's address the elephant in the room: the budget is double what we agreed in March.",
-    quoteKo: "자, 모두가 알면서 말 안 하는 문제부터 짚읍시다. 예산이 3월에 합의한 것의 두 배예요.",
+    quote: "Okay, I think we need to address the elephant in the room. The budget is now double what we agreed on in March, and nobody's said it out loud yet.",
+    quoteKo: "자, 다들 알면서 말 안 하는 그 문제를 짚고 넘어가야 할 것 같아요. 예산이 3월에 합의한 것의 두 배가 됐는데, 아직 아무도 입 밖에 안 냈잖아요.",
     youDo: null,
     mentorTip: "회의실에 코끼리가 있는데 다들 날씨 얘기만 하는 그림. 먼저 코끼리를 말하는 사람이 그 회의의 신뢰를 가져가.",
     mentorNuance: "다들 알면서 말 안 하는 문제를 회의에서 먼저 꺼낼 때 써. 예산 초과나 일정 지연 같은 걸 정면으로 올릴 때 이 말로 시작하면 신뢰가 생겨.",
@@ -4009,8 +4016,8 @@ const SCENARIOS = [
   { day: 48, word: "seat at the table", pos: "phr.", meaning: "의사결정 참여 권한", phonetic: "/siːt æt ðə ˈteɪbl/",
     scene: "10:00, Daniel이 분기 플래닝 초대장을 보내며 한 줄을 덧붙여요.",
     npc: "daniel",
-    quote: "You've earned a seat at the table. Join the quarterly planning from this cycle on.",
-    quoteKo: "의사결정 테이블에 앉을 자격을 스스로 얻어냈어요. 이번 주기부터 분기 플래닝에 들어오세요.",
+    quote: "You've earned a seat at the table. From this cycle on, I'd like you to join the quarterly planning with the leads.",
+    quoteKo: "이제 그 자리에 앉을 자격을 얻었어요. 이번 사이클부터 리드들과 함께 분기 계획 회의에 들어와 줬으면 해요.",
     youDo: null,
     mentorTip: "table은 결정이 내려지는 테이블. 거기 앉는다 = 듣는 사람에서 정하는 사람이 됐다는 뜻. 정직원 7주차에 받는 최고의 인정이야.",
     mentorNuance: "의사결정 자리에 처음 초대받을 때 듣는 말이야. 듣는 사람에서 정하는 사람이 됐다는 뜻이라, 초대장에 이 말이 붙으면 준비해서 가.",
@@ -4035,8 +4042,8 @@ const SCENARIOS = [
   { day: 49, word: "raise the bar", pos: "phr.", meaning: "기준을 높이다", phonetic: "/reɪz ðə bɑːr/",
     scene: "11:30, 주간 회의에서 김 팀장이 내 지난주 보고서를 화면에 띄우고 팀 전체에게 말해요.",
     npc: "manager",
-    quote: "This deck raised the bar. From now on, this is what 'done' looks like for client reports.",
-    quoteKo: "이 자료가 기준을 올려놨어요. 이제부터 클라이언트 보고서의 '완성'은 이 수준입니다.",
+    quote: "This deck raised the bar, and I mean that. From now on, this is what 'done' looks like for our client reports.",
+    quoteKo: "이 발표 자료가 기준을 끌어올렸어요, 진심이에요. 앞으로 클라이언트 리포트는 이게 '완료'의 모습이에요.",
     youDo: null,
     mentorTip: "bar는 높이뛰기 가로대. 네 결과물이 팀의 새 기준선이 됐다는 뜻. 칭찬이자 책임이야. 다음에도 그 높이를 넘어야 하거든.",
     mentorNuance: "결과물이 팀의 새 기준이 됐을 때 듣는 칭찬이야. 다음에도 그 높이를 넘어야 한다는 책임이 같이 오니까 '고맙다'로 끝내지 말고 팀 기준으로 만들어.",
@@ -4061,8 +4068,8 @@ const SCENARIOS = [
   { day: 50, word: "track record", pos: "n.", meaning: "실적, 검증된 경력", phonetic: "/træk ˈrekərd/",
     scene: "14:00, 신규 계약 협상 콜에서 Sarah가 결정 이유를 밝혀요.",
     npc: "sarah",
-    quote: "We picked your team because of your track record. Three launches, zero misses. Keep it that way.",
-    quoteKo: "당신 팀을 고른 건 실적 때문이에요. 런칭 세 번, 실패 zero. 그 기록 지켜주세요.",
+    quote: "We picked your team because of your track record. That's three launches without a single miss, and I'm counting on you to keep it that way.",
+    quoteKo: "여러분 팀을 고른 건 그동안의 실적 때문이에요. 런칭 세 번에 실수 한 번 없었잖아요. 앞으로도 그렇게 해 주길 기대해요.",
     youDo: null,
     mentorTip: "track record는 육상 트랙의 기록. 말이 아니라 쌓인 결과의 목록이야. 신뢰는 약속이 아니라 기록에서 나와.",
     mentorNuance: "약속이 아니라 이미 쌓인 결과를 근거로 믿는다는 말이야. 협상이나 평가에서 이 단어가 나오면 '말 말고 숫자로 보여줘'라는 신호야.",
@@ -4087,8 +4094,8 @@ const SCENARIOS = [
   { day: 51, word: "go the extra mile", pos: "phr.", meaning: "기대 이상으로 한 발 더 뛰다", phonetic: "/ɡoʊ ði ˈekstrə maɪl/",
     scene: "12:50, 점심에서 돌아오는 길에 사수가 커피를 건네며 말을 꺼내요.",
     npc: "mentor",
-    quote: "Fifty days in. You know what people say about you? You always go the extra mile. That's rare.",
-    quoteKo: "50일째네요. 사람들이 당신을 뭐라고 하는지 알아요? 항상 한 발 더 뛴다고요. 그거 흔치 않아요.",
+    quote: "You've been here fifty days now, and do you know what people say about you? They say you always go the extra mile, and that's a rare thing.",
+    quoteKo: "입사한 지 벌써 50일이네요. 사람들이 지원 씨를 뭐라고 하는지 알아요? 항상 한 걸음 더 간다고 해요. 흔치 않은 거예요.",
     youDo: null,
     mentorTip: "🎉 50일 돌파! extra mile은 부탁받은 1마일에 자발적 1마일을 보태는 것. 평판은 그 두 번째 마일에서 만들어져.",
     mentorNuance: "기대보다 한 발 더 뛴 사람을 칭찬할 때 써. 부탁받은 만큼만이 아니라 그 이상을 한 게 평판이 됐다는 뜻이야.",
@@ -4117,8 +4124,8 @@ const SCENARIOS = [
   { day: 52, word: "meet in the middle", pos: "phr.", meaning: "중간에서 합의하다", phonetic: "/miːt ɪn ðə ˈmɪdl/",
     scene: "10:30, 재계약 협상 콜에서 가격과 일정이 평행선을 달리다 Sarah가 제안을 해요.",
     npc: "sarah",
-    quote: "Your price, our timeline. Neither of us gets everything. Can we meet in the middle?",
-    quoteKo: "가격은 당신들 쪽, 일정은 우리 쪽 요구죠. 둘 다 전부 가질 순 없어요. 중간에서 만날까요?",
+    quote: "You want your price and we want our timeline, and neither of us is going to get everything. Do you think we can meet in the middle?",
+    quoteKo: "그쪽은 가격이 중요하고 저희는 일정이 중요하죠. 둘 다 전부 가져갈 순 없어요. 중간에서 만날 수 있을까요?",
     youDo: null,
     mentorTip: "meet in the middle은 항복이 아니라 거래야. 양보할 것과 지킬 것을 미리 정해두면 중간 지점이 무섭지 않아.",
     mentorNuance: "협상에서 양쪽이 조금씩 물러서자고 제안할 때 써. 내가 내줄 것과 지킬 것을 먼저 정해두고 꺼내야 항복이 아니라 거래가 돼.",
@@ -4143,8 +4150,8 @@ const SCENARIOS = [
   { day: 53, word: "skin in the game", pos: "phr.", meaning: "실질적 이해관계, 직접 건 것", phonetic: "/skɪn ɪn ðə ɡeɪm/",
     scene: "11:30, Daniel과 1:1에서 내 제안서를 본사 임원 회의에 올릴지 얘기해요.",
     npc: "daniel",
-    quote: "I'll back your proposal at the board. Remember, I've got skin in the game too now.",
-    quoteKo: "이사회에서 당신 제안을 밀어줄게요. 기억해요, 이제 나도 건 게 있다는 거.",
+    quote: "I'll back your proposal at the board meeting. Just remember that I've got skin in the game too now, so let's make sure it lands well.",
+    quoteKo: "이사회에서 지원 씨 제안을 밀어줄게요. 다만 이제 저도 같이 걸린 거니까, 잘 안착하도록 같이 신경 써요.",
     youDo: null,
     mentorTip: "skin in the game = 말만 보태는 게 아니라 자기 살(skin)을 건 상태. Daniel이 네 제안에 자기 평판을 걸었다는 뜻이야.",
     mentorNuance: "상대가 내 제안에 자기 평판을 걸었다고 말할 때 나와. 이 말을 들으면 그 사람 이름값까지 책임진다는 뜻이니 숫자를 더 꼼꼼히 봐.",
@@ -4169,8 +4176,8 @@ const SCENARIOS = [
   { day: 54, word: "visibility", pos: "n.", meaning: "(윗선에 대한) 가시성, 노출", phonetic: "/ˌvɪzəˈbɪləti/",
     scene: "16:30, 분기 평가 시즌에 김 팀장이 내 성과 목록을 보다가 조언을 해요.",
     npc: "manager",
-    quote: "Good work stays invisible unless you give it visibility. Send a monthly summary up the chain.",
-    quoteKo: "잘한 일도 보여주지 않으면 안 보여요. 매달 요약을 윗선으로 올리세요.",
+    quote: "Good work tends to stay invisible unless you give it visibility. I'd suggest sending a short monthly summary up the chain so people actually see what you're doing.",
+    quoteKo: "잘한 일도 드러내지 않으면 그냥 묻혀요. 매달 짧은 요약을 윗선에 보내는 걸 추천해요. 그래야 사람들이 지원 씨가 뭘 하는지 실제로 보거든요.",
     youDo: null,
     mentorTip: "visibility는 자랑이 아니라 정보 유통이야. 윗선은 안 보이는 일을 평가할 수 없어. 잘한 일은 보이게 만드는 것까지가 일이야.",
     mentorNuance: "잘한 일이 윗선에 안 보일 때 사수가 하는 조언이야. 월간 요약처럼 성과를 보이게 만드는 걸 뜻하고, 자랑이 아니라 정보 유통이야.",
@@ -4195,8 +4202,8 @@ const SCENARIOS = [
   { day: 55, word: "30,000 foot view", pos: "phr.", meaning: "큰 그림에서 보기", phonetic: "/ˈθɜːrti ˈθaʊznd fʊt vjuː/",
     scene: "10:00, 본사 임원 프리뷰 콜에서 내가 세부 슬라이드를 열자 Daniel이 부드럽게 끊어요.",
     npc: "daniel",
-    quote: "Hold the details. Give me the 30,000 foot view first, then we'll zoom into what matters.",
-    quoteKo: "디테일은 잠깐 멈추고, 큰 그림부터 보여줘요. 중요한 부분은 그다음에 들어가죠.",
+    quote: "Hold the details for a moment. Give me the 30,000 foot view first, and then we'll zoom into whatever actually matters.",
+    quoteKo: "디테일은 잠깐 넣어두세요. 먼저 3만 피트 상공에서 본 큰 그림을 주고, 그다음에 진짜 중요한 것만 확대해서 봐요.",
     youDo: null,
     mentorTip: "비행기 순항 고도(30,000피트)에서 내려다보는 시야. 임원 보고의 철칙: 큰 그림 먼저, 디테일은 질문 받으면.",
     mentorNuance: "임원 보고를 시작할 때 큰 그림부터 달라고 할 때 써. 디테일 슬라이드를 열면 이 말로 끊기니까, 첫 장은 항상 요약이어야 해.",
@@ -4221,8 +4228,8 @@ const SCENARIOS = [
   { day: 56, word: "stretch goal", pos: "n.", meaning: "도전적 목표", phonetic: "/stretʃ ɡoʊl/",
     scene: "14:00, Q3 목표 설정 회의에서 김 팀장이 화이트보드에 숫자 두 개를 써요.",
     npc: "manager",
-    quote: "Base target is 10% growth. Our stretch goal is 15. Plan for the base, aim for the stretch.",
-    quoteKo: "기본 목표는 10% 성장, 도전 목표는 15%예요. 계획은 기본에 맞추되, 겨냥은 도전 목표로.",
+    quote: "Our base target is 10% growth, and our stretch goal is 15. I want us to plan for the base but aim for the stretch.",
+    quoteKo: "기본 목표는 10% 성장, 스트레치 골은 15%예요. 계획은 기본에 맞추되 겨냥은 15%로 했으면 해요.",
     youDo: null,
     mentorTip: "stretch는 스트레칭의 그 stretch. 닿을 듯 안 닿는 높이까지 몸을 늘이는 목표야. 못 쳐도 벌점 없고, 치면 영웅.",
     mentorNuance: "목표를 둘로 나눌 때 도전 목표 쪽을 가리켜. 기본 목표 옆에 '치면 좋고 못 쳐도 벌점 없는' 숫자를 둘 때 쓰는 말이야.",
@@ -4247,8 +4254,8 @@ const SCENARIOS = [
   { day: 57, word: "gut check", pos: "n.", meaning: "직감으로 최종 점검", phonetic: "/ɡʌt tʃek/",
     scene: "15:30, 출시 결정 전날, 사수가 내 최종 보고서를 덮으며 솔직한 의견을 물어요.",
     npc: "mentor",
-    quote: "Numbers all pass. But do a gut check: would you put your own money on this product?",
-    quoteKo: "숫자는 다 통과예요. 근데 직감 점검 한 번 해봐요. 본인 돈이라면 이 제품에 걸겠어요?",
+    quote: "The numbers all pass, I can see that. But do a gut check for me: would you put your own money on this product? If you hesitate, that tells us something.",
+    quoteKo: "숫자는 다 통과예요, 저도 봤어요. 그런데 직감으로 한번 점검해 봐요. 이 제품에 지원 씨 돈을 넣겠어요? 망설여진다면 그것도 하나의 답이에요.",
     youDo: null,
     mentorTip: "gut은 직감이 사는 곳(배). 데이터가 다 통과해도 마지막엔 '내 돈이라면?'을 물어봐. 숫자가 못 잡는 위화감을 직감이 잡아.",
     mentorNuance: "데이터가 다 통과한 뒤 마지막으로 직감을 묻는 자리에 써. '내 돈이라면 넣겠어?'라는 질문이라 출시 결정 직전에 나와.",
@@ -4273,8 +4280,8 @@ const SCENARIOS = [
   { day: 58, word: "pulse check", pos: "n.", meaning: "현황·상태 점검", phonetic: "/pʌls tʃek/",
     scene: "09:30, 마감 주간 첫날, 김 팀장이 스탠드업 끝에 너를 보며 부탁을 해요.",
     npc: "manager",
-    quote: "Before crunch week starts, do a quick pulse check on the team. How's everyone holding up?",
-    quoteKo: "마감 주간 시작 전에, 팀 상태 가볍게 점검해줘요. 다들 어떻게 버티고 있어요?",
+    quote: "Before crunch week starts, could you do a quick pulse check on the team? I want to know how everyone's holding up before we push hard.",
+    quoteKo: "막판 주간이 시작되기 전에 팀 분위기를 한번 살펴봐 줄래요? 세게 밀어붙이기 전에 다들 어떤 상태인지 알고 싶어요.",
     youDo: null,
     mentorTip: "pulse는 맥박. 팀의 맥박을 짚어보라는 건 일정표가 아니라 '사람'의 상태를 물은 거야. 네가 그걸 맡을 짬이 됐다는 뜻이기도 해.",
     mentorNuance: "마감 주간 앞두고 팀 상태를 살펴보라고 할 때 써. 일정표가 아니라 사람의 컨디션을 묻는 말이라, 1:1 몇 개 돌리는 걸 뜻해.",
@@ -4299,8 +4306,8 @@ const SCENARIOS = [
   { day: 59, word: "crunch time", pos: "n.", meaning: "마감 직전 총력전 구간", phonetic: "/krʌntʃ taɪm/",
     scene: "09:00, 분기 마감 이틀 전, 김 팀장이 팀 채널에 짧고 굵게 공지해요.",
     npc: "manager",
-    quote: "It's crunch time, folks. Two days left. Clear your calendars, and shout early if you're blocked.",
-    quoteKo: "총력전 구간입니다, 여러분. 이틀 남았어요. 캘린더 비우고, 막히면 바로 외치세요.",
+    quote: "Okay everyone, it's crunch time. We've got two days left, so please clear your calendars and shout early if you get blocked.",
+    quoteKo: "자, 다들 이제 막판 스퍼트예요. 이틀 남았으니 일정 비워두고, 막히면 바로 말해 주세요.",
     youDo: null,
     mentorTip: "crunch는 '으드득' 소리. 모든 게 압축되는 마감 직전 구간이야. 핵심은 영웅 놀이가 아니라 빠른 블로커 공유야.",
     mentorNuance: "마감 직전 총력 구간을 팀에 알릴 때 써. 캘린더 비우고 막히면 바로 말하라는 게 같이 붙어야 진짜 crunch time 공지야.",
@@ -4325,8 +4332,8 @@ const SCENARIOS = [
   { day: 60, word: "take it offline", pos: "phr.", meaning: "그 얘긴 따로 하자", phonetic: "/teɪk ɪt ˈɔːflaɪn/",
     scene: "14:00, 분기 마감 전체 회의에서 안건이 길어지자 Daniel이 정리하며 한마디 덧붙여요.",
     npc: "daniel",
-    quote: "Good point, but let's take it offline. And Jiwon, stop by my office at 4. It's been 60 days, we should talk.",
-    quoteKo: "좋은 지적인데, 그건 따로 얘기합시다. 그리고 지원 씨, 4시에 내 방에 들러요. 60일이 됐으니, 우리 얘기 좀 해요.",
+    quote: "That's a good point, but let's take it offline so we don't hold up the meeting. And Jiwon, could you stop by my office at four? It's been sixty days, and I think we should talk.",
+    quoteKo: "좋은 지적인데, 회의를 붙잡지 않게 그건 따로 얘기하죠. 그리고 지원 씨, 4시에 제 방에 잠깐 들를래요? 60일이 됐으니 한번 얘기할 때가 된 것 같아요.",
     youDo: null,
     mentorTip: "🌟 Day 60! take it offline = 전체 회의에서 빼서 1:1로. 회의 시간을 지키는 마법의 문장이야. 그리고 오후 4시, 특별 면담이 기다려.",
     mentorNuance: "전체 회의에서 길어지는 얘기를 1:1로 빼자고 할 때 써. 회의 시간을 지키는 말이라 리더가 자주 쓰고, 나도 내 안건이 길어지면 먼저 꺼내.",
@@ -4357,8 +4364,8 @@ const SCENARIOS = [
   { day: 61, word: "on the same page", pos: "phr.", meaning: "생각이 일치한, 합을 맞춘", phonetic: "/ɒn ðə seɪm peɪdʒ/",
     scene: "09:30, 새 분기 킥오프에서 디자인과 개발이 우선순위를 다르게 보는데, 김 팀장이 너를 봐요.",
     npc: "manager",
-    quote: "Before we assign anything, I want the whole team on the same page about the goal. Can you frame it?",
-    quoteKo: "뭘 배정하기 전에, 팀 전체가 목표에 대해 같은 그림을 봤으면 해요. 정리해줄래요?",
+    quote: "Before we assign anything, I want the whole team on the same page about the goal. Would you be able to frame it for us in a couple of sentences?",
+    quoteKo: "일을 나누기 전에 팀 전체가 목표에 대해 같은 그림을 가졌으면 해요. 두세 문장으로 정리해서 말해 줄 수 있을까요?",
     youDo: null,
     mentorTip: "on the same page는 '동의'가 아니라 '같은 이해'야. 사람들이 싸우는 건 대부분 목표가 달라서가 아니라 목표를 다르게 이해해서거든. 대리의 첫 일은 그림을 맞추는 것.",
     mentorNuance: "업무 나누기 전에 목표를 같이 확인할 때 써. 동의가 아니라 같은 이해를 확인하는 말이라, 회의 첫머리에 한 줄로 목표를 다시 말하면 돼.",
@@ -4383,8 +4390,8 @@ const SCENARIOS = [
   { day: 62, word: "make the case", pos: "phr.", meaning: "논거를 세워 설득하다", phonetic: "/meɪk ðə keɪs/",
     scene: "11:00, Daniel과 화상 회의에서 추가 예산 얘기가 나오는데 Daniel은 숫자를 원해요.",
     npc: "daniel",
-    quote: "I'm open to more budget, but you'll need to make the case. What's the return if I say yes?",
-    quoteKo: "예산 더 주는 건 열려 있어요. 근데 논거를 세워야 해요. 내가 승인하면 뭐가 돌아오죠?",
+    quote: "I'm open to giving you more budget, but you'll need to make the case. What's the return if I say yes to this?",
+    quoteKo: "예산을 더 줄 마음은 있어요. 다만 근거는 지원 씨가 만들어야 해요. 제가 승인하면 돌아오는 게 뭐예요?",
     youDo: null,
     mentorTip: "make the case는 '부탁'이 아니라 '증명'이야. 원하는 것 + 그걸 주면 생기는 결과를 숫자로 엮는 게 핵심. 감정이 아니라 근거로 미는 거지.",
     mentorNuance: "예산이나 인력을 더 달라고 할 때 근거로 설득하는 자리에 써. 부탁이 아니라 증명이라, 원하는 것과 그걸로 생기는 결과를 숫자로 엮어야 해.",
@@ -4409,8 +4416,8 @@ const SCENARIOS = [
   { day: 63, word: "common ground", pos: "phr.", meaning: "공통분모, 서로 동의하는 지점", phonetic: "/ˈkɒmən ɡraʊnd/",
     scene: "10:20, 마케팅과 개발이 일정으로 팽팽한 가운데 김 팀장이 너를 조용히 불러요.",
     npc: "manager",
-    quote: "They're talking past each other. Jiwon, help them find some common ground before this stalls.",
-    quoteKo: "서로 딴소리만 하네요. 지원 씨, 교착되기 전에 공통분모 좀 찾게 도와줘요.",
+    quote: "Those two are talking past each other, and it's starting to stall the project. Jiwon, could you help them find some common ground before it gets worse?",
+    quoteKo: "저 둘이 서로 딴 얘기를 하고 있어서 프로젝트가 멈추기 시작했어요. 지원 씨, 더 나빠지기 전에 둘이 접점을 찾도록 도와줄래요?",
     youDo: null,
     mentorTip: "common ground는 '누가 이기냐'를 '무엇에는 둘 다 동의하냐'로 바꾸는 스위치야. 싸움이 풀리는 건 대부분 이미 합의된 작은 지점 하나를 찾을 때부터거든.",
     mentorNuance: "두 팀이 평행선일 때 둘 다 동의하는 지점부터 찾자고 할 때 써. '누가 이기냐'를 '뭐엔 둘 다 동의하냐'로 바꾸는 말이야.",
@@ -4435,8 +4442,8 @@ const SCENARIOS = [
   { day: 64, word: "concession", pos: "n.", meaning: "양보 (협상에서)", phonetic: "/kənˈseʃn/",
     scene: "15:00, Sarah와 계약 협상 중인데 가격은 못 낮추고 뭔가는 줘야 하는 상황이에요.",
     npc: "sarah",
-    quote: "Your price is higher than we planned. I need to bring something back to my team. What can you offer?",
-    quoteKo: "가격이 저희 예상보다 높네요. 저희 팀에 가져갈 뭔가가 필요해요. 뭘 제안할 수 있죠?",
+    quote: "Your price is higher than we planned for, and I need to bring something back to my team. What can you offer me so this works for both sides?",
+    quoteKo: "제시하신 가격이 저희 계획보다 높아요. 저도 팀에 들고 갈 게 있어야 하고요. 양쪽에 다 맞으려면 뭘 해줄 수 있으세요?",
     youDo: null,
     mentorTip: "concession은 '지는 것'이 아니라 '전략적으로 내주는 것'. 큰 걸 지키려고 작은 걸 주는 카드야. 그냥 주지 말고 '대신 이건 확정'을 붙여.",
     mentorNuance: "협상에서 뭔가 내줄 때 쓰는 말인데, 빈손으로 내주는 게 아니라 '대신 이거'가 붙어야 해. 양보를 카드로 쓴다는 뉘앙스야.",
@@ -4461,8 +4468,8 @@ const SCENARIOS = [
   { day: 65, word: "trade-off", pos: "n.", meaning: "맞교환, 하나를 얻고 하나를 내줌", phonetic: "/ˈtreɪd ɒf/",
     scene: "11:15, 김 팀장이 일정표를 짚으며 기한을 당기려면 뭘 포기할지 물어요.",
     npc: "manager",
-    quote: "You want two more weeks, but launch is fixed. What's the trade-off if we hold the date?",
-    quoteKo: "2주 더 원하는 건 알겠는데 런칭 날짜는 고정이에요. 날짜를 지키면 뭘 맞바꿔야 하죠?",
+    quote: "I hear you on wanting two more weeks, but the launch date is fixed. So tell me, what's the trade-off if we hold the date as it is?",
+    quoteKo: "2주 더 필요하다는 건 알겠어요. 그런데 출시일은 고정이에요. 그럼 말해 줘요, 날짜를 그대로 두면 뭘 포기해야 하죠?",
     youDo: null,
     mentorTip: "trade-off는 '희생'이 아니라 '선택을 눈에 보이게 만드는 말'. 다 가질 수 없을 때, 뭘 얻고 뭘 내주는지 명확히 하는 게 대리의 판단이야.",
     mentorNuance: "기한과 범위 중 하나를 골라야 할 때 선택을 눈에 보이게 만드는 자리에 써. 뭘 얻고 뭘 내주는지 한 줄로 말하면 결정이 빨라져.",
@@ -4487,8 +4494,8 @@ const SCENARIOS = [
   { day: 66, word: "win-win", pos: "adj./n.", meaning: "양쪽 다 이득인", phonetic: "/ˌwɪn ˈwɪn/",
     scene: "16:00, Daniel과 화상 회의에서 다른 팀과 리소스를 나눠야 하는데 서로 손해라고 느껴요.",
     npc: "daniel",
-    quote: "Both teams feel they're losing. Can you reframe this as a win-win before it turns political?",
-    quoteKo: "두 팀 다 손해라고 느껴요. 정치 싸움 되기 전에, 이걸 서로 이득인 그림으로 다시 짜볼래요?",
+    quote: "Right now both teams feel like they're losing. Can you reframe this as a win-win before it turns political? I'd rather fix it now than in a bigger meeting.",
+    quoteKo: "지금은 양쪽 팀 다 지고 있다고 느껴요. 정치적으로 번지기 전에 이걸 윈윈으로 다시 짜줄 수 있을까요? 더 큰 회의에서 다루기 전에 지금 잡고 싶어요.",
     youDo: null,
     mentorTip: "win-win은 '착한 척'이 아니라 '파이를 다시 그리는 것'. 나눠 먹는 싸움을 '같이 키우는' 문제로 바꾸면 둘 다 가져갈 게 생겨.",
     mentorNuance: "두 팀이 서로 손해 본다고 느낄 때 판을 다시 그리자고 할 때 써. 나눠 먹는 싸움을 같이 키우는 문제로 바꿀 때 이 말이 일해.",
@@ -4513,8 +4520,8 @@ const SCENARIOS = [
   { day: 67, word: "bring to the table", pos: "phr.", meaning: "(협업에) 기여하다, 판에 내놓다", phonetic: "/brɪŋ tə ðə ˈteɪbl/",
     scene: "09:00, 일주일 내내 조율만 하느라 지쳐 있는데, 사수가 노란 포스트잇 한 장을 붙여줘요.",
     npc: "mentor",
-    quote: "You've been mediating all week. Don't forget what you bring to the table, not just what others need.",
-    quoteKo: "이번 주 내내 중재만 했잖아. 남들이 뭘 필요로 하는지만 말고, 네가 판에 내놓는 게 뭔지도 잊지 마.",
+    quote: "You've been mediating for everyone all week, and you're good at it. Just don't forget what you bring to the table yourself, not only what the others need.",
+    quoteKo: "이번 주 내내 모두 사이에서 중재를 했잖아요, 잘하고 있어요. 다만 다른 사람들이 필요로 하는 것만 말고, 지원 씨가 직접 기여하는 게 뭔지도 잊지 마세요.",
     youDo: null,
     mentorTip: "🌱 Week 1 완주! bring to the table = 네가 그 자리에 더하는 고유한 가치야. 대리는 남을 조율하다 자기 강점을 잊기 쉬워. 네가 뭘 가져오는지 한 줄로 말할 수 있어야 해.",
     mentorNuance: "조율만 하다 지친 사람한테 '네가 더하는 가치가 뭔지 잊지 마'라고 할 때 써. 내 강점을 말해야 하는 자리에서 나를 소개하는 말로도 좋아.",
@@ -4541,8 +4548,8 @@ const SCENARIOS = [
   { day: 68, word: "friction", pos: "n.", meaning: "마찰, (팀 사이) 긴장", phonetic: "/ˈfrɪkʃn/",
     scene: "10:00, 디자인팀과 데이터팀 사이 기류가 심상찮은데, 김 팀장이 지나가며 낮은 목소리로 말해요.",
     npc: "manager",
-    quote: "There's friction between design and data lately. Before it grows, how would you smooth it out?",
-    quoteKo: "요즘 디자인팀이랑 데이터팀 사이에 마찰이 좀 있어요. 커지기 전에, 어떻게 풀어볼래요?",
+    quote: "I've noticed some friction between design and data lately. Before it grows into something bigger, how would you go about smoothing it out?",
+    quoteKo: "요즘 디자인팀이랑 데이터팀 사이에 마찰이 좀 보여요. 더 커지기 전에, 지원 씨라면 어떻게 풀어보겠어요?",
     youDo: null,
     mentorTip: "friction은 '싸움'보다 앞 단계야. 아직 폭발 안 한 미세한 삐걱거림. 대리는 이걸 크기 전에 알아채고 이름 붙이는 사람이야. 작을 때 다뤄야 싸움이 안 돼.",
     mentorNuance: "두 팀 사이 삐걱거림이 아직 작을 때 이름 붙이는 말이야. 싸움 전 단계라 이걸 먼저 짚는 사람이 커지기 전에 막을 수 있어.",
@@ -4567,8 +4574,8 @@ const SCENARIOS = [
   { day: 69, word: "de-escalate", pos: "v.", meaning: "진정시키다, 상황을 누그러뜨리다", phonetic: "/diːˈeskəleɪt/",
     scene: "14:30, Sarah와 긴급 화상 회의에서 두 번째 지연에 목소리가 날카로워져요.",
     npc: "sarah",
-    quote: "Honestly, I'm frustrated. This is the second delay. Why should I stay calm about this?",
-    quoteKo: "솔직히 화가 나요. 벌써 두 번째 지연이잖아요. 제가 왜 침착해야 하죠?",
+    quote: "Honestly, I'm really frustrated right now. This is the second delay we've had, so tell me why I should stay calm about this.",
+    quoteKo: "솔직히 지금 정말 답답해요. 벌써 두 번째 지연이잖아요. 제가 왜 차분해야 하는지 말씀해 보세요.",
     youDo: null,
     mentorTip: "de-escalate의 첫 수는 반박이 아니라 인정이야. 상대 감정을 먼저 받아주면 온도가 내려가. 변명부터 하면 불에 기름이야. 인정 다음에 계획을 줘.",
     mentorNuance: "화난 상대를 진정시키는 첫 수로 써. 반박이 아니라 인정부터 하는 게 이 말의 핵심이라, 클라이언트가 날카로울 때 변명 대신 이걸로 시작해.",
@@ -4593,8 +4600,8 @@ const SCENARIOS = [
   { day: 70, word: "air concerns", pos: "phr.", meaning: "우려를 터놓고 말하다", phonetic: "/eər kənˈsɜːnz/",
     scene: "16:00, 팀 회고에서 다들 괜찮다고만 하는데 표정은 안 괜찮고, 김 팀장이 나에게 눈짓을 해요.",
     npc: "manager",
-    quote: "Everyone's saying it's fine, but it clearly isn't. Can you get them to air their concerns?",
-    quoteKo: "다들 괜찮다는데 딱 봐도 아니에요. 사람들이 속에 있는 걸 터놓게 해줄래요?",
+    quote: "Everyone keeps saying it's fine, but it clearly isn't. Do you think you could get them to actually air their concerns instead of nodding along?",
+    quoteKo: "다들 괜찮다고만 하는데 분명히 괜찮지 않아요. 고개만 끄덕이지 말고 진짜 걱정을 꺼내놓게 만들어 줄 수 있을까요?",
     youDo: null,
     mentorTip: "air concerns는 '불만 받기'가 아니라 '숨은 리스크 꺼내기'야. 사람들이 말 안 하는 건 안 위험해서가 아니라 말해도 되는지 몰라서야. 먼저 안전하다고 신호를 줘.",
     mentorNuance: "불만 접수가 아니라 아직 말 안 한 걱정을 꺼내게 한다는 뜻이야. 회의에서 이 말은 '지금 말해도 안전하다'는 신호라, 리더가 먼저 써야 효과가 있어.",
@@ -4619,8 +4626,8 @@ const SCENARIOS = [
   { day: 71, word: "hash out", pos: "phr.", meaning: "끝까지 논의해 정리하다", phonetic: "/hæʃ aʊt/",
     scene: "11:30, Daniel과 화상 회의에서 두 방안이 며칠째 제자리를 맴돌아요.",
     npc: "daniel",
-    quote: "We keep going in circles on this. Can you hash it out with the leads and come back with one answer?",
-    quoteKo: "이 건이 계속 제자리만 맴돌아요. 리드들이랑 끝까지 정리해서 하나의 답으로 가져와줄래요?",
+    quote: "We keep going in circles on this one. Could you hash it out with the leads this week and come back to me with a single answer?",
+    quoteKo: "이 건은 계속 제자리를 돌고 있어요. 이번 주에 리드들이랑 끝장 토론해서, 하나로 정리된 답을 가져와 줄래요?",
     youDo: null,
     mentorTip: "hash out은 '대충 합의'가 아니라 '엉킨 걸 끝까지 풀어 하나로 만드는 것'. 결론과 담당과 기한까지 나와야 hash out이 끝난 거야. 열어만 두면 다음에 또 맴돌아.",
     mentorNuance: "가볍게 얘기하는 게 아니라 끝장 볼 때까지 세부를 맞춘다는 뜻이야. '한번 얘기해보자'보다 훨씬 무거워서, 이 말 나오면 회의 길어질 각오를 하면 돼.",
@@ -4645,8 +4652,8 @@ const SCENARIOS = [
   { day: 72, word: "give and take", pos: "phr.", meaning: "주고받기, 서로 양보하며 맞추기", phonetic: "/ɡɪv ən ˈteɪk/",
     scene: "15:30, Sarah와 계약 막바지인데 마지막 조건 몇 개가 남았어요.",
     npc: "sarah",
-    quote: "We're close. But this only works with some give and take. What are you flexible on?",
-    quoteKo: "거의 다 왔어요. 근데 이건 서로 주고받아야 되는 거예요. 어디는 유연하게 갈 수 있죠?",
+    quote: "I think we're close, but this only works if there's some give and take on both sides. So what are you flexible on?",
+    quoteKo: "거의 다 온 것 같은데, 이건 양쪽이 조금씩 주고받아야 성사돼요. 어느 부분에서 유연하게 갈 수 있으세요?",
     youDo: null,
     mentorTip: "give and take는 '반씩 손해'가 아니라 '나에게 싼 걸 주고, 나에게 비싼 걸 지키는 것'. 내가 뭘 쉽게 내줄 수 있는지 미리 알아두면 협상이 부드러워져.",
     mentorNuance: "협상 막판에 서로 한 발씩 물러서자고 할 때 쓰는 말이야. 내가 먼저 뭘 내줄지 말하면서 꺼내야 상대도 카드를 열어.",
@@ -4671,8 +4678,8 @@ const SCENARIOS = [
   { day: 73, word: "push for", pos: "phr.", meaning: "강하게 요구·추진하다", phonetic: "/pʊʃ fɔːr/",
     scene: "10:15, Daniel과 1:1에서 내가 필요한 걸 자꾸 돌려 말하자 Daniel이 짚어요.",
     npc: "daniel",
-    quote: "If you believe the extra week matters, don't just hint at it. Push for it. What's your actual ask?",
-    quoteKo: "1주가 정말 중요하다고 믿으면, 돌려 말하지 말고 강하게 밀어요. 진짜 원하는 게 뭐죠?",
+    quote: "If you really believe the extra week matters, don't just hint at it. Push for it properly, and tell me what your actual ask is.",
+    quoteKo: "일주일 더 필요하다고 정말 믿는다면 돌려 말하지 마세요. 제대로 밀어붙이세요. 실제로 원하는 게 뭐예요?",
     youDo: null,
     mentorTip: "push for는 '떼쓰기'가 아니라 '근거를 갖고 분명히 요구하기'야. 대리는 돌려 말하다 원하는 걸 못 얻는 실수를 줄여야 해. 요구는 근거 + 분명한 액션으로.",
     mentorNuance: "필요한 걸 돌려 말하다 못 얻을 때 '분명히 요구하라'는 뜻으로 써. 떼쓰기가 아니라 근거를 갖고 밀어붙이는 자리에 쓰는 말이야.",
@@ -4697,8 +4704,8 @@ const SCENARIOS = [
   { day: 74, word: "hold the line", pos: "phr.", meaning: "선을 지키다, 양보하지 않다", phonetic: "/hoʊld ðə laɪn/",
     scene: "09:00, 다들 품질 리뷰를 건너뛰자고 압박하던 참에 사수가 커피를 건네며 말을 꺼내요.",
     npc: "mentor",
-    quote: "They'll pressure you to skip the review to hit the date. Sometimes you hold the line. Know which lines are yours.",
-    quoteKo: "날짜 맞추려고 리뷰 건너뛰자고 압박할 거야. 어떤 때는 선을 지켜야 해. 어떤 선이 네 선인지 알아둬.",
+    quote: "They're going to pressure you to skip the review so we hit the date. Sometimes you have to hold the line, and part of the job is knowing which lines are yours to hold.",
+    quoteKo: "날짜를 맞추려고 검토를 건너뛰라는 압박이 올 거예요. 때로는 선을 지켜야 해요. 어떤 선이 지원 씨가 지켜야 할 선인지 아는 것도 일의 일부예요.",
     youDo: null,
     mentorTip: "⚡ Week 2 완주! hold the line은 '고집'이 아니라 '타협하면 안 되는 것을 지키는 것'. 다 양보할 순 없어. 품질, 안전, 신뢰 같은 선은 대리가 지켜야 팀이 무너지지 않아.",
     mentorNuance: "압박이 와도 이것만은 안 물러선다는 뜻이야. 다 지키겠다는 게 아니라 딱 한 가지를 지키는 거라, 뭘 내주고 뭘 지킬지 같이 말해야 설득력이 생겨.",
@@ -4725,8 +4732,8 @@ const SCENARIOS = [
   { day: 75, word: "manage up", pos: "phr.", meaning: "상사를 (거꾸로) 관리하다", phonetic: "/ˈmænɪdʒ ʌp/",
     scene: "09:00, 사수가 포스트잇을 붙이며 내 성과가 팀장에게 늦게 전달되는 걸 짚어요.",
     npc: "mentor",
-    quote: "Your work is strong, but your manager hears about it too late. Learn to manage up, no surprises for her.",
-    quoteKo: "일은 잘하는데, 팀장이 그걸 너무 늦게 알아. 상사를 관리하는 법을 배워, 팀장이 놀랄 일이 없게.",
+    quote: "Your work is strong, but your manager keeps hearing about it too late. Learn to manage up a little: no surprises for her, and she'll trust you more.",
+    quoteKo: "일은 잘하는데, 매니저가 그걸 너무 늦게 듣고 있어요. 위를 관리하는 법을 조금 익혀 봐요. 매니저한테 놀랄 일이 없게 하면 신뢰가 더 쌓여요.",
     youDo: null,
     mentorTip: "manage up은 '아부'가 아니라 '윗사람이 잘 판단하게 돕는 것'. 상사가 필요한 정보를 먼저, 짧게, 놀랄 일 없이 주는 거야. 대리의 핵심 생존 기술이지.",
     mentorNuance: "내 성과가 상사에게 늦게 전달될 때 사수가 하는 조언이야. 아부가 아니라 상사가 잘 판단하게 정보를 먼저 짧게 주는 걸 뜻해.",
@@ -4751,8 +4758,8 @@ const SCENARIOS = [
   { day: 76, word: "champion", pos: "v.", meaning: "적극 지지하다, 밀어주다", phonetic: "/ˈtʃæmpiən/",
     scene: "14:00, Daniel과 화상 회의에서 신입의 좋은 아이디어가 묻히고 있다는 얘기가 나와요.",
     npc: "daniel",
-    quote: "The junior's idea is getting buried. If you believe in it, will you champion it to the committee?",
-    quoteKo: "신입 아이디어가 묻히고 있어요. 정말 좋다고 믿으면, 위원회에서 그걸 밀어줄래요?",
+    quote: "The junior's idea is getting buried in all the noise. If you believe in it, would you be willing to champion it to the committee yourself?",
+    quoteKo: "주니어의 아이디어가 소음에 묻히고 있어요. 지원 씨가 그 아이디어를 믿는다면, 직접 위원회에 가져가서 밀어줄 수 있겠어요?",
     youDo: null,
     mentorTip: "champion은 '칭찬'이 아니라 '내 신뢰를 걸고 밀어주는 것'. 대리가 되면 남의 좋은 아이디어를 위로 올려주는 힘이 생겨. 그 힘을 쓰는 사람이 진짜 리더야.",
     mentorNuance: "묻히는 좋은 아이디어를 위로 올려줄 때 써. 칭찬이 아니라 내 신뢰를 걸고 밀어주는 거라, 대리쯤 되면 남의 아이디어에 이 말을 쓸 수 있어.",
@@ -4777,8 +4784,8 @@ const SCENARIOS = [
   { day: 77, word: "socialize an idea", pos: "phr.", meaning: "(결정 전) 미리 의견을 돌리다", phonetic: "/ˈsoʊʃəlaɪz ən aɪˈdɪə/",
     scene: "11:00, 김 팀장이 다음 주 큰 제안을 앞두고 조언을 해요.",
     npc: "manager",
-    quote: "Don't drop this cold in the big meeting. Socialize it with the key people first, then present.",
-    quoteKo: "큰 회의에서 갑자기 던지지 말아요. 핵심 인물들에게 미리 의견을 돌린 다음에 발표해요.",
+    quote: "Please don't drop this cold in the big meeting. Socialize the idea with the key people first, one on one, and then present it once they've had time to warm up to it.",
+    quoteKo: "큰 회의에서 갑자기 꺼내지 마세요. 먼저 핵심 인물들과 일대일로 아이디어를 공유해서 익숙해지게 하고, 그다음에 발표하세요.",
     youDo: null,
     mentorTip: "socialize an idea는 '비밀 작업'이 아니라 '반대를 미리 만나 다듬는 것'. 회의에서 처음 듣는 사람은 방어부터 해. 미리 돌리면 회의는 확인 도장만 찍는 자리가 돼.",
     mentorNuance: "큰 회의 전에 핵심 인물에게 먼저 의견을 돌리자고 할 때 써. 처음 듣는 사람은 방어부터 하니까, 미리 반대를 만나 다듬는 절차를 뜻해.",
@@ -4803,8 +4810,8 @@ const SCENARIOS = [
   { day: 78, word: "sign-off", pos: "n.", meaning: "최종 승인, 결재", phonetic: "/ˈsaɪn ɒf/",
     scene: "16:30, 런칭 직전 Daniel과 화상 회의에서 마지막 관문 얘기가 나와요.",
     npc: "daniel",
-    quote: "Looks ready to me. But get sign-off from legal and finance before you ship. No surprises after launch.",
-    quoteKo: "제가 보기엔 준비됐어요. 근데 내보내기 전에 법무랑 재무 최종 승인을 받아요. 런칭 후에 놀랄 일 없게.",
+    quote: "This looks ready to me. That said, please get sign-off from legal and finance before you ship, because I don't want any surprises after launch.",
+    quoteKo: "제가 보기엔 준비됐어요. 다만 출시 전에 법무·재무 승인은 꼭 받아 주세요. 런칭 후에 놀랄 일은 없었으면 해요.",
     youDo: null,
     mentorTip: "sign-off는 '형식 절차'가 아니라 '책임을 나눠 갖는 도장'이야. 관련 부서 승인을 미리 받아두면, 문제가 생겨도 '나 혼자 밀어붙인 것'이 안 돼. 대리의 안전벨트지.",
     mentorNuance: "구두 OK가 아니라 문서로 남는 최종 승인이야. 런칭 전에 '누구 sign-off 받았어?'라고 물으면 서명된 기록이 있느냐는 뜻이니까 이름과 날짜까지 준비해.",
@@ -4829,8 +4836,8 @@ const SCENARIOS = [
   { day: 79, word: "manage expectations", pos: "phr.", meaning: "기대치를 (현실적으로) 조율하다", phonetic: "/ˈmænɪdʒ ɪkspekˈteɪʃnz/",
     scene: "15:00, Sarah와 화상 회의에서 경영진이 무리한 일정을 기대하고 있다는 얘기를 해요.",
     npc: "sarah",
-    quote: "My exec expects all of this delivered by Q3. Between us, is that realistic? I don't want to overpromise.",
-    quoteKo: "저희 경영진은 이걸 다 Q3까지 받길 기대해요. 우리끼리 얘긴데, 현실적인가요? 과한 약속은 하기 싫어요.",
+    quote: "My exec is expecting all of this to be delivered by Q3. Just between us, is that realistic? I'd rather manage expectations now than overpromise.",
+    quoteKo: "저희 임원은 이걸 전부 3분기까지 받길 기대해요. 우리끼리 얘기지만 현실적인가요? 과하게 약속하느니 지금 기대치를 조정하고 싶어서요.",
     youDo: null,
     mentorTip: "manage expectations는 '초 치기'가 아니라 '나중의 실망을 지금의 솔직함으로 막는 것'. 안 되는 걸 된다고 하면 신뢰가 한 번에 무너져. 지금 현실을 주면 오래 간다.",
     mentorNuance: "경영진 기대가 무리할 때 지금 솔직하게 조율하자고 할 때 써. 초 치는 게 아니라 나중의 실망을 막는 말이라, 안 되는 건 지금 말해.",
@@ -4855,8 +4862,8 @@ const SCENARIOS = [
   { day: 80, word: "red flag", pos: "n.", meaning: "경고 신호, 위험 징후", phonetic: "/red flæɡ/",
     scene: "10:30, 김 팀장이 외주 업체 진행 상황을 묻는데 뭔가 미묘하게 어긋나는 게 보여요.",
     npc: "manager",
-    quote: "If you spot a red flag with the vendor, I want to hear it early, not on launch day. What's your read?",
-    quoteKo: "외주 업체에서 경고 신호가 보이면, 런칭 당일 말고 일찍 알려줘요. 어떻게 보여요?",
+    quote: "If you spot a red flag with the vendor, I want to hear about it early, not on launch day. So tell me honestly, what's your read on them?",
+    quoteKo: "벤더 쪽에서 위험 신호가 보이면 런칭 당일이 아니라 미리 듣고 싶어요. 그러니 솔직하게, 지원 씨가 보기엔 어때요?",
     youDo: null,
     mentorTip: "red flag는 '증명된 문제'가 아니라 '아직 근거는 약하지만 느낌이 오는 위험'이야. 대리는 확신이 설 때까지 기다리지 않고, 신호 단계에서 올려. 늦게 올리면 이미 사고야.",
     mentorNuance: "확신은 없지만 위험 신호가 보일 때 미리 알린다고 할 때 써. 증명된 문제가 아니어도 되니까, 런칭 날이 아니라 지금 말하라는 뜻이야.",
@@ -4881,8 +4888,8 @@ const SCENARIOS = [
   { day: 81, word: "rally", pos: "v.", meaning: "결집시키다, 사기를 끌어올리다", phonetic: "/ˈræli/",
     scene: "09:00, 지연 이후 팀 사기가 가라앉은 걸 보고 사수가 조용히 말을 꺼내요.",
     npc: "mentor",
-    quote: "Morale dipped after the delay. Before the final push, can you rally the team? They listen to you now.",
-    quoteKo: "지연 이후로 사기가 확 죽었어. 마지막 스퍼트 전에, 팀을 결집시킬 수 있겠어? 이제 사람들이 널 따르잖아.",
+    quote: "Morale has dipped a bit since the delay. Before the final push, could you rally the team? They really listen to you now.",
+    quoteKo: "지연 이후로 팀 사기가 좀 떨어졌어요. 마지막 스퍼트 전에 팀을 결집시켜 줄 수 있을까요? 이제 다들 지원 씨 말은 잘 듣잖아요.",
     youDo: null,
     mentorTip: "🔥 Week 3 완주! rally는 '억지 응원'이 아니라 '흩어진 에너지를 하나의 목표로 다시 모으는 것'. 힘든 걸 인정하고, 남은 목표를 작게 보여주면 사람은 다시 움직여.",
     mentorNuance: "지친 팀을 다시 모을 때 쓰는 말이야. 억지로 끄는 게 아니라 이유를 보여줘서 모이게 하는 거라, 리더가 자기 역할로 쓸 때 어울려.",
@@ -4909,8 +4916,8 @@ const SCENARIOS = [
   { day: 82, word: "double down", pos: "phr.", meaning: "더 강하게 밀어붙이다, 배팅을 키우다", phonetic: "/ˈdʌbl daʊn/",
     scene: "11:00, Daniel과 화상 회의에서 파일럿이 예상보다 잘 나와 더 밀지 안전하게 갈지 얘기해요.",
     npc: "daniel",
-    quote: "The pilot is working better than expected. Do we double down and scale, or play it safe for now?",
-    quoteKo: "파일럿이 예상보다 잘 나와요. 더 밀어붙여서 확대할까요, 아니면 일단 안전하게 갈까요?",
+    quote: "The pilot is working better than we expected. So here's the question: do we double down and scale it now, or play it safe for another quarter?",
+    quoteKo: "파일럿이 예상보다 잘 되고 있어요. 그래서 묻고 싶은 게, 지금 더 밀어붙여서 확장할까요, 아니면 한 분기 더 안전하게 갈까요?",
     youDo: null,
     mentorTip: "double down은 '무모한 올인'이 아니라 '증거가 나온 곳에 자원을 더 붓는 것'. 잘 되는 신호가 있을 때 망설이면 기회를 놓쳐. 단, 근거를 짚고 밀어야 도박이 아니야.",
     mentorNuance: "파일럿이 잘 나왔을 때 자원을 더 붓자고 제안하는 자리에 써. 무모한 올인이 아니라 증거가 있는 곳에 더 거는 결정이야.",
@@ -4935,8 +4942,8 @@ const SCENARIOS = [
   { day: 83, word: "scope creep", pos: "n.", meaning: "범위가 슬금슬금 늘어남", phonetic: "/skoʊp kriːp/",
     scene: "14:00, 김 팀장이 처음보다 두 배로 불어난 요구사항 목록을 보며 한숨을 쉬어요.",
     npc: "manager",
-    quote: "This project keeps growing. Every week there's one more thing. How do we stop the scope creep?",
-    quoteKo: "이 프로젝트가 계속 커져요. 매주 하나씩 늘어나. 이 범위 확장을 어떻게 막죠?",
+    quote: "This project keeps growing on us. Every week there's one more thing added, so how do we stop the scope creep?",
+    quoteKo: "이 프로젝트가 자꾸 커지고 있어요. 매주 하나씩 더 붙잖아요. 이 범위 확장을 어떻게 막을까요?",
     youDo: null,
     mentorTip: "scope creep은 큰 결정이 아니라 '작은 예스들이 쌓여서' 생겨. 하나하나는 사소해 보이지만 합치면 기한이 무너지지. 대리는 새 요청마다 '무엇을 뺄지'를 같이 묻는 사람이야.",
     mentorNuance: "요구가 한 번에 불어난 게 아니라 조금씩 늘어난 상황을 가리켜. 이 단어를 꺼내는 순간 '이제 선을 긋자'는 뜻이라, 대안 규칙을 같이 제안해.",
@@ -4961,8 +4968,8 @@ const SCENARIOS = [
   { day: 84, word: "sunset", pos: "v.", meaning: "(제품/기능을) 단계적으로 종료하다", phonetic: "/ˈsʌnset/",
     scene: "16:00, Daniel과 화상 회의에서 오래된 대시보드가 수익보다 유지비가 크다는 얘기가 나와요.",
     npc: "daniel",
-    quote: "The old dashboard costs more than it earns. How would you sunset it without upsetting the users still on it?",
-    quoteKo: "옛 대시보드가 버는 것보다 유지비가 더 들어요. 아직 쓰는 사용자를 화나게 안 하면서 어떻게 종료할래요?",
+    quote: "The old dashboard costs more to maintain than it earns. How would you sunset it without upsetting the users who are still on it?",
+    quoteKo: "옛 대시보드는 벌어오는 것보다 유지비가 더 들어요. 아직 쓰고 있는 사용자들을 화나게 하지 않으면서 어떻게 종료하겠어요?",
     youDo: null,
     mentorTip: "sunset은 '갑자기 끄기'가 아니라 '해가 지듯 단계적으로 내리는 것'. 미리 알리고, 대안을 주고, 날짜를 박는 3단계가 핵심이야. 잘 끝내는 것도 대리의 능력이지.",
     mentorNuance: "오래된 기능을 단계적으로 끝내자고 할 때 써. 갑자기 끄는 게 아니라 미리 알리고 대안 주고 날짜를 박는 3단계가 같이 와야 해.",
@@ -4987,8 +4994,8 @@ const SCENARIOS = [
   { day: 85, word: "delegate", pos: "v.", meaning: "(일을) 위임하다, 맡기다", phonetic: "/ˈdelɪɡeɪt/",
     scene: "09:00, 혼자 세 사람 몫을 지고 있는 너를 보고 사수가 밀린 일감 얘기를 꺼내요.",
     npc: "mentor",
-    quote: "You're doing three people's work. A senior associate delegates. What can you hand off today, not someday?",
-    quoteKo: "너 지금 세 사람 몫을 하고 있어. 대리는 위임할 줄 알아야 해. 언젠가 말고, 오늘 넘길 수 있는 게 뭐야?",
+    quote: "You're doing the work of three people right now, and a senior associate needs to delegate. So what can you hand off today, not someday?",
+    quoteKo: "지금 세 사람 몫을 혼자 하고 있어요. 대리급이면 위임할 줄 알아야 해요. '언젠가' 말고 오늘 넘길 수 있는 게 뭐예요?",
     youDo: null,
     mentorTip: "delegate는 '떠넘기기'가 아니라 '남을 키우면서 내 시간을 큰 일에 쓰는 것'. 잘하는 사람일수록 다 안고 병목이 돼. 맥락과 기준을 같이 주면 위임은 성장이 돼.",
     mentorNuance: "혼자 다 안고 있는 사람한테 일을 나누라고 할 때 써. 떠넘기기가 아니라 남을 키우면서 내 시간을 큰 일에 쓰는 거라, 대리부터 이 말을 듣게 돼.",
@@ -5013,8 +5020,8 @@ const SCENARIOS = [
   { day: 86, word: "empower", pos: "v.", meaning: "권한을 주다, 스스로 결정하게 하다", phonetic: "/ɪmˈpaʊər/",
     scene: "11:30, Daniel과 화상 회의에서 작은 결정까지 네게 몰려 병목이 됐다는 얘기를 해요.",
     npc: "daniel",
-    quote: "Every small decision waits on you. Stop being the bottleneck, empower your team. What can you push down?",
-    quoteKo: "작은 결정까지 다 당신을 기다려요. 병목이 되지 말고, 팀에 권한을 줘요. 어떤 결정을 아래로 내릴 수 있죠?",
+    quote: "Every small decision is waiting on you, and that's making you the bottleneck. I'd like you to empower your team, so what can you push down to them?",
+    quoteKo: "작은 결정까지 전부 지원 씨를 기다려요. 그게 병목이 되고 있고요. 팀에 권한을 줬으면 해요. 뭘 아래로 넘길 수 있을까요?",
     youDo: null,
     mentorTip: "empower는 delegate에서 한 걸음 더 나아간 거야. 일을 맡기는 게 delegate라면, '네가 직접 정해도 돼'라고 결정권을 주는 게 empower. 기준선만 정해주면 팀이 알아서 달려.",
     mentorNuance: "일을 넘기는 게 아니라 결정 권한을 넘긴다는 뜻이야. 범위를 같이 정해줘야 진짜 empower고, 안 그러면 그냥 떠넘긴 거야.",
@@ -5039,8 +5046,8 @@ const SCENARIOS = [
   { day: 87, word: "connect the dots", pos: "phr.", meaning: "흩어진 정보를 이어 맥락을 만들다", phonetic: "/kəˈnekt ðə dɒts/",
     scene: "10:00, 김 팀장이 여러 팀의 단편 보고를 앞에 두고 전체 그림을 물어요.",
     npc: "manager",
-    quote: "Everyone has a piece, but no one sees the whole picture. Can you connect the dots for the room?",
-    quoteKo: "다들 조각 하나씩만 쥐고 있고, 아무도 전체 그림을 못 봐요. 사람들한테 이 점들을 이어줄 수 있어요?",
+    quote: "Everyone in that room has a piece of the picture, but nobody sees the whole thing. Could you connect the dots for them so we're all looking at the same story?",
+    quoteKo: "그 방에 있는 사람들은 각자 조각은 갖고 있는데, 전체 그림을 보는 사람이 없어요. 모두 같은 이야기를 보도록 점들을 이어줄 수 있을까요?",
     youDo: null,
     mentorTip: "connect the dots는 '정보 요약'이 아니라 '조각들 사이의 관계를 보여주는 것'. 대리는 각 팀의 단편을 하나의 이야기로 엮어, 다들 '아, 그래서 이게 이거구나' 하게 만드는 사람이야.",
     mentorNuance: "여러 팀 보고를 한 그림으로 엮어달라고 할 때 써. 요약이 아니라 조각 사이 관계를 보여주는 거라, 임원 앞에서 이 말을 들으면 원인 하나로 정리해.",
@@ -5065,8 +5072,8 @@ const SCENARIOS = [
   { day: 88, word: "set the tone", pos: "phr.", meaning: "분위기·기준을 정하다", phonetic: "/set ðə toʊn/",
     scene: "09:00, 이제 사람들이 너를 보고 움직이기 시작했다고 사수가 조용히 말해줘요.",
     npc: "mentor",
-    quote: "People follow you now. You set the tone, whether you mean to or not. What tone do you want to set?",
-    quoteKo: "이제 사람들이 널 따라. 의도하든 아니든, 네가 분위기를 정하는 거야. 어떤 분위기를 만들고 싶어?",
+    quote: "People follow you now, whether you notice it or not. You set the tone for this team, so I'll ask you directly: what tone do you want to set?",
+    quoteKo: "이제 사람들이 지원 씨를 따라요, 본인이 느끼든 아니든요. 이 팀의 분위기는 지원 씨가 만들어요. 그래서 직접 물을게요, 어떤 분위기를 만들고 싶어요?",
     youDo: null,
     mentorTip: "set the tone은 '연설'이 아니라 '네가 매일 하는 행동이 곧 기준이 된다'는 뜻이야. 대리가 침착하면 팀이 침착하고, 대리가 대충하면 팀이 대충해. 톤은 말이 아니라 태도로 정해져.",
     mentorNuance: "사람들이 나를 보고 움직이기 시작했을 때 듣는 말이야. 연설이 아니라 매일 하는 행동이 기준이 된다는 뜻이라, 내가 원하는 분위기를 먼저 행동으로 보여.",
@@ -5091,8 +5098,8 @@ const SCENARIOS = [
   { day: 89, word: "lead by example", pos: "phr.", meaning: "솔선수범하다, 행동으로 이끌다", phonetic: "/liːd baɪ ɪɡˈzæmpl/",
     scene: "14:00, 마감 스퍼트를 앞두고 김 팀장이 팀은 말보다 행동을 본다고 말해요.",
     npc: "manager",
-    quote: "The team copies what you do, not what you say. On this final stretch, how will you lead by example?",
-    quoteKo: "팀은 당신이 말하는 게 아니라 하는 걸 따라 해요. 이 마지막 스퍼트에서, 어떻게 솔선수범할래요?",
+    quote: "The team copies what you do, not what you say. On this final stretch, how are you going to lead by example?",
+    quoteKo: "팀은 지원 씨가 말하는 게 아니라 하는 걸 따라 해요. 이 마지막 구간에서 어떻게 솔선수범해서 이끌 거예요?",
     youDo: null,
     mentorTip: "lead by example은 '더 오래 일하기'가 아니라 '내가 바라는 기준을 내가 먼저 지키는 것'. 정시 퇴근을 원하면 내가 먼저 퇴근하고, 꼼꼼함을 원하면 내 문서부터 깔끔해야 해.",
     mentorNuance: "마감 앞두고 팀을 이끌 때 써. 더 오래 일하라는 게 아니라 내가 바라는 기준을 내가 먼저 지키는 거라, 정시 퇴근을 원하면 내가 먼저 로그오프해.",
@@ -5117,8 +5124,8 @@ const SCENARIOS = [
   { day: 90, word: "pay it forward", pos: "phr.", meaning: "받은 것을 다음 사람에게 갚다", phonetic: "/peɪ ɪt ˈfɔːrwərd/",
     scene: "16:00, Day 90, Daniel의 방에 90일 전 너처럼 긴장한 신입이 옆자리로 와요.",
     npc: "daniel",
-    quote: "Ninety days ago, you needed a buddy. Now someone else does. Pay it forward, will you mentor them?",
-    quoteKo: "90일 전, 당신에겐 버디가 필요했죠. 이제 다른 누군가가 그래요. 받은 걸 물려줘요, 그 친구의 사수가 돼줄래요?",
+    quote: "Ninety days ago you were the one who needed a buddy, and now someone else does. I'd love for you to pay it forward, so will you mentor them?",
+    quoteKo: "90일 전엔 지원 씨가 버디가 필요했죠. 이제 다른 누군가가 그래요. 받은 걸 돌려줬으면 해요. 그 사람 멘토가 되어 줄래요?",
     youDo: null,
     mentorTip: "🌟 Day 90 완주! pay it forward = 내가 받은 도움을 준 사람이 아니라 '다음 사람'에게 갚는 것. 90개의 표현을 쌓은 너는 이제 누군가의 버디가 될 수 있어. 배움은 나눌 때 완성돼.",
     mentorNuance: "받은 걸 준 사람이 아니라 다음 사람에게 갚는다는 말이야. 감사 인사 자리에서 이 말이 나오면 '이제 네 차례'라는 뜻이야.",
@@ -8989,7 +8996,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               <span>오늘 일정 · DAY {USER.currentDay}{_RET_ON() && !USER.isViewingPast && (() => { const n = _retStreakDays(USER.email); return n > 0 ? <em className="schedule-streak" title="연속 출근">🔥 연속 {n}일</em> : null; })()}</span>
               {/* ★ 2026-09-18 (개발 뷰): '이어서 하기' 배너를 시간표 안으로. 학습 중엔 표 자체가 눌러야 할 것으로 보이게 */}
               {_RET_ON() && !USER.isViewingPast && _nextRow
-                ? <button type="button" className="schedule-go" onClick={() => handleScheduleClick(_nextRow, _nextIdx)}>{_noneDone ? "☀️ 오늘 일정 시작하기" : "▶ 이어서 하기 · " + _nextRow.title} →</button>
+                ? <button type="button" className="schedule-go" onClick={() => handleScheduleClick(_nextRow, _nextIdx)}>{isMobile ? (_noneDone ? "▶ 시작" : "▶ 이어서") : (_noneDone ? "☀️ 오늘 일정 시작하기 →" : "▶ 이어서 하기 · " + _nextRow.title + " →")}</button>
                 : _RET_ON() && !USER.isViewingPast && allTodayDone
                 ? <span style={{ color: "var(--green)" }}>✓ 완주</span>
                 : <span style={{ color: "var(--orange)" }}>● 진행 중</span>}
@@ -9683,6 +9690,24 @@ function _retDayAt(day, ts, live) {
 }
 function _retExpTotal(email) { return _retExpLedger(email).entries.reduce((n, e) => n + (Number(e.exp) || 0), 0); }
 function _retWeekStart(iso) { const d = new Date(iso + "T00:00:00Z"); const dow = (d.getUTCDay() + 6) % 7; return _retAddDays(iso, -dow); }   // 월요일
+// ★ 2026-09-19: 순위판(서버)과 HUD(기기)가 다른 숫자를 보여주던 문제. 서버가 기준(백필·다른 기기 기록까지 다 있음).
+//   서버 합계를 받아 캐시해두고, 있으면 HUD 도 그 숫자를 쓴다. 없으면(오프라인·SQL 미실행) 기기 장부.
+function _retSvrWeek(email) { try { const v = _retLoad("SVR", email, null); return (v && typeof v.week === "number") ? v : null; } catch (e) { return null; } }
+function _retSvrWeekSet(email, week) { try { _retSave("SVR", email, { week: Number(week) || 0, at: new Date().toISOString() }); } catch (e) {} }
+async function _retSvrWeekPull(email) {   // 서버 순위판에서 내 7일 합계만 (limit 1 → 가볍다)
+  try {
+    if (!(window.OD && window.OD.enabled && window.OD.fetchWeeklyBoard) || !email || email === "guest") return null;
+    if (localStorage.getItem("__OD_TT_STASH")) return null;
+    const r = await window.OD.fetchWeeklyBoard(1);
+    if (!r || !r.ok) return null;
+    const rows = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []);
+    const me = rows.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null;
+    const week = me ? Number(me.exp) || 0 : 0;
+    _retSvrWeekSet(email, week); _retPing();
+    return week;
+  } catch (e) { return null; }
+}
+function _retExpWeekShown(email) { const v = _retSvrWeek(email); return v ? v.week : _retExpThisWeek(email); }
 function _retExpThisWeek(email) {   // 최근 7일 (7일 전 ~ 오늘). 월요일 리셋이 아니라 굴러가는 창
   const from = _retAddDays(_tyTodayISO(), -6);
   return _retExpLedger(email).entries.filter(e => String(e.at || "").slice(0, 10) >= from).reduce((n, e) => n + (Number(e.exp) || 0), 0);
@@ -9965,10 +9990,20 @@ function _retReconcile(opts) {
     const ledger0 = _retExpLedger(email); const fresh = !ledger0.seededAt;
     // '지금 하고 있는 Day' = 기록이 있는 Day 중 가장 큰 것 (밀린 Day 를 하는 사람은 달력상 Day 와 다르다)
     const maxDay = days.size ? Math.max(...days) : 0;
+    // ★ 2026-09-19 밀린 Day 몰아하기 방지: 달력 하루에 일정 EXP 를 받는 Day 는 1개 (그날 처음 EXP 받은 Day).
+    //   같은 날 따라잡은 나머지 Day 는 학습 기록·출근부는 그대로 남지만 EXP 는 0. (연속 출근 보너스도 하루 1회)
+    const _kst = (iso) => { try { return new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice(0, 10); } catch (e) { return ""; } };
+    const dayOfDate = {};
+    ledger0.entries.forEach(e => { if ((e.kind === "task" || e.kind === "streak") && e.day) { const d = _kst(e.at); if (d && dayOfDate[d] == null) dayOfDate[d] = e.day; } });
     [...days].sort((a, b) => a - b).forEach(day => {
       const t = _loadJSON("__OD_TASKS_DAY_" + day) || {}; const ts = localStorage.getItem("__OD_TASKS_DAY_" + day + "_ts") || null;
       const live = !ts && (!fresh || day === maxDay);
       const isToday = ts ? new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10) === today : live;
+      const atDate = _kst(_retDayAt(day, ts, live));
+      const anyDone = ["checkin", "scenario", "wrapup"].some(k => t[k]) || _RET_SLOT3.some(k => t[k]);
+      if (anyDone && atDate) { if (dayOfDate[atDate] == null) dayOfDate[atDate] = day; }
+      const capped = anyDone && atDate && dayOfDate[atDate] !== day;   // 이 날짜의 EXP 는 이미 다른 Day 가 받았다
+      if (capped) { if (_retTasksDone(t) && isToday) _retMarkToday(email); return; }
       ["checkin", "scenario", "wrapup"].forEach(k => {
         if (!t[k] || !RET_EXP[k]) return;
         _retAwardExp(email, "task:" + day + ":" + k, RET_EXP[k], { checkin: "출근", scenario: "오늘의 시추에이션", wrapup: "퇴근" }[k] + " · Day " + day, _retDayAt(day, ts, live), day, "task", { silent: silent || !isToday });
@@ -10070,9 +10105,10 @@ function RetExpTag({ exp, done }) {
 // 헤더용 칩: 이번 주 EXP · 복지P · 연속 출근
 function RetHud({ setActive, top, compact }) {
   _useRetTick();
-  if (!_RET_ON()) return null;
   const email = _retEmail();
-  const week = _retExpThisWeek(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
+  React.useEffect(() => { if (!_RET_ON()) return; const t = setTimeout(() => { try { _retSyncExp(email, true); } catch (e) {} setTimeout(() => { _retSvrWeekPull(email); }, 1500); }, 800); return () => clearTimeout(t); }, [email]);
+  if (!_RET_ON()) return null;
+  const week = _retExpWeekShown(email), wp = _retWpBalance(email), streak = _retStreakDays(email);
   const U = window.__SIM && window.__SIM.USER; const attended = (U && U.streak) || 0;
   if (compact) return (
     /* ★ 2026-09-19 모바일: 헤더 아래 한 줄 4칸 (라벨 + 숫자만). 출근 칸은 '연속' 으로 */
@@ -10168,8 +10204,11 @@ function RetUnlockReturnPill({ setActive, email }) {
 function RetDayPopup({ day, email, onClose }) {
   const l = _retExpLedger(email);
   const today = _tyTodayISO();
-  const rows = l.entries.filter(e => e.kind === "task" && e.day === day).concat(l.entries.filter(e => e.kind === "streak" && e.day === day));
-  const sum = rows.reduce((n, e) => n + e.exp, 0);
+  const taskRows = l.entries.filter(e => e.kind === "task" && e.day === day);
+  const streakRows = l.entries.filter(e => e.kind === "streak" && e.day === day);
+  const rows = taskRows.concat(streakRows);
+  const taskSum = taskRows.reduce((n, e) => n + e.exp, 0), streakSum = streakRows.reduce((n, e) => n + e.exp, 0);
+  const sum = taskSum + streakSum;
   const streak = _retStreakDays(email);
   const gp = _retGoalProgress(email);
   return (
@@ -10177,7 +10216,9 @@ function RetDayPopup({ day, email, onClose }) {
       <div className="ret-pop" onClick={e => e.stopPropagation()}>
         <div className="ret-pop-burst">⚡</div>
         <div className="ret-pop-big">+{sum} EXP</div>
-        <div className="ret-pop-sub">Day {day} 완주 · 오늘도 출근 도장 쾅</div>
+        {sum === 0 && <div className="ret-deb-box warn" style={{ margin: "8px 0 4px", textAlign: "left" }}>오늘은 이미 다른 Day 로 EXP 를 받았어요. 밀린 Day 를 따라잡는 건 <b>하루 1 Day 만 EXP</b>가 쌓여요 (학습 기록·출근부는 그대로 남아요).</div>}
+        {/* ★ 2026-09-19: "4개 하면 200인데 왜 250?" → 일정 4개 200 + 연속 출근 보너스 50 을 따로 보여준다 (SIDE PROJECT 는 여기 안 들어감) */}
+        <div className="ret-pop-sub">Day {day} 완주 · 오늘 일정 {taskRows.length}개 <b>+{taskSum}</b>{streakSum ? <> + 연속 출근 보너스 <b>+{streakSum}</b></> : null}</div>
         <div className="ret-pop-streak">
           <div className="ret-pop-flames">{Array.from({ length: Math.min(7, Math.max(1, streak)) }).map((_, i) => <span key={i} style={{ animationDelay: (i * 0.08) + "s" }}>🔥</span>)}</div>
           <b>연속 출근 {streak}일{rows.some(e => e.kind === "streak") ? " · +" + RET_EXP.streak + " EXP" : ""}</b>
@@ -10190,9 +10231,11 @@ function RetDayPopup({ day, email, onClose }) {
           </div>
         )}
         <div className="ret-pop-rows">
-          {rows.map(e => <div key={e.key}><span>{e.label.replace(/ · Day \d+$/, "")}</span><b>+{e.exp}</b></div>)}
+          {taskRows.map(e => <div key={e.key}><span>{e.label.replace(/ · Day \d+$/, "")}</span><b>+{e.exp}</b></div>)}
+          <div className="ret-pop-rows-sum"><span>오늘 일정 소계</span><b>+{taskSum}</b></div>
+          {streakRows.map(e => <div key={e.key}><span>🔥 {e.label.replace(/ · Day \d+$/, "")} 보너스 <small style={{ color: "var(--ink-mute)" }}>(전날도 완주)</small></span><b>+{e.exp}</b></div>)}
         </div>
-        <div className="ret-pop-foot">EXP 는 최근 7일 기준 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 복지몰 SHOP 에서 써요.</div>
+        <div className="ret-pop-foot">퇴근 후 SIDE PROJECT(복습 퀴즈·내일 문장)는 따로 쌓여요. EXP 는 최근 7일 기준 <b>WEEKLY BIZ SCORE</b> 순위에 들어가요. 복지포인트는 복지몰 SHOP 에서 써요.</div>
         <button className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={onClose}>좋아요 →</button>
       </div>
     </div>
@@ -10561,6 +10604,7 @@ function RetWeeklyBoard() {
         // v2 RPC 는 { rows, me } (me = 내가 목록 밖일 때 내 순위), 옛 RPC 는 배열
         if (Array.isArray(r.result)) { setRows(r.result); setMeOut(null); }
         else { setRows(Array.isArray(r.result && r.result.rows) ? r.result.rows : []); setMeOut((r.result && r.result.me) || null); }
+        try { const rs = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []); const me = rs.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null; _retSvrWeekSet(email, me ? Number(me.exp) || 0 : 0); } catch (e) {}
       } catch (e) { if (alive) setErr("순위를 불러오지 못했어요"); }
     })();
     return () => { alive = false; };
@@ -10617,6 +10661,7 @@ function RetWeeklyBoard() {
               <li><span>🌙 퇴근 (일지)</span><em>+{RET_EXP.wrapup}</em></li>
               <li><span>🔥 어제도 완주했으면 연속 출근 보너스</span><em>+{RET_EXP.streak}</em></li>
             </ul>
+            <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink-mute)" }}>밀린 Day 를 하루에 여러 개 따라잡아도 EXP 는 <b>하루 1 Day 만</b> 쌓여요. 매일 하는 사람이 항상 앞서도록.</div>
           </div>
           <div className="ret-exp-how-sec">
             <b>퇴근 후 · 더 쌓기</b>
