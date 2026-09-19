@@ -1039,7 +1039,7 @@ body::before {
 .ret-hud-item:last-child { border-right: none; }
 button.ret-hud-item:hover { background: var(--paper-warm); }
 .ret-hud-item small { font-size: 10px; font-weight: 800; letter-spacing: .02em; color: var(--ink-mute); white-space: nowrap; }
-.ret-hud-item b { font-weight: 900; color: var(--ink); font-size: 17px; line-height: 1.15; font-family: "Hahmlet", serif; white-space: nowrap; }
+.ret-hud-item b { font-weight: 900; color: var(--ink); font-size: 17px; line-height: 1.15; font-family: inherit; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ret-hud-item b span { font-family: inherit; font-size: 11px; font-weight: 800; color: var(--ink-soft); margin-left: 1px; }
 .ret-hud-item em { font-style: normal; font-size: 10px; color: var(--orange); font-weight: 700; white-space: nowrap; }
 @media (max-width: 480px) { .ret-hud-item b { font-size: 15px; } .ret-hud-item small { font-size: 9.5px; } }
@@ -7296,12 +7296,12 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 // ★ 2026-09-15 (리텐션 엔진): Day 3 출근부·내 목표 / Day 4 심부름 / Day 7 복지몰 / Day 30 성장 리포트·PDF·연봉협상 준비 / Day 60 사수 리포트 4종
 const _UNLOCK_AT = _isNextFeature()
-  ? { schedule: 1, memo: 1, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
+  ? { schedule: 1, memo: 1, board: 2, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
   : { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
 const _UNLOCK_LABEL = _isNextFeature()
-  ? { schedule: "오늘 일정표", memo: "사내 게시판", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
+  ? { schedule: "오늘 일정표", memo: "사내 게시판", board: "WEEKLY BIZ SCORE", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
   : { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
-const _UNLOCK_EMOJI = { schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: "🤝", reports: "🧭" };
+const _UNLOCK_EMOJI = { board: "🏆", schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: "🤝", reports: "🧭" };
 function _lockedNext(key, rd, viewingPast) {
   if ((key === "errands" || key === "aireport" || key === "points") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
   if (_isNextFeature() && !(key in _UNLOCK_AT)) return false;   // 리텐션 뷰 사다리에 없는 것(승진 마일스톤·역량 스탯 등)은 잠그지 않는다
@@ -10088,12 +10088,13 @@ function RetHud({ setActive, top, compact }) {
 // ★ 열린 기능 안내 (2026-09-15): 그 Day 에 잠금이 풀리는 기능을 첫날 가이드처럼 알려준다. 위치로 데려가고 3초 반짝.
 //   업데이트 전에 이미 그 Day 를 지난 계정은 첫 접속 때 열려 있는 것들을 한 번에 본다. 본 건 __OD_RET_UNLOCK_SEEN 에 남긴다.
 const _RET_UNLOCK_GO = {
+  board: { nav: "inbox", sel: ".ret-board", how: "사내 게시판 · 최근 7일 EXP 로 동기들과 순위. 출근·시추에이션·퇴근이 다 EXP" },
   attendance: { nav: "home", sel: ".attendance", how: "홈 오른쪽 · 오늘 일정 다 끝내면 도장이 찍혀요" },
   goal: { nav: "home", sel: ".ret-goal, .ret-goal-slim", how: "홈 · 7·14·30·60일 연속 출근 목표를 골라요. 달성하면 복지포인트" },
   errands: { nav: "home", sel: ".ty-errand", how: "홈 · 매일 2개, 하나에 +20 EXP. 실제로 해야 도장이 찍혀요" },
   shop: { nav: "perk", sel: ".ret-shop-grid", how: "사이드바 · 연차·휴가·엿보기 티켓을 복지포인트로 사요" },
   mynotes: { nav: "mynotes", sel: ".ret-growth", how: "사이드바 · 진급 리포트가 쌓이고 표현 카드를 복습해요" },
-  pdf: { nav: "perk", sel: ".ret-shop-grid", how: "복지몰 · 1회권(200P)으로 지금까지 모은 표현을 PDF 로" },
+  pdf: { nav: "perk", sel: ".ret-shop-item[data-shop='pdf']", how: "복지몰 · 1회권(200P)으로 지금까지 모은 표현을 PDF 로" },
 };
 // 성장 리포트 · 사수 리포트 4종 · 분기 평가는 '준비 중' (사다리엔 보이지만 열림 팝업은 안 띄운다)
 const _RET_SOON = { mynotes: true, reports: true, nego: true };
@@ -10488,7 +10489,7 @@ function RetPerkShopPage({ setActive }) {
           const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
           const owned = !it.stack && have > 0;
           return (
-            <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")}>
+            <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")} data-shop={it.id}>
               <div className="ret-shop-ico">{it.icon}</div>
               <div className="ret-shop-name">{it.name}{have > 0 && <span className="ret-shop-have">보유 {have}</span>}</div>
               <div className="ret-shop-desc">{it.desc}{it.note && <div className="ret-shop-note">{it.note}</div>}
@@ -21531,6 +21532,12 @@ window.SimApp = App;
       u.scenariosCompleted = (u.scenariosCompleted || []).filter(x => !(x && Number(x.day) >= n));
       stash.user.dailyJournals = {}; Object.keys(u.dailyJournals || {}).forEach(d => { if (Number(d) >= n) { stash.user.dailyJournals[d] = u.dailyJournals[d]; delete u.dailyJournals[d]; } });
       stash.user.streak = u.streak; stash.user.wordsCollected = u.wordsCollected;
+      // ★ 2026-09-19: 직급도 그 Day 에 맞게 되돌린다 (Day 30 승급 의례·Day 29 예고 팝업을 다시 볼 수 있게).
+      //   원래 직급·승급 기록은 stash 에 두고 종료 시 복구. 서버 쓰기는 타임머신 중 막혀 있어 DB 는 안 바뀐다.
+      stash.user.level = u.level; stash.user.levelupCompletedAt = u.levelupCompletedAt; stash.user.levelup_completed_at = u.levelup_completed_at;
+      stash.user.levelupTestScore = u.levelupTestScore; stash.user.levelup_test_score = u.levelup_test_score;
+      if (n <= 30) { u.level = { id: 'probation' }; delete u.levelupCompletedAt; delete u.levelup_completed_at; delete u.levelupTestScore; delete u.levelup_test_score; hide('__OD_D1_SEEN_' + em); }
+      else if (n <= 90 && u.level && u.level.id === 'senior') { u.level = { id: 'fulltime', ko: '사원', en: 'Associate' }; }
       u.dayInCompany = n; u.devDayOverride = true;
       try { localStorage.setItem('__OD_TT_STASH', JSON.stringify(stash)); } catch (e) { alert('숨길 기록이 너무 커요'); return; }
       save(u); reloadCleanUrl(); return;
@@ -21550,6 +21557,10 @@ window.SimApp = App;
       u.scenariosCompleted = (u.scenariosCompleted || []).filter(x => !(x && Number(x.day) >= n)).concat(stash.user.scenariosCompleted || []);
       u.dailyJournals = { ...(u.dailyJournals || {}), ...((stash.user && stash.user.dailyJournals) || {}) };
       u.dayInCompany = stash.origDay; if (stash.origOverride) u.devDayOverride = true; else delete u.devDayOverride;
+      if (stash.user && 'level' in stash.user) {
+        u.level = stash.user.level;
+        ['levelupCompletedAt', 'levelup_completed_at', 'levelupTestScore', 'levelup_test_score'].forEach(k => { if (stash.user[k] === undefined) delete u[k]; else u[k] = stash.user[k]; });
+      }
       localStorage.removeItem('__OD_TT_STASH');
       save(u); reloadCleanUrl(); return;
     }
