@@ -162,7 +162,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 
 /* ── 모바일 권고 토스트 (유버디 메시지 톤). 막지 않고, 내용 먼저 보인 뒤 부드럽게 안내 ── */
-.mb-toast { display: none; position: fixed; left: 12px; right: 12px; bottom: 14px; z-index: 9998;
+.mb-toast { display: none; position: fixed; left: 12px; right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 9198;   /* ★ 2026-09-20: 하단 고정 '지금 바로 입사하기' 바(z 9200) 위에, 가리지 않게 */
   background: var(--ink); color: var(--paper); border-radius: 14px;
   padding: 12px 13px; box-shadow: 0 14px 34px -8px rgba(0,0,0,0.45);
   font-family: 'Noto Sans KR', sans-serif;
@@ -251,6 +251,8 @@ h1, h2, h3, .lead, .eyebrow, summary, .btn { text-wrap: balance; }
     try { dismissed = sessionStorage.getItem('__OD_MB_TOAST') === '1'; } catch (e) {}
     if (!dismissed && window.matchMedia('(max-width: 768px)').matches) {
       setTimeout(function(){ toast.classList.add('show'); }, 1400);
+      // 8초 뒤엔 스스로 내려간다 (입사 버튼 근처에 오래 머물지 않게)
+      setTimeout(function(){ toast.classList.remove('show'); }, 9400);
     }
     var x = document.getElementById('mb-toast-x');
     if (x) x.addEventListener('click', function(){
