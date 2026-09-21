@@ -7641,10 +7641,11 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
     setPreSaved(true);
     persist({ ...saved, preview: { text, at: new Date().toISOString() } });
   };
-  const doneCount = catchUp ? (attempts.length ? 1 : 0)
+  // ★ 2026-09-21: 밀린 사람도 '내일 미리 쓰기' 는 열어둔다 (회원 대부분이 2일+ 밀려 있어 아예 못 보던 문제). 복지P 는 하루 첫 1회만.
+  const doneCount = catchUp ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0))
     : _sideProject ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0))
     : (Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0));
-  const doneTotal = catchUp ? 1 : (_sideProject ? 2 : 4);
+  const doneTotal = catchUp ? 2 : (_sideProject ? 2 : 4);
   // ★ 내일 미리 쓰기 (2026-09-10): 한국어 지시문에 내일 표현이 영어 그대로 박혀 있는 날이 있다
   //   (예: "그분 인맥 leverage하는 방향으로 갈게요"). 그러면 위의 '내일 단어 미리 맞히기' 답이 그냥 보인다.
   //   개발 뷰에선 그 표현만 빈칸으로 가리고, 정답은 내일 아침 사수 카드에서 공개한다.
@@ -7658,7 +7659,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
             <div className="ot-sec">
               <div className="ot-sec-title">🧠 Review Quiz</div>
               <div className="ot-sec-sub">{catchUp
-                ? "따라잡는 중엔 본업(오늘 일정)만 하시면 돼요. 복습은 몸에 남는 거라 하루 1번은 열어뒀어요. 나머지 사이드 프로젝트는 오늘 날짜까지 오시면 전부 열려요."
+                ? "따라잡는 중엔 본업(오늘 일정)이 먼저예요. 복습은 몸에 남는 거라 하루 1번은 열어뒀고, 내일 미리 쓰기도 아래에서 할 수 있어요."
                 : "무작위가 아니라 복습 일정(1·3·7·14·30·60일)에 맞춘 나만의 테스트예요. 이전 표현 위주, 마지막 문제만 오늘 단어. 여러 번 풀어도 돼요."}</div>
               {attempts.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0 10px" }}>
@@ -7709,7 +7710,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
             })}
           </div>
 
-          {!catchUp && tomorrow && tomorrow.word && (
+          {tomorrow && tomorrow.word && (
             <div className="ot-sec">
               <div className="ot-sec-title">🔮 내일 미리 쓰기</div>
               <div className="ot-sec-sub">내일 이 말을 영어로 해야 해요. 지금 아는 표현으로 먼저 써두면, 내일 아침 사수가 정답 표현이랑 나란히 보여줘요.</div>
@@ -7741,7 +7742,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
         </div>
   );
   const _rowSub = catchUp
-    ? "따라잡는 중엔 복습 퀴즈만 · +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 완료 시 복지 +" + RET_WP.ot + "P (하루 1회)"
+    ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 +" + RET_EXP.pre + " EXP · 완료 시 복지 +" + RET_WP.ot + "P (하루 1회)"
     : "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 +" + RET_EXP.pre + " EXP · 완료 시 복지 +" + RET_WP.ot + "P (하루 1회)";
   const _toggle = () => setOpen(o => { if (!o) { try { _tyErrandProof("side"); } catch (e) {} } return !o; });
   if (_RET_ON()) return (
@@ -7763,7 +7764,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
     <div className="ot-card">
       <button className="ot-head" onClick={_toggle}>
         {catchUp
-          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "밀린 Day 따라잡는 중엔 복습 퀴즈만 · +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)"}</small></span>
+          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)"}</small></span>
           : _sideProject
           ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 미리 쓰기 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "10분이면 이전 표현이 복습되고, 내일 아침 사수 확인이 기다려요"}</small></span>
           : <span>🌙 야근 <small>10분이면 오늘 표현이 세 문장 더 남고, 내일 아침 사수 확인이 기다려요</small></span>}
@@ -7833,7 +7834,11 @@ function MilestoneCard() {
   // 접힘은 '그날 하루'만 유지. 새 day엔 다시 펼쳐서 로드맵(마일스톤)이 자주 보이게.
   const _s2Today = String(USER.realCurrentDay || USER.currentDay || 1);
   const [s2CardCollapsed, setS2CardCollapsed] = useState(() => {
-    try { return localStorage.getItem(_S2_CARD_KEY) === _s2Today; } catch (e) { return false; }
+    try {
+      const v = localStorage.getItem(_S2_CARD_KEY);
+      if (v === null && _RET_ON() && ((window.__SIM && window.__SIM.USER && (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay)) || 1) <= 1) return true;   // ★ 2026-09-21: Day 1 은 접힘 (펼치기로 열 수 있음)
+      return v === _s2Today;
+    } catch (e) { return false; }
   });
   const toggleS2Card = () => {
     setS2CardCollapsed(v => {
@@ -8220,6 +8225,7 @@ function AttendanceCard({ setViewingDay, todayDone }) {
               // React state 갱신 → App 이 USER/SCENARIOS/TODAY_SCHEDULE mutate → 전체 리렌더
               // 새로고침 없음, URL 안 건드림
               setViewingDay(c.day);
+              try { if (c.day === 1) _tyErrandProof("day1"); } catch (e) {}
               window.scrollTo({ top: 0, behavior: "smooth" });
             };
             return (
@@ -9533,6 +9539,7 @@ const _TY_ERRANDS = [
   { id: "mypage",    icon: "🪪", t: "사원증 한번 확인하기", verify: true, nav: "mypage" },
   { id: "skills",    icon: "📊", t: "역량 스탯에서 제일 빈 영역 찾아보기", sel: ".skillgrid", minDay: 4 },
   { id: "attend",    icon: "📅", t: "출근부에서 이번 주 도장 세어보기", sel: ".attendance", minDay: 3 },
+  { id: "day1",      icon: "🗓️", t: "출근부에서 Day 1 눌러보기 (첫날 화면을 다시 볼 수 있어요)", verify: true, sel: ".attendance", minDay: 3 },
   { id: "promo",     icon: "🏅", t: "승진 마일스톤에서 D-day 확인하기", sel: ".s2-welcome", minDay: 4 },
   { id: "inbox",     icon: "✉️", t: "사내 메모함 열어보기", verify: true, nav: "inbox" },
   { id: "inbox2",    icon: "📌", t: "안 읽은 사내 메모 하나 읽기", verify: true, nav: "inbox" },
@@ -9708,8 +9715,10 @@ async function _retSvrWeekPull(email) {   // 서버 순위판에서 내 7일 합
     if (!r || !r.ok) return null;
     const rows = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []);
     const me = rows.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null;
-    const week = me ? Number(me.exp) || 0 : 0;
-    _retSvrWeekSet(email, week, me && me.streak != null ? Number(me.streak) : undefined); _retPing();
+    // 순위판에 내가 없으면(운영자는 v5 부터 제외) 서버 캐시를 비워 기기 장부를 쓴다
+    if (!me) { try { _retSave("SVR", email, {}); } catch (e) {} _retPing(); return null; }
+    const week = Number(me.exp) || 0;
+    _retSvrWeekSet(email, week, me.streak != null ? Number(me.streak) : undefined); _retPing();
     return week;
   } catch (e) { return null; }
 }
@@ -9929,7 +9938,12 @@ function _retGoalCheck(email) {
   }
   if (!p.intact) {
     // ★ 2026-09-18: 결근 팝업을 아직 안 봤으면(아이템으로 막을 기회) 실패 확정을 미룬다. 팝업을 닫으면 그때 확정.
-    try { const d = _retDebuff(email); if (d && d.date === _tyTodayISO() && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended) return "pending"; } catch (e) {}
+    try {
+      const d = _retDebuff(email); const today = _tyTodayISO();
+      if (d && d.date === today && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended) return "pending";
+      // ★ 2026-09-21: 오늘 결근 판정(팝업)이 아직 안 만들어졌으면 확정을 미룬다. 전엔 집계가 팝업보다 먼저 돌아 목표가 그냥 리셋됐다.
+      if (!(d && d.date === today)) { const gap = _retAbsenceGap(email); if (gap >= 1 && gap < 30) return "pending"; }
+    } catch (e) {}
     g.status = "failed"; g.failedAt = new Date().toISOString(); g.streakAtFail = p.done; _retSave("GOAL", email, g); _retPing();
     return "failed";
   }
@@ -10216,8 +10230,8 @@ function RetDayPopup({ day, email, onClose }) {
   const rows = taskRows.concat(streakRows);
   const taskSum = taskRows.reduce((n, e) => n + e.exp, 0), streakSum = streakRows.reduce((n, e) => n + e.exp, 0);
   const sum = taskSum + streakSum;
-  const streak = _retStreakDays(email);
   const gp = _retGoalProgress(email);
+  const streak = gp ? gp.done : _retStreakDays(email);   // ★ 2026-09-21: 내 목표가 있으면 목표 기준 연속 (팝업 4일 vs 목표 1일 불일치 해소)
   return (
     <div className="modal-bg" style={{ zIndex: 9170 }} onClick={onClose}>
       <div className="ret-pop" onClick={e => e.stopPropagation()}>
@@ -10611,7 +10625,7 @@ function RetWeeklyBoard() {
         // v2 RPC 는 { rows, me } (me = 내가 목록 밖일 때 내 순위), 옛 RPC 는 배열
         if (Array.isArray(r.result)) { setRows(r.result); setMeOut(null); }
         else { setRows(Array.isArray(r.result && r.result.rows) ? r.result.rows : []); setMeOut((r.result && r.result.me) || null); }
-        try { const rs = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []); const me = rs.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null; _retSvrWeekSet(email, me ? Number(me.exp) || 0 : 0, me && me.streak != null ? Number(me.streak) : undefined); } catch (e) {}
+        try { const rs = Array.isArray(r.result) ? r.result : ((r.result && r.result.rows) || []); const me = rs.find(x => x.is_me) || (r.result && !Array.isArray(r.result) && r.result.me) || null; if (me) _retSvrWeekSet(email, Number(me.exp) || 0, me.streak != null ? Number(me.streak) : undefined); else _retSave("SVR", email, {}); _retPing(); } catch (e) {}
       } catch (e) { if (alive) setErr("순위를 불러오지 못했어요"); }
     })();
     return () => { alive = false; };
@@ -13349,7 +13363,10 @@ function InboxPage({ openMemo }) {
       </div>
       <ApprovalLine doc="YB-MEMO" applicant={USER.name} status={`${NOTICES.length}건 수신`} />
       <div className={ret ? "ret-inbox-split" : ""}>
-      {ret && <div className="ret-inbox-left"><RetWeeklyBoard /></div>}
+      {ret && (((USER.realCurrentDay || USER.currentDay || 1) >= (_UNLOCK_AT.board || 2))
+        ? <div className="ret-inbox-left"><RetWeeklyBoard /></div>
+        : <div className="ret-inbox-left"><div className="ret-board"><div className="ret-board-head"><div><b>🏆 WEEKLY BIZ SCORE</b><small>Day {_UNLOCK_AT.board || 2}에 열려요</small></div></div>
+            <div className="ret-board-err">🔒 동기들과의 주간 EXP 순위는 <b>Day {_UNLOCK_AT.board || 2}</b>에 열려요.<br/><small>오늘 일정을 끝내면 EXP 가 쌓이기 시작해요.</small></div></div></div>)}
       {(<div className={ret ? "ret-inbox-right" : ""}>
       {ret && <div className="ret-growth-head">📣 공지글 <small>인사팀·유버디가 올린 안내</small></div>}
 
@@ -14048,7 +14065,7 @@ function MyPage({ setActive, setViewingDay }) {
   const isMobile = _useIsMobile() && _isMobileHomeLive();
   const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
   // 출근부 지난 칸·역량 스탯에서 그날로 이동: 과거 Day 를 보여주는 건 홈 탭이므로 탭도 같이 옮긴다.
-  const _goDay = (d) => { if (setViewingDay) setViewingDay(d); if (setActive) setActive("home"); try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {} };
+  const _goDay = (d) => { if (setViewingDay) setViewingDay(d); try { if (d === 1) _tyErrandProof("day1"); } catch (e) {} if (setActive) setActive("home"); try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {} };
   const [notif, setNotif] = useState(true);
   const [notifTime, setNotifTime] = useState("09:00");
   const [paused, setPaused] = useState(false);
