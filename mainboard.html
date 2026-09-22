@@ -7490,6 +7490,33 @@ function _odMergeFreshNotes(local) {
   } catch (e) {}
   return local;
 }
+// ★ 2026-09-22: 출근 "날짜" 복원. 완주 시각(__OD_TASKS_DAY_n_ts)은 기기에만 있어서 새 기기·캐시 삭제 뒤엔
+//   "가입일 + Day 순번" 으로 지어내던 문제. 서버 exp_events 에 남은 실제 완주 시각(task:<day>:*)과
+//   방어로 인정된 날(att:<date>)을 받아 비어 있는 날짜만 채운다. 기기에 이미 있는 시각은 건드리지 않는다.
+async function _odApplyActivityDates(email) {
+  try {
+    if (!email || !window.OD || !window.OD.fetchActivityDates) return false;
+    const r = await window.OD.fetchActivityDates(email);
+    if (!r || !r.ok || !r.result) return false;
+    let changed = 0;
+    const td = r.result.task_days || {};
+    Object.keys(td).forEach(d => {
+      const at = td[d] && td[d].at; if (!at || !/^\d+$/.test(d)) return;
+      const k = "__OD_TASKS_DAY_" + d + "_ts";
+      if (localStorage.getItem(k)) return;
+      const t = new Date(at); if (isNaN(t.getTime())) return;
+      localStorage.setItem(k, t.toISOString()); changed++;
+    });
+    const att = Array.isArray(r.result.att) ? r.result.att.filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)) : [];
+    if (att.length) {
+      const cur = _retLoad("ATT", email, { dates: [] }); if (!Array.isArray(cur.dates)) cur.dates = [];
+      att.forEach(d => { if (cur.dates.indexOf(d) < 0) { cur.dates.push(d); changed++; } });
+      _retSave("ATT", email, cur);
+    }
+    if (changed) { try { _retSave("SVR_DATES", email, { at: new Date().toISOString(), n: changed }); } catch (e) {} console.log("[hydrate] 출근 날짜 " + changed + "건 서버에서 복원"); }
+    return changed > 0;
+  } catch (e) { return false; }
+}
 function _odRestoreMetaFromTasks(email, task_progress) {
   try {
     if (!email || !task_progress) return;
@@ -9966,11 +9993,8 @@ function _retEvalDebuff(email) {
   const gap = forced !== null ? forced : _retAbsenceGap(email);
   const level = _retDebuffLevel(gap);
   const rec = { date: today, gap, level, defended: false, quizDone: false, surveyDone: false, seen: false, forced: forced !== null };
-  // 방어 아이템 자동 사용: 2일 → 연차, 3일+ → 휴가(없으면 연차 2장도 안 됨. 휴가만)
-  const kstHour = new Date(Date.now() + 9 * 3600000).getUTCHours();
-  // ★ 2026-09-15: 연장권은 자동으로 안 쓴다 (팝업에서 물어보고 쓰기). 연차는 2일 결근에 자동.
-  if (level === 2 && _retInvUse(email, "annual")) rec.defended = "annual";
-  else if (level === 3 && _retInvUse(email, "vacay")) rec.defended = "vacay";
+  // ★ 2026-09-22: 아이템은 어떤 레벨이든 자동으로 안 쓴다. 팝업에서 "연차 쓰기 / 휴가 쓰기" 를 눌러야 소모.
+  //   (예전엔 2일 결근 → 연차, 3일+ → 휴가를 팝업 뜨기 전에 자동 차감했다. 1일 연장권만 물어보는 것과 어긋나서 통일.)
   _retSave("DEBUFF", email, rec);
   // 목표 판정 (방어했으면 목표도 유지: 결근일을 출근으로 채워 넣는다)
   if (rec.defended) {
@@ -10367,7 +10391,7 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
             <div><small>결근 전 연속 출근</small><b>🔥 {before}일</b></div>
             <span className="ret-deb-streak-arrow">→</span>
             <div><small>{rec.defended ? "지금" : "그냥 닫으면"}</small><b className={rec.defended ? "" : "neg"}>{rec.defended ? "🔥 " + (before + rec.gap + 1) + "일 유지" : "1일부터 다시"}</b></div>
-            {!rec.defended && item && lv === 1 && <div><small>{item.name} 쓰면</small><b>🔥 {before + rec.gap + 1}일 유지</b></div>}
+            {!rec.defended && item && lv >= 1 && lv <= 3 && <div><small>{item.name} 쓰면</small><b>🔥 {before + rec.gap + 1}일 유지</b></div>}
           </div>
         ); })()}
 
@@ -10392,7 +10416,7 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
 
         {item && !rec.defended && (
           <div className="ret-deb-box">
-            <div><b>{item.icon} {item.name}</b> ({item.cost}P){lv === 1 ? "을 쓰면 어제도 출근한 걸로 인정돼요. 연속 출근이 안 끊겨요." : "가 있으면 복습 없이 바로 들어갈 수 있어요."} 지금 <b>{wp.toLocaleString()}P</b> 있어요{(Number(inv[item.id]) || 0) > 0 ? " · " + item.name + " " + inv[item.id] + "장 보유" : ""}</div>
+            <div><b>{item.icon} {item.name}</b> ({item.cost}P){lv === 1 ? "을 쓰면 어제도 출근한 걸로 인정돼요. 연속 출근이 안 끊겨요." : "를 쓰면 빠진 날이 출근으로 인정돼요. 연속 출근과 내 목표가 그대로 이어지고, 복습 없이 바로 들어갈 수 있어요."} 지금 <b>{wp.toLocaleString()}P</b> 있어요{(Number(inv[item.id]) || 0) > 0 ? " · " + item.name + " " + inv[item.id] + "장 보유" : ""}</div>
             <div className="ret-deb-actions">
               {(Number(inv[item.id]) || 0) > 0
                 ? <button className="btn btn-primary" onClick={() => defendWith(item.id)}>{item.name} 쓰기</button>
@@ -21107,12 +21131,18 @@ window.SimApp = App;
             localStorage.setItem(k, JSON.stringify(merged));
           });
           _odRestoreMetaFromTasks(local.email, task_progress);
+          // ★ 2026-09-22: 서버에 남은 실제 완주 시각으로 비어 있는 출근 날짜 채우기 (새 기기·캐시 삭제 대응)
+          try { await _odApplyActivityDates(local.email); } catch (e) {}
 
           // ★ localStorage → DB (localStorage에 있는데 DB에 없는 거 push, 누락 복구)
-          const allTaskKeys = Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_"));
+          // ★ 2026-09-22: _ts(시각) 키가 같이 잡혀 JSON.parse 가 터지면서 반복문 전체가 중단되던 버그. 시각 키는 제외하고, 한 Day 가 깨져도 다음 Day 는 계속 본다.
+          const allTaskKeys = Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts"));
           for (const k of allTaskKeys) {
             const dayKey = k.replace("__OD_TASKS_DAY_", "");
-            const localTasks = JSON.parse(localStorage.getItem(k) || "{}");
+            if (!/^\d+$/.test(dayKey)) continue;
+            let localTasks = null;
+            try { localTasks = JSON.parse(localStorage.getItem(k) || "{}"); } catch (e) { continue; }
+            if (!localTasks || typeof localTasks !== "object") continue;
             const dbTasks = (task_progress && task_progress[dayKey]) || {};
             const hasMore = Object.keys(localTasks).some(id => localTasks[id] && !dbTasks[id]);
             if (hasMore && window.OD?.saveTaskProgress) {
@@ -21374,6 +21404,8 @@ window.SimApp = App;
         });
         _odRestoreMetaFromTasks(local.email, task_progress);
       } catch (e) {}
+      // ★ 2026-09-22: 새 기기 첫 로그인 = 시각 키가 하나도 없는 상태. 서버 완주 시각으로 채운다 (없으면 가입일+순번으로 지어내던 문제).
+      try { await _odApplyActivityDates(local.email); } catch (e) {}
 
       console.log("[hydrate] DB → localStorage 복원 완료.",
         "submissions:", dbCompleted.length,
