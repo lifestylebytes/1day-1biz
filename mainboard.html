@@ -20274,11 +20274,14 @@ function App() {
   //   2일 안에 재결제가 DB에 반영 안 되면 자동 차단(휴직 화면).
   //   퇴직 처리(membership_cancel_at)된 경우엔 유예 없이 만료일에 차단.
   //   ⚠ 갱신 웹훅이 없으므로 결제일 후 2일 내 동기화(CSV/웹훅) 필수. 안 하면 유료회원이 막힘.
-  const _GRACE_MS = 2 * 86400000;
+  // ★ 2026-09-22 재확정: 2일 유예도 사고를 냈다(9/20~21 갱신자 12명이 9/22 에 막힘).
+  //   Latpeed 는 자동갱신 웹훅을 안 주고 CSV 대조는 사람이 하는 일이라 날짜 기반 차단은 언제나 결제한 사람을 막는다.
+  //   해지 안 한 유료회원(member)은 날짜로 절대 자동 차단하지 않는다. 차단은 딱 두 경우:
+  //   (a) 운영자 수동 회수(unlocked=false), (b) 해지마커(membership_cancel_at) + 만료일 경과.
+  //   해지 안 하고 카드 실패한 사람은 다음 CSV 대조에서 '구독 종료' 로 잡혀 해지마커가 붙는다. 그 며칠은 손해가 아니라 보험이다.
   const _membershipExpired = !_isInternalUser && (_forceExpired
     || (_isPaidMember
         ? (_accessRevoked
-           || (_endsAt && _msUntilEnd <= -_GRACE_MS)
            || (!!_cancelAtRaw && _endsAt && _msUntilEnd <= 0))
         : (_endsAt && _msUntilEnd <= 0)));
   // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
@@ -21073,8 +21076,7 @@ window.SimApp = App;
           const _expiredNow = !_isInt && (
             _isMem
               ? (local.unlocked === false
-                 || (_ends2 && _msLeft2 <= -(2 * 86400000))
-                 || (_cancel2 && _ends2 && _msLeft2 <= 0))
+                 || (_cancel2 && _ends2 && _msLeft2 <= 0))   // 2026-09-22: 해지마커 없는 유료회원은 날짜로 차단 안 함 (위 정책과 동일)
               : (_ends2 && _msLeft2 <= 0));
           if (_expiredNow && !sessionStorage.getItem('__OD_EXP_RELOADED')) {
             sessionStorage.setItem('__OD_EXP_RELOADED', '1');
