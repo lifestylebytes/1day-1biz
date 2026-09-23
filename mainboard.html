@@ -9062,7 +9062,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               >
                 <span className="schedule-time">{row.time}</span>
                 <span>
-                  <span className="schedule-title" style={{ textDecoration: row.computed === "done" ? "line-through" : "none" }}>{row.title}</span>{RET_EXP_BY_SLOT[i] ? <RetExpTag exp={RET_EXP_BY_SLOT[i]} done={row.computed === "done"} bonus={(i === 2 && _tyTodayISO() >= RET_QZ_BONUS.from) ? RET_QZ_BONUS.perfect : 0} /> : null}
+                  <span className="schedule-title" style={{ textDecoration: row.computed === "done" ? "line-through" : "none" }}>{row.title}</span>{RET_EXP_BY_SLOT[i] ? <RetExpTag exp={RET_EXP_BY_SLOT[i]} done={row.computed === "done"} bonus={(i === 2 && _retQzBonusOn()) ? RET_QZ_BONUS.perfect : 0} /> : null}
                   {row.note ? <div className="schedule-note">{row.note}</div> : null}
                 </span>
                 <span className={"schedule-status " + row.computed}>
@@ -9688,11 +9688,13 @@ const _RET_SLOT3 = ["mission", "afternoon", "lunch", "recap"];       // 14:00 �
 // ★ 2026-09-24 부터: 미니 퀴즈 점수 보너스 (그날 첫 시도 점수 기준). 만점 +30 · 8~9/10 +15 · 그 아래 0.
 const RET_QZ_BONUS = { perfect: 30, good: 15, goodRatio: 0.8, from: "2026-09-24", minTotal: 5 };
 // 미니 퀴즈 기록(그 Day 의 MINI 로그 항목) → 보너스 EXP. 시작일 전 기록·문제 수 부족·기록 없음 = 0.
+// 보너스가 켜져 있나: 시작일 이후이거나, 개발 뷰(운영자 + __OD_NEXT)면 미리 보기
+function _retQzBonusOn() { try { return _tyTodayISO() >= RET_QZ_BONUS.from || (typeof _isDevNext === "function" && _isDevNext()); } catch (e) { return false; } }
 function _retQuizBonusOf(entry) {
   try {
     const f = (entry && entry.first) || entry; if (!f || !f.at) return 0;
     const kst = new Date(Date.parse(f.at) + 9 * 3600000).toISOString().slice(0, 10);
-    if (kst < RET_QZ_BONUS.from) return 0;
+    if (kst < RET_QZ_BONUS.from && !(typeof _isDevNext === "function" && _isDevNext())) return 0;
     const total = Number(f.total) || 0, score = Number(f.score) || 0;
     if (total < RET_QZ_BONUS.minTotal) return 0;
     if (score >= total) return RET_QZ_BONUS.perfect;
@@ -18342,8 +18344,7 @@ function QzBonusLine({ rd, results }) {
   const first = (entry && (entry.first || entry)) || null;
   const scored = results.filter(r => !r.preview); const total = scored.length; const score = scored.filter(r => r.ok).length;
   const retry = !!(first && entry && first.at !== entry.at);
-  const todayKst = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
-  if (todayKst < RET_QZ_BONUS.from) return null;   // 시작일 전엔 아예 안 보임
+  if (!_retQzBonusOn()) return null;   // 시작일 전엔 아예 안 보임 (개발 뷰 제외)
   const bonus = _retQuizBonusOf(entry);
   const fScore = first ? Number(first.score) || 0 : score, fTotal = first ? Number(first.total) || total : total;
   const need = Math.max(0, fTotal - fScore);
