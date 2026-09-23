@@ -9685,8 +9685,8 @@ const _retAddDays = (iso, n) => _retISO(Date.parse(iso + "T00:00:00Z") + n * 864
 // ── EXP 규칙 (제안서) ──
 const RET_EXP = { checkin: 25, scenario: 100, mission: 50, wrapup: 25, streak: 50, rev5: 10, rev10: 20, rev20: 50, pre: 50, errand: 20, survey: 50 };
 const _RET_SLOT3 = ["mission", "afternoon", "lunch", "recap"];       // 14:00 슬롯은 날마다 id 가 다르다 (로테이션). 어느 것이든 미니 퀴즈 50
-// ★ 2026-09-24 부터: 미니 퀴즈 점수 보너스 (그날 첫 시도 점수 기준). 만점 +30 · 8~9/10 +15 · 그 아래 0.
-const RET_QZ_BONUS = { perfect: 30, good: 15, goodRatio: 0.8, from: "2026-09-24", minTotal: 5 };
+// ★ 2026-09-24 부터: 미니 퀴즈 점수 보너스 (그날 첫 시도 점수 기준). 만점 +30 · 8~9/10 +15 · 6~7/10 +5 · 그 아래 0.
+const RET_QZ_BONUS = { perfect: 30, good: 15, goodRatio: 0.8, ok: 5, okRatio: 0.6, from: "2026-09-24", minTotal: 5 };
 // 미니 퀴즈 기록(그 Day 의 MINI 로그 항목) → 보너스 EXP. 시작일 전 기록·문제 수 부족·기록 없음 = 0.
 // 보너스가 켜져 있나: 시작일 이후이거나, 개발 뷰(운영자 + __OD_NEXT)면 미리 보기
 function _retQzBonusOn() { try { return _tyTodayISO() >= RET_QZ_BONUS.from || (typeof _isDevNext === "function" && _isDevNext()); } catch (e) { return false; } }
@@ -9699,6 +9699,7 @@ function _retQuizBonusOf(entry) {
     if (total < RET_QZ_BONUS.minTotal) return 0;
     if (score >= total) return RET_QZ_BONUS.perfect;
     if (score / total >= RET_QZ_BONUS.goodRatio) return RET_QZ_BONUS.good;
+    if (score / total >= RET_QZ_BONUS.okRatio) return RET_QZ_BONUS.ok;
     return 0;
   } catch (e) { return 0; }
 }
@@ -10739,7 +10740,7 @@ function RetWeeklyBoard() {
             <ul>
               <li><span>☀️ 출근 도장</span><em>+{RET_EXP.checkin}</em></li>
               <li><span>💬 오늘의 시추에이션 (한 줄 보내기)</span><em>+{RET_EXP.scenario}</em></li>
-              <li><span>🧩 미니 퀴즈 <small style={{ color: "var(--ink-mute)" }}>(만점 +{RET_QZ_BONUS.perfect} · 8문제 이상 +{RET_QZ_BONUS.good}, 첫 시도 기준)</small></span><em>+{RET_EXP.mission}~{RET_EXP.mission + RET_QZ_BONUS.perfect}</em></li>
+              <li><span>🧩 미니 퀴즈 <small style={{ color: "var(--ink-mute)" }}>(만점 +{RET_QZ_BONUS.perfect} · 8~9 +{RET_QZ_BONUS.good} · 6~7 +{RET_QZ_BONUS.ok}, 첫 시도 기준)</small></span><em>+{RET_EXP.mission}~{RET_EXP.mission + RET_QZ_BONUS.perfect}</em></li>
               <li><span>🌙 퇴근 (일지)</span><em>+{RET_EXP.wrapup}</em></li>
               <li><span>🔥 어제도 완주했으면 연속 출근 보너스</span><em>+{RET_EXP.streak}</em></li>
             </ul>
@@ -18349,10 +18350,12 @@ function QzBonusLine({ rd, results }) {
   const fScore = first ? Number(first.score) || 0 : score, fTotal = first ? Number(first.total) || total : total;
   const need = Math.max(0, fTotal - fScore);
   const goodNeed = Math.max(0, Math.ceil(fTotal * RET_QZ_BONUS.goodRatio) - fScore);
+  const okNeed = Math.max(0, Math.ceil(fTotal * RET_QZ_BONUS.okRatio) - fScore);
   let msg;
   if (bonus === RET_QZ_BONUS.perfect) msg = "만점! 퍼펙트 보너스예요";
   else if (bonus === RET_QZ_BONUS.good) msg = need + "문제만 더 맞히면 퍼펙트 +" + RET_QZ_BONUS.perfect;
-  else msg = (goodNeed > 0 ? goodNeed + "문제 더 맞히면 +" + RET_QZ_BONUS.good + " · " : "") + "내일 틀린 단어 잡으면 만점 +" + RET_QZ_BONUS.perfect;
+  else if (bonus === RET_QZ_BONUS.ok) msg = goodNeed + "문제 더 맞히면 +" + RET_QZ_BONUS.good + " · 내일 틀린 단어 잡으면 만점 +" + RET_QZ_BONUS.perfect;
+  else msg = (okNeed > 0 ? okNeed + "문제 더 맞히면 +" + RET_QZ_BONUS.ok + " · " : "") + "내일 틀린 단어 잡으면 만점 +" + RET_QZ_BONUS.perfect;
   return (
     <div style={{ margin: "10px 0 2px", padding: "10px 12px", background: bonus ? "rgba(74,124,89,0.08)" : "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 8, textAlign: "center", lineHeight: 1.55 }}>
       <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>⚡ 퀴즈 +{RET_EXP.mission}{bonus ? <> · 🎯 보너스 <span style={{ color: "var(--green)" }}>+{bonus}</span></> : " · 보너스 0"} = <span style={{ color: "var(--orange)" }}>+{RET_EXP.mission + bonus} EXP</span></div>
