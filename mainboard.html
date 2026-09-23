@@ -9116,8 +9116,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 </span>
                 <span className={"schedule-status " + row.computed}>
                   {row.computed === "done" ? "✓ 완료" : row.computed === "now" ? "👉 지금" : "🔒 잠금"}
-                  {/* ★ 2026-09-23 개발 뷰: 끝낸 미니 퀴즈 줄은 눌러서 다시 풀 수 있다는 걸 보여준다 */}
-                  {row.computed === "done" && row.type === "mini_quiz" && _isDevNext() ? <small style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--ink-mute)", marginTop: 2 }}>↻ 다시 풀기</small> : null}
+                  {/* ★ 2026-09-23: 끝낸 미니 퀴즈 줄은 눌러서 다시 풀 수 있다는 걸 작은 글씨로 (라이브) */}
+                  {row.computed === "done" && row.type === "mini_quiz" && _RET_ON() ? <small style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--ink-mute)", marginTop: 2 }}>↻ 다시 풀기</small> : null}
                 </span>
               </div>
             ))}
