@@ -5888,7 +5888,18 @@ function _computeGatedDay() {
       localStorage.setItem(_GK, JSON.stringify({ ..._sv, floor: _sv.floor || _floor, acked: _ack }));
     }
   } catch (e) {}
-  while (_d < _autoDay && _doneSet.has(_d) && _ack.indexOf(_d) >= 0) _d++;
+  // ★ 2026-09-23: 어제(또는 그 전에) 끝낸 Day 는 버튼 없이 자동으로 넘어간다.
+  //   평범한 회원(하루 하나)이 다음 날 접속했는데 어제 화면 + '다음 Day 열기' 버튼만 보여서 "Day 2가 안 열린다" 고 신고한 케이스.
+  //   ack 버튼은 "오늘 안에 밀린 Day 를 여러 개 끝낼 때" 훅 넘어가지 않게 하는 용도라, 오늘 끝낸 Day 에만 남긴다.
+  const _doneBeforeToday = (d) => {
+    try {
+      const v = localStorage.getItem('__OD_TASKS_DAY_' + d + '_ts');
+      if (!v) return true;   // 완주 시각이 없는 옛 기록 = 오늘 한 게 아님
+      const k = new Date(Date.parse(v) + 9 * 3600000).toISOString().slice(0, 10);
+      return k < _todayKST;
+    } catch (e) { return true; }
+  };
+  while (_d < _autoDay && _doneSet.has(_d) && (_ack.indexOf(_d) >= 0 || _doneBeforeToday(_d))) _d++;
   return _d;
 }
 // 지금 화면의 Day 를 다 끝냈는데 아직 '다음 Day 열기' 를 안 눌러서 멈춰 있는 상태인지.
