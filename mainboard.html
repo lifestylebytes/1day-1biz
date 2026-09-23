@@ -831,6 +831,19 @@ body::before {
 .ot-fb-note { color: var(--ink-soft); margin-top: 4px; }
 .ot-pre-ko { font-size: 15px; font-weight: 700; color: var(--ink); background: var(--paper-warm); padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
 .ot-pre-saved { display: grid; gap: 6px; }
+/* ★ 2026-09-23 개발 뷰: 내일 미리 쓰기 한 장 카드 (질문 1개 + 입력 1개). 좌우 대칭, 폭 100% */
+.ot-pre2 { width: 100%; box-sizing: border-box; padding: 14px 14px 12px; background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; }
+.ot-pre2-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink-mute); text-transform: uppercase; margin-bottom: 6px; }
+.ot-pre2-ko { font-size: 16px; font-weight: 800; color: var(--ink); line-height: 1.5; margin: 0 0 6px; word-break: keep-all; }
+.ot-pre2-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+.ot-pre2-hint b { color: var(--ink); }
+.ot-pre2 .ot-row-input { margin-top: 2px; }
+.ot-pre2-opt { margin-top: 8px; font-size: 12px; color: var(--ink-mute); }
+.ot-pre2-opt button.wb-link { font-size: 12px; font-weight: 700; }
+.ot-pre2-opt input { width: 100%; box-sizing: border-box; margin-top: 6px; font-family: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.ot-pre2-saved { display: grid; gap: 6px; }
+.ot-pre2-saved .ot-pre-mine { font-size: 14px; font-weight: 700; color: var(--ink); }
+.ot-pre2-saved .btn { justify-self: start; }
 .ot-pre-mine { font-size: 14px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .ot-pre-saved .btn { justify-self: start; }
 /* 🔮 어제 미리 쓴 문장 vs 오늘 표현 */
@@ -7655,6 +7668,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   };
   // 내일 단어: 뜻 보고 영어 표현 써보기 (미리쓰기와 같이 저장, 내일 아침 정답과 나란히)
   const [wordGuess, setWordGuess] = useState(() => (_loadJSON(_preKey(email, day + 1)) || {}).wordGuess || "");
+  const [preGuessOpen, setPreGuessOpen] = useState(() => !!((_loadJSON(_preKey(email, day + 1)) || {}).wordGuess));
 
   const submitOne = (syn) => {
     const text = (drafts[syn.w] || "").trim();
@@ -7748,7 +7762,42 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
             })}
           </div>
 
-          {tomorrow && tomorrow.word && (
+          {tomorrow && tomorrow.word && _isDevNext() && (() => {
+            /* ★ 2026-09-23 개발 뷰: 질문 하나, 입력 하나. 단어 맞히기는 '선택' 으로 접어둔다 (두 칸이 나란히 있어 뭘 해야 할지 헷갈리던 문제) */
+            const savedRec = preSaved ? (_loadJSON(_preKey(email, day + 1)) || {}) : null;
+            return (
+              <div className="ot-sec">
+                <div className="ot-sec-title">🔮 내일 미리 쓰기 <small style={{ fontWeight: 700, color: "var(--ink-mute)" }}>+{RET_EXP.pre} EXP</small></div>
+                <div className="ot-sec-sub">내일 이 말을 영어로 해야 해요. 지금 아는 영어로 한 문장만 써두면, 내일 아침 사수 표현이랑 나란히 비교해 줘요.</div>
+                <div className="ot-pre2">
+                  <div className="ot-pre2-eyebrow">내일 이 말을 영어로</div>
+                  {_tmKoShown ? <div className="ot-pre2-ko">"{_tmKoShown}"</div> : null}
+                  <div className="ot-pre2-hint">힌트 · 내일 표현의 뜻: <b>{tomorrow.meaning}</b>{_tmKoHidden ? " · _____ 자리에 들어가요" : ""}</div>
+                  {preSaved ? (
+                    <div className="ot-pre2-saved">
+                      <div className="ot-pre-mine">"{savedRec.text || pre}"</div>
+                      {savedRec.wordGuess ? <div style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>표현 예상: <b>{savedRec.wordGuess}</b> · 정답은 내일 아침에</div> : null}
+                      <div className="ot-fb-ok">✓ 저장했어요. 내일 출근하면 사수 표현이랑 나란히 보여요.</div>
+                      <button className="btn btn-ghost" style={{ fontSize: 12, padding: "5px 10px" }} onClick={() => setPreSaved(false)}>고쳐 쓰기</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="ot-row-input">
+                        <input value={pre} onChange={e => setPre(e.target.value)} placeholder="지금 아는 영어로 한 문장" onKeyDown={e => { if (e.key === "Enter") savePre(); }} />
+                        <button className="btn btn-primary" onClick={savePre}>내일 확인</button>
+                      </div>
+                      <div className="ot-pre2-opt">
+                        {!preGuessOpen
+                          ? <button type="button" className="wb-link" onClick={() => setPreGuessOpen(true)}>표현이 떠오르면 같이 적어두기 (선택) →</button>
+                          : <><span>떠오르는 영어 표현 (선택)</span><input value={wordGuess} onChange={e => setWordGuess(e.target.value)} placeholder="예: ramp up" /></>}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+          {tomorrow && tomorrow.word && !_isDevNext() && (
             <div className="ot-sec">
               <div className="ot-sec-title">🔮 내일 미리 쓰기</div>
               <div className="ot-sec-sub">내일 이 말을 영어로 해야 해요. 지금 아는 표현으로 먼저 써두면, 내일 아침 사수가 정답 표현이랑 나란히 보여줘요.</div>
@@ -9067,6 +9116,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
                 </span>
                 <span className={"schedule-status " + row.computed}>
                   {row.computed === "done" ? "✓ 완료" : row.computed === "now" ? "👉 지금" : "🔒 잠금"}
+                  {/* ★ 2026-09-23 개발 뷰: 끝낸 미니 퀴즈 줄은 눌러서 다시 풀 수 있다는 걸 보여준다 */}
+                  {row.computed === "done" && row.type === "mini_quiz" && _isDevNext() ? <small style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--ink-mute)", marginTop: 2 }}>↻ 다시 풀기</small> : null}
                 </span>
               </div>
             ))}
