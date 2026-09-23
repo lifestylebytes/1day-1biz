@@ -801,7 +801,8 @@ body::before {
 .ot-head b { font-size: 12px; font-weight: 800; color: #FFB380; }
 .ot-card-locked { opacity: 0.75; }
 .ot-card-locked .ot-head { background: var(--paper-warm); color: var(--ink-soft); }
-.ot-body { padding: 16px; display: grid; gap: 18px; }
+.ot-body { padding: 16px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }   /* ★ 2026-09-23: 1fr 의 최소가 auto 라 넓은 자식(입력줄 등)이 트랙을 오른쪽으로 밀어 좌우가 안 맞던 문제. minmax(0,1fr) 로 컨테이너 폭에 가둔다 */
+.ot-body > * { min-width: 0; max-width: 100%; }
 /* ★ 2026-09-18: 개발 뷰 — 퇴근 후 SIDE PROJECT 는 '오늘 일정' 표의 5번째 줄 */
 .schedule .ot-card.ot-inrow { margin: 0; border: none; border-radius: 0; background: transparent; border-top: 1px dashed var(--line); }
 .ot-inrow .ot-head { display: grid; grid-template-columns: 60px 1fr auto; gap: 14px; align-items: center; padding: 11px 16px; background: transparent; color: var(--ink); font-size: 13px; font-weight: 400; }
@@ -832,12 +833,13 @@ body::before {
 .ot-pre-ko { font-size: 15px; font-weight: 700; color: var(--ink); background: var(--paper-warm); padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
 .ot-pre-saved { display: grid; gap: 6px; }
 /* ★ 2026-09-23 개발 뷰: 내일 미리 쓰기 한 장 카드 (질문 1개 + 입력 1개). 좌우 대칭, 폭 100% */
-.ot-pre2 { width: 100%; box-sizing: border-box; padding: 14px 14px 12px; background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; }
+.ot-pre2 { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; padding: 14px 14px 12px; background: var(--paper-warm); border: 1px solid var(--line); border-radius: 10px; }
 .ot-pre2-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--ink-mute); text-transform: uppercase; margin-bottom: 6px; }
-.ot-pre2-ko { font-size: 16px; font-weight: 800; color: var(--ink); line-height: 1.5; margin: 0 0 6px; word-break: keep-all; }
+.ot-pre2-ko { font-size: 16px; font-weight: 800; color: var(--ink); line-height: 1.5; margin: 0 0 6px; word-break: keep-all; overflow-wrap: anywhere; }
 .ot-pre2-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
 .ot-pre2-hint b { color: var(--ink); }
-.ot-pre2 .ot-row-input { margin-top: 2px; }
+.ot-pre2 .ot-row-input { margin-top: 2px; min-width: 0; }
+.ot-pre2 .ot-row-input input { width: 0; min-width: 0; flex: 1 1 0; }
 .ot-pre2-opt { margin-top: 8px; font-size: 12px; color: var(--ink-mute); }
 .ot-pre2-opt button.wb-link { font-size: 12px; font-weight: 700; }
 .ot-pre2-opt input { width: 100%; box-sizing: border-box; margin-top: 6px; font-family: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
