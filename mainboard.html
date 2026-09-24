@@ -9789,7 +9789,89 @@ function _retShopOpen() { try { const u = (window.__SIM && window.__SIM.USER) ||
 
 // ── 저장소 ──
 function _retLoad(k, email, def) { const v = _loadJSON(_retKey(k, email)); return (v && typeof v === "object") ? v : (def || {}); }
-function _retSave(k, email, v) { _saveJSON(_retKey(k, email), v); }
+function _retSave(k, email, v) { _saveJSON(_retKey(k, email), v); try { _retStateTouched(k, email); } catch (e) {} }
+// ★ 2026-09-24 기기 간 동기화: 내 목표·아이템·복지P·결근 판정·출근 인정일은 기기 localStorage 에만 있어서
+//   PC/폰을 오가면 서로 다른 세상이 됐다 (폰에서 어제 완주했는데 PC 가 3일 결근으로 판정해 휴가를 쓰게 한 사고).
+//   users.ret_state 에 키별 {v, at} 로 올리고, 접속 때 내려받아 더 최신 쪽을 쓴다. ATT 는 합집합, WP 는 항목 합집합.
+const _RET_SYNC_KEYS = ["GOAL", "INV", "WP", "DEBUFF", "ATT"];
+const _retMetaKey = (email) => "__OD_RET_META_" + (email || "guest");
+function _retMeta(email) { return _loadJSON(_retMetaKey(email)) || {}; }
+let _retPushTimer = null; const _retPushPending = {};
+function _retStateTouched(k, email) {
+  if (_RET_SYNC_KEYS.indexOf(k) < 0 || !email || email === "guest") return;
+  if (window.__odRetPulling) return;   // 서버에서 내려받아 쓰는 중엔 다시 올리지 않는다
+  const at = new Date().toISOString();
+  const m = _retMeta(email); m[k] = at; _saveJSON(_retMetaKey(email), m);
+  _retPushPending[k] = true;
+  clearTimeout(_retPushTimer);
+  _retPushTimer = setTimeout(() => _retPushState(email), 1200);
+}
+function _retPushState(email, keys) {
+  try {
+    if (!window.OD || !window.OD.setRetState || !email || email === "guest") return;
+    const m = _retMeta(email); const patch = {};
+    (keys || Object.keys(_retPushPending)).forEach(k => { if (_RET_SYNC_KEYS.indexOf(k) < 0) return; const v = _loadJSON(_retKey(k, email)); if (v == null) return; patch[k] = { v, at: m[k] || new Date().toISOString() }; delete _retPushPending[k]; });
+    if (!Object.keys(patch).length) return;
+    window.OD.setRetState(email, patch).catch(() => {});
+  } catch (e) {}
+}
+async function _retPullState(email) {
+  try {
+    if (!window.OD || !window.OD.getRetState || !email || email === "guest") return false;
+    const r = await window.OD.getRetState(email);
+    if (!r || !r.ok || !r.result || typeof r.result !== "object") return false;
+    const sv = r.result; const m = _retMeta(email); let changed = false; const pushBack = [];
+    window.__odRetPulling = true;
+    try {
+      _RET_SYNC_KEYS.forEach(k => {
+        const s = sv[k]; const localAt = m[k] || ""; const local = _loadJSON(_retKey(k, email));
+        if (!s || !s.at) { if (local != null) pushBack.push(k); return; }
+        if (k === "ATT") {
+          const cur = (local && typeof local === "object") ? local : { dates: [] }; if (!Array.isArray(cur.dates)) cur.dates = [];
+          const before = cur.dates.length; ((s.v && s.v.dates) || []).forEach(d => { if (cur.dates.indexOf(d) < 0) cur.dates.push(d); });
+          if (cur.dates.length !== before) { _saveJSON(_retKey(k, email), cur); changed = true; }
+          if (cur.dates.length !== (((s.v && s.v.dates) || []).length)) pushBack.push(k);
+          return;
+        }
+        if (k === "WP") {
+          const cur = (local && typeof local === "object") ? local : { earn: [], spend: [] }; if (!Array.isArray(cur.earn)) cur.earn = []; if (!Array.isArray(cur.spend)) cur.spend = [];
+          const sv2 = s.v || {}; let n = 0;
+          (sv2.earn || []).forEach(e => { if (e && e.key && !cur.earn.some(x => x.key === e.key)) { cur.earn.push(e); n++; } });
+          (sv2.spend || []).forEach(e => { if (e && !cur.spend.some(x => x.at === e.at && x.item === e.item)) { cur.spend.push(e); n++; } });
+          if (n) { _saveJSON(_retKey(k, email), cur); changed = true; }
+          if (cur.earn.length !== (sv2.earn || []).length || cur.spend.length !== (sv2.spend || []).length) pushBack.push(k);
+          return;
+        }
+        if (s.at > localAt) { _saveJSON(_retKey(k, email), s.v); m[k] = s.at; changed = true; }
+        else if (localAt > s.at) pushBack.push(k);
+      });
+      _saveJSON(_retMetaKey(email), m);
+    } finally { window.__odRetPulling = false; }
+    if (pushBack.length) { pushBack.forEach(k => { if (!m[k]) { m[k] = new Date().toISOString(); } }); _saveJSON(_retMetaKey(email), m); _retPushState(email, pushBack); }
+    if (changed) { console.log("[hydrate] 리텐션 상태 서버 동기화:", "changed"); _retPing(); }
+    return changed;
+  } catch (e) { return false; }
+}
+// ★ 서버 날짜·상태를 받은 뒤, 오늘 이미 내린 결근 판정이 틀렸으면 되돌린다
+//   (PC 가 폰 기록을 모른 채 3일 결근으로 판정 → 휴가까지 쓰게 한 케이스). 실제 gap 이 줄었으면 기록을 고치고, 0 이면 아이템 환불 + 판정 삭제.
+function _retDebuffRevalidate(email) {
+  try {
+    const rec = _retDebuff(email); const today = _tyTodayISO();
+    if (!rec || rec.date !== today || rec.forced) return false;
+    const gap = _retAbsenceGap(email);
+    if (gap >= rec.gap) return false;
+    if (gap === 0) {
+      if (rec.defended) { try { _retInvAdd(email, rec.defended); _retToast("wp", "↩️", (RET_PERKS.find(x => x.id === rec.defended) || {}).name + " 돌려드렸어요", "다른 기기 기록을 확인해 보니 결근이 아니었어요"); } catch (e) {} }
+      _retSave("DEBUFF", email, {});
+    } else {
+      rec.gap = gap; rec.level = _retDebuffLevel(gap); _retSave("DEBUFF", email, rec);
+    }
+    try { const g = _retGoal(email); if (g && g.status === "failed" && g.failedAt && String(g.failedAt).slice(0, 10) === today) { g.status = "active"; delete g.failedAt; _retSave("GOAL", email, g); } } catch (e) {}
+    try { _retGoalCheck(email); } catch (e) {}
+    _retPing();
+    return true;
+  } catch (e) { return false; }
+}
 function _retPing() { try { window.dispatchEvent(new Event("od-ret-changed")); } catch (e) {} }
 
 // ── EXP 장부 ──
@@ -21256,6 +21338,7 @@ window.SimApp = App;
           _odRestoreMetaFromTasks(local.email, task_progress);
           // ★ 2026-09-22: 서버에 남은 실제 완주 시각으로 비어 있는 출근 날짜 채우기 (새 기기·캐시 삭제 대응)
           try { await _odApplyActivityDates(local.email); } catch (e) {}
+          try { await _retPullState(local.email); _retDebuffRevalidate(local.email); } catch (e) {}
 
           // ★ localStorage → DB (localStorage에 있는데 DB에 없는 거 push, 누락 복구)
           // ★ 2026-09-22: _ts(시각) 키가 같이 잡혀 JSON.parse 가 터지면서 반복문 전체가 중단되던 버그. 시각 키는 제외하고, 한 Day 가 깨져도 다음 Day 는 계속 본다.
@@ -21529,6 +21612,7 @@ window.SimApp = App;
       } catch (e) {}
       // ★ 2026-09-22: 새 기기 첫 로그인 = 시각 키가 하나도 없는 상태. 서버 완주 시각으로 채운다 (없으면 가입일+순번으로 지어내던 문제).
       try { await _odApplyActivityDates(local.email); } catch (e) {}
+      try { await _retPullState(local.email); _retDebuffRevalidate(local.email); } catch (e) {}
 
       console.log("[hydrate] DB → localStorage 복원 완료.",
         "submissions:", dbCompleted.length,
