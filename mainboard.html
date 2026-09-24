@@ -1145,6 +1145,17 @@ span.ret-hud-item { cursor: default; }
 .ret-deb-opt.on { border-color: var(--orange); color: var(--orange); background: rgba(216,90,42,0.08); font-weight: 800; }
 .ret-deb-memo { width: 100%; box-sizing: border-box; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 12.5px; }
 .ret-deb-foot { margin-top: 14px; }
+/* ★ 2026-09-24 복지몰 이벤트 코드 입력 */
+.ret-code { margin: 0 0 14px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: 12px; background: var(--paper-warm); }
+.ret-code-title { font-size: 13px; font-weight: 900; color: var(--ink); }
+.ret-code-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; line-height: 1.5; }
+.ret-code-row { display: flex; gap: 8px; margin-top: 10px; min-width: 0; }
+.ret-code-row input { flex: 1 1 0; width: 0; min-width: 0; font-family: inherit; font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.ret-code-row input:focus { outline: 2px solid var(--orange); outline-offset: 1px; border-color: transparent; }
+.ret-code-row .btn { flex: none; padding: 9px 16px; font-size: 13px; }
+.ret-code-msg { margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.ret-code-msg.ok { color: var(--green); }
+.ret-code-msg.bad { color: var(--stamp-red); }
 .ret-shop-balance { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 14px; padding: 16px 18px; border-radius: 12px; background: var(--ink); color: var(--paper); }
 .ret-shop-balance small { display: block; font-size: 11px; font-weight: 700; opacity: .75; letter-spacing: .04em; }
 .ret-shop-balance b { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; color: #FFD27A; }
@@ -9993,6 +10004,56 @@ function _retSpendWp(email, cost, item, title) {
   _retSave("WP", email, l);
   return true;
 }
+// ── 이벤트 코드 (2026-09-24): 복지몰 상단 입력칸. 서버(redeem_wp_code)가 계정당 1회·기간·상한을 지키고, 앱은 장부에 promo:<code> 로 적립 ──
+function RetCodeBox({ email, onDone }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);   // { ok, text }
+  const submit = async () => {
+    const c = String(code || "").replace(/\s/g, "").toUpperCase();
+    if (!c) { setMsg({ ok: false, text: "코드를 입력해 주세요" }); return; }
+    if (!email || email === "guest" || !window.OD || !window.OD.redeemWpCode) { setMsg({ ok: false, text: "지금은 코드를 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요" }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      const r = await window.OD.redeemWpCode(email, c);
+      const res = (r && r.ok && r.result) || null;
+      if (!res) { setMsg({ ok: false, text: "지금은 코드를 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요" }); return; }
+      if (res.ok) {
+        _retAwardWp(email, "promo:" + c, Number(res.points) || 0, res.label || "이벤트 코드");
+        setMsg({ ok: true, text: "🎁 +" + (Number(res.points) || 0).toLocaleString() + "P 들어왔어요! (" + (res.label || c) + ")" });
+        setCode(""); _retPing(); if (onDone) onDone();
+        try { _tyErrandProof("code"); } catch (e) {}
+      } else {
+        const why = { no_code: "없는 코드예요. 대소문자 상관없이 그대로 입력해 보세요", not_started: "아직 시작 전인 코드예요", expired: "기간이 지난 코드예요", sold_out: "선착순이 마감된 코드예요", already: "이미 사용한 코드예요", no_user: "계정을 못 찾았어요. 다시 로그인한 뒤 시도해 주세요" }[res.reason] || "사용할 수 없는 코드예요";
+        setMsg({ ok: false, text: why });
+      }
+    } catch (e) { setMsg({ ok: false, text: "지금은 코드를 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요" }); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="ret-code">
+      <div className="ret-code-title">🎟️ 이벤트 코드</div>
+      <div className="ret-code-sub">인스타 DM 이나 공지방에서 받은 코드를 넣으면 복지포인트가 바로 들어와요. 코드 하나는 계정당 한 번이에요.</div>
+      <div className="ret-code-row">
+        <input value={code} onChange={e => setCode(e.target.value)} placeholder="예: REELS500" maxLength={24} autoCapitalize="characters" autoCorrect="off" spellCheck={false} onKeyDown={e => { if (e.key === "Enter") submit(); }} disabled={busy} />
+        <button className="btn btn-primary" onClick={submit} disabled={busy || !code.trim()}>{busy ? "확인 중" : "입력"}</button>
+      </div>
+      {msg && <div className={"ret-code-msg " + (msg.ok ? "ok" : "bad")}>{msg.text}</div>}
+    </div>
+  );
+}
+// 운영자가 이메일로 예약해 둔 지급(wp_grants)을 접속 때 받아간다. 멱등키라 두 번 안 들어감.
+async function _retClaimGrants(email) {
+  try {
+    if (!email || email === "guest" || !window.OD || !window.OD.claimWpGrants) return 0;
+    const r = await window.OD.claimWpGrants(email);
+    const list = (r && r.ok && Array.isArray(r.result)) ? r.result : [];
+    let n = 0;
+    list.forEach(g => { if (g && g.key && Number(g.points) > 0) { if (_retAwardWp(email, "grant:" + g.key, Number(g.points), g.label || "운영팀 지급")) n++; } });
+    if (n) _retPing();
+    return n;
+  } catch (e) { return 0; }
+}
 // ── 인벤토리 ──
 function _retInv(email) { return _retLoad("INV", email, {}); }
 function _retInvAdd(email, id, n) { const inv = _retInv(email); inv[id] = (Number(inv[id]) || 0) + (n || 1); _retSave("INV", email, inv); _retPing(); }
@@ -10746,7 +10807,8 @@ function RetPerkShopPage({ setActive }) {
           <div><div className="desk-eyebrow">OFFICE · PERK SHOP · 복지몰 (준비 중)</div><h1 className="desk-title"><em>Day {RET_SHOP_OPEN_DAY}</em>에 열리는 복지몰</h1></div>
           <div className="desk-meta"><b>🎁 {wp.toLocaleString()}P</b><br/>쌓이는 중</div>
         </div>
-        <div style={{ marginTop: 24, padding: "40px 28px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
+        <div style={{ marginTop: 18 }}><RetCodeBox email={email} /></div>
+        <div style={{ marginTop: 14, padding: "40px 28px", textAlign: "center", background: "var(--cream)", border: "1.5px dashed var(--line)", borderRadius: 12 }}>
           <div style={{ fontSize: 42, marginBottom: 14, filter: "grayscale(0.3)" }}>🔒</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)", marginBottom: 8 }}>복지몰은 Day {RET_SHOP_OPEN_DAY}부터 열려요 · {Math.max(0, RET_SHOP_OPEN_DAY - rd)}일 남았어요</div>
           <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.7, maxWidth: 440, margin: "0 auto" }}>
@@ -10775,6 +10837,7 @@ function RetPerkShopPage({ setActive }) {
         <div className="ret-shop-balance-r"><span>적립 {_retWpEarnedTotal(email).toLocaleString()}P · 사용 {_retWpSpentTotal(email).toLocaleString()}P</span><span>보유 아이템 {Object.values(inv).reduce((n, x) => n + (Number(x) || 0), 0)}개</span><a href="#ret-how" onClick={e => { e.preventDefault(); try { document.querySelector(".ret-shop-how").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e2) {} }}>어떻게 쌓아요? ↓</a></div>
       </div>
       {msg && <div className="ret-shop-msg">{msg}</div>}
+      <RetCodeBox email={email} />
       <div className="ret-shop-grid">
         {RET_PERKS.map(it => {
           const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
@@ -21366,6 +21429,7 @@ window.SimApp = App;
           // ★ 2026-09-22: 서버에 남은 실제 완주 시각으로 비어 있는 출근 날짜 채우기 (새 기기·캐시 삭제 대응)
           try { await _odApplyActivityDates(local.email); } catch (e) {}
           try { await _retPullState(local.email); _retDebuffRevalidate(local.email); } catch (e) {}
+          try { await _retClaimGrants(local.email); } catch (e) {}
 
           // ★ localStorage → DB (localStorage에 있는데 DB에 없는 거 push, 누락 복구)
           // ★ 2026-09-22: _ts(시각) 키가 같이 잡혀 JSON.parse 가 터지면서 반복문 전체가 중단되던 버그. 시각 키는 제외하고, 한 Day 가 깨져도 다음 Day 는 계속 본다.
@@ -21640,6 +21704,7 @@ window.SimApp = App;
       // ★ 2026-09-22: 새 기기 첫 로그인 = 시각 키가 하나도 없는 상태. 서버 완주 시각으로 채운다 (없으면 가입일+순번으로 지어내던 문제).
       try { await _odApplyActivityDates(local.email); } catch (e) {}
       try { await _retPullState(local.email); _retDebuffRevalidate(local.email); } catch (e) {}
+      try { await _retClaimGrants(local.email); } catch (e) {}
 
       console.log("[hydrate] DB → localStorage 복원 완료.",
         "submissions:", dbCompleted.length,
