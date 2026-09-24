@@ -8984,12 +8984,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
       )}
       {retQuiz && today && (
-        <ReviewQuizModal today={today} email={USER.email} attemptNo={1}
+        <ReviewQuizModal today={today} email={USER.email} attemptNo={1} afterAbsence
           onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
           onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
       )}
       {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => setRetDayPop(false)} />}
-      {retUnlock && !retDayPop && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
+      {/* ★ 2026-09-24: 결근 팝업·복습 퀴즈가 떠 있는 동안엔 '열린 기능' 팝업을 겹치지 않는다 (닫히면 그때 뜬다) */}
+      {retUnlock && !retDayPop && !retDebuff && !retQuiz && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
       {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => {
           if (k === "mynotes") { setActive("mynotes"); return; }
@@ -10161,6 +10162,8 @@ function _retGoalCheck(email) {
 //   레벨: 1 = 1일 결근(격려만) · 2 = 2일(연차 권고, 미구매시 Review Quiz 먼저) · 3 = 3~29일(휴가 권고 + 사유서 + Quiz 먼저) · 4 = 30일+(유비챌 안내)
 //   { date, gap, level, defended, quizDone, surveyDone, seen }
 function _retDebuff(email) { const d = _retLoad("DEBUFF", email, null); return (d && d.date) ? d : null; }
+// 오늘 결근 팝업이 아직 처리 안 됐나 (다른 팝업이 겹치지 않게 하는 용도)
+function _retDebuffPending(email) { try { const d = _retDebuff(email || _retEmail()); return !!(d && d.date === _tyTodayISO() && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended && !d.quizDone); } catch (e) { return false; } }
 function _retDebuffLevel(gap) { return gap >= 30 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }
 function _retEvalDebuff(email) {
   if (!_RET_ON()) return null;
@@ -18593,7 +18596,7 @@ function MiniQuizActivity({ today, item, onClose, onComplete }) {
 }
 
 // ── 퇴근 후 Review Quiz (OvertimeCard 안에서 연다) ──
-function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
+function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished, afterAbsence }) {
   const rd = today.day;
   const [n, setN] = useState(null);
   const questions = useMemo(() => (n ? _qzBuildReview(today, n) : []), [n, today.day]);
@@ -18643,7 +18646,12 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished }) {
       </ActivityShell>
     );
   }
-  if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel="닫기" celebrate />;
+  if (results) return <QzResult title="REVIEW QUIZ · 결과" results={results} attempt={attemptNo} onDone={onClose} doneLabel={afterAbsence ? "오늘 출근하기 →" : "닫기"} celebrate
+    extra={afterAbsence ? (
+      <div style={{ margin: "10px 0 2px", padding: "10px 12px", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+        복습 끝! 오늘 일정이 열렸어요. <b style={{ color: "var(--ink)" }}>다음에 연속 2일 이상 결근하면 출근할 때 또 Review Quiz 를 봐야 해요.</b> 연차·휴가가 있으면 퀴즈 없이 바로 들어올 수 있어요.
+      </div>
+    ) : null} />;
   if (!questions.length) return <ActivityShell title="REVIEW QUIZ" onClose={onClose}><div style={{ padding: 20, textAlign: "center", color: "var(--ink-mute)" }}>아직 복습할 표현이 없어요. 내일 다시 열어봐요.</div></ActivityShell>;
   return <QuizRunner questions={questions} title="REVIEW QUIZ" eyebrow={`복습 ${questions.filter(q => !q.preview).length}문제${questions.some(q => q.preview) ? " + 예습 1" : ""}${attemptNo > 1 ? " · " + attemptNo + "번째" : ""}`} rd={rd} onFinish={onFinish} onClose={onClose}
     footerNote="복습 예정 표현은 최소 한 번씩 나와요. 답을 고르면 밑줄 친 표현을 눌러 뜻을 볼 수 있어요." />;
@@ -21019,10 +21027,10 @@ function App() {
       {_forceTest === "levelup" && _isInternalTester && <PromotionCeremony realDay={30} />}
       {_forceTest === "senior" && _isInternalTester && <Season3Checkpoint onClose={() => { try { const u = new URL(location.href); u.searchParams.delete("forcetest"); location.href = u.toString(); } catch (e) { location.reload(); } }} />}
       {_showDay60 && <Day60Checkpoint onClose={_dismissDay60} />}
-      {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && (
+      {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_retDebuffPending() && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
       )}
-      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && (
+      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_retDebuffPending() && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
       {/* 출근 환경 세팅 (Day 1 학습 완료 직후) */}
@@ -21030,7 +21038,7 @@ function App() {
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && (
+      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && !_retDebuffPending() && (
         <KakaoNudgePopup email={_localUserNow?.email} onClose={_closeKakao} />
       )}
       {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
