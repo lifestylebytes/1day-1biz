@@ -7524,6 +7524,7 @@ async function _odApplyActivityDates(email) {
     if (!email || !window.OD || !window.OD.fetchActivityDates) return false;
     const r = await window.OD.fetchActivityDates(email);
     if (!r || !r.ok || !r.result) return false;
+    window.__odRetSvrOk = true;   // ★ 이 세션은 서버 출근 기록을 확인했다 → 결근 판정·목표 실패 확정 허용
     let changed = 0;
     const td = r.result.task_days || {};
     Object.keys(td).forEach(d => {
@@ -9855,6 +9856,20 @@ async function _retPullState(email) {
 // ★ 서버 날짜·상태를 받은 뒤, 오늘 이미 내린 결근 판정이 틀렸으면 되돌린다
 //   (PC 가 폰 기록을 모른 채 3일 결근으로 판정 → 휴가까지 쓰게 한 케이스). 실제 gap 이 줄었으면 기록을 고치고, 0 이면 아이템 환불 + 판정 삭제.
 function _retDebuffRevalidate(email) {
+  // ★ 2026-09-24 복구: 최근 7일 안에 '실패' 처리된 목표가, 서버 날짜로 다시 세어 보니 실제로는 안 끊겼으면 되살린다.
+  //   (기기 간 동기화 전에 PC/폰이 서로 기록을 몰라 잘못 리셋된 목표. 한 번 살아나면 그대로 이어진다)
+  try {
+    const g = _retGoal(email); const today0 = _tyTodayISO();
+    if (g && g.status === "failed" && g.failedAt && g.startDate) {
+      const daysAgo = Math.round((Date.parse(today0) - Date.parse(String(g.failedAt).slice(0, 10))) / 86400000);
+      if (daysAgo >= 0 && daysAgo <= 7) {
+        const dates = _retActivityDates(email);
+        let n = 0, d = g.startDate; while (d <= today0 && dates.has(d)) { n++; d = _retAddDays(d, 1); }
+        const intact = d > today0 || d === today0;
+        if (intact && n > 0) { g.status = "active"; delete g.failedAt; delete g.streakAtFail; _retSave("GOAL", email, g); try { _retToast("wp", "🎯", "내 목표를 되살렸어요", "다른 기기 기록을 확인해 보니 연속 출근이 안 끊겼어요 (" + n + "일째)"); } catch (e) {} _retGoalCheck(email); _retPing(); }
+      }
+    }
+  } catch (e) {}
   try {
     const rec = _retDebuff(email); const today = _tyTodayISO();
     if (!rec || rec.date !== today || rec.forced) return false;
@@ -10134,6 +10149,7 @@ function _retGoalCheck(email) {
       if (d && d.date === today && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended) return "pending";
       // ★ 2026-09-21: 오늘 결근 판정(팝업)이 아직 안 만들어졌으면 확정을 미룬다. 전엔 집계가 팝업보다 먼저 돌아 목표가 그냥 리셋됐다.
       if (!(d && d.date === today)) { const gap = _retAbsenceGap(email); if (gap >= 1 && gap < 30) return "pending"; }
+      if (!window.__odRetSvrOk && _retForcedGap() === null) return "pending";   // 서버 기록 확인 전엔 실패 확정 안 함 (2026-09-24)
     } catch (e) {}
     g.status = "failed"; g.failedAt = new Date().toISOString(); g.streakAtFail = p.done; _retSave("GOAL", email, g); _retPing();
     return "failed";
@@ -10148,6 +10164,9 @@ function _retDebuff(email) { const d = _retLoad("DEBUFF", email, null); return (
 function _retDebuffLevel(gap) { return gap >= 30 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }
 function _retEvalDebuff(email) {
   if (!_RET_ON()) return null;
+  // ★ 2026-09-24 fail-open: 이 세션에서 서버 출근 기록을 못 받았으면(RPC 없음·타임아웃·오프라인) 결근 판정을 아예 내리지 않는다.
+  //   기기 로컬 기록만으로 판정하면 다른 기기에서 한 출근을 결근으로 오판한다. 오판으로 회원을 벌주느니 하루 안 묻는 게 낫다. (시뮬레이터 retgap 은 예외)
+  if (!window.__odRetSvrOk && _retForcedGap() === null) return null;
   if (_retDayNow() < RET_GOAL_OPEN_DAY && _retForcedGap() === null) return null;   // 결근 디버프는 내 목표가 열리는 Day 3 부터
   const today = _tyTodayISO();
   const cur = _retDebuff(email);
