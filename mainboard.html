@@ -9736,7 +9736,9 @@ const _RET_EPOCH = (() => { try { return localStorage.getItem("__OD_RET_EPOCH") 
 // 결근 시뮬레이터 (개발 뷰 전용): mainboard.html?retgap=2 → 오늘을 "2일 결근 뒤 첫 출근"으로 판정. ?retgap=0 으로 해제.
 function _retForcedGap() {
   try {
-    if (!_isNextFeature()) return null;
+    // ★ 2026-09-25: 결근 시뮬레이터는 개발 뷰(운영자 + 개발 뷰 ON)에서만. 예전엔 라이브 전체에 열려 있어서
+    //   ?retgap= 을 한 번 연 탭은 sessionStorage 에 값이 남아 새로고침마다 가짜 결근 판정 → 목표가 계속 리셋됐다.
+    if (typeof _isDevNext !== "function" || !_isDevNext()) { try { sessionStorage.removeItem("__OD_RET_GAP"); } catch (e) {} return null; }
     const q = new URLSearchParams(location.search).get("retgap");
     if (q !== null) { if (q === "" || q === "0") sessionStorage.removeItem("__OD_RET_GAP"); else sessionStorage.setItem("__OD_RET_GAP", String(Number(q) || 0)); }
     const v = sessionStorage.getItem("__OD_RET_GAP"); return v === null ? null : Number(v);
