@@ -8703,26 +8703,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     if (_data && _data !== 'missing' && _data.scenarios) {
       const raw = _data.scenarios.find(x => x.tfDay === _tfDayNum) || _data.scenarios[0];
       if (raw && _meta) {
-        today = {
-          // ★ 실제 회사 Day(91+)를 그대로 사용: 작문/저널/노트/제출이 날마다 고유 키로 저장되게.
-          //   (예전엔 90으로 고정해서 TF 기간 내내 같은 키에 덮여 "딴 날 문장이 그대로 보이는" 버그가 있었음.
-          //    TF 기간엔 점심/복습 로테이션이 안 돌아서 day>90이어도 깨질 곳 없음)
-          day: _tfViewDay,
-          tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[_tid]) || ["tf"],
-          word: raw.word, pos: raw.pos || "", meaning: raw.meaning, phonetic: "",
-          scene: `[${_meta.emoji} ${_meta.name} · Day ${raw.tfDay}/30] ` + raw.scene,
-          npc: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'),
-          quote: raw.quote,
-          sampleAnswer: (raw.sampleAnswers || [])[0] || "",
-          sampleAnswers: raw.sampleAnswers || [],
-          mentorTip: raw.mentorTip,
-          mentorNuance: raw.mentorNuance,
-          mcOptions: raw.mcOptions,
-          buddyAnswers: raw.buddyAnswers,
-          task: { to: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'), channel: "slack-dm",
-                  promptKo: (raw.task || {}).promptKo || "", koSentence: (raw.task || {}).koSentence || "" },
-          _tfInfo: { id: _tid, name: _meta.name, emoji: _meta.emoji, tfDay: raw.tfDay, quizPrompt: raw.quizPrompt || "", quoteKo: raw.quoteKo || "" },
-        };
+        today = _tfScenarioFrom(raw, _meta, _tid, _tfViewDay);
       }
     } else if (_data === 'missing' && _meta && today) {
       today = { ...today,
@@ -12249,7 +12230,8 @@ function _wbBuild(USER, SCENARIOS, rev) {
   const signup = (typeof _signupKST === "string" && _signupKST) || today;   // 가입일(KST), data 블록 전역
   const u = _wbUser();
   let known = []; try { known = JSON.parse(localStorage.getItem("__OD_KNOWN_WORDS") || "[]"); } catch (e) {}
-  return SCENARIOS.filter(s => s.day <= rd).map(s => {
+  // ★ 2026-09-28: 복습·성장 리포트·단어 PDF 도 Day 91+ TF 단어를 포함한다 (개발 뷰 / _WB_TF_LIVE)
+  return _odScenariosWithTf(SCENARIOS, USER).filter(s => s.day <= rd).map(s => {
     const c = _loadCompletion(s.day);
     const aiFb = c && c.feedback && c.feedback.aiFb;
     const corrected = aiFb && aiFb.corrected && c.sentence && _wbNorm(aiFb.corrected) !== _wbNorm(c.sentence) ? aiFb.corrected : "";
@@ -12283,7 +12265,7 @@ function _wbBuild(USER, SCENARIOS, rev) {
     const due = (strength < 55 || dueByRev) && !reviewedToday && s.day !== rd;
     return {
       day: s.day, word: s.word, meaning: s.meaning, scene: _sceneNoClock(s.scene), koSentence: (s.task && s.task.koSentence) || "", sample: s.sampleAnswer || "",
-      area: _areaOf(s.day), mine: c && c.sentence ? String(c.sentence) : "", corrected, used, isKnown, ot: otSentences, qa, memos, syn: SYNONYMS[s.day] || [],
+      area: s._tfInfo ? (_TF_AREA_CODE[s._tfInfo.id] || "N") : _areaOf(s.day), mine: c && c.sentence ? String(c.sentence) : "", corrected, used, isKnown, ot: otSentences, qa, memos, syn: SYNONYMS[s.day] || [],
       nuance: _mentorNuanceLine(s), tip: _buddyTipText(s), scn: s,
       strength, due, since, lastTouch, rev: r, reviewedToday,
     };
@@ -13132,7 +13114,16 @@ function LibraryPage({ openScene }) {
     <span role="button" tabIndex={0} title={favSet.has(word) ? "즐겨찾기 해제" : "즐겨찾기"} onClick={(e) => toggleFav(e, word)}
       style={{ cursor: "pointer", fontSize: size || 15, lineHeight: 1, marginRight: inCell ? 0 : 6, color: favSet.has(word) ? "#E0A93D" : "var(--line)", userSelect: "none" }}>{favSet.has(word) ? "★" : "☆"}</span>
   ) : null;
-  const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
+  // ★ 2026-09-28: Day 91+ TF 단어까지 목록에 포함 (개발 뷰 / _WB_TF_LIVE). 90일에서 멈추던 문제.
+  //   트랙 콘텐츠는 파일로 늦게 도착할 수 있어서 tf-scn-loaded 를 받으면 다시 그린다.
+  const [tfTick, setTfTick] = useState(0);
+  React.useEffect(() => {
+    const h = () => setTfTick(t => t + 1);
+    window.addEventListener("tf-scn-loaded", h);
+    return () => window.removeEventListener("tf-scn-loaded", h);
+  }, []);
+  const _allScn = useMemo(() => _odScenariosWithTf(SCENARIOS, USER), [tfTick]);
+  const accessible = _allScn.filter(s => s.day <= USER.wordsCollected);
   const filtered = accessible.filter(s => {
     if (filter === "fav" && !favSet.has(s.word)) return false;
     if (filter === "written" && !_loadCompletion(s.day)) return false;
@@ -13143,7 +13134,7 @@ function LibraryPage({ openScene }) {
     if (search && !s.word.toLowerCase().includes(search.toLowerCase()) && !(s.meaning || "").includes(search)) return false;
     return true;
   });
-  const locked = SCENARIOS.filter(s => s.day > USER.wordsCollected);
+  const locked = _allScn.filter(s => s.day > USER.wordsCollected);
 
   return (
     <div>
@@ -13167,6 +13158,7 @@ function LibraryPage({ openScene }) {
 
       <div className="filter-row">
         <button className={"filter-chip " + (filter === "all" ? "active" : "")} onClick={() => setFilter("all")}>전체 {accessible.length}</button>
+        {_WB_TF_ON() && !_WB_TF_LIVE && <span className="filter-chip" style={{ pointerEvents: "none", opacity: 0.75 }} title="운영자 개발 뷰에서만 보이는 표시입니다">🛠 개발 뷰 · TF 단어 포함</span>}
         <button className={"filter-chip " + (filter === "written" ? "active" : "")} onClick={() => setFilter("written")}>✏️ 내 문장 있음</button>
         <button className={"filter-chip " + (filter === "unwritten" ? "active" : "")} onClick={() => setFilter("unwritten")}>아직 안 쓴 것</button>
         <button className={"filter-chip " + (filter === "today" ? "active" : "")} onClick={() => setFilter("today")}>오늘</button>
@@ -19139,6 +19131,87 @@ function _tfLoadScenarios(forceId) {
 }
 window.__odLoadTf = _tfLoadScenarios;
 _tfLoadScenarios();
+
+// ── ★ 2026-09-28: TF 시나리오 → 앱 표준 시나리오 변환기 ──
+//   예전엔 이 변환이 "오늘 화면을 그리는 도중"에만 있어서 업무 노트·복습이 재사용할 수 없었다.
+//   오늘 화면과 업무 노트가 같은 변환기를 쓰도록 함수로 뺀다 (동작은 그대로).
+function _tfScenarioFrom(raw, meta, tid, day) {
+  return {
+    // ★ 실제 회사 Day(91+)를 그대로 사용: 작문/저널/노트/제출이 날마다 고유 키로 저장되게.
+    //   (예전엔 90으로 고정해서 TF 기간 내내 같은 키에 덮여 "딴 날 문장이 그대로 보이는" 버그가 있었음.
+    //    TF 기간엔 점심/복습 로테이션이 안 돌아서 day>90이어도 깨질 곳 없음)
+    day: day,
+    tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[tid]) || ["tf"],
+    word: raw.word, pos: raw.pos || "", meaning: raw.meaning, phonetic: "",
+    scene: `[${meta.emoji} ${meta.name} · Day ${raw.tfDay}/30] ` + raw.scene,
+    npc: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'),
+    quote: raw.quote,
+    sampleAnswer: (raw.sampleAnswers || [])[0] || "",
+    sampleAnswers: raw.sampleAnswers || [],
+    mentorTip: raw.mentorTip,
+    mentorNuance: raw.mentorNuance,
+    mcOptions: raw.mcOptions,
+    buddyAnswers: raw.buddyAnswers,
+    task: { to: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'), channel: "slack-dm",
+            promptKo: (raw.task || {}).promptKo || "", koSentence: (raw.task || {}).koSentence || "" },
+    _tfInfo: { id: tid, name: meta.name, emoji: meta.emoji, tfDay: raw.tfDay, quizPrompt: raw.quizPrompt || "", quoteKo: raw.quoteKo || "" },
+  };
+}
+
+// ── ★ 2026-09-28: 업무 노트·복습이 Day 90 에서 멈추던 문제 ──
+//   원인: 목록을 90일짜리 SCENARIOS 에서만 만들어서 Day 91+ TF 단어가 한 장도 안 들어갔다.
+//   고침: 그 계정이 들은 TF 트랙 단어를 실제 Day 번호로 바꿔 목록 뒤에 이어붙인다.
+//   트랙은 계정마다 다르고 수료 목록의 순서가 곧 날짜라, 결과도 계정마다 다르게 나온다.
+//   라이브 스위치: _WB_TF_LIVE = true 로 바꾸면 전원 공개. 그 전엔 운영자 개발 뷰에서만 보인다.
+const _WB_TF_LIVE = false;
+const _WB_TF_ON = () => { try { return _WB_TF_LIVE || _isDevNext(); } catch (e) { return false; } };
+// 업무 노트 5영역 코드(M 회의 / W 메일·문서 / S 관계 / R 보고 / N 협상)에 TF 트랙을 얹는다.
+const _TF_AREA_CODE = { nego: "N", people: "S", docs: "W", meeting: "M" };
+// 수료한 트랙 순서가 곧 날짜: done[0] = Day 91~120, done[1] = 121~150, 진행 중 트랙은 그 다음 30일.
+function _tfTrackSpans(st) {
+  const spans = [];
+  const done = (st && Array.isArray(st.done)) ? st.done : [];
+  done.forEach((id, i) => { if (id) spans.push({ id: (id.id || id), from: 91 + 30 * i, to: 90 + 30 * (i + 1) }); });
+  const cur = (st && st.track) ? (st.track.id || st.track) : null;
+  if (cur) spans.push({ id: cur, from: 91 + 30 * done.length, to: 90 + 30 * (done.length + 1) });
+  return spans;
+}
+// 기존 로더는 "지금 듣는 트랙" 하나만 받아온다. 업무 노트는 수료한 트랙 단어도 보여줘야 해서 같이 받아온다.
+function _tfLoadAllScenarios() {
+  try { _tfTrackSpans(_tfState()).forEach(sp => { if (!window.__TF_SCN[sp.id]) _tfLoadScenarios(sp.id); }); } catch (e) {}
+}
+window.__odLoadTfAll = _tfLoadAllScenarios;
+// Day 91~rd 의 TF 단어 카드. 아직 안 받아온 트랙은 도착하면 tf-scn-loaded 이벤트로 다시 그린다.
+function _tfCardsUpTo(rd) {
+  try {
+    const rdNow = Number(rd) || 0;
+    if (!_WB_TF_ON() || rdNow <= 90) return [];
+    _tfLoadAllScenarios();
+    const out = [];
+    _tfTrackSpans(_tfState()).forEach(sp => {
+      const meta = TF_TRACKS.find(t => t.id === sp.id); if (!meta) return;
+      const data = window.__TF_SCN[sp.id];
+      if (!data || data === 'missing' || !Array.isArray(data.scenarios)) return;
+      const last = Math.min(rdNow, sp.to);
+      for (let d = sp.from; d <= last; d++) {
+        const raw = data.scenarios.find(x => Number(x.tfDay) === (d - sp.from + 1));
+        if (!raw) continue;
+        const card = _tfScenarioFrom(raw, meta, sp.id, d);
+        card.status = (d === rdNow) ? "today" : "studied";
+        out.push(card);
+      }
+    });
+    return out;
+  } catch (e) { return []; }
+}
+// 90일 본편 + 그 계정의 TF 단어. 단어 목록을 만드는 화면은 모두 이걸 쓴다.
+function _odScenariosWithTf(SCN, U) {
+  try {
+    const rd = (U && (U.realCurrentDay || U.currentDay)) || 0;
+    const extra = _tfCardsUpTo(rd);
+    return extra.length ? (SCN || []).concat(extra) : (SCN || []);
+  } catch (e) { return SCN || []; }
+}
 
 // ── TF 발령 신청서: 대리 승진 후 1회. 30일 완주 시 남은 트랙 재선택에도 재사용 ──
 // === 첫 주 웰컴 팝업 (Day 1~5): 프레임은 회사 첫 주, 내용물은 매일 하나씩 실전 꿀팁 ===
