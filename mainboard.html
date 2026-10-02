@@ -388,6 +388,10 @@ body::before {
 .lib-table .col-npc { white-space: nowrap; color: var(--ink-soft); font-size: 12px; }
 .lib-table .col-npc .biz-card-npc-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 .lib-cat { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--paper-warm); border: 1px solid var(--line); color: var(--ink-soft); }
+/* ★ 2026-10-02 TF 트랙 칩: 상황 칸에 분류 칩 앞에 붙는다 (PC). 모바일은 뜻 줄 끝에 작은 글씨 */
+.lib-cat-tf { background: rgba(216,90,42,0.08); border-color: rgba(216,90,42,0.35); color: var(--orange); margin-right: 4px; }
+.lib-tf-m { display: none; font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--orange); margin-left: 6px; }
+@media (max-width: 880px) { .lib-tf-m { display: inline; } }
 .lib-table .col-st { white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
 .lib-table .col-st i { font-style: normal; margin-left: 8px; color: var(--ink-mute); font-size: 10px; }
 .lib-detail td { background: var(--paper); padding: 14px 16px 16px; border-bottom: 2px solid var(--line); }
@@ -6744,7 +6748,7 @@ function _getBuddyNudgeForDay(day) {
 // 시추에이션 장면 문구에서 앞머리 시각("15:00, ")을 뗀다 (2026-09-04).
 // 하루 일정표(09:00 출근 / 10:00 시추에이션 / 15:30 Recap / 17:00 퇴근)는 "학습 순서"인데
 // 장면 속 시각과 나란히 보이면 흐름이 안 맞아 보인다는 피드백. 장면은 장소·상황만 남긴다.
-function _sceneNoClock(t) { return String(t || "").replace(/^\s*\d{1,2}:\d{2}\s*,?\s*/, ""); }
+function _sceneNoClock(t) { return String(t || "").replace(/^\s*\d{1,2}:\d{2}\s*[,.]?\s*/, ""); }   // "09:30. 피플 TF" 처럼 마침표가 붙은 TF 상황문도 깔끔하게 (2026-10-02)
 window._sceneNoClock = _sceneNoClock;
 
 // 단어/시추에이션 모달의 "버디한테 물어보기" 응답 풀
@@ -13299,9 +13303,9 @@ function LibraryPage({ openScene }) {
                     <tr className={"lib-row" + (isOpen ? " open" : "") + (s.status === "today" ? " today" : "")} onClick={() => setOpenDay(isOpen ? null : s.day)}>
                       <td className="col-day">{String(s.day).padStart(2, "0")}</td>
                       {_favOn && <td className="col-fav" onClick={(e) => e.stopPropagation()}><FavStar word={s.word} inCell /></td>}
-                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small>{s._tf ? <small style={{ marginLeft: 6, color: "var(--orange)", fontWeight: 800 }}>{s._tf}</small> : null}<span className="lib-mean-inline">{s.meaning}</span></td>
+                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small><span className="lib-mean-inline">{s.meaning}{s._tf ? <em className="lib-tf-m">{s._tf.replace(/ · .*$/, "")}</em> : null}</span></td>
                       <td className="col-mean">{s.meaning}</td>
-                      <td className="col-npc"><span className="lib-cat">{_libCatLabel(_libCategory(s))}</span></td>
+                      <td className="col-npc">{s._tf ? <span className="lib-cat lib-cat-tf" title={s._tf}>{s._tf.replace(/ · .*$/, "")}</span> : null}<span className="lib-cat">{_libCatLabel(_libCategory(s))}</span></td>
                       <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
                     </tr>
                     {isOpen && (
