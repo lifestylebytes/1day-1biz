@@ -222,7 +222,7 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
     const how = mode === "keep" ? "\n진도는 그대로예요. 쉰 날만큼 밀린 Day 가 그대로 보여요." : "\n가입일을 되돌려서 오늘이 Day " + startDay + " 이 돼요. 그 앞 Day 는 이미 완주한 것만 완료로 남고, 안 한 건 밀린 Day 로 보여요.";
     if (!confirm((u.name || u.email) + " 님을 " + end + " 까지 활성화할까요?" + how)) return;
     setBusy(true); setMsg("");
-    const r = await window.OD.syncMembership(u.email, patch);
+    const r = await window.OD.syncMembership(u.email, patch, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
     setBusy(false);
     setMsg(r && r.ok ? "✅ " + (u.name || u.email) + " 활성화 · 만료 " + end + (startDay ? " · 오늘부터 Day " + startDay : " · 진도 그대로") : "실패: " + ((r && r.error) || "?"));
     if (r && r.ok && onDone) onDone();
@@ -574,7 +574,7 @@ function CsvSyncPanel({ supaUsers, onDone }) {
     setBusy(true);
     let ok = 0; const fails = [];
     for (const t of targets) {
-      const r = await window.OD.syncMembership(t.email, t.patch);
+      const r = await window.OD.syncMembership(t.email, t.patch, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
       if (r && r.ok) ok++; else fails.push(t.name + "(" + (r && r.error || "?") + ")");
     }
     setBusy(false);
@@ -1733,10 +1733,13 @@ function App() {
     if (usersRes.ok) setSupaUsers(usersRes.users);
     if (statsRes.ok) setSupaStats(statsRes.stats);
     setProgMap(progRes && progRes.ok ? progRes.map : null);
+    setLastStudyMap(progRes && progRes.ok && progRes.lastStudy ? progRes.lastStudy : {});
     setSupaLoading(false);
   };
   // ★ 계정별 진도 현황 (2026-09-14): 모든 계정의 완주 Day 목록. null 이면 RPC(get_progress_overview)가 아직 없는 것.
   const [progMap, setProgMap] = useState(null);
+  const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
+  const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
   // 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 밀린·빠뜨린은 '-'.
@@ -1751,8 +1754,13 @@ function App() {
       missing = []; for (let d = 1; d <= calDay; d++) if (!done.has(d)) missing.push(d);
       behind = missing.filter(d => d >= appDay).length;
     }
-    const lastStudy = u.last_active ? new Date(u.last_active).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
-    return { appDay, calDay, rank, missing, behind, lastStudy };
+    const fmt = (v) => v ? new Date(v).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
+    // ★ 2026-10-02: 마지막 학습일 = 실제 완주 기록(답안·일지·일정 체크) 시각. 마지막 접속일(last_active) 은 접속·운영자 변경에도 바뀌므로 따로.
+    const lsAt = lastStudyMap[String(u.email || '').toLowerCase()] || null;
+    const lastStudy = lsAt ? fmt(lsAt) : (progMap ? '-' : fmt(u.last_active));
+    const lastSeen = fmt(u.last_active);
+    const signup = fmt(u.signup_date);
+    return { appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
   };
   // 결제 상태 그룹 (정렬용): 0 만료일 없음 · 1 정상 활성/활성 · 2 내부 사용자 · 3 만료·종료
   const payGroup = (u) => {
@@ -2256,6 +2264,14 @@ function App() {
               <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={downloadProgressCsv} disabled={!supaUsers.length} title="CSV 로 내려받아 구글 스프레드시트에서 가져오기">📗 구글 스프레드시트로 받기</button>
               <button className="btn btn-ghost btn-mini" style={{ marginLeft: 'auto', padding: '2px 10px', fontSize: 11, background: showDayHelp ? '#FFF3D6' : undefined }} onClick={() => setShowDayHelp(v => !v)}>❓ DAY 설명</button>
             </div>
+            {opsLogOpen && (
+                  <div style={{ marginTop: 10, padding: '12px 14px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 10, background: '#fff' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><b>🗂 운영 이력 · {opsLogOpen.name || opsLogOpen.email}</b><button className="btn btn-ghost btn-mini" onClick={() => setOpsLogOpen(null)}>닫기</button></div>
+                    {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영자 변경이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
+                      <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => <tr key={i}><td style={{ whiteSpace: 'nowrap', paddingRight: 8 }}>{new Date(r.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td><td style={{ paddingRight: 8 }}>{r.action}</td><td style={{ color: '#6B5B4A' }}>{JSON.stringify(r.detail)}</td><td>{r.by || ''}</td></tr>)}</tbody></table>
+                    )}
+                  </div>
+                )}
             {showDayHelp && (
               <div className="day-help">
                 <div><b>앱 Day</b> = 지금 앱에 열려 있는 Day (마지막 접속 때 앱이 보낸 값. 접속해야 갱신돼요)</div>
@@ -2403,7 +2419,7 @@ function App() {
                       return (
                         <>
                           <div className="prog-line1">DAY {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank">[{pr.rank}]</span></div>
-                          <div className="prog-line2">마지막 학습일 {pr.lastStudy} · 앱 Day {pr.appDay}</div>
+                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} · 앱 Day {pr.appDay} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
                           {m ? (
                             <>
                               <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>

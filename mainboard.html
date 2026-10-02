@@ -3245,7 +3245,7 @@ const SCENARIOS = [
     ],
     buddyAnswers: {
       nuance: "align = '같은 방향' (동의보다 약간 약함). 회의 마무리에 가장 자주 등장하는 단어 중 하나.\n\n동의 표현 강도 비교:\n• disagree = 반대\n• not opposed = 반대 안 함 (소극적)\n• fine with it = 괜찮음 (수동적)\n• aligned = 같은 방향 (긍정적, 책임 동반) ← 추천\n• agree = 동의 (적극)\n• endorse = 지지·추천 (강함)\n\n실용 패턴:\n\"Aligned on X, but want to flag Y\" = 'X는 동의, Y는 지적할 게'\n\n주의: aligned만 하고 own·deadline 없으면 추후 책임 모호. 동의 + 액션이 세트.",
-      example: "🗣 회의: \"Are we aligned on next steps?\"\n📧 메일: \"Just confirming alignment on the launch date.\"\n💬 슬랙: \"Aligned, proceeding with Plan A.\"\n\n자주 같이 쓰는 표현:\n• alignment meeting (정렬 회의)\n• get aligned (정렬되다)\n• stay aligned (정렬 유지)\n• misaligned (어긋남)",
+      example: "🗣 회의: \"Are we aligned on next steps?\"\n📧 메일: \"Just confirming alignment on the launch date.\"\n💬 슬랙: \"Aligned, proceeding with Plan A.\"\n\n자주 같이 쓰는 표현:\n• alignment meeting (방향 맞추는 회의)\n• get aligned (같은 방향으로 맞추다)\n• stay aligned (같은 방향을 계속 유지하다)\n• misaligned (방향이 서로 어긋난)",
       default: "align = '한 줄로 정렬하다'. 자동차 휠 align먼트(정렬)와 같은 어원.\n\n외우기: 모두가 같은 방향 가리키게 정렬 = align. 100% 동의가 아니어도 큰 방향만 맞으면 OK.\n\n회의 끝에 'aligned?' 라고 물어보면 = '다 같은 방향이지?' 확인. 'Yes, aligned' 한 단어로 답하면 깔끔.",
     } },
   { day: 17, word: "sync up", pos: "phr.", meaning: "(짧게) 동기화하다, 진행상황 맞추다", phonetic: "/sɪŋk ʌp/",
@@ -5878,7 +5878,9 @@ const _gateDoneSet = (u) => {
 };
 // 게이트 값 계산. 학습을 마칠 때마다 다시 불러 "밀린 Day 이어하기"를 즉시 열어준다.
 function _computeGatedDay() {
-  if (!_localUser || !_localUser.email) return _autoDay;
+  // ★ 2026-10-02: 로그인 정보(이메일)를 못 읽으면 예전엔 달력 Day 를 돌려줘서, 그 값이 저장·동기화되며
+  //   "학습 안 했는데 Day 7" 이 됐다 (운영자 뷰 앱 Day 가 달력 Day 와 같던 사고). 이제는 1 또는 저장된 값 중 작은 쪽.
+  if (!_localUser || !_localUser.email) return Math.max(1, Math.min(_autoDay, (_localUser && Number(_localUser.dayInCompany)) || 1));
   const _GK = '__OD_DAYGATE_' + _localUser.email;
   let _floor = 1;
   try {
@@ -5926,6 +5928,8 @@ function _computeGatedDay() {
     } catch (e) { return true; }
   };
   while (_d < _autoDay && _doneSet.has(_d) && (_ack.indexOf(_d) >= 0 || _doneBeforeToday(_d))) _d++;
+  // ★ 안전장치: 어떤 경로로도 "완주한 가장 큰 Day + 1" 을 넘지 못한다 (floor 가 잘못 커진 경우 포함. 게이트 도입 전 회원의 floor 는 예외)
+  try { const _maxDone = _doneSet.size ? Math.max(..._doneSet) : 0; const _cap = Math.max(_floor, _maxDone + 1); if (_signupKST >= _GATE_EPOCH && _d > _cap) _d = _cap; } catch (e) {}
   return _d;
 }
 // 지금 화면의 Day 를 다 끝냈는데 아직 '다음 Day 열기' 를 안 눌러서 멈춰 있는 상태인지.
@@ -6303,7 +6307,7 @@ if (_localUser && !(_isInternal && _localUser.devDayOverride === true) && _gated
     _localUser.dayInCompany = _gatedDay;
     localStorage.setItem('__OD_USER', JSON.stringify(_localUser));
     // Supabase 동기화는 babel 블록(다음 script)에서 window.OD 준비된 후 실행
-    window.__OD_PENDING_DAY_SYNC = { email: _localUser.email, day: _gatedDay };
+    if (_localUser.email) window.__OD_PENDING_DAY_SYNC = { email: _localUser.email, day: _gatedDay };
   } catch (e) {}
 }
 
@@ -9001,7 +9005,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       )}
       {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => setRetDayPop(false)} />}
       {/* ★ 2026-09-24: 결근 팝업·복습 퀴즈가 떠 있는 동안엔 '열린 기능' 팝업을 겹치지 않는다 (닫히면 그때 뜬다) */}
-      {retUnlock && !retDayPop && !retDebuff && !retQuiz && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
+      {retUnlock && !retDayPop && !retDebuff && !retQuiz && !_retReturningPending(USER.email) && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
       {_isHomeLive() && !USER.isViewingPast && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => {
           if (k === "mynotes") { setActive("mynotes"); return; }
@@ -10226,6 +10230,16 @@ function _retGoalCheck(email) {
 //   { date, gap, level, defended, quizDone, surveyDone, seen }
 function _retDebuff(email) { const d = _retLoad("DEBUFF", email, null); return (d && d.date) ? d : null; }
 // 오늘 결근 팝업이 아직 처리 안 됐나 (다른 팝업이 겹치지 않게 하는 용도)
+// 오늘 결근 복귀자인데 아직 오늘 몫을 안 끝냈나 (열린 기능·알림 안내 등은 끝낸 뒤로 미룬다. 2026-10-02 지흔 제안)
+function _retReturningPending(email) {
+  try {
+    const em = email || _retEmail(); const d = _retDebuff(em);
+    if (!d || d.date !== _tyTodayISO() || !(d.gap >= 1)) return false;
+    const day = (window.__SIM && window.__SIM.USER && (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay)) || 1;
+    const t = _loadJSON("__OD_TASKS_DAY_" + day) || {};
+    return !_retTasksDone(t);
+  } catch (e) { return false; }
+}
 function _retDebuffPending(email) { try { const d = _retDebuff(email || _retEmail()); return !!(d && d.date === _tyTodayISO() && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended && !d.quizDone); } catch (e) { return false; } }
 function _retDebuffLevel(gap) { return gap >= 30 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }
 function _retEvalDebuff(email) {
@@ -10638,6 +10652,39 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
     try { if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {}
     _retDebuffPatch(email, { surveyDone: true });
   };
+  // ★ 2026-10-02 (지흔 제안): 내 목표가 없는 사람이 결근 뒤 돌아오면 '빚 청구서' 대신 가볍게. 사유서·아이템·퀴즈 강제 없이 오늘 하나만.
+  //   목표 제안은 오늘 몫을 끝낸 뒤 홈 카드가 한다. 사유는 닫기 전에 칩 한 줄로만(선택).
+  const _noGoal = !(gp && gp.status === "active");
+  if (_noGoal && lv >= 1 && lv <= 3) {
+    const today = (window.__SIM && window.__SIM.SCENARIOS || []).find(x => x.day === (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay || 1)) || null;
+    const goLight = () => { _retDebuffPatch(email, { seen: true, quizDone: true, light: true }); try { _retGoalCheck(email); } catch (e) {} onClose(); };
+    return (
+      <div className="modal-bg" style={{ zIndex: 9175 }}>
+        <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
+          <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap >= 7 ? "오랜만에 출근" : rec.gap + "일 만에 출근"}</small></div></div>
+          <div className="ret-deb-title">오셨네요, 기다렸어요</div>
+          <div className="ret-deb-msg">그동안 쌓인 건 그대로 있으니까 걱정 마세요. 오늘은 딱 하나만 하고 가요. 5분이면 끝나요.</div>
+          {today && (
+            <div className="ret-deb-box ok" style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.06em", color: "var(--ink-mute)", marginBottom: 4 }}>오늘 할 것 하나</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>Day {today.day} · {today.word} <span style={{ fontWeight: 600, color: "var(--ink-soft)" }}>· {today.meaning}</span></div>
+            </div>
+          )}
+          {!rec.surveyDone && (
+            <div className="ret-deb-opts" style={{ marginTop: 8 }}>
+              <span style={{ fontSize: 11.5, color: "var(--ink-mute)", alignSelf: "center", marginRight: 4 }}>왜 못 오셨어요? (선택)</span>
+              {RET_REASONS.map(r => <button key={r} className={"ret-deb-opt" + (reason === r ? " on" : "")} onClick={() => { setReason(r); try { const payload = { reason: r, memo: "", gap: rec.gap, at: new Date().toISOString() }; const l = _retLoad("REASONS", email, { list: [] }); l.list = (l.list || []).concat([payload]); _retSave("REASONS", email, l); if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {} _retDebuffPatch(email, { surveyDone: true }); }}>{r}</button>)}
+            </div>
+          )}
+          <div className="ret-deb-foot">
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={goLight}>오늘 하나만 하고 가기 →</button>
+            <div style={{ textAlign: "center", marginTop: 8 }}><button type="button" className="wb-link" style={{ fontSize: 12, fontWeight: 700 }} onClick={() => { _retDebuffPatch(email, { seen: true }); onOpenQuiz(); }}>복습부터 하고 싶어요</button></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-bg" style={{ zIndex: 9175 }}>
       <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
@@ -13132,7 +13179,34 @@ function LibraryPage({ openScene }) {
     <span role="button" tabIndex={0} title={favSet.has(word) ? "즐겨찾기 해제" : "즐겨찾기"} onClick={(e) => toggleFav(e, word)}
       style={{ cursor: "pointer", fontSize: size || 15, lineHeight: 1, marginRight: inCell ? 0 : 6, color: favSet.has(word) ? "#E0A93D" : "var(--line)", userSelect: "none" }}>{favSet.has(word) ? "★" : "☆"}</span>
   ) : null;
-  const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected);
+  // ★ 2026-10-02 (정주혜님 제안): Day 91+ TF 트랙(협상·피플·문서·미팅)에서 배운 표현도 업무 노트에 같이 나온다.
+  //   실제 Day(91+) 를 그대로 써서 같은 표 안에 섞이고, 내가 쓴 문장·즐겨찾기도 그 Day 키로 연결된다.
+  const [tfTick, setTfTick] = useState(0);
+  React.useEffect(() => { const f = () => setTfTick(t => t + 1); window.addEventListener("tf-scn-loaded", f); return () => window.removeEventListener("tf-scn-loaded", f); }, []);
+  const tfRows = useMemo(() => {
+    try {
+      const st = (typeof _tfState === "function") ? _tfState() : null; if (!st) return [];
+      const realDay = Number(USER.realCurrentDay || USER.currentDay) || 1; if (realDay < 91) return [];
+      const done = Array.isArray(st.done) ? st.done : [];
+      const cur = st.track ? (st.track.id || st.track) : null;
+      const tracks = done.map((id, i) => ({ id, anchor: 91 + 30 * i, upto: 30 })).concat(cur ? [{ id: cur, anchor: 91 + 30 * done.length, upto: Math.max(0, Math.min(30, realDay - (91 + 30 * done.length) + 1)) }] : []);
+      const out = [];
+      tracks.forEach(t => {
+        const d = window.__TF_SCN && window.__TF_SCN[t.id];
+        if (!d) { try { if (window.__odLoadTf) window.__odLoadTf(t.id); } catch (e) {} return; }
+        if (d === "missing" || !d.scenarios) return;
+        d.scenarios.forEach(raw => {
+          const n = Number(raw.tfDay) || 0; if (n < 1 || n > t.upto) return;
+          out.push({ day: t.anchor + n - 1, word: raw.word, pos: raw.pos || "", meaning: raw.meaning, scene: raw.scene, npc: (raw.npc === "yoona") ? "mentor" : (CHARACTERS[raw.npc] ? raw.npc : "manager"),
+            quote: raw.quote, quoteKo: raw.quoteKo || "", mentorTip: raw.mentorTip, mentorNuance: raw.mentorNuance, buddyAnswers: raw.buddyAnswers, sampleAnswer: (raw.sampleAnswers || [])[0] || "", sampleAnswers: raw.sampleAnswers || [],
+            tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[t.id]) || ["tf"],
+            status: (t.anchor + n - 1) === realDay ? "today" : "studied", _tf: String(d.trackName || (t.id + " TF")).replace(/\s*TF$/, "") + " TF · " + n + "/30" });
+        });
+      });
+      return out;
+    } catch (e) { return []; }
+  }, [tfTick, USER.realCurrentDay, USER.currentDay]);
+  const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected).concat(tfRows);
   const filtered = accessible.filter(s => {
     if (filter === "fav" && !favSet.has(s.word)) return false;
     if (filter === "written" && !_loadCompletion(s.day)) return false;
@@ -13225,7 +13299,7 @@ function LibraryPage({ openScene }) {
                     <tr className={"lib-row" + (isOpen ? " open" : "") + (s.status === "today" ? " today" : "")} onClick={() => setOpenDay(isOpen ? null : s.day)}>
                       <td className="col-day">{String(s.day).padStart(2, "0")}</td>
                       {_favOn && <td className="col-fav" onClick={(e) => e.stopPropagation()}><FavStar word={s.word} inCell /></td>}
-                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small><span className="lib-mean-inline">{s.meaning}</span></td>
+                      <td className="col-word"><b>{s.word}</b><small>{s.pos}</small>{s._tf ? <small style={{ marginLeft: 6, color: "var(--orange)", fontWeight: 800 }}>{s._tf}</small> : null}<span className="lib-mean-inline">{s.meaning}</span></td>
                       <td className="col-mean">{s.meaning}</td>
                       <td className="col-npc"><span className="lib-cat">{_libCatLabel(_libCategory(s))}</span></td>
                       <td className="col-st">{st}<i>{isOpen ? "▲" : "▼"}</i></td>
@@ -21095,7 +21169,7 @@ function App() {
       {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_retDebuffPending() && (
         <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
       )}
-      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_retDebuffPending() && (
+      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_retDebuffPending() && !_retReturningPending() && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
       {/* 출근 환경 세팅 (Day 1 학습 완료 직후) */}
@@ -21103,7 +21177,7 @@ function App() {
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && !_retDebuffPending() && (
+      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && !_retDebuffPending() && !_retReturningPending() && (
         <KakaoNudgePopup email={_localUserNow?.email} onClose={_closeKakao} />
       )}
       {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
