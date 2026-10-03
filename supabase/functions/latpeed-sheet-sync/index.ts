@@ -8,6 +8,8 @@
 //     연장 시 cohort=member, unlocked=true, 해지마커·퇴직사유 해제.
 //   · 그 결제 뒤에 '결제 취소'(환불) 가 있으면 만료일을 취소 시각으로 당기고 해지마커를 세운다.
 //   · '결제 실패' 는 건드리지 않는다 (멤버 CSV 의 '구독 종료' 가 처리).
+//   · 결제한 지 한 달이 지난 사람(시트 기준 만료)은 건드리지 않는다. 만료일은 줄이지 않는다.
+//   · 래피드 이메일 ≠ 앱 이메일이면 latpeed_aliases 표로 잇는다. 미가입 이메일은 같은 이름의 계정을 nameMatches 로 알려준다.
 //   · 운영자·Dev 계정, 테스트 계정(youbuddy.co@gmail.com)은 제외.
 //   · 가입 전 결제(users 에 없는 이메일)는 latpeed_events 에 남겨 가입 순간 소급 적용되게 한다 (latpeed_apply_pending).
 // 본문: { rows: [{ name, email, status, amount, at, reason }] }  (at = "26.09.20 21:25" 또는 ISO)
@@ -83,46 +85,59 @@ Deno.serve(async (req) => {
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
   const umap: Record<string, any> = {};
   (users || []).forEach((u: any) => { umap[String(u.email).toLowerCase()] = u; });
+  // 래피드 결제 이메일 ≠ 앱 가입 이메일 인 사람: latpeed_aliases (latpeed_email → app_email) 로 잇는다
+  const alias: Record<string, string> = {};
+  { const { data: al } = await sb.from("latpeed_aliases").select("latpeed_email, app_email");
+    (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
+  const nowIso = new Date().toISOString();
 
   const applied: any[] = [], cancelled: any[] = [], pending: any[] = []; let skipped = 0;
   for (const email of emails) {
-    const r = by[email]; const u = umap[email];
+    const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
+    const want = plusOneMonthKstEnd(r.lastPaid);
+    const wantIso = new Date(want).toISOString();
     if (!u) {
-      // 가입 전 결제: latpeed_events 에 넣어두면 가입 트리거(latpeed_apply_pending)가 소급 적용
-      pending.push({ email, paid: r.lastPaid });
+      // 가입 전 결제: latpeed_events 에 넣어두면 가입 트리거(latpeed_apply_pending)가 소급 적용.
+      // 이미 한 달이 지난 결제는 소급해도 의미가 없으니 기록만 남기지 않고 건너뛴다.
+      if (wantIso < nowIso) { skipped++; continue; }
+      // 같은 이름으로 가입한 계정이 있으면 후보로 알려준다 (운영자가 latpeed_aliases 에 넣을 수 있게)
+      const nm = r.name.replace(/\s+/g, "");
+      const nameMatches = nm ? (users || []).filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
+      pending.push({ email, name: r.name, paid: r.lastPaid, nameMatches });
       if (!dry) {
-        // 같은 결제를 매일 또 넣지 않게 먼저 확인
         const { data: ex } = await sb.from("latpeed_events").select("id").eq("email", email).eq("event_at", r.lastPaid).eq("type", "MEMBERSHIP_PAYMENT").limit(1);
         if (!ex || !ex.length) {
           await sb.from("latpeed_events").insert({
             email, type: "MEMBERSHIP_PAYMENT", status: "SUCCESS", event_at: r.lastPaid, amount: r.amount || null,
-            option_text: "sheet-sync", applied: false, raw: { source: "sheet-sync", name: r.name }, received_at: new Date().toISOString(),
+            option_text: "sheet-sync", applied: false, raw: { source: "sheet-sync", name: r.name }, received_at: nowIso,
           }).then(() => {}, () => {});
         }
       }
       continue;
     }
     if (u.is_operator || u.is_dev_mode || u.withdrawn_at) { skipped++; continue; }
-    const want = plusOneMonthKstEnd(r.lastPaid);
     const dbEnd = u.membership_ends_at ? new Date(u.membership_ends_at).toISOString() : null;
     const prefs = (u.preferences && typeof u.preferences === "object") ? u.preferences : {};
     if (r.cancelAfter) {
       // 환불: 취소 시각으로 만료 + 해지마커
       const cancelEnd = new Date(r.cancelAfter).toISOString();
       if (!dbEnd || dbEnd > cancelEnd || !u.membership_cancel_at) {
-        cancelled.push({ email, name: u.name, ends: cancelEnd });
-        if (!dry) await sb.from("users").update({ membership_ends_at: cancelEnd, membership_cancel_at: u.membership_cancel_at || new Date().toISOString(), membership_cancel_reason: "latpeed_refund" }).eq("email", u.email);
+        cancelled.push({ email: u.email, name: u.name, ends: cancelEnd });
+        if (!dry) await sb.from("users").update({ membership_ends_at: cancelEnd, membership_cancel_at: u.membership_cancel_at || nowIso, membership_cancel_reason: "latpeed_refund" }).eq("email", u.email);
       } else skipped++;
       continue;
     }
-    const wantIso = new Date(want).toISOString();
+    // ★ 결제한 지 한 달이 지난 사람(= 시트 기준으로 이미 만료)은 절대 건드리지 않는다.
+    //   해지마커를 지우면 앱의 fail-open(해지 안 한 member 는 날짜로 안 막음) 때문에 만료자가 열려 버린다. (2026-10-03 1차 실행 사고)
+    if (wantIso < nowIso) { skipped++; continue; }
     const needs = !dbEnd || dbEnd < wantIso || u.cohort !== "member" || u.unlocked === false || !!u.membership_cancel_at || !!u.membership_cancel_reason;
     if (!needs) { skipped++; continue; }
-    applied.push({ email, name: u.name, from: dbEnd, to: wantIso, paid: r.lastPaid });
+    const newEnd = (dbEnd && dbEnd > wantIso) ? dbEnd : wantIso;   // 줄이지 않는다
+    applied.push({ email: u.email, name: u.name, from: dbEnd, to: newEnd, paid: r.lastPaid });
     if (!dry) {
       await sb.from("users").update({
-        membership_ends_at: wantIso, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
+        membership_ends_at: newEnd, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
         preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid },
       }).eq("email", u.email);
     }

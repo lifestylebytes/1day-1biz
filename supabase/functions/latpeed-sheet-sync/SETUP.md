@@ -6,7 +6,9 @@
 - 이메일별 가장 최근 "결제 완료" 일시 + 1개월 그날 23:59 KST = 만료일. DB 만료일이 이보다 이르거나 비어 있으면 연장하고 cohort=member, unlocked=true, 해지마커 해제.
 - 그 결제 뒤에 "결제 취소"가 있으면 만료일을 취소 시각으로 당기고 해지마커(latpeed_refund)를 세운다.
 - "결제 실패"는 건드리지 않는다.
-- 아직 가입 안 한 이메일은 latpeed_events 에 넣어 두고, 가입하는 순간 기존 트리거(latpeed_apply_pending)가 소급 적용한다.
+- 결제한 지 한 달이 지난 사람(시트 기준 만료)은 건드리지 않는다. 만료일은 줄이지 않는다.
+- 아직 가입 안 한 이메일은 latpeed_events 에 넣어 두고, 가입하는 순간 기존 트리거(latpeed_apply_pending)가 소급 적용한다. 로그의 pending 에 같은 이름의 가입 계정이 nameMatches 로 같이 나온다.
+- 래피드 결제 이메일과 앱 가입 이메일이 다른 사람은 latpeed_aliases 표에 한 줄 넣어 두면 그 뒤로 자동으로 이어진다 (migrations/2026-10-03_latpeed_aliases.sql).
 - 운영자, Dev, 탈퇴 계정, youbuddy.co@gmail.com 은 건너뛴다.
 - 바뀐 사람은 ops_log 에 sheet_sync 로 남는다 (운영자 페이지 "이력 보기"에 보임).
 
