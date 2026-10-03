@@ -56,7 +56,7 @@
    ],
    "buddyAnswers": {
     "nuance": "겉은 정중, 속은 '이미 말씀드렸는데요'.\n\n수동공격(passive-aggressive)의 대명사로 밈이 된 표현이라, 쓸 때는 수위 조절이 필요해.",
-    "example": "• \"Per my last email, the files are due Friday.\"\n• \"As per my previous email, the meeting moved to 3pm.\" (as per도 같은 뜻)",
+    "example": "• \"Per my last email, the files are due Friday.\" (지난 메일에서 말씀드린 대로, 파일은 금요일까지예요.)\n• \"As per my previous email, the meeting moved to 3pm.\" (이전 메일에서 말씀드린 대로, 회의가 3시로 옮겨졌어요. as per도 같은 뜻)",
     "default": "같은 질문이 두 번 오면 내 메일이 안 읽힌 이유부터 생각해 보자. 너무 길었나? 요약이 없었나? (4일차에 배울 예정)"
    },
    "quizPrompt": "동기가 슬랙으로: \"거래처가 계약 조건을 세 번째 물어봐. 지난 메일에 다 있는데... 화 안 내고 답하는 법 없냐?\" 뭐라고 답장 예시를 줄까?"
@@ -100,7 +100,7 @@
    ],
    "buddyAnswers": {
     "nuance": "직역하면 '첨부된 것을 찾으세요'라 이상하지만, 그냥 '첨부합니다'라는 공식 멘트.\n\nPFA로 줄여 쓰는 사람들도 있어(인도권 메일에서 특히 자주).",
-    "example": "• \"Please find attached the invoice for March.\"\n• \"Please find attached my resume for your review.\"",
+    "example": "• \"Please find attached the invoice for March.\" (3월 청구서를 첨부해 드립니다.)\n• \"Please find attached my resume for your review.\" (검토용으로 제 이력서를 첨부해 드립니다.)",
     "default": "attached 뒤에 뭘 첨부했는지 정확히 쓰는 게 포인트. 그리고 제일 중요한 건... 진짜로 파일을 첨부하는 것."
    },
    "quizPrompt": "빈칸: 거래처에 견적서를 보내는 메일 첫 줄. \"____ the quote you requested yesterday.\""
@@ -144,7 +144,7 @@
    ],
    "buddyAnswers": {
     "nuance": "총알(bullet)처럼 박히는 점. 파워포인트, 메일, 이력서 어디든.\n\n동사처럼 'bullet it out'이라고도 써.",
-    "example": "• \"Can you bullet point the main risks?\"\n• \"His resume is one page, all bullet points.\"",
+    "example": "• \"Can you bullet point the main risks?\" (주요 리스크를 항목별로 정리해 줄 수 있어요?)\n• \"His resume is one page, all bullet points.\" (그 사람 이력서는 한 장짜리에 전부 항목 정리예요.)",
     "default": "불릿의 핵심은 '한 줄 한 생각'. 두 문장이 들어가는 순간 그건 불릿이 아니라 문단이야."
    },
    "quizPrompt": "다른 팀 신입이 임원 참조 메일을 10줄짜리 문단으로 썼다가 '읽기 힘들다'는 답장을 받았다. 어떤 톤으로 조언하는 게 좋을까?"
@@ -188,7 +188,7 @@
    ],
    "buddyAnswers": {
     "nuance": "Too Long; Didn't Read의 약자.\n\n원래는 '길어서 안 읽음'이라는 조롱이었는데, 지금은 '바쁜 당신을 위한 요약'이라는 배려로 진화했어.",
-    "example": "• \"TL;DR: we won the bid.\"\n• \"Adding a TL;DR since this got long.\"",
+    "example": "• \"TL;DR: we won the bid.\" (한 줄 요약: 입찰 땄어요.)\n• \"Adding a TL;DR since this got long.\" (길어져서 한 줄 요약을 넣어요.)",
     "default": "TL;DR을 쓰면 역설적으로 본문을 읽을 확률이 올라가. 요약이 재밌으면 본편이 궁금해지거든."
    },
    "quizPrompt": "어색한 곳 찾기: 동기가 보고 메일 맨 위에 쓴 요약. 가장 자연스러운 문장은?"
@@ -232,7 +232,7 @@
    ],
    "buddyAnswers": {
     "nuance": "철자를(spell) 하나하나 밖으로(out) 꺼내는 그림.\n\nASAP를 as soon as possible로 풀어 쓰는 것도, 애매한 지시를 구체화하는 것도 전부 spell out.",
-    "example": "• \"Please spell out the KPI definitions in the appendix.\"\n• \"The contract spells out who owns the data.\"",
+    "example": "• \"Please spell out the KPI definitions in the appendix.\" (부록에 KPI 정의를 명확히 적어 주세요.)\n• \"The contract spells out who owns the data.\" (계약서에 데이터 소유권이 누구인지 명시돼 있어요.)",
     "default": "글로벌 문서 1원칙: 읽는 사람은 우리 회사 약어를 모른다. 처음엔 풀고, 그다음에 줄여."
    },
    "quizPrompt": "친구가 회사 얘기를 한다. \"기획서에 '시너지 극대화'라고만 써 있고 뭘 하라는 건지 아무도 몰라...\" 뭐라고 답할까?"
@@ -276,7 +276,7 @@
    ],
    "buddyAnswers": {
     "nuance": "end of day의 약자. 사실상 '오늘 안에'.\n\n받는 사람 기준인지 보내는 사람 기준인지 애매할 땐 시간대를 붙이는 게 매너.",
-    "example": "• \"Can you review this by EOD?\"\n• \"EOD works, I'll have it done by then.\"",
+    "example": "• \"Can you review this by EOD?\" (퇴근 전까지 검토해 줄 수 있어요?)\n• \"EOD works, I'll have it done by then.\" (퇴근 전 괜찮아요, 그때까지 끝낼게요.)",
     "default": "EOD의 함정: 내 EOD는 6시, 워커홀릭 팀장의 EOD는 밤 11시일 수 있다. 숫자가 평화를 지킨다."
    },
    "quizPrompt": "빈칸: 디자이너 동기가 클라이언트에게 보낼 슬랙 메시지. \"배너 시안 3종, ___(오늘 안)까지 보내드릴게요.\""
@@ -320,7 +320,7 @@
    ],
    "buddyAnswers": {
     "nuance": "close of business. 은행 마감 시간에서 온 표현.\n\nEOD보다 살짝 격식체. 미국에선 보통 5pm, 하지만 결국 '그 회사의 퇴근 시간'.",
-    "example": "• \"Responses are due by COB Friday.\"\n• \"I'll circulate the agenda by COB.\"",
+    "example": "• \"Responses are due by COB Friday.\" (답변은 금요일 업무 종료 전까지예요.)\n• \"I'll circulate the agenda by COB.\" (업무 종료 전까지 안건을 돌릴게요.)",
     "default": "EOD(어제)와 COB(오늘)는 쌍둥이. 차이는 옷차림 정도야. 글로벌 팀에선 둘 다 시간대를 붙여야 산다."
    },
    "quizPrompt": "시차 8시간 나는 해외 협력사에 자료 마감을 알려야 한다. 오해 없이 전달하는 톤은?"
@@ -364,7 +364,7 @@
    ],
    "buddyAnswers": {
     "nuance": "recapitulate의 줄임말. 요점 재정리.\n\n명사로도 동사로도: a quick recap / let me recap.",
-    "example": "• \"To recap: we ship Friday, marketing starts Monday.\"\n• \"Can someone recap the last meeting? I was out.\"",
+    "example": "• \"To recap: we ship Friday, marketing starts Monday.\" (정리하면: 금요일 출시, 월요일 마케팅 시작.)\n• \"Can someone recap the last meeting? I was out.\" (지난 회의 요약해 줄 사람 있어요? 제가 자리를 비워서요.)",
     "default": "리캡은 기록이자 정치야. 먼저 쓰는 사람이 회의 결과를 정의해. 12일차에 배울 paper trail의 시작점이기도 하고."
    },
    "quizPrompt": "어색한 곳 찾기: 옆 팀 동기가 회의 직후 보낸 메일. 가장 자연스러운 건?"
@@ -408,7 +408,7 @@
    ],
    "buddyAnswers": {
     "nuance": "회의에서 나온 '실행할 일' 하나하나.\n\nto-do와 비슷하지만 action item은 회의 맥락 전용. AI라고 줄이면 요즘은 인공지능이랑 헷갈리니 풀어 쓰자.",
-    "example": "• \"Let's capture that as an action item.\"\n• \"Three action items came out of the retro.\"",
+    "example": "• \"Let's capture that as an action item.\" (그건 액션 아이템으로 적어 두죠.)\n• \"Three action items came out of the retro.\" (회고에서 액션 아이템 세 개가 나왔어요.)",
     "default": "어제 배운 recap의 심장이 바로 action items야. 결정사항은 과거, 액션 아이템은 미래. 리캡엔 둘 다 있어야 해."
    },
    "quizPrompt": "동기가 한숨 쉬며 말한다. \"우리 팀 회의는 한 시간 떠들고 끝나. 다음 회의 때 보면 아무도 아무것도 안 해놨어.\" 뭐라고 답할까?"
@@ -452,7 +452,7 @@
    ],
    "buddyAnswers": {
     "nuance": "stream(물살) + line(선). 물살이 스치는 유선형.\n\n프로세스, 조직, 글, 코드까지. '저항을 없애다'는 그림 하나로 다 통해.",
-    "example": "• \"We streamlined onboarding from two weeks to three days.\"\n• \"The new form streamlines expense reporting.\"",
+    "example": "• \"We streamlined onboarding from two weeks to three days.\" (온보딩을 2주에서 3일로 간소화했어요.)\n• \"The new form streamlines expense reporting.\" (새 양식으로 경비 보고가 간단해졌어요.)",
     "default": "글쓰기에서 streamline의 실전 질문은 하나야. '이 문장 지우면 뭐가 무너지지?' 답이 '아무것도'면 지워."
    },
    "quizPrompt": "빈칸: 옆 팀 회의에서 나온 말. \"결재에 서명이 다섯 번 필요해요. 승인 절차를 ___ 합시다.\""
@@ -496,7 +496,7 @@
    ],
    "buddyAnswers": {
     "nuance": "proof(교정쇄) + read. 인쇄 전 마지막 검토에서 온 말.\n\nreview는 내용 검토, proofread는 표면 검사(오타, 문법, 형식). 둘은 다른 작업이야.",
-    "example": "• \"Can you proofread this before I hit send?\"\n• \"I proofread it three times and still missed one.\"",
+    "example": "• \"Can you proofread this before I hit send?\" (보내기 전에 한번 교정 봐 줄 수 있어요?)\n• \"I proofread it three times and still missed one.\" (세 번 교정했는데도 하나 놓쳤어요.)",
     "default": "뇌는 자기가 쓴 글을 '쓰려던 글'로 읽어. 그래서 남의 눈, 소리 내 읽기, 하룻밤 묵히기가 필요한 거야."
    },
    "quizPrompt": "후배가 사색이 되어 온다. 고객사에 보낸 제안서에서 방금 오타를 발견했다고. 어떤 톤으로 말해줄까?"
@@ -540,7 +540,7 @@
    ],
    "buddyAnswers": {
     "nuance": "종이(paper)가 남긴 발자국(trail).\n\n원래 수사물에서 돈 흐름 추적할 때 쓰던 말인데, 회사에선 '증빙 가능한 기록'이란 뜻으로 순화됐어.",
-    "example": "• \"The expense has a full paper trail: request, approval, receipt.\"\n• \"No paper trail, no reimbursement.\"",
+    "example": "• \"The expense has a full paper trail: request, approval, receipt.\" (그 경비는 요청, 승인, 영수증까지 기록이 다 남아 있어요.)\n• \"No paper trail, no reimbursement.\" (기록이 없으면 환급도 없어요.)",
     "default": "기록은 나를 지키는 보험이야. 잘한 일은 증명해 주고, 문제가 생기면 방패가 돼. 쓰면서 남기면 공짜, 나중에 만들면 일주일."
    },
    "quizPrompt": "어색한 곳 찾기: 감사 시즌을 앞둔 동기의 말. 가장 자연스러운 문장은?"
@@ -584,7 +584,7 @@
    ],
    "buddyAnswers": {
     "nuance": "word + smith(장인). blacksmith(대장장이)의 문장 버전.\n\n명사로도 동사로도 써. 살짝 유머러스한 뉘앙스라 공식 직함은 아니고 '금손' 느낌.",
-    "example": "• \"She's the real wordsmith on our team.\"\n• \"Let me wordsmith the headline a bit.\"",
+    "example": "• \"She's the real wordsmith on our team.\" (그녀가 우리 팀의 진짜 글쟁이예요.)\n• \"Let me wordsmith the headline a bit.\" (헤드라인 문구를 제가 좀 다듬어 볼게요.)",
     "default": "wordsmith 소리를 듣기 시작했다면 축하해. 이제 사람들이 '보내기 전에 너한테 먼저' 들고 올 거야. 그게 문서 TF의 훈장이야."
    },
    "quizPrompt": "동기가 슬랙으로 묻는다. \"영문 자소서 쓰는데 문장이 다 뻣뻣해. 이거 봐줄 사람 없나...\" 뭐라고 답할까?"
@@ -628,7 +628,7 @@
    ],
    "buddyAnswers": {
     "nuance": "flesh(살) + out. 뼈대에 살을 붙여 형체를 만드는 그림.\n\n아이디어, 계획, 캐릭터, 챕터... 아직 앙상한 모든 것에 써.",
-    "example": "• \"The outline's approved, now flesh it out.\"\n• \"We need to flesh out the risks section.\"",
+    "example": "• \"The outline's approved, now flesh it out.\" (개요는 승인됐으니 이제 살을 붙여요.)\n• \"We need to flesh out the risks section.\" (리스크 섹션에 내용을 더 채워야 해요.)",
     "default": "좋은 피드백은 '별로야'가 아니라 'flesh out this part'라고 말해. 방향까지 주는 거니까. 받으면 감사하고, 줄 때도 그렇게 줘."
    },
    "quizPrompt": "빈칸: 사이드 프로젝트 하는 친구에게. \"아이디어 좋다. 근데 아직 한 줄짜리잖아. 수익 모델까지 ___ 해봐.\""
@@ -672,7 +672,7 @@
    ],
    "buddyAnswers": {
     "nuance": "느슨한 나사를 조이는(tighten) 그림.\n\n글, 일정, 규율, 수비까지. '헐거운 것을 팽팽하게'면 어디든 써.",
-    "example": "• \"Let's tighten up the intro, it rambles.\"\n• \"We tightened up the release schedule by a week.\"",
+    "example": "• \"Let's tighten up the intro, it rambles.\" (도입부를 좀 조여요, 너무 늘어져요.)\n• \"We tightened up the release schedule by a week.\" (릴리스 일정을 일주일 당겼어요.)",
     "default": "어제 flesh out, 오늘 tighten up. 글쓰기는 숨쉬기야. 들이쉬고(살 붙이고), 내쉬고(조이고). 한쪽만 하면 탈이 나."
    },
    "quizPrompt": "후배의 발표 스크립트가 15분 분량인데 주어진 시간은 10분. 어떤 톤으로 피드백할까?"
@@ -716,7 +716,7 @@
    ],
    "buddyAnswers": {
     "nuance": "by(옆으로) 지나가며(run) 보여주는 그림.\n\n정식 결재가 아니라 가볍게 의견 구하는 뉘앙스. run it past도 같은 뜻.",
-    "example": "• \"Can I run something by you real quick?\"\n• \"Run the pricing by finance before you quote it.\"",
+    "example": "• \"Can I run something by you real quick?\" (잠깐 뭐 하나 확인받아도 될까요?)\n• \"Run the pricing by finance before you quote it.\" (견적 내기 전에 가격을 재무팀에 확인받으세요.)",
     "default": "실수 방지 최강 습관: 중요한 발신 전에 한 사람만 거치기. 30초 아끼려다 3일 수습하는 게 회사 생활이야."
    },
    "quizPrompt": "어색한 곳 찾기: 신입이 계약 관련해서 한 말. 가장 자연스러운 문장은?"
@@ -760,7 +760,7 @@
    ],
    "buddyAnswers": {
     "nuance": "말(공기)을 글(writing)로 옮겨 박제하는 것.\n\nget it in writing(받아내다), have it in writing(갖고 있다)로 변형해서도 많이 써.",
-    "example": "• \"Great, could you put that in writing so I can share it internally?\"\n• \"I want the offer in writing before I resign.\"",
+    "example": "• \"Great, could you put that in writing so I can share it internally?\" (좋아요, 내부 공유할 수 있게 그걸 문서로 남겨 줄 수 있어요?)\n• \"I want the offer in writing before I resign.\" (퇴사하기 전에 오퍼를 서면으로 받고 싶어요.)",
     "default": "12일차 paper trail 기억나? put it in writing은 그 paper trail을 만드는 동작이야. 기록은 존재하는 게 아니라 만드는 것."
    },
    "quizPrompt": "친구가 카톡으로. \"집주인이 2년간 월세 안 올린다고 말로 약속했어. 착한 분이라 믿어도 되겠지?\" 뭐라고 답할까?"
@@ -804,7 +804,7 @@
    ],
    "buddyAnswers": {
     "nuance": "쿵 부딪혀서(bump) 위로 밀어 올리는 그림.\n\n메일, 슬랙 스레드, 게시글 전부. bump it up, bump the thread 형태로.",
-    "example": "• \"Bumping this to the top of your inbox.\"\n• \"Mind if I bump that ticket? It's blocking us.\"",
+    "example": "• \"Bumping this to the top of your inbox.\" (받은편지함 맨 위로 다시 올려요.)\n• \"Mind if I bump that ticket? It's blocking us.\" (그 티켓 좀 밀어 올려도 될까요? 우리가 막혀 있어서요.)",
     "default": "리마인드 3형제 예고: bump(오늘, 캐주얼) → gentle reminder(내일, 정중) → nudge(모레, 귀엽게). 강도와 온도가 다 달라."
    },
    "quizPrompt": "빈칸: 협력사 스레드가 나흘째 조용하다. 짧게 한 줄. \"___ this in case it got buried in your inbox.\""
@@ -848,7 +848,7 @@
    ],
    "buddyAnswers": {
     "nuance": "gentle(부드러운) + reminder(상기시킴). 리마인드 메일의 공식 오프닝.\n\nfriendly reminder, quick reminder도 같은 톤의 형제들.",
-    "example": "• \"Gentle reminder that the survey closes tonight.\"\n• \"Just a friendly reminder about tomorrow's 9am call.\"",
+    "example": "• \"Gentle reminder that the survey closes tonight.\" (설문이 오늘 밤에 마감된다는 점 살짝 알려 드려요.)\n• \"Just a friendly reminder about tomorrow's 9am call.\" (내일 9시 콜, 가볍게 다시 알려 드려요.)",
     "default": "어제 bump가 툭 치는 거라면 gentle reminder는 정중히 목례하는 거야. 상대가 상급자거나 대외 관계면 이쪽이 안전해."
    },
    "quizPrompt": "옆 팀 담당자가 2주째 답이 없다. 이번이 세 번째 팔로업. 어떤 톤이 맞을까?"
@@ -892,7 +892,7 @@
    ],
    "buddyAnswers": {
     "nuance": "팔꿈치로 슬쩍 찌르는 동작이 원뜻.\n\n행동경제학의 '넛지'도 같은 단어야. 강요 없이 살짝 방향만 주는 것.",
-    "example": "• \"A little nudge: the form's still waiting for your signature.\"\n• \"Can you nudge design about the logo files?\"",
+    "example": "• \"A little nudge: the form's still waiting for your signature.\" (살짝 알려 드려요: 양식이 아직 서명을 기다리고 있어요.)\n• \"Can you nudge design about the logo files?\" (디자인팀에 로고 파일 좀 재촉해 줄 수 있어요?)",
     "default": "리마인드 3형제 완성: bump(18일)는 스레드를 올리고, gentle reminder(19일)는 정중히 조이고, nudge(오늘)는 귀엽게 찌른다. 상황 맞춰 골라 써."
    },
    "quizPrompt": "어색한 곳 찾기: 동기가 쓴 팔로업 메시지. 가장 자연스러운 건?"
@@ -936,7 +936,7 @@
    ],
    "buddyAnswers": {
     "nuance": "증기기관 보일러의 강철판에서 온 말. 찍어내듯 똑같은 표준 문구.\n\n계약서 하단 조항, 회사 소개, 면책 문구가 대표 선수들. 개발자들은 반복 코드도 boilerplate라고 불러.",
-    "example": "• \"The NDA is mostly boilerplate, but read clause 7.\"\n• \"Add the standard boilerplate at the bottom.\"",
+    "example": "• \"The NDA is mostly boilerplate, but read clause 7.\" (NDA는 대부분 표준 문구인데, 7조는 꼭 읽어 보세요.)\n• \"Add the standard boilerplate at the bottom.\" (하단에 표준 문구를 넣어 주세요.)",
     "default": "boilerplate의 미덕은 속도와 안전, 죄악은 무성의. 어디까지 복붙하고 어디부터 새로 쓸지 아는 게 감각이야."
    },
    "quizPrompt": "동기가 푸념한다. \"견적 메일 보낼 때마다 회사 소개랑 조건 문단을 매번 새로 써. 시간 아까워 죽겠어.\" 뭐라고 답할까?"
@@ -980,7 +980,7 @@
    ],
    "buddyAnswers": {
     "nuance": "빨간 펜(red) 줄(line)에서 온 말. 수정 표시 가득한 검토본.\n\n명사로도 동사로도. 계약 협상에선 '수정 제안을 주고받는 라운드' 자체를 redline이라고 불러.",
-    "example": "• \"Send over your redlines by Friday.\"\n• \"We're on the third round of redlines with the vendor.\"",
+    "example": "• \"Send over your redlines by Friday.\" (금요일까지 수정 표시본을 보내 주세요.)\n• \"We're on the third round of redlines with the vendor.\" (벤더와 세 번째 수정본을 주고받는 중이에요.)",
     "default": "빨간 줄의 양은 관심의 양이야. 대충 볼 문서엔 아무도 레드라인 안 쳐. Daniel의 빨간 폭탄은 사실 러브레터... 라고 생각하면 견딜 만해."
    },
    "quizPrompt": "빈칸: 동기가 법무 검토 결과를 전한다. \"법무팀이 계약서를 ___ 해서 돌려줬어. 온통 빨간 줄이야.\""
@@ -1024,7 +1024,7 @@
    ],
    "buddyAnswers": {
     "nuance": "Word의 변경 내용 추적 기능. 이제 구글독스 Suggesting 모드까지 통칭.\n\nwith track changes on/off 형태로 상태를 말해.",
-    "example": "• \"Can you turn on track changes before editing?\"\n• \"The file's a mess of track changes, let me clean it up.\"",
+    "example": "• \"Can you turn on track changes before editing?\" (편집 전에 변경 내용 추적을 켜 줄 수 있어요?)\n• \"The file's a mess of track changes, let me clean it up.\" (파일이 변경 추적 표시로 엉망이에요, 제가 정리할게요.)",
     "default": "어제 redline이 '받은 빨간 줄'이면 track changes는 '내가 남기는 빨간 줄'. 투명하게 주고받는 게 원격 협업의 신뢰 화폐야."
    },
    "quizPrompt": "협력사가 계약서 문구를 변경 표시 없이 몰래 고쳐 보내왔다. 발견한 지금, 어떤 톤으로 답장할까?"
@@ -1068,7 +1068,7 @@
    ],
    "buddyAnswers": {
     "nuance": "append(덧붙이다)에서 온 말. 문서 끝의 자료 창고.\n\n복수형은 appendices(격식) 또는 appendixes(실용). 참고로 몸의 맹장도 appendix야. 본체에 붙어 있는 것.",
-    "example": "• \"Full methodology is in the appendix.\"\n• \"I moved the legal terms to Appendix C.\"",
+    "example": "• \"Full methodology is in the appendix.\" (전체 방법론은 부록에 있어요.)\n• \"I moved the legal terms to Appendix C.\" (법률 조항은 부록 C로 옮겼어요.)",
     "default": "부록은 본문의 쓰레기통이 아니라 금고야. 검증하고 싶은 사람을 위한 증거 보관소. 넣을 때도 기준을 갖고."
    },
    "quizPrompt": "어색한 곳 찾기: 논문 쓰는 대학원생 친구의 말. 가장 자연스러운 문장은?"
@@ -1112,7 +1112,7 @@
    ],
    "buddyAnswers": {
     "nuance": "executive(임원)를 위한 summary. 문서 맨 앞의 완결형 요약.\n\n4일차 TL;DR의 정장 버전이라고 생각하면 돼. 슬랙엔 TL;DR, 보고서엔 executive summary.",
-    "example": "• \"Keep the executive summary under one page.\"\n• \"She only read the executive summary and approved it.\"",
+    "example": "• \"Keep the executive summary under one page.\" (임원 요약은 한 장을 넘기지 마세요.)\n• \"She only read the executive summary and approved it.\" (그녀는 임원 요약만 읽고 승인했어요.)",
     "default": "잔인한 진실: 대부분의 임원은 요약만 읽는다. 더 잔인한 진실: 그래서 요약이 본문보다 어렵고, 제일 마지막에 써야 한다. 본문이 완성돼야 요약이 나오거든."
    },
    "quizPrompt": "동기가 시무룩하다. \"20장짜리 기획서 밤새 만들었는데 본부장님이 '그래서 결론이 뭐야?' 하셨대...\" 뭐라고 답할까?"
@@ -1156,7 +1156,7 @@
    ],
    "buddyAnswers": {
     "nuance": "take away, 들고 나가는 것.\n\n회의, 발표, 책, 실패 경험까지. '그래서 남은 게 뭔데'에 대한 답이 takeaway.",
-    "example": "• \"My main takeaway: we underpriced the product.\"\n• \"The one-line takeaway from the retro is 'test earlier'.\"",
+    "example": "• \"My main takeaway: we underpriced the product.\" (제 핵심 결론: 우리가 가격을 너무 낮게 잡았어요.)\n• \"The one-line takeaway from the retro is 'test earlier'.\" (회고의 한 줄 결론은 '더 일찍 테스트하자'예요.)",
     "default": "8일차 recap과의 차이: recap은 일어난 일 전체의 축약, takeaway는 그중 내가 들고 나가는 알맹이. recap은 기록용, takeaway는 실행용."
    },
    "quizPrompt": "빈칸: 컨퍼런스 다녀온 동기에게. \"발표 자료 말고, 너한테 남은 ___ 세 개만 말해줘.\""
@@ -1200,7 +1200,7 @@
    ],
    "buddyAnswers": {
     "nuance": "직역은 '당신이 편한 가장 이른 때에'. 실제 뜻은 '정중한 ASAP'.\n\nASAP보다 부드럽고, whenever you can보다 급해. 그 사이 어딘가.",
-    "example": "• \"Please return the signed copy at your earliest convenience.\"\n• \"Kindly confirm attendance at your earliest convenience.\"",
+    "example": "• \"Please return the signed copy at your earliest convenience.\" (서명본을 편하신 때 가능한 한 빨리 보내 주세요.)\n• \"Kindly confirm attendance at your earliest convenience.\" (참석 여부를 편하신 때 되도록 빨리 확인 부탁드려요.)",
     "default": "공손함의 역설: 말이 길어질수록 급한 거야. now < today < at your earliest convenience 순으로 정중해지지만, 속마음은 다 '빨리'다."
    },
    "quizPrompt": "바쁘기로 유명한 고객사 임원에게 계약서 서명을 요청해야 한다. 어떤 톤이 맞을까?"
@@ -1244,7 +1244,7 @@
    ],
    "buddyAnswers": {
     "nuance": "앞으로(forward) 나아가며(moving). '지금부터는'.\n\ngoing forward도 완전히 같은 뜻. 회의 마무리, 회고, 정책 변경 안내의 단골.",
-    "example": "• \"Moving forward, all PTO requests go through the portal.\"\n• \"Let's use this format going forward.\"",
+    "example": "• \"Moving forward, all PTO requests go through the portal.\" (앞으로는 모든 휴가 신청이 포털을 통해 이루어져요.)\n• \"Let's use this format going forward.\" (앞으로는 이 양식을 쓰죠.)",
     "default": "회고의 완성은 비난이 아니라 moving forward 문장이야. '누가 잘못했다'가 아니라 '다음엔 이렇게 한다'로 끝나는 회의가 좋은 회의."
    },
    "quizPrompt": "어색한 곳 찾기: 프로젝트 회고 회의에서 나온 문장. 가장 자연스러운 건?"
@@ -1288,7 +1288,7 @@
    ],
    "buddyAnswers": {
     "nuance": "직역하면 '조언해 주세요'지만 실제론 '결정이나 지시를 주세요'.\n\n메일 맨 끝에 단독 문장으로 쓰는 게 특징. 살짝 사무적인 향이 있어서 친한 사이엔 What do you think?가 나아.",
-    "example": "• \"The vendor can deliver May 2 or May 9. Please advise.\"\n• \"We're over budget by 8%. Please advise on next steps.\"",
+    "example": "• \"The vendor can deliver May 2 or May 9. Please advise.\" (벤더가 5월 2일 또는 9일에 납품 가능하답니다. 어떻게 할지 알려 주세요.)\n• \"We're over budget by 8%. Please advise on next steps.\" (예산을 8% 초과했어요. 다음 단계를 알려 주세요.)",
     "default": "결정권이 상대에게 있을 때 내가 할 일은 결정을 대신하는 게 아니라 결정하기 쉽게 차려주는 것. 옵션 두 개 + 추천 하나 + please advise. 이게 풀코스야."
    },
    "quizPrompt": "동기의 고민. \"거래처가 애매한 요청을 보내놓고 결정을 나한테 미루는 것 같아. 나도 공을 돌려주고 싶은데 예의 있게.\" 뭐라고 답할까?"
@@ -1332,7 +1332,7 @@
    ],
    "buddyAnswers": {
     "nuance": "acknowledge(인정하다) + receipt(수신). '수령 사실을 공식 확인합니다'.\n\nreceipt은 영수증이 아니라 '받음' 그 자체. 동의 여부와는 무관한 중립 확인이라는 게 포인트.",
-    "example": "• \"Please acknowledge receipt of this notice.\"\n• \"This email acknowledges receipt of your application.\"",
+    "example": "• \"Please acknowledge receipt of this notice.\" (이 공지를 받으셨으면 회신 부탁드립니다.)\n• \"This email acknowledges receipt of your application.\" (이 메일로 지원서 접수를 확인드립니다.)",
     "default": "문서 TF 30일 완주! per my last email로 시작해 acknowledge receipt으로 닫았어. 쓰고, 다듬고, 기록을 남기는 30개의 무기. 다음 TF에서 만나. 🏆"
    },
    "quizPrompt": "빈칸: 후배가 중요한 계약 원본 파일을 받고 첫 회신을 고민 중이다. \"공식적인 '잘 받았습니다' 한 줄, 영어로는 'We ___ of the signed contract.'\""

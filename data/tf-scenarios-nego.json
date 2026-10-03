@@ -54,7 +54,7 @@
       ],
       "buddyAnswers": {
         "nuance": "deal-breaker = 이거 하나 때문에 딜 전체가 깨지는 조건.\n\n연애에도 써: \"Smoking is a deal-breaker for me.\"\n비즈니스에선 계약, 채용, 파트너십 어디든.",
-        "example": "• \"The price isn't a deal-breaker, but the timeline might be.\"\n• \"Is remote work a deal-breaker for you?\" (면접에서도!)",
+        "example": "• \"The price isn't a deal-breaker, but the timeline might be.\" (가격은 결정적 문제가 아니지만, 일정은 그럴 수 있어요.)\n• \"Is remote work a deal-breaker for you?\" (재택 여부가 결정적 조건인가요? 면접에서도!)",
         "default": "deal(거래)을 break(깨는) 것. 내 deal-breaker를 아는 게 협상 준비의 1번."
       },
       "quizPrompt": "옆 팀 동기가 슬랙으로: \"이직 오퍼 받았는데 풀재택이 안 된대... 고민돼.\" 뭐라고 답할까?"
@@ -98,7 +98,7 @@
       ],
       "buddyAnswers": {
         "nuance": "negotiable(협상 가능)에 non-을 붙인 것.\n\n명사로도 써: \"That's a non-negotiable.\"\n채용 공고에서 non-negotiable requirements = 필수 요건.",
-        "example": "• \"My salary floor is non-negotiable.\"\n• \"Work-life balance is a non-negotiable for me.\"",
+        "example": "• \"My salary floor is non-negotiable.\" (제 연봉 하한선은 협상 불가예요.)\n• \"Work-life balance is a non-negotiable for me.\" (워라밸은 저한테 양보할 수 없는 조건이에요.)",
         "default": "deal-breaker(어제)가 '깨지는 결과'라면 non-negotiable은 '안 움직이는 항목'. 세트로 외워."
       },
       "quizPrompt": "빈칸: 팀 문화 소개 중 \"저에게 점심 산책 30분은 ___이에요.\""
@@ -142,7 +142,7 @@
       ],
       "buddyAnswers": {
         "nuance": "counter(맞받아치는) + offer(제안).\n\n동사로도: \"They offered 50K, we countered with 65K.\"\n연봉 협상에서 제일 많이 쓰는 단어.",
-        "example": "• \"We received their counteroffer this morning.\"\n• \"Should we counter, or accept as is?\"",
+        "example": "• \"We received their counteroffer this morning.\" (오늘 아침 그쪽 역제안을 받았어요.)\n• \"Should we counter, or accept as is?\" (우리가 역제안할까요, 아니면 그대로 받을까요?)",
         "default": "테니스처럼 공을 되받아치는 그림. 첫 제안을 그대로 받는 순간 게임 끝. 항상 counter."
       },
       "quizPrompt": "연봉 협상 상황. 시장가보다 낮은 오퍼를 받았다. 어떤 톤이 맞을까?"
@@ -186,7 +186,7 @@
       ],
       "buddyAnswers": {
         "nuance": "야구의 낮은 공에서 온 말.\n\n\"Don't lowball me\" = 후려치지 마.\n중고거래, 연봉, 견적 어디서든 쓰는 실전 단어.",
-        "example": "• \"The buyer lowballed us at half the asking price.\"\n• \"That's a lowball offer, we can't take it seriously.\"",
+        "example": "• \"The buyer lowballed us at half the asking price.\" (구매자가 호가의 절반으로 후려쳤어요.)\n• \"That's a lowball offer, we can't take it seriously.\" (그건 너무 낮은 제안이라 진지하게 볼 수 없어요.)",
         "default": "상대가 lowball하면? 화내지 말고 counteroffer(어제 단어)로 받아쳐. 어제-오늘 단어가 실전 콤보야."
       },
       "quizPrompt": "어색한 곳 찾기: 중고차를 팔았던 경험담. 자연스러운 문장은?"
@@ -230,7 +230,7 @@
       ],
       "buddyAnswers": {
         "nuance": "거래에 설탕을 친다는 그림.\n\n가격 대신 부가 혜택으로 매력도를 올리는 것.\n딜 뿐 아니라 제안 전반에 써.",
-        "example": "• \"They sweetened the deal with free onboarding.\"\n• \"To sweeten the deal, we'll throw in two extra licenses.\"",
+        "example": "• \"They sweetened the deal with free onboarding.\" (그쪽에서 무료 온보딩을 얹어서 조건을 더 좋게 만들었어요.)\n• \"To sweeten the deal, we'll throw in two extra licenses.\" (조건을 더 좋게 하려고 라이선스 두 개를 추가로 드릴게요.)",
         "default": "가격이 안 움직일 때 나오는 카드가 sweetener야. 받을 땐 좋지만, 뭘 가리려는 설탕인지 꼭 봐."
       },
       "quizPrompt": "고객사 재계약 미팅. 1년 약정을 망설이는 고객에게 뭐라고 제안할까?"
@@ -274,7 +274,7 @@
       ],
       "buddyAnswers": {
         "nuance": "bargain(흥정)을 hard하게 drive(몰다).\n\n지독하지만 정당하게 자기 몫을 챙기는 사람에게 써.\n비하가 아니라 살짝 감탄이 섞인 표현.",
-        "example": "• \"She drives a hard bargain, we barely got a discount.\"\n• \"You drive a hard bargain! Fine, 10% off.\"",
+        "example": "• \"She drives a hard bargain, we barely got a discount.\" (그녀는 정말 깐깐하게 협상해서 할인을 거의 못 받았어요.)\n• \"You drive a hard bargain! Fine, 10% off.\" (정말 만만치 않으시네요! 좋아요, 10% 할인해 드릴게요.)",
         "default": "시장에서 1원도 안 깎아주는 사장님 그림. 상대가 이러면? 나도 이러면 돼. 협상은 원래 서로 hard."
       },
       "quizPrompt": "빈칸: 시장에서 만난 할머니 이야기. \"우리 할머니는 정말 ___ a hard bargain.\""
@@ -318,7 +318,7 @@
       ],
       "buddyAnswers": {
         "nuance": "말 그대로 '걸어서 떠나다'.\n\n협상학의 BATNA(최선의 대안) 개념이 이 한마디에 들어 있어.\nwalk-away point = 이 선 넘으면 나간다는 기준선.",
-        "example": "• \"Know your walk-away point before you enter the room.\"\n• \"We walked away from the deal last year, and they came back with better terms.\"",
+        "example": "• \"Know your walk-away point before you enter the room.\" (협상장에 들어가기 전에 포기 기준선을 정해 두세요.)\n• \"We walked away from the deal last year, and they came back with better terms.\" (작년에 거래에서 손을 뗐더니 더 나은 조건으로 돌아왔어요.)",
         "default": "1주차 총정리: deal-breaker를 알고, non-negotiable은 작게, lowball엔 counter, 그리고 언제든 walk away 할 수 있게. 이게 협상 준비 끝."
       },
       "quizPrompt": "부동산 계약 상황. 집주인이 계속 가격을 올린다. 동행한 친구에게 하는 말로 자연스러운 톤은?"
@@ -362,7 +362,7 @@
       ],
       "buddyAnswers": {
         "nuance": "포커 칩에서 온 말.\n\n협상 테이블에 올릴 수 있는 '교환 가능한 가치' 전부.\n정보도, 시간도, 관계도 칩이 될 수 있어.",
-        "example": "• \"Don't give away your bargaining chips for free.\"\n• \"The early payment option is our biggest chip.\"",
+        "example": "• \"Don't give away your bargaining chips for free.\" (협상 카드를 공짜로 내주지 마세요.)\n• \"The early payment option is our biggest chip.\" (조기 결제 옵션이 우리의 가장 큰 협상 카드예요.)",
         "default": "협상 전에 내 칩 목록부터 적어봐. 칩이 많을수록 walk away(7일차)가 쉬워지고, 협상이 게임이 돼."
       },
       "quizPrompt": "후배가 이직 상담: \"경쟁사 오퍼가 하나 더 있는데, 말해도 될까요?\" 조언은?"
@@ -406,7 +406,7 @@
       ],
       "buddyAnswers": {
         "nuance": "stick(들러붙어 안 움직임) + point.\n\n논의가 '걸려서 안 넘어가는' 그 한 지점.\n협상, 계약, 회의 어디서든.",
-        "example": "• \"Salary wasn't the sticking point, the relocation was.\"\n• \"Let's isolate the sticking points and park the rest.\"",
+        "example": "• \"Salary wasn't the sticking point, the relocation was.\" (걸림돌은 연봉이 아니라 이전 문제였어요.)\n• \"Let's isolate the sticking points and park the rest.\" (걸림돌만 따로 떼어 놓고 나머지는 잠시 미뤄 두죠.)",
         "default": "체한 것처럼 '여기서 딱 걸렸다' 하는 그 부분. 찾으면 이름 붙여 불러. 이름 붙는 순간 풀 수 있는 문제가 돼."
       },
       "quizPrompt": "빈칸: 사무실 이전 회의 후기. \"의외로 주차 공간이 ___이 됐어.\""
@@ -450,7 +450,7 @@
       ],
       "buddyAnswers": {
         "nuance": "계약서 맨 아래 깨알 글씨에서 온 말.\n\n\"Read the fine print\" = 꼼꼼히 따져봐.\n일상에서도 조건 확인 전반에 써.",
-        "example": "• \"The discount was real, but the fine print said 'first month only'.\"\n• \"Always read the fine print before you sign.\"",
+        "example": "• \"The discount was real, but the fine print said 'first month only'.\" (할인은 진짜였는데, 작은 글씨에 '첫 달만'이라고 돼 있었어요.)\n• \"Always read the fine print before you sign.\" (서명하기 전에 작은 글씨를 꼭 읽으세요.)",
         "default": "어제 sticking point를 찾았다면, 오늘은 상대가 숨긴 sticking point를 찾는 날. 그게 fine print 안에 있어."
       },
       "quizPrompt": "어색한 곳 찾기: 구독 서비스 가입 조언. 자연스러운 문장은?"
@@ -494,7 +494,7 @@
       ],
       "buddyAnswers": {
         "nuance": "야구의 강속구(hardball)에서.\n\n반대말은 softball(살살 하기).\n\"They went hardball on us\" 처럼 동사구로.",
-        "example": "• \"HR played hardball on the salary, so I used my competing offer.\"\n• \"If they play hardball, we walk.\" (7일차 콤보!)",
+        "example": "• \"HR played hardball on the salary, so I used my competing offer.\" (HR이 연봉으로 강하게 나와서 다른 회사 오퍼를 썼어요.)\n• \"If they play hardball, we walk.\" (그쪽이 강하게 나오면 우리는 손 뗍니다. 7일차 콤보!)",
         "default": "hardball의 핵심은 목소리 크기가 아니라 대안의 존재야. 칩(8일차) 없이 hardball 치면 그냥 허세."
       },
       "quizPrompt": "월세 재계약 시즌. 집주인이 강경하게 인상을 요구한다. 룸메이트에게 하는 말은?"
@@ -538,7 +538,7 @@
       ],
       "buddyAnswers": {
         "nuance": "바람에도 안 흔들리고 firm(굳게) 서 있는 그림.\n\nhold the line과 비슷한데 stand firm이 더 격식 있는 자리에도 어울려.",
-        "example": "• \"She stood firm despite the pressure from the board.\"\n• \"We stand firm on our principles.\"",
+        "example": "• \"She stood firm despite the pressure from the board.\" (그녀는 이사회 압박에도 입장을 굽히지 않았어요.)\n• \"We stand firm on our principles.\" (우리는 원칙을 지킵니다.)",
         "default": "11일차 hardball이 상대의 공격이라면, stand firm은 나의 수비. 공수 세트로 기억해."
       },
       "quizPrompt": "빈칸: 마감 연장 압박을 세 번 받은 PM 이야기. \"그래도 그녀는 ___ firm.\""
@@ -582,7 +582,7 @@
       ],
       "buddyAnswers": {
         "nuance": "차이(difference)를 반으로 쪼개기(split).\n\n50:50 절충의 관용구.\n가격, 일정, 뭐든 '중간에서 만나자'는 뜻.",
-        "example": "• \"You want 10, I want 6. Let's split the difference at 8.\"\n• \"They offered to split the difference on the timeline.\"",
+        "example": "• \"You want 10, I want 6. Let's split the difference at 8.\" (당신은 10, 저는 6을 원하죠. 중간인 8로 하죠.)\n• \"They offered to split the difference on the timeline.\" (그쪽에서 일정은 중간에서 절충하자고 제안했어요.)",
         "default": "meet in the middle(기존 Day 52)의 숫자 버전. 중간이 늘 공정해 보이지만, 시작점을 누가 정했는지 꼭 봐. lowball(4일차) 뒤의 중간은 중간이 아니야."
       },
       "quizPrompt": "친구와 여행 계획. 너는 3박, 친구는 5박을 원한다. 자연스러운 제안은?"
@@ -626,7 +626,7 @@
       ],
       "buddyAnswers": {
         "nuance": "win(이기다)이 아니라 '넘어오게 만들다'.\n\n반대하던 사람이 고개를 끄덕이게 되는 과정.\n청중, 투자자, 면접관에게도 써.",
-        "example": "• \"The demo won over even the skeptics.\"\n• \"It took three meetings to win him over.\"",
+        "example": "• \"The demo won over even the skeptics.\" (데모가 회의적인 사람들까지 설득했어요.)\n• \"It took three meetings to win him over.\" (그를 설득하는 데 미팅 세 번이 걸렸어요.)",
         "default": "협상 상대 뒤에는 항상 '진짜 결정권자'가 있어. 테이블 건너편이 아니라 그 뒤의 사람을 win over 하는 게 진짜 게임."
       },
       "quizPrompt": "어색한 곳 찾기: 파일럿 프로그램 후기. 자연스러운 문장은?"
@@ -670,7 +670,7 @@
       ],
       "buddyAnswers": {
         "nuance": "뒷걸음질(back)로 빠져나가는(out) 그림.\n\n약속, 계약, 계획에서 발 빼는 것 전부.\nback out of + 명사 형태로.",
-        "example": "• \"The investor backed out at the last minute.\"\n• \"You can't back out now, we shook on it.\"",
+        "example": "• \"The investor backed out at the last minute.\" (투자자가 마지막 순간에 발을 뺐어요.)\n• \"You can't back out now, we shook on it.\" (이제 와서 발 빼면 안 되죠, 악수까지 했잖아요.)",
         "default": "2주차 마무리. 상대가 back out 해도 당황하지 마. walk away(7일차) 카드가 있는 한, 발 빼는 쪽이 아쉬워지는 게 협상이야."
       },
       "quizPrompt": "행사 전날, 케이터링 업체가 갑자기 취소를 통보했다. 팀 슬랙에 올릴 첫 메시지 톤은?"
@@ -714,7 +714,7 @@
       ],
       "buddyAnswers": {
         "nuance": "대장장이가 쇳덩이를 두들겨 모양을 내는 그림.\n\n쉽지 않은 합의를 '노력으로 만들어낸다'는 뉘앙스가 핵심.",
-        "example": "• \"The two sides hammered out a deal at 2 a.m.\"\n• \"We still need to hammer out the details.\"",
+        "example": "• \"The two sides hammered out a deal at 2 a.m.\" (양측은 새벽 2시에 합의를 끌어냈어요.)\n• \"We still need to hammer out the details.\" (세부 사항은 아직 더 조율해야 해요.)",
         "default": "iron out(내일)과 형제 표현. hammer out은 큰 틀을 만들 때, iron out은 주름을 펼 때. 순서도 hammer 먼저, iron 나중."
       },
       "quizPrompt": "빈칸: 밤샘 협상 뉴스 요약. \"노사가 밤새 합의안을 ___ out했다.\""
@@ -758,7 +758,7 @@
       ],
       "buddyAnswers": {
         "nuance": "다리미(iron)로 주름을 펴는 그림.\n\n큰 문제가 아니라 '남은 잔주름'을 정리할 때.\niron out differences/details/kinks 조합이 단골.",
-        "example": "• \"We ironed out the last few issues over coffee.\"\n• \"A few kinks left to iron out before launch.\"",
+        "example": "• \"We ironed out the last few issues over coffee.\" (남은 문제 몇 개는 커피 마시면서 풀었어요.)\n• \"A few kinks left to iron out before launch.\" (출시 전에 정리할 자잘한 문제가 몇 개 남았어요.)",
         "default": "어제 hammer out(큰 틀), 오늘 iron out(잔주름). 이 순서 그대로 실전에서 굴러가. 대장간에서 다림질까지, 협상은 공예야."
       },
       "quizPrompt": "신규 입사자 온보딩 가이드 초안이 거의 완성됐다. 동료에게 뭐라고 할까?"
@@ -802,7 +802,7 @@
       ],
       "buddyAnswers": {
         "nuance": "못을 박아 움직이지 않게 고정.\n\n날짜, 숫자, 담당자처럼 '흔들리면 안 되는 것'을 확정할 때.\nnail down the details/schedule/terms.",
-        "example": "• \"Can we nail down a launch date today?\"\n• \"The budget still isn't nailed down.\"",
+        "example": "• \"Can we nail down a launch date today?\" (오늘 출시 날짜를 확정할 수 있을까요?)\n• \"The budget still isn't nailed down.\" (예산이 아직 확정되지 않았어요.)",
         "default": "hammer out(16) → iron out(17) → nail down(18). 두들기고, 다리고, 못 박는다. 3일 연속 공구 시리즈, 이게 협상 마무리 3종 세트야."
       },
       "quizPrompt": "어색한 곳 찾기: 워크숍 준비 근황. 자연스러운 문장은?"
@@ -846,7 +846,7 @@
       ],
       "buddyAnswers": {
         "nuance": "팔씨름에서 위에 있는 손.\n\nhave/gain/lose the upper hand 조합.\n힘의 균형이 기울었을 때 쓰는 말.",
-        "example": "• \"The seller has the upper hand in this market.\"\n• \"We lost the upper hand when they found another supplier.\"",
+        "example": "• \"The seller has the upper hand in this market.\" (이 시장에선 파는 쪽이 유리해요.)\n• \"We lost the upper hand when they found another supplier.\" (그쪽이 다른 공급사를 찾으면서 우리가 우위를 잃었어요.)",
         "default": "upper hand는 빌린 것이지 소유한 게 아니야. 시장이 한 번 출렁이면 손 위치는 바뀌어. 잡았을 때 빨리, 품위 있게."
       },
       "quizPrompt": "빈칸: 이직 시장 이야기. \"경쟁 오퍼 두 개를 쥔 그녀가 연봉 협상에서 ___ hand를 쥐었다.\""
@@ -890,7 +890,7 @@
       ],
       "buddyAnswers": {
         "nuance": "협상 테이블 위(on the table)에 있던 걸 치운 것.\n\n반대말 on the table = 논의 가능.\n\"Nothing is off the table\" = 모든 옵션 열려 있다.",
-        "example": "• \"A discount is on the table, but free service is off the table.\"\n• \"Layoffs are off the table this year.\"",
+        "example": "• \"A discount is on the table, but free service is off the table.\" (할인은 가능하지만, 무상 서비스는 논의 대상이 아니에요.)\n• \"Layoffs are off the table this year.\" (올해 정리해고는 없어요.)",
         "default": "협상은 테이블 은유의 세계야. on/off the table, cards on the table(내일). 테이블 시리즈로 묶어두면 안 까먹어."
       },
       "quizPrompt": "분기 예산 회의. 팀원이 증액을 또 요청한다. 어떤 톤으로 정리할까?"
@@ -934,7 +934,7 @@
       ],
       "buddyAnswers": {
         "nuance": "포커에서 패를 테이블에 공개하는 그림.\n\nlay/put one's cards on the table.\n숨김없이 솔직하게 말하겠다는 선언.",
-        "example": "• \"Let's all put our cards on the table before we decide.\"\n• \"She laid her cards on the table: she had another offer.\"",
+        "example": "• \"Let's all put our cards on the table before we decide.\" (결정하기 전에 다들 솔직하게 패를 보여 주죠.)\n• \"She laid her cards on the table: she had another offer.\" (그녀는 패를 다 보여 줬어요: 다른 오퍼가 있다고요.)",
         "default": "8일차 bargaining chip은 쥐는 것, 오늘은 까는 것. 언제 쥐고 언제 까는지가 협상의 리듬이야. 상대가 깠을 때 = 마무리 신호."
       },
       "quizPrompt": "협업 킥오프 미팅. 상대 팀이 일정을 자꾸 낙관한다. 솔직하게 정리할 타이밍. 뭐라고 할까?"
@@ -978,7 +978,7 @@
       ],
       "buddyAnswers": {
         "nuance": "법률 용어로도 쓰는 진지한 표현.\n\nnegotiate in good faith = 성실히 협상하다.\nbad faith(기만적으로)가 반대말.",
-        "example": "• \"Both parties agreed to negotiate in good faith.\"\n• \"We made a good-faith deposit to show commitment.\"",
+        "example": "• \"Both parties agreed to negotiate in good faith.\" (양측은 성실하게 협상하기로 했어요.)\n• \"We made a good-faith deposit to show commitment.\" (의지를 보여 주려고 선의의 보증금을 넣었어요.)",
         "default": "어제 cards on the table 다음 날 good faith가 온 건 우연이 아니야. 솔직함에는 신의로 답한다. 이 순서가 장기 파트너십의 문법이야."
       },
       "quizPrompt": "빈칸: 정산 오류로 돈을 더 받았다. \"우리는 ___ good faith로 초과분을 돌려줬다.\""
@@ -1022,7 +1022,7 @@
       ],
       "buddyAnswers": {
         "nuance": "재무제표 맨 아랫줄(순이익)에서 온 말.\n\n'다 떠나서 결국 뭐냐'가 bottom line.\n마지노선이라는 뜻으로도: \"My bottom line is 5K.\"",
-        "example": "• \"The bottom line is: we can't miss this deadline.\"\n• \"What's your bottom line on price?\"",
+        "example": "• \"The bottom line is: we can't miss this deadline.\" (결론은: 이 마감은 절대 놓칠 수 없다는 거예요.)\n• \"What's your bottom line on price?\" (가격에서 마지노선이 어디예요?)",
         "default": "회의록 쓸 때 맨 위에 Bottom line: 한 줄부터 적어봐. 그 밑에 상세. 읽는 사람이 사랑하게 되는 문서 구조야."
       },
       "quizPrompt": "임원 엘리베이터에서 마주친 CFO: \"프로젝트 어때요?\" 10초 안에 뭐라고 답할까?"
@@ -1066,7 +1066,7 @@
       ],
       "buddyAnswers": {
         "nuance": "수익과 비용이 같아지는(even) 지점.\n\nbreak-even point = 손익분기점(BEP).\n투자, 사업, 개인 재테크까지 두루.",
-        "example": "• \"The cafe took two years to break even.\"\n• \"We're not profitable yet, but we broke even last quarter.\"",
+        "example": "• \"The cafe took two years to break even.\" (그 카페는 손익분기점을 넘기는 데 2년이 걸렸어요.)\n• \"We're not profitable yet, but we broke even last quarter.\" (아직 흑자는 아니지만 지난 분기에 손익분기점은 넘었어요.)",
         "default": "14일차에 win over 하려던 그 CFO, 오늘 break even 숫자로 끝낸다. 사람은 말로 설득되지 않아. 자기 언어로 된 숫자에 설득되지."
       },
       "quizPrompt": "어색한 곳 찾기: 푸드트럭 창업 후기. 자연스러운 문장은?"
@@ -1110,7 +1110,7 @@
       ],
       "buddyAnswers": {
         "nuance": "이윤(profit margin) 외에도 '여유 폭' 전반.\n\nmargin of error = 오차 범위.\nby a wide/narrow margin = 큰/근소한 차이로.",
-        "example": "• \"Our margins are thin on hardware.\"\n• \"She won the vote by a narrow margin.\"",
+        "example": "• \"Our margins are thin on hardware.\" (하드웨어 쪽은 마진이 얇아요.)\n• \"She won the vote by a narrow margin.\" (그녀는 근소한 차이로 표결에서 이겼어요.)",
         "default": "협상 끝물에 나오는 '마지막 1%'는 거의 항상 시험이야. 여기서 밀리면 서명 직전에 또 1%가 와. margin은 한 번 지키면 계속 지켜져."
       },
       "quizPrompt": "빈칸: 사업 모델 비교. \"소프트웨어는 하드웨어보다 ___이 높다.\""
@@ -1154,7 +1154,7 @@
       ],
       "buddyAnswers": {
         "nuance": "stake는 내기에 건 판돈.\n\n잃을 수 있는 상태 = at stake.\nhigh stakes(내일)와 한 가족.",
-        "example": "• \"Millions are at stake in this lawsuit.\"\n• \"My reputation is at stake, so I'm triple-checking.\"",
+        "example": "• \"Millions are at stake in this lawsuit.\" (이 소송에는 수백만 달러가 걸려 있어요.)\n• \"My reputation is at stake, so I'm triple-checking.\" (제 평판이 걸려 있어서 세 번씩 확인하고 있어요.)",
         "default": "1일차에 정한 deal-breaker(데이터 소유권)가 26일차에 진짜 걸렸어(at stake). 첫날의 준비가 마지막 주의 방패가 되는 것. 이게 협상 서사의 완성이야."
       },
       "quizPrompt": "보안 이슈 브리핑. 공개 여부를 논의 중이다. 어떤 톤이 맞을까?"
@@ -1198,7 +1198,7 @@
       ],
       "buddyAnswers": {
         "nuance": "판돈(stakes)이 높은(high).\n\nhigh-stakes meeting/negotiation/exam.\n하이픈으로 묶어 형용사로 쓰는 게 포인트.",
-        "example": "• \"It was a high-stakes presentation, the whole budget depended on it.\"\n• \"He performs well in high-stakes situations.\"",
+        "example": "• \"It was a high-stakes presentation, the whole budget depended on it.\" (예산 전체가 달린, 판이 큰 발표였어요.)\n• \"He performs well in high-stakes situations.\" (그는 판이 큰 상황에서 잘해요.)",
         "default": "어제 at stake(걸려 있다), 오늘 high-stakes(판이 크다). stake 가족 이틀 연속. 판이 클수록 기본기가 이겨. 침착, 친절, 단단. Daniel의 세 단어를 기억해."
       },
       "quizPrompt": "어색한 곳 찾기: 동료 칭찬. 자연스러운 문장은?"
@@ -1242,7 +1242,7 @@
       ],
       "buddyAnswers": {
         "nuance": "입찰 용어 BAFO(Best And Final Offer)에서.\n\n'이게 마지막 라운드'라는 공식 선언.\n이후 재협상 요청은 결례로 간주돼.",
-        "example": "• \"The buyer asked all vendors for their best and final by Friday.\"\n• \"We submitted our best and final. Now we wait.\"",
+        "example": "• \"The buyer asked all vendors for their best and final by Friday.\" (구매자가 모든 벤더에게 금요일까지 최종 제안을 요청했어요.)\n• \"We submitted our best and final. Now we wait.\" (최종 제안을 냈어요. 이제 기다리는 거죠.)",
         "default": "final의 무게는 그 사람의 이력이 정해. 말한 대로 끝내는 사람의 final은 강철이고, 매번 흔들리는 사람의 final은 종이야. 오늘부터 네 final을 강철로 만들어."
       },
       "quizPrompt": "입찰 마감 상황. 발주사가 전 업체에 정오까지 최종가를 요구했다. 팀 공지로 맞는 문장은?"
@@ -1286,7 +1286,7 @@
       ],
       "buddyAnswers": {
         "nuance": "level = 평평한, 같은 높이.\n\n숨기던 걸 내려놓고 눈높이 맞춰 말할 때.\n\"I'll level with you\"로 운을 떼는 경우가 많아.",
-        "example": "• \"I'll level with you: we can't afford this without cuts elsewhere.\"\n• \"Level with me, is the deadline realistic?\"",
+        "example": "• \"I'll level with you: we can't afford this without cuts elsewhere.\" (솔직히 말할게요: 다른 데서 줄이지 않으면 이건 감당이 안 돼요.)\n• \"Level with me, is the deadline realistic?\" (솔직히 말해 줘요, 그 마감 현실적이에요?)",
         "default": "21일차 cards on the table이 정보의 솔직함이라면, level with you는 마음의 솔직함이야. 협상은 숫자로 시작해서 이 단어로 끝나."
       },
       "quizPrompt": "빈칸: 예산 회의에서 솔직하게 말문을 열 때. \"___ with you, 남은 예산이 없습니다.\""
@@ -1330,7 +1330,7 @@
       ],
       "buddyAnswers": {
         "nuance": "딜의 문을 닫는(close) 그림.\n\nseal the deal, land the deal도 비슷.\ncloser = 마무리에 강한 사람이라는 칭호.",
-        "example": "• \"She flew to Singapore to close the deal in person.\"\n• \"We're one signature away from closing.\"",
+        "example": "• \"She flew to Singapore to close the deal in person.\" (그녀는 직접 계약을 마무리하러 싱가포르로 날아갔어요.)\n• \"We're one signature away from closing.\" (서명 하나만 남았어요.)",
         "default": "협상 TF 30일 완주! deal-breaker로 시작해 close the deal로 끝났어. 이 30개 단어는 이제 너의 협상 무기고야. 다음 TF에서 만나. 🎖️"
       },
       "quizPrompt": "후배가 첫 단독 딜의 마지막 미팅을 앞두고 긴장하고 있다. 뭐라고 보낼까?"

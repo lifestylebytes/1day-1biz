@@ -28,7 +28,7 @@
       ],
       "buddyAnswers": {
         "nuance": "1대 1로 마주 앉는 정기 면담.\n미국 회사 문화의 핵심 의례야. 명사로 굳어서 관사 붙여 a one-on-one.",
-        "example": "• \"Can we move our one-on-one to Friday?\"\n• \"I raised it in my one-on-one with the manager.\"",
+        "example": "• \"Can we move our one-on-one to Friday?\" (우리 일대일 미팅을 금요일로 옮길 수 있을까요?)\n• \"I raised it in my one-on-one with the manager.\" (매니저와 일대일 미팅에서 그 얘기를 꺼냈어요.)",
         "default": "피플 TF 첫날. 이제 네가 사수 쪽 의자에 앉는다. 배웠던 것을 줄 차례야."
       }
     },
@@ -49,7 +49,7 @@
       ],
       "buddyAnswers": {
         "nuance": "construct(짓다)에서 온 말.\n허물지 않고 지어 올리는 피드백. 반대는 destructive criticism.",
-        "example": "• \"She's great at giving constructive feedback without hurting morale.\"\n• \"Any constructive feedback on my slides?\"",
+        "example": "• \"She's great at giving constructive feedback without hurting morale.\" (그녀는 사기를 떨어뜨리지 않으면서 건설적인 피드백을 정말 잘 줘요.)\n• \"Any constructive feedback on my slides?\" (제 슬라이드에 건설적인 피드백 있을까요?)",
         "default": "공식: 사실 + 영향 + 다음 걸음. 이 3종이 없으면 그냥 감상평이야."
       }
     },
@@ -70,7 +70,7 @@
       ],
       "buddyAnswers": {
         "nuance": "밖으로(out) 불러내다(call).\n문제를 공개적으로 지목하는 것. 잘 쓰면 용기, 잘못 쓰면 저격.",
-        "example": "• \"Thanks for calling that out before the deadline.\"\n• \"She called out the risk everyone was ignoring.\"",
+        "example": "• \"Thanks for calling that out before the deadline.\" (마감 전에 그걸 짚어 줘서 고마워요.)\n• \"She called out the risk everyone was ignoring.\" (그녀는 다들 모른 척하던 리스크를 짚어 냈어요.)",
         "default": "shout-out(내일)과 짝. call out은 문제를, shout-out은 공을 지목해. 방향만 반대인 쌍둥이."
       }
     },
@@ -91,7 +91,7 @@
       ],
       "buddyAnswers": {
         "nuance": "라디오 DJ가 청취자 이름을 불러주던 것에서.\n공개 석상에서 이름 집어 칭찬하기. give a shout-out to.",
-        "example": "• \"Big shout-out to Minji for the all-nighter.\"\n• \"He always gives shout-outs in the town hall.\"",
+        "example": "• \"Big shout-out to Minji for the all-nighter.\" (밤샘해 준 Minji에게 큰 박수를 보내요.)\n• \"He always gives shout-outs in the town hall.\" (그분은 타운홀에서 늘 공개적으로 칭찬해요.)",
         "default": "칭찬은 구체적일수록 세. '수고했어' 말고 '그 메일의 그 문장이 좋았어'."
       }
     },
@@ -112,7 +112,7 @@
       ],
       "buddyAnswers": {
         "nuance": "배에 태우는(on board) 과정.\n반대말 offboarding(퇴사 절차)도 세트로 알아두면 좋아.",
-        "example": "• \"Our onboarding takes two weeks.\"\n• \"She built the onboarding docs from scratch.\"",
+        "example": "• \"Our onboarding takes two weeks.\" (우리 온보딩은 2주 걸려요.)\n• \"She built the onboarding docs from scratch.\" (그녀가 온보딩 문서를 처음부터 만들었어요.)",
         "default": "1일1비 신청서에도 있던 그 단어! 네가 겪은 온보딩을 이제 네가 설계하는 중."
       }
     },
@@ -133,7 +133,7 @@
       ],
       "buddyAnswers": {
         "nuance": "손(hand)에서 손으로 넘기는(over) 것.\n업무, 교대, 프로젝트 전부. 동사는 hand over 띄어 써.",
-        "example": "• \"The handover took a full week.\"\n• \"She handed over the account before leaving.\"",
+        "example": "• \"The handover took a full week.\" (인수인계에 꼬박 일주일이 걸렸어요.)\n• \"She handed over the account before leaving.\" (그녀는 떠나기 전에 거래처를 넘겨줬어요.)",
         "default": "인계의 완성은 '내가 없어도 돌아가는 것'. 그게 확인될 때까지가 handover야."
       }
     },
@@ -154,7 +154,7 @@
       ],
       "buddyAnswers": {
         "nuance": "micro(미세) + manage.\n일 말고 사람의 손끝까지 관리하려 들 때. 강한 비판 단어라 본인 앞에선 조심.",
-        "example": "• \"I trust my team, I don't micromanage.\"\n• \"Being micromanaged killed my motivation.\"",
+        "example": "• \"I trust my team, I don't micromanage.\" (저는 팀을 믿어요, 사사건건 간섭하지 않아요.)\n• \"Being micromanaged killed my motivation.\" (사사건건 간섭받는 게 제 의욕을 다 꺾었어요.)",
         "default": "해독제는 위임 + 선제 공유야. 내일과 모레 배울 hands-on/hands-off가 그 균형."
       }
     },
@@ -175,7 +175,7 @@
       ],
       "buddyAnswers": {
         "nuance": "두 손을 얹고(on) 직접 만지는 그림.\nhands-on experience = 실습 경험. 리더 스타일로도, 경험 종류로도.",
-        "example": "• \"I prefer a hands-on approach in the early stage.\"\n• \"The workshop was very hands-on.\"",
+        "example": "• \"I prefer a hands-on approach in the early stage.\" (초기 단계에선 직접 손대는 방식을 선호해요.)\n• \"The workshop was very hands-on.\" (워크숍이 아주 실습 위주였어요.)",
         "default": "내일 배울 hands-off와 한 쌍. 좋은 멘토는 이 둘을 시기별로 갈아 끼워."
       }
     },
@@ -196,7 +196,7 @@
       ],
       "buddyAnswers": {
         "nuance": "손을 뗀(off) 상태.\n신뢰 기반 위임 스타일. hands-off parenting처럼 육아에도 써.",
-        "example": "• \"Our CEO is famously hands-off.\"\n• \"Time to take a hands-off approach with this project.\"",
+        "example": "• \"Our CEO is famously hands-off.\" (우리 CEO는 맡기고 안 간섭하는 걸로 유명해요.)\n• \"Time to take a hands-off approach with this project.\" (이 프로젝트는 이제 맡겨 두고 한발 물러설 때예요.)",
         "default": "hands-on(8일) → hands-off(9일) 순서 그대로가 멘토링의 타임라인이야."
       }
     },
@@ -218,7 +218,7 @@
       ],
       "buddyAnswers": {
         "nuance": "연료가 다 타서(burn out) 꺼진 상태.\nWHO가 직업 현상으로 공식 등재한 단어. 동사구는 burn out, 명사는 burnout.",
-        "example": "• \"I burned out at my last job and took two months off.\"\n• \"Watch for early signs of burnout in your team.\"",
+        "example": "• \"I burned out at my last job and took two months off.\" (지난 직장에서 번아웃이 와서 두 달 쉬었어요.)\n• \"Watch for early signs of burnout in your team.\" (팀원들의 번아웃 초기 신호를 잘 살피세요.)",
         "default": "번아웃의 첫 신호는 실력 저하가 아니라 지각과 침묵이야. 오늘 네가 본 그것."
       }
     },
@@ -239,7 +239,7 @@
       ],
       "buddyAnswers": {
         "nuance": "프랑스어에서 온 단어라 발음 주의: 머랠(morale).\nmoral(도덕)과 스펠 한 끗 차이, 뜻은 완전 다름.",
-        "example": "• \"The win did wonders for morale.\"\n• \"Layoff rumors are hurting morale.\"",
+        "example": "• \"The win did wonders for morale.\" (그 성과가 사기를 확 올려 줬어요.)\n• \"Layoff rumors are hurting morale.\" (정리해고 소문이 사기를 떨어뜨리고 있어요.)",
         "default": "사기의 온도계는 회의 질문 수야. 질문이 사라지면 사기가 식은 것."
       }
     },
@@ -260,7 +260,7 @@
       ],
       "buddyAnswers": {
         "nuance": "스포츠에서 온 말.\n개인기보다 패스를 택하는 선수. 채용에서 최다 빈출 덕목.",
-        "example": "• \"We need team players, not lone wolves.\"\n• \"She's talented and a team player, rare combo.\"",
+        "example": "• \"We need team players, not lone wolves.\" (우리는 혼자 뛰는 사람 말고 팀플레이어가 필요해요.)\n• \"She's talented and a team player, rare combo.\" (그녀는 실력도 있고 팀플레이어예요, 흔치 않은 조합이죠.)",
         "default": "반대말 lone wolf(외로운 늑대)도 알아둬. 회사엔 둘 다 필요하지만, 신뢰는 team player에게 쌓여."
       }
     },
@@ -281,7 +281,7 @@
       ],
       "buddyAnswers": {
         "nuance": "조정 경기에서 자기 노를 젓는 무게에서 온 말.\n각자 자기 몫의 무게를 끌어야 배가 나가지.",
-        "example": "• \"Everyone pulled their weight, so we hit the deadline.\"\n• \"I felt like I wasn't pulling my weight during onboarding.\"",
+        "example": "• \"Everyone pulled their weight, so we hit the deadline.\" (모두가 제 몫을 해서 마감을 맞췄어요.)\n• \"I felt like I wasn't pulling my weight during onboarding.\" (온보딩 때 제 몫을 못 하는 것 같아 힘들었어요.)",
         "default": "수민이 한 달 만에 여기 왔어. 다음 주부터는 폭풍이야. 위기에서 진짜 팀이 드러나거든."
       }
     },
@@ -302,7 +302,7 @@
       ],
       "buddyAnswers": {
         "nuance": "미식축구에서 공을 떨어뜨리는 실책.\n비난 수위가 낮은 편이라 실수 인정 표현으로 안전해.",
-        "example": "• \"Sorry, I dropped the ball on the invite.\"\n• \"We can't drop the ball twice with this client.\"",
+        "example": "• \"Sorry, I dropped the ball on the invite.\" (죄송해요, 초대 건은 제가 놓쳤어요.)\n• \"We can't drop the ball twice with this client.\" (이 고객한테 두 번 실수하면 안 돼요.)",
         "default": "내일 단어(pick up the slack)가 오늘의 해독제야. 누군가 공을 놓치면, 누군가 주워야지."
       }
     },
@@ -323,7 +323,7 @@
       ],
       "buddyAnswers": {
         "nuance": "늘어진 밧줄(slack)을 당겨 팽팽하게.\n빈 자리의 일을 대신 맡을 때 쓰는 표현.",
-        "example": "• \"Thanks for picking up the slack while I was out.\"\n• \"Someone has to pick up the slack during the transition.\"",
+        "example": "• \"Thanks for picking up the slack while I was out.\" (제가 자리 비운 동안 빈자리 메워 줘서 고마워요.)\n• \"Someone has to pick up the slack during the transition.\" (전환기에는 누군가 빈자리를 메워야 해요.)",
         "default": "어제 drop the ball, 오늘 pick up the slack. 실수와 회복은 항상 한 세트로 다녀."
       }
     },
@@ -344,7 +344,7 @@
       ],
       "buddyAnswers": {
         "nuance": "빈자리를 덮어주는(cover) 것.\ncover up(은폐)과 구분! for가 붙어야 선의의 커버.",
-        "example": "• \"She covered for me during my leave.\"\n• \"Who's covering for the on-call this weekend?\"",
+        "example": "• \"She covered for me during my leave.\" (제 휴가 동안 그녀가 대신 맡아 줬어요.)\n• \"Who's covering for the on-call this weekend?\" (이번 주말 당직은 누가 대신 서요?)",
         "default": "커버는 품앗이야. 잘 커버해주는 사람 곁엔 커버해줄 사람이 모여."
       }
     },
@@ -365,7 +365,7 @@
       ],
       "buddyAnswers": {
         "nuance": "뒤(back)에서 받쳐 올리는 그림.\n데이터 백업과 같은 단어지만, 사람에게 쓰면 지원 사격.",
-        "example": "• \"My manager backed me up in front of the client.\"\n• \"I've got your back.\" (같은 뿌리의 관용구)",
+        "example": "• \"My manager backed me up in front of the client.\" (매니저가 고객 앞에서 제 편을 들어 줬어요.)\n• \"I've got your back.\" (제가 뒤에서 받쳐 줄게요. 같은 뿌리의 관용구)",
         "default": "back up의 짝꿍 문장 I've got your back도 세트로. 멘티에게 해줄 수 있는 최고의 말 중 하나야."
       }
     },
@@ -386,7 +386,7 @@
       ],
       "buddyAnswers": {
         "nuance": "credit = 신용, 공로.\ngive/take/share credit 조합. take credit for others' work가 최악의 조합.",
-        "example": "• \"She always gives credit to her juniors.\"\n• \"Don't let him take credit for your analysis.\"",
+        "example": "• \"She always gives credit to her juniors.\" (그녀는 늘 후배들에게 공을 돌려요.)\n• \"Don't let him take credit for your analysis.\" (당신이 한 분석의 공을 그 사람이 가져가게 두지 마세요.)",
         "default": "내일은 반대의 세계를 배워. 공 대신 책임을 떠넘기는 말, throw under the bus."
       }
     },
@@ -407,7 +407,7 @@
       ],
       "buddyAnswers": {
         "nuance": "달리는 버스 아래로 밀어 넣는 끔찍한 그림 그대로.\n자기가 살려고 남을 희생시키는 배신의 관용구.",
-        "example": "• \"He threw his own team under the bus in front of the CEO.\"\n• \"I won't throw you under the bus, we go in together.\"",
+        "example": "• \"He threw his own team under the bus in front of the CEO.\" (그는 CEO 앞에서 자기 팀에 책임을 떠넘겼어요.)\n• \"I won't throw you under the bus, we go in together.\" (당신한테 책임 떠넘기지 않을게요, 같이 들어가요.)",
         "default": "어제 give credit과 정반대 극. 공은 넘기고 책임은 끌어안는 게 리더, 반대로 하는 게 버스 던지기."
       }
     },
@@ -428,7 +428,7 @@
       ],
       "buddyAnswers": {
         "nuance": "관문(through)을 옆에서 함께 통과하는 코칭.\ntalk someone through(차근차근 설명)와 형제 표현.",
-        "example": "• \"She coached me through my first salary negotiation.\"\n• \"I'll talk you through the process step by step.\"",
+        "example": "• \"She coached me through my first salary negotiation.\" (그녀가 제 첫 연봉 협상을 옆에서 코치해 줬어요.)\n• \"I'll talk you through the process step by step.\" (절차를 하나씩 차근차근 알려 드릴게요.)",
         "default": "90일 전 차윤아가 네게 했던 것, 이제 네가 수민에게. 이 순환이 이 회사의 진짜 커리큘럼이야."
       }
     },
@@ -449,7 +449,7 @@
       ],
       "buddyAnswers": {
         "nuance": "호텔 체크인처럼 잠깐 들르는(check in) 그림.\non 뒤에 사람이 오면 안부, with면 진행 확인 쪽에 가까워.",
-        "example": "• \"I check in on my mentee every Friday.\"\n• \"Thanks for checking in on me last week.\"",
+        "example": "• \"I check in on my mentee every Friday.\" (멘티한테 매주 금요일 안부를 확인해요.)\n• \"Thanks for checking in on me last week.\" (지난주에 안부 물어봐 줘서 고마웠어요.)",
         "default": "번아웃(10일차)을 조기 발견하는 도구가 바로 이 습관이야. 주 1회, 일 말고 사람을 물어봐."
       }
     },
@@ -470,7 +470,7 @@
       ],
       "buddyAnswers": {
         "nuance": "항해·항공 용어에서. 항로(course)를 수정(correct)하다.\n크게 틀기 전에 자주 조금씩 트는 게 포인트.",
-        "example": "• \"We course-corrected after the first user tests.\"\n• \"It's cheaper to course-correct early.\"",
+        "example": "• \"We course-corrected after the first user tests.\" (첫 사용자 테스트 후에 방향을 수정했어요.)\n• \"It's cheaper to course-correct early.\" (방향 수정은 일찍 할수록 비용이 적게 들어요.)",
         "default": "멘토링도 항해야. 매주 check in(어제)이 레이더, course-correct가 키 조작."
       }
     },
@@ -491,7 +491,7 @@
       ],
       "buddyAnswers": {
         "nuance": "정기 인사 평가의 공식 명칭.\nannual review, mid-year review 등 주기 붙여 변형. 줄여서 그냥 review.",
-        "example": "• \"My performance review is next Tuesday.\"\n• \"She got a glowing performance review.\"",
+        "example": "• \"My performance review is next Tuesday.\" (제 성과 평가가 다음 주 화요일이에요.)\n• \"She got a glowing performance review.\" (그녀는 아주 좋은 성과 평가를 받았어요.)",
         "default": "평가받던 네가 평가를 쓰는 자리에 왔어. 기억해. 평가서 한 줄이 사람의 반년을 정의해. 무겁게, 공정하게."
       }
     },
@@ -512,7 +512,7 @@
       ],
       "buddyAnswers": {
         "nuance": "skill을 위로(up) 끌어올리는 동사.\nreskill(다른 직무로 전환 교육)과 세트로 HR 필수 어휘.",
-        "example": "• \"The program upskills junior analysts in six weeks.\"\n• \"I want to upskill in public speaking this year.\"",
+        "example": "• \"The program upskills junior analysts in six weeks.\" (그 프로그램은 주니어 분석가를 6주 만에 성장시켜요.)\n• \"I want to upskill in public speaking this year.\" (올해는 발표 능력을 키우고 싶어요.)",
         "default": "1일1비 하는 너 자신이 upskill의 현재진행형이야. I'm upskilling my business English."
       }
     },
@@ -533,7 +533,7 @@
       ],
       "buddyAnswers": {
         "nuance": "미식축구에서 공을 건네는 handoff에서.\nhandover(6일차)와 거의 같지만 hand off는 동작, handover는 과정 전체 느낌.",
-        "example": "• \"I handed off the project before parental leave.\"\n• \"Clean hand-offs make remote teams work.\"",
+        "example": "• \"I handed off the project before parental leave.\" (육아휴직 전에 프로젝트를 넘겼어요.)\n• \"Clean hand-offs make remote teams work.\" (깔끔한 인계가 원격 팀을 돌아가게 해요.)",
         "default": "6일차에 시작한 인계가 오늘 완성됐어. 넘기고, 훈련시키고, 공식화하고. 이관은 이벤트가 아니라 3주짜리 과정이야."
       }
     },
@@ -554,7 +554,7 @@
       ],
       "buddyAnswers": {
         "nuance": "사무실 문을 항상 열어둔다는 경영 관용구.\n정책(policy)이라고 부르지만 실은 문화 선언.",
-        "example": "• \"Thanks to the open-door policy, I flagged the issue early.\"\n• \"An open-door policy only works if people actually walk in.\"",
+        "example": "• \"Thanks to the open-door policy, I flagged the issue early.\" (열린 문 정책 덕분에 문제를 일찍 알릴 수 있었어요.)\n• \"An open-door policy only works if people actually walk in.\" (열린 문 정책은 사람들이 실제로 들어와야 효과가 있어요.)",
         "default": "멘토인 너도 오늘부터 선언해봐. 수민의 질문 빈도가 곧 너의 open-door 점수야."
       }
     },
@@ -575,7 +575,7 @@
       ],
       "buddyAnswers": {
         "nuance": "마을 회관(town hall)에서 열리던 주민 회의에서.\n전 직원이 모여 경영진과 직접 소통하는 자리. all-hands와 거의 동의어.",
-        "example": "• \"The CEO announced it at the quarterly town hall.\"\n• \"Submit your town hall questions by Wednesday.\"",
+        "example": "• \"The CEO announced it at the quarterly town hall.\" (CEO가 분기 타운홀에서 그걸 발표했어요.)\n• \"Submit your town hall questions by Wednesday.\" (타운홀 질문은 수요일까지 제출해 주세요.)",
         "default": "all-hands = town hall, 회사마다 부르는 이름만 달라. 둘 다 알아두면 어느 회사를 가도 안 낯설어."
       }
     },
@@ -596,7 +596,7 @@
       ],
       "buddyAnswers": {
         "nuance": "직급(level) 하나를 건너뛴(skip) 면담.\n내 상사의 상사와 하는 1:1. 조직 건강검진 도구야.",
-        "example": "• \"My skip-level with the VP is next week.\"\n• \"Skip-levels surface what managers filter out.\"",
+        "example": "• \"My skip-level with the VP is next week.\" (VP와의 건너뛰기 미팅이 다음 주예요.)\n• \"Skip-levels surface what managers filter out.\" (건너뛰기 미팅은 매니저가 걸러 낸 얘기를 드러내 줘요.)",
         "default": "1일차 one-on-one으로 시작해 28일차 skip-level까지. 면담의 세계를 한 바퀴 돌았네."
       }
     },
@@ -617,7 +617,7 @@
       ],
       "buddyAnswers": {
         "nuance": "account(설명) + able.\n설명 책임을 지는 상태. hold A accountable for B 구조로.",
-        "example": "• \"Leaders should be held accountable for team health.\"\n• \"I hold myself accountable for this miss.\"",
+        "example": "• \"Leaders should be held accountable for team health.\" (리더는 팀 건강에 책임을 져야 해요.)\n• \"I hold myself accountable for this miss.\" (이번 실수는 제가 책임질게요.)",
         "default": "최고 난도는 hold myself accountable이야. 남에게 들이대는 잣대를 나에게 먼저."
       }
     },
@@ -638,7 +638,7 @@
       ],
       "buddyAnswers": {
         "nuance": "의심(doubt)의 이득(benefit)을 상대에게 주다.\n확실치 않을 땐 좋은 쪽으로 해석해준다는 법정 용어 출신 관용구.",
-        "example": "• \"I gave him the benefit of the doubt, and he came through.\"\n• \"New teams deserve the benefit of the doubt.\"",
+        "example": "• \"I gave him the benefit of the doubt, and he came through.\" (그를 일단 믿어 줬더니 해냈어요.)\n• \"New teams deserve the benefit of the doubt.\" (새 팀은 일단 믿어 줄 필요가 있어요.)",
         "default": "피플 TF 완주! 🎉 one-on-one으로 시작해 믿음으로 끝났어. 다음 TF에서 봐."
       }
     }
