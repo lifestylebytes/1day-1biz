@@ -5,3 +5,7 @@
 # 래피드는 인증 헤더 없이 호출하므로 JWT 검증 끔.
 # 보안은 (a) URL 자체가 비밀 + (b) payload 형식 검증으로 확보.
 verify_jwt = false
+
+[functions.latpeed-sheet-sync]
+# 구글 시트 Apps Script 가 매일 07:00 KST 호출. 인증은 헤더 x-webhook-token (Secret SHEET_SYNC_SECRET).
+verify_jwt = false
