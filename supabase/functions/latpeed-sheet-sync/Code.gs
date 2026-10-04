@@ -19,7 +19,7 @@ function readRows_() {
     for (var i = 0; i < names.length; i++) { var k = head.indexOf(names[i]); if (k >= 0) return k; }
     return -1;
   };
-  var cName = col(["이름"]), cEmail = col(["이메일"]), cStatus = col(["상태"]), cAmount = col(["결제금액", "금액"]);
+  var cName = col(["이름"]), cEmail = col(["이메일"]), cPhone = col(["전화번호", "연락처", "휴대폰"]), cStatus = col(["상태"]), cAmount = col(["결제금액", "금액"]);
   var cAt = col(["일시", "결제일시", "결제일"]), cReason = col(["취소사유"]);
   if (cEmail < 0 || cStatus < 0 || cAt < 0) throw new Error("이메일/상태/일시 열을 못 찾았습니다: " + head.join(","));
   var rows = [];
@@ -32,6 +32,7 @@ function readRows_() {
     rows.push({
       name: cName >= 0 ? String(v[cName] || "") : "",
       email: email,
+      phone: cPhone >= 0 ? String(v[cPhone] || "").replace(/[^\d]/g, "") : "",
       status: String(v[cStatus] || ""),
       amount: cAmount >= 0 ? String(v[cAmount] || "").replace(/[^\d]/g, "") : "",
       at: String(at || ""),

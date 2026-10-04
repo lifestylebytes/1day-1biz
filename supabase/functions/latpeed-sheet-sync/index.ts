@@ -13,8 +13,9 @@
 //   · 래피드 이메일 ≠ 앱 이메일이면 latpeed_aliases 표로 잇는다. 미가입 이메일은 같은 이름의 계정을 nameMatches 로 알려준다.
 //   · 운영자·Dev 계정, 테스트 계정(youbuddy.co@gmail.com)은 제외.
 //   · 가입 전 결제(users 에 없는 이메일)는 latpeed_events 에 남겨 가입 순간 소급 적용되게 한다 (latpeed_apply_pending).
-// 본문: { rows: [{ name, email, status, amount, at, reason }] }  (at = "26.09.20 21:25" 또는 ISO)
-// 응답: { ok, applied: [...], cancelled: [...], ended: [...], pending: [...], skipped: n }
+// 본문: { rows: [{ name, email, phone, status, amount, at, reason }] }  (at = "26.09.20 21:25" 또는 ISO)
+// 응답: { ok, applied, cancelled, ended, autoAliased, pending, notInSheet, skipped }
+//   autoAliased: 전화번호로 앱 계정을 찾아 별칭을 자동 등록한 사람 · notInSheet: 앱엔 유료 회원인데 시트엔 결제 이메일이 없는 사람(반대 방향 대조)
 // ============================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { tokenGate } from "../_shared/gate.ts";
@@ -23,7 +24,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GRACE_DAYS = 2;   // 결제 지연 유예: 만료 후 이틀 안에 결제가 안 찍히면 구독 종료로 본다
 
-type Row = { name?: string; email?: string; status?: string; amount?: string | number; at?: string; reason?: string };
+type Row = { name?: string; email?: string; phone?: string; status?: string; amount?: string | number; at?: string; reason?: string };
 
 // "26.09.20 21:25" (KST) → ISO
 export function parseKstAt(s: string | undefined): string | null {
@@ -47,6 +48,11 @@ export function plusOneMonthKstEnd(iso: string): string {
   const ymd = n.toISOString().slice(0, 10);
   return `${ymd}T23:59:59+09:00`;
 }
+// 전화번호 비교용: 숫자만, 뒤 8자리 (010 유무·하이픈·국가번호 차이 무시)
+export function phoneKey(p: string | number | undefined): string {
+  const d = String(p || "").replace(/\D/g, "");
+  return d.length >= 8 ? d.slice(-8) : "";
+}
 export function normalizeStatus(s: string | undefined): "paid" | "cancel" | "fail" | "other" {
   const t = String(s || "").replace(/\s+/g, "");
   if (t === "결제완료") return "paid";
@@ -56,13 +62,14 @@ export function normalizeStatus(s: string | undefined): "paid" | "cancel" | "fai
 }
 // 이메일별로 '마지막 결제 완료' 와 '그 뒤의 취소' 를 찾는다
 export function reduceRows(rows: Row[]) {
-  const by: Record<string, { name: string; lastPaid: string | null; cancelAfter: string | null; amount: number }> = {};
+  const by: Record<string, { name: string; phone: string; lastPaid: string | null; cancelAfter: string | null; amount: number }> = {};
   for (const r of rows) {
     const email = String(r.email || "").trim().toLowerCase();
     if (!email || !email.includes("@") || email === "youbuddy.co@gmail.com") continue;
     const at = parseKstAt(r.at); if (!at) continue;
     const st = normalizeStatus(r.status);
-    const cur = by[email] || (by[email] = { name: String(r.name || ""), lastPaid: null, cancelAfter: null, amount: 0 });
+    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, cancelAfter: null, amount: 0 });
+    if (!cur.phone) cur.phone = phoneKey(r.phone);
     if (st === "paid") { if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.cancelAfter = null; cur.amount = Number(r.amount) || 0; } }
     else if (st === "cancel") { if (cur.lastPaid && at >= cur.lastPaid && (!cur.cancelAfter || at > cur.cancelAfter)) cur.cancelAfter = at; }
   }
@@ -83,7 +90,7 @@ Deno.serve(async (req) => {
 
   // 이메일 대소문자가 섞여 저장된 계정이 있어 전체를 받아 소문자로 맞춘다 (회원 수 백 명 단위라 가볍다)
   const { data: users, error } = await sb.from("users")
-    .select("email, name, cohort, unlocked, membership_ends_at, membership_cancel_at, membership_cancel_reason, is_operator, is_dev_mode, withdrawn_at, preferences");
+    .select("email, name, phone, signup_date, cohort, unlocked, membership_ends_at, membership_cancel_at, membership_cancel_reason, is_operator, is_dev_mode, withdrawn_at, preferences");
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
   const umap: Record<string, any> = {};
   (users || []).forEach((u: any) => { umap[String(u.email).toLowerCase()] = u; });
@@ -93,8 +100,11 @@ Deno.serve(async (req) => {
     (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
   const nowIso = new Date().toISOString();
 
-  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = []; let skipped = 0;
-  for (const email of emails) {
+  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = []; let skipped = 0;
+  const sheetEmails = new Set(emails);
+  const queue = emails.slice();
+  while (queue.length) {
+    const email = queue.shift()!;
     const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
     const want = plusOneMonthKstEnd(r.lastPaid);
@@ -103,10 +113,20 @@ Deno.serve(async (req) => {
       // 가입 전 결제: latpeed_events 에 넣어두면 가입 트리거(latpeed_apply_pending)가 소급 적용.
       // 이미 한 달이 지난 결제는 소급해도 의미가 없으니 기록만 남기지 않고 건너뛴다.
       if (wantIso < nowIso) { skipped++; continue; }
-      // 같은 이름으로 가입한 계정이 있으면 후보로 알려준다 (운영자가 latpeed_aliases 에 넣을 수 있게)
+      // 래피드 이메일 ≠ 앱 이메일 인 사람 찾기: ① 전화번호 뒤 8자리가 같은 계정이 딱 하나면 별칭을 자동으로 넣고 그 계정에 바로 적용
+      //   ② 아니면 같은 이름의 계정을 후보로 알려준다 (운영자가 latpeed_aliases 에 넣을 수 있게)
+      const pool = (users || []).filter((x: any) => !x.is_operator && !x.is_dev_mode && !x.withdrawn_at && !sheetEmails.has(String(x.email).toLowerCase()));
+      const phoneMatches = r.phone ? pool.filter((x: any) => phoneKey(x.phone) === r.phone).map((x: any) => x.email) : [];
+      if (phoneMatches.length === 1) {
+        autoAliased.push({ latpeed_email: email, app_email: phoneMatches[0], name: r.name, by: "phone" });
+        if (!dry) await sb.from("latpeed_aliases").upsert({ latpeed_email: email, app_email: String(phoneMatches[0]).toLowerCase(), note: r.name + " (전화번호 자동 매칭)" }, { onConflict: "latpeed_email" }).then(() => {}, () => {});
+        alias[email] = String(phoneMatches[0]).toLowerCase();
+        queue.push(email);   // 별칭이 생겼으니 그 계정으로 다시 처리
+        continue;
+      }
       const nm = r.name.replace(/\s+/g, "");
-      const nameMatches = nm ? (users || []).filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
-      pending.push({ email, name: r.name, paid: r.lastPaid, nameMatches });
+      const nameMatches = nm ? pool.filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
+      pending.push({ email, name: r.name, paid: r.lastPaid, nameMatches, phoneMatches });
       if (!dry) {
         const { data: ex } = await sb.from("latpeed_events").select("id").eq("email", email).eq("event_at", r.lastPaid).eq("type", "MEMBERSHIP_PAYMENT").limit(1);
         if (!ex || !ex.length) {
@@ -153,8 +173,14 @@ Deno.serve(async (req) => {
       }).eq("email", u.email);
     }
   }
+  // 반대 방향 대조: 앱에 유료 회원으로 있는데 시트(래피드 결제)엔 그 이메일이 없는 사람. 다른 이메일로 결제했을 가능성이 크다.
+  const aliasTargets = new Set(Object.values(alias));
+  const notInSheet = (users || []).filter((x: any) => x.cohort === "member" && !x.is_operator && !x.is_dev_mode && !x.withdrawn_at
+      && !sheetEmails.has(String(x.email).toLowerCase()) && !aliasTargets.has(String(x.email).toLowerCase())
+      && !(x.membership_ends_at && new Date(x.membership_ends_at).toISOString() < nowIso))
+    .map((x: any) => ({ email: x.email, name: x.name, signup: x.signup_date, ends: x.membership_ends_at, pay_source: (x.preferences || {}).pay_source || null }));
   if (!dry && (applied.length || cancelled.length || ended.length)) {
     await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, ended: ended.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email), ended.map(e => e.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
   }
-  return Response.json({ ok: true, dry, applied, cancelled, ended, pending, skipped });
+  return Response.json({ ok: true, dry, applied, cancelled, ended, autoAliased, pending, notInSheet, skipped });
 });
