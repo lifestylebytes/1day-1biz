@@ -8,18 +8,20 @@
 //     연장 시 cohort=member, unlocked=true, 해지마커·퇴직사유 해제.
 //   · 그 결제 뒤에 '결제 취소'(환불) 가 있으면 만료일을 취소 시각으로 당기고 해지마커를 세운다.
 //   · '결제 실패' 는 건드리지 않는다 (멤버 CSV 의 '구독 종료' 가 처리).
-//   · 결제한 지 한 달이 지난 사람(시트 기준 만료)은 건드리지 않는다. 만료일은 줄이지 않는다.
+//   · 새 결제가 있을 때(DB 만료일 < 시트 기준 만료일)만 연장·해지마커 해제. 같거나 뒤면 안 건드린다.
+//   · 마지막 결제 + 1개월 + 2일 안에 새 결제가 없으면 구독 종료로 보고 해지마커(latpeed_no_renewal)를 세운다 → 앱이 휴직 화면.
 //   · 래피드 이메일 ≠ 앱 이메일이면 latpeed_aliases 표로 잇는다. 미가입 이메일은 같은 이름의 계정을 nameMatches 로 알려준다.
 //   · 운영자·Dev 계정, 테스트 계정(youbuddy.co@gmail.com)은 제외.
 //   · 가입 전 결제(users 에 없는 이메일)는 latpeed_events 에 남겨 가입 순간 소급 적용되게 한다 (latpeed_apply_pending).
 // 본문: { rows: [{ name, email, status, amount, at, reason }] }  (at = "26.09.20 21:25" 또는 ISO)
-// 응답: { ok, applied: [...], cancelled: [...], pending: [...], skipped: n }
+// 응답: { ok, applied: [...], cancelled: [...], ended: [...], pending: [...], skipped: n }
 // ============================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { tokenGate } from "../_shared/gate.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const GRACE_DAYS = 2;   // 결제 지연 유예: 만료 후 이틀 안에 결제가 안 찍히면 구독 종료로 본다
 
 type Row = { name?: string; email?: string; status?: string; amount?: string | number; at?: string; reason?: string };
 
@@ -91,7 +93,7 @@ Deno.serve(async (req) => {
     (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
   const nowIso = new Date().toISOString();
 
-  const applied: any[] = [], cancelled: any[] = [], pending: any[] = []; let skipped = 0;
+  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = []; let skipped = 0;
   for (const email of emails) {
     const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
@@ -128,22 +130,31 @@ Deno.serve(async (req) => {
       } else skipped++;
       continue;
     }
-    // ★ 결제한 지 한 달이 지난 사람(= 시트 기준으로 이미 만료)은 절대 건드리지 않는다.
-    //   해지마커를 지우면 앱의 fail-open(해지 안 한 member 는 날짜로 안 막음) 때문에 만료자가 열려 버린다. (2026-10-03 1차 실행 사고)
-    if (wantIso < nowIso) { skipped++; continue; }
-    const needs = !dbEnd || dbEnd < wantIso || u.cohort !== "member" || u.unlocked === false || !!u.membership_cancel_at || !!u.membership_cancel_reason;
-    if (!needs) { skipped++; continue; }
-    const newEnd = (dbEnd && dbEnd > wantIso) ? dbEnd : wantIso;   // 줄이지 않는다
-    applied.push({ email: u.email, name: u.name, from: dbEnd, to: newEnd, paid: r.lastPaid });
+    // ★ 구독 종료 감지 (2026-10-04): 래피드는 월 구독이라 한 달마다 '결제 완료' 가 찍혀야 한다.
+    //   시트엔 '구독 취소' 가 안 찍히므로, 마지막 결제 + 1개월 + 2일(유예) 안에 새 결제가 없으면 구독이 끝난 것으로 보고
+    //   해지마커를 세운다 (앱은 해지마커 + 만료일 경과일 때만 member 를 막는다). 만료일은 그대로 둔다.
+    //   DB 만료일이 시트보다 뒤면(운영자가 손으로 늘린 경우 등) 건드리지 않는다.
+    if (wantIso < nowIso) {
+      const graceEnd = new Date(new Date(wantIso).getTime() + GRACE_DAYS * 86400000).toISOString();
+      if (graceEnd < nowIso && u.cohort === "member" && !u.membership_cancel_at && (!dbEnd || dbEnd <= wantIso)) {
+        ended.push({ email: u.email, name: u.name, paid: r.lastPaid, ends: dbEnd || wantIso });
+        if (!dry) await sb.from("users").update({ membership_ends_at: dbEnd || wantIso, membership_cancel_at: nowIso, membership_cancel_reason: "latpeed_no_renewal" }).eq("email", u.email);
+      } else skipped++;
+      continue;
+    }
+    // ★ 새 결제가 있을 때만 (DB 만료일 < 시트 기준 만료일) 연장 + 해지마커 해제. 만료일이 이미 같거나 더 뒤면 아무것도 안 건드린다.
+    //   (2026-10-03 사고: 날짜가 같은 사람의 해지마커까지 지워서 구독 취소자가 '정상 활성' 으로 바뀌었다)
+    if (dbEnd && dbEnd >= wantIso) { skipped++; continue; }
+    applied.push({ email: u.email, name: u.name, from: dbEnd, to: wantIso, paid: r.lastPaid });
     if (!dry) {
       await sb.from("users").update({
-        membership_ends_at: newEnd, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
+        membership_ends_at: wantIso, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
         preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid },
       }).eq("email", u.email);
     }
   }
-  if (!dry && (applied.length || cancelled.length)) {
-    await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
+  if (!dry && (applied.length || cancelled.length || ended.length)) {
+    await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, ended: ended.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email), ended.map(e => e.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
   }
-  return Response.json({ ok: true, dry, applied, cancelled, pending, skipped });
+  return Response.json({ ok: true, dry, applied, cancelled, ended, pending, skipped });
 });
