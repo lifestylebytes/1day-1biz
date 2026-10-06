@@ -21655,6 +21655,32 @@ window.SimApp = App;
   setTimeout(tick, 500);
 })();
 
+/* --- ★ 2026-10-06 실제 학습 Day 서버 기록 (운영자 뷰·순위판 표시용) ---
+ * 화면의 오늘 Day(_resolvedDay)는 페이지를 열 때 정해지고, 바뀌는 순간(다음 Day 열기, 날짜 변경)엔 페이지가 새로고침된다.
+ * 그래서 페이지를 열 때 한 번 보내면 화면과 같은 값이 서버에 남는다. 화면 계산에는 이 값을 다시 읽어 쓰지 않는다.
+ * dev 패널로 Day 를 고정한 운영자·Dev 계정은 보내지 않는다. 실패해도 화면에는 영향이 없다 (다음 접속 때 다시 보낸다).
+ */
+(function syncRealDayToSupabase() {
+  try {
+    if (!_localUser || !_localUser.email) return;
+    if (_isInternal && _localUser.devDayOverride === true) return;
+    const day = Number(_resolvedDay) || 0;
+    if (!day) return;
+    let tries = 0;
+    const tick = () => {
+      try {
+        if (localStorage.getItem("__OD_TT_STASH")) return;   // 타임머신(개발) 중엔 보내지 않는다
+        if (window.OD && window.OD.enabled && window.OD.saveRealDay) {
+          window.OD.saveRealDay(_localUser.email, day).catch(() => {});
+        } else if (tries++ < 20) {
+          setTimeout(tick, 250);
+        }
+      } catch (e) {}
+    };
+    setTimeout(tick, 700);
+  } catch (e) {}
+})();
+
 /* --- ★ 데이터 손실 방지: mainboard 진입 시 DB → localStorage 동기화 (2026-05-19 새 경로) ---
  * 정규화 테이블 (submissions / notes / journals / notice_reads_v2)에서 RPC 한 번으로 가져옴.
  * cross-device, 시크릿 모드, 캐시 클린, 신규 디바이스 모두 같은 경로로 복원.
@@ -21665,7 +21691,7 @@ window.SimApp = App;
   let stash = null; try { stash = localStorage.getItem("__OD_TT_STASH"); } catch (e) {}
   if (!stash) return;
   const noop = async () => ({ ok: true, tt: true });
-  const names = ["saveSubmission", "saveNoteRow", "deleteNoteRow", "saveJournalRow", "saveDayProgress", "saveTaskProgress", "updateProgress", "saveTfState", "addExpEvent", "saveSurveyResponse", "saveScenarioAtomic", "saveNoteAtomic", "markNoticeRead", "setKakaoNotify", "pushOutbox", "flushOutbox", "logEvent"];
+  const names = ["saveSubmission", "saveNoteRow", "deleteNoteRow", "saveJournalRow", "saveDayProgress", "saveRealDay", "saveTaskProgress", "updateProgress", "saveTfState", "addExpEvent", "saveSurveyResponse", "saveScenarioAtomic", "saveNoteAtomic", "markNoticeRead", "setKakaoNotify", "pushOutbox", "flushOutbox", "logEvent"];
   let n = 0; const iv = setInterval(() => { if (window.OD) { names.forEach(k => { if (typeof window.OD[k] === "function") window.OD[k] = noop; }); clearInterval(iv); console.log("[tt] 서버 쓰기 차단"); } else if (n++ > 80) clearInterval(iv); }, 100);
 })();
 (function hydrateFromDb() {

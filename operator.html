@@ -1733,34 +1733,54 @@ function App() {
     if (usersRes.ok) setSupaUsers(usersRes.users);
     if (statsRes.ok) setSupaStats(statsRes.stats);
     setProgMap(progRes && progRes.ok ? progRes.map : null);
+    setGateDoneMap(progRes && progRes.ok && progRes.gateDone ? progRes.gateDone : null);
     setLastStudyMap(progRes && progRes.ok && progRes.lastStudy ? progRes.lastStudy : {});
     setSupaLoading(false);
   };
   // ★ 계정별 진도 현황 (2026-09-14): 모든 계정의 완주 Day 목록. null 이면 RPC(get_progress_overview)가 아직 없는 것.
   const [progMap, setProgMap] = useState(null);
+  const [gateDoneMap, setGateDoneMap] = useState(null);   // email → 앱 기준 완주 Day (일지 또는 일정 4개). 실제 학습 Day 이어 세기용 (2026-10-06)
   const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
-  // 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 밀린·빠뜨린은 '-'.
+  // 실제 학습 Day / 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 빠뜨린은 '-'.
+  // ★ 2026-10-06 실제 학습 Day: 회원 앱이 접속 때 보낸 '화면의 오늘 Day'(real_day). 보낸 날 이후 접속이 없으면,
+  //   그 값에서 출발해 앱과 같은 완주 기준(일지 또는 일정 4개)으로 끝낸 Day 를 지나가며 센다 (달력 Day 를 넘지 않음).
+  //   real_day 가 아직 없으면(새 버전 앱 접속 전) 실제 학습 Day · 밀린 Day · 직급은 '-'. 앱 Day 는 계산에 쓰지 않는다.
   const calcProgress = (u) => {
     const appDay = u.day_in_company || 1;
+    const em = String(u.email || '').toLowerCase();
     const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
-    const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
-    const rank = appDay >= 90 ? '대리' : appDay >= 30 ? '사원' : '수습';
-    const done = progMap ? new Set(progMap[String(u.email || '').toLowerCase()] || []) : null;
+    const todayKst = kst(new Date());
+    const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(todayKst) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
+    let realDay = Number(u.real_day) || null;
+    if (realDay && u.real_day_at && kst(u.real_day_at) < todayKst && gateDoneMap && gateDoneMap[em]) {
+      const gd = new Set(gateDoneMap[em]);
+      while (realDay < calDay && gd.has(realDay)) realDay++;
+    }
+    // 직급: 고객 앱과 같은 규칙. 실제 학습 Day 31 이상 사원 · 90 이상 대리, 정직원 전환 시험 기록(level)과 둘 중 높은 쪽
+    let rank = '-';
+    if (realDay) {
+      const RO = { probation: 0, fulltime: 1, senior: 2 };
+      const lv = (u.level && typeof u.level === 'object' && u.level.id) || 'probation';
+      const byDay = realDay >= 90 ? 'senior' : realDay >= 31 ? 'fulltime' : 'probation';
+      const id = (RO[lv] || 0) > (RO[byDay] || 0) ? lv : byDay;
+      rank = id === 'senior' ? '대리' : id === 'fulltime' ? '사원' : '수습';
+    }
+    const done = progMap ? new Set(progMap[em] || []) : null;
     let missing = null, behind = null;
     if (done) {
       missing = []; for (let d = 1; d <= calDay; d++) if (!done.has(d)) missing.push(d);
-      behind = missing.filter(d => d >= appDay).length;
+      if (realDay) behind = missing.filter(d => d >= realDay).length;
     }
     const fmt = (v) => v ? new Date(v).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
     // ★ 2026-10-02: 마지막 학습일 = 실제 완주 기록(답안·일지·일정 체크) 시각. 마지막 접속일(last_active) 은 접속·운영자 변경에도 바뀌므로 따로.
-    const lsAt = lastStudyMap[String(u.email || '').toLowerCase()] || null;
+    const lsAt = lastStudyMap[em] || null;
     const lastStudy = lsAt ? fmt(lsAt) : (progMap ? '-' : fmt(u.last_active));
     const lastSeen = fmt(u.last_active);
     const signup = fmt(u.signup_date);
-    return { appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
+    return { realDay, appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
   };
   // 결제 상태 그룹 (정렬용): 0 만료일 없음 · 1 정상 활성/활성 · 2 내부 사용자 · 3 만료·종료
   const payGroup = (u) => {
@@ -1775,10 +1795,10 @@ function App() {
   // 구글 스프레드시트로 받기 (CSV · UTF-8 BOM → 시트에서 바로 열림)
   const downloadProgressCsv = () => {
     const esc = (v) => { const t = String(v == null ? '' : v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
-    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
+    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '실제 학습 Day', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
     const rows = [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
       const pr = calcProgress(u); const pi = payInfo(u);
-      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
+      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.realDay == null ? '' : pr.realDay, pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
     });
     const csv = '\ufeff' + head.join(',') + '\n' + rows.join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -2274,11 +2294,13 @@ function App() {
                 )}
             {showDayHelp && (
               <div className="day-help">
-                <div><b>앱 Day</b> = 지금 앱에 열려 있는 Day (마지막 접속 때 앱이 보낸 값. 접속해야 갱신돼요)</div>
+                <div>표시 순서: <b>DAY 실제 학습 / 앱 / 달력 (밀린) [직급]</b></div>
+                <div><b>실제 학습 Day</b> = 회원 앱 화면에 떠 있는 오늘 Day (접속할 때 앱이 보낸 값). 어제 이전에 받은 값이면, 그 뒤로 끝낸 Day(일지 또는 일정 4개)만큼 이어서 세요. 새 버전 앱에 아직 접속 안 한 회원은 '-'</div>
+                <div><b>앱 Day</b> = 예전 방식 값 (접속 때 앱이 보낸 값 중 가장 큰 값, 내려가지 않아요). 참고용</div>
                 <div><b>달력 Day</b> = 가입일 기준 원래 와 있어야 할 Day</div>
-                <div><b>밀린 Day</b> = 앱 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
+                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
                 <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day 포함)</div>
-                <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 앱 Day 기준 수습(~29) · 사원(30~89) · 대리(90~).</div>
+                <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 고객 앱과 같은 규칙: 실제 학습 Day 수습(~30) · 사원(31~89) · 대리(90~), 정직원 전환 시험 기록이 있으면 둘 중 높은 쪽.</div>
                 {progMap === null && <div style={{ marginTop: 4, color: '#B23A2C' }}>⚠️ 완주 기록 RPC(get_progress_overview)가 아직 없어요. supabase/migrations/20260914_progress_overview.sql 을 실행하면 밀린·빠뜨린 Day 가 채워져요.</div>}
               </div>
             )}
@@ -2418,11 +2440,11 @@ function App() {
                       const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div className="prog-line1">DAY {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank">[{pr.rank}]</span></div>
-                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} · 앱 Day {pr.appDay} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
+                          <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span></div>
+                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
                           {m ? (
                             <>
-                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
+                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "실제 학습 Day 아직 없음 (새 버전 앱 접속 전)" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
                               <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
                             </>
                           ) : (
