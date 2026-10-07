@@ -28,17 +28,17 @@
       "mentorNuance": "회의를 시작하면서 첫 안건으로 넘어갈 때 써. 어색한 첫 10초를 끊는 자리에 잘 맞아.",
       "mcOptions": [
         {
-          "text": "Just say 'let's get the ball rolling' and throw out an easy icebreaker question.",
+          "text": "Just say 'let's get the ball rolling' and throw out an easy icebreaker question.", "ko": "그냥 '시작해 볼까요' 하고 가벼운 아이스브레이킹 질문 하나 던지세요.",
           "kind": "correct",
           "note": "정답. 시동어 하나 + 쉬운 질문 하나. 첫 모임 어색함 해체 공식."
         },
         {
-          "text": "Wait quietly until someone else speaks first.",
+          "text": "Wait quietly until someone else speaks first.", "ko": "다른 사람이 먼저 말할 때까지 조용히 기다리세요.",
           "kind": "weak",
           "note": "다들 그 생각하면 30분간 정적이야. 모임장이 공을 굴려야지."
         },
         {
-          "text": "Commence the proceedings with a formal declaration of objectives.",
+          "text": "Commence the proceedings with a formal declaration of objectives.", "ko": "목표의 공식 선언으로 회의를 개시하십시오.",
           "kind": "formal",
           "note": "declaration... 스터디 모임이 국회니. 사람 말로 시작해."
         }
@@ -116,17 +116,17 @@
       "mentorNuance": "내 얘기를 끝내고 다른 사람들 의견을 받을 때 써. 이 말 뒤에는 5초 침묵을 견뎌야 해.",
       "mcOptions": [
         {
-          "text": "That's my take. Let me open the floor, what did everyone get out of chapter three?",
+          "text": "That's my take. Let me open the floor, what did everyone get out of chapter three?", "ko": "제 생각은 이래요. 이제 여러분 차례예요, 3장에서 다들 뭘 얻으셨어요?",
           "kind": "correct",
           "note": "정답. 내 의견에 마침표 + 구체적 질문으로 floor 열기. 토론이 굴러가."
         },
         {
-          "text": "So... does anyone want to say anything? Anything at all? No? Okay...",
+          "text": "So... does anyone want to say anything? Anything at all? No? Okay...", "ko": "그래서... 누구 할 말 있어요? 아무거나요? 없어요? 그럼...",
           "kind": "weak",
           "note": "구걸하는 톤은 침묵을 더 무겁게 해. 질문은 구체적으로, 한 번만."
         },
         {
-          "text": "The chairperson now solicits commentary from the assembled participants.",
+          "text": "The chairperson now solicits commentary from the assembled participants.", "ko": "의장은 이제 참석자들의 논평을 요청합니다.",
           "kind": "formal",
           "note": "chairperson... 북클럽이야, 주주총회가 아니라."
         }
@@ -160,7 +160,7 @@
       "mentorNuance": "발언권을 다른 사람에게 넘길 때 써. 받는 쪽이면 감사 한마디 뒤에 바로 본론으로 가.",
       "mcOptions": [
         {
-          "text": "Minji has been leading this project for a year. Minji, the floor is yours.",
+          "text": "Minji has been leading this project for a year. Minji, the floor is yours.", "ko": "민지 씨가 이 프로젝트를 1년간 이끌었어요. 민지 씨, 이제 말씀하세요.",
           "kind": "correct",
           "note": "정답. 소개 한 줄 + 깔끔한 토스. 마이크 넘김의 정석."
         },
@@ -204,17 +204,17 @@
       "mentorNuance": "대화 중간에 끼어들 때 양해를 구하는 말로 써. \"잠깐 끼어들게요\"를 이 표현으로 해.",
       "mcOptions": [
         {
-          "text": "Just say 'sorry, can I jump in?' first. That phrase buys you the floor politely.",
+          "text": "Just say 'sorry, can I jump in?' first. That phrase buys you the floor politely.", "ko": "먼저 '죄송한데, 잠깐 끼어들어도 될까요?'라고 하세요. 그 한마디가 정중하게 발언권을 줘요.",
           "kind": "correct",
           "note": "정답. 매직 프레이즈 하나로 예의와 발언권을 동시에 확보."
         },
         {
-          "text": "Talk louder than everyone else until they stop.",
+          "text": "Talk louder than everyone else until they stop.", "ko": "다들 멈출 때까지 남들보다 크게 말하세요.",
           "kind": "weak",
           "note": "볼륨 전쟁은 회의가 아니라 경매야. 프레이즈로 들어가."
         },
         {
-          "text": "One must formally request permission to interject via the designated host.",
+          "text": "One must formally request permission to interject via the designated host.", "ko": "지정된 진행자를 통해 끼어들 허가를 공식 요청해야 합니다.",
           "kind": "formal",
           "note": "designated host... 손 들고 허락 기다리다 회의 끝나."
         }
@@ -292,17 +292,17 @@
       "mentorNuance": "일부러 반대 의견을 내기 전에 선언하며 써. 공격이 아니라 시험이라는 신호가 돼.",
       "mcOptions": [
         {
-          "text": "I love the idea, but let me play devil's advocate for a minute: what's our rain plan?",
+          "text": "I love the idea, but let me play devil's advocate for a minute: what's our rain plan?", "ko": "아이디어 좋아요, 근데 잠깐 반대 입장에서 볼게요: 비 오면 어떻게 하죠?",
           "kind": "correct",
           "note": "정답. 애정 표시 + 역할 선언 + 구체적 리스크. 분위기 안 깨고 구멍만 찾기."
         },
         {
-          "text": "This will fail. Nobody thought about the weather?",
+          "text": "This will fail. Nobody thought about the weather?", "ko": "이거 망할 거예요. 날씨 생각한 사람 아무도 없어요?",
           "kind": "weak",
           "note": "같은 지적도 이 톤이면 적이 돼. 역할 선언이 왜 필요한지 보여주는 예."
         },
         {
-          "text": "I must interpose a contrarian perspective for deliberative purposes.",
+          "text": "I must interpose a contrarian perspective for deliberative purposes.", "ko": "심의 목적으로 반대 관점을 제기해야겠습니다.",
           "kind": "formal",
           "note": "contrarian perspective... 말하는 데 5초, 친구 잃는 데 1초."
         }
@@ -336,7 +336,7 @@
       "mentorNuance": "얘기가 옆길로 샜을 때 되돌리는 말로 써. 시간 핑계와 같이 말하면 부드러워.",
       "mcOptions": [
         {
-          "text": "The budget review went off on a tangent about office snacks for half an hour.",
+          "text": "The budget review went off on a tangent about office snacks for half an hour.", "ko": "예산 리뷰가 사무실 간식 얘기로 30분이나 샜어요.",
           "kind": "correct",
           "note": "정답. go off on a tangent, 전치사 세트 그대로. 간식 잡담 30분, 어느 회사나 있지."
         },
@@ -380,17 +380,17 @@
       "mentorNuance": "준비 없이 답하기 전에 양해를 구할 때 써. \"준비 안 된 거라 대략만 말할게요\"를 이 표현으로 해.",
       "mcOptions": [
         {
-          "text": "You gave a whole speech off the cuff? That's impressive, most people freeze.",
+          "text": "You gave a whole speech off the cuff? That's impressive, most people freeze.", "ko": "연설 전체를 즉석에서 했다고요? 대단하네요, 대부분은 얼어붙거든요.",
           "kind": "correct",
           "note": "정답. off the cuff 상황을 정확히 알아듣고 감탄. 리액션도 실력이야."
         },
         {
-          "text": "Why didn't you prepare a backup speech in advance?",
+          "text": "Why didn't you prepare a backup speech in advance?", "ko": "왜 미리 예비 연설을 준비 안 했어요?",
           "kind": "weak",
           "note": "즉석 대응 무용담에 '왜 준비 안 했어'는 초 치는 소리야."
         },
         {
-          "text": "Your extemporaneous oration was doubtless commendable.",
+          "text": "Your extemporaneous oration was doubtless commendable.", "ko": "귀하의 즉흥 연설은 의심할 바 없이 훌륭했습니다.",
           "kind": "formal",
           "note": "extemporaneous oration... 친구가 조용히 멀어져."
         }
@@ -468,17 +468,17 @@
       "mentorNuance": "회의를 잡을 때 \"이 시간엔 꼭 나가야 한다\"를 미리 알리며 써. 초대 답장에 한 줄 넣으면 돼.",
       "mcOptions": [
         {
-          "text": "Quick note before we start: I have a hard stop at 2, so let's prioritize the top two items.",
+          "text": "Quick note before we start: I have a hard stop at 2, so let's prioritize the top two items.", "ko": "시작 전에 짧게요: 저는 2시에 꼭 나가야 해서 상위 두 안건부터 하죠.",
           "kind": "correct",
           "note": "정답. 시작할 때 미리 선언 + 우선순위 제안. hard stop의 정석 사용법."
         },
         {
-          "text": "I might have to leave at some point, we'll see how it goes.",
+          "text": "I might have to leave at some point, we'll see how it goes.", "ko": "어느 시점엔가 나가야 할 수도 있어요, 봐서요.",
           "kind": "weak",
           "note": "'아마 어쩌면'으론 아무도 계획을 못 세워. 스탑은 하드하게 말해야 스탑이야."
         },
         {
-          "text": "Be advised that my departure shall occur promptly at 1400 hours.",
+          "text": "Be advised that my departure shall occur promptly at 1400 hours.", "ko": "본인의 퇴장은 14시 정각에 이루어질 것임을 알려 드립니다.",
           "kind": "formal",
           "note": "1400 hours... 회의지 군사 작전이 아니야."
         }
@@ -512,7 +512,7 @@
       "mentorNuance": "회의나 발표가 예정 시간을 넘길 때 써. \"10분 넘길 것 같다\"고 양해를 구하는 자리에서 나와.",
       "mcOptions": [
         {
-          "text": "Sorry I'm late, the standup ran over by twenty minutes.",
+          "text": "Sorry I'm late, the standup ran over by twenty minutes.", "ko": "늦어서 죄송해요, 스탠드업이 20분 길어졌어요.",
           "kind": "correct",
           "note": "정답. 회의가 주어로 와서 ran over. 지각 사유의 국제 표준 문장."
         },
@@ -556,17 +556,17 @@
       "mentorNuance": "대화가 엉뚱한 곳으로 갈 때 방향을 돌리는 상황을 설명하며 써. 진행자 코칭에서 자주 나와.",
       "mcOptions": [
         {
-          "text": "Okay, let me steer the conversation somewhere safer. Who's watched anything good lately?",
+          "text": "Okay, let me steer the conversation somewhere safer. Who's watched anything good lately?", "ko": "자, 대화를 좀 안전한 쪽으로 돌릴게요. 요즘 재밌게 본 거 있는 분?",
           "kind": "correct",
           "note": "정답. 유머로 선언하고 부드럽게 핸들 꺾기. 가족 모임 필수 스킬."
         },
         {
-          "text": "Stop talking about politics right now. New topic.",
+          "text": "Stop talking about politics right now. New topic.", "ko": "정치 얘기 당장 그만하세요. 다른 주제로요.",
           "kind": "weak",
           "note": "급브레이크는 분위기가 먼저 죽어. 조종은 부드럽게."
         },
         {
-          "text": "I propose we redirect our discourse toward less contentious subject matter.",
+          "text": "I propose we redirect our discourse toward less contentious subject matter.", "ko": "덜 논쟁적인 주제로 담론을 전환할 것을 제안합니다.",
           "kind": "formal",
           "note": "discourse... 가족 모임에서 이러면 네가 다음 화제가 돼."
         }
@@ -644,17 +644,17 @@
       "mentorNuance": "자료를 처음부터 차근차근 설명해 달라고 요청하거나 설명할 때 써. 데모, 온보딩에서 매일 나와.",
       "mcOptions": [
         {
-          "text": "Come grab a seat, I'll walk you through the whole deploy process step by step.",
+          "text": "Come grab a seat, I'll walk you through the whole deploy process step by step.", "ko": "이리 와서 앉으세요, 배포 과정 전체를 하나씩 차근차근 알려 드릴게요.",
           "kind": "correct",
           "note": "정답. 옆에 앉혀서 한 단계씩. walk through가 만드는 안전감이 이거야."
         },
         {
-          "text": "The wiki has everything, just read it carefully.",
+          "text": "The wiki has everything, just read it carefully.", "ko": "위키에 다 있어요, 꼼꼼히 읽으세요.",
           "kind": "weak",
           "note": "위키 던지기는 안내가 아니라 방치야. 첫 배포는 같이 걸어줘."
         },
         {
-          "text": "Kindly familiarize yourself with the standard operating procedures documentation.",
+          "text": "Kindly familiarize yourself with the standard operating procedures documentation.", "ko": "표준 운영 절차 문서를 숙지하시기 바랍니다.",
           "kind": "formal",
           "note": "SOP documentation... 신입 퇴사 사유 1위 문장."
         }
@@ -688,7 +688,7 @@
       "mentorNuance": "한 주제를 깊게 파는 후속 회의를 제안할 때 써. 미팅 제목에 그대로 붙여.",
       "mcOptions": [
         {
-          "text": "We're doing a deep dive into the latency issue next sprint.",
+          "text": "We're doing a deep dive into the latency issue next sprint.", "ko": "다음 스프린트에 지연 문제를 깊이 파 볼 거예요.",
           "kind": "correct",
           "note": "정답. do a deep dive into, 세트 그대로. 분석 예고의 표준 문장."
         },
@@ -732,17 +732,17 @@
       "mentorNuance": "디테일 빼고 큰 그림만 달라고 할 때 써. 임원 보고 요청에 자주 붙어.",
       "mcOptions": [
         {
-          "text": "High-level: we're on track, two weeks ahead on dev, one open risk on hiring.",
+          "text": "High-level: we're on track, two weeks ahead on dev, one open risk on hiring.", "ko": "큰 틀: 순조롭고, 개발은 2주 앞서 있고, 채용 쪽 리스크 하나 열려 있어요.",
           "kind": "correct",
           "note": "정답. 상태 + 진도 + 리스크, 15초 완결. 임원은 이 밀도를 사랑해."
         },
         {
-          "text": "Well, it all started when the API team changed the spec back in March...",
+          "text": "Well, it all started when the API team changed the spec back in March...", "ko": "음, 그게 다 3월에 API 팀이 스펙을 바꾸면서 시작됐는데요...",
           "kind": "weak",
           "note": "3월 스펙 얘기 나오는 순간 임원은 내릴 층만 세고 있어."
         },
         {
-          "text": "Permit me to furnish a comprehensive progress elucidation at your convenience.",
+          "text": "Permit me to furnish a comprehensive progress elucidation at your convenience.", "ko": "편하실 때 포괄적인 진행 상황 설명을 드리도록 허락해 주십시오.",
           "kind": "formal",
           "note": "elucidation... 엘리베이터가 멈춰도 이 문장은 안 끝나."
         }
@@ -820,17 +820,17 @@
       "mentorNuance": "디테일에 빠졌을 때 전체 그림으로 돌아가자고 할 때 써. 발표 중 질문 러시를 정리할 때도 써.",
       "mcOptions": [
         {
-          "text": "Zoom out for a second: which job gets you where you want to be in five years?",
+          "text": "Zoom out for a second: which job gets you where you want to be in five years?", "ko": "잠깐 크게 봐요: 5년 뒤 가고 싶은 자리에 어느 일이 데려다줘요?",
           "kind": "correct",
           "note": "정답. 엑셀에서 인생으로 카메라 빼주기. 좋은 친구의 질문."
         },
         {
-          "text": "Just pick the higher salary, easy decision.",
+          "text": "Just pick the higher salary, easy decision.", "ko": "그냥 연봉 높은 쪽 고르세요, 쉬운 결정이에요.",
           "kind": "weak",
           "note": "숫자 하나로 끝내는 조언은 줌아웃이 아니라 그냥 안 보는 거야."
         },
         {
-          "text": "You must holistically evaluate the totality of each employment opportunity.",
+          "text": "You must holistically evaluate the totality of each employment opportunity.", "ko": "각 고용 기회의 총체를 전체적으로 평가해야 합니다.",
           "kind": "formal",
           "note": "totality... 고민 상담이 약관 낭독이 됐어."
         }
@@ -864,7 +864,7 @@
       "mentorNuance": "회의 시작 전에 모두를 같은 출발선에 세우는 30초 정리를 부르며 써. 참석자 배경이 다를 때 꼭 필요해.",
       "mcOptions": [
         {
-          "text": "I started the kickoff by level setting on what the project covers and what it doesn't.",
+          "text": "I started the kickoff by level setting on what the project covers and what it doesn't.", "ko": "킥오프를 프로젝트가 뭘 다루고 뭘 안 다루는지 기준 맞추는 걸로 시작했어요.",
           "kind": "correct",
           "note": "정답. level set on + 주제. 범위 합의로 여는 킥오프의 정석."
         },
@@ -908,17 +908,17 @@
       "mentorNuance": "완벽하지 않은 초안을 던져 논의를 시작할 때 써. \"두들겨 맞으라고 만든 안이다\"를 이 한 단어로 말해.",
       "mcOptions": [
         {
-          "text": "Bring a strawman proposal to the next meeting. People decide faster when there's something to attack.",
+          "text": "Bring a strawman proposal to the next meeting. People decide faster when there's something to attack.", "ko": "다음 회의에 초안을 하나 가져오세요. 공격할 게 있으면 사람들은 더 빨리 결정해요.",
           "kind": "correct",
           "note": "정답. 결정 못 하는 팀의 특효약. 뜯을 대상을 만들어주는 것."
         },
         {
-          "text": "Just wait, good ideas take time to emerge naturally.",
+          "text": "Just wait, good ideas take time to emerge naturally.", "ko": "그냥 기다리세요, 좋은 아이디어는 자연스럽게 나오는 데 시간이 걸려요.",
           "kind": "weak",
           "note": "3주 돌았으면 자연 발생은 물 건너갔어. 허수아비가 필요한 타이밍."
         },
         {
-          "text": "Institute a formalized ideation framework with weighted decision matrices.",
+          "text": "Institute a formalized ideation framework with weighted decision matrices.", "ko": "가중 의사결정 매트릭스를 갖춘 공식 아이디어 체계를 도입하십시오.",
           "kind": "formal",
           "note": "weighted matrices... 회의가 하나 더 늘어날 소리야."
         }
@@ -996,17 +996,17 @@
       "mentorNuance": "논의를 잠시 접고 나중에 돌아오자고 할 때 써. 언제 돌아올지 같이 말해야 신뢰가 남아.",
       "mcOptions": [
         {
-          "text": "Great debate, but let's put a pin in it and finish the chapter. We'll settle it in the group chat.",
+          "text": "Great debate, but let's put a pin in it and finish the chapter. We'll settle it in the group chat.", "ko": "좋은 토론인데, 잠시 접어 두고 챕터를 마저 끝내죠. 단톡에서 결판내요.",
           "kind": "correct",
           "note": "정답. 논쟁 존중 + 핀 + 후속 장소 지정. 아무도 안 삐지는 정리법."
         },
         {
-          "text": "You two are wasting everyone's time. Drop it.",
+          "text": "You two are wasting everyone's time. Drop it.", "ko": "둘이 다들 시간 낭비하게 하네요. 그만하세요.",
           "kind": "weak",
           "note": "정리는 됐는데 두 사람은 다음 모임에 안 나와."
         },
         {
-          "text": "I move to table this discussion pursuant to our procedural guidelines.",
+          "text": "I move to table this discussion pursuant to our procedural guidelines.", "ko": "절차 규정에 의거하여 이 논의의 보류를 발의합니다.",
           "kind": "formal",
           "note": "pursuant... 스터디에 로버트 회의규칙 들고 오지 마."
         }
@@ -1040,7 +1040,7 @@
       "mentorNuance": "화상회의에서 상대 소리가 안 들릴 때 써. 웃으면서 한 번만 말하면 돼.",
       "mcOptions": [
         {
-          "text": "Hold on, you're on mute! We missed all of that.",
+          "text": "Hold on, you're on mute! We missed all of that.", "ko": "잠깐만요, 음소거예요! 방금 거 하나도 못 들었어요.",
           "kind": "correct",
           "note": "정답. 세계에서 제일 많이 쓰인 화상회의 문장. 이대로 통째로."
         },
@@ -1084,17 +1084,17 @@
       "mentorNuance": "발표 순서를 다음 사람에게 넘길 때 써. 이름과 이유 한 줄을 같이 붙여.",
       "mcOptions": [
         {
-          "text": "That's the agenda. Now I'll turn it over to Dr. Lee, who built this framework from scratch.",
+          "text": "That's the agenda. Now I'll turn it over to Dr. Lee, who built this framework from scratch.", "ko": "안건은 여기까지예요. 이제 이 프레임워크를 처음부터 만든 이 박사님께 넘길게요.",
           "kind": "correct",
           "note": "정답. 아젠다 마침표 + 연사 크레딧 한 줄 + 토스. 사회의 정석."
         },
         {
-          "text": "Okay, I'm done talking. Dr. Lee, go.",
+          "text": "Okay, I'm done talking. Dr. Lee, go.", "ko": "네, 저는 다 했어요. 이 박사님, 하세요.",
           "kind": "weak",
           "note": "'go'는 토스가 아니라 투척이야. 연사를 세워주는 한 줄이 빠졌어."
         },
         {
-          "text": "I shall now transfer presentational authority to our distinguished orator.",
+          "text": "I shall now transfer presentational authority to our distinguished orator.", "ko": "이제 발표 권한을 우리의 저명한 연사께 이양하겠습니다.",
           "kind": "formal",
           "note": "presentational authority... 연사가 부담스러워서 카메라를 꺼."
         }
@@ -1172,17 +1172,17 @@
       "mentorNuance": "30초 안에 핵심을 말해야 할 때 그 요약을 부르며 써. 상사가 갑자기 물어볼 때 준비된 답이 이거야.",
       "mcOptions": [
         {
-          "text": "Start with your elevator pitch: one problem, one solution, one number. Say it out loud until it's boring.",
+          "text": "Start with your elevator pitch: one problem, one solution, one number. Say it out loud until it's boring.", "ko": "엘리베이터 피치로 시작하세요: 문제 하나, 해결책 하나, 숫자 하나. 지겨워질 때까지 소리 내서 말해 보세요.",
           "kind": "correct",
           "note": "정답. 피치의 3요소 + 소리 내 연습. 데모데이 준비의 1번."
         },
         {
-          "text": "One minute is nothing, just read your intro slide really fast.",
+          "text": "One minute is nothing, just read your intro slide really fast.", "ko": "1분은 금방이에요, 그냥 소개 슬라이드를 엄청 빨리 읽으세요.",
           "kind": "weak",
           "note": "빨리 읽기는 피치가 아니라 랩이야. 심사위원 귀는 닫혀."
         },
         {
-          "text": "Compose a meticulously structured oratorical presentation encompassing your venture's totality.",
+          "text": "Compose a meticulously structured oratorical presentation encompassing your venture's totality.", "ko": "귀하 사업의 전체를 아우르는 치밀하게 구조화된 연설문을 작성하십시오.",
           "kind": "formal",
           "note": "totality... 1분 안에 이 단어 설명도 못 끝나."
         }
@@ -1216,7 +1216,7 @@
       "mentorNuance": "발표에서 주제를 자연스럽게 넘길 때 그 연결 문장을 부르며 써. 리허설 피드백에서 자주 나와.",
       "mcOptions": [
         {
-          "text": "I loved how she segued from the customer story into the pricing ask.",
+          "text": "I loved how she segued from the customer story into the pricing ask.", "ko": "고객 사례에서 가격 요청으로 넘어가는 방식이 정말 좋았어요.",
           "kind": "correct",
           "note": "정답. segue from A into B. 발음은 '세그웨이', 타는 그것과 같아."
         },
@@ -1260,17 +1260,17 @@
       "mentorNuance": "보내기 전에 \"말이 되는지 한번 봐줘\"를 부탁할 때 써. 숫자 자료 검토 요청에 잘 맞아.",
       "mcOptions": [
         {
-          "text": "Before you sign, get a sanity check from someone who's rented before. Ten minutes, zero regrets.",
+          "text": "Before you sign, get a sanity check from someone who's rented before. Ten minutes, zero regrets.", "ko": "서명하기 전에 집 빌려 본 사람한테 한번 확인받으세요. 10분이면 후회 없어요.",
           "kind": "correct",
           "note": "정답. 도장 전 제3자 검증. sanity check가 지켜주는 건 계약서만이 아니야."
         },
         {
-          "text": "Looks fine to me, just sign it and celebrate!",
+          "text": "Looks fine to me, just sign it and celebrate!", "ko": "제가 보기엔 괜찮은데요, 그냥 서명하고 축하하세요!",
           "kind": "weak",
           "note": "사진 한 장 보고 '괜찮네'는 체크가 아니라 덕담이야."
         },
         {
-          "text": "I recommend commissioning a comprehensive juridical due diligence review.",
+          "text": "I recommend commissioning a comprehensive juridical due diligence review.", "ko": "포괄적인 법률 실사 검토를 의뢰할 것을 권합니다.",
           "kind": "formal",
           "note": "juridical due diligence... 전세 계약에 로펌 선임하란 소리야."
         }

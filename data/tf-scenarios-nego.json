@@ -37,17 +37,17 @@
       "mentorNuance": "계약 조건 검토하면서 \"이건 절대 양보 못 한다\"를 상대에게 선 긋듯 말할 때 써. 협상 시작 전에 우리 쪽 기준을 정리하는 내부 회의에서도 그대로 써.",
       "mcOptions": [
         {
-          "text": "Is remote work a deal-breaker for you, or just a nice-to-have?",
+          "text": "Is remote work a deal-breaker for you, or just a nice-to-have?", "ko": "재택이 꼭 필요한 조건이에요, 아니면 있으면 좋은 정도예요?",
           "kind": "correct",
           "note": "정답. deal-breaker인지 선호인지 구분하게 해주는 질문. 결정을 돕는 어른의 답."
         },
         {
-          "text": "Just take it. A job is a job.",
+          "text": "Just take it. A job is a job.", "ko": "그냥 받으세요. 직장이 다 직장이죠.",
           "kind": "weak",
           "note": "고민의 핵심(deal-breaker 여부)을 안 듣고 결론부터. 대화가 끝나버려."
         },
         {
-          "text": "You must undertake a holistic assessment of the employment proposition.",
+          "text": "You must undertake a holistic assessment of the employment proposition.", "ko": "고용 제안을 전체적으로 평가해야 합니다.",
           "kind": "formal",
           "note": "동기 슬랙에 holistic assessment... 친구를 잃는 영어야."
         }
@@ -125,17 +125,17 @@
       "mentorNuance": "상대 제안서를 받고 우리 숫자를 되돌려 보낼 때 써. 메일 첫 문장에 \"역제안 드립니다\"로 시작하면 자연스러워.",
       "mcOptions": [
         {
-          "text": "Thank you for the offer. Based on my research, I'd like to counter with 72.",
+          "text": "Thank you for the offer. Based on my research, I'd like to counter with 72.", "ko": "제안 감사합니다. 조사해 본 바로는 72로 역제안하고 싶어요.",
           "kind": "correct",
           "note": "정답. 감사 + 근거 + 역제안 숫자. 연봉 협상의 교과서 톤."
         },
         {
-          "text": "That's way too low. I'm disappointed in this company.",
+          "text": "That's way too low. I'm disappointed in this company.", "ko": "그건 너무 낮아요. 이 회사에 실망했어요.",
           "kind": "weak",
           "note": "감정 노출은 협상력을 태워. 실망은 숫자로 표현하는 거야."
         },
         {
-          "text": "I hereby tender a counterproposal pursuant to prevailing market valuations.",
+          "text": "I hereby tender a counterproposal pursuant to prevailing market valuations.", "ko": "시장 가치에 의거하여 역제안을 제출합니다.",
           "kind": "formal",
           "note": "리크루터가 도망가. 사람 말로 counter하면 돼."
         }
@@ -169,7 +169,7 @@
       "mentorNuance": "상대가 말도 안 되게 낮은 금액을 불렀을 때 팀 내부에서 상황을 설명하며 써. 상대 면전에서는 안 쓰는 게 안전해.",
       "mcOptions": [
         {
-          "text": "The buyer lowballed me, so I didn't even reply.",
+          "text": "The buyer lowballed me, so I didn't even reply.", "ko": "구매자가 너무 낮게 불러서 답도 안 했어요.",
           "kind": "correct",
           "note": "정답. lowball은 이렇게 타동사로 깔끔하게."
         },
@@ -213,17 +213,17 @@
       "mentorNuance": "가격은 못 움직이는데 부가 조건으로 마무리를 당기고 싶을 때 써. 상대가 먼저 꺼내면 \"뭘 얹어줄 건지\" 되묻는 자리에서도 써.",
       "mcOptions": [
         {
-          "text": "If you commit to a year, we'll sweeten the deal with a free month.",
+          "text": "If you commit to a year, we'll sweeten the deal with a free month.", "ko": "1년 약정하시면 한 달 무료로 조건을 더 좋게 해 드릴게요.",
           "kind": "correct",
           "note": "정답. 조건(1년) + 스위트너(1달 무료). 구조가 정석이야."
         },
         {
-          "text": "Please just sign, we really need this.",
+          "text": "Please just sign, we really need this.", "ko": "제발 그냥 서명해 주세요, 저희한테 정말 필요해요.",
           "kind": "weak",
           "note": "절박함은 스위트너가 아니야. 상대에게 얹어줄 것을 제시해야지."
         },
         {
-          "text": "Upon annual commitment, supplementary benefits shall be conferred.",
+          "text": "Upon annual commitment, supplementary benefits shall be conferred.", "ko": "연간 약정 시 보충 혜택이 부여될 것입니다.",
           "kind": "formal",
           "note": "conferred... 훈장 수여식이니. 미팅에선 사람 말로."
         }
@@ -301,17 +301,17 @@
       "mentorNuance": "조건이 안 맞으면 접을 수도 있다는 걸 상대에게 알릴 때 써. 내부 회의에서 \"마지노선 넘으면 접자\"를 정할 때도 써.",
       "mcOptions": [
         {
-          "text": "The numbers don't work anymore. Let's be ready to walk away.",
+          "text": "The numbers don't work anymore. Let's be ready to walk away.", "ko": "숫자가 더 이상 안 맞아요. 손 뗄 준비를 하죠.",
           "kind": "correct",
           "note": "정답. 감정 없이 기준(numbers)으로 판단하고 떠날 준비. 협상의 왕도."
         },
         {
-          "text": "Let's storm out right now and slam the door!!",
+          "text": "Let's storm out right now and slam the door!!", "ko": "지금 당장 박차고 나가서 문을 쾅 닫죠!!",
           "kind": "weak",
           "note": "박차고 나가는 건 walk away가 아니라 드라마야. 조용히 떠날 수 있는 게 힘이야."
         },
         {
-          "text": "We shall commence withdrawal procedures from this transaction.",
+          "text": "We shall commence withdrawal procedures from this transaction.", "ko": "본 거래에서 철수 절차를 개시하겠습니다.",
           "kind": "formal",
           "note": "집 보러 와서 withdrawal procedures... 친구가 무서워해."
         }
@@ -345,7 +345,7 @@
       "mentorNuance": "돈 말고 우리가 내밀 수 있는 카드를 정리하는 내부 회의에서 써. 상대에게 \"이건 우리 카드다\"라고 직접 말하지는 않아.",
       "mcOptions": [
         {
-          "text": "Mention it politely. A competing offer is your best bargaining chip.",
+          "text": "Mention it politely. A competing offer is your best bargaining chip.", "ko": "정중하게 언급하세요. 경쟁 오퍼가 가장 좋은 협상 카드예요.",
           "kind": "correct",
           "note": "정답. 경쟁 오퍼 = 칩. 쓰라고 있는 거야, 단 politely."
         },
@@ -477,17 +477,17 @@
       "mentorNuance": "상대가 압박 카드를 꺼냈을 때 팀 내부에서 상황을 정리하는 말로 써. \"우리도 세게 나가자\"를 정할 때도 이 표현으로 말해.",
       "mcOptions": [
         {
-          "text": "If the landlord plays hardball, we bring up the repairs he's been ignoring.",
+          "text": "If the landlord plays hardball, we bring up the repairs he's been ignoring.", "ko": "집주인이 강하게 나오면 그동안 무시해 온 수리 문제를 꺼내죠.",
           "kind": "correct",
           "note": "정답. hardball엔 카드로 응수. 감정이 아니라 재료로 받아치는 거야."
         },
         {
-          "text": "If the landlord plays hardball, let's just cry and beg.",
+          "text": "If the landlord plays hardball, let's just cry and beg.", "ko": "집주인이 강하게 나오면 그냥 울면서 빌죠.",
           "kind": "weak",
           "note": "동정에 기대는 순간 협상은 끝나. 칩을 찾아."
         },
         {
-          "text": "Should the lessor adopt an adversarial posture, countermeasures will be initiated.",
+          "text": "Should the lessor adopt an adversarial posture, countermeasures will be initiated.", "ko": "임대인이 적대적 태도를 취할 경우 대응 조치가 개시될 것입니다.",
           "kind": "formal",
           "note": "lessor, countermeasures... 룸메이트가 이사 가고 싶어져."
         }
@@ -565,17 +565,17 @@
       "mentorNuance": "격차가 많이 좁혀졌을 때 마무리 제안으로 써. 상대가 먼저 꺼내면 받되 조건을 붙이는 답장에서 써.",
       "mcOptions": [
         {
-          "text": "You want five nights, I want three. Let's split the difference at four.",
+          "text": "You want five nights, I want three. Let's split the difference at four.", "ko": "당신은 5박, 저는 3박을 원하죠. 중간인 4박으로 하죠.",
           "kind": "correct",
           "note": "정답. 일상 협상에도 그대로. 숫자 명시가 포인트야."
         },
         {
-          "text": "Fine, five nights, whatever you want.",
+          "text": "Fine, five nights, whatever you want.", "ko": "알겠어요, 5박이요, 원하시는 대로요.",
           "kind": "weak",
           "note": "져주는 건 절충이 아니야. 다음 여행에서도 계속 지게 돼."
         },
         {
-          "text": "I propose we bisect the numerical disparity in lodging duration.",
+          "text": "I propose we bisect the numerical disparity in lodging duration.", "ko": "숙박 기간의 수치적 차이를 양분할 것을 제안합니다.",
           "kind": "formal",
           "note": "bisect... 수학여행이니. split the difference면 끝."
         }
@@ -653,17 +653,17 @@
       "mentorNuance": "상대가 합의를 뒤집었을 때 상황 보고 첫 줄에 써. 언제 합의했는지 기록과 같이 써야 힘이 생겨.",
       "mcOptions": [
         {
-          "text": "The caterer just backed out. I'm getting two backup quotes within the hour.",
+          "text": "The caterer just backed out. I'm getting two backup quotes within the hour.", "ko": "케이터링 업체가 방금 발을 뺐어요. 한 시간 안에 대체 견적 두 개 받을게요.",
           "kind": "correct",
           "note": "정답. 사실 + 즉각 대응. back out 당했을 때 프로의 첫 마디."
         },
         {
-          "text": "The caterer BETRAYED us!! What do we do!!",
+          "text": "The caterer BETRAYED us!! What do we do!!", "ko": "케이터링 업체가 우릴 배신했어요!! 어떡하죠!!",
           "kind": "weak",
           "note": "패닉은 전염돼. 팀 슬랙의 첫 메시지는 온도 조절 장치야."
         },
         {
-          "text": "The vendor has effectuated a unilateral withdrawal from contractual obligations.",
+          "text": "The vendor has effectuated a unilateral withdrawal from contractual obligations.", "ko": "해당 업체가 계약 의무로부터 일방적 철수를 단행했습니다.",
           "kind": "formal",
           "note": "effectuated... 행사가 내일이야. 빨리 사람 말로."
         }
@@ -741,17 +741,17 @@
       "mentorNuance": "큰 틀은 끝났고 남은 세부만 정리하면 되는 단계에서 써. 마무리 메일이나 후속 회의 제안에서 자주 나와.",
       "mcOptions": [
         {
-          "text": "The structure is solid. Let's iron out the wording tomorrow morning.",
+          "text": "The structure is solid. Let's iron out the wording tomorrow morning.", "ko": "구조는 탄탄해요. 문구는 내일 아침에 다듬죠.",
           "kind": "correct",
           "note": "정답. 큰 틀 OK + 잔손질 예약. iron out의 정확한 사용처야."
         },
         {
-          "text": "It's all wrong. Let's rewrite everything from scratch.",
+          "text": "It's all wrong. Let's rewrite everything from scratch.", "ko": "다 틀렸어요. 처음부터 전부 다시 쓰죠.",
           "kind": "weak",
           "note": "다 뒤집는 건 iron out이 아니야. 그건 hammer out부터 다시."
         },
         {
-          "text": "Residual lexical refinements shall be administered subsequently.",
+          "text": "Residual lexical refinements shall be administered subsequently.", "ko": "잔여 어휘 정제는 추후 시행될 것입니다.",
           "kind": "formal",
           "note": "administered... 문서가 약이니. 내일 아침에 다듬자고 하면 돼."
         }
@@ -873,7 +873,7 @@
       "mentorNuance": "상대가 무리한 아이디어를 던졌을 때 짧게 잘라 말하는 자리에 써. 설명 없이 한 문장으로 끝내야 효과가 있어.",
       "mcOptions": [
         {
-          "text": "A budget increase is off the table this quarter. Let's optimize what we have.",
+          "text": "A budget increase is off the table this quarter. Let's optimize what we have.", "ko": "이번 분기에 예산 증액은 논의 대상이 아니에요. 있는 걸로 최적화하죠.",
           "kind": "correct",
           "note": "정답. 명확한 off the table + 대안 방향 제시. 리더의 정리법."
         },
@@ -917,17 +917,17 @@
       "mentorNuance": "서로 숨기던 걸 털어놓고 마무리 짓자고 제안할 때 써. 상대가 먼저 솔직해졌을 때 화답하는 자리에서도 써.",
       "mcOptions": [
         {
-          "text": "Let me put my cards on the table: we can't start before March.",
+          "text": "Let me put my cards on the table: we can't start before March.", "ko": "패를 다 보여 드릴게요: 3월 전에는 시작 못 해요.",
           "kind": "correct",
           "note": "정답. 패를 깔고 현실 일정 공유. 킥오프에서 이 한마디가 뒤의 석 달을 구해."
         },
         {
-          "text": "We'll see how it goes. Timing is flexible-ish.",
+          "text": "We'll see how it goes. Timing is flexible-ish.", "ko": "어떻게 되나 보죠. 시기는 좀 유연하다면 유연해요.",
           "kind": "weak",
           "note": "ish로 얼버무린 일정은 반드시 사고로 돌아와. 깔 건 지금 깔아."
         },
         {
-          "text": "Allow me to disclose our operational constraints comprehensively.",
+          "text": "Allow me to disclose our operational constraints comprehensively.", "ko": "저희 운영상 제약을 포괄적으로 공개하도록 허락해 주십시오.",
           "kind": "formal",
           "note": "comprehensively 대신 그냥 cards on the table. 관용구가 온도를 만들어."
         }
@@ -1005,17 +1005,17 @@
       "mentorNuance": "임원 보고에서 결론부터 말할 때 써. 상대에게 \"우리 마지노선은 여기다\"라고 최종 선을 그을 때도 써.",
       "mcOptions": [
         {
-          "text": "Bottom line: two weeks behind, but recoverable with one more engineer.",
+          "text": "Bottom line: two weeks behind, but recoverable with one more engineer.", "ko": "결론: 2주 늦었지만, 엔지니어 한 명만 더 있으면 만회 가능해요.",
           "kind": "correct",
           "note": "정답. 결론 + 해법을 10초에. bottom line 화법의 실전이야."
         },
         {
-          "text": "Oh it's a long story, so it all started in June when...",
+          "text": "Oh it's a long story, so it all started in June when...", "ko": "아 긴 얘긴데요, 그게 다 6월에 시작됐는데...",
           "kind": "weak",
           "note": "엘리베이터는 12층까지야. story는 회의실에서."
         },
         {
-          "text": "The project exhibits multidimensional progress characteristics.",
+          "text": "The project exhibits multidimensional progress characteristics.", "ko": "본 프로젝트는 다차원적 진행 특성을 보입니다.",
           "kind": "formal",
           "note": "정보량 0. CFO의 시간을 훔치는 문장이야."
         }
@@ -1049,7 +1049,7 @@
       "mentorNuance": "CFO 설득 자료에서 \"언제 본전을 뽑는지\" 설명할 때 써. ROI 회의라면 이 단어 하나로 대화가 열려.",
       "mcOptions": [
         {
-          "text": "The food truck broke even in its first summer.",
+          "text": "The food truck broke even in its first summer.", "ko": "푸드트럭이 첫 여름에 손익분기점을 넘었어요.",
           "kind": "correct",
           "note": "정답. break even 과거형은 broke even. 관사 없이."
         },
@@ -1181,17 +1181,17 @@
       "mentorNuance": "판이 큰 회의를 앞두고 팀에 긴장감을 줄 때 써. \"이번 미팅은 판이 크다\"를 한 단어로 말해.",
       "mcOptions": [
         {
-          "text": "She thrives in high-stakes negotiations.",
+          "text": "She thrives in high-stakes negotiations.", "ko": "그녀는 판이 큰 협상에서 잘해요.",
           "kind": "correct",
           "note": "정답. high-stakes를 하이픈 형용사로. thrive와 찰떡 조합."
         },
         {
-          "text": "She thrives in high-stake negotiations.",
+          "text": "She thrives in high-stake negotiations.", "ko": "그녀는 판이 큰 협상에서 잘해요.",
           "kind": "weak",
           "note": "어색한 곳: stake가 아니라 stakes. 판돈은 항상 복수야."
         },
         {
-          "text": "She thrives in tall-stakes negotiations.",
+          "text": "She thrives in tall-stakes negotiations.", "ko": "그녀는 판이 큰 협상에서 잘해요.",
           "kind": "weak",
           "note": "tall은 키. 판이 큰 건 high-stakes."
         }
@@ -1225,7 +1225,7 @@
       "mentorNuance": "마지막 숫자를 던지면서 \"더는 없다\"를 선언할 때 써. 한 협상에서 딱 한 번만 써야 해.",
       "mcOptions": [
         {
-          "text": "The client wants best and final from all vendors by noon. One shot, make it count.",
+          "text": "The client wants best and final from all vendors by noon. One shot, make it count.", "ko": "고객이 정오까지 모든 벤더의 최종 제안을 원해요. 한 번뿐이니 제대로 하죠.",
           "kind": "correct",
           "note": "정답. BAFO 상황 공지의 정석. One shot의 무게까지 전달."
         },
@@ -1313,17 +1313,17 @@
       "mentorNuance": "서명이 끝났을 때 팀에 알리거나 성과를 보고할 때 써. 세일즈 회의에서 \"이번 주 안에 마무리하자\"를 말할 때도 써.",
       "mcOptions": [
         {
-          "text": "You've done the work. Now go close the deal.",
+          "text": "You've done the work. Now go close the deal.", "ko": "할 만큼 했어요. 이제 가서 계약을 마무리하세요.",
           "kind": "correct",
           "note": "정답. 30일 전 네가 받았던 격려를 이제 네가 보내는 차례야. pay it forward."
         },
         {
-          "text": "Don't mess it up, everything depends on this.",
+          "text": "Don't mess it up, everything depends on this.", "ko": "망치지 마세요, 모든 게 여기에 달렸어요.",
           "kind": "weak",
           "note": "부담은 격려가 아니야. 긴장한 사람에겐 확신을 줘."
         },
         {
-          "text": "May the culmination of your endeavors prove fruitful.",
+          "text": "May the culmination of your endeavors prove fruitful.", "ko": "귀하의 노력이 결실을 맺기를 바랍니다.",
           "kind": "formal",
           "note": "축문이니. 후배 DM은 두 문장이면 충분해."
         }
