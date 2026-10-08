@@ -10636,7 +10636,10 @@ function RetGoalCard({ compact, slim }) {
   const streak = _retStreakDays(email);
   const [pick, setPick] = React.useState(null);
   const choose = (days) => { _retSetGoal(email, days); setPick(null); };
-  if (!g || g.status === "failed" || (g.status === "done" && !pick)) {
+  // ★ 2026-10-08: 지난 목표가 '달성(done)' 상태면 고르는 동안에도 계속 고르기 화면을 보여준다.
+  //   예전엔 `done && !pick` 이라서 7일을 누르는 순간 옛 '달성' 목표의 진행 화면("7일 연속 출근 0/7")으로 넘어가
+  //   '오늘부터 시작' 버튼이 사라졌다. 목표는 실제로 저장되지 않았고, 새로고침하면 다시 고르기 화면 → "자꾸 리셋" 신고.
+  if (!g || g.status === "failed" || g.status === "done") {
     const failed = g && g.status === "failed";
     const done = g && g.status === "done";
     return (
