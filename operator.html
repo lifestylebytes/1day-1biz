@@ -45,7 +45,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .card.warn { background: #FFF7E8; border-color: #E8C99B; }
 .card .title { font-size: 13px; color: #8A7964; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-.user-row { display: grid; grid-template-columns: 1.2fr 250px 70px 230px 90px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row { display: grid; grid-template-columns: 1.25fr 240px 96px 240px 90px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
 .user-row .col-progress { font-size: 12px; line-height: 1.5; }
 .user-row .col-progress .progress-day { font-weight: 800; color: #2A1F14; font-size: 13px; }
 .user-row .col-progress .progress-last { font-size: 11px; color: #8A7964; margin-top: 2px; }
@@ -1881,6 +1881,16 @@ function AttendanceCalendarModal({ open, onClose }) {
               Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주). 칸에 마우스를 올리면 시각이 보여요.<br />
               아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).
             </div>
+            {open.prog && open.prog.missing ? (() => {
+              const P = open.prog; const rd = P.realDay || 0; const cd = P.calDay || 0;
+              const overdue = P.missing.filter(d => d >= rd && d < cd), past = P.missing.filter(d => d < rd), todayLeft = P.missing.includes(cd);
+              const L = a => a.map(n => 'Day ' + n).join(', ');
+              return <div className="attcal-unk" style={{ background: overdue.length ? '#FAEBE6' : '#E3F1DC', color: overdue.length ? '#993C1D' : '#2D6E3A' }}>
+                {overdue.length ? <>⏳ 밀린 Day <b>{overdue.length}개</b>: <b>{L(overdue)}</b></> : <>✅ 밀린 Day 없음</>}
+                {todayLeft ? <> · 오늘 Day {cd} 아직 안 함</> : null}
+                {past.length ? <> · 건너뛴 Day: {L(past)}</> : null}
+              </div>;
+            })() : null}
             {built.unknown.length > 0 && <div className="attcal-unk">📌 날짜 기록 없음: <b>{built.unknown.map(n => 'Day ' + n).join(', ')}</b> (완주는 했지만 언제 했는지 서버에 기록이 없어요)</div>}
           </>
         )}
@@ -1950,11 +1960,13 @@ function App() {
     }
     setSupaEnabled(true);
     setSupaLoading(true);
-    const [usersRes, statsRes, progRes] = await Promise.all([
+    const [usersRes, statsRes, progRes, pushRes] = await Promise.all([
       window.OD.fetchAllUsers(),
       window.OD.fetchStats(),
       (window.OD.fetchProgressOverview ? window.OD.fetchProgressOverview() : Promise.resolve({ ok: false, map: {} })),
+      (window.OD.fetchPushEmails ? window.OD.fetchPushEmails() : Promise.resolve({ ok: false })),
     ]);
+    setPushEmails(pushRes && pushRes.ok ? new Set((pushRes.emails || []).map(e => String(e).toLowerCase())) : null);   // ★ 2026-10-08 푸시 구독 있는 계정 (SQL get_push_emails 필요)
     if (usersRes.ok) setSupaUsers(usersRes.users);
     if (statsRes.ok) setSupaStats(statsRes.stats);
     setProgMap(progRes && progRes.ok ? progRes.map : null);
@@ -1964,14 +1976,16 @@ function App() {
   };
   // ★ 계정별 진도 현황 (2026-09-14): 모든 계정의 완주 Day 목록. null 이면 RPC(get_progress_overview)가 아직 없는 것.
   const [progMap, setProgMap] = useState(null);
+  const [pushEmails, setPushEmails] = useState(null);   // 브라우저 푸시 구독이 있는 이메일 집합. null 이면 RPC 없음
   const [gateDoneMap, setGateDoneMap] = useState(null);   // email → 앱 기준 완주 Day (일지 또는 일정 4개). 실제 학습 Day 이어 세기용 (2026-10-06)
   const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
   const [attCalOpen, setAttCalOpen] = useState(null);   // ★ 2026-10-08 출근 달력 { email, name, loading, error, data }
   const openAttCal = async (u) => {
-    setAttCalOpen({ email: u.email, name: u.name, loading: true });
+    let prog = null; try { prog = calcProgress(u); } catch (e) {}
+    setAttCalOpen({ email: u.email, name: u.name, loading: true, prog });
     const r = (window.OD && window.OD.fetchAttendanceCalendar) ? await window.OD.fetchAttendanceCalendar(u.email) : { ok: false, error: 'fetchAttendanceCalendar 없음' };
-    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null } : cur);
+    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null, prog } : cur);
   };
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
@@ -2020,7 +2034,7 @@ function App() {
     let missing = null, behind = null;
     if (done) {
       missing = []; for (let d = 1; d <= calDay; d++) if (!done.has(d)) missing.push(d);
-      if (realDay) behind = missing.filter(d => d >= realDay).length;
+      if (realDay) behind = missing.filter(d => d >= realDay && d < calDay).length;   // 오늘(달력 Day)은 아직 안 밀린 것으로 센다
     }
     const fmt = (v) => v ? new Date(v).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
     // ★ 2026-10-02: 마지막 학습일 = 실제 완주 기록(답안·일지·일정 체크) 시각. 마지막 접속일(last_active) 은 접속·운영자 변경에도 바뀌므로 따로.
@@ -2595,7 +2609,7 @@ function App() {
               <div className="user-row head">
                 <div>사용자</div>
                 <div className="col-progress">학습 진도 <span style={{ fontWeight: 500, fontSize: 11, color: '#8A7964' }}>· DAY 실제 학습 / 달력 (밀린 Day 수) [직급]</span></div>
-                <div className="col-type">유형</div>
+                <div className="col-type">알림</div>
                 <div className="col-payment">결제 상태</div>
                 <div>작업</div>
               </div>
@@ -2688,11 +2702,17 @@ function App() {
 
                 return (
                 <div key={u.id} className="user-row">
-                  {/* 사용자 */}
+                  {/* 사용자: 이름 + 유형 칩 · 이메일 · 사번 · 가입/마지막 학습/접속 */}
                   <div>
-                    <div style={{ fontWeight: 700 }}>{u.name}</div>
-                    <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.email}</div>
-                    <div style={{ fontSize: 10, color: '#A8997F', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.emp_number || ''}</div>
+                    <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>{u.name}
+                      {typeBadges.map((b, i) => (
+                        <span key={i} className="status-pill" style={{ fontSize: 10, background: b.bg, color: b.color, fontWeight: 700 }}>{b.label}</span>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{u.email}{u.emp_number ? <span style={{ color: '#A8997F' }}> · {u.emp_number}</span> : null}</div>
+                    {(() => { const pr = calcProgress(u); return (
+                      <div style={{ fontSize: 11, color: '#8A7964', marginTop: 3 }}>가입 {pr.signup} · 마지막 학습 <b style={{ color: '#5B4A36' }}>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 접속 {pr.lastSeen}</> : null}</div>
+                    ); })()}
                   </div>
 
                   {/* 학습 진도 · DAY 앱/달력 (밀린) [직급] */}
@@ -2705,14 +2725,10 @@ function App() {
                       return (
                         <>
                           <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="달력 Day (가입일부터 오늘까지 며칠째)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
-                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} {(() => { const h = u.kakao_notify_hour; const on = h !== null && h !== undefined && h !== '' && !!u.phone; return <span title={on ? "카톡 출근 알림 켜짐 (매일 " + h + "시)" : (u.phone ? "번호는 있지만 카톡 알림 꺼짐" : "번호 없음, 카톡 알림 꺼짐")} style={{ display: 'inline-block', marginLeft: 4, padding: '1px 7px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: on ? '#FFF1C9' : '#EFEAE2', color: on ? '#7A5A00' : '#A09484' }}>{on ? "💬 카톡 " + h + "시" : "카톡 꺼짐"}</span>; })()} <button type="button" className="hist-btn" title="퇴직·복직·결제 같은 운영 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button></div>
                           {m ? (
-                            <>
-                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "완주 기록 없음" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} </div>
-                              <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
-                            </>
+                            pr.behind > 0 ? <div className="prog-line3" title="전체 목록은 📅 출근 달력 아래에">밀린 Day {pr.behind}개 · 빠뜨린 {shown.join(', ')}{m.length > 5 ? ' 외 ' + (m.length - 5) + '개' : ''}</div> : null
                           ) : (
-                            <div className="prog-line4" style={{ color: '#B23A2C' }}>완주 기록 RPC 없음 · ❓ DAY 설명 참고</div>
+                            <div className="prog-line4" style={{ color: '#B23A2C' }}>완주 기록 RPC 없음 · ❓ DAY 가드 SQL 실행 필요</div>
                           )}
                         </>
                       );
@@ -2764,10 +2780,18 @@ function App() {
                   </div>
 
                   {/* 유형 */}
-                  <div className="col-type">
-                    {typeBadges.map((b, i) => (
-                      <span key={i} className="status-pill" style={{ fontSize: 10, background: b.bg, color: b.color, fontWeight: 700 }}>{b.label}</span>
-                    ))}
+                  <div className="col-type" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                    {(() => {
+                      const h = u.kakao_notify_hour; const kOn = h !== null && h !== undefined && h !== '' && !!u.phone;
+                      const pOn = !!(pushEmails && pushEmails.has(String(u.email || '').toLowerCase()));
+                      const chip = (on, label, title) => <span title={title} style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: on ? '#FFF1C9' : '#EFEAE2', color: on ? '#7A5A00' : '#A09484', whiteSpace: 'nowrap' }}>{label}</span>;
+                      return (
+                        <>
+                          {chip(pOn, pOn ? '🔔 푸시 켜짐' : '푸시 꺼짐', pOn ? '이 계정에 브라우저 푸시 구독이 있어요' : '푸시 구독 없음')}
+                          {chip(kOn, kOn ? '💬 카톡 ' + h + '시' : '카톡 꺼짐', kOn ? '카톡 출근 알림 켜짐 (매일 ' + h + '시)' : (u.phone ? '번호는 있지만 카톡 알림 꺼짐' : '번호 없음, 카톡 알림 꺼짐'))}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* 결제 상태 */}
@@ -2784,6 +2808,7 @@ function App() {
                         </>
                       );
                     })()}
+                    <button type="button" className="hist-btn" style={{ marginTop: 4 }} title="퇴직·복직·결제·시트 동기화 같은 멤버십 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button>
                   </div>
 
                   {/* 작업 */}
