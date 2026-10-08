@@ -58,6 +58,44 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .prog-line1 { font-weight: 900; font-size: 14px; color: #2A1F14; }
 .prog-line1 .behind { color: #B23A2C; }
 .prog-line1 .rank { font-weight: 700; color: #8A7964; font-size: 12px; }
+/* ★ 2026-10-08 출근 달력 (실제 학습 기록 기준) */
+.attcal-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #7A3E12; background: #FFF1DC; border: 1px solid #D9A066; border-radius: 999px; cursor: pointer; vertical-align: 1px; }
+.attcal-btn:hover { background: #FFE4BE; }
+.attcal-dim { position: fixed; inset: 0; background: rgba(43,33,24,.45); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 16px; }
+.attcal { width: 100%; max-width: 720px; background: #FFFCF6; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.25); padding: 20px 22px; color: #2A1F14; }
+.attcal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.attcal-title { font-size: 17px; font-weight: 900; }
+.attcal-sub { font-size: 12px; color: #6B5B4A; margin-top: 3px; }
+.attcal-x { background: none; border: 0; font-size: 20px; color: #8A7964; cursor: pointer; line-height: 1; }
+.attcal-nums { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.attcal-num { background: #F5EEE2; border-radius: 7px; padding: 5px 9px; font-size: 11.5px; color: #5C4A36; }
+.attcal-num b { font-size: 14px; color: #2A1F14; margin-left: 4px; }
+.attcal-num.warn { background: #FFE1C7; }
+.attcal-nav { display: flex; justify-content: center; align-items: center; gap: 18px; margin: 14px 0 4px; font-size: 15px; font-weight: 900; }
+.attcal-nav button { background: none; border: 0; font-size: 13px; font-weight: 700; color: #8A7964; cursor: pointer; }
+.attcal-nav button:disabled { color: #D8CCBB; cursor: default; }
+.attcal-msum { text-align: center; font-size: 12px; color: #6B5B4A; margin-bottom: 10px; }
+.attcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.attcal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #8A7964; padding: 3px 0; }
+.attcal-dow.sun { color: #C0503A; } .attcal-dow.sat { color: #4A6FA5; }
+.attcal-c { min-height: 68px; border-radius: 7px; background: #F7F2E9; padding: 4px 5px; font-size: 10.5px; min-width: 0; }
+.attcal-c .d { font-size: 10.5px; font-weight: 700; color: #8A7964; margin-bottom: 2px; }
+.attcal-c.other { background: transparent; } .attcal-c.other .d { color: #D3C7B6; }
+.attcal-c.future { background: #FBF8F2; } .attcal-c.future .d { color: #C9BCAA; }
+.attcal-c.today { outline: 2px solid #D85A2A; }
+.attcal-c.study { background: #E3F1DC; }
+.attcal-c.item { background: #FFF4CF; }
+.attcal-c.both { background: #FFE1C7; outline: 2px dashed #D9782E; }
+.attcal-chip { display: block; border-radius: 4px; padding: 0 4px; margin-top: 2px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; }
+.attcal-chip.s { color: #2E6B2A; border: 1px solid #B9DBA9; }
+.attcal-chip.s.j { border-style: dashed; }
+.attcal-chip.i { color: #8A6200; border: 1px solid #EBCB72; }
+.attcal-chip.w { background: #D9782E; color: #fff; border: 0; font-size: 9.5px; white-space: normal; }
+.attcal-leg { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 11px; color: #5C4A36; }
+.attcal-leg i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+.attcal-note { margin-top: 6px; font-size: 11px; color: #8A7964; line-height: 1.6; }
+.attcal-unk { margin-top: 10px; background: #F5EEE2; border-radius: 7px; padding: 8px 11px; font-size: 12px; color: #5C4A36; }
+@media (max-width: 560px) { .attcal { padding: 16px 12px; } .attcal-chip { padding: 0 2px; font-size: 10px; text-overflow: clip; } .attcal-chip .lg { display: none; } .attcal-c { min-height: 56px; padding: 3px; } }
 .prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
 .prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
 .prog-line3.ok { color: #2D6E3A; }
@@ -1664,6 +1702,136 @@ function ContentEditsReview() {
   );
 }
 
+// ★ 2026-10-08 출근 달력: 한 사람이 며칠에 Day 몇을 완주했는지 (실제 학습 기록 기준, 회원 화면 출근부와 다를 수 있음)
+//   날짜 출처: 서버 완주 시각(배포 이후 완주) > 일지 처음 작성 시각(배포 전 완주). 둘 다 없으면 "날짜 기록 없음".
+//   아이템 방어일: item_uses 기록이 있으면 그 아이템, 없으면(배포 전 사용) 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일+ 휴가).
+const ATTCAL_ITEMS = { extend: { icon: '🕐', name: '연장권' }, annual: { icon: '🌴', name: '연차' }, vacay: { icon: '✈️', name: '휴가' } };
+function _acKst(at) { const t = Date.parse(at); return isNaN(t) ? null : new Date(t + 9 * 3600000).toISOString().slice(0, 10); }
+function _acAdd(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function _acBuild(data) {
+  const byDate = {};   // 'YYYY-MM-DD' → { days: [{day, at, src}], item: {id, guess} | null }
+  const cell = (d) => (byDate[d] = byDate[d] || { days: [], item: null });
+  const unknown = [];
+  ((data && data.days) || []).forEach(x => {
+    const d = x && x.at ? _acKst(x.at) : null;
+    if (!d) { unknown.push(x.day); return; }
+    cell(d).days.push(x);
+  });
+  Object.values(byDate).forEach(c => c.days.sort((a, b) => a.day - b.day));
+  const att = Array.from(new Set(((data && data.att) || []).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)))).sort();
+  const known = {};
+  ((data && data.items) || []).forEach(it => (Array.isArray(it.dates) ? it.dates : []).forEach(d => { known[d] = it.item; }));
+  // 기록 없는 방어일은 연달아 막은 날 묶음 길이로 판별
+  let i = 0;
+  while (i < att.length) {
+    let j = i; while (j + 1 < att.length && _acAdd(att[j], 1) === att[j + 1]) j++;
+    const len = j - i + 1; const guess = len === 1 ? 'extend' : (len === 2 ? 'annual' : 'vacay');
+    for (let k = i; k <= j; k++) cell(att[k]).item = known[att[k]] ? { id: known[att[k]], guess: false } : { id: guess, guess: true };
+    i = j + 1;
+  }
+  // att 에는 없고 item_uses 에만 있는 날 (att 저장 실패 등)
+  Object.keys(known).forEach(d => { if (!cell(d).item) cell(d).item = { id: known[d], guess: false }; });
+  return { byDate, unknown: unknown.sort((a, b) => a - b) };
+}
+function AttendanceCalendarModal({ open, onClose }) {
+  const todayK = _acKst(new Date().toISOString());
+  const [ym, setYm] = useState(todayK.slice(0, 7));
+  useEffect(() => { setYm(todayK.slice(0, 7)); }, [open && open.email]);
+  if (!open) return null;
+  const { name, email, loading, error, data } = open;
+  const built = data ? _acBuild(data) : null;
+  const signupK = data && data.signup ? _acKst(data.signup) : null;
+  const minYm = signupK ? signupK.slice(0, 7) : null;
+  const maxYm = todayK.slice(0, 7);
+  const moveYm = (n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(Date.UTC(y, m - 1 + n, 1)); setYm(d.toISOString().slice(0, 7)); };
+  let total = null, month = null, cells = [];
+  if (built) {
+    const vals = Object.entries(built.byDate);
+    const isBoth = (c) => c.days.length && c.item;
+    total = {
+      done: ((data.days) || []).length,
+      studyDates: vals.filter(([, c]) => c.days.length).length,
+      itemDates: vals.filter(([, c]) => c.item).length,
+      both: vals.filter(([, c]) => isBoth(c)).length,
+    };
+    const inM = vals.filter(([d]) => d.slice(0, 7) === ym);
+    month = { studyDates: inM.filter(([, c]) => c.days.length).length, dayCount: inM.reduce((n, [, c]) => n + c.days.length, 0), itemDates: inM.filter(([, c]) => c.item).length };
+    const first = ym + '-01';
+    const lead = new Date(first + 'T00:00:00Z').getUTCDay();   // 0 = 일요일
+    const start = _acAdd(first, -lead);
+    for (let k = 0; k < 42; k++) {
+      const d = _acAdd(start, k);
+      if (k >= 35 && d.slice(0, 7) !== ym) break;
+      cells.push(d);
+    }
+  }
+  const fmtAt = (at) => { try { return new Date(at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  return (
+    <div className="attcal-dim" onClick={onClose}>
+      <div className="attcal" onClick={e => e.stopPropagation()}>
+        <div className="attcal-head">
+          <div>
+            <div className="attcal-title">📅 {name || email} 출근 달력</div>
+            <div className="attcal-sub">{signupK ? '가입 ' + signupK.replace(/-/g, '.') + ' · ' : ''}실제 학습 기록 기준 (회원 화면 출근부와 다를 수 있어요)</div>
+          </div>
+          <button className="attcal-x" onClick={onClose} title="닫기">✕</button>
+        </div>
+        {loading && <div style={{ padding: '30px 0', textAlign: 'center', color: '#8A7964', fontSize: 13 }}>불러오는 중…</div>}
+        {!loading && error && <div style={{ marginTop: 14, padding: '10px 12px', background: '#FDECEA', borderRadius: 8, fontSize: 12.5, color: '#B23A2C' }}>달력 기록을 못 불러왔어요. supabase/migrations/20261008_attendance_calendar.sql 을 실행했는지 확인해 주세요.<br /><span style={{ color: '#8A7964' }}>{String(error)}</span></div>}
+        {!loading && built && (
+          <>
+            <div className="attcal-nums">
+              <div className="attcal-num">완주한 Day<b>{total.done}개</b></div>
+              <div className="attcal-num">실제 학습한 날<b>{total.studyDates}일</b></div>
+              <div className="attcal-num">아이템 방어일<b>{total.itemDates}일</b></div>
+              {total.both > 0 && <div className="attcal-num warn" title="실제로 학습했는데 결근으로 판정돼 아이템이 쓰인 날 (예전 가짜 날짜 버그 피해 의심)">겹친 날 (확인 필요)<b>{total.both}일</b></div>}
+            </div>
+            <div className="attcal-nav">
+              <button onClick={() => moveYm(-1)} disabled={!!minYm && ym <= minYm}>◀ 이전 달</button>
+              <span>{ym.slice(0, 4)}년 {Number(ym.slice(5, 7))}월</span>
+              <button onClick={() => moveYm(1)} disabled={ym >= maxYm}>다음 달 ▶</button>
+            </div>
+            <div className="attcal-msum">이번 달 실제 학습 <b>{month.studyDates}일</b> · Day <b>{month.dayCount}개</b> 완주 · 아이템 방어 <b>{month.itemDates}일</b></div>
+            <div className="attcal-grid">
+              {['일', '월', '화', '수', '목', '금', '토'].map((w, k) => <div key={w} className={'attcal-dow' + (k === 0 ? ' sun' : (k === 6 ? ' sat' : ''))}>{w}</div>)}
+              {cells.map(d => {
+                const c = built.byDate[d];
+                const other = d.slice(0, 7) !== ym;
+                const cls = ['attcal-c'];
+                if (other) cls.push('other');
+                else if (d > todayK) cls.push('future');
+                if (!other && c) cls.push(c.days.length && c.item ? 'both' : (c.days.length ? 'study' : (c.item ? 'item' : '')));
+                if (d === todayK) cls.push('today');
+                const it = c && c.item ? (ATTCAL_ITEMS[c.item.id] || { icon: '🎟️', name: c.item.id }) : null;
+                return (
+                  <div key={d} className={cls.join(' ')}>
+                    <div className="d">{Number(d.slice(8, 10))}{d === todayK ? ' 오늘' : ''}</div>
+                    {!other && c && c.days.map(x => (
+                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '')} title={fmtAt(x.at) + (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각')}><span className="lg">Day </span>{x.day}</span>
+                    ))}
+                    {!other && it && <span className="attcal-chip i" title={c.item.guess ? '아이템 기록 없음. 연달아 막은 날 수로 판별했어요' : '아이템 사용 기록'}>{it.icon}<span className="lg"> {it.name}</span>{c.item.guess ? '?' : ''}</span>}
+                    {!other && c && c.days.length > 0 && c.item && <span className="attcal-chip w" title="학습했는데 방어">⚠<span className="lg"> 학습했는데 방어</span></span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="attcal-leg">
+              <span><i style={{ background: '#E3F1DC' }}></i>실제 학습 (완주한 Day)</span>
+              <span><i style={{ background: '#FFF4CF' }}></i>아이템 방어 (🕐 연장권 · 🌴 연차 · ✈️ 휴가)</span>
+              <span><i style={{ background: '#FFE1C7', outline: '1.5px dashed #D9782E' }}></i>둘 다 (버그 피해 의심)</span>
+            </div>
+            <div className="attcal-note">
+              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주). 칸에 마우스를 올리면 시각이 보여요.<br />
+              아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).
+            </div>
+            {built.unknown.length > 0 && <div className="attcal-unk">📌 날짜 기록 없음: <b>{built.unknown.map(n => 'Day ' + n).join(', ')}</b> (완주는 했지만 언제 했는지 서버에 기록이 없어요)</div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // ★ 운영자 가드, 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
@@ -1742,6 +1910,12 @@ function App() {
   const [gateDoneMap, setGateDoneMap] = useState(null);   // email → 앱 기준 완주 Day (일지 또는 일정 4개). 실제 학습 Day 이어 세기용 (2026-10-06)
   const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
+  const [attCalOpen, setAttCalOpen] = useState(null);   // ★ 2026-10-08 출근 달력 { email, name, loading, error, data }
+  const openAttCal = async (u) => {
+    setAttCalOpen({ email: u.email, name: u.name, loading: true });
+    const r = (window.OD && window.OD.fetchAttendanceCalendar) ? await window.OD.fetchAttendanceCalendar(u.email) : { ok: false, error: 'fetchAttendanceCalendar 없음' };
+    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null } : cur);
+  };
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
   // 운영 이력 작업 이름 (영어 코드 → 한글). 목록에 없으면 코드 그대로 보여준다
@@ -2293,6 +2467,7 @@ function App() {
               <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={downloadProgressCsv} disabled={!supaUsers.length} title="CSV 로 내려받아 구글 스프레드시트에서 가져오기">📗 구글 스프레드시트로 받기</button>
               <button className="btn btn-ghost btn-mini" style={{ marginLeft: 'auto', padding: '2px 10px', fontSize: 11, background: showDayHelp ? '#FFF3D6' : undefined }} onClick={() => setShowDayHelp(v => !v)}>❓ DAY 설명</button>
             </div>
+            <AttendanceCalendarModal open={attCalOpen} onClose={() => setAttCalOpen(null)} />
             {opsLogOpen && (
                   <div style={{ marginTop: 10, padding: '12px 14px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 10, background: '#fff' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><b>🗂 운영 이력 · {opsLogOpen.name || opsLogOpen.email}</b><button className="btn btn-ghost btn-mini" onClick={() => setOpsLogOpen(null)}>닫기</button></div>
@@ -2464,7 +2639,7 @@ function App() {
                       const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span></div>
+                          <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
                           <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
                           {m ? (
                             <>
