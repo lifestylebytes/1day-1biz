@@ -2496,7 +2496,9 @@ function App() {
             })()}
             {supaUsers.length > 0 && <ChurnPanel supaUsers={supaUsers} />}
             {supaUsers.length > 0 && <CampaignMatchPanel supaUsers={supaUsers} />}
-            {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
+            {/* ★ 2026-10-08: Latpeed CSV 동기화 패널은 숨김. 매일 07:00 구글시트 → Supabase 자동 동기화(latpeed-sheet-sync)가 대신한다.
+                필요하면 아래 한 줄을 되살리면 된다 (CsvSyncPanel 은 그대로 둠).
+                {supaUsers.length > 0 && <CsvSyncPanel supaUsers={supaUsers} onDone={refreshSupabase} />} */}
             {supaUsers.length > 0 && <ManualMembershipPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && (
               <details style={{ marginBottom: 16 }}>
