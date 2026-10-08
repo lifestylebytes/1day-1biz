@@ -7575,7 +7575,12 @@ function _odTakeDoneAt(task_progress) {
       const k = "__OD_TASKS_DAY_" + d + "_ts";
       if (localStorage.getItem("__OD_DONEAT_" + d) && localStorage.getItem(k)) return;
       const iso = new Date(at).toISOString();
-      if (localStorage.getItem(k) !== iso) { localStorage.setItem(k, iso); n++; }
+      // ★ 2026-10-09: 이 기기에 이미 완주 시각이 있으면 "더 이른" 쪽만 받는다. 서버 시각이 더 늦으면 그대로 둔다.
+      //   배포 전에 완주한 Day 를 다른 기기가 다시 저장하면 서버는 '처음 완주' 로 보고 지금 시각을 적는데,
+      //   그걸 그대로 받으면 옛 Day 의 출근 날짜가 오늘로 옮겨져 연속 출근이 끊기고 내 목표가 실패 처리됐다 (운영자 계정 리셋 사고).
+      const cur = localStorage.getItem(k);
+      if (cur && !isNaN(Date.parse(cur)) && Date.parse(cur) <= Date.parse(iso)) return;
+      if (cur !== iso) { localStorage.setItem(k, iso); n++; }
     });
   } catch (e) {}
   if (n) console.log("[hydrate] 서버 완주 시각 " + n + "건 반영");
@@ -7595,8 +7600,11 @@ async function _odApplyActivityDates(email) {
     Object.keys(td).forEach(d => {
       const at = td[d] && td[d].at; if (!at || !/^\d+$/.test(d)) return;
       const k = "__OD_TASKS_DAY_" + d + "_ts";
-      if (localStorage.getItem(k)) return;
       const t = new Date(at); if (isNaN(t.getTime())) return;
+      const cur = localStorage.getItem(k);
+      // ★ 2026-10-09: 없으면 채우고, 이 기기 시각이 서버 기록(exp_events 의 그날 완주)보다 하루 넘게 늦으면 서버 쪽으로 되돌린다.
+      //   (다른 기기 재저장으로 옛 Day 의 출근 날짜가 오늘로 옮겨진 사고 복구. 더 이른 시각이 진짜 완주일)
+      if (cur && !isNaN(Date.parse(cur)) && Date.parse(cur) - t.getTime() <= 86400000) return;
       localStorage.setItem(k, t.toISOString()); changed++;
     });
     const att = Array.isArray(r.result.att) ? r.result.att.filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)) : [];
