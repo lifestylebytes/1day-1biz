@@ -1995,9 +1995,17 @@ function App() {
     const todayKst = kst(new Date());
     const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(todayKst) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
     let realDay = Number(u.real_day) || null;
+    let realDayEst = false;
     if (realDay && u.real_day_at && kst(u.real_day_at) < todayKst && gateDoneMap && gateDoneMap[em]) {
       const gd = new Set(gateDoneMap[em]);
       while (realDay < calDay && gd.has(realDay)) realDay++;
+    }
+    // ★ 2026-10-08: 새 버전 앱에 아직 안 들어와 real_day 가 없으면 '-' 대신 앱과 같은 규칙으로 추정한다
+    //   (완주한 Day 중 가장 큰 것 + 1, 달력 Day 를 넘지 않음). 앱이 한 번 보내면 그 값으로 바뀐다.
+    if (!realDay && gateDoneMap && gateDoneMap[em]) {
+      const gd = gateDoneMap[em].map(Number).filter(n => n > 0);
+      realDay = Math.min(calDay, (gd.length ? Math.max(...gd) : 0) + 1);
+      realDayEst = true;
     }
     // 직급: 고객 앱과 같은 규칙. 실제 학습 Day 31 이상 사원 · 90 이상 대리, 정직원 전환 시험 기록(level)과 둘 중 높은 쪽
     let rank = '-';
@@ -2020,7 +2028,7 @@ function App() {
     const lastStudy = lsAt ? fmt(lsAt) : (progMap ? '-' : fmt(u.last_active));
     const lastSeen = fmt(u.last_active);
     const signup = fmt(u.signup_date);
-    return { realDay, appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
+    return { realDay, realDayEst, appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
   };
   // 결제 상태 그룹 (정렬용): 0 만료일 없음 · 1 정상 활성/활성 · 2 내부 사용자 · 3 만료·종료
   const payGroup = (u) => {
@@ -2586,7 +2594,7 @@ function App() {
             <div className="card" style={{ padding: 0 }}>
               <div className="user-row head">
                 <div>사용자</div>
-                <div className="col-progress">학습 진도</div>
+                <div className="col-progress">학습 진도 <span style={{ fontWeight: 500, fontSize: 11, color: '#8A7964' }}>· DAY 실제 학습 / 앱 / 달력 (밀린 Day 수) [직급]</span></div>
                 <div className="col-type">유형</div>
                 <div className="col-payment">결제 상태</div>
                 <div>작업</div>
@@ -2696,11 +2704,11 @@ function App() {
                       const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
+                          <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="앱 Day (서버에 저장된 값, 내려가지 않음)">{pr.appDay}</span> / <span title="달력 Day (가입일부터 오늘까지)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
                           <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <button type="button" className="hist-btn" title="퇴직·복직·결제 같은 운영 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button></div>
                           {m ? (
                             <>
-                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "실제 학습 Day 아직 없음 (새 버전 앱 접속 전)" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
+                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "완주 기록 없음" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
                               <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
                             </>
                           ) : (
