@@ -128,9 +128,10 @@ Deno.serve(async (req) => {
           membership_ends_at: endsAt,
           membership_cancel_at: null,
           membership_cancel_reason: null,
-          last_active: new Date().toISOString(),
         }).ilike("email", email);
         if (error) throw error;
+        // 2026-10-06: 결제 이벤트는 last_active 대신 운영 이력에 남긴다
+        try { await supa.from("ops_log").insert({ email, action: "payment_grant", detail: { event: eventName, ends_at: endsAt }, by_email: "lemonsqueezy" }); } catch (_) {}
         return new Response(JSON.stringify({ ok: true, handled: true, action: "grant", email, endsAt }), {
           headers: { ...cors, "content-type": "application/json" },
         });
@@ -148,9 +149,10 @@ Deno.serve(async (req) => {
       const { error } = await supa.from("users").update({
         membership_ends_at: endsAt,
         membership_cancel_reason: "lemonsqueezy_" + eventName,
-        last_active: new Date().toISOString(),
       }).ilike("email", email);
       if (error) throw error;
+      // 2026-10-06: 결제 이벤트는 last_active 대신 운영 이력에 남긴다
+      try { await supa.from("ops_log").insert({ email, action: eventName === "subscription_expired" ? "payment_expired" : "payment_cancelled", detail: { event: eventName, ends_at: endsAt }, by_email: "lemonsqueezy" }); } catch (_) {}
       return new Response(JSON.stringify({ ok: true, handled: true, action: "revoke", email, endsAt }), {
         headers: { ...cors, "content-type": "application/json" },
       });

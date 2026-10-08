@@ -58,6 +58,56 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .prog-line1 { font-weight: 900; font-size: 14px; color: #2A1F14; }
 .prog-line1 .behind { color: #B23A2C; }
 .prog-line1 .rank { font-weight: 700; color: #8A7964; font-size: 12px; }
+/* ★ 2026-10-08 출근 달력 (실제 학습 기록 기준) */
+.attcal-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #7A3E12; background: #FFF1DC; border: 1px solid #D9A066; border-radius: 999px; cursor: pointer; vertical-align: 1px; }
+.attcal-btn:hover { background: #FFE4BE; }
+.attcal-dim { position: fixed; inset: 0; background: rgba(43,33,24,.45); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 16px; }
+.attcal { width: 100%; max-width: 720px; background: #FFFCF6; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.25); padding: 20px 22px; color: #2A1F14; }
+.attcal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.attcal-title { font-size: 17px; font-weight: 900; }
+.attcal-sub { font-size: 12px; color: #6B5B4A; margin-top: 3px; }
+.attcal-x { background: none; border: 0; font-size: 20px; color: #8A7964; cursor: pointer; line-height: 1; }
+.attcal-nums { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.attcal-num { background: #F5EEE2; border-radius: 7px; padding: 5px 9px; font-size: 11.5px; color: #5C4A36; }
+.attcal-num b { font-size: 14px; color: #2A1F14; margin-left: 4px; }
+.attcal-num.warn { background: #FFE1C7; }
+.attcal-nav { display: flex; justify-content: center; align-items: center; gap: 18px; margin: 14px 0 4px; font-size: 15px; font-weight: 900; }
+.attcal-nav button { background: none; border: 0; font-size: 13px; font-weight: 700; color: #8A7964; cursor: pointer; }
+.attcal-nav button:disabled { color: #D8CCBB; cursor: default; }
+.attcal-msum { text-align: center; font-size: 12px; color: #6B5B4A; margin-bottom: 10px; }
+.attcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.attcal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #8A7964; padding: 3px 0; }
+.attcal-dow.sun { color: #C0503A; } .attcal-dow.sat { color: #4A6FA5; }
+.attcal-c { min-height: 68px; border-radius: 7px; background: #F7F2E9; padding: 4px 5px; font-size: 10.5px; min-width: 0; }
+.attcal-c .d { font-size: 10.5px; font-weight: 700; color: #8A7964; margin-bottom: 2px; }
+.attcal-c.other { background: transparent; } .attcal-c.other .d { color: #D3C7B6; }
+.attcal-c.future { background: #FBF8F2; } .attcal-c.future .d { color: #C9BCAA; }
+.attcal-c.today { outline: 2px solid #D85A2A; }
+.attcal-c.study { background: #E3F1DC; }
+.attcal-c.item { background: #FFF4CF; }
+.attcal-c.both { background: #FFE1C7; outline: 2px dashed #D9782E; }
+.attcal-chip { display: block; border-radius: 4px; padding: 0 4px; margin-top: 2px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; }
+.attcal-chip.s { color: #2E6B2A; border: 1px solid #B9DBA9; }
+.attcal-chip.s.j { border-style: dashed; }
+.attcal-chip.i { color: #8A6200; border: 1px solid #EBCB72; }
+.attcal-chip.w { background: #D9782E; color: #fff; border: 0; font-size: 9.5px; white-space: normal; }
+.attcal-leg { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 11px; color: #5C4A36; }
+.attcal-leg i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+.attcal-note { margin-top: 6px; font-size: 11px; color: #8A7964; line-height: 1.6; }
+.attcal-unk { margin-top: 10px; background: #F5EEE2; border-radius: 7px; padding: 8px 11px; font-size: 12px; color: #5C4A36; }
+.attcal-chip.s { cursor: pointer; }
+.attcal-chip.s.sel { background: #2E6B2A; color: #fff; border-color: #2E6B2A; }
+.attcal-acts { margin-top: 12px; border: 1px solid #E8DCC8; border-radius: 9px; padding: 10px 12px; background: #fff; font-size: 12px; color: #3E3022; }
+.attcal-acts-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; font-weight: 800; font-size: 12.5px; }
+.attcal-acts-head select { width: auto; max-width: 140px; font-size: 12px; padding: 2px 6px; border: 1px solid #D9C9AF; border-radius: 6px; background: #FFFCF6; }
+.attcal-acts table { width: 100%; border-collapse: collapse; }
+.attcal-acts td { padding: 4px 6px 4px 0; border-top: 1px solid #F1E8DA; vertical-align: top; }
+.attcal-acts td.t { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; width: 1%; }
+.attcal-acts .sub { color: #8A7964; font-size: 11px; }
+/* ★ 2026-10-08 회원 행 이력 보기 버튼 */
+.hist-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #4A3B2A; background: #F3ECE0; border: 1px solid #CDBDA3; border-radius: 999px; cursor: pointer; vertical-align: 1px; font-family: inherit; line-height: 1.5; }
+.hist-btn:hover { background: #E9DFCF; }
+@media (max-width: 560px) { .attcal { padding: 16px 12px; } .attcal-chip { padding: 0 2px; font-size: 10px; text-overflow: clip; } .attcal-chip .lg { display: none; } .attcal-c { min-height: 56px; padding: 3px; } }
 .prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
 .prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
 .prog-line3.ok { color: #2D6E3A; }
@@ -1664,6 +1714,181 @@ function ContentEditsReview() {
   );
 }
 
+// ★ 2026-10-08 출근 달력: 한 사람이 며칠에 Day 몇을 완주했는지 (실제 학습 기록 기준, 회원 화면 출근부와 다를 수 있음)
+//   날짜 출처: 서버 완주 시각(배포 이후 완주) > 일지 처음 작성 시각(배포 전 완주). 둘 다 없으면 "날짜 기록 없음".
+//   아이템 방어일: item_uses 기록이 있으면 그 아이템, 없으면(배포 전 사용) 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일+ 휴가).
+const ATTCAL_ITEMS = { extend: { icon: '🕐', name: '연장권' }, annual: { icon: '🌴', name: '연차' }, vacay: { icon: '✈️', name: '휴가' } };
+function _acKst(at) { const t = Date.parse(at); return isNaN(t) ? null : new Date(t + 9 * 3600000).toISOString().slice(0, 10); }
+function _acAdd(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function _acBuild(data) {
+  const byDate = {};   // 'YYYY-MM-DD' → { days: [{day, at, src}], item: {id, guess} | null }
+  const cell = (d) => (byDate[d] = byDate[d] || { days: [], item: null });
+  const unknown = [];
+  ((data && data.days) || []).forEach(x => {
+    const d = x && x.at ? _acKst(x.at) : null;
+    if (!d) { unknown.push(x.day); return; }
+    cell(d).days.push(x);
+  });
+  Object.values(byDate).forEach(c => c.days.sort((a, b) => a.day - b.day));
+  const att = Array.from(new Set(((data && data.att) || []).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)))).sort();
+  const known = {};
+  ((data && data.items) || []).forEach(it => (Array.isArray(it.dates) ? it.dates : []).forEach(d => { known[d] = it.item; }));
+  // 기록 없는 방어일은 연달아 막은 날 묶음 길이로 판별
+  let i = 0;
+  while (i < att.length) {
+    let j = i; while (j + 1 < att.length && _acAdd(att[j], 1) === att[j + 1]) j++;
+    const len = j - i + 1; const guess = len === 1 ? 'extend' : (len === 2 ? 'annual' : 'vacay');
+    for (let k = i; k <= j; k++) cell(att[k]).item = known[att[k]] ? { id: known[att[k]], guess: false } : { id: guess, guess: true };
+    i = j + 1;
+  }
+  // att 에는 없고 item_uses 에만 있는 날 (att 저장 실패 등)
+  Object.keys(known).forEach(d => { if (!cell(d).item) cell(d).item = { id: known[d], guess: false }; });
+  return { byDate, unknown: unknown.sort((a, b) => a - b) };
+}
+// ★ 2026-10-08 활동 이름 (activity_log.activity → 화면 이름). 14시 칸은 Day 마다 종류가 달라 detail 로 구분
+const ATTCAL_ACT = { checkin: '09:00 출근', scenario: '10:00 오늘의 시추에이션', wrapup: '17:00 내 시추에이션 + 퇴근', review_quiz: 'Review Quiz', pre_write: '내일 문장 쓰기' };
+const ATTCAL_SLOT3 = { mini_quiz: '14:00 미니 퀴즈', mini_mission: '14:00 미니 미션', english_lunch: '12:30 영어 점심', recap: '15:30 Recap 퀴즈', office_task: '14:00 오후 업무' };
+function _acActLabel(a) {
+  if (!a) return '';
+  if (a.activity === 'slot3') return ATTCAL_SLOT3[a.detail && a.detail.type] || '14:00 활동';
+  const base = ATTCAL_ACT[a.activity] || a.activity;
+  if (a.activity === 'review_quiz' && a.detail && a.detail.n) return base + ' (' + a.detail.n + '번째)';
+  if (a.activity === 'pre_write' && a.detail && a.detail.edit) return base + ' (고쳐 씀)';
+  return base;
+}
+function AttendanceCalendarModal({ open, onClose }) {
+  const todayK = _acKst(new Date().toISOString());
+  const [ym, setYm] = useState(todayK.slice(0, 7));
+  const [selDay, setSelDay] = useState(null);   // ★ 2026-10-08 활동 시각을 볼 Day
+  useEffect(() => { setYm(todayK.slice(0, 7)); setSelDay(null); }, [open && open.email]);
+  if (!open) return null;
+  const { name, email, loading, error, data } = open;
+  const built = data ? _acBuild(data) : null;
+  // ★ 2026-10-08 Day → 활동 시각 목록 (activity_log). 배포 이후부터 쌓여요
+  const actsByDay = {};
+  ((data && data.acts) || []).forEach(a => { if (a && a.day) (actsByDay[a.day] = actsByDay[a.day] || []).push(a); });
+  Object.values(actsByDay).forEach(l => l.sort((a, b) => String(a.at).localeCompare(String(b.at))));
+  const actDays = Object.keys(actsByDay).map(Number).sort((a, b) => b - a);
+  const showDay = selDay != null ? selDay : (actDays.length ? actDays[0] : null);
+  const fmtHm = (at) => { try { return new Date(at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }); } catch (e) { return ''; } };
+  const signupK = data && data.signup ? _acKst(data.signup) : null;
+  const minYm = signupK ? signupK.slice(0, 7) : null;
+  const maxYm = todayK.slice(0, 7);
+  const moveYm = (n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(Date.UTC(y, m - 1 + n, 1)); setYm(d.toISOString().slice(0, 7)); };
+  let total = null, month = null, cells = [];
+  if (built) {
+    const vals = Object.entries(built.byDate);
+    const isBoth = (c) => c.days.length && c.item;
+    total = {
+      done: ((data.days) || []).length,
+      studyDates: vals.filter(([, c]) => c.days.length).length,
+      itemDates: vals.filter(([, c]) => c.item).length,
+      both: vals.filter(([, c]) => isBoth(c)).length,
+    };
+    const inM = vals.filter(([d]) => d.slice(0, 7) === ym);
+    month = { studyDates: inM.filter(([, c]) => c.days.length).length, dayCount: inM.reduce((n, [, c]) => n + c.days.length, 0), itemDates: inM.filter(([, c]) => c.item).length };
+    const first = ym + '-01';
+    const lead = new Date(first + 'T00:00:00Z').getUTCDay();   // 0 = 일요일
+    const start = _acAdd(first, -lead);
+    for (let k = 0; k < 42; k++) {
+      const d = _acAdd(start, k);
+      if (k >= 35 && d.slice(0, 7) !== ym) break;
+      cells.push(d);
+    }
+  }
+  const fmtAt = (at) => { try { return new Date(at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  return (
+    <div className="attcal-dim" onClick={onClose}>
+      <div className="attcal" onClick={e => e.stopPropagation()}>
+        <div className="attcal-head">
+          <div>
+            <div className="attcal-title">📅 {name || email} 출근 달력</div>
+            <div className="attcal-sub">{signupK ? '가입 ' + signupK.replace(/-/g, '.') + ' · ' : ''}실제 학습 기록 기준 (회원 화면 출근부와 다를 수 있어요)</div>
+          </div>
+          <button className="attcal-x" onClick={onClose} title="닫기">✕</button>
+        </div>
+        {loading && <div style={{ padding: '30px 0', textAlign: 'center', color: '#8A7964', fontSize: 13 }}>불러오는 중…</div>}
+        {!loading && error && <div style={{ marginTop: 14, padding: '10px 12px', background: '#FDECEA', borderRadius: 8, fontSize: 12.5, color: '#B23A2C' }}>달력 기록을 못 불러왔어요. supabase/migrations/20261008_attendance_calendar.sql 을 실행했는지 확인해 주세요.<br /><span style={{ color: '#8A7964' }}>{String(error)}</span></div>}
+        {!loading && built && (
+          <>
+            <div className="attcal-nums">
+              <div className="attcal-num">완주한 Day<b>{total.done}개</b></div>
+              <div className="attcal-num">실제 학습한 날<b>{total.studyDates}일</b></div>
+              <div className="attcal-num">아이템 방어일<b>{total.itemDates}일</b></div>
+              {total.both > 0 && <div className="attcal-num warn" title="실제로 학습했는데 결근으로 판정돼 아이템이 쓰인 날 (예전 가짜 날짜 버그 피해 의심)">겹친 날 (확인 필요)<b>{total.both}일</b></div>}
+            </div>
+            <div className="attcal-nav">
+              <button onClick={() => moveYm(-1)} disabled={!!minYm && ym <= minYm}>◀ 이전 달</button>
+              <span>{ym.slice(0, 4)}년 {Number(ym.slice(5, 7))}월</span>
+              <button onClick={() => moveYm(1)} disabled={ym >= maxYm}>다음 달 ▶</button>
+            </div>
+            <div className="attcal-msum">이번 달 실제 학습 <b>{month.studyDates}일</b> · Day <b>{month.dayCount}개</b> 완주 · 아이템 방어 <b>{month.itemDates}일</b></div>
+            <div className="attcal-grid">
+              {['일', '월', '화', '수', '목', '금', '토'].map((w, k) => <div key={w} className={'attcal-dow' + (k === 0 ? ' sun' : (k === 6 ? ' sat' : ''))}>{w}</div>)}
+              {cells.map(d => {
+                const c = built.byDate[d];
+                const other = d.slice(0, 7) !== ym;
+                const cls = ['attcal-c'];
+                if (other) cls.push('other');
+                else if (d > todayK) cls.push('future');
+                if (!other && c) cls.push(c.days.length && c.item ? 'both' : (c.days.length ? 'study' : (c.item ? 'item' : '')));
+                if (d === todayK) cls.push('today');
+                const it = c && c.item ? (ATTCAL_ITEMS[c.item.id] || { icon: '🎟️', name: c.item.id }) : null;
+                return (
+                  <div key={d} className={cls.join(' ')}>
+                    <div className="d">{Number(d.slice(8, 10))}{d === todayK ? ' 오늘' : ''}</div>
+                    {!other && c && c.days.map(x => (
+                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '') + (showDay === x.day ? ' sel' : '')} onClick={() => setSelDay(x.day)} title={fmtAt(x.at) + (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각') + ((actsByDay[x.day] || []).length ? '\n' + actsByDay[x.day].map(a => fmtHm(a.at) + '  ' + _acActLabel(a)).join('\n') : '') + '\n(누르면 아래에 활동 시각)'}><span className="lg">Day </span>{x.day}</span>
+                    ))}
+                    {!other && it && <span className="attcal-chip i" title={c.item.guess ? '아이템 기록 없음. 연달아 막은 날 수로 판별했어요' : '아이템 사용 기록'}>{it.icon}<span className="lg"> {it.name}</span>{c.item.guess ? '?' : ''}</span>}
+                    {!other && c && c.days.length > 0 && c.item && <span className="attcal-chip w" title="학습했는데 방어">⚠<span className="lg"> 학습했는데 방어</span></span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="attcal-acts">
+              <div className="attcal-acts-head">
+                <span>⏱ Day별 활동 시각{showDay != null ? ' · Day ' + showDay : ''}</span>
+                {actDays.length > 0 && (
+                  <select value={showDay != null ? String(showDay) : ''} onChange={e => setSelDay(Number(e.target.value))}>
+                    {showDay != null && !actDays.includes(showDay) && <option value={String(showDay)}>Day {showDay}</option>}
+                    {actDays.map(d => <option key={d} value={String(d)}>Day {d}</option>)}
+                  </select>
+                )}
+              </div>
+              {showDay == null ? (
+                <div className="sub">활동 시각 기록이 아직 없어요. 배포 이후 회원이 활동을 끝낼 때마다 쌓여요.</div>
+              ) : !(actsByDay[showDay] || []).length ? (
+                <div className="sub">Day {showDay} 은 활동 시각 기록이 없어요 (배포 전에 한 Day 예요).</div>
+              ) : (
+                <table><tbody>{actsByDay[showDay].map((a, i) => {
+                  const off = a.client_at && Math.abs(Date.parse(a.client_at) - Date.parse(a.at)) > 60000;
+                  return (
+                    <tr key={i}>
+                      <td className="t">{fmtHm(a.at)}</td>
+                      <td>{_acActLabel(a)}{off && <div className="sub">기기 시각 {fmtHm(a.client_at)} (48시간 넘게 늦게 도착해서 도착 시각으로 기록)</div>}{a.detail && a.detail.backfill && <div className="sub">완료 표시가 빠져 있던 걸 나중에 채운 기록</div>}</td>
+                    </tr>
+                  );
+                })}</tbody></table>
+              )}
+            </div>
+            <div className="attcal-leg">
+              <span><i style={{ background: '#E3F1DC' }}></i>실제 학습 (완주한 Day)</span>
+              <span><i style={{ background: '#FFF4CF' }}></i>아이템 방어 (🕐 연장권 · 🌴 연차 · ✈️ 휴가)</span>
+              <span><i style={{ background: '#FFE1C7', outline: '1.5px dashed #D9782E' }}></i>둘 다 (버그 피해 의심)</span>
+            </div>
+            <div className="attcal-note">
+              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주). 칸에 마우스를 올리면 시각이 보여요.<br />
+              아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).
+            </div>
+            {built.unknown.length > 0 && <div className="attcal-unk">📌 날짜 기록 없음: <b>{built.unknown.map(n => 'Day ' + n).join(', ')}</b> (완주는 했지만 언제 했는지 서버에 기록이 없어요)</div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // ★ 운영자 가드, 운영자 아니면 즉시 차단 (localStorage 1차 검증)
   const _initUser = load(KEY_USER, null);
@@ -1733,34 +1958,69 @@ function App() {
     if (usersRes.ok) setSupaUsers(usersRes.users);
     if (statsRes.ok) setSupaStats(statsRes.stats);
     setProgMap(progRes && progRes.ok ? progRes.map : null);
+    setGateDoneMap(progRes && progRes.ok && progRes.gateDone ? progRes.gateDone : null);
     setLastStudyMap(progRes && progRes.ok && progRes.lastStudy ? progRes.lastStudy : {});
     setSupaLoading(false);
   };
   // ★ 계정별 진도 현황 (2026-09-14): 모든 계정의 완주 Day 목록. null 이면 RPC(get_progress_overview)가 아직 없는 것.
   const [progMap, setProgMap] = useState(null);
+  const [gateDoneMap, setGateDoneMap] = useState(null);   // email → 앱 기준 완주 Day (일지 또는 일정 4개). 실제 학습 Day 이어 세기용 (2026-10-06)
   const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
+  const [attCalOpen, setAttCalOpen] = useState(null);   // ★ 2026-10-08 출근 달력 { email, name, loading, error, data }
+  const openAttCal = async (u) => {
+    setAttCalOpen({ email: u.email, name: u.name, loading: true });
+    const r = (window.OD && window.OD.fetchAttendanceCalendar) ? await window.OD.fetchAttendanceCalendar(u.email) : { ok: false, error: 'fetchAttendanceCalendar 없음' };
+    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null } : cur);
+  };
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
-  // 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 밀린·빠뜨린은 '-'.
+  // 운영 이력 작업 이름 (영어 코드 → 한글). 목록에 없으면 코드 그대로 보여준다
+  const OPS_ACTION_LABEL = {
+    membership_sync: '멤버십 동기화',
+    operator_cancel: '퇴직 처리',
+    operator_restore: '복직 처리',
+    payment_grant: '결제됨',
+    payment_cancelled: '결제 해지',
+    payment_expired: '결제 만료',
+  };
+  // 실제 학습 Day / 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 빠뜨린은 '-'.
+  // ★ 2026-10-06 실제 학습 Day: 회원 앱이 접속 때 보낸 '화면의 오늘 Day'(real_day). 보낸 날 이후 접속이 없으면,
+  //   그 값에서 출발해 앱과 같은 완주 기준(일지 또는 일정 4개)으로 끝낸 Day 를 지나가며 센다 (달력 Day 를 넘지 않음).
+  //   real_day 가 아직 없으면(새 버전 앱 접속 전) 실제 학습 Day · 밀린 Day · 직급은 '-'. 앱 Day 는 계산에 쓰지 않는다.
   const calcProgress = (u) => {
     const appDay = u.day_in_company || 1;
+    const em = String(u.email || '').toLowerCase();
     const kst = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
-    const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(kst(new Date())) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
-    const rank = appDay >= 90 ? '대리' : appDay >= 30 ? '사원' : '수습';
-    const done = progMap ? new Set(progMap[String(u.email || '').toLowerCase()] || []) : null;
+    const todayKst = kst(new Date());
+    const calDay = u.signup_date ? Math.max(1, Math.min(240, Math.round((Date.parse(todayKst) - Date.parse(kst(u.signup_date))) / 86400000) + 1)) : appDay;
+    let realDay = Number(u.real_day) || null;
+    if (realDay && u.real_day_at && kst(u.real_day_at) < todayKst && gateDoneMap && gateDoneMap[em]) {
+      const gd = new Set(gateDoneMap[em]);
+      while (realDay < calDay && gd.has(realDay)) realDay++;
+    }
+    // 직급: 고객 앱과 같은 규칙. 실제 학습 Day 31 이상 사원 · 90 이상 대리, 정직원 전환 시험 기록(level)과 둘 중 높은 쪽
+    let rank = '-';
+    if (realDay) {
+      const RO = { probation: 0, fulltime: 1, senior: 2 };
+      const lv = (u.level && typeof u.level === 'object' && u.level.id) || 'probation';
+      const byDay = realDay >= 90 ? 'senior' : realDay >= 31 ? 'fulltime' : 'probation';
+      const id = (RO[lv] || 0) > (RO[byDay] || 0) ? lv : byDay;
+      rank = id === 'senior' ? '대리' : id === 'fulltime' ? '사원' : '수습';
+    }
+    const done = progMap ? new Set(progMap[em] || []) : null;
     let missing = null, behind = null;
     if (done) {
       missing = []; for (let d = 1; d <= calDay; d++) if (!done.has(d)) missing.push(d);
-      behind = missing.filter(d => d >= appDay).length;
+      if (realDay) behind = missing.filter(d => d >= realDay).length;
     }
     const fmt = (v) => v ? new Date(v).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '') : '-';
     // ★ 2026-10-02: 마지막 학습일 = 실제 완주 기록(답안·일지·일정 체크) 시각. 마지막 접속일(last_active) 은 접속·운영자 변경에도 바뀌므로 따로.
-    const lsAt = lastStudyMap[String(u.email || '').toLowerCase()] || null;
+    const lsAt = lastStudyMap[em] || null;
     const lastStudy = lsAt ? fmt(lsAt) : (progMap ? '-' : fmt(u.last_active));
     const lastSeen = fmt(u.last_active);
     const signup = fmt(u.signup_date);
-    return { appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
+    return { realDay, appDay, calDay, rank, missing, behind, lastStudy, lastSeen, signup };
   };
   // 결제 상태 그룹 (정렬용): 0 만료일 없음 · 1 정상 활성/활성 · 2 내부 사용자 · 3 만료·종료
   const payGroup = (u) => {
@@ -1775,10 +2035,10 @@ function App() {
   // 구글 스프레드시트로 받기 (CSV · UTF-8 BOM → 시트에서 바로 열림)
   const downloadProgressCsv = () => {
     const esc = (v) => { const t = String(v == null ? '' : v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
-    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
+    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '실제 학습 Day', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
     const rows = [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
       const pr = calcProgress(u); const pi = payInfo(u);
-      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
+      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.realDay == null ? '' : pr.realDay, pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
     });
     const csv = '\ufeff' + head.join(',') + '\n' + rows.join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -1838,7 +2098,7 @@ function App() {
     if (!m) { alert("날짜 형식이 아니에요. 예: 2026-10-07"); return; }
     const daysGrace = Math.max(0, Math.round((Date.parse(picked.trim()) - Date.parse(today)) / 86400000));
     if (!confirm(`${u.name} 님 마지막 출근일: ${picked.trim()} (오늘부터 ${daysGrace}일)\n그날까지는 평소처럼 출근 가능하고, 지나면 자동으로 휴직 화면이 떠요. 진행할까요?`)) return;
-    const res = await window.OD.cancelMembership(u.email, daysGrace);
+    const res = await window.OD.cancelMembership(u.email, daysGrace, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
     if (res.ok) {
       const endDate = new Date(res.endsAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
       showToast(`${u.name} 퇴직 처리됨 · 마지막 출근일 ${endDate}`);
@@ -1852,7 +2112,7 @@ function App() {
   const restoreUserMembership = async (u) => {
     if (!u || !u.email) return;
     if (!confirm(`${u.name} 님의 퇴직을 취소하고 복직 처리할까요?`)) return;
-    const res = await window.OD.restoreMembership(u.email);
+    const res = await window.OD.restoreMembership(u.email, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
     if (res.ok) {
       showToast(`${u.name} 복직 완료 · 만료일 해제`);
       refreshSupabase();
@@ -2264,21 +2524,39 @@ function App() {
               <button className="btn btn-ghost btn-mini" style={{ padding: '2px 10px', fontSize: 11 }} onClick={downloadProgressCsv} disabled={!supaUsers.length} title="CSV 로 내려받아 구글 스프레드시트에서 가져오기">📗 구글 스프레드시트로 받기</button>
               <button className="btn btn-ghost btn-mini" style={{ marginLeft: 'auto', padding: '2px 10px', fontSize: 11, background: showDayHelp ? '#FFF3D6' : undefined }} onClick={() => setShowDayHelp(v => !v)}>❓ DAY 설명</button>
             </div>
+            <AttendanceCalendarModal open={attCalOpen} onClose={() => setAttCalOpen(null)} />
             {opsLogOpen && (
                   <div style={{ marginTop: 10, padding: '12px 14px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 10, background: '#fff' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><b>🗂 운영 이력 · {opsLogOpen.name || opsLogOpen.email}</b><button className="btn btn-ghost btn-mini" onClick={() => setOpsLogOpen(null)}>닫기</button></div>
-                    {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영자 변경이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
-                      <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => <tr key={i}><td style={{ whiteSpace: 'nowrap', paddingRight: 8 }}>{new Date(r.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td><td style={{ paddingRight: 8 }}>{r.action}</td><td style={{ color: '#6B5B4A' }}>{JSON.stringify(r.detail)}</td><td>{r.by || ''}</td></tr>)}</tbody></table>
+                    {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영 이력이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
+                      <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => {
+                        const open = !!(opsLogOpen.show && opsLogOpen.show[i]);
+                        return (
+                          <tr key={i}>
+                            <td style={{ whiteSpace: 'nowrap', paddingRight: 8, verticalAlign: 'top' }}>{new Date(r.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td>
+                            <td style={{ paddingRight: 8, verticalAlign: 'top' }}>
+                              <a style={{ textDecoration: 'underline', cursor: 'pointer' }} title="눌러서 자세히 보기"
+                                 onClick={() => setOpsLogOpen(o => ({ ...o, show: { ...((o && o.show) || {}), [i]: !open } }))}>
+                                {OPS_ACTION_LABEL[r.action] || r.action}
+                              </a>
+                              {open && <div style={{ marginTop: 3, color: '#6B5B4A', wordBreak: 'break-all' }}><code>{r.action}</code> {r.detail ? JSON.stringify(r.detail) : ''}</div>}
+                            </td>
+                            <td style={{ verticalAlign: 'top' }}>{r.by || ''}</td>
+                          </tr>
+                        );
+                      })}</tbody></table>
                     )}
                   </div>
                 )}
             {showDayHelp && (
               <div className="day-help">
-                <div><b>앱 Day</b> = 지금 앱에 열려 있는 Day (마지막 접속 때 앱이 보낸 값. 접속해야 갱신돼요)</div>
+                <div>표시 순서: <b>DAY 실제 학습 / 앱 / 달력 (밀린) [직급]</b></div>
+                <div><b>실제 학습 Day</b> = 회원 앱 화면에 떠 있는 오늘 Day (접속할 때 앱이 보낸 값). 어제 이전에 받은 값이면, 그 뒤로 끝낸 Day(일지 또는 일정 4개)만큼 이어서 세요. 새 버전 앱에 아직 접속 안 한 회원은 '-'</div>
+                <div><b>앱 Day</b> = 예전 방식 값 (접속 때 앱이 보낸 값 중 가장 큰 값, 내려가지 않아요). 참고용</div>
                 <div><b>달력 Day</b> = 가입일 기준 원래 와 있어야 할 Day</div>
-                <div><b>밀린 Day</b> = 앱 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
+                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
                 <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day 포함)</div>
-                <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 앱 Day 기준 수습(~29) · 사원(30~89) · 대리(90~).</div>
+                <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 고객 앱과 같은 규칙: 실제 학습 Day 수습(~30) · 사원(31~89) · 대리(90~), 정직원 전환 시험 기록이 있으면 둘 중 높은 쪽.</div>
                 {progMap === null && <div style={{ marginTop: 4, color: '#B23A2C' }}>⚠️ 완주 기록 RPC(get_progress_overview)가 아직 없어요. supabase/migrations/20260914_progress_overview.sql 을 실행하면 밀린·빠뜨린 Day 가 채워져요.</div>}
               </div>
             )}
@@ -2418,11 +2696,11 @@ function App() {
                       const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div className="prog-line1">DAY {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank">[{pr.rank}]</span></div>
-                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} · 앱 Day {pr.appDay} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
+                          <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
+                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <button type="button" className="hist-btn" title="퇴직·복직·결제 같은 운영 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button></div>
                           {m ? (
                             <>
-                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
+                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "실제 학습 Day 아직 없음 (새 버전 앱 접속 전)" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
                               <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
                             </>
                           ) : (
