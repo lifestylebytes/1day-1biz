@@ -2594,7 +2594,7 @@ function App() {
             <div className="card" style={{ padding: 0 }}>
               <div className="user-row head">
                 <div>사용자</div>
-                <div className="col-progress">학습 진도 <span style={{ fontWeight: 500, fontSize: 11, color: '#8A7964' }}>· DAY 실제 학습 / 앱 / 달력 (밀린 Day 수) [직급]</span></div>
+                <div className="col-progress">학습 진도 <span style={{ fontWeight: 500, fontSize: 11, color: '#8A7964' }}>· DAY 실제 학습 / 달력 (밀린 Day 수) [직급]</span></div>
                 <div className="col-type">유형</div>
                 <div className="col-payment">결제 상태</div>
                 <div>작업</div>
@@ -2704,11 +2704,11 @@ function App() {
                       const shown = m ? (openMissing[em] ? m : m.slice(0, 5)) : null;
                       return (
                         <>
-                          <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="앱 Day (서버에 저장된 값, 내려가지 않음)">{pr.appDay}</span> / <span title="달력 Day (가입일부터 오늘까지)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
+                          <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="달력 Day (가입일부터 오늘까지 며칠째)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
                           <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} {(() => { const h = u.kakao_notify_hour; const on = h !== null && h !== undefined && h !== '' && !!u.phone; return <span title={on ? "카톡 출근 알림 켜짐 (매일 " + h + "시)" : (u.phone ? "번호는 있지만 카톡 알림 꺼짐" : "번호 없음, 카톡 알림 꺼짐")} style={{ display: 'inline-block', marginLeft: 4, padding: '1px 7px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: on ? '#FFF1C9' : '#EFEAE2', color: on ? '#7A5A00' : '#A09484' }}>{on ? "💬 카톡 " + h + "시" : "카톡 꺼짐"}</span>; })()} <button type="button" className="hist-btn" title="퇴직·복직·결제 같은 운영 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button></div>
                           {m ? (
                             <>
-                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "완주 기록 없음" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
+                              <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "완주 기록 없음" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} </div>
                               <div className="prog-line4">{m.length ? <>빠뜨린 Day {shown.join(', ')}{m.length > 5 && !openMissing[em] ? ' …' : ''}{m.length > 5 && <a onClick={() => setOpenMissing(o => ({ ...o, [em]: !o[em] }))}>{openMissing[em] ? '접기' : '전체보기'}</a>}</> : '빠뜨린 Day 없음'}</div>
                             </>
                           ) : (
