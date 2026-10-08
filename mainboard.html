@@ -7535,6 +7535,31 @@ function _odMergeFreshNotes(local) {
   } catch (e) {}
   return local;
 }
+// ★ 2026-10-08: 오늘 일정 활동별 학습 시각 (출근 · 시추에이션 · 14시 활동 · 내 시추에이션+퇴근 · Review Quiz · 내일 문장 쓰기).
+//   활동을 끝낸 순간의 기기 시각을 "몇 Day 것인지" 와 함께 서버(activity_log)에 남긴다. 운영자 뷰 출근 달력에서 본다.
+//   오프라인이면 outbox 에 쌓였다가 연결되면 보낸다 (보낼 때도 끝낸 순간의 시각 그대로).
+//   서버는 기기 시각이 도착보다 이르고 48시간 이내일 때만 학습 시각으로 인정하고, 기기 시각 원본도 같이 남긴다.
+//   화면·완주 계산에는 쓰지 않는다. 실패해도 학습 흐름엔 영향 없음.
+function _odLogActivity(day, activity, detail, at) {
+  try {
+    const d = Number(day); if (!d || !activity) return;
+    if (localStorage.getItem("__OD_TT_STASH")) return;   // 타임머신(개발) 중엔 남기지 않는다
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+    const email = u.email; if (!email || email === "guest") return;
+    const iso = (at && !isNaN(Date.parse(at))) ? new Date(at).toISOString() : new Date().toISOString();
+    const op = { type: "act", email, day: d, activity: String(activity), at: iso, detail: detail || null };
+    const queue = () => { try { window.OD && window.OD.pushOutbox && window.OD.pushOutbox(op); } catch (e) {} };
+    if (window.OD && window.OD.enabled && window.OD.logActivity) {
+      window.OD.logActivity(op.email, op.day, op.activity, op.at, op.detail).then(r => { if (!r || !r.ok) queue(); }).catch(queue);
+    } else queue();
+  } catch (e) {}
+}
+// 일정 항목 → 활동 이름. 14시 칸은 Day 마다 id 가 바뀌어서(mission/lunch/recap/afternoon, 미니 퀴즈) slot3 하나로 모은다.
+function _odActOfTask(item) {
+  if (!item || !item.id) return null;
+  if (item.id === "checkin" || item.id === "scenario" || item.id === "wrapup") return { activity: item.id, detail: null };
+  return { activity: "slot3", detail: { id: item.id, type: item.type || null } };
+}
 // ★ 2026-10-08: 서버가 task_progress 에 같이 실어 보낸 완주 시각(_done_at)을 떼어 내 출근 날짜(_ts)로 쓴다.
 //   "어느 Day 를 완주했는지" 와 "언제" 를 한 번에 받으므로, 배포 이후 완주한 Day 는 날짜를 지어낼 일이 없다.
 //   이 기기에서 직접 완주한 Day(__OD_DONEAT_ 있음)는 기기 시각을 그대로 둔다 (서버도 그 시각을 받았다).
@@ -7706,6 +7731,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const onReviewFinished = (res) => {
     const next = { ...saved, review: { attempts: [...attempts, res] } };
     persist(next);
+    _odLogActivity(day, "review_quiz", { n: attempts.length + 1 });   // ★ 2026-10-08 활동 시각 (응시할 때마다)
     if (catchUp) { _revqMarkToday(email); setRevqLockedToday(true); }
     try { if (attempts.length === 0 && day >= 30) _wpToast(WP_RULES.ot, "Review Quiz"); } catch (e) {}
   };
@@ -7732,6 +7758,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const savePre = () => {
     const text = pre.trim(); if (!text) return;
     _saveJSON(_preKey(email, day + 1), { text, at: new Date().toISOString(), fromDay: day, wordGuess: (wordGuess || "").trim() });
+    _odLogActivity(day, "pre_write", { for_day: day + 1, edit: !!preSaved });   // ★ 2026-10-08 활동 시각 (Day = 오늘 Day, 문장은 내일 것)
     try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
     setPreSaved(true);
     persist({ ...saved, preview: { text, at: new Date().toISOString() } });
@@ -8499,6 +8526,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       setDoneTasks(next);
       localStorage.setItem(taskKey, JSON.stringify(next));
       localStorage.setItem(taskKey + "_ts", new Date().toISOString());
+      _odLogActivity(USER.currentDay, "scenario", { backfill: true }, c.submittedAt || null);   // 제출 시각이 남아 있으면 그 시각
       if (window.OD?.enabled && window.OD.saveTaskProgress && USER.email) {
         window.OD.saveTaskProgress(USER.email, USER.currentDay, next).catch(() => {
           window.OD.pushOutbox?.({ type: 'task', email: USER.email, day: USER.currentDay, tasks: next });
@@ -8831,6 +8859,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       const next = { ...doneTasks, [item.id]: true };
       setDoneTasks(next);
       try { localStorage.setItem(taskKey, JSON.stringify(next)); localStorage.setItem(taskKey + "_ts", new Date().toISOString()); } catch(e) {}
+      { const _a = _odActOfTask(item); if (_a) _odLogActivity(USER.currentDay, _a.activity, _a.detail); }   // ★ 2026-10-08 활동 시각
       // ★ cross-device 동기화
       if (window.OD?.enabled && window.OD.saveTaskProgress && USER.email) {
         window.OD.saveTaskProgress(USER.email, USER.currentDay, next).catch(() => {
@@ -8854,6 +8883,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       const next = { ...doneTasks, [item.id]: true };
       setDoneTasks(next);
       try { localStorage.setItem(taskKey, JSON.stringify(next)); localStorage.setItem(taskKey + "_ts", new Date().toISOString()); } catch(e) {}
+      { const _a = _odActOfTask(item); if (_a) _odLogActivity(USER.currentDay, _a.activity, _a.detail); }   // ★ 2026-10-08 활동 시각
       // ★ cross-device 동기화
       if (window.OD?.enabled && window.OD.saveTaskProgress && USER.email) {
         window.OD.saveTaskProgress(USER.email, USER.currentDay, next).catch(() => {
@@ -15353,6 +15383,7 @@ function SceneModal({ scenario, onClose }) {
         tasks.scenario = true;
         localStorage.setItem(taskKey, JSON.stringify(tasks));
         localStorage.setItem(taskKey + "_ts", new Date().toISOString());
+        _odLogActivity(scenario.day, "scenario");   // ★ 2026-10-08 활동 시각
         const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
         if (window.OD?.enabled && window.OD.saveTaskProgress && u?.email) {
           window.OD.saveTaskProgress(u.email, scenario.day, tasks).catch(() => {
@@ -21742,7 +21773,7 @@ window.SimApp = App;
   let stash = null; try { stash = localStorage.getItem("__OD_TT_STASH"); } catch (e) {}
   if (!stash) return;
   const noop = async () => ({ ok: true, tt: true });
-  const names = ["saveSubmission", "saveNoteRow", "deleteNoteRow", "saveJournalRow", "saveDayProgress", "saveRealDay", "saveTaskProgress", "updateProgress", "saveTfState", "addExpEvent", "saveSurveyResponse", "saveScenarioAtomic", "saveNoteAtomic", "markNoticeRead", "setKakaoNotify", "pushOutbox", "flushOutbox", "logEvent"];
+  const names = ["saveSubmission", "saveNoteRow", "deleteNoteRow", "saveJournalRow", "saveDayProgress", "saveRealDay", "saveTaskProgress", "logActivity", "logItemUse", "updateProgress", "saveTfState", "addExpEvent", "saveSurveyResponse", "saveScenarioAtomic", "saveNoteAtomic", "markNoticeRead", "setKakaoNotify", "pushOutbox", "flushOutbox", "logEvent"];
   let n = 0; const iv = setInterval(() => { if (window.OD) { names.forEach(k => { if (typeof window.OD[k] === "function") window.OD[k] = noop; }); clearInterval(iv); console.log("[tt] 서버 쓰기 차단"); } else if (n++ > 80) clearInterval(iv); }, 100);
 })();
 (function hydrateFromDb() {

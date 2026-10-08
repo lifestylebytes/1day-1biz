@@ -95,6 +95,18 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .attcal-leg i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
 .attcal-note { margin-top: 6px; font-size: 11px; color: #8A7964; line-height: 1.6; }
 .attcal-unk { margin-top: 10px; background: #F5EEE2; border-radius: 7px; padding: 8px 11px; font-size: 12px; color: #5C4A36; }
+.attcal-chip.s { cursor: pointer; }
+.attcal-chip.s.sel { background: #2E6B2A; color: #fff; border-color: #2E6B2A; }
+.attcal-acts { margin-top: 12px; border: 1px solid #E8DCC8; border-radius: 9px; padding: 10px 12px; background: #fff; font-size: 12px; color: #3E3022; }
+.attcal-acts-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; font-weight: 800; font-size: 12.5px; }
+.attcal-acts-head select { width: auto; max-width: 140px; font-size: 12px; padding: 2px 6px; border: 1px solid #D9C9AF; border-radius: 6px; background: #FFFCF6; }
+.attcal-acts table { width: 100%; border-collapse: collapse; }
+.attcal-acts td { padding: 4px 6px 4px 0; border-top: 1px solid #F1E8DA; vertical-align: top; }
+.attcal-acts td.t { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; width: 1%; }
+.attcal-acts .sub { color: #8A7964; font-size: 11px; }
+/* ★ 2026-10-08 회원 행 이력 보기 버튼 */
+.hist-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #4A3B2A; background: #F3ECE0; border: 1px solid #CDBDA3; border-radius: 999px; cursor: pointer; vertical-align: 1px; font-family: inherit; line-height: 1.5; }
+.hist-btn:hover { background: #E9DFCF; }
 @media (max-width: 560px) { .attcal { padding: 16px 12px; } .attcal-chip { padding: 0 2px; font-size: 10px; text-overflow: clip; } .attcal-chip .lg { display: none; } .attcal-c { min-height: 56px; padding: 3px; } }
 .prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
 .prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
@@ -1733,13 +1745,32 @@ function _acBuild(data) {
   Object.keys(known).forEach(d => { if (!cell(d).item) cell(d).item = { id: known[d], guess: false }; });
   return { byDate, unknown: unknown.sort((a, b) => a - b) };
 }
+// ★ 2026-10-08 활동 이름 (activity_log.activity → 화면 이름). 14시 칸은 Day 마다 종류가 달라 detail 로 구분
+const ATTCAL_ACT = { checkin: '09:00 출근', scenario: '10:00 오늘의 시추에이션', wrapup: '17:00 내 시추에이션 + 퇴근', review_quiz: 'Review Quiz', pre_write: '내일 문장 쓰기' };
+const ATTCAL_SLOT3 = { mini_quiz: '14:00 미니 퀴즈', mini_mission: '14:00 미니 미션', english_lunch: '12:30 영어 점심', recap: '15:30 Recap 퀴즈', office_task: '14:00 오후 업무' };
+function _acActLabel(a) {
+  if (!a) return '';
+  if (a.activity === 'slot3') return ATTCAL_SLOT3[a.detail && a.detail.type] || '14:00 활동';
+  const base = ATTCAL_ACT[a.activity] || a.activity;
+  if (a.activity === 'review_quiz' && a.detail && a.detail.n) return base + ' (' + a.detail.n + '번째)';
+  if (a.activity === 'pre_write' && a.detail && a.detail.edit) return base + ' (고쳐 씀)';
+  return base;
+}
 function AttendanceCalendarModal({ open, onClose }) {
   const todayK = _acKst(new Date().toISOString());
   const [ym, setYm] = useState(todayK.slice(0, 7));
-  useEffect(() => { setYm(todayK.slice(0, 7)); }, [open && open.email]);
+  const [selDay, setSelDay] = useState(null);   // ★ 2026-10-08 활동 시각을 볼 Day
+  useEffect(() => { setYm(todayK.slice(0, 7)); setSelDay(null); }, [open && open.email]);
   if (!open) return null;
   const { name, email, loading, error, data } = open;
   const built = data ? _acBuild(data) : null;
+  // ★ 2026-10-08 Day → 활동 시각 목록 (activity_log). 배포 이후부터 쌓여요
+  const actsByDay = {};
+  ((data && data.acts) || []).forEach(a => { if (a && a.day) (actsByDay[a.day] = actsByDay[a.day] || []).push(a); });
+  Object.values(actsByDay).forEach(l => l.sort((a, b) => String(a.at).localeCompare(String(b.at))));
+  const actDays = Object.keys(actsByDay).map(Number).sort((a, b) => b - a);
+  const showDay = selDay != null ? selDay : (actDays.length ? actDays[0] : null);
+  const fmtHm = (at) => { try { return new Date(at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }); } catch (e) { return ''; } };
   const signupK = data && data.signup ? _acKst(data.signup) : null;
   const minYm = signupK ? signupK.slice(0, 7) : null;
   const maxYm = todayK.slice(0, 7);
@@ -1807,13 +1838,39 @@ function AttendanceCalendarModal({ open, onClose }) {
                   <div key={d} className={cls.join(' ')}>
                     <div className="d">{Number(d.slice(8, 10))}{d === todayK ? ' 오늘' : ''}</div>
                     {!other && c && c.days.map(x => (
-                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '')} title={fmtAt(x.at) + (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각')}><span className="lg">Day </span>{x.day}</span>
+                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '') + (showDay === x.day ? ' sel' : '')} onClick={() => setSelDay(x.day)} title={fmtAt(x.at) + (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각') + ((actsByDay[x.day] || []).length ? '\n' + actsByDay[x.day].map(a => fmtHm(a.at) + '  ' + _acActLabel(a)).join('\n') : '') + '\n(누르면 아래에 활동 시각)'}><span className="lg">Day </span>{x.day}</span>
                     ))}
                     {!other && it && <span className="attcal-chip i" title={c.item.guess ? '아이템 기록 없음. 연달아 막은 날 수로 판별했어요' : '아이템 사용 기록'}>{it.icon}<span className="lg"> {it.name}</span>{c.item.guess ? '?' : ''}</span>}
                     {!other && c && c.days.length > 0 && c.item && <span className="attcal-chip w" title="학습했는데 방어">⚠<span className="lg"> 학습했는데 방어</span></span>}
                   </div>
                 );
               })}
+            </div>
+            <div className="attcal-acts">
+              <div className="attcal-acts-head">
+                <span>⏱ Day별 활동 시각{showDay != null ? ' · Day ' + showDay : ''}</span>
+                {actDays.length > 0 && (
+                  <select value={showDay != null ? String(showDay) : ''} onChange={e => setSelDay(Number(e.target.value))}>
+                    {showDay != null && !actDays.includes(showDay) && <option value={String(showDay)}>Day {showDay}</option>}
+                    {actDays.map(d => <option key={d} value={String(d)}>Day {d}</option>)}
+                  </select>
+                )}
+              </div>
+              {showDay == null ? (
+                <div className="sub">활동 시각 기록이 아직 없어요. 배포 이후 회원이 활동을 끝낼 때마다 쌓여요.</div>
+              ) : !(actsByDay[showDay] || []).length ? (
+                <div className="sub">Day {showDay} 은 활동 시각 기록이 없어요 (배포 전에 한 Day 예요).</div>
+              ) : (
+                <table><tbody>{actsByDay[showDay].map((a, i) => {
+                  const off = a.client_at && Math.abs(Date.parse(a.client_at) - Date.parse(a.at)) > 60000;
+                  return (
+                    <tr key={i}>
+                      <td className="t">{fmtHm(a.at)}</td>
+                      <td>{_acActLabel(a)}{off && <div className="sub">기기 시각 {fmtHm(a.client_at)} (48시간 넘게 늦게 도착해서 도착 시각으로 기록)</div>}{a.detail && a.detail.backfill && <div className="sub">완료 표시가 빠져 있던 걸 나중에 채운 기록</div>}</td>
+                    </tr>
+                  );
+                })}</tbody></table>
+              )}
             </div>
             <div className="attcal-leg">
               <span><i style={{ background: '#E3F1DC' }}></i>실제 학습 (완주한 Day)</span>
@@ -2640,7 +2697,7 @@ function App() {
                       return (
                         <>
                           <div className="prog-line1">DAY {pr.realDay == null ? '-' : pr.realDay} / {pr.appDay} / {pr.calDay} {pr.behind != null ? <span className="behind">({pr.behind})</span> : <span className="behind" title={pr.realDay == null ? "실제 학습 Day 아직 없음" : "완주 기록 RPC 필요"}>(-)</span>} <span className="rank">[{pr.rank}]</span><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a></div>
-                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <a style={{ marginLeft: 6, fontSize: 11 }} onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>이력 보기</a></div>
+                          <div className="prog-line2">가입 {pr.signup} · 마지막 학습일 <b>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 마지막 접속 {pr.lastSeen}</> : null} <button type="button" className="hist-btn" title="퇴직·복직·결제 같은 운영 이력 보기" onClick={async (e) => { e.stopPropagation(); const r = window.OD.fetchOpsLog ? await window.OD.fetchOpsLog(u.email) : { result: [] }; setOpsLogOpen({ email: u.email, name: u.name, rows: (r && r.result) || [] }); }}>🗂 이력 보기</button></div>
                           {m ? (
                             <>
                               <div className={"prog-line3" + (pr.behind === 0 ? " ok" : "")}>{pr.behind == null ? "실제 학습 Day 아직 없음 (새 버전 앱 접속 전)" : pr.behind > 0 ? "더 해야 할 밀린 Day " + pr.behind + "개" : "밀린 Day 없음"} <span style={{ fontWeight: 500, color: '#8A7964' }}>· 달력 Day {pr.calDay}</span></div>
