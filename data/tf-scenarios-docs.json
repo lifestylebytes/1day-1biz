@@ -56,7 +56,7 @@
    ],
    "buddyAnswers": {
     "nuance": "겉은 정중, 속은 '이미 말씀드렸는데요'.\n\n수동공격(passive-aggressive)의 대명사로 밈이 된 표현이라, 쓸 때는 수위 조절이 필요해.",
-    "example": "• \"Per my last email, the files are due Friday.\" (지난 메일에서 말씀드린 대로, 파일은 금요일까지예요.)\n• \"As per my previous email, the meeting moved to 3pm.\" (이전 메일에서 말씀드린 대로, 회의가 3시로 옮겨졌어요. as per도 같은 뜻)",
+    "example": "• \"Per my last email, the files are due Friday.\" (지난 메일에서 말씀드린 대로, 파일은 금요일까지예요.)\n• \"As per my previous email, the meeting moved to 3pm.\" (이전 메일에서 말씀드린 대로, 회의가 3시로 옮겨졌어요.)",
     "default": "같은 질문이 두 번 오면 내 메일이 안 읽힌 이유부터 생각해 보자. 너무 길었나? 요약이 없었나? (4일차에 배울 예정)"
    },
    "quizPrompt": "동기가 슬랙으로: \"거래처가 계약 조건을 세 번째 물어봐. 지난 메일에 다 있는데... 화 안 내고 답하는 법 없냐?\" 뭐라고 답장 예시를 줄까?"

@@ -54,7 +54,7 @@
       ],
       "buddyAnswers": {
         "nuance": "deal-breaker = 이거 하나 때문에 딜 전체가 깨지는 조건.\n\n연애에도 써: \"Smoking is a deal-breaker for me.\"\n비즈니스에선 계약, 채용, 파트너십 어디든.",
-        "example": "• \"The price isn't a deal-breaker, but the timeline might be.\" (가격은 결정적 문제가 아니지만, 일정은 그럴 수 있어요.)\n• \"Is remote work a deal-breaker for you?\" (재택 여부가 결정적 조건인가요? 면접에서도!)",
+        "example": "• \"The price isn't a deal-breaker, but the timeline might be.\" (가격은 결정적 문제가 아니지만, 일정은 그럴 수 있어요.)\n• \"Is remote work a deal-breaker for you?\" (재택 여부가 결정적 조건인가요?)",
         "default": "deal(거래)을 break(깨는) 것. 내 deal-breaker를 아는 게 협상 준비의 1번."
       },
       "quizPrompt": "옆 팀 동기가 슬랙으로: \"이직 오퍼 받았는데 풀재택이 안 된대... 고민돼.\" 뭐라고 답할까?"
@@ -494,7 +494,7 @@
       ],
       "buddyAnswers": {
         "nuance": "야구의 강속구(hardball)에서.\n\n반대말은 softball(살살 하기).\n\"They went hardball on us\" 처럼 동사구로.",
-        "example": "• \"HR played hardball on the salary, so I used my competing offer.\" (HR이 연봉으로 강하게 나와서 다른 회사 오퍼를 썼어요.)\n• \"If they play hardball, we walk.\" (그쪽이 강하게 나오면 우리는 손 뗍니다. 7일차 콤보!)",
+        "example": "• \"HR played hardball on the salary, so I used my competing offer.\" (HR이 연봉으로 강하게 나와서 다른 회사 오퍼를 썼어요.)\n• \"If they play hardball, we walk.\" (그쪽이 강하게 나오면 우리는 손 뗍니다.)",
         "default": "hardball의 핵심은 목소리 크기가 아니라 대안의 존재야. 칩(8일차) 없이 hardball 치면 그냥 허세."
       },
       "quizPrompt": "월세 재계약 시즌. 집주인이 강경하게 인상을 요구한다. 룸메이트에게 하는 말은?"
