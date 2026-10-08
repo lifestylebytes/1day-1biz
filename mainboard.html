@@ -21266,6 +21266,27 @@ function App() {
 
 window.SimApp = App;
 
+/* --- 2026-10-06 마지막 접속 기록: 화면이 열릴 때 + 다시 앞으로 올 때 (만료·운영자·Dev 포함 전원). 서버가 5분 간격으로만 기록 --- */
+(function trackLastActive() {
+  let lastSent = 0;
+  const send = async () => {
+    if (document.visibilityState !== "visible") return;
+    if (Date.now() - lastSent < 60 * 1000) return;   // 1분 안 재호출은 생략
+    let email = null;
+    try { email = (JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}).email || null; } catch (e) {}
+    if (!email || email === "guest") return;
+    lastSent = Date.now();
+    const start = Date.now();
+    while (!(window.OD && window.OD.enabled && window.OD.touchLastActive)) {
+      if (Date.now() - start > 5000) return;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    window.OD.touchLastActive(email).catch(() => {});
+  };
+  send();
+  document.addEventListener("visibilitychange", send);
+})();
+
 /* --- 마운트, hydrate 완료 후에만. cross-device 동기화 보장 --- */
 (async function mountAfterHydrate() {
   const MAX_WAIT_MS = 2500; // hydrate 최대 대기, 안 끝나도 그대로 마운트

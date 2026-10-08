@@ -1744,6 +1744,15 @@ function App() {
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
+  // 운영 이력 작업 이름 (영어 코드 → 한글). 목록에 없으면 코드 그대로 보여준다
+  const OPS_ACTION_LABEL = {
+    membership_sync: '멤버십 동기화',
+    operator_cancel: '퇴직 처리',
+    operator_restore: '복직 처리',
+    payment_grant: '결제됨',
+    payment_cancelled: '결제 해지',
+    payment_expired: '결제 만료',
+  };
   // 실제 학습 Day / 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 빠뜨린은 '-'.
   // ★ 2026-10-06 실제 학습 Day: 회원 앱이 접속 때 보낸 '화면의 오늘 Day'(real_day). 보낸 날 이후 접속이 없으면,
   //   그 값에서 출발해 앱과 같은 완주 기준(일지 또는 일정 4개)으로 끝낸 Day 를 지나가며 센다 (달력 Day 를 넘지 않음).
@@ -1858,7 +1867,7 @@ function App() {
     if (!m) { alert("날짜 형식이 아니에요. 예: 2026-10-07"); return; }
     const daysGrace = Math.max(0, Math.round((Date.parse(picked.trim()) - Date.parse(today)) / 86400000));
     if (!confirm(`${u.name} 님 마지막 출근일: ${picked.trim()} (오늘부터 ${daysGrace}일)\n그날까지는 평소처럼 출근 가능하고, 지나면 자동으로 휴직 화면이 떠요. 진행할까요?`)) return;
-    const res = await window.OD.cancelMembership(u.email, daysGrace);
+    const res = await window.OD.cancelMembership(u.email, daysGrace, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
     if (res.ok) {
       const endDate = new Date(res.endsAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
       showToast(`${u.name} 퇴직 처리됨 · 마지막 출근일 ${endDate}`);
@@ -1872,7 +1881,7 @@ function App() {
   const restoreUserMembership = async (u) => {
     if (!u || !u.email) return;
     if (!confirm(`${u.name} 님의 퇴직을 취소하고 복직 처리할까요?`)) return;
-    const res = await window.OD.restoreMembership(u.email);
+    const res = await window.OD.restoreMembership(u.email, (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email);
     if (res.ok) {
       showToast(`${u.name} 복직 완료 · 만료일 해제`);
       refreshSupabase();
@@ -2287,8 +2296,23 @@ function App() {
             {opsLogOpen && (
                   <div style={{ marginTop: 10, padding: '12px 14px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 10, background: '#fff' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><b>🗂 운영 이력 · {opsLogOpen.name || opsLogOpen.email}</b><button className="btn btn-ghost btn-mini" onClick={() => setOpsLogOpen(null)}>닫기</button></div>
-                    {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영자 변경이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
-                      <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => <tr key={i}><td style={{ whiteSpace: 'nowrap', paddingRight: 8 }}>{new Date(r.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td><td style={{ paddingRight: 8 }}>{r.action}</td><td style={{ color: '#6B5B4A' }}>{JSON.stringify(r.detail)}</td><td>{r.by || ''}</td></tr>)}</tbody></table>
+                    {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영 이력이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
+                      <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => {
+                        const open = !!(opsLogOpen.show && opsLogOpen.show[i]);
+                        return (
+                          <tr key={i}>
+                            <td style={{ whiteSpace: 'nowrap', paddingRight: 8, verticalAlign: 'top' }}>{new Date(r.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td>
+                            <td style={{ paddingRight: 8, verticalAlign: 'top' }}>
+                              <a style={{ textDecoration: 'underline', cursor: 'pointer' }} title="눌러서 자세히 보기"
+                                 onClick={() => setOpsLogOpen(o => ({ ...o, show: { ...((o && o.show) || {}), [i]: !open } }))}>
+                                {OPS_ACTION_LABEL[r.action] || r.action}
+                              </a>
+                              {open && <div style={{ marginTop: 3, color: '#6B5B4A', wordBreak: 'break-all' }}><code>{r.action}</code> {r.detail ? JSON.stringify(r.detail) : ''}</div>}
+                            </td>
+                            <td style={{ verticalAlign: 'top' }}>{r.by || ''}</td>
+                          </tr>
+                        );
+                      })}</tbody></table>
                     )}
                   </div>
                 )}
