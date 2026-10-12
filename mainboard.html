@@ -7657,15 +7657,9 @@ function _saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } c
 
 // ★ 2026-09-11 밀린 Day 정책:
 //   - 사이드 프로젝트는 '오늘 날짜 Day' 에서만 연다 (몰아치기 보상 방지).
-//   - 단 Review Quiz 는 예외. 밀린 사람일수록 복습이 필요하니, 달력 기준 하루 1번 허용.
+//   - 단 Review Quiz 는 예외. 밀린 사람일수록 복습이 필요하니 열어둔다.
+//     ★ 2026-10-12 (박나영님 피드백): 하루 1번 제한도 풀었다. 몇 번이든 풀 수 있고, EXP 는 달력 기준 하루 첫 1회만 (몰아치기 보상 방지는 보상 쪽에서).
 //   - '내일 미리 쓰기' 는 밀린 Day 에선 숨긴다 (바로 다음 Day 를 열 수 있어 컨닝이 됨).
-const _REVQ_DAYKEY = (email) => "__OD_REVQ_DATE_" + (email || "guest");
-function _revqDoneToday(email) {
-  try { return localStorage.getItem(_REVQ_DAYKEY(email)) === new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }); } catch (e) { return false; }
-}
-function _revqMarkToday(email) {
-  try { localStorage.setItem(_REVQ_DAYKEY(email), new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" })); } catch (e) {}
-}
 // ── 이번 주 출근한 동료 스트립 (실제 DB 기준, 이름은 성 한 글자만 마스킹해서 내려옴) ──
 //    RPC(get_office_today)가 없거나 인원이 2명 미만이면 아무것도 안 그린다.
 function OfficeTodayStrip({ sib }) {
@@ -7735,12 +7729,10 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
   const _sideProject = _isQuizLive();
   const [reviewOpen, setReviewOpen] = useState(0);   // 0 = 닫힘, n = n번째 응시로 열림 (결과 화면에서 번호가 안 바뀌게 열 때 고정)
   const attempts = (saved.review && saved.review.attempts) || [];
-  const [revqLockedToday, setRevqLockedToday] = useState(() => _revqDoneToday(email));
   const onReviewFinished = (res) => {
     const next = { ...saved, review: { attempts: [...attempts, res] } };
     persist(next);
     _odLogActivity(day, "review_quiz", { n: attempts.length + 1 });   // ★ 2026-10-08 활동 시각 (응시할 때마다)
-    if (catchUp) { _revqMarkToday(email); setRevqLockedToday(true); }
     try { if (attempts.length === 0 && day >= 30) _wpToast(WP_RULES.ot, "Review Quiz"); } catch (e) {}
   };
   // 내일 단어: 뜻 보고 영어 표현 써보기 (미리쓰기와 같이 저장, 내일 아침 정답과 나란히)
@@ -7789,7 +7781,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
             <div className="ot-sec">
               <div className="ot-sec-title">🧠 Review Quiz</div>
               <div className="ot-sec-sub">{catchUp
-                ? "따라잡는 중엔 본업(오늘 일정)이 먼저예요. 복습은 몸에 남는 거라 하루 1번은 열어뒀고, 내일 미리 쓰기도 아래에서 할 수 있어요."
+                ? "따라잡는 중엔 본업(오늘 일정)이 먼저예요. 그래도 복습은 몸에 남는 거라 횟수 제한 없이 열어뒀어요. 포인트는 하루 첫 1회만 쌓여요. 내일 미리 쓰기도 아래에서 할 수 있어요."
                 : "무작위가 아니라 복습 일정(1·3·7·14·30·60일)에 맞춘 나만의 테스트예요. 이전 표현 위주, 마지막 문제만 오늘 단어. 여러 번 풀어도 돼요."}</div>
               {attempts.length > 0 && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0 10px" }}>
@@ -7801,11 +7793,11 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
                 </div>
               )}
               <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <button className="btn btn-primary" disabled={catchUp && revqLockedToday} onClick={() => setReviewOpen(attempts.length + 1)}>
-                  {(catchUp && revqLockedToday) ? "오늘 복습 완료 ✓" : attempts.length ? "한 번 더 풀기 →" : "Review Quiz 시작 →"}
+                <button className="btn btn-primary" onClick={() => setReviewOpen(attempts.length + 1)}>
+                  {attempts.length ? "한 번 더 풀기 →" : "Review Quiz 시작 →"}
                 </button>
                 <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
-                  {(catchUp && revqLockedToday) ? "내일 다시 열려요" : "오늘 복습 예정 표현 " + _qzRevDueDays(day).length + "개"}
+                  {"오늘 복습 예정 표현 " + _qzRevDueDays(day).length + "개"}
                 </span>
               </div>
             </div>
@@ -7929,7 +7921,7 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
     <div className="ot-card">
       <button className="ot-head" onClick={_toggle}>
         {catchUp
-          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (하루 1번)"}</small></span>
+          ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "밀린 Day를 따라잡는 중이라 오늘은 복습만 열려요 (횟수 제한 없음)"}</small></span>
           : _sideProject
           ? <span>🌙 퇴근 후 SIDE PROJECT <small>{_RET_ON() ? "복습 퀴즈 +" + RET_EXP.rev5 + "~" + RET_EXP.rev20 + " EXP · 내일 문장 미리 쓰기 +" + RET_EXP.pre + " EXP · 완료하면 복지 +" + RET_WP.ot + "P (하루 1회)" : "10분이면 이전 표현이 복습되고, 내일 아침 사수 확인이 기다려요"}</small></span>
           : <span>🌙 야근 <small>10분이면 오늘 표현이 세 문장 더 남고, 내일 아침 사수 확인이 기다려요</small></span>}
@@ -10393,10 +10385,11 @@ function _retReconcile(opts) {
     });
     if (fresh) { const l2 = _retExpLedger(email); l2.seededAt = new Date().toISOString(); _retSave("EXP", email, l2); }
     // 2) 야근: Review Quiz (문제수별) · 내일 미리쓰기 · 야근 완료 복지P (하루 1회)
+    // ★ 2026-10-12: 밀린 Day 에서도 Review Quiz 를 몇 번이든 풀 수 있게 됐으니, EXP 는 Day 와 상관없이 달력 날짜당 첫 1회만
+    const _seenDates = new Set(_retExpLedger(email).entries.filter(e => e && e.kind === "review").map(e => String(e.at || "").slice(0, 10)));
     Object.keys(localStorage).forEach(k => {
       if (k.startsWith("__OD_OT_" + email + "_")) {
         const day = Number(k.split("_").pop()); const v = _loadJSON(k) || {};
-        const _seenDates = new Set();
         ((v.review && v.review.attempts) || []).forEach((a, i) => {
           const n = Number(a.n || a.total || 0); const exp = n >= 20 ? RET_EXP.rev20 : (n >= 10 ? RET_EXP.rev10 : RET_EXP.rev5);
           const atDate = String(a.at || "").slice(0, 10);
