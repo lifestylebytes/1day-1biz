@@ -110,6 +110,24 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 /* ★ 2026-10-08 회원 행 이력 보기 버튼 */
 .hist-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #4A3B2A; background: #F3ECE0; border: 1px solid #CDBDA3; border-radius: 999px; cursor: pointer; vertical-align: 1px; font-family: inherit; line-height: 1.5; }
 .hist-btn:hover { background: #E9DFCF; }
+.hist-btn.primary { background: #2A1F14; color: #F4EFE3; border-color: #2A1F14; }
+.hist-btn.primary:hover { background: #4A3B2A; }
+.hist-btn.danger { color: #993C1D; }
+.hist-btn:disabled { opacity: .5; cursor: default; }
+/* ★ 2026-10-09 회원별 운영 메모 (users.ops_memo) */
+.memo-note { display: flex; align-items: flex-start; gap: 5px; margin-top: 5px; padding: 5px 8px; background: #FFF6C7; border: 1px solid #EBD88A; border-left: 3px solid #D9B23A; border-radius: 5px; font-size: 11.5px; line-height: 1.45; color: #4A3B2A; cursor: pointer; white-space: pre-wrap; word-break: break-word; }
+.memo-note:hover { background: #FFF0A8; }
+.memo-note .memo-ic { flex: none; }
+.memo-note .memo-text { flex: 1 1 auto; min-width: 0; }
+.memo-note .memo-meta { flex: none; font-size: 10px; color: #A08A3A; margin-left: 4px; white-space: nowrap; align-self: flex-end; }
+.memo-add { margin-top: 4px; padding: 0; background: none; border: 0; font-family: inherit; font-size: 11px; color: #A8997F; cursor: pointer; }
+.memo-add:hover { color: #4A3B2A; text-decoration: underline; }
+.memo-edit { margin-top: 5px; }
+.memo-edit textarea { width: 100%; min-height: 58px; padding: 6px 8px; font-family: inherit; font-size: 12px; line-height: 1.45; color: #2A1F14; background: #FFFBE8; border: 1px solid #D9B23A; border-radius: 5px; resize: vertical; box-sizing: border-box; }
+.memo-edit textarea:focus { outline: 2px solid #EBD88A; outline-offset: 1px; }
+.memo-edit-row { display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.memo-edit-row .hist-btn { margin-left: 0; }
+.memo-hint { font-size: 10px; color: #A8997F; margin-left: auto; }
 @media (max-width: 560px) { .attcal { padding: 16px 12px; } .attcal-chip { padding: 0 2px; font-size: 10px; text-overflow: clip; } .attcal-chip .lg { display: none; } .attcal-c { min-height: 56px; padding: 3px; } }
 .prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
 .prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
@@ -1985,6 +2003,17 @@ function App() {
   const [gateDoneMap, setGateDoneMap] = useState(null);   // email → 앱 기준 완주 Day (일지 또는 일정 4개). 실제 학습 Day 이어 세기용 (2026-10-06)
   const [lastStudyMap, setLastStudyMap] = useState({});   // email → 마지막 학습 시각 (완주 기록 기준, 2026-10-02)
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
+  const [memoEdit, setMemoEdit] = useState(null);         // { email, text, busy } 회원 메모 편집 중 (2026-10-09)
+  const saveMemo = async (u, text) => {
+    const opBy = (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email || null;
+    if (!window.OD || !window.OD.saveOpsMemo) { alert('메모 저장 기능이 아직 없어요 (supabase-client.js 갱신 필요)'); return; }
+    setMemoEdit(m => m ? { ...m, busy: true } : m);
+    const r = await window.OD.saveOpsMemo(u.email, text, opBy);
+    if (!r || !r.ok) { alert('메모 저장 실패: ' + (r && r.error || '?') + '\n(SQL 20261009_ops_memo.sql 을 아직 안 돌렸으면 먼저 실행)'); setMemoEdit(m => m ? { ...m, busy: false } : m); return; }
+    const memo = (r.result && r.result.memo) || null;
+    setSupaUsers(list => list.map(x => x.email === u.email ? { ...x, ops_memo: memo, ops_memo_at: memo ? new Date().toISOString() : null, ops_memo_by: memo ? opBy : null } : x));
+    setMemoEdit(null);
+  };
   const [attCalOpen, setAttCalOpen] = useState(null);   // ★ 2026-10-08 출근 달력 { email, name, loading, error, data }
   const openAttCal = async (u) => {
     let prog = null; try { prog = calcProgress(u); } catch (e) {}
@@ -2002,6 +2031,8 @@ function App() {
     payment_grant: '결제됨',
     payment_cancelled: '결제 해지',
     payment_expired: '결제 만료',
+    sheet_sync: '시트 동기화',
+    memo: '메모',
   };
   // 실제 학습 Day / 앱 Day / 달력 Day / 밀린 Day / 빠뜨린 Day / 직급 계산. 완주 기록이 없으면(progMap null) 빠뜨린은 '-'.
   // ★ 2026-10-06 실제 학습 Day: 회원 앱이 접속 때 보낸 '화면의 오늘 Day'(real_day). 보낸 날 이후 접속이 없으면,
@@ -2720,6 +2751,27 @@ function App() {
                     {(() => { const pr = calcProgress(u); return (
                       <div style={{ fontSize: 11, color: '#8A7964', marginTop: 3 }}>가입 {pr.signup} · 마지막 학습 <b style={{ color: '#5B4A36' }}>{pr.lastStudy}</b>{pr.lastSeen !== pr.lastStudy ? <> · 접속 {pr.lastSeen}</> : null}</div>
                     ); })()}
+                    {/* 📝 운영 메모 (2026-10-09): 약속한 혜택·특이사항을 회원 행에 직접 적는다. users.ops_memo */}
+                    {memoEdit && memoEdit.email === u.email ? (
+                      <div className="memo-edit" onClick={e => e.stopPropagation()}>
+                        <textarea autoFocus value={memoEdit.text} disabled={!!memoEdit.busy} placeholder="예) 10기 혜택: 해지할 때 7일 연장 약속 (9/21)"
+                          onChange={e => setMemoEdit({ ...memoEdit, text: e.target.value })}
+                          onKeyDown={e => { if (e.key === 'Escape') setMemoEdit(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') saveMemo(u, memoEdit.text); }} />
+                        <div className="memo-edit-row">
+                          <button type="button" className="hist-btn primary" disabled={!!memoEdit.busy} onClick={() => saveMemo(u, memoEdit.text)}>{memoEdit.busy ? '저장 중…' : '저장'}</button>
+                          <button type="button" className="hist-btn" disabled={!!memoEdit.busy} onClick={() => setMemoEdit(null)}>취소</button>
+                          {u.ops_memo ? <button type="button" className="hist-btn danger" disabled={!!memoEdit.busy} onClick={() => { if (confirm(u.name + '님 메모를 지울까요?')) saveMemo(u, ''); }}>지우기</button> : null}
+                          <span className="memo-hint">Ctrl/⌘+Enter 저장 · Esc 취소</span>
+                        </div>
+                      </div>
+                    ) : u.ops_memo ? (
+                      <div className="memo-note" title={'클릭해서 고치기' + (u.ops_memo_at ? '\n' + new Date(u.ops_memo_at).toLocaleString('ko-KR') + (u.ops_memo_by ? ' · ' + u.ops_memo_by : '') : '')} onClick={(e) => { e.stopPropagation(); setMemoEdit({ email: u.email, text: u.ops_memo || '' }); }}>
+                        <span className="memo-ic">📝</span><span className="memo-text">{u.ops_memo}</span>
+                        {u.ops_memo_at ? <span className="memo-meta">{new Date(u.ops_memo_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}{u.ops_memo_by ? ' · ' + String(u.ops_memo_by).split('@')[0] : ''}</span> : null}
+                      </div>
+                    ) : (
+                      <button type="button" className="memo-add" title="이 회원에 대한 약속·특이사항 적어 두기 (운영자끼리 공유)" onClick={(e) => { e.stopPropagation(); setMemoEdit({ email: u.email, text: '' }); }}>📝 메모</button>
+                    )}
                   </div>
 
                   {/* 학습 진도 · DAY 앱/달력 (밀린) [직급] */}
