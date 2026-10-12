@@ -237,7 +237,8 @@ h1, h2, h3, .lead, .eyebrow, summary, .btn { text-wrap: balance; }
   <div class="mb-toast-av">🤝</div>
   <div class="mb-toast-body">
     <div class="mb-toast-name">유버디</div>
-    <div class="mb-toast-msg">여긴 사무실로 "출근"하는 곳이라, <b>PC·노트북</b>에서 하면 훨씬 몰입돼요. 모바일도 되지만 가능하면 큰 화면을 추천해요 :)</div>
+    <!-- ★ 2026-10-12: 예전엔 "PC·노트북 추천" 이었는데, 재참여 설문에서 "데스크탑으로만 되는 줄 알았다" 는 답이 나와서 폰 환영 문구로 바꿈 -->
+    <div class="mb-toast-msg">폰으로 보고 계시네요! 1일1비는 <b>폰에서도 그대로</b> 출근할 수 있어요. 가입하면 홈 화면에 추가하는 법도 알려드릴게요 :)</div>
   </div>
   <button id="mb-toast-x" class="mb-toast-x" aria-label="닫기">✕</button>
 </div>
@@ -1496,6 +1497,29 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <Divider />
 
+      {/* ── 3.5 폰·알림·동료 (2026-10-12 재참여 설문: 폰으로 못 하는 줄 알았고, 알림·공지방이 있는 줄 몰랐다. 있는 기능을 처음부터 보여준다) ── */}
+      <SectionTitle eyebrow="ON YOUR PHONE" title="출퇴근길 폰으로, 혼자가 아니게" sub="컴퓨터 앞이 아니어도 돼요. 폰 하나로 출근하고, 알림이 챙겨주고, 동기들이 같이 가요." />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["📱", "폰으로 출근해요", "회원가입부터 매일 출근까지 전부 휴대폰에서 돼요. 홈 화면에 추가하면 앱처럼 한 번에 열리고, 컴퓨터와 폰을 오가도 진도·표현 노트가 그대로 이어져요."],
+          ["⏰", "정한 시간에 카톡이 와요", "아침 7시든 밤 11시든, 내가 고른 시각에 오늘의 표현이 카톡으로 도착해요. 앱을 안 열어도요. 출근을 깜빡할 틈이 없어요."],
+          ["👥", "1일1비 공지방에서 같이 가요", "카톡 공지방에서 공지·업데이트를 받고, 같이 출근하는 동기들을 봐요. 사내 게시판엔 이번 주 EXP 순위판도 있어서, 혼자 조용히 하다가 끊기는 일이 줄어요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 21, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginBottom: 4 }}>
+        알림 시간과 공지방 입장은 가입 첫날 가이드에서 바로 켜드려요. 나중에 사원증 → 설정에서 언제든 바꿀 수 있고요.
+      </div>
+
+      <Divider />
+
       {/* ── 4. 후기 ── */}
       <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문과 30일 수료 회고에서 그대로 가져왔어요. 별점은 실제 제출된 만족도예요." />
       <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
@@ -1565,6 +1589,8 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 갑니다. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요."],
           ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 하실 수 있어요. 표현 노트와 진도는 해지 후 2개월간 보관되니, 그 안에 재구독하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
           ["누구한테 잘 맞나요?", "슬랙·메일·회의에서 영어를 이미 쓰고 계신 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스랍니다."],
+          ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
+          ["매일 알림이 오나요?", "카톡 출근 알림을 켜면 내가 정한 시각에 오늘의 표현이 카톡으로 와요 (앱을 안 열어도요). 가입 첫날 가이드에서 켜드리고, 사원증 → 설정에서 시간을 바꾸거나 끌 수 있어요. 1일1비 공지방(카톡)도 같은 곳에서 들어가요."],
         ].map(q => (
           <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
             <summary style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
