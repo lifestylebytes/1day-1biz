@@ -9707,6 +9707,9 @@ const _TY_ERRANDS = [
   { id: "libsearch", icon: "🔎", t: "업무 노트 검색창에 아무 단어나 쳐보기", verify: true, nav: "library" },
   { id: "libcard",   icon: "🗂", t: "업무 노트를 '카드'로 바꿔서 훑어보기", verify: true, nav: "library" },
   { id: "fwc",       icon: "🎁", t: "첫 주 카드 다시 펼쳐보기", verify: true, nav: "library", minDay: 2 },
+  // ★ 2026-10-12 (박나영님 피드백): 틀린 문장·교정·복기가 업무 노트 줄을 펼치면 다 있는데 몰라서 못 찾는다. 심부름으로 데려가 준다.
+  { id: "libreview", icon: "🔍", t: "업무 노트에서 지난 Day 한 줄 펼쳐서 내 문장과 사수 교정 다시 보기", verify: true, nav: "library", sel: ".lib-table-wrap", minDay: 2 },
+  { id: "libredo",   icon: "🔁", t: "업무 노트 지난 Day 펼쳐서 '지금 복습'으로 한 줄 다시 써보기", verify: true, nav: "library", sel: ".lib-table-wrap", minDay: 2 },
   { id: "mypage",    icon: "🪪", t: "사원증 한번 확인하기", verify: true, nav: "mypage" },
   { id: "skills",    icon: "📊", t: "역량 스탯에서 제일 빈 영역 찾아보기", sel: ".skillgrid", minDay: 4 },
   { id: "attend",    icon: "📅", t: "출근부에서 이번 주 도장 세어보기", sel: ".attendance", minDay: 3 },
@@ -12586,12 +12589,14 @@ function LibReviewInline({ s, myAnswer, savedNotes, myJournal }) {
   const hasWord = line.toLowerCase().includes(String(s.word || "").toLowerCase().split(" ")[0]);
   const grade = (g) => {
     const next = _wbGrade(rev, s.day, g, line.trim() ? { sentence: line.trim() } : null);
-    _wbSaveRev(em, next); try { _tyErrandProof("mynotes"); } catch (e) {}
+    _wbSaveRev(em, next); try { _tyErrandProof("mynotes"); _tyErrandProof("libredo"); } catch (e) {}
     try { if (USER.email && window.OD && window.OD.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(USER.email, s.day, { _rev: next[s.day] }).catch(() => {}); } catch (e) {}
     try { window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {}
     setDone(g); setTick(t => t + 1);
   };
   const lastKo = r && r.lastDay ? r.lastDay.slice(5).replace("-", ".") : null;
+  // ★ 2026-10-12: 내가 쓴 문장이 있는 지난 Day 를 펼쳐 보면 '내 문장·교정 다시 보기' 심부름 도장
+  React.useEffect(() => { try { if (myAnswer && myAnswer.sentence && s.status !== "today") _tyErrandProof("libreview"); } catch (e) {} }, [s.day]);
   return (
     <div className="lib-review" onClick={(e) => e.stopPropagation()}>
       <div className="lib-review-grid">
