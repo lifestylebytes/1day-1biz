@@ -1132,6 +1132,46 @@ span.ret-hud-item { cursor: default; }
 .desk-catch b { color: var(--green); font-weight: 900; }
 @media (max-width: 880px) { .ret-goal-slim { flex-wrap: wrap; } .ret-goal-slim .ret-goal-bar { order: 3; flex-basis: 100%; } }
 .ret-pop.debuff { text-align: left; max-width: 460px; }
+/* ★ 2026-10-13 결근 팝업 개편: 그림 위주 카드형 (접속 팝업 · 복귀 설문 · 새 목표) */
+.ret-pop.ret-cb { max-width: 420px; text-align: center; }
+.ret-cb-wp { display: inline-block; font-size: 12px; font-weight: 900; color: #B5461C; background: rgba(216,90,42,0.10); padding: 4px 10px; border-radius: 999px; }
+.ret-cb-ico { font-size: 52px; line-height: 1; margin-top: 12px; }
+.ret-cb-title { font-size: 22px; font-weight: 900; color: var(--ink); margin-top: 10px; line-height: 1.38; white-space: pre-line; letter-spacing: -0.01em; }
+.ret-cb-sub { font-size: 13px; color: var(--ink-soft); margin-top: 8px; line-height: 1.6; }
+.ret-cb-step { font-size: 11px; font-weight: 900; color: #2B4A6E; letter-spacing: 0.06em; text-align: left; }
+.ret-cb-days { display: flex; justify-content: center; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 16px; }
+.ret-cb-days span { min-width: 24px; height: 24px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+.ret-cb-days .on { background: rgba(216,90,42,0.14); }
+.ret-cb-days .miss { border: 1.5px dashed #B0291A; color: #B0291A; font-weight: 900; }
+.ret-cb-days .now { background: var(--ink); color: var(--cream); font-size: 10.5px; font-weight: 900; padding: 0 6px; }
+.ret-cb-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.ret-cb-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; border-radius: 12px; font-family: inherit; cursor: pointer; color: var(--ink); text-align: center; }
+.ret-cb-card b { font-size: 15px; font-weight: 900; }
+.ret-cb-card small { font-size: 12px; font-weight: 700; line-height: 1.5; }
+.ret-cb-card.good { background: #fff; border: 2px solid var(--orange); }
+.ret-cb-card.good small { color: #2F5E22; }
+.ret-cb-card.good small.cost { color: #B5461C; font-weight: 900; }
+.ret-cb-card.good small.short { color: var(--ink-mute); }
+.ret-cb-card.good:disabled { opacity: 0.55; cursor: not-allowed; }
+.ret-cb-card.plain { background: var(--paper-warm); border: 1.5px solid var(--line); }
+.ret-cb-card.plain small { color: #8A2A1C; }
+.ret-cb-cico { font-size: 30px; line-height: 1; }
+.ret-cb-tag { font-size: 10.5px; font-weight: 900; color: #fff; background: var(--orange); padding: 2px 8px; border-radius: 999px; }
+.ret-cb-note { margin-top: 12px; font-size: 11.5px; font-weight: 700; color: var(--ink-mute); }
+.ret-cb-survey { text-align: left; }
+.ret-cb-survey .ret-cb-title, .ret-cb-survey .ret-cb-sub { text-align: left; }
+.ret-cb-q { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; font-size: 13.5px; font-weight: 900; color: var(--ink); }
+.ret-cb-multi { font-size: 11px; font-weight: 800; color: #2B4A6E; background: rgba(43,74,110,0.10); padding: 3px 8px; border-radius: 999px; }
+.ret-cb-opts { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.ret-cb-opt { text-align: left; border: 1px solid var(--line); background: var(--cream); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; font-family: inherit; color: var(--ink); cursor: pointer; }
+.ret-cb-opt.on { border-color: var(--orange); background: rgba(216,90,42,0.08); font-weight: 800; }
+.ret-cb-memo { width: 100%; box-sizing: border-box; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font-family: inherit; font-size: 12.5px; }
+.ret-cb-link { display: block; margin: 6px auto 0; background: none; border: 0; padding: 6px; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink-mute); text-decoration: underline; cursor: pointer; }
+.ret-cb-goals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.ret-cb-goal { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 16px 4px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--cream); font-family: inherit; color: var(--ink); cursor: pointer; }
+.ret-cb-goal b { font-size: 19px; font-weight: 900; } .ret-cb-goal small { font-size: 11px; color: var(--ink-soft); font-weight: 700; }
+.ret-cb-goal.on { border: 2px solid var(--orange); background: #fff; }
+.ret-cb-goal .ret-cb-tag { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
 .ret-deb-from { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
 .ret-deb-from b { display: block; font-size: 13px; } .ret-deb-from small { font-size: 11px; color: var(--ink-mute); font-weight: 700; }
 .ret-deb-wp { margin-left: auto; font-size: 12.5px; font-weight: 900; color: var(--orange); background: rgba(216,90,42,0.10); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
@@ -8499,6 +8539,9 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // ★ 리텐션 엔진 (2026-09-14, 개발 뷰): 기록 훑어서 EXP/복지P 지급 · 결근 판정 · 하루 완주 팝업
   const [retDebuff, setRetDebuff] = useState(null);
   const [retDayPop, setRetDayPop] = useState(false);
+  // ★ 2026-10-13: 오늘 EXP 팝업을 이미 봤나 (복귀 설문·새 목표 팝업은 그 다음에 뜬다)
+  const [retDayPopClosed, setRetDayPopClosed] = useState(() => { try { return !!localStorage.getItem(_retKey("DAYPOP", USER.email) + "_" + (USER.realCurrentDay || 1)); } catch (e) { return false; } });
+  _useRetTick();
   const [retUnlock, setRetUnlock] = useState(null);   // 열린 기능 안내 팝업 (keys)
   React.useEffect(() => {
     if (!_RET_ON() || USER.isViewingPast) return;
@@ -9057,7 +9100,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
       {retDebuff && !retQuiz && (
-        <RetDebuffPopup rec={retDebuff} onGoShop={() => { setRetDebuff(null); setActive("perk"); }}
+        <RetDebuffPopup rec={retDebuff}
           onOpenQuiz={() => setRetQuiz(true)}
           onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
       )}
@@ -9066,7 +9109,16 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
           onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
       )}
-      {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => setRetDayPop(false)} />}
+      {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => { setRetDayPop(false); setRetDayPopClosed(true); }} />}
+      {/* ★ 2026-10-13: 결근 복귀자는 오늘 일정 + EXP 팝업이 끝난 뒤 설문 → 새 목표 */}
+      {(() => {
+        if (!_RET_ON() || USER.isViewingPast || !allTodayDone || retDayPop || !retDayPopClosed || retDebuff || retQuiz) return null;
+        const need = _retComebackNeeds(USER.email); if (!need) return null;
+        const d = _retDebuff(USER.email);
+        if (need.survey) return <RetComebackSurvey rec={d} hasNext={need.goal} onDone={() => _retPing()} />;
+        const hadSurvey = !!(d && d.surveyDone && (d.gap >= 8 || (d.level === 3 && !d.defended && !d.light)));
+        return <RetNewGoalPopup step={hadSurvey ? "2 / 2" : null} onDone={() => _retPing()} />;
+      })()}
       {/* ★ 2026-09-24: 결근 팝업·복습 퀴즈가 떠 있는 동안엔 '열린 기능' 팝업을 겹치지 않는다 (닫히면 그때 뜬다) */}
       {retUnlock && !retDayPop && !retDebuff && !retQuiz && !_retReturningPending(USER.email) && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
       {_isHomeLive() && !USER.isViewingPast && (
@@ -9851,7 +9903,7 @@ const RET_GOALS = [
 // ── PERK SHOP ──
 const RET_PERKS = [
   { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "이틀 결근했을 때 써요. Review Quiz 먼저 안 풀어도 되고, 내 목표(연속 출근)도 안 끊겨요. 학습 진도는 그대로.", stack: true },
-  { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3일 이상 결근 디버프까지 막아줘요. 사유서도 안 써도 돼요.", stack: true },
+  { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3~7일 결근을 막아줘요. 복습 없이 바로 들어가고 내 목표도 안 끊겨요. 8일 이상은 못 막아요.", stack: true },
   { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true, soon: true },
   { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "probation", minDay: 30, soon: true, desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 아래에서 고르고, 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", minDay: 15, desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 이 카드에 남아서 언제든 다시 열 수 있어요.", stack: true },
@@ -10279,7 +10331,7 @@ function _retGoalCheck(email) {
       const d = _retDebuff(email); const today = _tyTodayISO();
       if (d && d.date === today && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended) return "pending";
       // ★ 2026-09-21: 오늘 결근 판정(팝업)이 아직 안 만들어졌으면 확정을 미룬다. 전엔 집계가 팝업보다 먼저 돌아 목표가 그냥 리셋됐다.
-      if (!(d && d.date === today)) { const gap = _retAbsenceGap(email); if (gap >= 1 && gap < 30) return "pending"; }
+      if (!(d && d.date === today)) { const gap = _retAbsenceGap(email); if (gap >= 1 && gap < 8) return "pending"; }
       if (!window.__odRetSvrOk && _retForcedGap() === null) return "pending";   // 서버 기록 확인 전엔 실패 확정 안 함 (2026-09-24)
     } catch (e) {}
     g.status = "failed"; g.failedAt = new Date().toISOString(); g.streakAtFail = p.done; _retSave("GOAL", email, g); _retPing();
@@ -10289,7 +10341,8 @@ function _retGoalCheck(email) {
 }
 
 // ── 디버프 ──
-//   레벨: 1 = 1일 결근(격려만) · 2 = 2일(연차 권고, 미구매시 Review Quiz 먼저) · 3 = 3~29일(휴가 권고 + 사유서 + Quiz 먼저) · 4 = 30일+(유비챌 안내)
+//   레벨: 1 = 1일 결근(연장권 제안) · 2 = 2일(연차 제안, 안 쓰면 복습 5문제 먼저) · 3 = 3~7일(휴가 제안, 안 쓰면 복습 5문제 먼저) · 4 = 8일+(접속 팝업 없음)
+//   ★ 2026-10-13: 내 목표 없는 사람은 결근 일수와 상관없이 접속 팝업 없음. 8일+·3~7일 아이템 안 쓴 사람은 일정 끝낸 뒤 설문, 목표 없거나 끊기면 새 목표 팝업.
 //   { date, gap, level, defended, quizDone, surveyDone, seen }
 function _retDebuff(email) { const d = _retLoad("DEBUFF", email, null); return (d && d.date) ? d : null; }
 // 오늘 결근 팝업이 아직 처리 안 됐나 (다른 팝업이 겹치지 않게 하는 용도)
@@ -10300,11 +10353,13 @@ function _retReturningPending(email) {
     if (!d || d.date !== _tyTodayISO() || !(d.gap >= 1)) return false;
     const day = (window.__SIM && window.__SIM.USER && (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay)) || 1;
     const t = _loadJSON("__OD_TASKS_DAY_" + day) || {};
-    return !_retTasksDone(t);
+    if (!_retTasksDone(t)) return true;
+    // ★ 2026-10-13: 일정은 끝냈어도 복귀 설문·새 목표 팝업이 남았으면 다른 안내는 그 뒤로
+    return !!_retComebackNeeds(em);
   } catch (e) { return false; }
 }
 function _retDebuffPending(email) { try { const d = _retDebuff(email || _retEmail()); return !!(d && d.date === _tyTodayISO() && d.level >= 1 && d.level <= 3 && !d.seen && !d.defended && !d.quizDone); } catch (e) { return false; } }
-function _retDebuffLevel(gap) { return gap >= 30 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }
+function _retDebuffLevel(gap) { return gap >= 8 ? 4 : (gap >= 3 ? 3 : (gap === 2 ? 2 : (gap === 1 ? 1 : 0))); }   // ★ 2026-10-13: 3~7일까지 휴가로 막고, 8일부터는 접속 팝업 없이 시작
 function _retEvalDebuff(email) {
   if (!_RET_ON()) return null;
   // ★ 2026-09-24 fail-open: 이 세션에서 서버 출근 기록을 못 받았으면(RPC 없음·타임아웃·오프라인) 결근 판정을 아예 내리지 않는다.
@@ -10318,7 +10373,10 @@ function _retEvalDebuff(email) {
   const forced = _retForcedGap();
   const gap = forced !== null ? forced : _retAbsenceGap(email);
   const level = _retDebuffLevel(gap);
-  const rec = { date: today, gap, level, defended: false, quizDone: false, surveyDone: false, seen: false, forced: forced !== null };
+  // ★ 2026-10-13: 접속 팝업은 '내 목표 있는 1~7일 결근자'만. 나머지는 팝업 없이 바로 시작 (seen·quizDone 미리 처리)
+  const _g0 = _retGoal(email); const hadGoal = !!(_g0 && _g0.status === "active");
+  const silent = level >= 4 || !hadGoal;
+  const rec = { date: today, gap, level, defended: false, quizDone: silent, surveyDone: false, seen: silent, light: !hadGoal, hadGoal, forced: forced !== null };
   // ★ 2026-09-22: 아이템은 어떤 레벨이든 자동으로 안 쓴다. 팝업에서 "연차 쓰기 / 휴가 쓰기" 를 눌러야 소모.
   //   (예전엔 2일 결근 → 연차, 3일+ → 휴가를 팝업 뜨기 전에 자동 차감했다. 1일 연장권만 물어보는 것과 어긋나서 통일.)
   _retSave("DEBUFF", email, rec);
@@ -10678,27 +10736,27 @@ function RetGoalCard({ compact, slim }) {
   );
 }
 
-// ── 디버프 팝업 (출근했을 때 1회) ──
-const _RET_ENCOURAGE = {
-  1: { t: "어제 많이 바쁘셨죠?", m: "하루 쉰 건 괜찮아요. 오늘 다시 오신 게 제일 중요하죠! 오늘 표현부터 가볍게 시작해요." },
-  2: { t: "이틀 못 봤네요..", m: "이틀 결근하면 열심히 외운 표현이 서서히 잊혀져요.. Review Quiz 보면서 다시 복습해볼까요?" },
-  3: { t: "요즘 많이 바쁘신가 봐요?", m: "며칠 비었네요.. 어떤 게 힘드셨는지 한 줄만 남겨주시면 제가 방식을 바꿔볼게요. 오늘은 Review Quiz로 감 먼저 찾고 들어가요." },
-  4: { t: "한 달 넘게 못 봤어요..", m: "혼자 다시 시작하는 게 제일 어렵더라고요. 습관부터 잡는 게 먼저라면 유비챌이 더 맞을 수도 있어요. 4주 동안 같이 인증하면서 가는 방이에요." },
+// ── 결근 팝업 (접속했을 때 1회) ──
+// ★ 2026-10-13 개편: 내 목표가 있는 1~7일 결근자에게만 뜬다. "아이템 쓰기 / 그냥 시작" 카드 두 장.
+//   사유는 여기서 묻지 않는다 (8일 이상, 3~7일 아이템 안 쓴 사람은 오늘 일정 끝낸 뒤 RetComebackSurvey).
+//   목표 없는 사람과 8일 이상 결근자는 접속 팝업 없이 바로 시작 (_retEvalDebuff 에서 seen 처리).
+const _RET_DEB_COPY = {
+  1: { ico: "🕐", t: "어제 하루 비었어요 🙂" },
+  2: { ico: "🌴", t: "이틀 비었네요 👀" },
+  3: { ico: "🏖️", t: "휴가 다녀오셨군요!\n편히 쉬다 오셨나요?" },
 };
-const RET_REASONS = ["바빠서 시간이 없었어요", "그냥 까먹었어요", "재미가 없어졌어요", "어려워서 부담됐어요", "효과가 있는지 모르겠어요"];
-function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
+function RetDebuffPopup({ rec, onClose, onOpenQuiz }) {
   const email = _retEmail();
-  const { CHARACTERS } = window.__SIM;
-  const mentor = CHARACTERS.mentor;
-  const lv = rec.level;
-  const enc = _RET_ENCOURAGE[lv] || _RET_ENCOURAGE[1];
-  const gp = _retGoal(email);
-  const [reason, setReason] = React.useState(null);
-  const [memo, setMemo] = React.useState("");
+  const lv = Math.min(3, Math.max(1, rec.level || 1));
+  const copy = _RET_DEB_COPY[lv];
   const inv = _retInv(email);
-  const item = lv === 1 ? RET_PERKS.find(x => x.id === "extend") : (lv === 2 ? RET_PERKS[0] : (lv === 3 ? RET_PERKS[1] : null));
+  const item = RET_PERKS.find(x => x.id === (lv === 1 ? "extend" : lv === 2 ? "annual" : "vacay"));
   const wp = _retWpBalance(email);
   const needQuiz = _retNeedsQuizFirst(email);
+  const before = _retStreakBefore(email, rec.gap);
+  const owned = (Number(inv[item.id]) || 0) > 0;
+  const canUse = owned || wp >= item.cost;
+  const keep = before + rec.gap + 1;
   const defendWith = (id) => {
     _retInvUse(email, id);
     // 방어했으면 결근일을 출근으로 채워 목표·연속 기록을 지킨다
@@ -10715,112 +10773,123 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz, onGoShop }) {
     _retDebuffPatch(email, { defended: id, seen: true });
     onClose();
   };
-  const buyNow = () => {
-    const r = _retBuy(email, item.id);
-    if (!r.ok) { alert(r.why); return; }
+  const useItem = () => {
+    if (!owned) { const r = _retBuy(email, item.id); if (!r.ok) { alert(r.why); return; } }
     defendWith(item.id);
   };
-  const submitSurvey = () => {
-    const payload = { reason, memo: memo.trim(), gap: rec.gap, at: new Date().toISOString() };
-    try { const l = _retLoad("REASONS", email, { list: [] }); l.list = (l.list || []).concat([payload]); _retSave("REASONS", email, l); } catch (e) {}
-    try { if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {}
-    _retDebuffPatch(email, { surveyDone: true });
-  };
-  // ★ 2026-10-02 (지흔 제안): 내 목표가 없는 사람이 결근 뒤 돌아오면 '빚 청구서' 대신 가볍게. 사유서·아이템·퀴즈 강제 없이 오늘 하나만.
-  //   목표 제안은 오늘 몫을 끝낸 뒤 홈 카드가 한다. 사유는 닫기 전에 칩 한 줄로만(선택).
-  const _noGoal = !(gp && gp.status === "active");
-  if (_noGoal && lv >= 1 && lv <= 3) {
-    const today = (window.__SIM && window.__SIM.SCENARIOS || []).find(x => x.day === (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay || 1)) || null;
-    const goLight = () => { _retDebuffPatch(email, { seen: true, quizDone: true, light: true }); try { _retGoalCheck(email); } catch (e) {} onClose(); };
-    return (
-      <div className="modal-bg" style={{ zIndex: 9175 }}>
-        <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
-          <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap >= 7 ? "오랜만에 출근" : rec.gap + "일 만에 출근"}</small></div></div>
-          <div className="ret-deb-title">오셨네요, 기다렸어요</div>
-          <div className="ret-deb-msg">그동안 쌓인 건 그대로 있으니까 걱정 마세요. 오늘은 딱 하나만 하고 가요. 5분이면 끝나요.</div>
-          {today && (
-            <div className="ret-deb-box ok" style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.06em", color: "var(--ink-mute)", marginBottom: 4 }}>오늘 할 것 하나</div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>Day {today.day} · {today.word} <span style={{ fontWeight: 600, color: "var(--ink-soft)" }}>· {today.meaning}</span></div>
-            </div>
-          )}
-          {!rec.surveyDone && (
-            <div className="ret-deb-opts" style={{ marginTop: 8 }}>
-              <span style={{ fontSize: 11.5, color: "var(--ink-mute)", alignSelf: "center", marginRight: 4 }}>왜 못 오셨어요? (선택)</span>
-              {RET_REASONS.map(r => <button key={r} className={"ret-deb-opt" + (reason === r ? " on" : "")} onClick={() => { setReason(r); try { const payload = { reason: r, memo: "", gap: rec.gap, at: new Date().toISOString() }; const l = _retLoad("REASONS", email, { list: [] }); l.list = (l.list || []).concat([payload]); _retSave("REASONS", email, l); if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {} _retDebuffPatch(email, { surveyDone: true }); }}>{r}</button>)}
-            </div>
-          )}
-          <div className="ret-deb-foot">
-            <button className="btn btn-primary" style={{ width: "100%" }} onClick={goLight}>오늘 하나만 하고 가기 →</button>
-            <div style={{ textAlign: "center", marginTop: 8 }}><button type="button" className="wb-link" style={{ fontSize: 12, fontWeight: 700 }} onClick={() => { _retDebuffPatch(email, { seen: true }); onOpenQuiz(); }}>복습부터 하고 싶어요</button></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  const plain = () => { if (needQuiz) onOpenQuiz(); else onClose(); };
+  const flames = Math.min(6, Math.max(0, before));
+  const misses = Math.min(7, Math.max(1, rec.gap));
   return (
     <div className="modal-bg" style={{ zIndex: 9175 }}>
-      <div className="ret-pop debuff" onClick={e => e.stopPropagation()}>
-        <div className="ret-deb-from"><span className="scene-avatar" style={{ background: mentor.color, width: 34, height: 34, fontSize: 13 }}>{mentor.avatar}</span><div><b>{mentor.name} 사수</b><small>{rec.gap}일 결근 후 출근</small></div><span className="ret-deb-wp">🎁 {wp.toLocaleString()}P</span></div>
-        <div className="ret-deb-title">{enc.t}</div>
-        <div className="ret-deb-msg">{enc.m}</div>
-        {(() => { const before = _retStreakBefore(email, rec.gap); if (before <= 0) return null; return (
-          <div className="ret-deb-streak">
-            <div><small>결근 전 연속 출근</small><b>🔥 {before}일</b></div>
-            <span className="ret-deb-streak-arrow">→</span>
-            <div><small>{rec.defended ? "지금" : "그냥 닫으면"}</small><b className={rec.defended ? "" : "neg"}>{rec.defended ? "🔥 " + (before + rec.gap + 1) + "일 유지" : "1일부터 다시"}</b></div>
-            {!rec.defended && item && lv >= 1 && lv <= 3 && <div><small>{item.name} 쓰면</small><b>🔥 {before + rec.gap + 1}일 유지</b></div>}
-          </div>
-        ); })()}
-
-        {rec.defended && (
-          <div className="ret-deb-box ok">{rec.defended === "extend" ? "🕐 " : "🌴 "}<b>{rec.defended === "annual" ? "연차" : rec.defended === "vacay" ? "휴가" : "출근 시간 연장권"}</b>{rec.defended === "extend" ? "을 썼어요! 어제도 출근한 걸로 인정됐고 연속 출근 기록도 그대로예요." : "를 썼어요! 복습 없이 바로 들어가도 되고, 연속 출근 기록도 그대로예요."}</div>
-        )}
-        {gp && gp.status === "failed" && !rec.defended && (
-          <div className="ret-deb-box warn">🎯 내 목표({gp.days}일)가 여기서 끊겼어요.. 홈에서 다시 잡으면 돼요.</div>
-        )}
-        {gp && gp.status === "active" && !rec.defended && lv >= 1 && lv <= 3 && (
-          <div className="ret-deb-box warn">⚠️ 결근이 생겨서 <b>내 목표({gp.days}일 · 지금 {(_retGoalProgress(email) || {}).done || 0}일째)</b>가 끊길 참이에요. {item ? <><b>{item.name}</b>를 쓰면 막을 수 있어요. </> : null}이 창을 그냥 닫으면 목표는 리셋돼요.</div>
-        )}
-
-        {lv === 3 && !rec.defended && !rec.surveyDone && (
-          <div className="ret-deb-survey">
-            <div className="ret-deb-q">사유서.. 라고 하니 무겁지만 <small>왜 못 오셨는지만 알려주세요. 제가 고치는 데 써요</small></div>
-            <div className="ret-deb-opts">{RET_REASONS.map(r => <button key={r} className={"ret-deb-opt" + (reason === r ? " on" : "")} onClick={() => setReason(r)}>{r}</button>)}</div>
-            <textarea className="ret-deb-memo" rows={2} placeholder="한 줄 더 (선택)" value={memo} onChange={e => setMemo(e.target.value)} />
-            <button className="btn btn-ghost" style={{ marginTop: 6 }} disabled={!reason} onClick={submitSurvey}>사유서 제출</button>
-          </div>
-        )}
-
-        {item && !rec.defended && (
-          <div className="ret-deb-box">
-            <div><b>{item.icon} {item.name}</b> ({item.cost}P){lv === 1 ? "을 쓰면 어제도 출근한 걸로 인정돼요. 연속 출근이 안 끊겨요." : "를 쓰면 빠진 날이 출근으로 인정돼요. 연속 출근과 내 목표가 그대로 이어지고, 복습 없이 바로 들어갈 수 있어요."} 지금 <b>{wp.toLocaleString()}P</b> 있어요{(Number(inv[item.id]) || 0) > 0 ? " · " + item.name + " " + inv[item.id] + "장 보유" : ""}</div>
-            <div className="ret-deb-actions">
-              {(Number(inv[item.id]) || 0) > 0
-                ? <button className="btn btn-primary" onClick={() => defendWith(item.id)}>{item.name} 쓰기</button>
-                : <button className="btn btn-primary" disabled={wp < item.cost} onClick={buyNow}>{item.name} 사서 쓰기 ({item.cost}P)</button>}
-              {wp < item.cost && (Number(inv[item.id]) || 0) === 0 && <span className="ret-deb-note">{lv === 1 ? "지금은 포인트가 조금 모자라네요.. 오늘부터 다시 세면 돼요!" : "지금은 포인트가 조금 모자라네요.. Review Quiz 하고 들어가면 돼요!"}</span>}
-            </div>
-          </div>
-        )}
-
-        {lv === 4 && (
-          <div className="ret-deb-box">
-            <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>유비챌은 <b>4주 · 매일 인증 · 같이 하는 방</b>이에요. 혼자 매일이 안 될 땐 같이 하는 게 답이더라고요. 1일1비 기록은 그대로 남아 있으니 걱정 마세요.</div>
-            <a className="btn btn-primary" style={{ marginTop: 8, display: "inline-flex" }} href={_TY_UBCHALL_URL} target="_blank" rel="noopener">유비챌 보러 가기 →</a>
-          </div>
-        )}
-
-        <div className="ret-deb-foot">
-          {needQuiz
-            ? <button className="btn btn-primary" style={{ width: "100%" }} onClick={onOpenQuiz}>Review Quiz 하고 출근하기 →</button>
-            : <button className="btn btn-primary" style={{ width: "100%" }} onClick={onClose}>{lv === 4 ? "그래도 오늘은 출근할래요" : "오늘 출근하기 →"}</button>}
-          {needQuiz && (lv === 3 && !rec.surveyDone) && <div className="ret-deb-note" style={{ marginTop: 6 }}>사유서는 안 쓰셔도 괜찮아요. Quiz만 하면 열려요.</div>}
+      <div className="ret-pop ret-cb" onClick={e => e.stopPropagation()}>
+        <span className="ret-cb-wp">🎁 내 포인트 {wp.toLocaleString()}P</span>
+        <div className="ret-cb-ico">{copy.ico}</div>
+        <div className="ret-cb-title">{copy.t}</div>
+        <div className="ret-cb-days" aria-label={"결근 전 연속 출근 " + before + "일, 결근 " + rec.gap + "일"}>
+          {Array.from({ length: flames }).map((_, i) => <span key={"f" + i} className="on">🔥</span>)}
+          {Array.from({ length: misses }).map((_, i) => <span key={"m" + i} className="miss">✕</span>)}
+          <span className="now">오늘</span>
         </div>
+        <div className="ret-cb-cards">
+          <button type="button" className="ret-cb-card good" disabled={!canUse} onClick={useItem}>
+            <span className="ret-cb-tag">추천</span>
+            <span className="ret-cb-cico">{item.icon}</span>
+            <b>{item.name} 쓰기</b>
+            <small className="cost">{owned ? item.name + " " + inv[item.id] + "장 있어요" : item.cost + "P"}</small>
+            <small>🔥 {keep}일 연속 유지<br />🎯 목표 그대로{lv >= 2 ? <><br />📝 복습 없이 바로</> : null}</small>
+            {!canUse && <small className="short">포인트가 조금 모자라요</small>}
+          </button>
+          <button type="button" className="ret-cb-card plain" onClick={plain}>
+            <span className="ret-cb-cico">▶️</span>
+            <b>그냥 시작</b>
+            <small>{lv >= 2 ? <>📝 복습 5문제 먼저<br /></> : null}🔥 1일부터 다시<br />🎯 목표 리셋<br />→ 끝나면 {lv === 3 ? "📋 설문 + 새 목표" : "새 목표"}</small>
+          </button>
+        </div>
+        {lv === 3 && <div className="ret-cb-note">⏳ 휴가는 7일 결근까지만 쓸 수 있어요</div>}
       </div>
     </div>
   );
+}
+
+// ── 결근 복귀 설문 (오늘 일정 끝낸 뒤) ──
+// ★ 2026-10-13: 8일 이상 결근, 3~7일 결근에 아이템을 안 쓴 사람. 좋았던 점·아쉬웠던 점 복수 선택 + 한마디. 전부 선택 사항.
+const RET_CB_GOOD = ["🏢 진짜 외국계 회사에 출근하는 콘셉트", "💬 바로 써먹는 실무 표현과 상황 예문", "⏱️ 하루 5~10분 부담 없는 분량", "📒 업무노트·나만의 노트로 다시 보기", "✍️ 네이티브 버전으로 고쳐주는 영작 첨삭·AI 피드백"];
+const RET_CB_BAD = ["🏠 첫 화면에서 어디부터 누를지 모르겠음", "📱 접속·화면이 번거로웠어요 (로그인·휴대폰·오류 등)", "📚 며칠 빠지니 밀린 Day가 부담됐어요", "🤔 언제 할지 정해두지 않아 자꾸 잊었어요", "🙋 혼자 하니 동기부여가 안 됐어요", "💸 가격이 부담됐어요", "💼 내 업무·업계와 잘 안 맞았어요", "📉 실력이 느는 게 잘 안 느껴졌어요"];
+function RetComebackSurvey({ rec, hasNext, onDone }) {
+  const email = _retEmail();
+  const [good, setGood] = React.useState([]);
+  const [bad, setBad] = React.useState([]);
+  const [memo, setMemo] = React.useState("");
+  const toggle = (list, set, v) => set(list.indexOf(v) >= 0 ? list.filter(x => x !== v) : list.concat([v]));
+  const finish = (send) => {
+    if (send && (good.length || bad.length || memo.trim())) {
+      const payload = { kind: "comeback", good, bad, memo: memo.trim(), gap: rec.gap, level: rec.level, defended: rec.defended || null, at: new Date().toISOString() };
+      try { const l = _retLoad("REASONS", email, { list: [] }); l.list = (l.list || []).concat([payload]); _retSave("REASONS", email, l); } catch (e) {}
+      try { if (window.OD && window.OD.enabled && window.OD.saveSurveyResponse && email !== "guest") window.OD.saveSurveyResponse(email, "absence_reason", payload).catch(() => {}); } catch (e) {}
+    }
+    _retDebuffPatch(email, { surveyDone: true });
+    onDone();
+  };
+  const opt = (list, set, v) => <button key={v} type="button" className={"ret-cb-opt" + (list.indexOf(v) >= 0 ? " on" : "")} onClick={() => toggle(list, set, v)}>{v}</button>;
+  return (
+    <div className="modal-bg" style={{ zIndex: 9176 }}>
+      <div className="ret-pop ret-cb ret-cb-survey" onClick={e => e.stopPropagation()}>
+        {hasNext && <div className="ret-cb-step">1 / 2</div>}
+        <div className="ret-cb-title" style={{ marginTop: 4 }}>오랜만의 출근 완료! 🙌</div>
+        <div className="ret-cb-sub">다시 와줘서 고마워요. 딱 2가지만 알려주세요 (선택)</div>
+        <div className="ret-cb-q">👍 좋았던 점 <span className="ret-cb-multi">✅ 여러 개 골라도 돼요</span></div>
+        <div className="ret-cb-opts">{RET_CB_GOOD.map(v => opt(good, setGood, v))}</div>
+        <div className="ret-cb-q">👎 아쉬웠던 점 <span className="ret-cb-multi">✅ 여러 개 골라도 돼요</span></div>
+        <div className="ret-cb-opts">{RET_CB_BAD.map(v => opt(bad, setBad, v))}</div>
+        <input className="ret-cb-memo" type="text" maxLength={300} placeholder="✍️ 한마디 더 (선택)" aria-label="한마디 더" value={memo} onChange={e => setMemo(e.target.value)} />
+        <button type="button" className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={() => finish(true)}>{hasNext ? "보내고 다음 →" : "보내기"}</button>
+        <button type="button" className="ret-cb-link" onClick={() => finish(false)}>건너뛰기</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 새 목표 정하기 (오늘 일정 끝낸 뒤) ──
+// ★ 2026-10-13: 결근하고 돌아왔는데 내 목표가 없거나 끊긴 사람. 짧은 목표(7일)를 먼저 추천.
+function RetNewGoalPopup({ step, onDone }) {
+  const email = _retEmail();
+  const [pick, setPick] = React.useState(RET_GOALS[0].days);
+  const start = () => { try { _retSetGoal(email, pick); } catch (e) {} _retDebuffPatch(email, { goalAsked: true }); onDone(); };
+  const later = () => { _retDebuffPatch(email, { goalAsked: true }); onDone(); };
+  return (
+    <div className="modal-bg" style={{ zIndex: 9176 }}>
+      <div className="ret-pop ret-cb" onClick={e => e.stopPropagation()}>
+        {step && <div className="ret-cb-step">{step}</div>}
+        <div className="ret-cb-ico">🎯</div>
+        <div className="ret-cb-title">오늘 출근 끝! 🎉{"\n"}새 목표 하나 잡아볼까요?</div>
+        <div className="ret-cb-goals">
+          {RET_GOALS.map((g, i) => (
+            <button key={g.days} type="button" className={"ret-cb-goal" + (pick === g.days ? " on" : "")} onClick={() => setPick(g.days)}>
+              {i === 0 && <span className="ret-cb-tag">추천</span>}
+              <b>{g.days}일</b><small>+{g.p.toLocaleString()}P</small>
+            </button>
+          ))}
+        </div>
+        <div className="ret-cb-sub" style={{ fontWeight: 800, color: "var(--ink)" }}>🔥 오늘이 1일째 · {pick - 1}일만 더!</div>
+        <button type="button" className="btn btn-primary" style={{ width: "100%", marginTop: 14 }} onClick={start}>🎯 {pick}일 목표 시작하기 →</button>
+        <button type="button" className="ret-cb-link" onClick={later}>나중에 할게요</button>
+      </div>
+    </div>
+  );
+}
+// 오늘 결근 복귀자의 '일정 끝낸 뒤' 팝업이 남았나: { survey, goal }
+function _retComebackNeeds(email) {
+  try {
+    if (!_RET_ON()) return null;
+    const d = _retDebuff(email);
+    if (!d || d.date !== _tyTodayISO() || !(d.gap >= 1)) return null;
+    const survey = !d.surveyDone && (d.gap >= 8 || (d.level === 3 && !d.defended && !d.light));
+    const g = _retGoal(email);
+    const goal = !d.goalAsked && !(g && g.status === "active");
+    if (!survey && !goal) return null;
+    return { survey, goal };
+  } catch (e) { return null; }
 }
 
 // ── PERK SHOP (OFFICE 하위 탭) ──
@@ -18834,6 +18903,27 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished, afterAb
     } catch (e) {}
     if (onFinished) onFinished({ score: res.filter(r => r.ok && !r.preview).length, total: res.filter(r => !r.preview).length, at: new Date().toISOString(), n });
   };
+  // ★ 2026-10-13: 결근 뒤 복습은 문제 수 고르기 없이 5문제 고정 (배운 표현이 모자라면 가능한 만큼)
+  if (!n && afterAbsence) {
+    const k = sizes.length ? (sizes.indexOf(5) >= 0 ? 5 : sizes[0]) : 0;
+    return (
+      <ActivityShell title="REVIEW QUIZ" onClose={onClose}>
+        <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
+          <div style={{ fontSize: 48, lineHeight: 1 }}>📝</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink)", marginTop: 10 }}>감 찾고 들어가요</div>
+          {k > 0 && <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>{Array.from({ length: k }).map((_, i) => <span key={i} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #C79233", background: "var(--cream)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "var(--ink)" }}>{i + 1}</span>)}</div>}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 800, background: "var(--paper-warm)", padding: "6px 12px", borderRadius: 999 }}>⏱️ 3분</span>
+            <span style={{ fontSize: 12.5, fontWeight: 800, background: "var(--paper-warm)", padding: "6px 12px", borderRadius: 999 }}>📚 배운 표현만</span>
+          </div>
+          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>📝 {k || 5}문제 <span style={{ color: "var(--ink-mute)" }}>→</span> 🔓 오늘 일정 열림</div>
+          {k > 0
+            ? <button className="btn btn-primary" style={{ width: "100%", marginTop: 18, justifyContent: "center" }} onClick={() => setN(k)}>복습 시작 →</button>
+            : <button className="btn btn-primary" style={{ width: "100%", marginTop: 18, justifyContent: "center" }} onClick={() => { if (onFinished) onFinished({ score: 0, total: 0, at: new Date().toISOString(), n: 0 }); onClose(); }}>아직 복습할 표현이 적어요. 오늘 출근하기 →</button>}
+        </div>
+      </ActivityShell>
+    );
+  }
   if (!n) {
     return (
       <ActivityShell title="REVIEW QUIZ · 퇴근 후 SIDE PROJECT" onClose={onClose}>
@@ -22159,7 +22249,7 @@ window.SimApp = App;
       <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1)">
         <div class="muted" style="margin-bottom:4px;">리텐션 시뮬레이션 (개발 뷰)</div>
         <div class="dp-row" style="grid-template-columns: repeat(5, 1fr)">
-          ${[[1, '결근 1일'], [2, '결근 2일'], [3, '결근 3일'], [30, '결근 30일']].map(([g, t]) => `<button class="dp-btn" data-act="gap-${g}" style="${String(sessionStorage.getItem('__OD_RET_GAP') || '') === String(g) ? 'background:rgba(243,138,92,0.4)' : ''}" title="어제부터 ${g}일 결근한 걸로 보고 디버프 팝업">${t}</button>`).join('')}
+          ${[[1, '결근 1일'], [2, '결근 2일'], [5, '결근 5일'], [8, '결근 8일']].map(([g, t]) => `<button class="dp-btn" data-act="gap-${g}" style="${String(sessionStorage.getItem('__OD_RET_GAP') || '') === String(g) ? 'background:rgba(243,138,92,0.4)' : ''}" title="어제부터 ${g}일 결근한 걸로 보고 디버프 팝업">${t}</button>`).join('')}
           <button class="dp-btn" data-act="gap-0" title="결근 시뮬레이션 해제 (실제 기록으로)">해제</button>
         </div>
         <div class="dp-row" style="grid-template-columns: 1fr 1fr; margin-top:4px">
