@@ -547,8 +547,9 @@ function unmPlusMonth(iso) { const d = new Date(iso); d.setMonth(d.getMonth() + 
 function unmMd(d) { if (!d) return "-"; const x = new Date(d); return x.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).replace(/\.\s?/g, "/").replace(/\/$/, ""); }
 function unmPhone(p) { const d = String(p || "").replace(/\D/g, ""); return d.length === 11 ? d.slice(0, 3) + "-" + d.slice(3, 7) + "-" + d.slice(7) : (d || ""); }
 function unmIsActive(r) { return !!r.last_paid_at && unmPlusMonth(r.last_paid_at).getTime() > Date.now(); }
-// ★ 2026-10-12 보상 방식 확정(버디): 환불 대신 '못 쓴 개월 수만큼 이용 기간 연장'. 가입(또는 계정 연결) 뒤 운영자 뷰 수동 연장으로 넣는다.
-//   못 쓴 개월 = 결제 횟수 (결제 중인 사람은 마지막 결제 달이 가입 때 자동으로 붙으니 1개월 뺀다). 시트 동기화는 더 긴 만료일을 안 줄인다.
+// ★ 2026-10-12 보상 방식 확정(버디): 환불 대신 '못 쓴 개월 수만큼 이용 기간 연장'. 가입(또는 계정 연결) 되면 시트 동기화가
+//   가입 전에 통째로 지나간 결제 달 수를 세어 만료일에 자동으로 더한다 (latpeed-sheet-sync unusedMonthsBeforeSignup). 운영자가 손댈 것 없음.
+//   문자 문구의 개월 수 = 같은 계산 (결제 중인 사람은 마지막 결제 달을 쓰는 것으로 봐서 1개월 뺀다).
 function unmUnusedMonths(r) { const n = Number(r.pay_count) || 0; return Math.max(0, unmIsActive(r) ? n - 1 : n); }
 function unmMessage(r) {
   const name = (r.name || "").trim() || "회원";
@@ -556,7 +557,7 @@ function unmMessage(r) {
   const m = unmUnusedMonths(r);
   if (unmIsActive(r)) {
     const code = Number(r.last_amount) >= 13900 ? "1DAY1BIZ365-2" : "1DAY1BIZ365";
-    const comp = m > 0 ? "그동안 결제하시고 못 쓰신 " + m + "개월은 가입하시면 이용 기간에 그대로 더해 드릴게요." : "가입하시면 이번 달 결제분부터 바로 이용하실 수 있어요.";
+    const comp = m > 0 ? "그동안 결제하시고 못 쓰신 " + m + "개월은 가입하시면 이용 기간에 자동으로 더해져요." : "가입하시면 이번 달 결제분부터 바로 이용하실 수 있어요.";
     return head + "래피드 결제 내역은 확인했는데, 아직 1일1비 앱 가입이 되어 있지 않아 이용을 못 하고 계신 것 같아 연락드려요.\n\n"
       + "아래 주소에서 결제하신 이메일(" + r.latpeed_email + ")과 가입 코드 " + code + " 로 가입해 주시면 결제 내역이 바로 연결돼요.\n" + UNM_SITE + "\n\n"
       + "다른 이메일로 가입하고 싶으시면 이 번호로 그 이메일만 알려주세요. 저희가 연결해 드릴게요.\n"
@@ -2314,6 +2315,7 @@ function App() {
     const codes = [];
     if (pref.signup_code) codes.push(pref.signup_code);
     if (u.cohort === 'trial-ubc7' && !codes.includes('UBC7-1DAY1BIZ')) codes.push('UBC7-1DAY1BIZ');
+    if (u.cohort === 'trial-ubc10' && !codes.includes('UBC10-7DAYS')) codes.push('UBC10-7DAYS');
     if (pref.plan === 'part2' && !codes.includes('1DAY1BIZ365-2')) codes.push('1DAY1BIZ365-2');
     if (pref.plan === 'part1' && !codes.includes('1DAY1BIZ365')) codes.push('1DAY1BIZ365');
     if (Array.isArray(pref.codes_used)) pref.codes_used.forEach(c => { if (c && !codes.includes(c)) codes.push(c); });

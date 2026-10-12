@@ -50,6 +50,18 @@ export function plusOneMonthKstEnd(iso: string): string {
   const ymd = n.toISOString().slice(0, 10);
   return `${ymd}T23:59:59+09:00`;
 }
+// ★ 2026-10-12 보상 연장: 결제했는데 앱 가입이 늦은 사람은, 가입 전에 통째로 지나간 결제 달 수만큼 만료일을 자동으로 더 준다.
+//   (못 쓴 달 = 결제일 + 1개월 이 가입일보다 앞선 결제. 가입한 달은 쓴 것으로 본다.) 매일 같은 값이 나오므로 중복 적용되지 않는다.
+export function unusedMonthsBeforeSignup(paidAts: string[], signupIso: string | null | undefined): number {
+  if (!signupIso) return 0;
+  const signup = new Date(signupIso).toISOString();
+  return paidAts.filter(a => new Date(plusOneMonthKstEnd(a)).toISOString() <= signup).length;
+}
+export function plusMonthsKstEnd(iso: string, months: number): string {
+  let cur = iso;
+  for (let i = 0; i < months; i++) cur = plusOneMonthKstEnd(cur);
+  return cur;
+}
 // 전화번호 비교용: 숫자만, 뒤 8자리 (010 유무·하이픈·국가번호 차이 무시)
 export function phoneKey(p: string | number | undefined): string {
   const d = String(p || "").replace(/\D/g, "");
@@ -64,7 +76,7 @@ export function normalizeStatus(s: string | undefined): "paid" | "cancel" | "fai
 }
 // 이메일별로 '마지막 결제 완료' 와 '그 뒤의 취소' 를 찾는다
 export function reduceRows(rows: Row[]) {
-  const by: Record<string, { name: string; phone: string; lastPaid: string | null; firstPaid: string | null; cancelAfter: string | null; amount: number; payCount: number }> = {};
+  const by: Record<string, { name: string; phone: string; lastPaid: string | null; firstPaid: string | null; cancelAfter: string | null; amount: number; payCount: number; paidAts: string[] }> = {};
   const seen = new Set<string>();   // ★ 2026-10-13: 시트에 같은 구간을 두 번 붙여 넣은 줄(이메일·시각·상태가 같음)은 한 번만 센다
   for (const r of rows) {
     const email = String(r.email || "").trim().toLowerCase();
@@ -72,10 +84,10 @@ export function reduceRows(rows: Row[]) {
     const at = parseKstAt(r.at); if (!at) continue;
     const st = normalizeStatus(r.status);
     const key = email + "|" + at + "|" + st; if (seen.has(key)) continue; seen.add(key);
-    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, firstPaid: null, cancelAfter: null, amount: 0, payCount: 0 });
+    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, firstPaid: null, cancelAfter: null, amount: 0, payCount: 0, paidAts: [] });
     if (!cur.phone) cur.phone = phoneKey(r.phone);
     if (st === "paid") {
-      cur.payCount++;
+      cur.payCount++; cur.paidAts.push(at);
       if (!cur.firstPaid || at < cur.firstPaid) cur.firstPaid = at;
       if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.cancelAfter = null; cur.amount = Number(r.amount) || 0; }
     }
@@ -115,7 +127,8 @@ Deno.serve(async (req) => {
     const email = queue.shift()!;
     const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
-    const want = plusOneMonthKstEnd(r.lastPaid);
+    const comp = u ? unusedMonthsBeforeSignup(r.paidAts, u.signup_date) : 0;
+    const want = plusMonthsKstEnd(plusOneMonthKstEnd(r.lastPaid), comp);
     const wantIso = new Date(want).toISOString();
     if (!u) {
       // 래피드 이메일 ≠ 앱 이메일 인 사람 찾기: ① 전화번호 뒤 8자리가 같은 계정이 딱 하나면 별칭을 자동으로 넣고 그 계정에 바로 적용
@@ -181,11 +194,11 @@ Deno.serve(async (req) => {
     // ★ 새 결제가 있을 때만 (DB 만료일 < 시트 기준 만료일) 연장 + 해지마커 해제. 만료일이 이미 같거나 더 뒤면 아무것도 안 건드린다.
     //   (2026-10-03 사고: 날짜가 같은 사람의 해지마커까지 지워서 구독 취소자가 '정상 활성' 으로 바뀌었다)
     if (dbEnd && dbEnd >= wantIso) { skipped++; continue; }
-    applied.push({ email: u.email, name: u.name, from: dbEnd, to: wantIso, paid: r.lastPaid });
+    applied.push({ email: u.email, name: u.name, from: dbEnd, to: wantIso, paid: r.lastPaid, compMonths: comp || undefined });
     if (!dry) {
       await sb.from("users").update({
         membership_ends_at: wantIso, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
-        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid },
+        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid, ...(comp ? { comp_months: comp } : {}) },
       }).eq("email", u.email);
     }
   }

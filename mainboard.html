@@ -21173,6 +21173,33 @@ function App() {
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
   if (_membershipExpired) {
     const endDateStr = _endsAt ? _endsAt.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    // ★ 2026-10-12 체험 코드(UBC10-7DAYS 등) 회원: '휴직' 대신 '체험 완료' 화면. 결제하면 다음 07:00 시트 동기화가 member 로 바꿔 열린다.
+    const _isTrialUser = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
+    if (_isTrialUser) {
+      const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : '7일 체험';
+      return (
+        <div className="office" style={{ filter: "saturate(0.6)" }}>
+          <main className="desk">
+            <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(42,31,20,0.78)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+              <div style={{ background: "var(--paper)", border: "2px solid var(--accent)", borderRadius: 14, padding: "36px 32px 28px", maxWidth: 460, width: "100%", textAlign: "center", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.4)" }}>
+                <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", borderRadius: 4, transform: "rotate(-4deg)", marginBottom: 18 }}>체험 완료</div>
+                <h1 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.35, marginBottom: 14, color: "var(--ink)" }}>{_trialName}이<br/><span style={{ color: "var(--accent)" }}>끝났어요</span></h1>
+                <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
+                  지난 7일처럼 매일 한 표현씩 계속 쌓으려면<br/>멤버십으로 이어가세요.<br/>
+                  <span style={{ color: "var(--ink-mute)", fontSize: 12.5 }}>월 13,900원 · 언제든 해지</span>
+                </p>
+                <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 8, padding: "12px 14px", fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, fontWeight: 500, marginBottom: 18 }}>
+                  💼 결제하면 그동안의 단어, 노트, 출근 기록이 그대로 이어져요. 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
+                </div>
+                <a href={LATPEED_MEMBERSHIP_URL} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "14px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, marginBottom: 10, boxSizing: "border-box" }}>멤버십으로 이어가기 →</a>
+                <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 고객센터</a>
+                <div style={{ marginTop: 22, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: 11, color: "var(--ink-mute)" }}>결제 후 다음 날 아침 7시에 자동으로 열려요. 더 빨리 열고 싶으면 고객센터로 알려주세요.</div>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
     return (
       <div className="office" style={{ filter: "saturate(0.5) brightness(0.95)" }}>
         <main className="desk">
