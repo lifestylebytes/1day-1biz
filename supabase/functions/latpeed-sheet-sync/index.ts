@@ -169,8 +169,11 @@ Deno.serve(async (req) => {
     //   DB 만료일이 시트보다 뒤면(운영자가 손으로 늘린 경우 등) 건드리지 않는다.
     if (wantIso < nowIso) {
       const graceEnd = new Date(new Date(wantIso).getTime() + GRACE_DAYS * 86400000).toISOString();
-      if (graceEnd < nowIso && u.cohort === "member" && !u.membership_cancel_at && (!dbEnd || dbEnd <= wantIso)) {
-        ended.push({ email: u.email, name: u.name, paid: r.lastPaid, ends: dbEnd || wantIso });
+      // ★ 2026-10-12: 운영자가 손으로 늘린 만료일(보상 연장·해지 시 +N일)도, 그 날짜 + 2일이 지나면 똑같이 해지마커를 세운다.
+      //   (앱이 fail-open 이라 마커 없이 만료일만 지나면 계속 열려 있었다)
+      const extEnded = !!dbEnd && dbEnd > wantIso && new Date(new Date(dbEnd).getTime() + GRACE_DAYS * 86400000).toISOString() < nowIso;
+      if (graceEnd < nowIso && u.cohort === "member" && !u.membership_cancel_at && (!dbEnd || dbEnd <= wantIso || extEnded)) {
+        ended.push({ email: u.email, name: u.name, paid: r.lastPaid, ends: dbEnd || wantIso, extended: extEnded || undefined });
         if (!dry) await sb.from("users").update({ membership_ends_at: dbEnd || wantIso, membership_cancel_at: nowIso, membership_cancel_reason: "latpeed_no_renewal" }).eq("email", u.email);
       } else skipped++;
       continue;

@@ -547,18 +547,24 @@ function unmPlusMonth(iso) { const d = new Date(iso); d.setMonth(d.getMonth() + 
 function unmMd(d) { if (!d) return "-"; const x = new Date(d); return x.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).replace(/\.\s?/g, "/").replace(/\/$/, ""); }
 function unmPhone(p) { const d = String(p || "").replace(/\D/g, ""); return d.length === 11 ? d.slice(0, 3) + "-" + d.slice(3, 7) + "-" + d.slice(7) : (d || ""); }
 function unmIsActive(r) { return !!r.last_paid_at && unmPlusMonth(r.last_paid_at).getTime() > Date.now(); }
+// ★ 2026-10-12 보상 방식 확정(버디): 환불 대신 '못 쓴 개월 수만큼 이용 기간 연장'. 가입(또는 계정 연결) 뒤 운영자 뷰 수동 연장으로 넣는다.
+//   못 쓴 개월 = 결제 횟수 (결제 중인 사람은 마지막 결제 달이 가입 때 자동으로 붙으니 1개월 뺀다). 시트 동기화는 더 긴 만료일을 안 줄인다.
+function unmUnusedMonths(r) { const n = Number(r.pay_count) || 0; return Math.max(0, unmIsActive(r) ? n - 1 : n); }
 function unmMessage(r) {
   const name = (r.name || "").trim() || "회원";
   const head = "[1일1비] 안녕하세요 " + name + "님, 1일1비 운영팀입니다.\n";
+  const m = unmUnusedMonths(r);
   if (unmIsActive(r)) {
     const code = Number(r.last_amount) >= 13900 ? "1DAY1BIZ365-2" : "1DAY1BIZ365";
+    const comp = m > 0 ? "그동안 결제하시고 못 쓰신 " + m + "개월은 가입하시면 이용 기간에 그대로 더해 드릴게요." : "가입하시면 이번 달 결제분부터 바로 이용하실 수 있어요.";
     return head + "래피드 결제 내역은 확인했는데, 아직 1일1비 앱 가입이 되어 있지 않아 이용을 못 하고 계신 것 같아 연락드려요.\n\n"
       + "아래 주소에서 결제하신 이메일(" + r.latpeed_email + ")과 가입 코드 " + code + " 로 가입해 주시면 결제 내역이 바로 연결돼요.\n" + UNM_SITE + "\n\n"
       + "다른 이메일로 가입하고 싶으시면 이 번호로 그 이메일만 알려주세요. 저희가 연결해 드릴게요.\n"
-      + "\n그동안 이용하지 못하신 기간은 " + UNM_FILL + " 해 드릴게요. 불편 드려 죄송합니다.";
+      + "\n" + comp + " 불편 드려 죄송합니다.";
   }
+  const comp = m > 0 ? "다시 시작하시면 그때 못 쓰신 " + m + "개월을 무료로 더해 드리고 싶어요." : "다시 시작하시면 바로 이어서 도와드릴게요.";
   return head + "예전에 래피드로 결제해 주셨던 기간(" + unmMd(r.first_paid_at || r.last_paid_at) + "~" + unmMd(unmPlusMonth(r.last_paid_at)) + ")에 1일1비 앱 가입이 되어 있지 않아, 이용을 못 하셨던 것 같아 연락드려요.\n\n"
-    + "혹시 가입하다 막히신 부분이 있었을까요? 결제하시고 이용 못 하신 기간은 " + UNM_FILL + " 해 드리고 싶어요.\n"
+    + "혹시 가입하다 막히신 부분이 있었을까요? " + comp + "\n"
     + "불편 드려 죄송합니다.";
 }
 async function unmCopy(text) {
