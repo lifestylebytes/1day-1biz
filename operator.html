@@ -534,6 +534,178 @@ function ChurnPanel({ supaUsers }) {
   );
 }
 
+// ============================================================
+// ★ 2026-10-13 결제했는데 앱 계정 없는 사람
+// 래피드 시트엔 결제가 있는데, 같은 이메일(또는 별칭)로 가입한 계정이 없는 사람. 매일 07:00 시트 동기화가 latpeed_unmatched 에 채운다.
+// 회원 표는 users 만 보여 주니 이런 분은 운영자 뷰 어디에도 안 보였다 (10/12 대조 때 결제 중인데 이용 못 하는 회원이 여럿 나옴).
+// 작업: 🔗 계정 연결(다른 이메일로 가입한 계정과 잇기, 다음 동기화부터 결제 반영) · 📱 문자 복사 · 확인 완료(접어 두기)
+// SQL: supabase/migrations/20261013_latpeed_unmatched.sql 실행 + latpeed-sheet-sync 재배포 필요
+// ============================================================
+const UNM_SITE = "https://1day-1biz.youbuddy.co.kr";
+const UNM_FILL = "[보상 방법 넣기]";
+function unmPlusMonth(iso) { const d = new Date(iso); d.setMonth(d.getMonth() + 1); return d; }
+function unmMd(d) { if (!d) return "-"; const x = new Date(d); return x.toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).replace(/\.\s?/g, "/").replace(/\/$/, ""); }
+function unmPhone(p) { const d = String(p || "").replace(/\D/g, ""); return d.length === 11 ? d.slice(0, 3) + "-" + d.slice(3, 7) + "-" + d.slice(7) : (d || ""); }
+function unmIsActive(r) { return !!r.last_paid_at && unmPlusMonth(r.last_paid_at).getTime() > Date.now(); }
+function unmMessage(r) {
+  const name = (r.name || "").trim() || "회원";
+  const head = "[1일1비] 안녕하세요 " + name + "님, 1일1비 운영팀입니다.\n";
+  if (unmIsActive(r)) {
+    const code = Number(r.last_amount) >= 13900 ? "1DAY1BIZ365-2" : "1DAY1BIZ365";
+    return head + "래피드 결제 내역은 확인했는데, 아직 1일1비 앱 가입이 되어 있지 않아 이용을 못 하고 계신 것 같아 연락드려요.\n\n"
+      + "아래 주소에서 결제하신 이메일(" + r.latpeed_email + ")과 가입 코드 " + code + " 로 가입해 주시면 결제 내역이 바로 연결돼요.\n" + UNM_SITE + "\n\n"
+      + "다른 이메일로 가입하고 싶으시면 이 번호로 그 이메일만 알려주세요. 저희가 연결해 드릴게요.\n"
+      + "\n그동안 이용하지 못하신 기간은 " + UNM_FILL + " 해 드릴게요. 불편 드려 죄송합니다.";
+  }
+  return head + "예전에 래피드로 결제해 주셨던 기간(" + unmMd(r.first_paid_at || r.last_paid_at) + "~" + unmMd(unmPlusMonth(r.last_paid_at)) + ")에 1일1비 앱 가입이 되어 있지 않아, 이용을 못 하셨던 것 같아 연락드려요.\n\n"
+    + "혹시 가입하다 막히신 부분이 있었을까요? 결제하시고 이용 못 하신 기간은 " + UNM_FILL + " 해 드리고 싶어요.\n"
+    + "불편 드려 죄송합니다.";
+}
+async function unmCopy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); const ok = document.execCommand("copy"); t.remove(); return ok; } catch (e) { return false; }
+}
+
+function UnmatchedPayPanel({ supaUsers, onDone }) {
+  const opEmail = (() => { try { return (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email || null; } catch (e) { return null; } })();
+  const [rows, setRows] = useState(null);      // null = 불러오는 중
+  const [err, setErr] = useState("");
+  const [showDismissed, setShowDismissed] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const [smsFor, setSmsFor] = useState(null);  // { row, text }
+  const [linkFor, setLinkFor] = useState(null); // { row, app }
+  const [toast, setToast] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = async () => {
+    if (!window.OD || !window.OD.fetchLatpeedUnmatched) { setErr("lib 배포 전이에요."); setRows([]); return; }
+    const r = await window.OD.fetchLatpeedUnmatched(opEmail);
+    if (!r.ok) { setErr(/get_latpeed_unmatched|function|schema/i.test(r.error || "") ? "SQL(20261013_latpeed_unmatched.sql)을 아직 실행하지 않았어요." : ("불러오기 실패: " + (r.error || "?"))); setRows([]); return; }
+    setErr(""); setRows(r.rows);
+  };
+  useEffect(() => { load(); }, []);
+  const flash = (t) => { setToast(t); setTimeout(() => setToast(""), 2200); };
+  if (rows === null) return null;
+  const open = rows.filter(r => !r.dismissed_at);
+  const dismissed = rows.filter(r => r.dismissed_at);
+  const sorted = [...open].sort((a, b) => (unmIsActive(b) - unmIsActive(a)) || (new Date(b.last_paid_at) - new Date(a.last_paid_at)));
+  const activeN = open.filter(unmIsActive).length;
+  const visible = showAll ? sorted : sorted.slice(0, 6);
+  if (!err && rows.length === 0) return null;   // 아무도 없으면 칸을 안 띄운다
+
+  const dismiss = async (r, flag) => {
+    setBusy(true);
+    const res = await window.OD.dismissLatpeedUnmatched(opEmail, r.latpeed_email, flag);
+    setBusy(false);
+    if (!res.ok) { flash("실패: " + (res.error || "?")); return; }
+    flash(flag ? "접어 뒀어요" : "다시 펼쳤어요"); load();
+  };
+  const link = async () => {
+    const app = (linkFor.app || "").trim().toLowerCase();
+    const u = (supaUsers || []).find(x => String(x.email || "").toLowerCase() === app);
+    if (!u) { flash("그 이메일의 앱 계정이 없어요"); return; }
+    if (!confirm((linkFor.row.name || linkFor.row.latpeed_email) + " 님의 래피드 결제를 " + (u.name || u.email) + " 계정에 연결할까요?\n내일 07:00 동기화 때 결제 기간이 반영돼요.")) return;
+    setBusy(true);
+    const res = await window.OD.linkLatpeedAlias(opEmail, linkFor.row.latpeed_email, u.email);
+    setBusy(false);
+    if (!res.ok) { flash("실패: " + (res.error || "?")); return; }
+    setLinkFor(null); flash("✅ 연결했어요. 내일 07:00 동기화 때 반영돼요"); load(); if (onDone) onDone();
+  };
+  const pill = (on) => ({ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 12, background: on ? '#FBE3D8' : '#ECE6DA', color: on ? '#B8431A' : '#5C4A36', whiteSpace: 'nowrap' });
+  const cell = { padding: '9px 10px', borderBottom: '1px solid #F0E9DA', verticalAlign: 'top', fontSize: 12.5, lineHeight: 1.5 };
+  const unfilled = smsFor && smsFor.text.includes(UNM_FILL);
+
+  return (
+    <div className="card" style={{ marginBottom: 16, background: '#FFFBF2', border: '2px solid #E9B99F', position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontWeight: 900, fontSize: 15 }}>💳 결제했는데 앱 계정 없는 사람 <span style={{ color: '#B8431A' }}>{open.length}명</span></div>
+          <div style={{ fontSize: 12, color: '#8A7964', marginTop: 3, lineHeight: 1.6 }}>래피드 시트엔 결제가 있는데, 같은 이메일로 가입한 계정이 없어요. 매일 07:00 동기화 결과예요. 계좌이체(해외결제)는 여기 안 잡혀요.</div>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}><span style={pill(true)}>결제 중 {activeN}명</span><span style={pill(false)}>결제 끝남 {open.length - activeN}명</span></div>
+      </div>
+      {err && <div style={{ fontSize: 12.5, color: '#993C1D', background: '#FFF3D6', borderRadius: 6, padding: '8px 12px' }}>⚠ {err}</div>}
+      {sorted.length > 0 && (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8 }}>
+            <thead><tr style={{ background: '#FBF7EE', textAlign: 'left', fontSize: 11.5, color: '#5C4A36' }}>
+              <th style={cell}>이름 · 결제 이메일</th><th style={cell}>상태</th><th style={cell}>마지막 결제</th><th style={cell}>이용 가능 기간</th><th style={cell}>비슷한 계정 후보</th><th style={cell}>작업</th>
+            </tr></thead>
+            <tbody>
+              {visible.map(r => {
+                const on = unmIsActive(r);
+                const cands = Array.isArray(r.name_matches) ? r.name_matches : [];
+                return (
+                  <tr key={r.latpeed_email}>
+                    <td style={cell}><b>{r.name || '-'}</b><br/><span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, color: '#5C4A36' }}>{r.latpeed_email}</span></td>
+                    <td style={cell}><span style={pill(on)}>{on ? '결제 중' : '끝남'}</span></td>
+                    <td style={cell}>{unmMd(r.last_paid_at)} · {r.pay_count || 0}회</td>
+                    <td style={cell}>~{unmMd(unmPlusMonth(r.last_paid_at))}</td>
+                    <td style={cell}>{cands.length ? cands.map(e => { const u = (supaUsers || []).find(x => String(x.email || '').toLowerCase() === String(e).toLowerCase()); return <div key={e}>{u ? (u.name || e) : e}</div>; }) : <span style={{ color: '#A8997F' }}>후보 없음</span>}</td>
+                    <td style={{ ...cell, whiteSpace: 'nowrap' }}>
+                      <button className="btn btn-mini" disabled={busy} onClick={() => setLinkFor({ row: r, app: cands[0] || '' })}>🔗 계정 연결</button>{' '}
+                      <button className="btn btn-mini" onClick={() => setSmsFor({ row: r, text: unmMessage(r) })}>📱 문자 복사</button>{' '}
+                      <button className="btn btn-ghost btn-mini" disabled={busy} onClick={() => dismiss(r, true)}>확인 완료</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {sorted.length > 6 && <div style={{ textAlign: 'center', marginTop: 8 }}><button className="btn btn-ghost btn-mini" onClick={() => setShowAll(!showAll)}>{showAll ? '접기' : '+ ' + (sorted.length - 6) + '명 더 보기'}</button></div>}
+        </div>
+      )}
+      {dismissed.length > 0 && (
+        <div style={{ marginTop: 10, fontSize: 12, color: '#8A7964' }}>
+          <button className="btn btn-ghost btn-mini" onClick={() => setShowDismissed(!showDismissed)}>확인 완료 {dismissed.length}명 {showDismissed ? '숨기기' : '보기'}</button>
+          {showDismissed && <div style={{ marginTop: 6, display: 'grid', gap: 4 }}>{dismissed.map(r => (
+            <div key={r.latpeed_email}>{r.name || '-'} <span style={{ color: '#A8997F' }}>{r.latpeed_email}</span> · {unmMd(r.dismissed_at)} 확인 <button className="btn btn-ghost btn-mini" onClick={() => dismiss(r, false)}>되돌리기</button></div>
+          ))}</div>}
+        </div>
+      )}
+
+      {linkFor && (
+        <div onClick={() => setLinkFor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(42,31,20,.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} className="card" style={{ width: 'min(520px, 100%)' }}>
+            <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>🔗 {linkFor.row.name || ''}님 계정 연결</div>
+            <div style={{ fontSize: 12.5, color: '#6B5B4A', lineHeight: 1.6, marginBottom: 10 }}>래피드 결제 이메일 <b>{linkFor.row.latpeed_email}</b> 을 이미 가입한 앱 계정과 이어요. 내일 07:00 동기화 때 결제 기간이 그 계정에 반영돼요.</div>
+            <input list="unm-emails" value={linkFor.app} onChange={e => setLinkFor({ ...linkFor, app: e.target.value })} placeholder="앱 가입 이메일 (이름으로 검색돼요)" style={{ width: '100%', padding: '8px 10px', border: '1px solid #D9CDB8', borderRadius: 6, fontFamily: 'inherit', fontSize: 13 }} />
+            <datalist id="unm-emails">{(supaUsers || []).filter(u => !u.is_operator && !u.is_dev_mode).map(u => <option key={u.email} value={u.email}>{u.name}</option>)}</datalist>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 12 }}>
+              <button className="btn btn-ghost" onClick={() => setLinkFor(null)}>취소</button>
+              <button className="btn primary" disabled={busy || !linkFor.app.trim()} onClick={link}>연결하기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {smsFor && (
+        <div onClick={() => setSmsFor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(42,31,20,.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} className="card" style={{ width: 'min(620px, 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>📱 {smsFor.row.name || ''}님께 보낼 문자</div>
+              <button className="btn btn-ghost btn-mini" onClick={() => setSmsFor(null)}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr auto', gap: '6px 10px', alignItems: 'center', fontSize: 13, background: '#FBF7EE', border: '1px solid #E8DFCB', borderRadius: 8, padding: '10px 12px', marginBottom: 10 }}>
+              <span style={{ color: '#8A7964' }}>받는 번호</span><span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{unmPhone(smsFor.row.phone) || '번호 없음'}</span>
+              <button className="btn btn-ghost btn-mini" disabled={!smsFor.row.phone} onClick={async () => flash((await unmCopy(String(smsFor.row.phone || '').replace(/\D/g, ''))) ? '번호를 복사했어요' : '복사 실패')}>번호 복사</button>
+              <span style={{ color: '#8A7964' }}>결제 이메일</span><span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{smsFor.row.latpeed_email}</span><span></span>
+              <span style={{ color: '#8A7964' }}>상황</span><span>{unmIsActive(smsFor.row) ? '결제 중' : '결제 끝남'} · {unmMd(smsFor.row.last_paid_at)}까지 {smsFor.row.pay_count || 0}회 · 이용 가능 ~{unmMd(unmPlusMonth(smsFor.row.last_paid_at))}</span><span></span>
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#8A7964', marginBottom: 4 }}>문자 내용 (여기서 바로 고칠 수 있어요)</div>
+            <textarea value={smsFor.text} onChange={e => setSmsFor({ ...smsFor, text: e.target.value })} rows={12} style={{ width: '100%', padding: '12px 14px', border: '2px solid #9CC98A', background: '#EAF4E4', borderRadius: 10, fontFamily: 'inherit', fontSize: 13.5, lineHeight: 1.65, resize: 'vertical' }} />
+            {unfilled && <div style={{ fontSize: 12.5, background: '#FFF6D6', border: '1px solid #F0DC8C', color: '#7A5B00', borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>⚠ <b>{UNM_FILL}</b> 를 채워야 복사 버튼이 켜져요.</div>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+              <span style={{ fontSize: 12, color: '#8A7964' }}>{smsFor.text.length}자 · {smsFor.text.length > 45 ? '장문 문자(LMS)' : '단문 문자(SMS)'}</span>
+              <button className="btn primary" disabled={unfilled} onClick={async () => flash((await unmCopy(smsFor.text)) ? '✅ 복사됐어요. 문자 앱에 붙여넣기 하세요' : '복사 실패')}>📋 문자 내용 복사</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: '#2E5E2A', color: '#fff', padding: '10px 18px', borderRadius: 22, fontSize: 13.5, fontWeight: 700, zIndex: 60, boxShadow: '0 6px 18px rgba(0,0,0,.2)' }}>{toast}</div>}
+    </div>
+  );
+}
+
 function CsvSyncPanel({ supaUsers, onDone }) {
   const [raw, setRaw] = useState("");
   const [plan, setPlan] = useState(null);
@@ -2526,6 +2698,7 @@ function App() {
               );
             })()}
             {supaUsers.length > 0 && <ChurnPanel supaUsers={supaUsers} />}
+            {supaUsers.length > 0 && <UnmatchedPayPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && <CampaignMatchPanel supaUsers={supaUsers} />}
             {/* ★ 2026-10-08: Latpeed CSV 동기화 패널은 숨김. 매일 07:00 구글시트 → Supabase 자동 동기화(latpeed-sheet-sync)가 대신한다.
                 필요하면 아래 한 줄을 되살리면 된다 (CsvSyncPanel 은 그대로 둠).

@@ -13,8 +13,10 @@
 //   · 래피드 이메일 ≠ 앱 이메일이면 latpeed_aliases 표로 잇는다. 미가입 이메일은 같은 이름의 계정을 nameMatches 로 알려준다.
 //   · 운영자·Dev 계정, 테스트 계정(youbuddy.co@gmail.com)은 제외.
 //   · 가입 전 결제(users 에 없는 이메일)는 latpeed_events 에 남겨 가입 순간 소급 적용되게 한다 (latpeed_apply_pending).
+//   · ★ 2026-10-13: 계정을 못 찾은 결제자 전원(결제 끝난 사람 포함)을 latpeed_unmatched 표에 매일 덮어 쓴다.
+//     운영자 뷰 '결제했는데 앱 계정 없는 사람' 칸이 이 표를 읽는다. 이번에 계정이 잡힌 사람은 resolved_at 을 찍어 목록에서 뺀다.
 // 본문: { rows: [{ name, email, phone, status, amount, at, reason }] }  (at = "26.09.20 21:25" 또는 ISO)
-// 응답: { ok, applied, cancelled, ended, autoAliased, pending, notInSheet, skipped }
+// 응답: { ok, applied, cancelled, ended, autoAliased, pending, unmatched, notInSheet, skipped }
 //   autoAliased: 전화번호로 앱 계정을 찾아 별칭을 자동 등록한 사람 · notInSheet: 앱엔 유료 회원인데 시트엔 결제 이메일이 없는 사람(반대 방향 대조)
 // ============================================================
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
@@ -62,15 +64,21 @@ export function normalizeStatus(s: string | undefined): "paid" | "cancel" | "fai
 }
 // 이메일별로 '마지막 결제 완료' 와 '그 뒤의 취소' 를 찾는다
 export function reduceRows(rows: Row[]) {
-  const by: Record<string, { name: string; phone: string; lastPaid: string | null; cancelAfter: string | null; amount: number }> = {};
+  const by: Record<string, { name: string; phone: string; lastPaid: string | null; firstPaid: string | null; cancelAfter: string | null; amount: number; payCount: number }> = {};
+  const seen = new Set<string>();   // ★ 2026-10-13: 시트에 같은 구간을 두 번 붙여 넣은 줄(이메일·시각·상태가 같음)은 한 번만 센다
   for (const r of rows) {
     const email = String(r.email || "").trim().toLowerCase();
     if (!email || !email.includes("@") || email === "youbuddy.co@gmail.com") continue;
     const at = parseKstAt(r.at); if (!at) continue;
     const st = normalizeStatus(r.status);
-    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, cancelAfter: null, amount: 0 });
+    const key = email + "|" + at + "|" + st; if (seen.has(key)) continue; seen.add(key);
+    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, firstPaid: null, cancelAfter: null, amount: 0, payCount: 0 });
     if (!cur.phone) cur.phone = phoneKey(r.phone);
-    if (st === "paid") { if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.cancelAfter = null; cur.amount = Number(r.amount) || 0; } }
+    if (st === "paid") {
+      cur.payCount++;
+      if (!cur.firstPaid || at < cur.firstPaid) cur.firstPaid = at;
+      if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.cancelAfter = null; cur.amount = Number(r.amount) || 0; }
+    }
     else if (st === "cancel") { if (cur.lastPaid && at >= cur.lastPaid && (!cur.cancelAfter || at > cur.cancelAfter)) cur.cancelAfter = at; }
   }
   return by;
@@ -100,7 +108,7 @@ Deno.serve(async (req) => {
     (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
   const nowIso = new Date().toISOString();
 
-  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = []; let skipped = 0;
+  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = [], unmatched: any[] = []; let skipped = 0;
   const sheetEmails = new Set(emails);
   const queue = emails.slice();
   while (queue.length) {
@@ -110,13 +118,20 @@ Deno.serve(async (req) => {
     const want = plusOneMonthKstEnd(r.lastPaid);
     const wantIso = new Date(want).toISOString();
     if (!u) {
-      // 가입 전 결제: latpeed_events 에 넣어두면 가입 트리거(latpeed_apply_pending)가 소급 적용.
-      // 이미 한 달이 지난 결제는 소급해도 의미가 없으니 기록만 남기지 않고 건너뛴다.
-      if (wantIso < nowIso) { skipped++; continue; }
       // 래피드 이메일 ≠ 앱 이메일 인 사람 찾기: ① 전화번호 뒤 8자리가 같은 계정이 딱 하나면 별칭을 자동으로 넣고 그 계정에 바로 적용
       //   ② 아니면 같은 이름의 계정을 후보로 알려준다 (운영자가 latpeed_aliases 에 넣을 수 있게)
       const pool = (users || []).filter((x: any) => !x.is_operator && !x.is_dev_mode && !x.withdrawn_at && !sheetEmails.has(String(x.email).toLowerCase()));
       const phoneMatches = r.phone ? pool.filter((x: any) => phoneKey(x.phone) === r.phone).map((x: any) => x.email) : [];
+      const nm = r.name.replace(/\s+/g, "");
+      const nameMatches = nm ? pool.filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
+      // ★ 2026-10-13: 결제가 끝난 사람도 운영자 뷰에 보이도록 계정 없는 결제자로 모아 둔다 (전화번호 자동 연결은 결제 중인 사람만)
+      const expired = wantIso < nowIso;
+      if (expired || phoneMatches.length !== 1) {
+        unmatched.push({ latpeed_email: email, name: r.name, phone: r.phone || null, first_paid_at: r.firstPaid, last_paid_at: r.lastPaid,
+          pay_count: r.payCount, last_amount: r.amount || null, name_matches: [...new Set([...phoneMatches, ...nameMatches])] });   // 후보: 전화번호·이름이 같은 계정
+      }
+      // 이미 한 달이 지난 결제는 가입해도 소급할 게 없으니 latpeed_events 엔 안 남긴다.
+      if (expired) { skipped++; continue; }
       if (phoneMatches.length === 1) {
         autoAliased.push({ latpeed_email: email, app_email: phoneMatches[0], name: r.name, by: "phone" });
         if (!dry) await sb.from("latpeed_aliases").upsert({ latpeed_email: email, app_email: String(phoneMatches[0]).toLowerCase(), note: r.name + " (전화번호 자동 매칭)" }, { onConflict: "latpeed_email" }).then(() => {}, () => {});
@@ -124,8 +139,6 @@ Deno.serve(async (req) => {
         queue.push(email);   // 별칭이 생겼으니 그 계정으로 다시 처리
         continue;
       }
-      const nm = r.name.replace(/\s+/g, "");
-      const nameMatches = nm ? pool.filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
       pending.push({ email, name: r.name, paid: r.lastPaid, nameMatches, phoneMatches });
       if (!dry) {
         const { data: ex } = await sb.from("latpeed_events").select("id").eq("email", email).eq("event_at", r.lastPaid).eq("type", "MEMBERSHIP_PAYMENT").limit(1);
@@ -179,8 +192,21 @@ Deno.serve(async (req) => {
       && !sheetEmails.has(String(x.email).toLowerCase()) && !aliasTargets.has(String(x.email).toLowerCase())
       && !(x.membership_ends_at && new Date(x.membership_ends_at).toISOString() < nowIso))
     .map((x: any) => ({ email: x.email, name: x.name, signup: x.signup_date, ends: x.membership_ends_at, pay_source: (x.preferences || {}).pay_source || null }));
+  // ★ 2026-10-13: 계정 없는 결제자 표 갱신. 이번에 다시 나온 사람은 덮어 쓰고(접어 둔 표시는 그대로), 안 나온 사람은 해결로 본다.
+  let unmatchedSaved = false;
+  if (!dry) {
+    const nowSeen = new Date().toISOString();
+    if (unmatched.length) {
+      const { error: ue } = await sb.from("latpeed_unmatched").upsert(unmatched.map(x => ({ ...x, last_seen_at: nowSeen, resolved_at: null })), { onConflict: "latpeed_email" });
+      unmatchedSaved = !ue;
+    } else unmatchedSaved = true;
+    const keep = unmatched.map(x => x.latpeed_email);
+    let q = sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).is("resolved_at", null);
+    if (keep.length) q = q.not("latpeed_email", "in", "(" + keep.map(e => '"' + e.replace(/"/g, "") + '"').join(",") + ")");
+    await q.then(() => {}, () => {});   // 표가 아직 없으면(SQL 미실행) 조용히 넘어간다
+  }
   if (!dry && (applied.length || cancelled.length || ended.length)) {
     await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, ended: ended.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email), ended.map(e => e.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
   }
-  return Response.json({ ok: true, dry, applied, cancelled, ended, autoAliased, pending, notInSheet, skipped });
+  return Response.json({ ok: true, dry, applied, cancelled, ended, autoAliased, pending, unmatched, unmatchedSaved, notInSheet, skipped });
 });
