@@ -7495,6 +7495,60 @@ function UnlockChip({ k, rd }) {
   return <span className="unlock-chip">NEW · 오늘 열렸어요</span>;
 }
 
+// ── 팝업 줄 세우기 (2026-10-13) ──
+//   팝업은 한 번에 1개만. "접속하자마자" 줄과 "오늘 일정 끝낸 뒤" 줄로 나누고, 번호가 작은 것부터 띄운다.
+//   떠 있는 팝업은 닫힐 때까지 그대로 둔다 (뒤에 더 앞 번호가 와도 끼어들지 않는다).
+//   오늘 일정 끝낸 뒤 줄(100번대)은 그날 일정 4개를 끝낸 뒤에만 열린다. 일정을 안 끝내면 그날은 안 뜬다.
+const _POP_ORDER = {
+  // 🚪 접속하자마자
+  "retire-d7": 10, "notice-personal": 20, "promo-ceremony": 30, "senior": 40, "tf-select": 50, "absence": 60, "first-week": 70,
+  // ✅ 오늘 일정 끝낸 뒤
+  "exp": 110, "setup": 120, "milestone": 130, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
+  "notice-all": 180, "unlock": 190, "kakao": 200, "push": 210, "notice-room": 220, "curriculum": 230, "pulse": 240,
+};
+function _popQ() { if (!window.__odPopQ) window.__odPopQ = { want: {}, owner: null, doneAt: 0, timer: null }; return window.__odPopQ; }
+function _popTodayDone() {
+  try {
+    const U = (window.__SIM && window.__SIM.USER) || {};
+    const day = U.realCurrentDay || U.currentDay || 1;
+    return _retTasksDone(_loadJSON("__OD_TASKS_DAY_" + day) || {});
+  } catch (e) { return false; }
+}
+function _popRecompute() {
+  const q = _popQ();
+  const done = _popTodayDone();
+  if (done && !q.doneAt) q.doneAt = Date.now();
+  if (!done) q.doneAt = 0;
+  // 일정을 막 끝낸 직후 1.5초는 기다린다 (EXP 팝업이 먼저 줄을 서게)
+  const settling = done && (Date.now() - q.doneAt < 1500);
+  if (settling) { clearTimeout(q.settle); q.settle = setTimeout(_popRecompute, Math.max(50, 1550 - (Date.now() - q.doneAt))); }
+  if (q.owner && q.want[q.owner]) return;
+  let best = null;
+  Object.keys(q.want).forEach(id => {
+    if (!q.want[id]) return;
+    const o = _POP_ORDER[id] || 999;
+    if (o >= 100 && (!done || settling)) return;
+    if (best === null || o < (_POP_ORDER[best] || 999)) best = id;
+  });
+  if (q.owner !== best) { q.owner = best; try { window.dispatchEvent(new Event("od-pop-q")); } catch (e) {} }
+}
+// 같은 화면 갱신에서 여러 팝업이 동시에 손을 들 수 있으니, 다 들고 나서 한 번에 고른다
+function _popSchedule() { const q = _popQ(); clearTimeout(q.timer); q.timer = setTimeout(_popRecompute, 120); }
+function _popWant(id, on) {
+  const q = _popQ(); const v = !!on;
+  if (!!q.want[id] === v) return;
+  if (v) q.want[id] = true; else { delete q.want[id]; if (q.owner === id) q.owner = null; }
+  _popSchedule();
+}
+function usePopSlot(id, want) {
+  const [, setN] = React.useState(0);
+  React.useEffect(() => { const h = () => setN(n => n + 1); window.addEventListener("od-pop-q", h); return () => window.removeEventListener("od-pop-q", h); }, []);
+  React.useEffect(() => { _popWant(id, want); }, [id, !!want]);
+  React.useEffect(() => () => _popWant(id, false), [id]);
+  return !!want && _popQ().owner === id;
+}
+try { ["od-tasks-changed", "od-day-complete"].forEach(ev => window.addEventListener(ev, _popSchedule)); } catch (e) {}
+
 // ── 슬랙 알림 핑 (2026-09-05, 개발 뷰) ──
 // 단순 카드에서 뺀 NPC 대사를 "메시지가 온 것처럼" 보여준다. 출근 뒤, 팝업이 다 닫히고 1.5초 지나면
 // 휴대폰 알림처럼 위에서 내려온다. 탭하면 시추에이션이 열린다. 하루 1회.
@@ -8856,6 +8910,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
   // 출근부·마일스톤 카드는 2026-09-09 부터 별도 컴포넌트 (AttendanceCard / MilestoneCard, HomePage 바로 위).
   //   PC 홈 오른쪽 칸과 모바일 사원증 탭 두 곳에서 같은 걸 그린다.
   const allTodayDone = TODAY_SCHEDULE.length > 0 && TODAY_SCHEDULE.every(t => doneTasks[t.id]);
+  // ★ 2026-10-13 팝업 줄 세우기: 홈에서 뜨는 팝업도 순서표(_POP_ORDER)대로 한 번에 1개
+  const _cbNeed = (_RET_ON() && !USER.isViewingPast && allTodayDone && retDayPopClosed && !retDayPop && !retDebuff && !retQuiz) ? _retComebackNeeds(USER.email) : null;
+  const _slAbsence = usePopSlot("absence", !!retDebuff || !!retQuiz);   // 복습 퀴즈 푸는 동안에도 자리를 잡고 있는다
+  const _slExp = usePopSlot("exp", !!retDayPop);
+  const _slCbSurvey = usePopSlot("cb-survey", !!(_cbNeed && _cbNeed.survey));
+  const _slCbGoal = usePopSlot("cb-goal", !!(_cbNeed && !_cbNeed.survey && _cbNeed.goal));
+  const _slUnlock = usePopSlot("unlock", !!retUnlock && !retDebuff && !retQuiz);
   useEffect(() => {
     if (!allTodayDone || USER.isViewingPast || _RET_ON()) return;   // 리텐션 엔진에선 완주 복지P 없음 (EXP 로)
     try { const k = "__OD_WP_DAY_TOAST_" + (USER.email || "guest") + "_" + (USER.realCurrentDay || 1); if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); if ((USER.realCurrentDay || 1) >= 30) setTimeout(() => _wpToast(WP_RULES.day, "오늘 완주"), 900); } catch (e) {}
@@ -9099,7 +9160,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {_isDevNext() && !USER.isViewingPast && (
         <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
       )}
-      {retDebuff && !retQuiz && (
+      {retDebuff && !retQuiz && _slAbsence && (
         <RetDebuffPopup rec={retDebuff}
           onOpenQuiz={() => setRetQuiz(true)}
           onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
@@ -9109,19 +9170,19 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
           onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
       )}
-      {retDayPop && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => { setRetDayPop(false); setRetDayPopClosed(true); }} />}
+      {retDayPop && _slExp && <RetDayPopup day={USER.currentDay} email={USER.email} onClose={() => { setRetDayPop(false); setRetDayPopClosed(true); }} />}
       {/* ★ 2026-10-13: 결근 복귀자는 오늘 일정 + EXP 팝업이 끝난 뒤 설문 → 새 목표 */}
       {(() => {
-        if (!_RET_ON() || USER.isViewingPast || !allTodayDone || retDayPop || !retDayPopClosed || retDebuff || retQuiz) return null;
-        const need = _retComebackNeeds(USER.email); if (!need) return null;
+        const need = _cbNeed; if (!need || !(_slCbSurvey || _slCbGoal)) return null;
         const d = _retDebuff(USER.email);
         if (need.survey) return <RetComebackSurvey rec={d} hasNext={need.goal} onDone={() => _retPing()} />;
         const hadSurvey = !!(d && d.surveyDone && (d.gap >= 8 || (d.level === 3 && !d.defended && !d.light)));
         return <RetNewGoalPopup step={hadSurvey ? "2 / 2" : null} onDone={() => _retPing()} />;
       })()}
       {/* ★ 2026-09-24: 결근 팝업·복습 퀴즈가 떠 있는 동안엔 '열린 기능' 팝업을 겹치지 않는다 (닫히면 그때 뜬다) */}
-      {retUnlock && !retDayPop && !retDebuff && !retQuiz && !_retReturningPending(USER.email) && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
-      {_isHomeLive() && !USER.isViewingPast && (
+      {retUnlock && _slUnlock && <RetUnlockPopup keys={retUnlock} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setRetUnlock(null)} />}
+      {/* ★ 2026-10-13: 리텐션 뷰에선 새 '열린 기능'(RetUnlockPopup)만. 옛 UnlockPopup 은 같은 날 겹쳐 떠서 뺐다 */}
+      {_isHomeLive() && !USER.isViewingPast && !_isNextFeature() && (
         <UnlockPopup rd={_rdNow} email={USER.email} onGo={(k) => {
           if (k === "mynotes") { setActive("mynotes"); return; }
           const sel = { attendance: ".attendance", accum: ".today-accum", promo: ".s2-welcome", skills: ".skillgrid", doc: ".home-appline", errands: ".ty-errand" }[k];
@@ -20764,18 +20825,22 @@ function App() {
     window.addEventListener("od-tour-done", done);
     return () => window.removeEventListener("od-tour-done", done);
   }, []);
+  // ★ 2026-10-13 팝업 줄 세우기: 바로 열지 않고 줄에 세운다. 개인 피드백 답변(1:1)은 접속 시, 전체 공지는 오늘 일정 끝낸 뒤.
+  const [_autoDirect, _setAutoDirect] = React.useState(null);
+  const [_autoAll, _setAutoAll] = React.useState(null);
   React.useEffect(() => {
     if (_autoPoppedRef.current) return;
     if (!dbNotices || dbNotices.length === 0) return;
     if (!_tourCleared && _tourPending()) return;   // 투어 먼저, 공지는 그다음
-    const target = dbNotices.find(n => n.popup && !readIds.has(n.id));
-    if (!target) return;
     let shown = [];
     try { shown = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); } catch (e) {}
-    if (shown.includes(target.id)) return;
+    const ok = (n) => n.popup && !readIds.has(n.id) && !shown.includes(n.id);
+    const direct = dbNotices.find(n => n.isDirect && ok(n));
+    const all = dbNotices.find(n => !n.isDirect && ok(n));
+    if (!direct && !all) return;
     _autoPoppedRef.current = true;
-    try { shown.push(target.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(shown)); } catch (e) {}
-    handleOpenMemo(target);
+    if (direct) _setAutoDirect(direct);
+    if (all) _setAutoAll(all);
   }, [dbNotices, readIds, _tourCleared, _tourPending]);
 
   // ★ 하드코딩 공지(예: 유비챌 9기 오픈, 푸시 알림 안내)도 한 번은 자동으로 띄운다.
@@ -20783,6 +20848,7 @@ function App() {
   //   한 번 접속에 하나만: 아직 안 띄운 것 중 앞의 것부터. 다음 접속 때 다음 공지가 뜬다.
   const _AUTOPOP_HARDCODED = ["n-notice-room", "n-push-setup", "n-curriculum-v2"];   // ★ 2026-09-18: 유비챌 9기 공지는 자동 팝업 종료 (게시판엔 남김)
   const _promoPoppedRef = React.useRef(false);
+  const [_autoPromo, _setAutoPromo] = React.useState(null);
   React.useEffect(() => {
     if (_promoPoppedRef.current) return;
     if (!_tourCleared && _tourPending()) return;   // 투어 먼저
@@ -20794,15 +20860,32 @@ function App() {
     const promo = _AUTOPOP_HARDCODED.map(id => list.find(n => n.id === id)).find(n => n && !shown.includes(n.id));
     if (!promo) return;
     _promoPoppedRef.current = true;
-    // 다른 팝업(마일스톤, 승급, 웰컴 키트)이 떠 있으면 닫힐 때까지 기다렸다가 띄운다. 겹쳐 뜨지 않게.
-    let tries = 0;
-    const tryPop = () => {
-      if (typeof _popupOpen === "function" && _popupOpen() && tries++ < 60) { setTimeout(tryPop, 1200); return; }
-      try { const cur = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); if (!cur.includes(promo.id)) { cur.push(promo.id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(cur)); } } catch (e) {}
-      handleOpenMemo(promo);
-    };
-    setTimeout(tryPop, 900);
+    // ★ 2026-10-13: 바로 열지 않고 줄에 세운다 (오늘 일정 끝낸 뒤, 순서표대로 한 번에 1개)
+    _setAutoPromo(promo);
   }, [_tourCleared, _tourPending]);
+  // 줄에서 차례가 오면 메모 창으로 연다. 열 때 "봤음"을 남긴다 (기기당 1회).
+  const _PROMO_SLOT = { "n-notice-room": "notice-room", "n-push-setup": "push", "n-curriculum-v2": "curriculum" };
+  const _slNoticeDirect = usePopSlot("notice-personal", !!_autoDirect);
+  const _slNoticeAll = usePopSlot("notice-all", !!_autoAll);
+  const _slPromo = usePopSlot(_autoPromo ? (_PROMO_SLOT[_autoPromo.id] || "notice-room") : "notice-room", !!_autoPromo);
+  const _autoOpenedRef = React.useRef({});
+  const _markAutoShown = (id) => { try { const cur = JSON.parse(localStorage.getItem("__OD_AUTOPOP") || "[]"); if (!cur.includes(id)) { cur.push(id); localStorage.setItem("__OD_AUTOPOP", JSON.stringify(cur)); } } catch (e) {} };
+  React.useEffect(() => {
+    if (memo) return;
+    const pick = _slNoticeDirect ? _autoDirect : _slNoticeAll ? _autoAll : _slPromo ? _autoPromo : null;
+    if (!pick || _autoOpenedRef.current[pick.id]) return;
+    // 카톡 출근 알림을 이미 켠 분에겐 푸시 설정 안내를 건너뛴다
+    if (pick.id === "n-push-setup") { let on = false; try { on = localStorage.getItem("__OD_KAKAO_ON_" + (USER.email || "guest")) === "1"; } catch (e) {} if (on) { _markAutoShown(pick.id); _setAutoPromo(null); return; } }
+    _autoOpenedRef.current[pick.id] = true;
+    _markAutoShown(pick.id);
+    handleOpenMemo(pick);
+  }, [_slNoticeDirect, _slNoticeAll, _slPromo, memo]);
+  const _clearAutoMemo = (m) => {
+    if (!m) return;
+    if (_autoDirect && _autoDirect.id === m.id) _setAutoDirect(null);
+    if (_autoAll && _autoAll.id === m.id) _setAutoAll(null);
+    if (_autoPromo && _autoPromo.id === m.id) _setAutoPromo(null);
+  };
 
   // 주말 분기는 여기서 결정 (HomePage 안에서 early-return 하면 hooks 순서 깨짐)
   const weekend = _weekendKind();
@@ -20982,7 +21065,9 @@ function App() {
     const em = _localUserNow?.email;
     if (!em) return;
     const KEY = '__OD_KAKAO_NUDGE_' + em;
-    try { if (localStorage.getItem(KEY) === '1') return; } catch (e) { return; }
+    let nudged = false;
+    try { nudged = localStorage.getItem(KEY) === '1'; } catch (e) { return; }
+    if (nudged && localStorage.getItem('__OD_KAKAO_ON_' + em) === '1') return;
     if ((_realDay || 1) < 2) return;
     if (!(window.OD?.enabled && window.OD.getKakaoNotify)) return;
     let alive = true;
@@ -20991,9 +21076,10 @@ function App() {
         const r = await window.OD.getKakaoNotify(em);
         if (!alive) return;
         if (r && r.ok && r.result && r.result.hour != null) {
-          try { localStorage.setItem(KEY, '1'); } catch (e) {}   // 이미 켠 분은 다시 묻지 않는다
+          try { localStorage.setItem(KEY, '1'); localStorage.setItem('__OD_KAKAO_ON_' + em, '1'); } catch (e) {}   // 이미 켠 분은 다시 묻지 않는다 (푸시 안내도 건너뛴다)
           return;
         }
+        if (nudged) return;   // 한 번 안내했으면 다시 안 띄운다 (켰는지만 확인)
         _setShowKakao(true);
       } catch (e) {}
     }, 3500);
@@ -21041,6 +21127,11 @@ function App() {
   // ── 수습 마일스톤 팝업: 실제 완주 일수 기준 (달력 day 무관, 밀린 사용자도 따라잡으면 받음) ──
   // 여러 개 한꺼번에 넘기면 아직 안 본 것 중 가장 높은 하나만 표시.
   const [_milestonePopup, _setMilestonePopup] = useState(null);
+  const _msPendingRef = React.useRef(null);
+  const _closeMilestone = () => {
+    try { const p = _msPendingRef.current; if (p) localStorage.setItem(p.key, JSON.stringify(p.ats)); } catch (e) {}
+    _setMilestonePopup(null);
+  };
   React.useEffect(() => {
     if (!_localUserNow || _showCeremony) return;
     // 수습이면 수습 마일스톤, 사원이면 대리 승진 시험 예고. (대리 이상은 없음)
@@ -21055,12 +21146,24 @@ function App() {
     if (reached.length === 0) return;
     const top = reached[reached.length - 1];
     // 넘긴 모든 마일스톤을 본 것으로 기록 (한 번에 하나만 띄우되 나머지도 소진)
-    try {
-      const next = Array.from(new Set([...seen, ...reached.map(m => m.at)]));
-      localStorage.setItem(_msKey, JSON.stringify(next));
-    } catch (e) {}
+    //   ★ 2026-10-13: 오늘 일정 끝낸 뒤로 미뤄졌으니 기록은 실제로 닫을 때 한다 (_closeMilestone)
+    _msPendingRef.current = { key: _msKey, ats: Array.from(new Set([...seen, ...reached.map(m => m.at)])) };
     _setMilestonePopup(top);
   }, []);
+
+  // ── 팝업 줄 세우기 (2026-10-13): 순서표 _POP_ORDER 대로 한 번에 1개 ──
+  const _absSurveyToday = (() => { try { const d = _retDebuff(_localUserNow?.email || USER.email); return !!(d && d.date === _tyTodayISO() && d.surveyDone); } catch (e) { return false; } })();
+  const _slD7 = usePopSlot("retire-d7", !!_showD7Popup);
+  const _slCeremony = usePopSlot("promo-ceremony", !!_showCeremony);
+  const _slSenior = usePopSlot("senior", !!_showS3Checkpoint);
+  const _slTf = usePopSlot("tf-select", !!_showTfSelect);
+  const _slFwp = usePopSlot("first-week", !!_fwpDay);
+  const _slSetup = usePopSlot("setup", !!_showSetup);
+  const _slMs = usePopSlot("milestone", !!_milestonePopup);
+  const _slD1 = usePopSlot("promo-d1", !!_showD1Popup);
+  const _slDay60 = usePopSlot("day60", !!_showDay60);
+  const _slKakao = usePopSlot("kakao", !!_showKakao);
+  const _slPulse = usePopSlot("pulse", !!(_showSurvey && _surveyEligible && !_absSurveyToday));
 
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
   if (_membershipExpired) {
@@ -21269,7 +21372,7 @@ function App() {
       <MobileTabbar active={active} setActive={setActive} unread={unread} isFulltime={USER.isFulltime} />
       {_RET_ON() && <RetUnlockReturnPill setActive={setActive} email={USER.email} />}
       {scene ? <SceneModal scenario={scene} onClose={() => setScene(null)} /> : null}
-      {memo ? <MemoModal memo={memo} onClose={() => { setMemo(null); _maybeSurveyAfterMemo(); }} /> : null}
+      {memo ? <MemoModal memo={memo} onClose={() => { _clearAutoMemo(memo); setMemo(null); _maybeSurveyAfterMemo(); }} /> : null}
 
       {/* ── 우상단 피드백 버튼 (어디서든 열림) ── */}
       <button
@@ -21328,36 +21431,36 @@ function App() {
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
       {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
-      {_showD1Popup && <PromotionD1Popup onClose={_dismissD1} />}
-      {_showCeremony && <PromotionCeremony realDay={_realDay} />}
-      {_showS3Checkpoint && <Season3Checkpoint onClose={_dismissS3} />}
-      {_showTfSelect && <TrackSelectModal done={_tf.done} onClose={() => _setTf(_tfState())} />}
+      {_showD1Popup && _slD1 && <PromotionD1Popup onClose={_dismissD1} />}
+      {_showCeremony && _slCeremony && <PromotionCeremony realDay={_realDay} />}
+      {_showS3Checkpoint && _slSenior && <Season3Checkpoint onClose={_dismissS3} />}
+      {_showTfSelect && _slTf && <TrackSelectModal done={_tf.done} onClose={() => _setTf(_tfState())} />}
       {_forceTest === "tf" && _isInternalTester && <TrackSelectModal done={[]} onClose={() => { try { const u = new URL(location.href); u.searchParams.delete("forcetest"); location.href = u.toString(); } catch (e) { location.reload(); } }} />}
       {/* dev 런처용: ?forcetest=levelup|senior 로 승급/대리 시험 바로 열기 (운영자/Dev만) */}
       {_forceTest === "levelup" && _isInternalTester && <PromotionCeremony realDay={30} />}
       {_forceTest === "senior" && _isInternalTester && <Season3Checkpoint onClose={() => { try { const u = new URL(location.href); u.searchParams.delete("forcetest"); location.href = u.toString(); } catch (e) { location.reload(); } }} />}
-      {_showDay60 && <Day60Checkpoint onClose={_dismissDay60} />}
-      {_milestonePopup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_retDebuffPending() && (
-        <MilestonePopup milestone={_milestonePopup} onClose={() => _setMilestonePopup(null)} />
+      {_showDay60 && _slDay60 && <Day60Checkpoint onClose={_dismissDay60} />}
+      {_milestonePopup && _slMs && (
+        <MilestonePopup milestone={_milestonePopup} onClose={_closeMilestone} />
       )}
-      {_showSurvey && _surveyEligible && !_fwpDay && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_retDebuffPending() && !_retReturningPending() && (
+      {_slPulse && (
         <PulseSurveyModal surveyKey={PULSE_SURVEY_KEY} onClose={() => _setShowSurvey(false)} />
       )}
       {/* 출근 환경 세팅 (Day 1 학습 완료 직후) */}
-      {_showSetup && !_showCeremony && !_showS3Checkpoint && !_showDay60 && (
+      {_showSetup && _slSetup && (
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {_showKakao && !_showSetup && !_showCeremony && !_showD1Popup && !_showS3Checkpoint && !_showTfSelect && !_showDay60 && !_milestonePopup && !_showSurvey && !_fwpDay && !_retDebuffPending() && !_retReturningPending() && (
+      {_showKakao && _slKakao && (
         <KakaoNudgePopup email={_localUserNow?.email} onClose={_closeKakao} />
       )}
       {/* 첫 주 웰컴 팝업 (Day 1~5), 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {_fwpDay && !_showSetup && !_showCeremony && !_showD1Popup && !_milestonePopup && !_showS3Checkpoint && !_showDay60 && !_showSurvey && (
+      {_fwpDay && _slFwp && (
         <FirstWeekPopup day={_fwpDay} onClose={_closeFwp} />
       )}
 
       {/* ── D-7 알림 팝업, 인수인계 기간 7일 이내 진입 시 (세션당 1회) ── */}
-      {_showD7Popup && (
+      {_showD7Popup && _slD7 && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9100,
           background: "rgba(20,15,8,0.65)",
