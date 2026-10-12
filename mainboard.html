@@ -7068,7 +7068,7 @@ function Locker({ active, setActive, user, unread }) {
       <div className="locker-section">
         <div className="locker-label">Today</div>
         {items.slice(0, 1).map(it => (
-          <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
+          <button key={it.id} data-nav={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
             {it.badge ? <span className="locker-badge">{it.badge}</span> : null}
           </button>
@@ -7077,7 +7077,7 @@ function Locker({ active, setActive, user, unread }) {
       <div className="locker-section">
         <div className="locker-label">Records</div>
         {items.slice(1, 3).map(it => (
-          <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
+          <button key={it.id} data-nav={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
             {it.tag ? <span className="locker-tag">{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : it.id === "perk" ? "Day " + RET_SHOP_OPEN_DAY : "사원 ☆"}</span> : null}
           </button>
@@ -7086,7 +7086,7 @@ function Locker({ active, setActive, user, unread }) {
       <div className="locker-section">
         <div className="locker-label">Office</div>
         {items.slice(3).map(it => (
-          <button key={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
+          <button key={it.id} data-nav={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
             {it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : null}
           </button>
@@ -8754,6 +8754,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       placement: "left",
       title: "출근부 · 14일",
       body: "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
+    },
+    // ★ 2026-10-12 (재참여 설문): 카톡 알림·휴대폰 출근·공지방을 아무도 몰랐다. 첫 출근 가이드에서 한 번 짚어 준다.
+    {
+      selector: isMobile ? _MYPAGE_TAB_SEL : ".locker-link[data-nav='mypage']",
+      placement: isMobile ? "top" : "right",
+      title: "💬 카톡 알림 켜면 출근을 안 까먹어요",
+      body: "사원증 → 설정 → '카톡 출근 알림'에서 받을 시간을 정하면, 그 시간에 그날 표현이 카톡으로 와요. 앱을 안 열어도요.\n\n휴대폰으로도 똑같이 출근할 수 있어요. 홈 화면에 추가하면 앱처럼 열리고, 같은 설정에서 1일1비 공지방(카톡)에도 들어갈 수 있어요.",
     },
     {
       selector: ".schedule-row.now",
