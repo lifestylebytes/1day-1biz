@@ -3072,9 +3072,9 @@ const SCENARIOS = [
       default: "deliver (전달) + able (가능한) → 전달할 수 있는 것. 즉 약속하고 만들어서 넘겨주는 결과물.\n\n외우기: 택배 deliver = 약속한 물건 → 같은 deliver로 만든 deliverable = 약속한 결과물. 둘 다 '받기로 한 사람한테 넘기는 것'.\n\n분기 회의에서 '이번 분기 deliverable 뭐예요?' 한 번만 자연스럽게 물으면 격이 확 올라가.",
     } },
   { day: 8, word: "ramp up", pos: "phr.", meaning: "(생산·활동을) 늘리다", phonetic: "/ræmp ʌp/",
-    scene: "11:30, 채용 회의에서 김 팀장이 하반기 인력 계획을 설명해요.", npc: "manager",
-    quote: "I've been meaning to ask, what does the engineering team's ramp-up timeline look like right now? I'd like to know when they'll be at full speed.",
-    quoteKo: "물어보려던 건데, 지금 엔지니어링팀 램프업 일정이 어떻게 돼요? 언제쯤 풀 속도로 돌아갈지 알고 싶어서요.",
+    scene: "11:30, 채용 회의에서 김 팀장이 엔지니어링 채용 일정을 물어봐요.", npc: "manager",
+    quote: "I've been meaning to ask, how are we ramping up engineering hiring over the next few months? I need a rough timeline for the headcount plan.",
+    quoteKo: "물어보려던 건데, 앞으로 몇 달 동안 엔지니어링 채용을 어떻게 늘려 갈 거예요? 인력 계획에 넣을 대략적인 일정이 필요해서요.",
     youDo: "채용 일정과 온보딩 계획을 한 페이지로 정리해 공유했다.",
     mentorTip: "조직/생산을 단계적으로 늘리는 뉘앙스. 갑자기 크게 늘릴 땐 'scale up' 이 더 자연스러워.",
     mentorNuance: "채용이나 생산을 단계적으로 늘리는 계획을 말할 때 써. 한 번에 확 키우는 건 scale up이고, 이건 천천히 올리는 그림이야.",
@@ -15127,9 +15127,9 @@ function _classifyMentorFeedback(sentence, scenario) {
   let headline;
   if (isExample) {
     headline = _pickV([
-      "예시 문장 그대로 제출하셨네요. 본인 표현으로 한 번 써보시면 더 늘어요.",
-      "예문 참고는 좋아요. 한 단어라도 본인 상황으로 바꿔보시면 기억에 세 배 오래 남아요.",
-      "모범 답안은 출발점이에요. 내일은 본인 문장으로 한 줄, 약속해요.",
+      "사수 예시 답안이랑 같은 문장이에요. 그대로 회의에서 써도 되는 문장이니, 아래 네이티브 버전으로 한 번 더 굳혀요.",
+      "예시 답안과 똑같이 나왔어요. 정답 문장이라 그대로 써도 돼요. 숫자나 시점만 내 상황으로 바꿔 보면 더 오래 남아요.",
+      "모범 답안 그대로예요. 이미 자연스러운 문장이고, 아래에서 비슷한 다른 말투도 같이 챙겨가요.",
     ]);
   } else if (!hasWord) {
     headline = _pickV([
@@ -15471,32 +15471,16 @@ function SceneModal({ scenario, onClose }) {
     if (_dockLogRef.current) _dockLogRef.current.scrollTop = _dockLogRef.current.scrollHeight;
   }, [buddyMsgs, buddyDockOpen]);
 
-  function handleSubmit() {
-    const fb = _classifyMentorFeedback(draft, scenario);
-    setFeedback(fb);
-    setSubmitted(true);
-    setEditing(false);
-    setAiFb(null);
-    setNativeSaved(false);
-    _saveCompletion({
-      day: scenario.day,
-      word: scenario.word,
-      sentence: draft,
-      feedback: fb,
-      submittedAt: new Date().toISOString(),
-    });
-
-    // ★ AI 사수 코멘트 (실패/느리면 규칙 기반 피드백만 유지, 폴백)
-    //    예시 그대로 낸 경우엔 AI 호출 생략 (본인 문장 아니라 코칭 의미 없음)
-    if (!fb.isExample && draft.trim() && window.OD?.enabled && window.OD.getMentorAiFeedback) {
+  function _requestAiFb(draftText) {
+    if (!(draftText || "").trim() || !window.OD?.enabled || !window.OD.getMentorAiFeedback) return;
       setAiLoading(true);
-      const _submittedDraft = draft;
+      const _submittedDraft = draftText;
       // 직전 AI 추천 문장 전달: 추천을 그대로 반영해 재제출하면 또 딴 버전으로 안 되돌리게 (왔다갔다 버그 방지)
       const _prevAiCorrected = (() => {
         try { const c = _loadCompletion(scenario.day); return (c && c.feedback && c.feedback.aiFb && c.feedback.aiFb.corrected) || ""; } catch (e) { return ""; }
       })();
       window.OD.getMentorAiFeedback({
-        sentence: draft,
+        sentence: draftText,
         word: scenario.word,
         meaning: scenario.meaning,
         scene: scenario.scene,
@@ -15519,7 +15503,37 @@ function SceneModal({ scenario, onClose }) {
           } catch (e) {}
         }
       }).catch(() => setAiLoading(false));
-    }
+  }
+  // 예전에 예문 일치로 AI 를 건너뛴 제출(또는 AI 실패분)은 다시 열 때 한 번 채워 넣는다. 세션당 하루 1회만.
+  React.useEffect(() => {
+    try {
+      if (!saved || !saved.sentence || (saved.feedback && saved.feedback.aiFb)) return;
+      const k = "__OD_AIFB_RETRY_" + scenario.day;
+      if (sessionStorage.getItem(k)) return;
+      sessionStorage.setItem(k, "1");
+      _requestAiFb(saved.sentence);
+    } catch (e) {}
+  }, []);
+
+  function handleSubmit() {
+    const fb = _classifyMentorFeedback(draft, scenario);
+    setFeedback(fb);
+    setSubmitted(true);
+    setEditing(false);
+    setAiFb(null);
+    setNativeSaved(false);
+    _saveCompletion({
+      day: scenario.day,
+      word: scenario.word,
+      sentence: draft,
+      feedback: fb,
+      submittedAt: new Date().toISOString(),
+    });
+
+    // ★ AI 사수 코멘트 (실패/느리면 규칙 기반 피드백만 유지, 폴백)
+    //   2026-10-14: 예시 답안과 같은 문장이어도 호출한다. 한국어 문장을 정확히 옮기면 예시와 똑같이 나오는데
+    //   그때 네이티브 버전/비슷한 표현이 통째로 빠져서 '언젠가부터 네이티브 문장이 안 나온다'는 제보 (최유리, Day 8).
+    _requestAiFb(draft);
     // ★ 피드백 #15: 홈 시추에이션 카드로 바로 들어와 제출한 경우에도
     //   일정의 '오늘의 시추에이션' 항목을 완료 처리 (재진입 없이 다음 순서 진행)
     try {
@@ -20065,6 +20079,24 @@ function Season3Checkpoint({ onClose }) {
 
 // -- 의견 설문 (별점 + 한마디 정의 + 이탈 이유 + 계속 쓸 조건). 운영자 피드함으로 수집. --
 // surveyKey 단위로 1회만. 새 설문 돌릴 땐 키만 바꾸면 됨.
+function _pulseSurveySrvKey(surveyKey) { return "SURVEY" + String(surveyKey || "").replace(/^__OD_SURVEY/, ""); }
+function _pulseSurveyMarkServer(email, surveyKey) {
+  try {
+    if (!email || email === "guest" || !window.OD || !window.OD.setRetState) return;
+    const at = new Date().toISOString();
+    window.OD.setRetState(email, { [_pulseSurveySrvKey(surveyKey)]: { v: 1, at } }).catch(() => {});
+  } catch (e) {}
+}
+// 서버에 이미 낸 기록이 있으면 이 기기에도 완료 표시하고 true
+async function _pulseSurveyDoneOnServer(email, surveyKey) {
+  try {
+    if (!email || email === "guest" || !window.OD || !window.OD.getRetState) return false;
+    const r = await window.OD.getRetState(email);
+    const hit = !!(r && r.ok && r.result && r.result[_pulseSurveySrvKey(surveyKey)]);
+    if (hit) { try { localStorage.setItem(surveyKey, "1"); } catch (e) {} }
+    return hit;
+  } catch (e) { return false; }
+}
 function PulseSurveyModal({ surveyKey, onClose }) {
   const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
   const name = local.name || "사원";
@@ -20083,7 +20115,9 @@ function PulseSurveyModal({ surveyKey, onClose }) {
     "그만둘 생각 없어요",
   ];
 
-  const markDone = () => { try { localStorage.setItem(surveyKey, "1"); } catch (e) {} };
+  // ★ 2026-10-14: 완료 표시가 기기 localStorage 에만 있어서 PC 에서 낸 사람이 폰에서 또 받았다 (최유리 Day 8, 두 번 제출).
+  //   서버 ret_state 에도 남겨서 다른 기기에서도 다시 안 뜨게 한다.
+  const markDone = () => { try { localStorage.setItem(surveyKey, "1"); } catch (e) {} _pulseSurveyMarkServer(local.email, surveyKey); };
   const close = () => { markDone(); onClose(); };
   const hasAny = () => !!(rating || oneLiner.trim() || quit || keep.trim());
 
@@ -21117,14 +21151,21 @@ function App() {
     } catch (e) { return false; }
   })();
   // 접속 후 3초 뒤 자동 노출. 승급 의례 등 다른 팝업이 떠 있으면 렌더 가드에서 걸러짐.
+  //   다른 기기에서 이미 냈는지 서버를 먼저 확인한다 (기기마다 한 번씩 뜨던 문제).
+  const [_surveySrvDone, _setSurveySrvDone] = useState(false);
   React.useEffect(() => {
     if (_surveyDone || !_localUserNow || !_surveyEligible) return;
-    const _t = setTimeout(() => _setShowSurvey(true), 3000);
-    return () => clearTimeout(_t);
+    let _alive = true; let _t = null;
+    _pulseSurveyDoneOnServer(_localUserNow.email, PULSE_SURVEY_KEY).then(done => {
+      if (!_alive) return;
+      if (done) { _setSurveySrvDone(true); return; }
+      _t = setTimeout(() => _setShowSurvey(true), 3000);
+    });
+    return () => { _alive = false; if (_t) clearTimeout(_t); };
   }, [_surveyDone, !!_localUserNow, _surveyEligible]);
   // 공지(메모)를 먼저 닫는 경우엔 그 직후에 바로 노출.
   const _maybeSurveyAfterMemo = () => {
-    if (_surveyDone || !_localUserNow || !_surveyEligible) return;
+    if (_surveyDone || _surveySrvDone || !_localUserNow || !_surveyEligible) return;
     if (_showCeremony || _showD1Popup) return;
     setTimeout(() => _setShowSurvey(true), 350);
   };
@@ -21168,7 +21209,7 @@ function App() {
   const _slD1 = usePopSlot("promo-d1", !!_showD1Popup);
   const _slDay60 = usePopSlot("day60", !!_showDay60);
   const _slKakao = usePopSlot("kakao", !!_showKakao);
-  const _slPulse = usePopSlot("pulse", !!(_showSurvey && _surveyEligible && !_absSurveyToday));
+  const _slPulse = usePopSlot("pulse", !!(_showSurvey && _surveyEligible && !_absSurveyToday && !_surveySrvDone));
 
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
   if (_membershipExpired) {
