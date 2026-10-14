@@ -15127,9 +15127,7 @@ function _classifyMentorFeedback(sentence, scenario) {
   let headline;
   if (isExample) {
     headline = _pickV([
-      "사수 예시 답안이랑 같은 문장이에요. 그대로 회의에서 써도 되는 문장이니, 아래 네이티브 버전으로 한 번 더 굳혀요.",
-      "예시 답안과 똑같이 나왔어요. 정답 문장이라 그대로 써도 돼요. 숫자나 시점만 내 상황으로 바꿔 보면 더 오래 남아요.",
-      "모범 답안 그대로예요. 이미 자연스러운 문장이고, 아래에서 비슷한 다른 말투도 같이 챙겨가요.",
+      _exampleHeadline(scenario),
     ]);
   } else if (!hasWord) {
     headline = _pickV([
@@ -15251,6 +15249,18 @@ function _saveDailyJournal(day, text) {
 }
 
 // scenariosCompleted 저장/조회 헬퍼
+// 예시 답안 그대로 낸 경우 (2026-10-14): 꾸중 대신 인정 + 다른 말투. AI 없이 시나리오 데이터만 쓴다.
+function _exampleHeadline(scn) {
+  return "사수 예시 답안이랑 똑같은 문장이에요. 정답 문장이라 그대로 회의에서 써도 돼요. 아래 다른 말투도 하나 챙겨가요.";
+}
+function _exampleAlts(scn) {
+  const out = []; const sample = String(scn?.sampleAnswer || "").trim();
+  const add = (t) => { t = String(t || "").trim(); if (t && t !== sample && out.indexOf(t) < 0) out.push(t); };
+  (scn?.mcOptions || []).filter(o => o && o.kind === "correct").forEach(o => add(o.text));
+  const ex = String(scn?.buddyAnswers?.example || "");
+  (ex.match(/"([^"]{8,160})"/g) || []).map(q => q.slice(1, -1)).forEach(add);
+  return out.slice(0, 3);
+}
 function _loadCompletion(day) {
   try {
     const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
@@ -15507,7 +15517,8 @@ function SceneModal({ scenario, onClose }) {
   // 예전에 예문 일치로 AI 를 건너뛴 제출(또는 AI 실패분)은 다시 열 때 한 번 채워 넣는다. 세션당 하루 1회만.
   React.useEffect(() => {
     try {
-      if (!saved || !saved.sentence || (saved.feedback && saved.feedback.aiFb)) return;
+      if (!saved || !saved.sentence || (saved.feedback && (saved.feedback.aiFb || saved.feedback.isExample))) return;
+      if (String(saved.sentence).trim() === String(scenario.sampleAnswer || "").trim()) return;
       const k = "__OD_AIFB_RETRY_" + scenario.day;
       if (sessionStorage.getItem(k)) return;
       sessionStorage.setItem(k, "1");
@@ -15531,9 +15542,9 @@ function SceneModal({ scenario, onClose }) {
     });
 
     // ★ AI 사수 코멘트 (실패/느리면 규칙 기반 피드백만 유지, 폴백)
-    //   2026-10-14: 예시 답안과 같은 문장이어도 호출한다. 한국어 문장을 정확히 옮기면 예시와 똑같이 나오는데
-    //   그때 네이티브 버전/비슷한 표현이 통째로 빠져서 '언젠가부터 네이티브 문장이 안 나온다'는 제보 (최유리, Day 8).
-    _requestAiFb(draft);
+    //   예시 답안과 같은 문장은 AI 를 부르지 않는다 (예시를 첨삭하면 우리 정답과 다른 '네이티브 버전'이 나와 헷갈림).
+    //   대신 아래 '예시 그대로' 카드에서 이미 네이티브 문장임 + 같은 뜻 다른 말투를 보여준다 (2026-10-14, 최유리 Day 8).
+    if (!fb.isExample) _requestAiFb(draft);
     // ★ 피드백 #15: 홈 시추에이션 카드로 바로 들어와 제출한 경우에도
     //   일정의 '오늘의 시추에이션' 항목을 완료 처리 (재진입 없이 다음 순서 진행)
     try {
@@ -15980,8 +15991,23 @@ function SceneModal({ scenario, onClose }) {
                           <>
                             {/* AI 실패 시 폴백: 규칙 기반 피드백 */}
                             <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink)", fontWeight: 600 }}>
-                              {feedback.headline}
+                              {feedback.isExample ? _exampleHeadline(scenario) : feedback.headline}
                             </div>
+                            {feedback.isExample && (() => {
+                              const alts = _exampleAlts(scenario);
+                              return (
+                                <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(255,255,255,0.6)", borderRadius: 6, display: "grid", gap: 6 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--orange)" }}>✅ 이미 네이티브 문장이에요</div>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>"{scenario.sampleAnswer}"</div>
+                                  {alts.length > 0 && (
+                                    <>
+                                      <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", marginTop: 4 }}>🔁 같은 단어, 다른 말투로도 말해봐요</div>
+                                      {alts.map((a, i) => <div key={i} style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6 }}>• {a}</div>)}
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             {feedback.checks && feedback.checks.length > 0 && (
                               <div style={{ marginTop: 10, display: "grid", gap: 4 }}>
                                 {feedback.checks.map((c, i) => (
@@ -15995,6 +16021,7 @@ function SceneModal({ scenario, onClose }) {
                         )
                       )}
 
+                      {!(feedback.isExample && !aiFb) && (
                       <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(255,255,255,0.55)", borderRadius: 4 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>💡 사수 예시 답안 (참고용)</div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>"{scenario.sampleAnswer}"</div>
@@ -16005,6 +16032,7 @@ function SceneModal({ scenario, onClose }) {
                           </div>
                         )}
                       </div>
+                      )}
                     </>
                   )}
 
