@@ -143,13 +143,16 @@ Deno.serve(async (req) => {
       maxN: Number(pp.maxN) || 0, maxDate: S(pp.maxDate, 12), bestMonth: S(pp.bestMonth, 12), bestMonthDays: Number(pp.bestMonthDays) || 0,
       gapDays: Number(pp.gapDays) || 0, gapFrom: S(pp.gapFrom, 12), gapBack: S(pp.gapBack, 12), firstDate: S(pp.firstDate, 12), lastDate: S(pp.lastDate, 12),
       sentences: clip(pp.sentences, 6).map((x: any) => ({ day: Number(x.day) || 0, word: S(x.word, 40), text: S(x.text, 200), fixed: S(x.fixed, 200) })),
+      said: clip(pp.said, 4).map((x: any) => ({ label: S(x?.label, 60), text: S(x?.text, 200) })),
+      board: pp.board && typeof pp.board === "object" ? { week: S(pp.board.week, 12), rank: Number(pp.board.rank) || 0, n: Number(pp.board.n) || 0, exp: Number(pp.board.exp) || 0, ones: Number(pp.board.ones) || 0 } : null,
       words: clip(pp.words, 90).map((w: any) => S(w, 40)), sentenceCount: Number(pp.sentenceCount) || 0, test: pp.test && typeof pp.test === "object" ? { ok: Number(pp.test.ok) || 0, total: Number(pp.test.total) || 0 } : null,
     };
     const psys = [
       `너는 1일1비의 영어 사수 ${mentor}야. 후배 ${compact.name}의 ${compact.rank} 진급 리포트에 들어갈 글을 쓴다. 기간은 ${compact.period}.`,
       `반드시 받은 기록(숫자, 날짜, 문장, 표현)에 실제로 있는 것만 근거로 쓴다. 없는 사건, 없는 숫자, 없는 감정은 지어내지 않는다. 날짜는 "7월 27일"처럼 쓴다.`,
       `사람마다 다르게 쓴다: 이 사람 기록에서 제일 눈에 띄는 것(가장 긴 연속, 몰아서 한 날, 오래 쉬었다 돌아온 날, 좋은 문장)을 골라 그 얘기로 시작한다.`,
-      `JSON 으로만: {"note":"리포트 맨 위 사수 한마디. 1~2문장, 50자 안팎","pins":[{"date":"MM.DD","title":"짧은 제목 8자 안팎","text":"한 문장 + 이모지 1개"}] (4개, 날짜 순),"comments":{"<day>":"잘 쓴 문장마다 사수 코멘트 한두 문장 + 이모지 1개"},"letter":{"to":"OO씨, 사원 진급 축하해요. 같은 첫 줄","paragraphs":["3~4개 문단, 각 1~3문장. 숫자는 기록 그대로"]}}`,
+      `JSON 으로만: {"note":"리포트 맨 위 사수 한마디. 1~2문장, 50자 안팎","pins":[{"date":"MM.DD","title":"짧은 제목 8자 안팎","text":"한 문장 + 이모지 1개"}] (4개, 날짜 순),"comments":{"<day>":"잘 쓴 문장마다 사수 코멘트 한두 문장 + 이모지 1개"},"letter":{"to":"OO씨, 사원 진급 축하해요. 같은 첫 줄","paragraphs":["3~4개 문단, 각 1~3문장. 숫자는 기록 그대로"]},"reply":"said(입사 지원 동기 · 설문 답)가 있으면 그 말에 사수가 답하는 두세 문장 + 이모지 1개. said 가 비었으면 빈 문자열"}`,
+      `board(주간 순위판 최고 순위)가 있으면 편지나 메모 핀에 한 번 넣어도 좋다. 없으면 순위 얘기는 하지 않는다.`,
       `comments 의 키는 sentences 의 day 숫자. 이모지는 한 사람 안에서 겹치지 않게.`,
       `규칙: 따뜻한 존댓말, 담백하게. 과장 칭찬 금지. 모든 문장은 동사로 끝낸다. em-dash(U+2014) 절대 금지. 영어 문장 인용은 짧게.`,
     ].join("\n");
@@ -159,7 +162,7 @@ Deno.serve(async (req) => {
       const promo: any = rr.data || {};
       if (!promo.letter || !Array.isArray(promo.letter.paragraphs)) return json({ ok: false, error: "empty" }, 200);
       const strip = (t: any) => String(t ?? "").split(String.fromCharCode(0x2014)).join(", ");
-      promo.note = strip(promo.note);
+      promo.note = strip(promo.note); promo.reply = strip(S(promo.reply, 300));
       promo.letter.to = strip(promo.letter.to); promo.letter.paragraphs = promo.letter.paragraphs.slice(0, 5).map(strip);
       promo.pins = clip(promo.pins, 4).map((x: any) => ({ date: S(x?.date, 8), title: strip(S(x?.title, 30)), text: strip(S(x?.text, 160)) }));
       const cm: any = {}; Object.keys(promo.comments || {}).slice(0, 6).forEach(k => { cm[k] = strip(S(promo.comments[k], 200)); }); promo.comments = cm;

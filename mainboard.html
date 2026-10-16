@@ -11617,7 +11617,25 @@ function _agDefaultAI(r, D, nick, rank) {
     fallback: true,
   };
 }
-function _agHTML(r, D, ai) {
+// 서버 기록(본인 것만): 입사 지원 동기 · 설문 · 주별 순위 → 이 리포트 기간 것만 고른다
+function _agExtra(D, X) {
+  const out = { said: [], board: null };
+  if (!X || !D.dates.length) return out;
+  const first = D.dates[0], last = D.dates[D.dates.length - 1];
+  const mv = X.motivation; const mvt = typeof mv === "string" ? mv : (mv && (mv.text || mv.reason || mv.answer)) || (mv ? JSON.stringify(mv) : "");
+  if (mvt && D.from <= 30) out.said.push({ label: "입사 지원 동기", text: String(mvt).slice(0, 200) });
+  (X.surveys || []).forEach(sv => {
+    const iso = _agKST(sv.at); const msg = String(sv.message || "");
+    if (!iso || iso < first || iso > _agAdd(last, 3) || /^\[리포트 후기\]/.test(msg)) return;
+    const lines = msg.split("\n").map(x => x.trim()).filter(Boolean);
+    const head = (lines[0] || "").replace(/^\[|\]$/g, "");
+    lines.slice(1).forEach(l => { const k = l.indexOf(":"); if (k > 0 && out.said.length < 4) { const v = l.slice(k + 1).trim(); if (v && !/^\(미/.test(v)) out.said.push({ label: (sv.day && !/Day/.test(head) ? "Day " + sv.day + " " : "") + head + " · " + l.slice(0, k).trim(), text: v.slice(0, 160) }); } });
+  });
+  const inRange = (X.weeks || []).filter(w => w.week >= _agAdd(first, -6) && w.week <= last && w.rank);
+  if (inRange.length) { const b = inRange.slice().sort((a, b2) => (a.rank - b2.rank) || (b2.exp - a.exp))[0]; out.board = { week: b.week, rank: b.rank, n: b.n, exp: b.exp, ones: inRange.filter(w => w.rank === 1).length }; }
+  return out;
+}
+function _agHTML(r, D, ai, X) {
   const { USER, CHARACTERS } = window.__SIM;
   const E = _agEsc, nick = _agNick(USER.name), rank = r.rankLabel || "사원";
   const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", ini = mentor.charAt(0);
@@ -11680,11 +11698,13 @@ function _agHTML(r, D, ai) {
   // 사수 메모 핀
   const pins = '<section class="mod"><h3>사수 메모 핀</h3>' + (A.pins || []).map((p, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">' + (i + 1) + '</span><div><small>' + E((p.iso ? _agMD(p.iso).split(".").map(x => x.padStart(2, "0")).join(".") : p.date) + " · " + p.title) + '</small><br>' + E(p.text) + '</div></div>').join("") + '</section>';
   // 기록
+  const XE = _agExtra(D, X);
   const tok = [];
+  if (XE.board) tok.push([(XE.board.rank === 1 ? '🥇' : XE.board.rank === 2 ? '🥈' : XE.board.rank === 3 ? '🥉' : '🏅') + ' WEEKLY BIZ SCORE ' + (XE.board.rank === 1 ? '1위' : '최고 ' + XE.board.rank + '위'), _agMD(XE.board.week) + ' 주', Number(XE.board.exp || 0).toLocaleString() + ' EXP · ' + XE.board.n + '명 중 ' + XE.board.rank + '등.' + (XE.board.ones > 1 ? ' 1위만 ' + XE.board.ones + '번.' : '')]);
   if (D.streak) tok.push(['🏃 가장 길게 연속 출근', D.streak + '<small>일</small>', _agMD(D.sFrom) + '~' + _agMD(D.sTo) + '. 이 기간 최고 기록.']);
   if (D.bestMonth) tok.push(['📅 ' + Number(D.bestMonth.slice(5, 7)) + '월 실제 학습', D.bestMonthDays + '<small>일</small>', '이 기간 제일 많이 온 달이에요.']);
-  if (D.maxN) tok.push(['🚚 하루에 끝낸 Day 최다', D.maxN + '<small>개</small>', _agKo(D.maxDate) + ' (Day ' + (D.byDate[D.maxDate] || []).join(" · ") + ').']);
-  tok.push(['✍️ 첨삭 없이 통과한 문장', D.clean.length + '<small>개</small>', '직접 쓴 ' + D.sentences.length + '개 중에서요.']);
+  if (D.maxN && tok.length < 4) tok.push(['🚚 하루에 끝낸 Day 최다', D.maxN + '<small>개</small>', _agKo(D.maxDate) + ' (Day ' + (D.byDate[D.maxDate] || []).join(" · ") + ').']);
+  if (tok.length < 4) tok.push(['✍️ 첨삭 없이 통과한 문장', D.clean.length + '<small>개</small>', '직접 쓴 ' + D.sentences.length + '개 중에서요.']);
   const rec = '<section class="mod w3"><h3>기록 <small>' + E(nick) + '씨 ' + E(prevRank) + ' 기간 기록</small></h3><div class="tok" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">' + tok.map(t => '<div><span>' + E(t[0]) + '</span><b>' + t[1] + '</b><span>' + E(t[2]) + '</span></div>').join("") + '</div></section>';
   // 모은 표현 칩 · 다시 볼 표현 · 다음에 열어볼 Day
   const chips = '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
@@ -11698,16 +11718,18 @@ function _agHTML(r, D, ai) {
   // 진급 테스트
   let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = t.main; } catch (e) {}
   const testSec = '<section class="mod w2"><h3>진급 테스트 <small>' + E(rank) + ' 진급 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " 진급") + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
+  // 그때 한 말
+  const saidSec = XE.said.length ? '<section class="mod"><h3>그때 한 말</h3>' + XE.said.map(x => '<div class="field"><div class="lb">' + E(x.label) + '</div><div class="q">' + E(x.text) + '</div></div>').join("") + (A.reply ? '<div class="reply2"><span class="av">' + E(ini) + '</span><div><small>사수 답장 · 사수 ' + E(mentor) + '</small><p>' + E(A.reply) + '</p></div></div>' : '') + '</section>' : '';
   // 사수 편지
   const L = A.letter || {};
   const letter = '<section class="mod w3"><h3>사수 편지 <small>' + E(mentor) + ' 사수가 ' + E(nick) + ' ' + E(rank) + '에게</small></h3><div class="typo letter2"><span class="lstamp">사수<br>편지</span><div class="to">' + E(L.to || (nick + "씨, " + rank + " 진급 축하해요.")) + '</div>' + (L.paragraphs || []).map(p => '<p>' + E(p) + '</p>').join("") + '<div class="sig">' + E(mentor) + '<small>담당 사수 · ' + E(issued.replace(/-/g, ".")) + '</small></div></div></section>';
   const head = '<div class="sub" style="margin-top:0"><div class="ko">' + E(nick) + '씨, <em>' + E(rank) + '</em> 진급 리포트예요.</div><div class="tabs"><span>PROMOTION REPORT</span><span>' + E(prevRank + " → " + rank) + '</span><span>DAY ' + D.from + '–' + D.to + '</span><span>' + E(issued.replace(/-/g, ".")) + ' 발급</span></div></div>';
-  const body = head + '<div class="grid"><section class="quote"><p>' + E(A.note) + '</p><b>사수 ' + E(mentor) + '</b></section>' + att + flow + wk + heat + gauge + stack + road + calSec + pins + rec + chips + againSec + openSec + cards + testSec + letter + '</div>';
+  const body = head + '<div class="grid"><section class="quote"><p>' + E(A.note) + '</p><b>사수 ' + E(mentor) + '</b></section>' + att + flow + wk + heat + gauge + stack + road + calSec + pins + rec + chips + againSec + openSec + cards + testSec + saidSec + letter + '</div>';
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"><style>' + _AG_CSS + 'html,body{overflow:hidden}body{padding:18px!important}body *,body *::before,body *::after{font-family:\'Noto Sans KR\',\'Apple SD Gothic Neo\',sans-serif!important}</style></head><body><div class="sheet">' + body + '</div></body></html>';
 }
 // AI 사수 글: 리포트마다 한 번 받아서 PROMO 기록(r.ai)에 저장
 const _agAsking = {};
-function _agEnsureAI(r, D, onDone) {
+function _agEnsureAI(r, D, onDone, X) {
   if (r.ai || _agAsking[r.id] || !(window.OD && window.OD.enabled && window.OD.getMentorAiFeedback)) return;
   _agAsking[r.id] = true;
   const { USER, CHARACTERS } = window.__SIM; const rank = r.rankLabel || "사원";
@@ -11715,6 +11737,7 @@ function _agEnsureAI(r, D, onDone) {
   const payload = { name: _agNick(USER.name), rank, period: "Day " + D.from + "~" + D.to, total: D.total, done: D.doneN, studyDays: D.studyDays, streak: D.streak, streakFrom: D.sFrom, streakTo: D.sTo,
     maxN: D.maxN, maxDate: D.maxDate, bestMonth: D.bestMonth, bestMonthDays: D.bestMonthDays, gapDays: D.gapDays, gapFrom: D.gapFrom, gapBack: D.gapBack, firstDate: D.dates[0] || "", lastDate: D.dates[D.dates.length - 1] || "",
     sentences: D.best.concat(D.sentences.filter(s => D.best.indexOf(s) < 0)).slice(0, 6).map(s => ({ day: s.day, word: s.word, text: s.text, fixed: s.fixed })), words: D.words.map(w => w.word), sentenceCount: D.sentences.length, test: tres };
+  { const XE = _agExtra(D, X); payload.said = XE.said; payload.board = XE.board; }
   window.OD.getMentorAiFeedback({ mode: "promoLetter", promo: payload, mentorName: (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", word: "promo" })
     .then(res => {
       if (!(res && res.ok && res.promo && res.promo.letter)) return;
@@ -11731,8 +11754,16 @@ function _agEnsureAI(r, D, onDone) {
 function RetPromoSheetAG({ r, preview }) {
   const D = React.useMemo(() => _agData(r), [r && r.id, r && r.at]);
   const [ai, setAi] = React.useState(() => r.ai || (preview ? (() => { try { return JSON.parse(localStorage.getItem("__OD_PROMO_AI_PREVIEW_" + _retEmail()) || "null"); } catch (e) { return null; } })() : null));
-  React.useEffect(() => { if (!ai) _agEnsureAI(r, D, setAi); }, [r && r.id]);
-  const html = React.useMemo(() => _agHTML(r, D, ai), [D, ai]);
+  const [X, setX] = React.useState(() => window.__OD_PROMO_EXTRA || null);
+  React.useEffect(() => {
+    if (X) return;
+    if (!(window.OD && window.OD.enabled && window.OD.fetchPromoExtra)) { setX({}); return; }
+    let alive = true; const t = setTimeout(() => { if (alive) setX(v => v || {}); }, 4000);
+    window.OD.fetchPromoExtra(_retEmail()).then(res => { if (!alive) return; const v = (res && res.ok && res.result) || {}; if (res && res.ok) window.__OD_PROMO_EXTRA = v; setX(v); }).catch(() => { if (alive) setX({}); });
+    return () => { alive = false; clearTimeout(t); };
+  }, []);
+  React.useEffect(() => { if (!ai && X) _agEnsureAI(r, D, setAi, X); }, [r && r.id, !!X]);
+  const html = React.useMemo(() => _agHTML(r, D, ai, X), [D, ai, X]);
   const boxRef = React.useRef(null), frRef = React.useRef(null);
   const [zoom, setZoom] = React.useState(1), [h, setH] = React.useState(1600);
   React.useEffect(() => {
