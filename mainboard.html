@@ -1290,52 +1290,28 @@ span.ret-hud-item { cursor: default; }
 .ret-promo-tags span { background: rgba(216,90,42,0.10); color: var(--orange); font-weight: 800; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; }
 .ret-promo-mentor { margin-top: 12px; padding: 10px 12px; background: #FFE9A6; border-radius: 6px; font-size: 13px; line-height: 1.6; }
 .ret-promo-foot { margin-top: 8px; font-size: 10.5px; color: var(--ink-mute); text-align: right; font-weight: 700; }
-/* ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G (시안 A 격자 + G2 인포그래픽). 큰 영어 제목 없음, 글꼴은 모두 고딕. 폰은 PC 화면 그대로 줄여서 보여준다 */
-.pag-fit { overflow: hidden; margin-bottom: 14px; } .pag, .pag * { box-sizing: border-box; }
-.pag { width: 100%; background: #FAF6EB; border: 1px solid #E0D3B8; border-radius: 12px; padding: 28px 30px 26px; color: #2A1F14; font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; box-shadow: 0 20px 40px -28px rgba(58,40,18,.45); }
-.pag * { font-family: inherit; }
-.pag-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
-.pag-top h3 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; } .pag-top h3 em { font-style: normal; color: #D85A2A; }
-.pag-tabs { display: flex; gap: 16px; font-size: 12.5px; border-bottom: 1px solid #E0D3B8; flex-wrap: wrap; }
-.pag-tabs span { padding: 6px 2px; } .pag-tabs span:first-child { border-bottom: 2px solid #2A1F14; font-weight: 700; }
-.pag-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; margin-top: 24px; }
-.pag-w { background: #FFFDF7; border: 1px solid #E0D3B8; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-shadow: 0 10px 24px -18px rgba(58,40,18,.45); }
-.pag-w.s2 { grid-column: span 2; } .pag-w.s3 { grid-column: 1 / -1; }
-.pag-w h4 { margin: 0; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-.pag-w h4 small { font-size: 11.5px; color: #D85A2A; font-weight: 500; }
-.pag-quote { position: relative; padding-top: 22px; } .pag-quote::before { content: "\201C"; position: absolute; left: 14px; top: -4px; font-size: 56px; color: #F2B79A; line-height: 1; }
-.pag-quote p { margin: 6px 0 4px; font-size: 15px; line-height: 1.7; font-weight: 500; } .pag-quote b { font-size: 12px; color: #D85A2A; }
-.pag-att { display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; }
-.pag-donut { position: relative; width: 148px; height: 148px; display: grid; place-items: center; } .pag-donut svg { position: absolute; inset: 0; }
-.pag-donut b { font-size: 32px; font-weight: 600; line-height: 1; text-align: center; } .pag-donut b small { display: block; font-size: 11px; font-weight: 500; color: #8A7964; margin-top: 4px; }
-.pag-kn { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-.pag-kn div { border-top: 1.5px solid #2A1F14; padding-top: 6px; } .pag-kn small { display: block; font-size: 11.5px; color: #8A7964; }
-.pag-kn b { font-size: 26px; font-weight: 500; line-height: 1.15; } .pag-kn b small { display: inline; font-size: 12px; color: #5C4A36; }
-.pag-lede { font-size: 12.5px; color: #8A7964; margin: 10px 0 0; }
-.pag-bars { display: flex; align-items: flex-end; gap: 10px; height: 110px; padding-top: 14px; }
-.pag-bars div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; font-size: 11px; color: #5C4A36; height: 100%; }
-.pag-bars i { display: block; width: 100%; max-width: 22px; border-radius: 6px 6px 3px 3px; background: linear-gradient(#D85A2A, #F2B79A); }
-.pag-heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 13px); grid-auto-columns: 13px; justify-content: start; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
-.pag-heat i { width: 13px; height: 13px; border-radius: 3px; background: rgba(160,100,70,.12); }
-.pag-heat i.h1 { background: #F7C4A9; } .pag-heat i.h2 { background: #EE9A72; } .pag-heat i.h3 { background: #D85A2A; } .pag-heat i.h4 { background: #8E3414; }
-.pag-leg { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: #8A7964; } .pag-leg i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
-.pag-stack { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: #F1E8D6; } .pag-stack i { display: block; height: 100%; }
-.pag-road { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 14px 6px; }
-.pag-road::before { content: ""; position: absolute; left: 20px; right: 20px; top: 50%; height: 4px; background: #F1E8D6; border-radius: 2px; }
-.pag-road span { position: relative; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: #fff; color: #8A7964; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
-.pag-road span.on { background: #D85A2A; color: #fff; }
-.pag-cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-.pag-card { background: #FFFDF7; border: 1px solid #E0D3B8; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-.pag-card .t { background: #F1E8D6; padding: 8px 12px; font-size: 11px; display: flex; justify-content: space-between; color: #5C4A36; font-weight: 700; letter-spacing: .03em; }
-.pag-card .en { padding: 10px 12px 0; font-size: 14px; font-weight: 600; line-height: 1.5; }
-.pag-card .fx { margin: 8px 12px 0; font-size: 12.5px; color: #5C4A36; border-left: 2px solid #D85A2A; padding-left: 8px; line-height: 1.55; }
-.pag-card .cm { margin: 10px 12px 12px; padding: 9px 11px; border-radius: 10px; background: linear-gradient(135deg, #D85A2A, #E8743F); color: #fff; font-size: 12.5px; line-height: 1.55; }
-.pag-letter { position: relative; background: #FFFDF7; border: 1px solid #E0D3B8; border-top: 7px solid #D85A2A; border-radius: 16px; padding: 30px 34px 24px; background-image: repeating-linear-gradient(transparent 0 31px, rgba(216,90,42,.10) 31px 32px); background-position: 0 64px; }
-.pag-letter .to { font-size: 26px; font-weight: 700; color: #D85A2A; margin-bottom: 12px; }
-.pag-letter p { font-size: 15px; line-height: 2.1; margin: 0 0 6px; } .pag-letter p b { background: linear-gradient(transparent 60%, #FBD3BD 60%); }
-.pag-letter .sig { text-align: right; font-size: 18px; font-weight: 700; } .pag-letter .sig small { display: block; font-size: 12px; color: #8A7964; font-weight: 400; }
-.pag-letter .stamp { position: absolute; right: 22px; top: 16px; width: 58px; height: 58px; border: 2.5px solid #D85A2A; border-radius: 50%; color: #D85A2A; font-weight: 900; font-size: 12px; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-12deg); }
-.pag-foot { margin-top: 12px; font-size: 11px; color: #8A7964; text-align: right; }
+/* ★ 2026-10-16 (개발 뷰): 진급 리포트 A×G. 리포트 본문은 iframe 안(성장 리포트 탭 아티팩트와 같은 CSS), 바깥은 봉투 묶음 */
+.ag-env-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.ag-env { position: relative; text-align: left; background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 14px 70px 12px 14px; overflow: hidden; transition: transform .15s; cursor: pointer; font-family: inherit; color: var(--ink); }
+.ag-env::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 46px; background: linear-gradient(160deg, transparent 49.5%, rgba(58,40,18,.07) 50%) left/50% 100% no-repeat, linear-gradient(200deg, transparent 49.5%, rgba(58,40,18,.07) 50%) right/50% 100% no-repeat; pointer-events: none; }
+.ag-env:hover { transform: translateY(-2px); }
+.ag-env.on { border-color: var(--orange); box-shadow: 0 0 0 2px var(--orange-soft), 0 12px 24px -16px rgba(216,90,42,.7); background: #FFFDF7; }
+.ag-env-eb { font-size: 9.5px; letter-spacing: .18em; font-weight: 800; color: var(--ink-mute); }
+.ag-env-t { font-size: 16px; font-weight: 900; letter-spacing: -.02em; margin: 4px 0 2px; }
+.ag-env-d { font-size: 11.5px; color: var(--ink-soft); }
+.ag-env-stamp { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--stamp-red); color: var(--stamp-red); display: grid; place-items: center; font-size: 12px; font-weight: 900; transform: rotate(-12deg); opacity: .85; background: rgba(255,255,255,.4); }
+.ag-env-new { position: absolute; right: 10px; top: 10px; background: var(--orange); color: #fff; font-size: 9.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
+.ag-env-open { font-size: 11px; font-weight: 800; color: var(--orange); margin-top: 10px; display: inline-block; }
+.ag-env.on .ag-env-open::after { content: " · 펼쳐짐"; }
+.ag-env.next { border-style: dashed; background: transparent; cursor: default; }
+.ag-env.next .ag-env-t { color: var(--ink-mute); }
+.ag-sheet-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; font-size: 12px; color: var(--ink-mute); flex-wrap: wrap; } .ag-sheet-bar b { color: var(--ink); }
+.ag-box { margin-bottom: 16px; overflow: hidden; }
+.ag-sheet { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #E8DFCB; }
+.ag-sheet iframe { display: block; width: 100%; border: 0; }
+.ag-hint { margin: 0 0 10px; font-size: 12px; font-weight: 700; color: var(--orange); background: var(--orange-soft); border-radius: 8px; padding: 8px 10px; }
+.ag-note { font-size: 11.5px; color: var(--ink-mute); margin-top: 6px; }
+@media (max-width: 760px) { .ag-env-row { grid-auto-flow: column; grid-auto-columns: 76%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; } .ag-env { scroll-snap-align: start; } }
 .pag-dev { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; background: #2A1F14; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
 .qe-frame { width: 100%; border: 0; display: block; background: transparent; }
 .qe-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); background: var(--cream); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; font-size: 13px; } .qe-bar b { color: var(--orange); } .qe-bar span { flex: 1; color: var(--ink-mute); font-size: 12px; }
@@ -11038,13 +11014,12 @@ function RetReportsSoonPage({ setActive }) {
       </div>
       <div className="ret-growth">
         <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
-        {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-        {!list.length && (
+        {_isDevNext() ? <RetPromoReportsAG list={list} preview={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString() }} /> : list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+        {!list.length && !_isDevNext() && (
           <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)" }}>
             아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
           </div>
         )}
-        {!list.length && _isDevNext() && <RetPromoReportAG preview r={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(), mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} />}
         <div className="ret-growth-head" style={{ marginTop: 22 }}>🧭 사수 리포트 4종 <small>실전 대본 · 오늘 표현 첨삭 · 회의 리허설 · 이메일 교정</small></div>
         <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: 28 }}>🚧</span>
@@ -11431,138 +11406,384 @@ function RetPromoReportCard({ r, sample }) {
     </div>
   );
 }
-// ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G. 기기에 있는 학습 기록(scenariosCompleted)으로 숫자를 계산해서 그린다.
-//   사수 한마디 · 출근부 기록(완주율 도넛 + 숫자 3개) · 주별 흐름 · 요일별 · 하루하루 · 모은 표현 · 여정 · 잘 쓴 문장 · 사수 편지
-function _pagKST(t) { try { const d = new Date(t); if (isNaN(d)) return ""; return new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10); } catch (e) { return ""; } }
-function _pagAdd(iso, n) { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
-function _pagData(r) {
+// ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G. 성장 리포트 탭 아티팩트와 같은 화면을 iframe 안에 그린다.
+//   숫자 · 출근부 · 기록 · 표현은 기기의 학습 기록(scenariosCompleted)으로 계산한다.
+//   사수 한마디 · 메모 핀 · 잘 쓴 문장 코멘트 · 사수 편지는 mentor-feedback 의 promoLetter 모드로 리포트마다 한 번 받아서 저장한다 (배포 전엔 틀 문장).
+const _AG_CSS = String.raw`*{box-sizing:border-box}body{margin:0}
+:root{--paper:#FAF6EB;--surf:#FFFDF7;--ink:#2A1F14;--ink2:#5C4A36;--mute:#8A7964;--line:#E0D3B8;--or:#D85A2A;--or2:#E8743F;--serif:'Gloock','Noto Serif KR',serif;--f:'Inter','Noto Sans KR',sans-serif}
+body{background:#E8DFCB;font-family:var(--f);color:var(--ink);padding:24px max(16px,3vw);background-image:radial-gradient(rgba(58,40,18,.05) 1px,transparent 1px);background-size:8px 8px}
+.sheet{max-width:1180px;margin:0 auto;background:var(--paper);border:1px solid #C9BBA0;border-radius:10px;padding:clamp(18px,4vw,48px);box-shadow:0 30px 60px rgba(58,40,18,.18)}
+.hero{position:relative;padding:20px 0 30px;background-image:linear-gradient(90deg,rgba(0,0,0,.06) 1px,transparent 1px),linear-gradient(rgba(216,90,42,.0) 0,transparent 0),repeating-linear-gradient(transparent 0 11px,rgba(0,0,0,.05) 11px 12px);background-size:calc(100%/12) 100%,100% 100%,100% 100%}
+.hero h1{font-family:var(--serif);font-size:clamp(44px,7.6vw,96px);font-weight:400;letter-spacing:-.02em;line-height:.98;margin:0;position:relative}
+.hero h1::after{content:"";position:absolute;left:0;right:0;top:62%;height:1px;background:rgba(216,90,42,.5)}
+.hero h1 i{font-style:normal;color:var(--ink2)}
+.ruler{height:14px;margin-top:22px;background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 10px);opacity:.55;border-top:1px solid var(--ink)}
+.sub{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end;margin-top:16px}
+.sub .ko{font-size:clamp(17px,2.2vw,22px);font-weight:600}.sub .ko em{font-style:normal;color:var(--or)}
+.tabs{display:flex;gap:16px;font-size:13px;border-bottom:1px solid var(--line)}
+.tabs span{padding:6px 2px}.tabs span:first-child{border-bottom:2px solid var(--ink);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 32px;margin-top:34px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.mod{border-top:1.5px solid var(--ink);padding-top:12px;min-width:0}
+.mod.w2{grid-column:span 2}.mod.w3{grid-column:1/-1}
+@media (max-width:860px){.mod.w2,.mod.w3{grid-column:auto}}
+.mod>h3{font-size:19px;font-weight:500;margin:0 0 14px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mod>h3 small{font-size:12px;color:var(--mute);font-weight:400}
+.note{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.7;box-shadow:0 10px 24px -14px rgba(0,0,0,.35)}
+.note b{display:block;font-size:12px;color:var(--or);margin-top:6px}
+.tok{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tok div{border-radius:12px;padding:12px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid var(--line);background:var(--surf);font-size:12px;line-height:1.45}
+.tok div:nth-child(1){background:var(--or);color:#fff;border-color:var(--or)}
+.tok div:nth-child(3){background:#ECE3CF}
+.tok div:nth-child(4){box-shadow:0 0 0 3px rgba(216,90,42,.25);border-color:var(--or)}
+.tok b{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}.tok b small{font-size:12px;font-weight:500}
+.tok span{opacity:.8}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surf)}
+.cal .wd{font-size:11px;color:var(--mute);padding:6px;border-bottom:1px solid var(--line)}
+.cal .c{min-height:64px;padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;font-size:12px;position:relative;min-width:0}
+.cal .c:nth-child(7n){border-right:0}
+.cal .c.out{background:repeating-linear-gradient(-45deg,transparent 0 5px,rgba(0,0,0,.04) 5px 6px);color:var(--mute)}
+.cal .c .n{font-size:12px;color:var(--ink2)}.cal .c.ring .n{color:var(--or);font-weight:700}
+.cal .c .m{position:absolute;right:4px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--ink);color:#fff;font-size:9.5px;display:grid;place-items:center}
+.cal .t,.cal .b{font-size:10px;border-radius:999px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .t{background:var(--or);color:#fff}.cal .b{background:#ECE3CF}
+.cal .it{font-size:10px;color:var(--or)}
+.cal .fold{grid-column:1/-1;padding:6px 10px;font-size:12px;color:var(--mute);border-bottom:1px solid var(--line);background:var(--paper)}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--mute);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:9px;margin-right:4px;vertical-align:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border-radius:999px;padding:5px 12px;font-size:13px;border:1px solid var(--line);background:var(--surf)}
+.chips .own{background:var(--or);border-color:var(--or);color:#fff}
+.chips .miss{border:1.5px solid var(--or);color:var(--or)}
+.chips .l2{background:#ECE3CF}.chips .l3{background:#DDD0B6}.chips .l4{background:#C9BBA0}
+.alert{display:grid;grid-template-columns:22px 1fr;gap:10px;background:var(--surf);border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:0 8px 20px -14px rgba(0,0,0,.4);font-size:13px;line-height:1.55}
+.alert.hot{box-shadow:0 0 0 2px rgba(216,90,42,.35),0 10px 24px -12px rgba(216,90,42,.6)}
+.alert .ic{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;display:grid;place-items:center}
+.alert.hot .ic{background:var(--or)}
+.alert b{font-size:15px}.alert small{color:var(--mute)}
+.space{display:grid;gap:6px;font-size:12.5px}
+.space div{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center}
+.space i{display:block;height:10px;background:#DDD0B6;border-radius:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--surf);border-radius:14px;box-shadow:0 14px 30px -18px rgba(0,0,0,.45);overflow:hidden;display:flex;flex-direction:column}
+.card .top{background:#E8DDC7;padding:10px 14px;font-size:11.5px;display:flex;justify-content:space-between;color:var(--ink2)}
+.card .en{padding:12px 14px 0;font-size:15px;font-weight:600;line-height:1.45}
+.card .fx{margin:10px 14px 0;font-size:12.5px;color:var(--ink2);border-left:2px solid var(--or);padding-left:8px}
+.card .pr{margin:12px 14px 14px;font-size:13px;line-height:1.6}
+.btn{border-radius:10px;padding:14px 16px;background:var(--or);color:#fff;font-weight:600;font-size:16px;margin-bottom:10px;box-shadow:0 10px 24px -12px rgba(216,90,42,.8)}
+.btn small{display:block;font-weight:400;font-size:12.5px;opacity:.9;margin-top:4px}
+.field{border:1px solid #DDD0B6;border-radius:10px;padding:10px 12px;background:var(--surf);margin-bottom:10px;font-size:13px}
+.field .lb{font-size:11.5px;color:var(--mute);display:flex;gap:8px;align-items:center}
+.field .lb em{font-style:normal;background:var(--ink);color:#fff;border-radius:999px;padding:0 8px;font-size:10.5px}
+.field .q{font-weight:600;margin:4px 0;color:var(--ink)}
+.field.focus{border-color:var(--or);box-shadow:0 0 0 3px rgba(216,90,42,.18)}
+.typo p{margin:0 0 10px;font-size:15px;line-height:1.85}.typo p b{color:var(--or)}
+.typo .to{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px}
+.typo .sig{text-align:right;font-size:18px;font-weight:600}.typo .sig small{display:block;font-size:12px;color:var(--mute);font-weight:400}
+.lede{font-size:12.5px;color:var(--mute);margin:0 0 10px}
+.ig-h{grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:8px 0 -4px}
+.ig-h b{font-family:var(--serif);font-weight:400;font-size:30px}.ig-h small{font-size:12.5px;color:var(--ink2)}
+.donut{display:grid;place-items:center;position:relative}
+.donut svg{width:132px;height:132px}
+.donut b{position:absolute;font-family:var(--serif);font-weight:400;font-size:30px;text-align:center;line-height:1}
+.donut b small{display:block;font-family:var(--f);font-size:10.5px;color:var(--ink2)}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--ink2)}.legend2 i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:0}
+.stack{display:flex;height:16px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.6)}
+.stack i{display:block;height:100%}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;justify-content:start;gap:4px;overflow-x:auto;padding-bottom:2px}
+.heat i{width:13px;height:13px;border-radius:4px;background:rgba(160,100,70,.13)}
+.heat i.h1{background:#F6B999}.heat i.h2{background:#EE8A55}.heat i.h3{background:var(--or)}.heat i.h4{background:#9C3F18}.heat i.no{background:transparent}
+.wkbar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:96px}
+.wkbar div{display:grid;gap:4px;justify-items:center;font-size:10.5px;color:var(--ink2)}
+.wkbar i{display:block;width:100%;max-width:22px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--or),#F6B999)}
+.gauge{display:grid;justify-items:center}
+.gauge svg{width:170px;height:96px}
+.gauge b{font-family:var(--serif);font-weight:400;font-size:30px;margin-top:-30px}
+.steps2{position:relative;display:flex;justify-content:space-between;align-items:center;margin:14px 6px 2px}
+.steps2::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;border-radius:4px;background:rgba(255,255,255,.7)}
+.steps2 .fill{position:absolute;left:0;top:50%;height:4px;border-radius:4px;background:var(--or);transform:translateY(-50%)}
+.steps2 span{position:relative;width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink2);box-shadow:0 6px 14px -8px rgba(120,60,30,.6)}
+.steps2 span.on{background:var(--or);color:#fff}
+.steps2 + .lb{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink2);margin:0 2px}
+
+.grid>.w{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:0 10px 24px -18px rgba(58,40,18,.45)}
+.grid>.w.s2{grid-column:span 2}
+@media (max-width:860px){.grid>.w.s2{grid-column:auto}}
+.w h4{margin:0;font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.w h4 small{font-size:11.5px;color:var(--or);font-weight:500}
+.heat i{background:rgba(160,100,70,.12)}
+.quote{position:relative;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:22px 18px 16px;box-shadow:0 10px 24px -18px rgba(58,40,18,.45)}
+.quote::before{content:"\201C";position:absolute;left:14px;top:-6px;font-family:var(--serif);font-size:64px;color:#F2B79A;line-height:1}
+.quote p{margin:10px 0 8px;font-size:15.5px;line-height:1.7;font-weight:500}
+.quote b{font-size:12px;color:var(--or)}
+.att{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}
+@media (max-width:700px){.att{grid-template-columns:1fr}}
+.att .donut svg{width:148px;height:148px}
+.att .donut b{font-size:34px}
+.kn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kn div{border-top:1.5px solid var(--ink);padding-top:6px}
+.kn small{display:block;font-size:11.5px;color:var(--mute)}
+.kn b{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.1}
+.kn b small{display:inline;font-family:var(--f);font-size:12px;color:var(--ink2)}
+.cal .c.multi{background:#FFDCC6;box-shadow:inset 0 0 0 2px var(--or)}
+.cal .c.multi .n{color:var(--or);font-weight:800}
+.cal .x{position:absolute;right:24px;top:4px;background:var(--ink);color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:0 6px;line-height:16px}
+
+.cm2{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;background:#FDE3D3;border-radius:12px;padding:9px 11px;margin-top:8px;box-shadow:inset 0 0 0 1.5px rgba(216,90,42,.38);color:#2A1F14;font-weight:500;font-size:13.5px;line-height:1.6;text-align:left}
+.cm2 .av{width:30px;height:30px;border-radius:50%;background:#D85A2A;color:#fff;font-weight:800;font-size:12.5px;display:grid;place-items:center}
+.cm2 small{display:block;font-size:10.5px;font-weight:800;color:#B8461C;letter-spacing:.04em;opacity:1}
+.calwrap{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(220px,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.calwrap{grid-template-columns:1fr}}
+.pins{display:flex;flex-direction:column;gap:10px}
+.pins h5{margin:0;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+.pins h5::before{content:"📌"}
+
+.card .pr{margin:10px 12px 12px}
+.letter2{position:relative;background:#FFFDF7;border:1px solid var(--line);border-top:7px solid var(--or);border-radius:16px;padding:34px clamp(18px,4vw,44px) 28px;box-shadow:0 24px 40px -26px rgba(58,40,18,.55);background-image:repeating-linear-gradient(transparent 0 33px,rgba(216,90,42,.10) 33px 34px);background-position:0 70px}
+.letter2 .to{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,40px);color:var(--or);margin-bottom:14px}
+.letter2 p{font-family:'Noto Serif KR',serif;font-size:16.5px;line-height:2.05;margin:0 0 12px}
+.letter2 p b{background:linear-gradient(transparent 60%,#FBD3BD 60%);color:var(--ink)}
+.letter2 .sig{font-family:var(--serif);font-size:24px;color:var(--ink)}
+.lstamp{position:absolute;right:22px;top:18px;width:62px;height:62px;border:2.5px solid var(--or);border-radius:50%;color:var(--or);font-weight:900;font-size:13px;line-height:1.15;display:grid;place-items:center;text-align:center;transform:rotate(-12deg);background:rgba(255,253,247,.85)}
+.mod.w3:has(.letter2)>h3{color:var(--or)}
+.reply2{position:relative;display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;margin-top:14px;background:linear-gradient(135deg,#D85A2A,#E8743F);color:#fff;border-radius:16px 16px 16px 4px;padding:14px 16px;box-shadow:0 16px 28px -16px rgba(216,90,42,.8)}
+.reply2::before{content:"";position:absolute;left:18px;top:-9px;border:9px solid transparent;border-bottom-color:#D85A2A;border-top:0}
+.reply2 .av{width:38px;height:38px;border-radius:50%;background:#fff;color:#D85A2A;font-weight:900;display:grid;place-items:center}
+.reply2 small{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;opacity:.9}
+.reply2 p{margin:3px 0 0;font-size:15px;line-height:1.7;font-weight:500}
+`;
+function _agKST(t) { try { const d = new Date(t); if (isNaN(d)) return ""; return new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10); } catch (e) { return ""; } }
+function _agAdd(iso, n) { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function _agDow(iso) { return new Date(iso + "T00:00:00Z").getUTCDay(); }
+function _agDiff(a, b) { return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 864e5); }
+function _agMD(iso) { return iso ? Number(iso.slice(5, 7)) + "." + Number(iso.slice(8, 10)) : ""; }
+function _agKo(iso) { return iso ? Number(iso.slice(5, 7)) + "월 " + Number(iso.slice(8, 10)) + "일" : ""; }
+function _agEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
+function _agNick(name) { const n = String(name || "").trim(); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
+function _agScn(d) { try { return SCENARIOS.find(s => s.day === d) || {}; } catch (e) { return {}; } }
+function _agData(r) {
   const u = _wbUser();
-  const from = r.from || (r.stats && r.stats.from) || 1, to = r.to || (r.stats && r.stats.to) || 30;
-  const total = to - from + 1;
+  const from = r.from || (r.stats && r.stats.from) || 1, to = r.to || (r.stats && r.stats.to) || 30, total = to - from + 1;
   const done = _odCompletedDaySet(u);
-  let doneN = 0; for (let d = from; d <= to; d++) if (done.has(d)) doneN++;
+  const doneDays = []; const open = [];
+  for (let d = from; d <= to; d++) (done.has(d) ? doneDays : open).push(d);
   const list = (u.scenariosCompleted || []).filter(s => s && s.day >= from && s.day <= to);
   const byDate = {};
-  list.forEach(s => { const iso = _pagKST(s.submittedAt); if (iso) byDate[iso] = (byDate[iso] || 0) + 1; });
+  list.forEach(s => { const iso = _agKST(s.submittedAt); if (iso) (byDate[iso] = byDate[iso] || []).push(s.day); });
+  Object.keys(byDate).forEach(k => byDate[k].sort((a, b) => a - b));
   const dates = Object.keys(byDate).sort();
-  let streak = 0, run = 0, prev = "";
-  dates.forEach(iso => { run = (prev && _pagAdd(prev, 1) === iso) ? run + 1 : 1; streak = Math.max(streak, run); prev = iso; });
+  let streak = 0, sFrom = "", sTo = "", run = 0, runFrom = "", prev = "";
+  dates.forEach(iso => { if (prev && _agAdd(prev, 1) === iso) run++; else { run = 1; runFrom = iso; } if (run > streak) { streak = run; sFrom = runFrom; sTo = iso; } prev = iso; });
   let maxN = 0, maxDate = "";
-  dates.forEach(iso => { if (byDate[iso] > maxN) { maxN = byDate[iso]; maxDate = iso; } });
-  const wd = [0, 0, 0, 0, 0, 0, 0];
-  dates.forEach(iso => { wd[new Date(iso + "T00:00:00Z").getUTCDay()] += byDate[iso]; });
-  // 주별 흐름 · 하루하루: 첫 기록 주의 일요일부터 마지막 기록 주까지
+  dates.forEach(iso => { if (byDate[iso].length > maxN) { maxN = byDate[iso].length; maxDate = iso; } });
+  let gapDays = 0, gapFrom = "", gapBack = "";
+  for (let i = 1; i < dates.length; i++) { const g = _agDiff(dates[i - 1], dates[i]) - 1; if (g > gapDays) { gapDays = g; gapFrom = _agAdd(dates[i - 1], 1); gapBack = dates[i]; } }
+  const months = {}; dates.forEach(iso => { const m = iso.slice(0, 7); months[m] = (months[m] || 0) + 1; });
+  const bm = Object.keys(months).sort((a, b) => months[b] - months[a])[0] || "";
+  const wd = [0, 0, 0, 0, 0, 0, 0]; dates.forEach(iso => { wd[_agDow(iso)] += byDate[iso].length; });
   const weeks = [];
   if (dates.length) {
-    let s = dates[0]; s = _pagAdd(s, -new Date(s + "T00:00:00Z").getUTCDay());
-    const last = dates[dates.length - 1];
-    while (s <= last && weeks.length < 60) {
-      const days = []; let sum = 0;
-      for (let k = 0; k < 7; k++) { const iso = _pagAdd(s, k); const n = byDate[iso] || 0; days.push(n); sum += n; }
-      weeks.push({ start: s, days, sum }); s = _pagAdd(s, 7);
-    }
+    let s = _agAdd(dates[0], -_agDow(dates[0])); const last = dates[dates.length - 1];
+    while (s <= last && weeks.length < 80) { const days = []; let sum = 0; for (let k = 0; k < 7; k++) { const iso = _agAdd(s, k); const n = (byDate[iso] || []).length; days.push({ iso, n }); sum += n; } weeks.push({ start: s, days, sum }); s = _agAdd(s, 7); }
   }
-  const sentences = list.filter(s => s.sentence && String(s.sentence).trim().split(/\s+/).length >= 3);
   const fb = (s) => (s.feedback && s.feedback.aiFb) || {};
-  const corrected = sentences.filter(s => fb(s).corrected).length;
-  const best = sentences.slice().sort((a, b) => ((fb(b).praise ? 1 : 0) - (fb(a).praise ? 1 : 0)) || (String(b.sentence).length - String(a.sentence).length)).slice(0, 3)
-    .map(s => ({ day: s.day, word: s.word, text: String(s.sentence).trim(), fixed: fb(s).corrected && _wbNorm(fb(s).corrected) !== _wbNorm(s.sentence) ? fb(s).corrected : "", praise: fb(s).praise || "", date: _pagKST(s.submittedAt) }));
-  return { from, to, total, doneN, rate: total ? Math.round(100 * doneN / total) : 0, studyDays: dates.length, streak, maxN, maxDate, wd, weeks, sentences: sentences.length, corrected, best };
+  const sentences = list.filter(s => s.sentence && String(s.sentence).trim().split(/\s+/).length >= 3).map(s => {
+    const f = fb(s); const fixed = f.corrected && _wbNorm(f.corrected) !== _wbNorm(s.sentence) ? f.corrected : "";
+    return { day: s.day, word: s.word || _agScn(s.day).word || "", text: String(s.sentence).trim(), fixed, praise: f.praise || "", date: _agKST(s.submittedAt) };
+  });
+  const clean = sentences.filter(s => !s.fixed);
+  const best = sentences.slice().sort((a, b) => ((b.praise ? 1 : 0) - (a.praise ? 1 : 0)) || (b.text.length - a.text.length)).slice(0, 3).sort((a, b) => a.day - b.day);
+  const learnedAt = {}; dates.forEach(iso => byDate[iso].forEach(d => { if (!learnedAt[d]) learnedAt[d] = iso; }));
+  const words = doneDays.map(d => { const sc = _agScn(d); return { day: d, word: sc.word || "", meaning: sc.meaning || "", tip: (sc.buddyAnswers && (sc.buddyAnswers.default || sc.buddyAnswers.nuance)) || sc.mentorTip || "", at: learnedAt[d] || "", clean: clean.some(x => x.day === d) }; });
+  return { from, to, total, doneN: doneDays.length, rate: total ? Math.round(100 * doneDays.length / total) : 0, open, byDate, dates, studyDays: dates.length, streak, sFrom, sTo, maxN, maxDate, gapDays, gapFrom, gapBack, bestMonth: bm, bestMonthDays: months[bm] || 0, wd, weeks, sentences, clean, best, words };
 }
-function _pagNick(name) { const n = String(name || "").trim(); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
-function _pagMD(iso) { return iso ? Number(iso.slice(5, 7)) + "." + Number(iso.slice(8, 10)) : ""; }
-function RetPromoReportAG({ r, preview }) {
+// 기본 문장 (AI 편지를 아직 못 받았을 때)
+function _agDefaultAI(r, D, nick, rank) {
+  const pins = [];
+  if (D.dates[0]) pins.push({ date: _agMD(D.dates[0]).replace(/^(\d+)\.(\d+)$/, (m, a, b) => String(a).padStart(2, "0") + "." + String(b).padStart(2, "0")), title: "첫 출근", text: "Day " + D.byDate[D.dates[0]][0] + "부터 시작했어요. 🌱", iso: D.dates[0] });
+  if (D.streak >= 2) pins.push({ title: D.streak + "일 연속 시작", text: _agKo(D.sTo) + "까지 하루도 안 빠졌어요. 🔗", iso: D.sFrom });
+  if (D.maxN >= 2) pins.push({ title: "하루 " + D.maxN + "개", text: "Day " + D.byDate[D.maxDate].join(" · ") + "를 한 번에 채운 날이에요. ⚡", iso: D.maxDate });
+  if (D.gapDays >= 3) pins.push({ title: D.gapDays + "일 쉬고 복귀", text: _agKo(D.gapBack) + "에 다시 돌아왔어요. 🏖️", iso: D.gapBack });
+  else if (D.dates.length) pins.push({ title: "마지막 기록", text: "Day " + D.byDate[D.dates[D.dates.length - 1]].slice(-1)[0] + "까지 왔어요. 🏁", iso: D.dates[D.dates.length - 1] });
+  const b0 = D.best[0];
+  return {
+    note: r.mentorLine || (D.streak >= 5 ? "출근부 보면서 제일 먼저 눈에 띈 게 " + D.streak + "일 연속이었어요. 그 얘기부터 할게요." : "빈 날도 있었지만 여기까지 왔어요. 그 얘기부터 할게요."),
+    pins: pins.slice(0, 4).sort((a, b) => (a.iso < b.iso ? -1 : 1)),
+    comments: {},
+    letter: { to: nick + "씨, " + rank + " 진급 축하해요.", paragraphs: [
+      D.total + "칸 중 " + D.doneN + "칸을 채웠어요. 제일 길게 이어간 건 " + D.streak + "일 연속" + (D.maxN > 1 ? ", 하루에 제일 많이 한 날은 " + _agKo(D.maxDate) + "(" + D.maxN + "개)" : "") + "이에요.",
+      b0 ? "Day " + b0.day + " 문장이 좋았어요. \"" + b0.text + "\" 그날 표현(" + b0.word + ")을 상황에 맞게 썼어요." : "다음 단계에서는 하루 한 문장씩 직접 써봐요. 그 문장들이 다음 리포트의 주인공이 돼요.",
+      rank === "대리" ? "이제 회의를 이끄는 문장이 필요한 자리예요. 다음 TF에서 같이 연습해요." : "사원 기간에도 지금처럼 하루 한 칸씩 이어가요. 남은 칸은 같이 채워가요." ] },
+    fallback: true,
+  };
+}
+function _agHTML(r, D, ai) {
   const { USER, CHARACTERS } = window.__SIM;
-  const D = React.useMemo(() => _pagData(r), [r && r.id, r && r.at]);
-  const boxRef = React.useRef(null); const [zoom, setZoom] = React.useState(1);
+  const E = _agEsc, nick = _agNick(USER.name), rank = r.rankLabel || "사원";
+  const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", ini = mentor.charAt(0);
+  const A = ai || _agDefaultAI(r, D, nick, rank);
+  const prevRank = rank === "대리" ? "사원" : rank === "사원" ? "수습" : "";
+  const issued = String(r.at || "").slice(0, 10);
+  // 출근부 기록
+  const C = 326.7, dash = (C * Math.min(1, D.doneN / Math.max(1, D.total))).toFixed(1);
+  const donut = '<div class="donut"><svg viewBox="0 0 132 132"><circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="14"/><circle cx="66" cy="66" r="52" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + C + '" transform="rotate(-90 66 66)"/></svg><b>' + D.rate + '%<small>' + D.doneN + ' / ' + D.total + '</small></b></div>';
+  const att = '<section class="mod w2"><h3>출근부 기록 <small>' + E(prevRank + " Day " + D.total + "칸을 채운 날들") + '</small></h3><div class="att">' + donut + '<div><div class="kn"><div><small>실제 학습한 날</small><b>' + D.studyDays + '일</b></div><div><small>가장 긴 연속</small><b>' + D.streak + '일</b></div><div><small>쓴 문장</small><b>' + D.sentences.length + '개</b></div></div><p class="lede" style="margin:12px 0 0">' + E(prevRank) + ' Day 완주 ' + D.doneN + ' / ' + D.total + '</p></div></div></section>';
+  // 주별 흐름
+  const wmax = Math.max(1, ...D.weeks.map(w => w.sum)), nW = D.weeks.length;
+  const pk = D.weeks.reduce((a, w) => (w.sum > (a ? a.sum : -1) ? w : a), null);
+  const pts = D.weeks.map((w, i) => [nW > 1 ? 10 + i * 540 / (nW - 1) : 280, 112 - 100 * w.sum / wmax]);
+  const pth = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const every = Math.max(1, Math.ceil(nW / 16));
+  const flow = '<div class="w s2"><h4>주별 흐름 <small>' + (pk && pk.sum ? "제일 많이 한 주 " + _agMD(pk.start) + " · " + pk.sum + "개" : "") + '</small></h4>' + (nW ? '<svg viewBox="0 0 560 134" style="width:100%;height:auto"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D85A2A" stop-opacity=".35"/><stop offset="1" stop-color="#D85A2A" stop-opacity="0"/></linearGradient></defs><path d="' + pth + ' L' + pts[nW - 1][0].toFixed(1) + ' 120 L' + pts[0][0].toFixed(1) + ' 120 Z" fill="url(#ga)"/><path d="' + pth + '" fill="none" stroke="#D85A2A" stroke-width="2.4" stroke-linejoin="round"/>' + pts.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (D.weeks[i] === pk ? 3.6 : 2.4) + '" fill="' + (D.weeks[i] === pk ? "#D85A2A" : "#fff") + '" stroke="#D85A2A" stroke-width="1.6"/>' + (i % every === 0 ? '<text x="' + p[0].toFixed(1) + '" y="132" font-size="11" text-anchor="middle" fill="#7A6358">' + _agMD(D.weeks[i].start) + '</text>' : '')).join("") + '</svg>' : '') + '</div>';
+  // 요일별
+  const WK = ["일", "월", "화", "수", "목", "금", "토"], wdm = Math.max(1, ...D.wd), top = D.wd.indexOf(Math.max(...D.wd));
+  const wk = '<div class="w"><h4>요일별 Day <small>' + (Math.max(...D.wd) > 0 ? WK[top] + "요일에 제일 많이" : "") + '</small></h4><div class="wkbar">' + D.wd.map((n, i) => '<div><span>' + n + '</span><i style="height:' + Math.round(70 * n / wdm) + 'px;"></i>' + WK[i] + '</div>').join("") + '</div></div>';
+  // 하루하루
+  const lv = (n) => n <= 0 ? "" : n === 1 ? "h1" : n === 2 ? "h2" : n === 3 ? "h3" : "h4";
+  const heat = '<div class="w s2"><h4>하루하루 <small>진할수록 그날 많이</small></h4><div class="heat">' + D.weeks.map(w => w.days.map(x => '<i class="' + (x.iso < D.dates[0] ? "no" : lv(x.n)) + '" title="' + _agMD(x.iso) + ' · ' + x.n + '개"></i>').join("")).join("") + '</div><div class="legend2"><span><i style="background:rgba(255,255,255,.7)"></i>쉰 날</span><span><i style="background:#F6B999"></i>1개</span><span><i style="background:#EE8A55"></i>2개</span><span><i style="background:#D85A2A"></i>3개</span><span><i style="background:#9C3F18"></i>4개 이상</span></div></div>';
+  // 진급 테스트 게이지 (새 테스트 결과, 없으면 예전 승급 테스트 점수)
+  let gv = null; try { const t = _qeLoad(_retEmail()); if (t && t.main && t.main.total) gv = [t.main.ok, t.main.total]; } catch (e) {}
+  if (!gv && rank === "사원") { const sc = Number(_wbUser().levelupTestScore); if (sc >= 0 && _wbUser().levelupTestScore != null) gv = [sc, 100]; }
+  const gauge = gv ? '<div class="w"><h4>진급 테스트</h4><div class="gauge"><svg viewBox="0 0 170 96"><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="14" stroke-linecap="round"/><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + (219.9 * Math.min(1, gv[0] / Math.max(1, gv[1]))).toFixed(1) + ' 219.9"/></svg><b>' + gv[0] + '<small style="font-size:14px;color:var(--ink2)"> / ' + gv[1] + '</small></b></div></div>' : '';
+  // 모은 표현 한 줄
+  const pc = (n) => (100 * n / Math.max(1, D.doneN)).toFixed(1) + "%";
+  const nClean = D.words.filter(w => w.clean).length, nFix = D.sentences.length - D.clean.length, nRest = Math.max(0, D.doneN - nClean - nFix);
+  const stack = '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nClean) + ';background:#D85A2A"></i><i style="width:' + pc(nFix) + ';background:#F6B999"></i><i style="width:' + pc(nRest) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>첨삭 없이 통과한 문장 ' + nClean + '</span><span><i style="background:#F6B999"></i>사수가 다듬은 문장 ' + nFix + '</span><span><i style="background:#fff"></i>나머지 ' + nRest + '</span></div></div>';
+  // 여정
+  const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
+  const road = '<div class="w"><h4>여정 <small>' + (D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지") + '</small></h4><div class="steps2"><span class="fill" style="width:' + D.rate + '%"></span>' + q.map(n => '<span class="' + (D.doneN >= n ? "on" : "") + '">' + n + '</span>').join("") + '</div></div>';
+  // 출근부 달력
+  const pinAt = {}; (A.pins || []).forEach((p, i) => { const iso = p.iso || (D.dates.find(d => _agMD(d) === String(p.date || "").replace(/^0/, "").replace(/\.0/, ".")) || ""); if (iso) pinAt[iso] = i + 1; });
+  let cal = '';
+  if (D.dates.length) {
+    const first = D.dates[0], last = D.dates[D.dates.length - 1];
+    cal += ["일", "월", "화", "수", "목", "금", "토"].map(x => '<div class="wd">' + x + '</div>').join("");
+    let empty = [];
+    const flush = () => { if (empty.length >= 2) cal += '<div class="fold">' + _agMD(empty[0].start) + ' – ' + _agMD(_agAdd(empty[empty.length - 1].start, 6)) + ' · ' + empty.length + '주 동안 이 리포트 Day를 안 했어요</div>'; else empty.forEach(w => { cal += w.html; }); empty = []; };
+    let s = _agAdd(first, -_agDow(first)), firstCell = true;
+    while (s <= last) {
+      let html = '', any = false;
+      for (let k = 0; k < 7; k++) {
+        const iso = _agAdd(s, k), ds = D.byDate[iso] || [], out = iso < first || iso > last;
+        if (ds.length) any = true;
+        const dn = Number(iso.slice(8, 10)), mo = (firstCell || dn === 1) ? ' <small>' + Number(iso.slice(5, 7)) + '월</small>' : '';
+        html += '<div class="c' + (out ? " out" : "") + (ds.length > 1 ? " multi" : "") + '"><span class="n">' + dn + mo + '</span>' + ds.slice(0, 3).map(d => '<span class="t">Day ' + d + '</span>').join("") + (ds.length > 3 ? '<span class="t">+' + (ds.length - 3) + '</span>' : '') + (ds.length > 1 ? '<span class="x">×' + ds.length + '</span>' : '') + (pinAt[iso] ? '<span class="m">' + pinAt[iso] + '</span>' : '') + '</div>';
+        firstCell = false;
+      }
+      if (any) { flush(); cal += html; } else empty.push({ start: s, html });
+      s = _agAdd(s, 7);
+    }
+    flush();
+  }
+  const ym = (iso) => ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][Number(iso.slice(5, 7)) - 1];
+  const calSec = D.dates.length ? '<section class="mod w2"><h3>출근부 <small>' + ym(D.dates[0]) + ' – ' + ym(D.dates[D.dates.length - 1]) + ' ' + D.dates[D.dates.length - 1].slice(0, 4) + '</small></h3><div class="cal">' + cal + '</div><div class="legend"><span><i style="background:var(--or)"></i>학습한 Day</span><span><i style="background:#FFDCC6;box-shadow:inset 0 0 0 1.5px var(--or)"></i>하루에 여러 개 한 날 (×개수)</span><span>줄무늬 = 범위 밖</span></div></section>' : '';
+  // 사수 메모 핀
+  const pins = '<section class="mod"><h3>사수 메모 핀</h3>' + (A.pins || []).map((p, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">' + (i + 1) + '</span><div><small>' + E((p.iso ? _agMD(p.iso).split(".").map(x => x.padStart(2, "0")).join(".") : p.date) + " · " + p.title) + '</small><br>' + E(p.text) + '</div></div>').join("") + '</section>';
+  // 기록
+  const tok = [];
+  if (D.streak) tok.push(['🏃 가장 길게 연속 출근', D.streak + '<small>일</small>', _agMD(D.sFrom) + '~' + _agMD(D.sTo) + '. 이 기간 최고 기록.']);
+  if (D.bestMonth) tok.push(['📅 ' + Number(D.bestMonth.slice(5, 7)) + '월 실제 학습', D.bestMonthDays + '<small>일</small>', '이 기간 제일 많이 온 달이에요.']);
+  if (D.maxN) tok.push(['🚚 하루에 끝낸 Day 최다', D.maxN + '<small>개</small>', _agKo(D.maxDate) + ' (Day ' + (D.byDate[D.maxDate] || []).join(" · ") + ').']);
+  tok.push(['✍️ 첨삭 없이 통과한 문장', D.clean.length + '<small>개</small>', '직접 쓴 ' + D.sentences.length + '개 중에서요.']);
+  const rec = '<section class="mod w3"><h3>기록 <small>' + E(nick) + '씨 ' + E(prevRank) + ' 기간 기록</small></h3><div class="tok" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">' + tok.map(t => '<div><span>' + E(t[0]) + '</span><b>' + t[1] + '</b><span>' + E(t[2]) + '</span></div>').join("") + '</div></section>';
+  // 모은 표현 칩 · 다시 볼 표현 · 다음에 열어볼 Day
+  const chips = '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
+  const today = _agKST(new Date().toISOString());
+  const again = D.words.filter(w => !w.clean && w.at).sort((a, b) => (a.at < b.at ? -1 : 1)).slice(0, 3);
+  const againSec = again.length ? '<section class="mod"><h3>다시 볼 표현</h3>' + again.map((w, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">!</span><div><b>' + E(w.word) + '</b> <small>Day ' + w.day + ' · ' + E(w.meaning) + ' · ' + Math.max(0, _agDiff(w.at, today)) + '일 전에 배움</small><br>리뷰퀴즈에서 한 번 더 만나면 완전히 내 표현이 돼요.' + (w.tip ? '<br><small>' + E(String(w.tip).slice(0, 140)) + '</small>' : '') + '</div></div>').join("") + '</section>' : '';
+  const openSec = D.open.length ? '<section class="mod"><h3>다음에 열어볼 Day <small>' + D.open.length + '개</small></h3><p class="lede">하루 하나씩 열면 이 칸도 금방 채워져요.</p><div class="space">' + D.open.slice(0, 10).map(d => '<div><span>' + d + '</span><span>' + E(_agScn(d).word || "") + '</span></div>').join("") + '</div></section>' : '';
+  // 잘 쓴 문장
+  const cm = A.comments || {};
+  const cards = D.best.length ? '<section class="mod w3"><h3>잘 쓴 문장 <small>' + E(nick) + '씨가 직접 쓴 문장</small></h3><div class="cards">' + D.best.map(b => { const c = cm[b.day] || cm[String(b.day)] || b.praise; return '<article class="card"><div class="top"><span>DAY ' + b.day + ' · ' + E(String(b.word).toUpperCase()) + '</span><span>' + _agMD(b.date).split(".").map(x => x.padStart(2, "0")).join(".") + '</span></div><div class="en">"' + E(b.text) + '"</div>' + (b.fixed ? '<div class="fx"><b>사수가 다듬은 문장</b> ' + E(b.fixed) + '</div>' : '') + (c ? '<div class="pr"><span class="cm2"><span class="av">' + E(ini) + '</span><span><small>사수 코멘트</small>' + E(c) + '</span></span></div>' : '') + '</article>'; }).join("") + '</div></section>' : '';
+  // 진급 테스트
+  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = t.main; } catch (e) {}
+  const testSec = '<section class="mod w2"><h3>진급 테스트 <small>' + E(rank) + ' 진급 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " 진급") + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
+  // 사수 편지
+  const L = A.letter || {};
+  const letter = '<section class="mod w3"><h3>사수 편지 <small>' + E(mentor) + ' 사수가 ' + E(nick) + ' ' + E(rank) + '에게</small></h3><div class="typo letter2"><span class="lstamp">사수<br>편지</span><div class="to">' + E(L.to || (nick + "씨, " + rank + " 진급 축하해요.")) + '</div>' + (L.paragraphs || []).map(p => '<p>' + E(p) + '</p>').join("") + '<div class="sig">' + E(mentor) + '<small>담당 사수 · ' + E(issued.replace(/-/g, ".")) + '</small></div></div></section>';
+  const head = '<div class="sub" style="margin-top:0"><div class="ko">' + E(nick) + '씨, <em>' + E(rank) + '</em> 진급 리포트예요.</div><div class="tabs"><span>PROMOTION REPORT</span><span>' + E(prevRank + " → " + rank) + '</span><span>DAY ' + D.from + '–' + D.to + '</span><span>' + E(issued.replace(/-/g, ".")) + ' 발급</span></div></div>';
+  const body = head + '<div class="grid"><section class="quote"><p>' + E(A.note) + '</p><b>사수 ' + E(mentor) + '</b></section>' + att + flow + wk + heat + gauge + stack + road + calSec + pins + rec + chips + againSec + openSec + cards + testSec + letter + '</div>';
+  return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"><style>' + _AG_CSS + 'html,body{overflow:hidden}body{padding:18px!important}body *,body *::before,body *::after{font-family:\'Noto Sans KR\',\'Apple SD Gothic Neo\',sans-serif!important}</style></head><body><div class="sheet">' + body + '</div></body></html>';
+}
+// AI 사수 글: 리포트마다 한 번 받아서 PROMO 기록(r.ai)에 저장
+const _agAsking = {};
+function _agEnsureAI(r, D, onDone) {
+  if (r.ai || _agAsking[r.id] || !(window.OD && window.OD.enabled && window.OD.getMentorAiFeedback)) return;
+  _agAsking[r.id] = true;
+  const { USER, CHARACTERS } = window.__SIM; const rank = r.rankLabel || "사원";
+  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = { ok: t.main.ok, total: t.main.total }; } catch (e) {}
+  const payload = { name: _agNick(USER.name), rank, period: "Day " + D.from + "~" + D.to, total: D.total, done: D.doneN, studyDays: D.studyDays, streak: D.streak, streakFrom: D.sFrom, streakTo: D.sTo,
+    maxN: D.maxN, maxDate: D.maxDate, bestMonth: D.bestMonth, bestMonthDays: D.bestMonthDays, gapDays: D.gapDays, gapFrom: D.gapFrom, gapBack: D.gapBack, firstDate: D.dates[0] || "", lastDate: D.dates[D.dates.length - 1] || "",
+    sentences: D.best.concat(D.sentences.filter(s => D.best.indexOf(s) < 0)).slice(0, 6).map(s => ({ day: s.day, word: s.word, text: s.text, fixed: s.fixed })), words: D.words.map(w => w.word), sentenceCount: D.sentences.length, test: tres };
+  window.OD.getMentorAiFeedback({ mode: "promoLetter", promo: payload, mentorName: (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", word: "promo" })
+    .then(res => {
+      if (!(res && res.ok && res.promo && res.promo.letter)) return;
+      const ai = Object.assign({ at: new Date().toISOString() }, res.promo);
+      const email = _retEmail(); const l = _retLoad("PROMO", email, { list: [] });
+      const it = (l.list || []).find(x => x.id === r.id);
+      if (it) { it.ai = ai; _retSave("PROMO", email, l); _retPing(); }
+      else { try { localStorage.setItem("__OD_PROMO_AI_PREVIEW_" + email, JSON.stringify(ai)); } catch (e) {} }
+      onDone && onDone(ai);
+    })
+    .catch(() => {})
+    .finally(() => { _agAsking[r.id] = false; });
+}
+function RetPromoSheetAG({ r, preview }) {
+  const D = React.useMemo(() => _agData(r), [r && r.id, r && r.at]);
+  const [ai, setAi] = React.useState(() => r.ai || (preview ? (() => { try { return JSON.parse(localStorage.getItem("__OD_PROMO_AI_PREVIEW_" + _retEmail()) || "null"); } catch (e) { return null; } })() : null));
+  React.useEffect(() => { if (!ai) _agEnsureAI(r, D, setAi); }, [r && r.id]);
+  const html = React.useMemo(() => _agHTML(r, D, ai), [D, ai]);
+  const boxRef = React.useRef(null), frRef = React.useRef(null);
+  const [zoom, setZoom] = React.useState(1), [h, setH] = React.useState(1600);
   React.useEffect(() => {
     const el = boxRef.current; if (!el) return;
     const fit = () => { const w = el.clientWidth; setZoom(w && w < 900 ? +(w / 1000).toFixed(4) : 1); };
-    fit(); let ro = null;
-    try { ro = new ResizeObserver(fit); ro.observe(el); } catch (e) { window.addEventListener("resize", fit); }
+    fit(); let ro = null; try { ro = new ResizeObserver(fit); ro.observe(el); } catch (e) { window.addEventListener("resize", fit); }
     return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); };
   }, []);
-  const nick = _pagNick(USER.name); const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수";
-  const rank = r.rankLabel || "사원";
-  const C = 2 * Math.PI * 60, dash = C * Math.min(1, D.doneN / Math.max(1, D.total));
-  const wMax = Math.max(1, ...D.weeks.map(w => w.sum));
-  const W = 600, H = 120, pts = D.weeks.map((w, i) => [D.weeks.length > 1 ? 10 + i * (W - 20) / (D.weeks.length - 1) : W / 2, H - 10 - (H - 30) * w.sum / wMax]);
-  const peak = D.weeks.reduce((a, w) => (w.sum > (a ? a.sum : -1) ? w : a), null);
-  const wdMax = Math.max(1, ...D.wd), wdTop = D.wd.indexOf(Math.max(...D.wd));
-  const WK = ["일", "월", "화", "수", "목", "금", "토"];
-  const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
-  const seg = (n) => (100 * n / Math.max(1, D.total)).toFixed(1) + "%";
-  const lvl = (n) => n <= 0 ? "" : n === 1 ? "h1" : n === 2 ? "h2" : n === 3 ? "h3" : "h4";
-  const line = pts.map(p => p.join(",")).join(" ");
-  const b0 = D.best[0];
+  const size = () => { try { const d = frRef.current && frRef.current.contentDocument; if (d && d.documentElement) setH(d.documentElement.scrollHeight); } catch (e) {} };
   return (
-    <div className="pag-fit" ref={boxRef}>
-      <div className="pag" style={zoom < 1 ? { width: 1000, zoom } : null}>
-        <div className="pag-top">
-          <h3>{nick}씨, <em>{rank}</em> 진급 리포트예요.{preview && <span className="pag-dev">개발 뷰 미리보기</span>}</h3>
-          <div className="pag-tabs"><span>PROMOTION REPORT</span><span>{r.title}</span><span>DAY {D.from}–{D.to}</span><span>{String(r.at || "").slice(0, 10)} 발급</span></div>
-        </div>
-        <div className="pag-grid">
-          <section className="pag-w pag-quote"><p>{r.mentorLine}</p><b>사수 {mentor}</b></section>
-          <section className="pag-w s2">
-            <h4>출근부 기록 <small>{D.total}칸 중 {D.doneN}칸</small></h4>
-            <div className="pag-att">
-              <div className="pag-donut"><svg viewBox="0 0 148 148"><circle cx="74" cy="74" r="60" fill="none" stroke="#F1E8D6" strokeWidth="16" /><circle cx="74" cy="74" r="60" fill="none" stroke="#D85A2A" strokeWidth="16" strokeLinecap="round" strokeDasharray={dash + " " + C} transform="rotate(-90 74 74)" /></svg><b>{D.rate}%<small>{D.doneN} / {D.total}</small></b></div>
-              <div><div className="pag-kn"><div><small>실제 학습한 날</small><b>{D.studyDays}<small>일</small></b></div><div><small>가장 긴 연속</small><b>{D.streak}<small>일</small></b></div><div><small>쓴 문장</small><b>{D.sentences}<small>개</small></b></div></div>
-                <p className="pag-lede">{rank === "사원" ? "수습" : "사원"} Day 완주 {D.doneN} / {D.total}{D.maxN > 1 ? " · 하루에 제일 많이 한 날 " + _pagMD(D.maxDate) + " (" + D.maxN + "개)" : ""}</p></div>
-            </div>
-          </section>
-          <section className="pag-w s2">
-            <h4>주별 흐름 <small>{peak && peak.sum ? "제일 많이 한 주 " + _pagMD(peak.start) + " · " + peak.sum + "개" : "기록이 쌓이면 그려져요"}</small></h4>
-            {pts.length > 0 && <svg viewBox={"0 0 " + W + " " + (H + 18)} width="100%" style={{ display: "block" }}>
-              <polygon points={"10," + (H - 10) + " " + line + " " + (W - 10) + "," + (H - 10)} fill="rgba(216,90,42,.12)" />
-              <polyline points={line} fill="none" stroke="#D85A2A" strokeWidth="2.5" strokeLinejoin="round" />
-              {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={D.weeks[i] === peak ? 5 : 3.5} fill={D.weeks[i] === peak ? "#D85A2A" : "#fff"} stroke="#D85A2A" strokeWidth="2" />)}
-              {D.weeks.map((w, i) => (i % Math.ceil(D.weeks.length / 8) === 0) && <text key={"t" + i} x={pts[i][0]} y={H + 14} fontSize="11" fill="#8A7964" textAnchor="middle">{_pagMD(w.start)}</text>)}
-            </svg>}
-          </section>
-          <section className="pag-w">
-            <h4>요일별 Day <small>{Math.max(...D.wd) > 0 ? WK[wdTop] + "요일에 제일 많이" : ""}</small></h4>
-            <div className="pag-bars">{D.wd.map((n, i) => <div key={i}><span>{n || ""}</span><i style={{ height: Math.max(4, 70 * n / wdMax) }} /><span>{WK[i]}</span></div>)}</div>
-          </section>
-          <section className="pag-w s2">
-            <h4>하루하루 <small>진할수록 그날 많이</small></h4>
-            <div className="pag-heat">{D.weeks.map((w, i) => w.days.map((n, k) => <i key={i + "-" + k} className={lvl(n)} title={_pagMD(_pagAdd(w.start, k)) + " · " + n + "개"} />))}</div>
-            <div className="pag-leg"><span><i style={{ background: "rgba(160,100,70,.12)" }} />쉰 날</span><span><i style={{ background: "#F7C4A9" }} />1개</span><span><i style={{ background: "#EE9A72" }} />2개</span><span><i style={{ background: "#D85A2A" }} />3개</span><span><i style={{ background: "#8E3414" }} />4개 이상</span></div>
-          </section>
-          <section className="pag-w">
-            <h4>여정 <small>{D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지"}</small></h4>
-            <div className="pag-road">{q.map(n => <span key={n} className={D.doneN >= n ? "on" : ""}>{n}</span>)}</div>
-          </section>
-          <section className="pag-w s3">
-            <h4>모은 표현 {D.doneN}개 <small>한 줄로 보기</small></h4>
-            <div className="pag-stack"><i style={{ width: seg(D.corrected), background: "#D85A2A" }} /><i style={{ width: seg(Math.max(0, D.sentences - D.corrected)), background: "#F2B79A" }} /><i style={{ width: seg(Math.max(0, D.doneN - D.sentences)), background: "#E8DDC7" }} /></div>
-            <div className="pag-leg"><span><i style={{ background: "#D85A2A" }} />사수 첨삭 받은 문장 {D.corrected}</span><span><i style={{ background: "#F2B79A" }} />직접 쓴 문장 {Math.max(0, D.sentences - D.corrected)}</span><span><i style={{ background: "#E8DDC7" }} />표현만 모음 {Math.max(0, D.doneN - D.sentences)}</span><span>남은 칸 {Math.max(0, D.total - D.doneN)}</span></div>
-          </section>
-          {D.best.length > 0 && <section className="pag-w s3">
-            <h4>잘 쓴 문장 <small>직접 쓴 문장 중에서</small></h4>
-            <div className="pag-cards">{D.best.map(b => (
-              <article key={b.day} className="pag-card"><div className="t"><span>DAY {b.day} · {String(b.word || "").toUpperCase()}</span><span>{_pagMD(b.date)}</span></div>
-                <div className="en">"{b.text}"</div>
-                {b.fixed && <div className="fx"><b>사수가 다듬은 문장</b> {b.fixed}</div>}
-                {b.praise && <div className="cm">{b.praise}</div>}
-              </article>))}</div>
-          </section>}
-          <section className="pag-w s3" style={{ background: "transparent", border: 0, boxShadow: "none", padding: 0 }}>
-            <div className="pag-letter"><span className="stamp">사수<br />편지</span>
-              <div className="to">{nick}씨, {rank} 진급 축하해요.</div>
-              <p>{D.total}칸 중 <b>{D.doneN}칸</b>을 채웠어요. 제일 길게 이어간 건 <b>{D.streak}일 연속</b>{D.maxN > 1 ? <>, 하루에 제일 많이 한 날은 {_pagMD(D.maxDate)}({D.maxN}개)</> : null}이에요.</p>
-              {b0 ? <p>Day {b0.day} 문장이 좋았어요. "{b0.text}" 그날 표현({b0.word})을 상황에 맞게 썼어요.</p> : <p>다음 단계에서는 하루 한 문장씩 직접 써봐요. 그 문장들이 다음 리포트의 주인공이 돼요.</p>}
-              <p>{rank === "대리" ? "이제 회의를 이끄는 문장이 필요한 자리예요. 다음 TF에서 같이 연습해요." : "사원 기간에도 지금처럼 하루 한 칸씩 이어가요. 남은 칸은 같이 채워가요."}</p>
-              <div className="sig">{mentor}<small>담당 사수 · {String(r.at || "").slice(0, 10)}</small></div>
-            </div>
-          </section>
-        </div>
-        <div className="pag-foot">{USER.name} · {r.title} · {String(r.at || "").slice(0, 10)} 발급</div>
+    <div ref={boxRef} className="ag-box">
+      {zoom < 1 && <div className="ag-hint">📄 리포트는 PC 화면 그대로 보여줘요 · 두 손가락으로 벌려 확대해요</div>}
+      <div className="ag-sheet" style={zoom < 1 ? { width: 1000, zoom } : null}>
+        <iframe ref={frRef} title="진급 리포트" srcDoc={html} scrolling="no" onLoad={() => { size(); setTimeout(size, 700); }} style={{ height: h }} />
       </div>
+      {preview && <div className="ag-note">개발 뷰 미리보기 · 지금까지 내 기록(Day {D.from}~{D.to})으로 그렸어요{ai && !ai.fallback ? " · 사수 글은 AI가 썼어요" : " · 사수 글은 아직 기본 문장이에요 (AI 편지는 mentor-feedback 배포 후)"}</div>}
     </div>
   );
 }
+// 성장 리포트 탭: 봉투 묶음 → 하나 펼쳐 보기 (성장 리포트 탭 아티팩트와 같은 구성)
+function RetPromoReportsAG({ list, preview }) {
+  const { USER } = window.__SIM;
+  const items = list.length ? list : (preview ? [preview] : []);
+  const [cur, setCur] = React.useState(items.length ? items[items.length - 1].id : null);
+  const rk = USER.rankId;
+  const next = (rk === "intern" || !rk) ? { t: "수습 → 사원", d: "Day 30 진급 때 이 자리에 와요" } : rk === "fulltime" ? { t: "사원 → 대리", d: "Day 90 진급 때 이 자리에 와요" } : { t: "다음 TF 수료 리포트", d: "다음 TF 30칸을 마치면 이 자리에 와요" };
+  const r = items.find(x => x.id === cur) || items[items.length - 1];
+  return (
+    <div className="ag-wrap">
+      <div className="ag-env-row">
+        {items.map((x, i) => {
+          const rank = x.rankLabel || "사원", prev = rank === "대리" ? "사원" : "수습";
+          return (
+            <button key={x.id} type="button" className={"ag-env" + (x.id === (r && r.id) ? " on" : "")} onClick={() => setCur(x.id)}>
+              {i === items.length - 1 && <span className="ag-env-new">NEW</span>}
+              <div className="ag-env-eb">PROMOTION REPORT</div>
+              <div className="ag-env-t">{prev} → {rank}</div>
+              <div className="ag-env-d">Day {x.from}–{x.to} · {String(x.at || "").slice(0, 10).replace(/-/g, ".")} 발급</div>
+              <span className="ag-env-open">펼쳐 보기</span>
+              <span className="ag-env-stamp">{rank}</span>
+            </button>
+          );
+        })}
+        <div className="ag-env next"><div className="ag-env-eb">NEXT</div><div className="ag-env-t">{next.t}</div><div className="ag-env-d">{next.d}</div></div>
+      </div>
+      {r && <div className="ag-sheet-bar"><span>펼친 리포트: <b>{r.title || ((r.rankLabel === "대리" ? "사원" : "수습") + " → " + (r.rankLabel || "사원") + " 진급 리포트")} (Day {r.from}–{r.to})</b></span></div>}
+      {r && <RetPromoSheetAG key={r.id} r={r} preview={!list.length} />}
+    </div>
+  );
+}
+function RetPromoReportAG({ r, preview }) { return <RetPromoSheetAG r={r} preview={preview} />; }
 function RetGrowthReports() {
   _useRetTick();
   if (!_RET_ON()) return null;
