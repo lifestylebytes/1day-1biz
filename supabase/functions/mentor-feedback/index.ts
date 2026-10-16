@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
   // ── 남용 방지 게이트 (YB-SEC-002) ──
   if (!originOk(req)) return json({ ok: false, error: "origin" }, 200);
   {
-    const rich = mode === "report" || mode === "insight" || mode === "consult";
+    const rich = mode === "report" || mode === "insight" || mode === "consult" || mode === "promoLetter";
     const why = await rateGate(req, email, rich);
     if (why) return json({ ok: false, error: why, message: rich
       ? "오늘 받을 수 있는 리포트 횟수를 다 쓰셨어요. 내일 다시 받아보세요."
@@ -129,6 +129,47 @@ Deno.serve(async (req) => {
   }
   const question   = String(b?.question || "").slice(0, 300).trim();  // AI Q&A 자유 질문
   const prevCorrected = String(b?.prevCorrected || "").slice(0, 300).trim();  // 직전에 사수가 추천했던 문장 (재제출 시 왔다갔다 방지)
+  // ── 진급 리포트 사수 편지 모드 (2026-10-16, 개발 뷰) ──
+  // 클라이언트가 진급 구간 압축본(숫자, 연속 기간, 쉰 기간, 잘 쓴 문장 최대 6개, 배운 표현 목록)만 보낸다.
+  // 돌려주는 것: 사수 한마디(note) · 메모 핀 4개(pins) · 잘 쓴 문장 코멘트(comments) · 편지(letter). 리포트마다 한 번만 받아서 기기에 저장한다.
+  if (mode === "promoLetter") {
+    const pp = (b && typeof b.promo === "object" && b.promo) || null;
+    if (!pp) return json({ ok: false, error: "missing" }, 200);
+    const clip = (arr: any, n: number) => Array.isArray(arr) ? arr.slice(0, n) : [];
+    const S = (x: any, n: number) => String(x ?? "").slice(0, n);
+    const compact = {
+      name: S(pp.name, 20), rank: S(pp.rank, 10), period: S(pp.period, 40), total: Number(pp.total) || 0, done: Number(pp.done) || 0,
+      studyDays: Number(pp.studyDays) || 0, streak: Number(pp.streak) || 0, streakFrom: S(pp.streakFrom, 12), streakTo: S(pp.streakTo, 12),
+      maxN: Number(pp.maxN) || 0, maxDate: S(pp.maxDate, 12), bestMonth: S(pp.bestMonth, 12), bestMonthDays: Number(pp.bestMonthDays) || 0,
+      gapDays: Number(pp.gapDays) || 0, gapFrom: S(pp.gapFrom, 12), gapBack: S(pp.gapBack, 12), firstDate: S(pp.firstDate, 12), lastDate: S(pp.lastDate, 12),
+      sentences: clip(pp.sentences, 6).map((x: any) => ({ day: Number(x.day) || 0, word: S(x.word, 40), text: S(x.text, 200), fixed: S(x.fixed, 200) })),
+      said: clip(pp.said, 4).map((x: any) => ({ label: S(x?.label, 60), text: S(x?.text, 200) })),
+      board: pp.board && typeof pp.board === "object" ? { week: S(pp.board.week, 12), rank: Number(pp.board.rank) || 0, n: Number(pp.board.n) || 0, exp: Number(pp.board.exp) || 0, ones: Number(pp.board.ones) || 0 } : null,
+      words: clip(pp.words, 90).map((w: any) => S(w, 40)), sentenceCount: Number(pp.sentenceCount) || 0, test: pp.test && typeof pp.test === "object" ? { ok: Number(pp.test.ok) || 0, total: Number(pp.test.total) || 0 } : null,
+    };
+    const psys = [
+      `너는 1일1비의 영어 사수 ${mentor}야. 후배 ${compact.name}의 ${compact.rank} 진급 리포트에 들어갈 글을 쓴다. 기간은 ${compact.period}.`,
+      `반드시 받은 기록(숫자, 날짜, 문장, 표현)에 실제로 있는 것만 근거로 쓴다. 없는 사건, 없는 숫자, 없는 감정은 지어내지 않는다. 날짜는 "7월 27일"처럼 쓴다.`,
+      `사람마다 다르게 쓴다: 이 사람 기록에서 제일 눈에 띄는 것(가장 긴 연속, 몰아서 한 날, 오래 쉬었다 돌아온 날, 좋은 문장)을 골라 그 얘기로 시작한다.`,
+      `JSON 으로만: {"note":"리포트 맨 위 사수 한마디. 1~2문장, 50자 안팎","pins":[{"date":"MM.DD","title":"짧은 제목 8자 안팎","text":"한 문장 + 이모지 1개"}] (4개, 날짜 순),"comments":{"<day>":"잘 쓴 문장마다 사수 코멘트 한두 문장 + 이모지 1개"},"letter":{"to":"OO씨, 사원 진급 축하해요. 같은 첫 줄","paragraphs":["3~4개 문단, 각 1~3문장. 숫자는 기록 그대로"]},"reply":"said(입사 지원 동기 · 설문 답)가 있으면 그 말에 사수가 답하는 두세 문장 + 이모지 1개. said 가 비었으면 빈 문자열"}`,
+      `board(주간 순위판 최고 순위)가 있으면 편지나 메모 핀에 한 번 넣어도 좋다. 없으면 순위 얘기는 하지 않는다.`,
+      `comments 의 키는 sentences 의 day 숫자. 이모지는 한 사람 안에서 겹치지 않게.`,
+      `규칙: 따뜻한 존댓말, 담백하게. 과장 칭찬 금지. 모든 문장은 동사로 끝낸다. em-dash(U+2014) 절대 금지. 영어 문장 인용은 짧게.`,
+    ].join("\n");
+    {
+      const rr = await callRich(psys, JSON.stringify(compact), { temperature: 0.5, maxTokens: 1800 });
+      if (!rr.ok) return json({ ok: false, error: rr.error }, 200);
+      const promo: any = rr.data || {};
+      if (!promo.letter || !Array.isArray(promo.letter.paragraphs)) return json({ ok: false, error: "empty" }, 200);
+      const strip = (t: any) => String(t ?? "").split(String.fromCharCode(0x2014)).join(", ");
+      promo.note = strip(promo.note); promo.reply = strip(S(promo.reply, 300));
+      promo.letter.to = strip(promo.letter.to); promo.letter.paragraphs = promo.letter.paragraphs.slice(0, 5).map(strip);
+      promo.pins = clip(promo.pins, 4).map((x: any) => ({ date: S(x?.date, 8), title: strip(S(x?.title, 30)), text: strip(S(x?.text, 160)) }));
+      const cm: any = {}; Object.keys(promo.comments || {}).slice(0, 6).forEach(k => { cm[k] = strip(S(promo.comments[k], 200)); }); promo.comments = cm;
+      return json({ ok: true, promo, model: MODEL_RICH, usage: rr.usage || null });
+    }
+  }
+
   // ── AI 성장 리포트 모드 (2026-09-05, 개발 뷰 프로토타입) ──
   // 클라이언트가 압축본(단어 목록, 최근 문장 30개, 저널 10개, 질문 10개, 아는 표현, 연속 출근)만 보낸다. 원문 노트는 안 보낸다.
   if (mode === "report") {

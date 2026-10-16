@@ -1290,6 +1290,32 @@ span.ret-hud-item { cursor: default; }
 .ret-promo-tags span { background: rgba(216,90,42,0.10); color: var(--orange); font-weight: 800; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; }
 .ret-promo-mentor { margin-top: 12px; padding: 10px 12px; background: #FFE9A6; border-radius: 6px; font-size: 13px; line-height: 1.6; }
 .ret-promo-foot { margin-top: 8px; font-size: 10.5px; color: var(--ink-mute); text-align: right; font-weight: 700; }
+/* ★ 2026-10-16 (개발 뷰): 진급 리포트 A×G. 리포트 본문은 iframe 안(성장 리포트 탭 아티팩트와 같은 CSS), 바깥은 봉투 묶음 */
+.ag-env-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.ag-env { position: relative; text-align: left; background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 14px 70px 12px 14px; overflow: hidden; transition: transform .15s; cursor: pointer; font-family: inherit; color: var(--ink); }
+.ag-env::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 46px; background: linear-gradient(160deg, transparent 49.5%, rgba(58,40,18,.07) 50%) left/50% 100% no-repeat, linear-gradient(200deg, transparent 49.5%, rgba(58,40,18,.07) 50%) right/50% 100% no-repeat; pointer-events: none; }
+.ag-env:hover { transform: translateY(-2px); }
+.ag-env.on { border-color: var(--orange); box-shadow: 0 0 0 2px var(--orange-soft), 0 12px 24px -16px rgba(216,90,42,.7); background: #FFFDF7; }
+.ag-env-eb { font-size: 9.5px; letter-spacing: .18em; font-weight: 800; color: var(--ink-mute); }
+.ag-env-t { font-size: 16px; font-weight: 900; letter-spacing: -.02em; margin: 4px 0 2px; }
+.ag-env-d { font-size: 11.5px; color: var(--ink-soft); }
+.ag-env-stamp { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--stamp-red); color: var(--stamp-red); display: grid; place-items: center; font-size: 12px; font-weight: 900; transform: rotate(-12deg); opacity: .85; background: rgba(255,255,255,.4); }
+.ag-env-new { position: absolute; right: 10px; top: 10px; background: var(--orange); color: #fff; font-size: 9.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
+.ag-env-open { font-size: 11px; font-weight: 800; color: var(--orange); margin-top: 10px; display: inline-block; }
+.ag-env.on .ag-env-open::after { content: " · 펼쳐짐"; }
+.ag-env.next { border-style: dashed; background: transparent; cursor: default; }
+.ag-env.next .ag-env-t { color: var(--ink-mute); }
+.ag-sheet-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; font-size: 12px; color: var(--ink-mute); flex-wrap: wrap; } .ag-sheet-bar b { color: var(--ink); }
+.ag-box { margin-bottom: 16px; overflow: hidden; }
+.ag-sheet { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #E8DFCB; }
+.ag-sheet iframe { display: block; width: 100%; border: 0; }
+.ag-hint { margin: 0 0 10px; font-size: 12px; font-weight: 700; color: var(--orange); background: var(--orange-soft); border-radius: 8px; padding: 8px 10px; }
+.ag-note { font-size: 11.5px; color: var(--ink-mute); margin-top: 6px; }
+@media (max-width: 760px) { .ag-env-row { grid-auto-flow: column; grid-auto-columns: 76%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; } .ag-env { scroll-snap-align: start; } }
+.pag-dev { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; background: #2A1F14; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+.qe-frame { width: 100%; border: 0; display: block; background: transparent; }
+.qe-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); background: var(--cream); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; font-size: 13px; } .qe-bar b { color: var(--orange); } .qe-bar span { flex: 1; color: var(--ink-mute); font-size: 12px; }
+.qe-rec { font-size: 12.5px; color: var(--ink-soft); background: var(--cream); border: 1px dashed var(--line); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; } .qe-rec small { color: var(--ink-mute); margin-left: 6px; }
 .ret-consult { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
 .ret-consult-head { width: 100%; display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; background: var(--paper); border: none; font-family: inherit; text-align: left; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--ink); }
 .ret-consult-head small { font-size: 11px; color: var(--ink-mute); } .ret-consult-head i { font-style: normal; color: var(--ink-mute); font-size: 11px; }
@@ -7039,7 +7065,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
-    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? "🚧" : "✍️", locked: _RET_ON(), tag: _RET_ON() ? "준비 중" : undefined },
+    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? (_isDevNext() ? "📝" : "🚧") : "✍️", locked: _RET_ON() && !_isDevNext(), tag: _RET_ON() ? (_isDevNext() ? "개발 뷰" : "준비 중") : undefined },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -7152,7 +7178,7 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
     { id: "inbox", label: "메모", icon: "📨", badge: unread },
     { id: "mypage", label: "사원증", icon: "🪪" },
   ];
-  const notesActive = active === "library" || active === "mynotes";
+  const notesActive = active === "library" || active === "mynotes" || (_RET_ON() && _isDevNext() && active === "test");
   const optionStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 16px", background: "transparent", border: "none", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "var(--ink)" };
   return (
     <>
@@ -7178,6 +7204,15 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
                 <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{(_RET_ON() && _RET_SOON.mynotes) ? "진급 리포트 · PDF 보관함 · 사수 리포트는 준비 중" : _myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
+            {_RET_ON() && _isDevNext() && (
+              <button onClick={() => { setActive("test"); setNotesOpen(false); }} style={{ ...optionStyle, borderTop: "1px solid var(--line)" }}>
+                <span style={{ fontSize: 20 }}>📝</span>
+                <span style={{ display: "grid" }}>
+                  <b style={{ fontSize: 14 }}>분기 평가</b>
+                  <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>진급 테스트 · Preview Ticket (개발 뷰)</small>
+                </span>
+              </button>
+            )}
           </div>
         </>
       )}
@@ -10242,8 +10277,10 @@ async function _retClaimGrants(email) {
 function _retInv(email) { return _retLoad("INV", email, {}); }
 function _retInvAdd(email, id, n) { const inv = _retInv(email); inv[id] = (Number(inv[id]) || 0) + (n || 1); _retSave("INV", email, inv); _retPing(); }
 function _retInvUse(email, id) { const inv = _retInv(email); if ((Number(inv[id]) || 0) <= 0) return false; inv[id] = inv[id] - 1; _retSave("INV", email, inv); _retPing(); return true; }
+// ★ 2026-10-16 (개발 뷰): Preview Ticket 판매 · 수습도 살 수 있음(사원 평가 전에 씀) · 1장만
+function _retPerkOf(it) { return (it && it.id === "preview" && _isDevNext()) ? { ...it, soon: false, rank: "probation", stack: false, desc: "응시일 전에 분기 평가를 먼저 봐요. ① 구성 보기 → ② 연습 1회 (본 평가와 같은 화면, 다른 단어). 1장만." } : it; }
 function _retBuy(email, id) {
-  const it = RET_PERKS.find(x => x.id === id); if (!it) return { ok: false, why: "없는 아이템" };
+  const it = _retPerkOf(RET_PERKS.find(x => x.id === id)); if (!it) return { ok: false, why: "없는 아이템" };
   if (!_retItemOpen(it)) return { ok: false, why: _retItemLockLabel(it) + " 살 수 있어요" };
   if (!it.stack && (Number(_retInv(email)[id]) || 0) > 0) return { ok: false, why: "이미 갖고 있어요" };
   if (!_retSpendWp(email, it.cost, id, it.name)) return { ok: false, why: "복지포인트가 모자라요" };
@@ -10977,8 +11014,8 @@ function RetReportsSoonPage({ setActive }) {
       </div>
       <div className="ret-growth">
         <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
-        {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-        {!list.length && (
+        {_isDevNext() ? <RetPromoReportsAG list={list} preview={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString() }} /> : list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+        {!list.length && !_isDevNext() && (
           <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)" }}>
             아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
           </div>
@@ -11017,6 +11054,62 @@ function RetReportsSoonPage({ setActive }) {
     </div>
   );
 }
+// ★ 2026-10-16 (개발 뷰): 분기 평가 탭. 화면은 promo/ 폴더의 정적 페이지를 iframe 으로 넣는다 (진급 테스트 15문항 · Preview Ticket 연습).
+//   상태: intern(잠김) · peek(Ticket ① 구성 보기) · practice(Ticket ② 연습) · open(응시 가능) · staff(사원, 대리 평가 잠김) · test(본 평가)
+//   결과는 일단 기기에만 저장 (__OD_PROMO_TEST_<email>). 서버 저장(M2 · M6)은 SQL 실행 후 다음 PR.
+function _qeKey(email) { return "__OD_PROMO_TEST_" + (email || "anon"); }
+function _qeLoad(email) { try { return JSON.parse(localStorage.getItem(_qeKey(email)) || "{}") || {}; } catch (e) { return {}; } }
+function _qeSave(email, v) { try { localStorage.setItem(_qeKey(email), JSON.stringify(v)); } catch (e) {} }
+function QuarterEvalDev({ setActive }) {
+  _useRetTick();
+  const { USER } = window.__SIM;
+  const email = _retEmail();
+  const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+  const rk = USER.rankId || "intern";
+  const evalDay = (rk === "intern" || rk === "probation") ? 30 : rk === "fulltime" ? 90 : 0;
+  const rec = _qeLoad(email);
+  const have = (Number(_retInv(email).preview) || 0) > 0;
+  const [mode, setMode] = React.useState(() => { try { if (sessionStorage.getItem("__OD_RET_PREVIEW") === "1") return "peek"; } catch (e) {} return null; });
+  const [h, setH] = React.useState(900);
+  const base = !evalDay ? "staff" : (rd >= evalDay && !(rec.main && rec.main.evalDay === evalDay)) ? "open" : (rk === "fulltime" ? "staff" : "intern");
+  const state = mode || base;
+  React.useEffect(() => {
+    const on = (e) => {
+      const d = (e && e.data) || {};
+      if (d.qe) {
+        if (d.qe.ph) setH(Math.max(400, d.qe.ph + 8));
+        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); r.ticket = Object.assign({}, r.ticket, { practiceStartAt: new Date().toISOString() }); _qeSave(email, r); }
+        if (d.qe.nav === "perk") setActive && setActive("perk");
+        if (d.qe.nav === "use") { if (_retInvUse(email, "preview")) { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString(), evalDay }; _qeSave(email, r); try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e2) {} setMode("peek"); } }
+        if (d.qe.start === "test") setMode("test");
+      }
+      if (d.ph && !d.qe) setH(Math.max(400, d.ph + 8));
+      if (d.promo) {
+        const r = _qeLoad(email); const at = new Date().toISOString();
+        const row = { at, evalDay, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {} };
+        if (d.promo.set === "main") { if (!r.main || r.main.evalDay !== evalDay) r.main = Object.assign({ firstTry: true }, row); }
+        else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
+        _qeSave(email, r);
+      }
+    };
+    window.addEventListener("message", on);
+    return () => window.removeEventListener("message", on);
+  }, [email, evalDay]);
+  const src = state === "test" ? "promo/test.html" : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + "#" + state);
+  const title = rk === "fulltime" ? "대리 진급 평가" : "사원 진급 평가";
+  return (
+    <div>
+      <div className="desk-header">
+        <div><div className="desk-eyebrow">OFFICE · 분기 평가 · 12F 인사팀 <span className="pag-dev">개발 뷰</span></div><h1 className="desk-title"><em>분기</em> 평가</h1></div>
+        <div className="desk-meta"><b>{USER.name}</b> · {USER.position}<br/>Day {rd}</div>
+      </div>
+      {state === "test" && <div className="qe-bar"><b>📝 {title}</b><span>15문항 · 5분 · 끝나면 결과가 여기 저장돼요</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {(state === "practice") && <div className="qe-bar"><b>🎟️ 아이템 사용 중</b><span>Preview Ticket ② 연습</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {rec.main && state !== "test" && <div className="qe-rec">지난 기록 · {title} 첫 시도 <b>{rec.main.ok} / {rec.main.total}</b>{rec.main.miss && rec.main.miss.length ? <> · 헷갈린 표현 {rec.main.miss.slice(0, 4).join(" · ")}</> : null} <small>{String(rec.main.at).slice(0, 10)}</small></div>}
+      <iframe key={src} className="qe-frame" title="분기 평가" src={src} style={{ height: h }} />
+    </div>
+  );
+}
 function RetComingSoonPage({ title, desc, setActive }) {
   return (
     <div>
@@ -11048,7 +11141,7 @@ function RetPerkShopPage({ setActive }) {
     const r = _retBuy(email, it.id);
     setMsg(r.ok ? "✅ " + it.name + " 구매했어요" + (it.id === "pdf" ? " · 아래 'PDF 받기' 를 누르면 인쇄 창이 열려요" : it.note ? " · " + it.note.replace(/^⚠️ /, "") : "") : "⚠️ " + r.why);
   };
-  const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} setActive("test"); };
+  const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} try { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString() }; _qeSave(email, r); } catch (e) {} setActive("test"); };
   // 적립 방법 → 그 화면으로 데려가기 (심부름 이동과 같은 방식)
   const go = (nav, sel, evt) => {
     setActive(nav);
@@ -11095,8 +11188,8 @@ function RetPerkShopPage({ setActive }) {
       {msg && <div className="ret-shop-msg">{msg}</div>}
       <RetCodeBox email={email} />
       <div className="ret-shop-grid">
-        {RET_PERKS.map(it => {
-          const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
+        {RET_PERKS.map(it0 => {
+          const it = _retPerkOf(it0); const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
           const owned = !it.stack && have > 0;
           return (
             <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")} data-shop={it.id}>
@@ -11289,6 +11382,7 @@ function _retEnsurePromoReports(email) {
   return l.list;
 }
 function RetPromoReportCard({ r, sample }) {
+  if (!sample && _isDevNext()) return <RetPromoReportAG r={r} />;
   const s = r.stats; const { CHARACTERS, USER } = window.__SIM;
   return (
     <div className="ret-promo">
@@ -11312,6 +11406,415 @@ function RetPromoReportCard({ r, sample }) {
     </div>
   );
 }
+// ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G. 성장 리포트 탭 아티팩트와 같은 화면을 iframe 안에 그린다.
+//   숫자 · 출근부 · 기록 · 표현은 기기의 학습 기록(scenariosCompleted)으로 계산한다.
+//   사수 한마디 · 메모 핀 · 잘 쓴 문장 코멘트 · 사수 편지는 mentor-feedback 의 promoLetter 모드로 리포트마다 한 번 받아서 저장한다 (배포 전엔 틀 문장).
+const _AG_CSS = String.raw`*{box-sizing:border-box}body{margin:0}
+:root{--paper:#FAF6EB;--surf:#FFFDF7;--ink:#2A1F14;--ink2:#5C4A36;--mute:#8A7964;--line:#E0D3B8;--or:#D85A2A;--or2:#E8743F;--serif:'Gloock','Noto Serif KR',serif;--f:'Inter','Noto Sans KR',sans-serif}
+body{background:#E8DFCB;font-family:var(--f);color:var(--ink);padding:24px max(16px,3vw);background-image:radial-gradient(rgba(58,40,18,.05) 1px,transparent 1px);background-size:8px 8px}
+.sheet{max-width:1180px;margin:0 auto;background:var(--paper);border:1px solid #C9BBA0;border-radius:10px;padding:clamp(18px,4vw,48px);box-shadow:0 30px 60px rgba(58,40,18,.18)}
+.hero{position:relative;padding:20px 0 30px;background-image:linear-gradient(90deg,rgba(0,0,0,.06) 1px,transparent 1px),linear-gradient(rgba(216,90,42,.0) 0,transparent 0),repeating-linear-gradient(transparent 0 11px,rgba(0,0,0,.05) 11px 12px);background-size:calc(100%/12) 100%,100% 100%,100% 100%}
+.hero h1{font-family:var(--serif);font-size:clamp(44px,7.6vw,96px);font-weight:400;letter-spacing:-.02em;line-height:.98;margin:0;position:relative}
+.hero h1::after{content:"";position:absolute;left:0;right:0;top:62%;height:1px;background:rgba(216,90,42,.5)}
+.hero h1 i{font-style:normal;color:var(--ink2)}
+.ruler{height:14px;margin-top:22px;background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 10px);opacity:.55;border-top:1px solid var(--ink)}
+.sub{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end;margin-top:16px}
+.sub .ko{font-size:clamp(17px,2.2vw,22px);font-weight:600}.sub .ko em{font-style:normal;color:var(--or)}
+.tabs{display:flex;gap:16px;font-size:13px;border-bottom:1px solid var(--line)}
+.tabs span{padding:6px 2px}.tabs span:first-child{border-bottom:2px solid var(--ink);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 32px;margin-top:34px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.mod{border-top:1.5px solid var(--ink);padding-top:12px;min-width:0}
+.mod.w2{grid-column:span 2}.mod.w3{grid-column:1/-1}
+@media (max-width:860px){.mod.w2,.mod.w3{grid-column:auto}}
+.mod>h3{font-size:19px;font-weight:500;margin:0 0 14px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mod>h3 small{font-size:12px;color:var(--mute);font-weight:400}
+.note{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.7;box-shadow:0 10px 24px -14px rgba(0,0,0,.35)}
+.note b{display:block;font-size:12px;color:var(--or);margin-top:6px}
+.tok{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tok div{border-radius:12px;padding:12px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid var(--line);background:var(--surf);font-size:12px;line-height:1.45}
+.tok div:nth-child(1){background:var(--or);color:#fff;border-color:var(--or)}
+.tok div:nth-child(3){background:#ECE3CF}
+.tok div:nth-child(4){box-shadow:0 0 0 3px rgba(216,90,42,.25);border-color:var(--or)}
+.tok b{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}.tok b small{font-size:12px;font-weight:500}
+.tok span{opacity:.8}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surf)}
+.cal .wd{font-size:11px;color:var(--mute);padding:6px;border-bottom:1px solid var(--line)}
+.cal .c{min-height:64px;padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;font-size:12px;position:relative;min-width:0}
+.cal .c:nth-child(7n){border-right:0}
+.cal .c.out{background:repeating-linear-gradient(-45deg,transparent 0 5px,rgba(0,0,0,.04) 5px 6px);color:var(--mute)}
+.cal .c .n{font-size:12px;color:var(--ink2)}.cal .c.ring .n{color:var(--or);font-weight:700}
+.cal .c .m{position:absolute;right:4px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--ink);color:#fff;font-size:9.5px;display:grid;place-items:center}
+.cal .t,.cal .b{font-size:10px;border-radius:999px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .t{background:var(--or);color:#fff}.cal .b{background:#ECE3CF}
+.cal .it{font-size:10px;color:var(--or)}
+.cal .fold{grid-column:1/-1;padding:6px 10px;font-size:12px;color:var(--mute);border-bottom:1px solid var(--line);background:var(--paper)}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--mute);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:9px;margin-right:4px;vertical-align:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border-radius:999px;padding:5px 12px;font-size:13px;border:1px solid var(--line);background:var(--surf)}
+.chips .own{background:var(--or);border-color:var(--or);color:#fff}
+.chips .miss{border:1.5px solid var(--or);color:var(--or)}
+.chips .l2{background:#ECE3CF}.chips .l3{background:#DDD0B6}.chips .l4{background:#C9BBA0}
+.alert{display:grid;grid-template-columns:22px 1fr;gap:10px;background:var(--surf);border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:0 8px 20px -14px rgba(0,0,0,.4);font-size:13px;line-height:1.55}
+.alert.hot{box-shadow:0 0 0 2px rgba(216,90,42,.35),0 10px 24px -12px rgba(216,90,42,.6)}
+.alert .ic{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;display:grid;place-items:center}
+.alert.hot .ic{background:var(--or)}
+.alert b{font-size:15px}.alert small{color:var(--mute)}
+.space{display:grid;gap:6px;font-size:12.5px}
+.space div{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center}
+.space i{display:block;height:10px;background:#DDD0B6;border-radius:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--surf);border-radius:14px;box-shadow:0 14px 30px -18px rgba(0,0,0,.45);overflow:hidden;display:flex;flex-direction:column}
+.card .top{background:#E8DDC7;padding:10px 14px;font-size:11.5px;display:flex;justify-content:space-between;color:var(--ink2)}
+.card .en{padding:12px 14px 0;font-size:15px;font-weight:600;line-height:1.45}
+.card .fx{margin:10px 14px 0;font-size:12.5px;color:var(--ink2);border-left:2px solid var(--or);padding-left:8px}
+.card .pr{margin:12px 14px 14px;font-size:13px;line-height:1.6}
+.btn{border-radius:10px;padding:14px 16px;background:var(--or);color:#fff;font-weight:600;font-size:16px;margin-bottom:10px;box-shadow:0 10px 24px -12px rgba(216,90,42,.8)}
+.btn small{display:block;font-weight:400;font-size:12.5px;opacity:.9;margin-top:4px}
+.field{border:1px solid #DDD0B6;border-radius:10px;padding:10px 12px;background:var(--surf);margin-bottom:10px;font-size:13px}
+.field .lb{font-size:11.5px;color:var(--mute);display:flex;gap:8px;align-items:center}
+.field .lb em{font-style:normal;background:var(--ink);color:#fff;border-radius:999px;padding:0 8px;font-size:10.5px}
+.field .q{font-weight:600;margin:4px 0;color:var(--ink)}
+.field.focus{border-color:var(--or);box-shadow:0 0 0 3px rgba(216,90,42,.18)}
+.typo p{margin:0 0 10px;font-size:15px;line-height:1.85}.typo p b{color:var(--or)}
+.typo .to{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px}
+.typo .sig{text-align:right;font-size:18px;font-weight:600}.typo .sig small{display:block;font-size:12px;color:var(--mute);font-weight:400}
+.lede{font-size:12.5px;color:var(--mute);margin:0 0 10px}
+.ig-h{grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:8px 0 -4px}
+.ig-h b{font-family:var(--serif);font-weight:400;font-size:30px}.ig-h small{font-size:12.5px;color:var(--ink2)}
+.donut{display:grid;place-items:center;position:relative}
+.donut svg{width:132px;height:132px}
+.donut b{position:absolute;font-family:var(--serif);font-weight:400;font-size:30px;text-align:center;line-height:1}
+.donut b small{display:block;font-family:var(--f);font-size:10.5px;color:var(--ink2)}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--ink2)}.legend2 i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:0}
+.stack{display:flex;height:16px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.6)}
+.stack i{display:block;height:100%}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,13px);grid-auto-columns:13px;justify-content:start;gap:4px;overflow-x:auto;padding-bottom:2px}
+.heat i{width:13px;height:13px;border-radius:4px;background:rgba(160,100,70,.13)}
+.heat i.h1{background:#F6B999}.heat i.h2{background:#EE8A55}.heat i.h3{background:var(--or)}.heat i.h4{background:#9C3F18}.heat i.no{background:transparent}
+.wkbar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:96px}
+.wkbar div{display:grid;gap:4px;justify-items:center;font-size:10.5px;color:var(--ink2)}
+.wkbar i{display:block;width:100%;max-width:22px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--or),#F6B999)}
+.gauge{display:grid;justify-items:center}
+.gauge svg{width:170px;height:96px}
+.gauge b{font-family:var(--serif);font-weight:400;font-size:30px;margin-top:-30px}
+.steps2{position:relative;display:flex;justify-content:space-between;align-items:center;margin:14px 6px 2px}
+.steps2::before{content:"";position:absolute;left:0;right:0;top:50%;height:4px;border-radius:4px;background:rgba(255,255,255,.7)}
+.steps2 .fill{position:absolute;left:0;top:50%;height:4px;border-radius:4px;background:var(--or);transform:translateY(-50%)}
+.steps2 span{position:relative;width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink2);box-shadow:0 6px 14px -8px rgba(120,60,30,.6)}
+.steps2 span.on{background:var(--or);color:#fff}
+.steps2 + .lb{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink2);margin:0 2px}
+
+.grid>.w{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:0 10px 24px -18px rgba(58,40,18,.45)}
+.grid>.w.s2{grid-column:span 2}
+@media (max-width:860px){.grid>.w.s2{grid-column:auto}}
+.w h4{margin:0;font-size:14px;font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.w h4 small{font-size:11.5px;color:var(--or);font-weight:500}
+.heat i{background:rgba(160,100,70,.12)}
+.quote{position:relative;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:22px 18px 16px;box-shadow:0 10px 24px -18px rgba(58,40,18,.45)}
+.quote::before{content:"\201C";position:absolute;left:14px;top:-6px;font-family:var(--serif);font-size:64px;color:#F2B79A;line-height:1}
+.quote p{margin:10px 0 8px;font-size:15.5px;line-height:1.7;font-weight:500}
+.quote b{font-size:12px;color:var(--or)}
+.att{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}
+@media (max-width:700px){.att{grid-template-columns:1fr}}
+.att .donut svg{width:148px;height:148px}
+.att .donut b{font-size:34px}
+.kn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kn div{border-top:1.5px solid var(--ink);padding-top:6px}
+.kn small{display:block;font-size:11.5px;color:var(--mute)}
+.kn b{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.1}
+.kn b small{display:inline;font-family:var(--f);font-size:12px;color:var(--ink2)}
+.cal .c.multi{background:#FFDCC6;box-shadow:inset 0 0 0 2px var(--or)}
+.cal .c.multi .n{color:var(--or);font-weight:800}
+.cal .x{position:absolute;right:24px;top:4px;background:var(--ink);color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:0 6px;line-height:16px}
+
+.cm2{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;background:#FDE3D3;border-radius:12px;padding:9px 11px;margin-top:8px;box-shadow:inset 0 0 0 1.5px rgba(216,90,42,.38);color:#2A1F14;font-weight:500;font-size:13.5px;line-height:1.6;text-align:left}
+.cm2 .av{width:30px;height:30px;border-radius:50%;background:#D85A2A;color:#fff;font-weight:800;font-size:12.5px;display:grid;place-items:center}
+.cm2 small{display:block;font-size:10.5px;font-weight:800;color:#B8461C;letter-spacing:.04em;opacity:1}
+.calwrap{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(220px,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.calwrap{grid-template-columns:1fr}}
+.pins{display:flex;flex-direction:column;gap:10px}
+.pins h5{margin:0;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+.pins h5::before{content:"📌"}
+
+.card .pr{margin:10px 12px 12px}
+.letter2{position:relative;background:#FFFDF7;border:1px solid var(--line);border-top:7px solid var(--or);border-radius:16px;padding:34px clamp(18px,4vw,44px) 28px;box-shadow:0 24px 40px -26px rgba(58,40,18,.55);background-image:repeating-linear-gradient(transparent 0 33px,rgba(216,90,42,.10) 33px 34px);background-position:0 70px}
+.letter2 .to{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,40px);color:var(--or);margin-bottom:14px}
+.letter2 p{font-family:'Noto Serif KR',serif;font-size:16.5px;line-height:2.05;margin:0 0 12px}
+.letter2 p b{background:linear-gradient(transparent 60%,#FBD3BD 60%);color:var(--ink)}
+.letter2 .sig{font-family:var(--serif);font-size:24px;color:var(--ink)}
+.lstamp{position:absolute;right:22px;top:18px;width:62px;height:62px;border:2.5px solid var(--or);border-radius:50%;color:var(--or);font-weight:900;font-size:13px;line-height:1.15;display:grid;place-items:center;text-align:center;transform:rotate(-12deg);background:rgba(255,253,247,.85)}
+.mod.w3:has(.letter2)>h3{color:var(--or)}
+.reply2{position:relative;display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;margin-top:14px;background:linear-gradient(135deg,#D85A2A,#E8743F);color:#fff;border-radius:16px 16px 16px 4px;padding:14px 16px;box-shadow:0 16px 28px -16px rgba(216,90,42,.8)}
+.reply2::before{content:"";position:absolute;left:18px;top:-9px;border:9px solid transparent;border-bottom-color:#D85A2A;border-top:0}
+.reply2 .av{width:38px;height:38px;border-radius:50%;background:#fff;color:#D85A2A;font-weight:900;display:grid;place-items:center}
+.reply2 small{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;opacity:.9}
+.reply2 p{margin:3px 0 0;font-size:15px;line-height:1.7;font-weight:500}
+`;
+function _agKST(t) { try { const d = new Date(t); if (isNaN(d)) return ""; return new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10); } catch (e) { return ""; } }
+function _agAdd(iso, n) { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function _agDow(iso) { return new Date(iso + "T00:00:00Z").getUTCDay(); }
+function _agDiff(a, b) { return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 864e5); }
+function _agMD(iso) { return iso ? Number(iso.slice(5, 7)) + "." + Number(iso.slice(8, 10)) : ""; }
+function _agKo(iso) { return iso ? Number(iso.slice(5, 7)) + "월 " + Number(iso.slice(8, 10)) + "일" : ""; }
+function _agEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
+function _agNick(name) { const n = String(name || "").trim(); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
+function _agScn(d) { try { return SCENARIOS.find(s => s.day === d) || {}; } catch (e) { return {}; } }
+function _agData(r) {
+  const u = _wbUser();
+  const from = r.from || (r.stats && r.stats.from) || 1, to = r.to || (r.stats && r.stats.to) || 30, total = to - from + 1;
+  const done = _odCompletedDaySet(u);
+  const doneDays = []; const open = [];
+  for (let d = from; d <= to; d++) (done.has(d) ? doneDays : open).push(d);
+  const list = (u.scenariosCompleted || []).filter(s => s && s.day >= from && s.day <= to);
+  const byDate = {};
+  list.forEach(s => { const iso = _agKST(s.submittedAt); if (iso) (byDate[iso] = byDate[iso] || []).push(s.day); });
+  Object.keys(byDate).forEach(k => byDate[k].sort((a, b) => a - b));
+  const dates = Object.keys(byDate).sort();
+  let streak = 0, sFrom = "", sTo = "", run = 0, runFrom = "", prev = "";
+  dates.forEach(iso => { if (prev && _agAdd(prev, 1) === iso) run++; else { run = 1; runFrom = iso; } if (run > streak) { streak = run; sFrom = runFrom; sTo = iso; } prev = iso; });
+  let maxN = 0, maxDate = "";
+  dates.forEach(iso => { if (byDate[iso].length > maxN) { maxN = byDate[iso].length; maxDate = iso; } });
+  let gapDays = 0, gapFrom = "", gapBack = "";
+  for (let i = 1; i < dates.length; i++) { const g = _agDiff(dates[i - 1], dates[i]) - 1; if (g > gapDays) { gapDays = g; gapFrom = _agAdd(dates[i - 1], 1); gapBack = dates[i]; } }
+  const months = {}; dates.forEach(iso => { const m = iso.slice(0, 7); months[m] = (months[m] || 0) + 1; });
+  const bm = Object.keys(months).sort((a, b) => months[b] - months[a])[0] || "";
+  const wd = [0, 0, 0, 0, 0, 0, 0]; dates.forEach(iso => { wd[_agDow(iso)] += byDate[iso].length; });
+  const weeks = [];
+  if (dates.length) {
+    let s = _agAdd(dates[0], -_agDow(dates[0])); const last = dates[dates.length - 1];
+    while (s <= last && weeks.length < 80) { const days = []; let sum = 0; for (let k = 0; k < 7; k++) { const iso = _agAdd(s, k); const n = (byDate[iso] || []).length; days.push({ iso, n }); sum += n; } weeks.push({ start: s, days, sum }); s = _agAdd(s, 7); }
+  }
+  const fb = (s) => (s.feedback && s.feedback.aiFb) || {};
+  const sentences = list.filter(s => s.sentence && String(s.sentence).trim().split(/\s+/).length >= 3).map(s => {
+    const f = fb(s); const fixed = f.corrected && _wbNorm(f.corrected) !== _wbNorm(s.sentence) ? f.corrected : "";
+    return { day: s.day, word: s.word || _agScn(s.day).word || "", text: String(s.sentence).trim(), fixed, praise: f.praise || "", date: _agKST(s.submittedAt) };
+  });
+  const clean = sentences.filter(s => !s.fixed);
+  const best = sentences.slice().sort((a, b) => ((b.praise ? 1 : 0) - (a.praise ? 1 : 0)) || (b.text.length - a.text.length)).slice(0, 3).sort((a, b) => a.day - b.day);
+  const learnedAt = {}; dates.forEach(iso => byDate[iso].forEach(d => { if (!learnedAt[d]) learnedAt[d] = iso; }));
+  const words = doneDays.map(d => { const sc = _agScn(d); return { day: d, word: sc.word || "", meaning: sc.meaning || "", tip: (sc.buddyAnswers && (sc.buddyAnswers.default || sc.buddyAnswers.nuance)) || sc.mentorTip || "", at: learnedAt[d] || "", clean: clean.some(x => x.day === d) }; });
+  return { from, to, total, doneN: doneDays.length, rate: total ? Math.round(100 * doneDays.length / total) : 0, open, byDate, dates, studyDays: dates.length, streak, sFrom, sTo, maxN, maxDate, gapDays, gapFrom, gapBack, bestMonth: bm, bestMonthDays: months[bm] || 0, wd, weeks, sentences, clean, best, words };
+}
+// 기본 문장 (AI 편지를 아직 못 받았을 때)
+function _agDefaultAI(r, D, nick, rank) {
+  const pins = [];
+  if (D.dates[0]) pins.push({ date: _agMD(D.dates[0]).replace(/^(\d+)\.(\d+)$/, (m, a, b) => String(a).padStart(2, "0") + "." + String(b).padStart(2, "0")), title: "첫 출근", text: "Day " + D.byDate[D.dates[0]][0] + "부터 시작했어요. 🌱", iso: D.dates[0] });
+  if (D.streak >= 2) pins.push({ title: D.streak + "일 연속 시작", text: _agKo(D.sTo) + "까지 하루도 안 빠졌어요. 🔗", iso: D.sFrom });
+  if (D.maxN >= 2) pins.push({ title: "하루 " + D.maxN + "개", text: "Day " + D.byDate[D.maxDate].join(" · ") + "를 한 번에 채운 날이에요. ⚡", iso: D.maxDate });
+  if (D.gapDays >= 3) pins.push({ title: D.gapDays + "일 쉬고 복귀", text: _agKo(D.gapBack) + "에 다시 돌아왔어요. 🏖️", iso: D.gapBack });
+  else if (D.dates.length) pins.push({ title: "마지막 기록", text: "Day " + D.byDate[D.dates[D.dates.length - 1]].slice(-1)[0] + "까지 왔어요. 🏁", iso: D.dates[D.dates.length - 1] });
+  const b0 = D.best[0];
+  return {
+    note: r.mentorLine || (D.streak >= 5 ? "출근부 보면서 제일 먼저 눈에 띈 게 " + D.streak + "일 연속이었어요. 그 얘기부터 할게요." : "빈 날도 있었지만 여기까지 왔어요. 그 얘기부터 할게요."),
+    pins: pins.slice(0, 4).sort((a, b) => (a.iso < b.iso ? -1 : 1)),
+    comments: {},
+    letter: { to: nick + "씨, " + rank + " 진급 축하해요.", paragraphs: [
+      D.total + "칸 중 " + D.doneN + "칸을 채웠어요. 제일 길게 이어간 건 " + D.streak + "일 연속" + (D.maxN > 1 ? ", 하루에 제일 많이 한 날은 " + _agKo(D.maxDate) + "(" + D.maxN + "개)" : "") + "이에요.",
+      b0 ? "Day " + b0.day + " 문장이 좋았어요. \"" + b0.text + "\" 그날 표현(" + b0.word + ")을 상황에 맞게 썼어요." : "다음 단계에서는 하루 한 문장씩 직접 써봐요. 그 문장들이 다음 리포트의 주인공이 돼요.",
+      rank === "대리" ? "이제 회의를 이끄는 문장이 필요한 자리예요. 다음 TF에서 같이 연습해요." : "사원 기간에도 지금처럼 하루 한 칸씩 이어가요. 남은 칸은 같이 채워가요." ] },
+    fallback: true,
+  };
+}
+// 서버 기록(본인 것만): 입사 지원 동기 · 설문 · 주별 순위 → 이 리포트 기간 것만 고른다
+function _agExtra(D, X) {
+  const out = { said: [], board: null };
+  if (!X || !D.dates.length) return out;
+  const first = D.dates[0], last = D.dates[D.dates.length - 1];
+  const mv = X.motivation; const mvt = typeof mv === "string" ? mv : (mv && (mv.text || mv.reason || mv.answer)) || (mv ? JSON.stringify(mv) : "");
+  if (mvt && D.from <= 30) out.said.push({ label: "입사 지원 동기", text: String(mvt).slice(0, 200) });
+  (X.surveys || []).forEach(sv => {
+    const iso = _agKST(sv.at); const msg = String(sv.message || "");
+    if (!iso || iso < first || iso > _agAdd(last, 3) || /^\[리포트 후기\]/.test(msg)) return;
+    const lines = msg.split("\n").map(x => x.trim()).filter(Boolean);
+    const head = (lines[0] || "").replace(/^\[|\]$/g, "");
+    lines.slice(1).forEach(l => { const k = l.indexOf(":"); if (k > 0 && out.said.length < 4) { const v = l.slice(k + 1).trim(); if (v && !/^\(미/.test(v)) out.said.push({ label: (sv.day && !/Day/.test(head) ? "Day " + sv.day + " " : "") + head + " · " + l.slice(0, k).trim(), text: v.slice(0, 160) }); } });
+  });
+  const inRange = (X.weeks || []).filter(w => w.week >= _agAdd(first, -6) && w.week <= last && w.rank);
+  if (inRange.length) { const b = inRange.slice().sort((a, b2) => (a.rank - b2.rank) || (b2.exp - a.exp))[0]; out.board = { week: b.week, rank: b.rank, n: b.n, exp: b.exp, ones: inRange.filter(w => w.rank === 1).length }; }
+  return out;
+}
+function _agHTML(r, D, ai, X) {
+  const { USER, CHARACTERS } = window.__SIM;
+  const E = _agEsc, nick = _agNick(USER.name), rank = r.rankLabel || "사원";
+  const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", ini = mentor.charAt(0);
+  const A = ai || _agDefaultAI(r, D, nick, rank);
+  const prevRank = rank === "대리" ? "사원" : rank === "사원" ? "수습" : "";
+  const issued = String(r.at || "").slice(0, 10);
+  // 출근부 기록
+  const C = 326.7, dash = (C * Math.min(1, D.doneN / Math.max(1, D.total))).toFixed(1);
+  const donut = '<div class="donut"><svg viewBox="0 0 132 132"><circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="14"/><circle cx="66" cy="66" r="52" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + C + '" transform="rotate(-90 66 66)"/></svg><b>' + D.rate + '%<small>' + D.doneN + ' / ' + D.total + '</small></b></div>';
+  const att = '<section class="mod w2"><h3>출근부 기록 <small>' + E(prevRank + " Day " + D.total + "칸을 채운 날들") + '</small></h3><div class="att">' + donut + '<div><div class="kn"><div><small>실제 학습한 날</small><b>' + D.studyDays + '일</b></div><div><small>가장 긴 연속</small><b>' + D.streak + '일</b></div><div><small>쓴 문장</small><b>' + D.sentences.length + '개</b></div></div><p class="lede" style="margin:12px 0 0">' + E(prevRank) + ' Day 완주 ' + D.doneN + ' / ' + D.total + '</p></div></div></section>';
+  // 주별 흐름
+  const wmax = Math.max(1, ...D.weeks.map(w => w.sum)), nW = D.weeks.length;
+  const pk = D.weeks.reduce((a, w) => (w.sum > (a ? a.sum : -1) ? w : a), null);
+  const pts = D.weeks.map((w, i) => [nW > 1 ? 10 + i * 540 / (nW - 1) : 280, 112 - 100 * w.sum / wmax]);
+  const pth = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const every = Math.max(1, Math.ceil(nW / 16));
+  const flow = '<div class="w s2"><h4>주별 흐름 <small>' + (pk && pk.sum ? "제일 많이 한 주 " + _agMD(pk.start) + " · " + pk.sum + "개" : "") + '</small></h4>' + (nW ? '<svg viewBox="0 0 560 134" style="width:100%;height:auto"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D85A2A" stop-opacity=".35"/><stop offset="1" stop-color="#D85A2A" stop-opacity="0"/></linearGradient></defs><path d="' + pth + ' L' + pts[nW - 1][0].toFixed(1) + ' 120 L' + pts[0][0].toFixed(1) + ' 120 Z" fill="url(#ga)"/><path d="' + pth + '" fill="none" stroke="#D85A2A" stroke-width="2.4" stroke-linejoin="round"/>' + pts.map((p, i) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (D.weeks[i] === pk ? 3.6 : 2.4) + '" fill="' + (D.weeks[i] === pk ? "#D85A2A" : "#fff") + '" stroke="#D85A2A" stroke-width="1.6"/>' + (i % every === 0 ? '<text x="' + p[0].toFixed(1) + '" y="132" font-size="11" text-anchor="middle" fill="#7A6358">' + _agMD(D.weeks[i].start) + '</text>' : '')).join("") + '</svg>' : '') + '</div>';
+  // 요일별
+  const WK = ["일", "월", "화", "수", "목", "금", "토"], wdm = Math.max(1, ...D.wd), top = D.wd.indexOf(Math.max(...D.wd));
+  const wk = '<div class="w"><h4>요일별 Day <small>' + (Math.max(...D.wd) > 0 ? WK[top] + "요일에 제일 많이" : "") + '</small></h4><div class="wkbar">' + D.wd.map((n, i) => '<div><span>' + n + '</span><i style="height:' + Math.round(70 * n / wdm) + 'px;"></i>' + WK[i] + '</div>').join("") + '</div></div>';
+  // 하루하루
+  const lv = (n) => n <= 0 ? "" : n === 1 ? "h1" : n === 2 ? "h2" : n === 3 ? "h3" : "h4";
+  const heat = '<div class="w s2"><h4>하루하루 <small>진할수록 그날 많이</small></h4><div class="heat">' + D.weeks.map(w => w.days.map(x => '<i class="' + (x.iso < D.dates[0] ? "no" : lv(x.n)) + '" title="' + _agMD(x.iso) + ' · ' + x.n + '개"></i>').join("")).join("") + '</div><div class="legend2"><span><i style="background:rgba(255,255,255,.7)"></i>쉰 날</span><span><i style="background:#F6B999"></i>1개</span><span><i style="background:#EE8A55"></i>2개</span><span><i style="background:#D85A2A"></i>3개</span><span><i style="background:#9C3F18"></i>4개 이상</span></div></div>';
+  // 진급 테스트 게이지 (새 테스트 결과, 없으면 예전 승급 테스트 점수)
+  let gv = null; try { const t = _qeLoad(_retEmail()); if (t && t.main && t.main.total) gv = [t.main.ok, t.main.total]; } catch (e) {}
+  if (!gv && rank === "사원") { const sc = Number(_wbUser().levelupTestScore); if (sc >= 0 && _wbUser().levelupTestScore != null) gv = [sc, 100]; }
+  const gauge = gv ? '<div class="w"><h4>진급 테스트</h4><div class="gauge"><svg viewBox="0 0 170 96"><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="14" stroke-linecap="round"/><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + (219.9 * Math.min(1, gv[0] / Math.max(1, gv[1]))).toFixed(1) + ' 219.9"/></svg><b>' + gv[0] + '<small style="font-size:14px;color:var(--ink2)"> / ' + gv[1] + '</small></b></div></div>' : '';
+  // 모은 표현 한 줄
+  const pc = (n) => (100 * n / Math.max(1, D.doneN)).toFixed(1) + "%";
+  const nClean = D.words.filter(w => w.clean).length, nFix = D.sentences.length - D.clean.length, nRest = Math.max(0, D.doneN - nClean - nFix);
+  const stack = '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nClean) + ';background:#D85A2A"></i><i style="width:' + pc(nFix) + ';background:#F6B999"></i><i style="width:' + pc(nRest) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>첨삭 없이 통과한 문장 ' + nClean + '</span><span><i style="background:#F6B999"></i>사수가 다듬은 문장 ' + nFix + '</span><span><i style="background:#fff"></i>나머지 ' + nRest + '</span></div></div>';
+  // 여정
+  const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
+  const road = '<div class="w"><h4>여정 <small>' + (D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지") + '</small></h4><div class="steps2"><span class="fill" style="width:' + D.rate + '%"></span>' + q.map(n => '<span class="' + (D.doneN >= n ? "on" : "") + '">' + n + '</span>').join("") + '</div></div>';
+  // 출근부 달력
+  const pinAt = {}; (A.pins || []).forEach((p, i) => { const iso = p.iso || (D.dates.find(d => _agMD(d) === String(p.date || "").replace(/^0/, "").replace(/\.0/, ".")) || ""); if (iso) pinAt[iso] = i + 1; });
+  let cal = '';
+  if (D.dates.length) {
+    const first = D.dates[0], last = D.dates[D.dates.length - 1];
+    cal += ["일", "월", "화", "수", "목", "금", "토"].map(x => '<div class="wd">' + x + '</div>').join("");
+    let empty = [];
+    const flush = () => { if (empty.length >= 2) cal += '<div class="fold">' + _agMD(empty[0].start) + ' – ' + _agMD(_agAdd(empty[empty.length - 1].start, 6)) + ' · ' + empty.length + '주 동안 이 리포트 Day를 안 했어요</div>'; else empty.forEach(w => { cal += w.html; }); empty = []; };
+    let s = _agAdd(first, -_agDow(first)), firstCell = true;
+    while (s <= last) {
+      let html = '', any = false;
+      for (let k = 0; k < 7; k++) {
+        const iso = _agAdd(s, k), ds = D.byDate[iso] || [], out = iso < first || iso > last;
+        if (ds.length) any = true;
+        const dn = Number(iso.slice(8, 10)), mo = (firstCell || dn === 1) ? ' <small>' + Number(iso.slice(5, 7)) + '월</small>' : '';
+        html += '<div class="c' + (out ? " out" : "") + (ds.length > 1 ? " multi" : "") + '"><span class="n">' + dn + mo + '</span>' + ds.slice(0, 3).map(d => '<span class="t">Day ' + d + '</span>').join("") + (ds.length > 3 ? '<span class="t">+' + (ds.length - 3) + '</span>' : '') + (ds.length > 1 ? '<span class="x">×' + ds.length + '</span>' : '') + (pinAt[iso] ? '<span class="m">' + pinAt[iso] + '</span>' : '') + '</div>';
+        firstCell = false;
+      }
+      if (any) { flush(); cal += html; } else empty.push({ start: s, html });
+      s = _agAdd(s, 7);
+    }
+    flush();
+  }
+  const ym = (iso) => ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][Number(iso.slice(5, 7)) - 1];
+  const calSec = D.dates.length ? '<section class="mod w2"><h3>출근부 <small>' + ym(D.dates[0]) + ' – ' + ym(D.dates[D.dates.length - 1]) + ' ' + D.dates[D.dates.length - 1].slice(0, 4) + '</small></h3><div class="cal">' + cal + '</div><div class="legend"><span><i style="background:var(--or)"></i>학습한 Day</span><span><i style="background:#FFDCC6;box-shadow:inset 0 0 0 1.5px var(--or)"></i>하루에 여러 개 한 날 (×개수)</span><span>줄무늬 = 범위 밖</span></div></section>' : '';
+  // 사수 메모 핀
+  const pins = '<section class="mod"><h3>사수 메모 핀</h3>' + (A.pins || []).map((p, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">' + (i + 1) + '</span><div><small>' + E((p.iso ? _agMD(p.iso).split(".").map(x => x.padStart(2, "0")).join(".") : p.date) + " · " + p.title) + '</small><br>' + E(p.text) + '</div></div>').join("") + '</section>';
+  // 기록
+  const XE = _agExtra(D, X);
+  const tok = [];
+  if (XE.board) tok.push([(XE.board.rank === 1 ? '🥇' : XE.board.rank === 2 ? '🥈' : XE.board.rank === 3 ? '🥉' : '🏅') + ' WEEKLY BIZ SCORE ' + (XE.board.rank === 1 ? '1위' : '최고 ' + XE.board.rank + '위'), _agMD(XE.board.week) + ' 주', Number(XE.board.exp || 0).toLocaleString() + ' EXP · ' + XE.board.n + '명 중 ' + XE.board.rank + '등.' + (XE.board.ones > 1 ? ' 1위만 ' + XE.board.ones + '번.' : '')]);
+  if (D.streak) tok.push(['🏃 가장 길게 연속 출근', D.streak + '<small>일</small>', _agMD(D.sFrom) + '~' + _agMD(D.sTo) + '. 이 기간 최고 기록.']);
+  if (D.bestMonth) tok.push(['📅 ' + Number(D.bestMonth.slice(5, 7)) + '월 실제 학습', D.bestMonthDays + '<small>일</small>', '이 기간 제일 많이 온 달이에요.']);
+  if (D.maxN && tok.length < 4) tok.push(['🚚 하루에 끝낸 Day 최다', D.maxN + '<small>개</small>', _agKo(D.maxDate) + ' (Day ' + (D.byDate[D.maxDate] || []).join(" · ") + ').']);
+  if (tok.length < 4) tok.push(['✍️ 첨삭 없이 통과한 문장', D.clean.length + '<small>개</small>', '직접 쓴 ' + D.sentences.length + '개 중에서요.']);
+  const rec = '<section class="mod w3"><h3>기록 <small>' + E(nick) + '씨 ' + E(prevRank) + ' 기간 기록</small></h3><div class="tok" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">' + tok.map(t => '<div><span>' + E(t[0]) + '</span><b>' + t[1] + '</b><span>' + E(t[2]) + '</span></div>').join("") + '</div></section>';
+  // 모은 표현 칩 · 다시 볼 표현 · 다음에 열어볼 Day
+  const chips = '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
+  const today = _agKST(new Date().toISOString());
+  const again = D.words.filter(w => !w.clean && w.at).sort((a, b) => (a.at < b.at ? -1 : 1)).slice(0, 3);
+  const againSec = again.length ? '<section class="mod"><h3>다시 볼 표현</h3>' + again.map((w, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">!</span><div><b>' + E(w.word) + '</b> <small>Day ' + w.day + ' · ' + E(w.meaning) + ' · ' + Math.max(0, _agDiff(w.at, today)) + '일 전에 배움</small><br>리뷰퀴즈에서 한 번 더 만나면 완전히 내 표현이 돼요.' + (w.tip ? '<br><small>' + E(String(w.tip).slice(0, 140)) + '</small>' : '') + '</div></div>').join("") + '</section>' : '';
+  const openSec = D.open.length ? '<section class="mod"><h3>다음에 열어볼 Day <small>' + D.open.length + '개</small></h3><p class="lede">하루 하나씩 열면 이 칸도 금방 채워져요.</p><div class="space">' + D.open.slice(0, 10).map(d => '<div><span>' + d + '</span><span>' + E(_agScn(d).word || "") + '</span></div>').join("") + '</div></section>' : '';
+  // 잘 쓴 문장
+  const cm = A.comments || {};
+  const cards = D.best.length ? '<section class="mod w3"><h3>잘 쓴 문장 <small>' + E(nick) + '씨가 직접 쓴 문장</small></h3><div class="cards">' + D.best.map(b => { const c = cm[b.day] || cm[String(b.day)] || b.praise; return '<article class="card"><div class="top"><span>DAY ' + b.day + ' · ' + E(String(b.word).toUpperCase()) + '</span><span>' + _agMD(b.date).split(".").map(x => x.padStart(2, "0")).join(".") + '</span></div><div class="en">"' + E(b.text) + '"</div>' + (b.fixed ? '<div class="fx"><b>사수가 다듬은 문장</b> ' + E(b.fixed) + '</div>' : '') + (c ? '<div class="pr"><span class="cm2"><span class="av">' + E(ini) + '</span><span><small>사수 코멘트</small>' + E(c) + '</span></span></div>' : '') + '</article>'; }).join("") + '</div></section>' : '';
+  // 진급 테스트
+  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = t.main; } catch (e) {}
+  const testSec = '<section class="mod w2"><h3>진급 테스트 <small>' + E(rank) + ' 진급 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " 진급") + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
+  // 그때 한 말
+  const saidSec = XE.said.length ? '<section class="mod"><h3>그때 한 말</h3>' + XE.said.map(x => '<div class="field"><div class="lb">' + E(x.label) + '</div><div class="q">' + E(x.text) + '</div></div>').join("") + (A.reply ? '<div class="reply2"><span class="av">' + E(ini) + '</span><div><small>사수 답장 · 사수 ' + E(mentor) + '</small><p>' + E(A.reply) + '</p></div></div>' : '') + '</section>' : '';
+  // 사수 편지
+  const L = A.letter || {};
+  const letter = '<section class="mod w3"><h3>사수 편지 <small>' + E(mentor) + ' 사수가 ' + E(nick) + ' ' + E(rank) + '에게</small></h3><div class="typo letter2"><span class="lstamp">사수<br>편지</span><div class="to">' + E(L.to || (nick + "씨, " + rank + " 진급 축하해요.")) + '</div>' + (L.paragraphs || []).map(p => '<p>' + E(p) + '</p>').join("") + '<div class="sig">' + E(mentor) + '<small>담당 사수 · ' + E(issued.replace(/-/g, ".")) + '</small></div></div></section>';
+  const head = '<div class="sub" style="margin-top:0"><div class="ko">' + E(nick) + '씨, <em>' + E(rank) + '</em> 진급 리포트예요.</div><div class="tabs"><span>PROMOTION REPORT</span><span>' + E(prevRank + " → " + rank) + '</span><span>DAY ' + D.from + '–' + D.to + '</span><span>' + E(issued.replace(/-/g, ".")) + ' 발급</span></div></div>';
+  const body = head + '<div class="grid"><section class="quote"><p>' + E(A.note) + '</p><b>사수 ' + E(mentor) + '</b></section>' + att + flow + wk + heat + gauge + stack + road + calSec + pins + rec + chips + againSec + openSec + cards + testSec + saidSec + letter + '</div>';
+  return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"><style>' + _AG_CSS + 'html,body{overflow:hidden}body{padding:18px!important}body *,body *::before,body *::after{font-family:\'Noto Sans KR\',\'Apple SD Gothic Neo\',sans-serif!important}</style></head><body><div class="sheet">' + body + '</div></body></html>';
+}
+// AI 사수 글: 리포트마다 한 번 받아서 PROMO 기록(r.ai)에 저장
+const _agAsking = {};
+function _agEnsureAI(r, D, onDone, X) {
+  if (r.ai || _agAsking[r.id] || !(window.OD && window.OD.enabled && window.OD.getMentorAiFeedback)) return;
+  _agAsking[r.id] = true;
+  const { USER, CHARACTERS } = window.__SIM; const rank = r.rankLabel || "사원";
+  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = { ok: t.main.ok, total: t.main.total }; } catch (e) {}
+  const payload = { name: _agNick(USER.name), rank, period: "Day " + D.from + "~" + D.to, total: D.total, done: D.doneN, studyDays: D.studyDays, streak: D.streak, streakFrom: D.sFrom, streakTo: D.sTo,
+    maxN: D.maxN, maxDate: D.maxDate, bestMonth: D.bestMonth, bestMonthDays: D.bestMonthDays, gapDays: D.gapDays, gapFrom: D.gapFrom, gapBack: D.gapBack, firstDate: D.dates[0] || "", lastDate: D.dates[D.dates.length - 1] || "",
+    sentences: D.best.concat(D.sentences.filter(s => D.best.indexOf(s) < 0)).slice(0, 6).map(s => ({ day: s.day, word: s.word, text: s.text, fixed: s.fixed })), words: D.words.map(w => w.word), sentenceCount: D.sentences.length, test: tres };
+  { const XE = _agExtra(D, X); payload.said = XE.said; payload.board = XE.board; }
+  window.OD.getMentorAiFeedback({ mode: "promoLetter", promo: payload, mentorName: (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", word: "promo" })
+    .then(res => {
+      if (!(res && res.ok && res.promo && res.promo.letter)) return;
+      const ai = Object.assign({ at: new Date().toISOString() }, res.promo);
+      const email = _retEmail(); const l = _retLoad("PROMO", email, { list: [] });
+      const it = (l.list || []).find(x => x.id === r.id);
+      if (it) { it.ai = ai; _retSave("PROMO", email, l); _retPing(); }
+      else { try { localStorage.setItem("__OD_PROMO_AI_PREVIEW_" + email, JSON.stringify(ai)); } catch (e) {} }
+      onDone && onDone(ai);
+    })
+    .catch(() => {})
+    .finally(() => { _agAsking[r.id] = false; });
+}
+function RetPromoSheetAG({ r, preview }) {
+  const D = React.useMemo(() => _agData(r), [r && r.id, r && r.at]);
+  const [ai, setAi] = React.useState(() => r.ai || (preview ? (() => { try { return JSON.parse(localStorage.getItem("__OD_PROMO_AI_PREVIEW_" + _retEmail()) || "null"); } catch (e) { return null; } })() : null));
+  const [X, setX] = React.useState(() => window.__OD_PROMO_EXTRA || null);
+  React.useEffect(() => {
+    if (X) return;
+    if (!(window.OD && window.OD.enabled && window.OD.fetchPromoExtra)) { setX({}); return; }
+    let alive = true; const t = setTimeout(() => { if (alive) setX(v => v || {}); }, 4000);
+    window.OD.fetchPromoExtra(_retEmail()).then(res => { if (!alive) return; const v = (res && res.ok && res.result) || {}; if (res && res.ok) window.__OD_PROMO_EXTRA = v; setX(v); }).catch(() => { if (alive) setX({}); });
+    return () => { alive = false; clearTimeout(t); };
+  }, []);
+  React.useEffect(() => { if (!ai && X) _agEnsureAI(r, D, setAi, X); }, [r && r.id, !!X]);
+  const html = React.useMemo(() => _agHTML(r, D, ai, X), [D, ai, X]);
+  const boxRef = React.useRef(null), frRef = React.useRef(null);
+  const [zoom, setZoom] = React.useState(1), [h, setH] = React.useState(1600);
+  React.useEffect(() => {
+    const el = boxRef.current; if (!el) return;
+    const fit = () => { const w = el.clientWidth; setZoom(w && w < 900 ? +(w / 1000).toFixed(4) : 1); };
+    fit(); let ro = null; try { ro = new ResizeObserver(fit); ro.observe(el); } catch (e) { window.addEventListener("resize", fit); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); };
+  }, []);
+  const size = () => { try { const d = frRef.current && frRef.current.contentDocument; if (d && d.documentElement) setH(d.documentElement.scrollHeight); } catch (e) {} };
+  return (
+    <div ref={boxRef} className="ag-box">
+      {zoom < 1 && <div className="ag-hint">📄 리포트는 PC 화면 그대로 보여줘요 · 두 손가락으로 벌려 확대해요</div>}
+      <div className="ag-sheet" style={zoom < 1 ? { width: 1000, zoom } : null}>
+        <iframe ref={frRef} title="진급 리포트" srcDoc={html} scrolling="no" onLoad={() => { size(); setTimeout(size, 700); }} style={{ height: h }} />
+      </div>
+      {preview && <div className="ag-note">개발 뷰 미리보기 · 지금까지 내 기록(Day {D.from}~{D.to})으로 그렸어요{ai && !ai.fallback ? " · 사수 글은 AI가 썼어요" : " · 사수 글은 아직 기본 문장이에요 (AI 편지는 mentor-feedback 배포 후)"}</div>}
+    </div>
+  );
+}
+// 성장 리포트 탭: 봉투 묶음 → 하나 펼쳐 보기 (성장 리포트 탭 아티팩트와 같은 구성)
+function RetPromoReportsAG({ list, preview }) {
+  const { USER } = window.__SIM;
+  const items = list.length ? list : (preview ? [preview] : []);
+  const [cur, setCur] = React.useState(items.length ? items[items.length - 1].id : null);
+  const rk = USER.rankId;
+  const next = (rk === "intern" || !rk) ? { t: "수습 → 사원", d: "Day 30 진급 때 이 자리에 와요" } : rk === "fulltime" ? { t: "사원 → 대리", d: "Day 90 진급 때 이 자리에 와요" } : { t: "다음 TF 수료 리포트", d: "다음 TF 30칸을 마치면 이 자리에 와요" };
+  const r = items.find(x => x.id === cur) || items[items.length - 1];
+  return (
+    <div className="ag-wrap">
+      <div className="ag-env-row">
+        {items.map((x, i) => {
+          const rank = x.rankLabel || "사원", prev = rank === "대리" ? "사원" : "수습";
+          return (
+            <button key={x.id} type="button" className={"ag-env" + (x.id === (r && r.id) ? " on" : "")} onClick={() => setCur(x.id)}>
+              {i === items.length - 1 && <span className="ag-env-new">NEW</span>}
+              <div className="ag-env-eb">PROMOTION REPORT</div>
+              <div className="ag-env-t">{prev} → {rank}</div>
+              <div className="ag-env-d">Day {x.from}–{x.to} · {String(x.at || "").slice(0, 10).replace(/-/g, ".")} 발급</div>
+              <span className="ag-env-open">펼쳐 보기</span>
+              <span className="ag-env-stamp">{rank}</span>
+            </button>
+          );
+        })}
+        <div className="ag-env next"><div className="ag-env-eb">NEXT</div><div className="ag-env-t">{next.t}</div><div className="ag-env-d">{next.d}</div></div>
+      </div>
+      {r && <div className="ag-sheet-bar"><span>펼친 리포트: <b>{r.title || ((r.rankLabel === "대리" ? "사원" : "수습") + " → " + (r.rankLabel || "사원") + " 진급 리포트")} (Day {r.from}–{r.to})</b></span></div>}
+      {r && <RetPromoSheetAG key={r.id} r={r} preview={!list.length} />}
+    </div>
+  );
+}
+function RetPromoReportAG({ r, preview }) { return <RetPromoSheetAG r={r} preview={preview} />; }
 function RetGrowthReports() {
   _useRetTick();
   if (!_RET_ON()) return null;
@@ -11329,7 +11832,7 @@ function RetGrowthReports() {
     <div className="ret-growth">
       <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-      {sample && <RetPromoReportCard r={sample} sample />}
+      {sample && (_isDevNext() ? <RetPromoReportAG preview r={{ ...sample, mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} /> : <RetPromoReportCard r={sample} sample />)}
       {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
       {(() => {
         const legacy = (typeof _reportsList === "function") ? _reportsList() : [];
@@ -21470,7 +21973,7 @@ function App() {
         {active === "mynotes" && (_RET_ON() && _RET_SOON.mynotes) && <RetReportsSoonPage setActive={setActive} />}
         {false && <RetComingSoonPage title="성장 리포트" desc="진급 리포트와 사수 리포트가 쌓이고, 표현 카드를 기억 강도별로 복습하는 곳이에요. 지금은 준비 중이에요. 그동안 쓴 문장과 복기는 업무 노트에서 그대로 볼 수 있어요." setActive={setActive} />}
         {active === "mynotes" && !(_RET_ON() && _RET_SOON.mynotes) && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
-        {active === "test" && (_RET_ON() ? <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} /> : <TestPage />)}
+        {active === "test" && (_RET_ON() ? (_isDevNext() ? <QuarterEvalDev setActive={setActive} /> : <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} />) : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
