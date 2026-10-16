@@ -1290,6 +1290,53 @@ span.ret-hud-item { cursor: default; }
 .ret-promo-tags span { background: rgba(216,90,42,0.10); color: var(--orange); font-weight: 800; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; }
 .ret-promo-mentor { margin-top: 12px; padding: 10px 12px; background: #FFE9A6; border-radius: 6px; font-size: 13px; line-height: 1.6; }
 .ret-promo-foot { margin-top: 8px; font-size: 10.5px; color: var(--ink-mute); text-align: right; font-weight: 700; }
+/* ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G (시안 A 격자 + G2 인포그래픽). 큰 영어 제목 없음, 글꼴은 모두 고딕. 폰은 PC 화면 그대로 줄여서 보여준다 */
+.pag-fit { overflow: hidden; margin-bottom: 14px; } .pag, .pag * { box-sizing: border-box; }
+.pag { width: 100%; background: #FAF6EB; border: 1px solid #E0D3B8; border-radius: 12px; padding: 28px 30px 26px; color: #2A1F14; font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; box-shadow: 0 20px 40px -28px rgba(58,40,18,.45); }
+.pag * { font-family: inherit; }
+.pag-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.pag-top h3 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; } .pag-top h3 em { font-style: normal; color: #D85A2A; }
+.pag-tabs { display: flex; gap: 16px; font-size: 12.5px; border-bottom: 1px solid #E0D3B8; flex-wrap: wrap; }
+.pag-tabs span { padding: 6px 2px; } .pag-tabs span:first-child { border-bottom: 2px solid #2A1F14; font-weight: 700; }
+.pag-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; margin-top: 24px; }
+.pag-w { background: #FFFDF7; border: 1px solid #E0D3B8; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-shadow: 0 10px 24px -18px rgba(58,40,18,.45); }
+.pag-w.s2 { grid-column: span 2; } .pag-w.s3 { grid-column: 1 / -1; }
+.pag-w h4 { margin: 0; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.pag-w h4 small { font-size: 11.5px; color: #D85A2A; font-weight: 500; }
+.pag-quote { position: relative; padding-top: 22px; } .pag-quote::before { content: "\201C"; position: absolute; left: 14px; top: -4px; font-size: 56px; color: #F2B79A; line-height: 1; }
+.pag-quote p { margin: 6px 0 4px; font-size: 15px; line-height: 1.7; font-weight: 500; } .pag-quote b { font-size: 12px; color: #D85A2A; }
+.pag-att { display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; }
+.pag-donut { position: relative; width: 148px; height: 148px; display: grid; place-items: center; } .pag-donut svg { position: absolute; inset: 0; }
+.pag-donut b { font-size: 32px; font-weight: 600; line-height: 1; text-align: center; } .pag-donut b small { display: block; font-size: 11px; font-weight: 500; color: #8A7964; margin-top: 4px; }
+.pag-kn { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.pag-kn div { border-top: 1.5px solid #2A1F14; padding-top: 6px; } .pag-kn small { display: block; font-size: 11.5px; color: #8A7964; }
+.pag-kn b { font-size: 26px; font-weight: 500; line-height: 1.15; } .pag-kn b small { display: inline; font-size: 12px; color: #5C4A36; }
+.pag-lede { font-size: 12.5px; color: #8A7964; margin: 10px 0 0; }
+.pag-bars { display: flex; align-items: flex-end; gap: 10px; height: 110px; padding-top: 14px; }
+.pag-bars div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; font-size: 11px; color: #5C4A36; height: 100%; }
+.pag-bars i { display: block; width: 100%; max-width: 22px; border-radius: 6px 6px 3px 3px; background: linear-gradient(#D85A2A, #F2B79A); }
+.pag-heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 13px); grid-auto-columns: 13px; justify-content: start; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+.pag-heat i { width: 13px; height: 13px; border-radius: 3px; background: rgba(160,100,70,.12); }
+.pag-heat i.h1 { background: #F7C4A9; } .pag-heat i.h2 { background: #EE9A72; } .pag-heat i.h3 { background: #D85A2A; } .pag-heat i.h4 { background: #8E3414; }
+.pag-leg { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: #8A7964; } .pag-leg i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.pag-stack { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: #F1E8D6; } .pag-stack i { display: block; height: 100%; }
+.pag-road { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 14px 6px; }
+.pag-road::before { content: ""; position: absolute; left: 20px; right: 20px; top: 50%; height: 4px; background: #F1E8D6; border-radius: 2px; }
+.pag-road span { position: relative; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: #fff; color: #8A7964; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.pag-road span.on { background: #D85A2A; color: #fff; }
+.pag-cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.pag-card { background: #FFFDF7; border: 1px solid #E0D3B8; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.pag-card .t { background: #F1E8D6; padding: 8px 12px; font-size: 11px; display: flex; justify-content: space-between; color: #5C4A36; font-weight: 700; letter-spacing: .03em; }
+.pag-card .en { padding: 10px 12px 0; font-size: 14px; font-weight: 600; line-height: 1.5; }
+.pag-card .fx { margin: 8px 12px 0; font-size: 12.5px; color: #5C4A36; border-left: 2px solid #D85A2A; padding-left: 8px; line-height: 1.55; }
+.pag-card .cm { margin: 10px 12px 12px; padding: 9px 11px; border-radius: 10px; background: linear-gradient(135deg, #D85A2A, #E8743F); color: #fff; font-size: 12.5px; line-height: 1.55; }
+.pag-letter { position: relative; background: #FFFDF7; border: 1px solid #E0D3B8; border-top: 7px solid #D85A2A; border-radius: 16px; padding: 30px 34px 24px; background-image: repeating-linear-gradient(transparent 0 31px, rgba(216,90,42,.10) 31px 32px); background-position: 0 64px; }
+.pag-letter .to { font-size: 26px; font-weight: 700; color: #D85A2A; margin-bottom: 12px; }
+.pag-letter p { font-size: 15px; line-height: 2.1; margin: 0 0 6px; } .pag-letter p b { background: linear-gradient(transparent 60%, #FBD3BD 60%); }
+.pag-letter .sig { text-align: right; font-size: 18px; font-weight: 700; } .pag-letter .sig small { display: block; font-size: 12px; color: #8A7964; font-weight: 400; }
+.pag-letter .stamp { position: absolute; right: 22px; top: 16px; width: 58px; height: 58px; border: 2.5px solid #D85A2A; border-radius: 50%; color: #D85A2A; font-weight: 900; font-size: 12px; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-12deg); }
+.pag-foot { margin-top: 12px; font-size: 11px; color: #8A7964; text-align: right; }
+.pag-dev { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; background: #2A1F14; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
 .ret-consult { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
 .ret-consult-head { width: 100%; display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; background: var(--paper); border: none; font-family: inherit; text-align: left; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--ink); }
 .ret-consult-head small { font-size: 11px; color: var(--ink-mute); } .ret-consult-head i { font-style: normal; color: var(--ink-mute); font-size: 11px; }
@@ -10983,6 +11030,7 @@ function RetReportsSoonPage({ setActive }) {
             아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
           </div>
         )}
+        {!list.length && _isDevNext() && <RetPromoReportAG preview r={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(), mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} />}
         <div className="ret-growth-head" style={{ marginTop: 22 }}>🧭 사수 리포트 4종 <small>실전 대본 · 오늘 표현 첨삭 · 회의 리허설 · 이메일 교정</small></div>
         <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: 28 }}>🚧</span>
@@ -11289,6 +11337,7 @@ function _retEnsurePromoReports(email) {
   return l.list;
 }
 function RetPromoReportCard({ r, sample }) {
+  if (!sample && _isDevNext()) return <RetPromoReportAG r={r} />;
   const s = r.stats; const { CHARACTERS, USER } = window.__SIM;
   return (
     <div className="ret-promo">
@@ -11312,6 +11361,138 @@ function RetPromoReportCard({ r, sample }) {
     </div>
   );
 }
+// ★ 2026-10-16 (개발 뷰): 진급 리포트 최종 시안 A×G. 기기에 있는 학습 기록(scenariosCompleted)으로 숫자를 계산해서 그린다.
+//   사수 한마디 · 출근부 기록(완주율 도넛 + 숫자 3개) · 주별 흐름 · 요일별 · 하루하루 · 모은 표현 · 여정 · 잘 쓴 문장 · 사수 편지
+function _pagKST(t) { try { const d = new Date(t); if (isNaN(d)) return ""; return new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10); } catch (e) { return ""; } }
+function _pagAdd(iso, n) { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function _pagData(r) {
+  const u = _wbUser();
+  const from = r.from || (r.stats && r.stats.from) || 1, to = r.to || (r.stats && r.stats.to) || 30;
+  const total = to - from + 1;
+  const done = _odCompletedDaySet(u);
+  let doneN = 0; for (let d = from; d <= to; d++) if (done.has(d)) doneN++;
+  const list = (u.scenariosCompleted || []).filter(s => s && s.day >= from && s.day <= to);
+  const byDate = {};
+  list.forEach(s => { const iso = _pagKST(s.submittedAt); if (iso) byDate[iso] = (byDate[iso] || 0) + 1; });
+  const dates = Object.keys(byDate).sort();
+  let streak = 0, run = 0, prev = "";
+  dates.forEach(iso => { run = (prev && _pagAdd(prev, 1) === iso) ? run + 1 : 1; streak = Math.max(streak, run); prev = iso; });
+  let maxN = 0, maxDate = "";
+  dates.forEach(iso => { if (byDate[iso] > maxN) { maxN = byDate[iso]; maxDate = iso; } });
+  const wd = [0, 0, 0, 0, 0, 0, 0];
+  dates.forEach(iso => { wd[new Date(iso + "T00:00:00Z").getUTCDay()] += byDate[iso]; });
+  // 주별 흐름 · 하루하루: 첫 기록 주의 일요일부터 마지막 기록 주까지
+  const weeks = [];
+  if (dates.length) {
+    let s = dates[0]; s = _pagAdd(s, -new Date(s + "T00:00:00Z").getUTCDay());
+    const last = dates[dates.length - 1];
+    while (s <= last && weeks.length < 60) {
+      const days = []; let sum = 0;
+      for (let k = 0; k < 7; k++) { const iso = _pagAdd(s, k); const n = byDate[iso] || 0; days.push(n); sum += n; }
+      weeks.push({ start: s, days, sum }); s = _pagAdd(s, 7);
+    }
+  }
+  const sentences = list.filter(s => s.sentence && String(s.sentence).trim().split(/\s+/).length >= 3);
+  const fb = (s) => (s.feedback && s.feedback.aiFb) || {};
+  const corrected = sentences.filter(s => fb(s).corrected).length;
+  const best = sentences.slice().sort((a, b) => ((fb(b).praise ? 1 : 0) - (fb(a).praise ? 1 : 0)) || (String(b.sentence).length - String(a.sentence).length)).slice(0, 3)
+    .map(s => ({ day: s.day, word: s.word, text: String(s.sentence).trim(), fixed: fb(s).corrected && _wbNorm(fb(s).corrected) !== _wbNorm(s.sentence) ? fb(s).corrected : "", praise: fb(s).praise || "", date: _pagKST(s.submittedAt) }));
+  return { from, to, total, doneN, rate: total ? Math.round(100 * doneN / total) : 0, studyDays: dates.length, streak, maxN, maxDate, wd, weeks, sentences: sentences.length, corrected, best };
+}
+function _pagNick(name) { const n = String(name || "").trim(); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
+function _pagMD(iso) { return iso ? Number(iso.slice(5, 7)) + "." + Number(iso.slice(8, 10)) : ""; }
+function RetPromoReportAG({ r, preview }) {
+  const { USER, CHARACTERS } = window.__SIM;
+  const D = React.useMemo(() => _pagData(r), [r && r.id, r && r.at]);
+  const boxRef = React.useRef(null); const [zoom, setZoom] = React.useState(1);
+  React.useEffect(() => {
+    const el = boxRef.current; if (!el) return;
+    const fit = () => { const w = el.clientWidth; setZoom(w && w < 900 ? +(w / 1000).toFixed(4) : 1); };
+    fit(); let ro = null;
+    try { ro = new ResizeObserver(fit); ro.observe(el); } catch (e) { window.addEventListener("resize", fit); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); };
+  }, []);
+  const nick = _pagNick(USER.name); const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수";
+  const rank = r.rankLabel || "사원";
+  const C = 2 * Math.PI * 60, dash = C * Math.min(1, D.doneN / Math.max(1, D.total));
+  const wMax = Math.max(1, ...D.weeks.map(w => w.sum));
+  const W = 600, H = 120, pts = D.weeks.map((w, i) => [D.weeks.length > 1 ? 10 + i * (W - 20) / (D.weeks.length - 1) : W / 2, H - 10 - (H - 30) * w.sum / wMax]);
+  const peak = D.weeks.reduce((a, w) => (w.sum > (a ? a.sum : -1) ? w : a), null);
+  const wdMax = Math.max(1, ...D.wd), wdTop = D.wd.indexOf(Math.max(...D.wd));
+  const WK = ["일", "월", "화", "수", "목", "금", "토"];
+  const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
+  const seg = (n) => (100 * n / Math.max(1, D.total)).toFixed(1) + "%";
+  const lvl = (n) => n <= 0 ? "" : n === 1 ? "h1" : n === 2 ? "h2" : n === 3 ? "h3" : "h4";
+  const line = pts.map(p => p.join(",")).join(" ");
+  const b0 = D.best[0];
+  return (
+    <div className="pag-fit" ref={boxRef}>
+      <div className="pag" style={zoom < 1 ? { width: 1000, zoom } : null}>
+        <div className="pag-top">
+          <h3>{nick}씨, <em>{rank}</em> 진급 리포트예요.{preview && <span className="pag-dev">개발 뷰 미리보기</span>}</h3>
+          <div className="pag-tabs"><span>PROMOTION REPORT</span><span>{r.title}</span><span>DAY {D.from}–{D.to}</span><span>{String(r.at || "").slice(0, 10)} 발급</span></div>
+        </div>
+        <div className="pag-grid">
+          <section className="pag-w pag-quote"><p>{r.mentorLine}</p><b>사수 {mentor}</b></section>
+          <section className="pag-w s2">
+            <h4>출근부 기록 <small>{D.total}칸 중 {D.doneN}칸</small></h4>
+            <div className="pag-att">
+              <div className="pag-donut"><svg viewBox="0 0 148 148"><circle cx="74" cy="74" r="60" fill="none" stroke="#F1E8D6" strokeWidth="16" /><circle cx="74" cy="74" r="60" fill="none" stroke="#D85A2A" strokeWidth="16" strokeLinecap="round" strokeDasharray={dash + " " + C} transform="rotate(-90 74 74)" /></svg><b>{D.rate}%<small>{D.doneN} / {D.total}</small></b></div>
+              <div><div className="pag-kn"><div><small>실제 학습한 날</small><b>{D.studyDays}<small>일</small></b></div><div><small>가장 긴 연속</small><b>{D.streak}<small>일</small></b></div><div><small>쓴 문장</small><b>{D.sentences}<small>개</small></b></div></div>
+                <p className="pag-lede">{rank === "사원" ? "수습" : "사원"} Day 완주 {D.doneN} / {D.total}{D.maxN > 1 ? " · 하루에 제일 많이 한 날 " + _pagMD(D.maxDate) + " (" + D.maxN + "개)" : ""}</p></div>
+            </div>
+          </section>
+          <section className="pag-w s2">
+            <h4>주별 흐름 <small>{peak && peak.sum ? "제일 많이 한 주 " + _pagMD(peak.start) + " · " + peak.sum + "개" : "기록이 쌓이면 그려져요"}</small></h4>
+            {pts.length > 0 && <svg viewBox={"0 0 " + W + " " + (H + 18)} width="100%" style={{ display: "block" }}>
+              <polygon points={"10," + (H - 10) + " " + line + " " + (W - 10) + "," + (H - 10)} fill="rgba(216,90,42,.12)" />
+              <polyline points={line} fill="none" stroke="#D85A2A" strokeWidth="2.5" strokeLinejoin="round" />
+              {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={D.weeks[i] === peak ? 5 : 3.5} fill={D.weeks[i] === peak ? "#D85A2A" : "#fff"} stroke="#D85A2A" strokeWidth="2" />)}
+              {D.weeks.map((w, i) => (i % Math.ceil(D.weeks.length / 8) === 0) && <text key={"t" + i} x={pts[i][0]} y={H + 14} fontSize="11" fill="#8A7964" textAnchor="middle">{_pagMD(w.start)}</text>)}
+            </svg>}
+          </section>
+          <section className="pag-w">
+            <h4>요일별 Day <small>{Math.max(...D.wd) > 0 ? WK[wdTop] + "요일에 제일 많이" : ""}</small></h4>
+            <div className="pag-bars">{D.wd.map((n, i) => <div key={i}><span>{n || ""}</span><i style={{ height: Math.max(4, 70 * n / wdMax) }} /><span>{WK[i]}</span></div>)}</div>
+          </section>
+          <section className="pag-w s2">
+            <h4>하루하루 <small>진할수록 그날 많이</small></h4>
+            <div className="pag-heat">{D.weeks.map((w, i) => w.days.map((n, k) => <i key={i + "-" + k} className={lvl(n)} title={_pagMD(_pagAdd(w.start, k)) + " · " + n + "개"} />))}</div>
+            <div className="pag-leg"><span><i style={{ background: "rgba(160,100,70,.12)" }} />쉰 날</span><span><i style={{ background: "#F7C4A9" }} />1개</span><span><i style={{ background: "#EE9A72" }} />2개</span><span><i style={{ background: "#D85A2A" }} />3개</span><span><i style={{ background: "#8E3414" }} />4개 이상</span></div>
+          </section>
+          <section className="pag-w">
+            <h4>여정 <small>{D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지"}</small></h4>
+            <div className="pag-road">{q.map(n => <span key={n} className={D.doneN >= n ? "on" : ""}>{n}</span>)}</div>
+          </section>
+          <section className="pag-w s3">
+            <h4>모은 표현 {D.doneN}개 <small>한 줄로 보기</small></h4>
+            <div className="pag-stack"><i style={{ width: seg(D.corrected), background: "#D85A2A" }} /><i style={{ width: seg(Math.max(0, D.sentences - D.corrected)), background: "#F2B79A" }} /><i style={{ width: seg(Math.max(0, D.doneN - D.sentences)), background: "#E8DDC7" }} /></div>
+            <div className="pag-leg"><span><i style={{ background: "#D85A2A" }} />사수 첨삭 받은 문장 {D.corrected}</span><span><i style={{ background: "#F2B79A" }} />직접 쓴 문장 {Math.max(0, D.sentences - D.corrected)}</span><span><i style={{ background: "#E8DDC7" }} />표현만 모음 {Math.max(0, D.doneN - D.sentences)}</span><span>남은 칸 {Math.max(0, D.total - D.doneN)}</span></div>
+          </section>
+          {D.best.length > 0 && <section className="pag-w s3">
+            <h4>잘 쓴 문장 <small>직접 쓴 문장 중에서</small></h4>
+            <div className="pag-cards">{D.best.map(b => (
+              <article key={b.day} className="pag-card"><div className="t"><span>DAY {b.day} · {String(b.word || "").toUpperCase()}</span><span>{_pagMD(b.date)}</span></div>
+                <div className="en">"{b.text}"</div>
+                {b.fixed && <div className="fx"><b>사수가 다듬은 문장</b> {b.fixed}</div>}
+                {b.praise && <div className="cm">{b.praise}</div>}
+              </article>))}</div>
+          </section>}
+          <section className="pag-w s3" style={{ background: "transparent", border: 0, boxShadow: "none", padding: 0 }}>
+            <div className="pag-letter"><span className="stamp">사수<br />편지</span>
+              <div className="to">{nick}씨, {rank} 진급 축하해요.</div>
+              <p>{D.total}칸 중 <b>{D.doneN}칸</b>을 채웠어요. 제일 길게 이어간 건 <b>{D.streak}일 연속</b>{D.maxN > 1 ? <>, 하루에 제일 많이 한 날은 {_pagMD(D.maxDate)}({D.maxN}개)</> : null}이에요.</p>
+              {b0 ? <p>Day {b0.day} 문장이 좋았어요. "{b0.text}" 그날 표현({b0.word})을 상황에 맞게 썼어요.</p> : <p>다음 단계에서는 하루 한 문장씩 직접 써봐요. 그 문장들이 다음 리포트의 주인공이 돼요.</p>}
+              <p>{rank === "대리" ? "이제 회의를 이끄는 문장이 필요한 자리예요. 다음 TF에서 같이 연습해요." : "사원 기간에도 지금처럼 하루 한 칸씩 이어가요. 남은 칸은 같이 채워가요."}</p>
+              <div className="sig">{mentor}<small>담당 사수 · {String(r.at || "").slice(0, 10)}</small></div>
+            </div>
+          </section>
+        </div>
+        <div className="pag-foot">{USER.name} · {r.title} · {String(r.at || "").slice(0, 10)} 발급</div>
+      </div>
+    </div>
+  );
+}
 function RetGrowthReports() {
   _useRetTick();
   if (!_RET_ON()) return null;
@@ -11329,7 +11510,7 @@ function RetGrowthReports() {
     <div className="ret-growth">
       <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-      {sample && <RetPromoReportCard r={sample} sample />}
+      {sample && (_isDevNext() ? <RetPromoReportAG preview r={{ ...sample, mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} /> : <RetPromoReportCard r={sample} sample />)}
       {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
       {(() => {
         const legacy = (typeof _reportsList === "function") ? _reportsList() : [];
