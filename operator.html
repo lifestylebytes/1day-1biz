@@ -2316,6 +2316,7 @@ function App() {
     if (pref.signup_code) codes.push(pref.signup_code);
     if (u.cohort === 'trial-ubc7' && !codes.includes('UBC7-1DAY1BIZ')) codes.push('UBC7-1DAY1BIZ');
     if (u.cohort === 'trial-ubc10' && !codes.includes('UBC10-7DAYS')) codes.push('UBC10-7DAYS');
+    if (u.cohort === 'trial-7d' && !codes.includes('TRY7DAYS')) codes.push('TRY7DAYS');
     if (pref.plan === 'part2' && !codes.includes('1DAY1BIZ365-2')) codes.push('1DAY1BIZ365-2');
     if (pref.plan === 'part1' && !codes.includes('1DAY1BIZ365')) codes.push('1DAY1BIZ365');
     if (Array.isArray(pref.codes_used)) pref.codes_used.forEach(c => { if (c && !codes.includes(c)) codes.push(c); });

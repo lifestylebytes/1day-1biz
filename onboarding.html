@@ -322,7 +322,13 @@ const TRIAL_CODES = {
   "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7", active: false },
   // ★ 2026-10-12 유비챌 10기 전용 7일 체험. 8일째 아침부터 '체험 완료' 화면 → 멤버십 결제 안내. 끝낼 땐 active:false
   "UBC10-7DAYS": { label: "유비챌 10기 7일 체험", days: 7, cohort: "trial-ubc10" },
+  // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
+  //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
+  //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
+  "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d", active: false, preview: true },
 };
+const _isPreview = (() => { try { return new URLSearchParams(location.search).get("preview") === "1"; } catch (e) { return false; } })();
+function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
 
 // ============================================================
 // 유틸, 사번 / 입사일 / 추정값 생성
@@ -410,8 +416,10 @@ function OnboardingApp() {
         const _isStaffCode = !!STAFF_CODES[code];
         const _isMemberCode = !!MEMBER_CODES[code];
         const _isTrialCode = !!TRIAL_CODES[code];
-        if (_isTrialCode && TRIAL_CODES[code].active === false) {
-          setSubmitError("이 코드는 사용 기간이 끝났어요. 멤버십 결제 후 받은 코드로 입장해주세요.");
+        if (_isTrialCode && TRIAL_CODES[code].active === false && !(TRIAL_CODES[code].preview && _isPreview)) {
+          setSubmitError(TRIAL_CODES[code].preview
+            ? "7일 무료 체험은 아직 오픈 전이에요. 곧 열리니 조금만 기다려 주세요!"
+            : "이 코드는 사용 기간이 끝났어요. 멤버십 결제 후 받은 코드로 입장해주세요.");
           setSubmitting(false);
           return;
         }
@@ -442,7 +450,9 @@ function OnboardingApp() {
         const emailTrimmed = (email || "").trim().toLowerCase();
         const existing = await window.OD.emailExists(emailTrimmed);
         if (existing && existing.ok && existing.exists) {
-          setSubmitError("이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
+          setSubmitError(_isTrialCode
+            ? "이미 가입된 이메일이에요. 무료 체험은 처음 오신 분만 쓸 수 있어요. 처음 화면에서 \"다시 출근하기\"로 로그인해주세요."
+            : "이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
           setSubmitting(false);
           return;
         }
@@ -575,7 +585,7 @@ function OnboardingApp() {
       profile.isOperator = false;
       profile.cohort = _trialDef.cohort || 'trial';
       profile.unlocked = true;
-      const _tEnd = new Date(Date.now() + (_trialDef.days || 7) * 86400000);
+      const _tEnd = new Date(Date.now() + ((_trialDef.days || 7) - 1) * 86400000);
       _tEnd.setHours(23, 59, 59, 0);
       profile.membershipEndsAt = _tEnd.toISOString();
       profile.membership_ends_at = _tEnd.toISOString();
@@ -2468,6 +2478,21 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       <h1>환영해요!<br/>입사 <em>지원서</em> 작성하기</h1>
       <p className="lead">실제 입사 지원서처럼, 이름과 본인 확인을 위한 메일을 작성해주세요.</p>
 
+      {_trialDefOf(inviteCode) ? (
+      <div style={{
+        marginBottom: 20, padding: "12px 14px",
+        background: "var(--paper-warm)",
+        border: "1.5px solid var(--accent)",
+        borderRadius: 8,
+        fontSize: 13, color: "var(--ink)", lineHeight: 1.65, fontWeight: 700,
+      }}>
+        🎁 <span style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).label}</span>으로 입사해요
+        <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
+          결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
+          결제하면 쌓은 기록 그대로 Day 8부터 이어져요.
+        </div>
+      </div>
+      ) : (
       <div style={{
         marginBottom: 20, padding: "12px 14px",
         background: "var(--paper-warm)",
@@ -2480,12 +2505,14 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           운영자가 보내드린 베타 코드를 아래에 입력해주세요.
         </div>
       </div>
+      )}
 
       <div className="form-row">
         <label>초대 코드</label>
         <input
           value={inviteCode}
           onChange={e => setInviteCode(e.target.value.toUpperCase())}
+          readOnly={!!_trialDefOf(inviteCode)}
           placeholder="초대받으신 코드를 입력하세요"
           style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
         />
@@ -2495,8 +2522,8 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
       </div>
       <div className="form-row">
-        <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 이용권 구매하신 이메일로 작성해주세요</span></label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="구매하신 이메일 입력 (예: you@gmail.com)" />
+        <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· {_trialDefOf(inviteCode) ? "나중에 결제할 때도 이 이메일로 해주세요" : "이용권 구매하신 이메일로 작성해주세요"}</span></label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={_trialDefOf(inviteCode) ? "자주 쓰는 이메일 (예: you@gmail.com)" : "구매하신 이메일 입력 (예: you@gmail.com)"} />
       </div>
       <div className="form-row">
         <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 8자 이상</span></label>

@@ -21,6 +21,7 @@ import { tokenGate } from "../_shared/gate.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MEMBERSHIP_DAYS = parseInt(Deno.env.get("MEMBERSHIP_DAYS") || "31", 10);
+const THREE_MONTH_MIN_AMOUNT = Number(Deno.env.get("THREE_MONTH_MIN_AMOUNT") || "30000");
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, {
   auth: { persistSession: false },
@@ -118,8 +119,10 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ★ 2026-10-16 3개월권: 금액이 THREE_MONTH_MIN_AMOUNT(기본 30,000원) 이상이면 3개월 뒤까지 (월 구독은 기존대로 31일)
       const endsAt = new Date(eventAt);
-      endsAt.setDate(endsAt.getDate() + MEMBERSHIP_DAYS);
+      if (amount != null && amount >= THREE_MONTH_MIN_AMOUNT) endsAt.setMonth(endsAt.getMonth() + 3);
+      else endsAt.setDate(endsAt.getDate() + MEMBERSHIP_DAYS);
       updates.membership_ends_at = endsAt.toISOString();
 
       const { data, error } = await supabase
