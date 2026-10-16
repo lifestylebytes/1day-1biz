@@ -1138,6 +1138,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
     <div className="card">
 
+      {/* ★ 2026-10-16 개편안 순서로 재배치 (내용은 그대로): 히어로 → 파운더 노트 → 실제 화면·3단계 → 안 맞는 분 → 후기 → 지원 동기 → 데모 → 승진 → 폰(+카톡 미리보기) → 멤버십(+가격 칩) → 유비챌 → FAQ → 마지막 CTA */}
       {/* ── 1. 히어로 ── */}
       {/* ★ 광고(입사 시뮬레이션) message match: 클릭한 사람 머릿속 단어를 첫 줄에 */}
       <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, marginBottom: 12, letterSpacing: "-0.01em" }}>
@@ -1150,76 +1151,40 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         그 자리에서 한 번 써보면 <strong>내 비즈니스 어휘 사전</strong>에 한 칸이 채워져요.
       </p>
 
-      {/* ── 1.1 카톡 미리보기: '매일 아침 카톡으로' 를 말이 아니라 화면으로 ── */}
-      <div style={{ background: "#9FB4C7", borderRadius: 14, padding: "14px 12px 16px", marginTop: 2 }}>
-        <div style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 10, letterSpacing: "0.02em" }}>
-          내일 아침 9시, 카톡함에 이렇게 도착해요
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-          <span style={{ width: 32, height: 32, borderRadius: 11, background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 12.5, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>유</span>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.95)", fontWeight: 700, marginBottom: 4 }}>1일1비</div>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
-              <div style={{ background: "#fff", borderRadius: "3px 13px 13px 13px", padding: "12px 13px", fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, boxShadow: "0 1px 2px rgba(0,0,0,0.08)", minWidth: 0 }}>
-                ☀️ 좋은 아침이에요! 오늘의 표현이 도착했어요.<br/><br/>
-                <strong style={{ fontSize: 14 }}>low-hanging fruit</strong><br/>
-                <span style={{ color: "var(--ink-soft)" }}>쉽게 얻을 수 있는 성과</span>
-                <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
-                  💬 오늘 이런 자리에서 써요<br/>
-                  <span style={{ color: "var(--ink)" }}>"Let's knock out the low-hanging fruit first."</span><br/>
-                  <span style={{ fontSize: 11.5 }}>쉽게 처리할 수 있는 것부터 먼저 해치웁시다.</span>
-                </div>
-                <div style={{ marginTop: 10, textAlign: "center", background: "var(--accent)", color: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800 }}>
-                  출근해서 한 번 써보기 →
-                </div>
-              </div>
-              <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.85)", flexShrink: 0, paddingBottom: 2 }}>오전 9:00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 9 }}>
-        앱을 안 열어도 와요. 받을 시간은 <strong>24시간 중 원하는 시각</strong>으로 직접 고르시면 돼요. 해외 시차도 괜찮아요.
-      </div>
-
       <Divider />
 
-      {/* ── 1.2 페인 체크: 타깃 3명의 순간 (지원 동기) ── */}
-      <SectionTitle eyebrow="지원 동기" title="혹시 이런 순간 있으셨어요?" />
-      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
-        {[
-          ["📮", "메일 보내기 전, 번역기로 두 번 검사해요", "표현은 아는데 이게 자연스러운지 확신이 없어서요. 외국계 다니면서도 그래요."],
-          ["🎤", "회의에서 할 말이 있었는데, 정리하다 화제가 넘어갔어요", "어휘가 부족한 게 아니라, 그 상황에서 말해본 적이 없어서요."],
-          ["🧳", "갑자기 영어 쓰는 자리로 가게 됐어요", "보직이 바뀌었거나, 외국계로 옮기고 싶은데 영어로 일하는 감이 없어서 막막해요."],
-        ].map(c => (
-          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
-            <span style={{ fontSize: 19, flexShrink: 0 }}>{c[0]}</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
-              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
-            </div>
+      {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
+      <SectionTitle eyebrow="FROM YOUBUDDY" title="제가 이걸 만든 이유" />
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
+        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
+          안녕하세요, 유버디예요. 외국계에서 팀장을 맡으며 7년째 일하고 있습니다.<br/><br/>
+          "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
+          저는 이 말을 그만 듣고 싶어요.<br/><br/>
+          근데 실력이 없어서가 아니잖아요? 다 아는 단어인데 저 사람들이 쓰는 조합은 처음 들어봐서,
+          알아듣는 데 반 박자 걸리는 거죠. 근데 매번 그 사이에 화제는 넘어가 있고요.
+          저도 그랬답니다.<br/><br/>
+          충격받은 1년차 때부터 회의에서 들린 표현을 하나씩 적어뒀어요.
+          팀장님이 슬랙에서 쓴 말, 메일에서 본 문장, 회의에서 안 들렸던 아메리칸 농담까지.
+          적어두니까 신기하게, 같은 상황이 다시 왔을 때 어렴풋이 어떤 의미인지는 알겠더라고요.<br/><br/>
+          근데 우리 바쁜데 언제 영어까지 챙기나요. 그래서 제가 하던 그대로,
+          <strong>하루에 하나씩 어휘를 보내드리고 카톡으로도 알려드리기로 했어요.</strong>
+          페이지에서는 그 표현으로 진짜 외국계 상황을 시뮬레이션할 수 있고요.
+          슬랙, 화상회의, 동기와의 스몰톡까지 유버디 경험을 쫙 담았습니다.<br/><br/>
+          더 이상 한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어요.<br/>
+          <strong style={{ color: "var(--accent)" }}>오늘 당신의 라이브러리에 단어를 담고, 다음에 쓸 수 있게 버디<sup style={{ fontSize: 9 }}>*</sup>가 도와드릴게요.</strong>
+          <div style={{ marginTop: 14, paddingTop: 11, borderTop: "1px dashed var(--line)", fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.65 }}>
+            <strong style={{ color: "var(--ink-soft)" }}>* 버디 제도</strong> · 외국계에서 신입이 입사하면 옆자리 선배 한 명을 짝지어주는 제도예요.
+            모르는 걸 물어봐도 되는 사람이 한 명 있다는 것만으로 회사 생활이 달라지거든요.
+            1일1비의 사수와 유버디가 그 역할이에요.
           </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.75, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
-        셋 다 원인은 같아요. <strong>몰라서가 아니라, 써본 적이 없어서.</strong><br/>
-        그래서 1일1비는 표현 대신 <strong style={{ color: "var(--accent)" }}>매일 써볼 자리</strong>를 드려요. 아래가 그 자리예요.
-      </div>
-
-      {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
-        {[
-          ["🏢", "외국계 대기업 7년차"],
-          ["✍️", "현업에서 실제로 쓰는 표현만"],
-          ["📚", "7년치 표현 수집본"],
-        ].map(t => (
-          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
-            <span>{t[0]}</span>{t[1]}
-          </span>
-        ))}
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accent)", color: "#fff", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 800 }}>
-          💳 월 13,900원 · 언제든 해지
-        </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, paddingTop: 13, borderTop: "1px dashed var(--line)" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>버디 드림</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 7년차</div>
+          </div>
+        </div>
       </div>
 
       <Divider />
@@ -1302,12 +1267,85 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           </div>
         ))}
       </div>
-      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 4, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
-        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
+
+      <Divider />
+
+      {/* ── 4.7 이런 분껜 안 맞아요 (결제 직전 자가 필터) ── */}
+      <SectionTitle eyebrow="BEFORE YOU JOIN" title="이런 분껜 안 맞아요" sub="솔직하게 먼저 말씀드릴게요. 아래에 해당되시면 지금은 안 하시는 게 나아요." />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["🎯", "토익·오픽 점수가 목표인 분", "시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았어요. 점수에는 도움이 안 돼요."],
+          ["🌱", "영어를 아예 안 쓰는 환경인 분", "회의·슬랙·메일에서 쓰는 표현이라, 써먹을 자리가 없으면 와닿지 않아요. 기초 문법부터라면 다른 걸 먼저 하세요."],
+          ["🗣️", "발음·스피킹 교정을 원하는 분", "말하기를 직접 봐드리진 않아요. 입으로 뱉는 연습이 필요하시면 유비챌 쪽이 맞아요."],
+          ["📚", "하루 30분 이상 제대로 파고 싶은 분", "5분 안에 끝나게 설계했어요. 더 깊게 하고 싶은 분껜 오히려 성에 안 찰 수 있어요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        반대로 <strong>영어로 일은 하는데 늘 쓰던 표현만 나오는 분</strong>이라면,<br/>
+        딱 그 자리를 메우려고 만든 서비스예요.
       </div>
 
       <Divider />
 
+      {/* ── 4. 후기 ── */}
+      <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문과 30일 수료 회고에서 그대로 가져왔어요. 별점은 실제 제출된 만족도예요." />
+      <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
+        {[
+          ["\"간단하게 부담 없이 하루에 하나씩 할 수 있어서 좋고, 진짜 비즈니스 영어라 도움 돼요.\"", "Day 40 멤버 · 주간 설문 ★★★★★"],
+          ["\"매일 하기는 어려웠는데 롤플레잉을 하니까 단어가 더 잘 외워졌어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있었고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · 수료 시험 100점"],
+          ["\"문장 피드백 해주는 방식이 중간에 더 상세해져서 좋았어요.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"이렇게 사용하는구나 싶은 것들이 많은 것 같아요.\"", "Day 33 멤버 · 주간 설문 ★★★★★"],
+          ["\"유저 피드백이 빨리 반영되고 개선되는 점이 좋았습니다.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"쉽고 빨라요. 유비챌보다 간단하고 쉽게 접근할 수 있는 것 같아요.\"", "베타 테스터 · 10일 체험"],
+          ["\"오늘의 한줄에 AI 피드백 생긴 거 넘 좋아요~ 감사합니다 :)\"", "Day 52 멤버"],
+          ["\"해놓으신 단어들이나 만들어놓으신 건 정말 너무 좋았어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"점심 대화가 랜덤 말고 매일 있으면 좋겠어요.\"", "30일 완주 멤버 · ★★★★★ (더 달라는 요청이 최고의 후기죠)"],
+        ].map(r => (
+          <div key={r[1]} style={{ borderLeft: "3px solid var(--accent)", padding: "4px 2px 4px 13px" }}>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, fontStyle: "italic" }}>{r[0]}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5 }}>{r[1]}</div>
+          </div>
+        ))}
+      </div>
+
+      <Divider />
+
+      {/* ── 1.2 페인 체크: 타깃 3명의 순간 (지원 동기) ── */}
+      <SectionTitle eyebrow="지원 동기" title="혹시 이런 순간 있으셨어요?" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["📮", "메일 보내기 전, 번역기로 두 번 검사해요", "표현은 아는데 이게 자연스러운지 확신이 없어서요. 외국계 다니면서도 그래요."],
+          ["🎤", "회의에서 할 말이 있었는데, 정리하다 화제가 넘어갔어요", "어휘가 부족한 게 아니라, 그 상황에서 말해본 적이 없어서요."],
+          ["🧳", "갑자기 영어 쓰는 자리로 가게 됐어요", "보직이 바뀌었거나, 외국계로 옮기고 싶은데 영어로 일하는 감이 없어서 막막해요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 19, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.75, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        셋 다 원인은 같아요. <strong>몰라서가 아니라, 써본 적이 없어서.</strong><br/>
+        그래서 1일1비는 표현 대신 <strong style={{ color: "var(--accent)" }}>매일 써볼 자리</strong>를 드려요. 아래가 그 자리예요.
+      </div>
+
+      <Divider />
+
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 18, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
+      </div>
       {/* ── 2. 인터랙티브 체험: 실제 인트라넷 오늘 일정 ── */}
       <SectionTitle eyebrow="LIVE DEMO" title="구경 말고, 직접 출근해보세요" sub="Day 1을 가입 없이 그대로 해봅니다. 마지막엔 진짜 AI 사수가 첨삭해줘요." />
 
@@ -1501,6 +1539,37 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       {/* ── 3.5 폰·알림·동료 (2026-10-12 재참여 설문: 폰으로 못 하는 줄 알았고, 알림·공지방이 있는 줄 몰랐다. 있는 기능을 처음부터 보여준다) ── */}
       <SectionTitle eyebrow="ON YOUR PHONE" title="출퇴근길 폰으로, 혼자가 아니게" sub="컴퓨터 앞이 아니어도 돼요. 폰 하나로 출근하고, 알림이 챙겨주고, 동기들이 같이 가요." />
+      {/* ── 1.1 카톡 미리보기: '매일 아침 카톡으로' 를 말이 아니라 화면으로 ── */}
+      <div style={{ background: "#9FB4C7", borderRadius: 14, padding: "14px 12px 16px", marginTop: 2 }}>
+        <div style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 10, letterSpacing: "0.02em" }}>
+          내일 아침 9시, 카톡함에 이렇게 도착해요
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <span style={{ width: 32, height: 32, borderRadius: 11, background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 12.5, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>유</span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.95)", fontWeight: 700, marginBottom: 4 }}>1일1비</div>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
+              <div style={{ background: "#fff", borderRadius: "3px 13px 13px 13px", padding: "12px 13px", fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, boxShadow: "0 1px 2px rgba(0,0,0,0.08)", minWidth: 0 }}>
+                ☀️ 좋은 아침이에요! 오늘의 표현이 도착했어요.<br/><br/>
+                <strong style={{ fontSize: 14 }}>low-hanging fruit</strong><br/>
+                <span style={{ color: "var(--ink-soft)" }}>쉽게 얻을 수 있는 성과</span>
+                <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  💬 오늘 이런 자리에서 써요<br/>
+                  <span style={{ color: "var(--ink)" }}>"Let's knock out the low-hanging fruit first."</span><br/>
+                  <span style={{ fontSize: 11.5 }}>쉽게 처리할 수 있는 것부터 먼저 해치웁시다.</span>
+                </div>
+                <div style={{ marginTop: 10, textAlign: "center", background: "var(--accent)", color: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800 }}>
+                  출근해서 한 번 써보기 →
+                </div>
+              </div>
+              <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.85)", flexShrink: 0, paddingBottom: 2 }}>오전 9:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 9 }}>
+        앱을 안 열어도 와요. 받을 시간은 <strong>24시간 중 원하는 시각</strong>으로 직접 고르시면 돼요. 해외 시차도 괜찮아요.
+      </div>
       <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
         {[
           ["📱", "폰으로 출근해요", "회원가입부터 매일 출근까지 전부 휴대폰에서 돼요. 홈 화면에 추가하면 앱처럼 한 번에 열리고, 컴퓨터와 폰을 오가도 진도·표현 노트가 그대로 이어져요."],
@@ -1522,114 +1591,22 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <Divider />
 
-      {/* ── 4. 후기 ── */}
-      <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문과 30일 수료 회고에서 그대로 가져왔어요. 별점은 실제 제출된 만족도예요." />
-      <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
-        {[
-          ["\"간단하게 부담 없이 하루에 하나씩 할 수 있어서 좋고, 진짜 비즈니스 영어라 도움 돼요.\"", "Day 40 멤버 · 주간 설문 ★★★★★"],
-          ["\"매일 하기는 어려웠는데 롤플레잉을 하니까 단어가 더 잘 외워졌어요!\"", "30일 완주 멤버 · ★★★★★"],
-          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있었고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · 수료 시험 100점"],
-          ["\"문장 피드백 해주는 방식이 중간에 더 상세해져서 좋았어요.\"", "30일 완주 멤버 · ★★★★★"],
-          ["\"이렇게 사용하는구나 싶은 것들이 많은 것 같아요.\"", "Day 33 멤버 · 주간 설문 ★★★★★"],
-          ["\"유저 피드백이 빨리 반영되고 개선되는 점이 좋았습니다.\"", "30일 완주 멤버 · ★★★★★"],
-          ["\"쉽고 빨라요. 유비챌보다 간단하고 쉽게 접근할 수 있는 것 같아요.\"", "베타 테스터 · 10일 체험"],
-          ["\"오늘의 한줄에 AI 피드백 생긴 거 넘 좋아요~ 감사합니다 :)\"", "Day 52 멤버"],
-          ["\"해놓으신 단어들이나 만들어놓으신 건 정말 너무 좋았어요!\"", "30일 완주 멤버 · ★★★★★"],
-          ["\"점심 대화가 랜덤 말고 매일 있으면 좋겠어요.\"", "30일 완주 멤버 · ★★★★★ (더 달라는 요청이 최고의 후기죠)"],
-        ].map(r => (
-          <div key={r[1]} style={{ borderLeft: "3px solid var(--accent)", padding: "4px 2px 4px 13px" }}>
-            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, fontStyle: "italic" }}>{r[0]}</div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5 }}>{r[1]}</div>
-          </div>
-        ))}
-      </div>
-
-      <Divider />
-
-      {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
-      <SectionTitle eyebrow="FROM YOUBUDDY" title="제가 이걸 만든 이유" />
-      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
-        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
-          안녕하세요, 유버디예요. 외국계에서 팀장을 맡으며 7년째 일하고 있습니다.<br/><br/>
-          "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
-          저는 이 말을 그만 듣고 싶어요.<br/><br/>
-          근데 실력이 없어서가 아니잖아요? 다 아는 단어인데 저 사람들이 쓰는 조합은 처음 들어봐서,
-          알아듣는 데 반 박자 걸리는 거죠. 근데 매번 그 사이에 화제는 넘어가 있고요.
-          저도 그랬답니다.<br/><br/>
-          충격받은 1년차 때부터 회의에서 들린 표현을 하나씩 적어뒀어요.
-          팀장님이 슬랙에서 쓴 말, 메일에서 본 문장, 회의에서 안 들렸던 아메리칸 농담까지.
-          적어두니까 신기하게, 같은 상황이 다시 왔을 때 어렴풋이 어떤 의미인지는 알겠더라고요.<br/><br/>
-          근데 우리 바쁜데 언제 영어까지 챙기나요. 그래서 제가 하던 그대로,
-          <strong>하루에 하나씩 어휘를 보내드리고 카톡으로도 알려드리기로 했어요.</strong>
-          페이지에서는 그 표현으로 진짜 외국계 상황을 시뮬레이션할 수 있고요.
-          슬랙, 화상회의, 동기와의 스몰톡까지 유버디 경험을 쫙 담았습니다.<br/><br/>
-          더 이상 한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어요.<br/>
-          <strong style={{ color: "var(--accent)" }}>오늘 당신의 라이브러리에 단어를 담고, 다음에 쓸 수 있게 버디<sup style={{ fontSize: 9 }}>*</sup>가 도와드릴게요.</strong>
-          <div style={{ marginTop: 14, paddingTop: 11, borderTop: "1px dashed var(--line)", fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.65 }}>
-            <strong style={{ color: "var(--ink-soft)" }}>* 버디 제도</strong> · 외국계에서 신입이 입사하면 옆자리 선배 한 명을 짝지어주는 제도예요.
-            모르는 걸 물어봐도 되는 사람이 한 명 있다는 것만으로 회사 생활이 달라지거든요.
-            1일1비의 사수와 유버디가 그 역할이에요.
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, paddingTop: 13, borderTop: "1px dashed var(--line)" }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
-          <div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>버디 드림</div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 7년차</div>
-          </div>
-        </div>
-      </div>
-
-      <Divider />
-
-      {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
-      <SectionTitle eyebrow="FAQ" title="사기 전에 다들 물어보는 것" />
-      <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
-        {[
-          ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
-          ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
-          ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 갑니다. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요."],
-          ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 하실 수 있어요. 표현 노트와 진도는 해지 후 2개월간 보관되니, 그 안에 재구독하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
-          ["누구한테 잘 맞나요?", "슬랙·메일·회의에서 영어를 이미 쓰고 계신 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스랍니다."],
-          ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
-          ["매일 알림이 오나요?", "카톡 출근 알림을 켜면 내가 정한 시각에 오늘의 표현이 카톡으로 와요 (앱을 안 열어도요). 가입 첫날 가이드에서 켜드리고, 사원증 → 설정에서 시간을 바꾸거나 끌 수 있어요. 1일1비 공지방(카톡)도 같은 곳에서 들어가요."],
-        ].map(q => (
-          <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
-            <summary style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
-            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, padding: "0 14px 13px" }}>{q[1]}</div>
-          </details>
-        ))}
-      </div>
-
-      <Divider />
-
-      {/* ── 5. 구성 + CTA ── */}
-      {/* ── 4.7 이런 분껜 안 맞아요 (결제 직전 자가 필터) ── */}
-      <SectionTitle eyebrow="BEFORE YOU JOIN" title="이런 분껜 안 맞아요" sub="솔직하게 먼저 말씀드릴게요. 아래에 해당되시면 지금은 안 하시는 게 나아요." />
-      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
-        {[
-          ["🎯", "토익·오픽 점수가 목표인 분", "시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았어요. 점수에는 도움이 안 돼요."],
-          ["🌱", "영어를 아예 안 쓰는 환경인 분", "회의·슬랙·메일에서 쓰는 표현이라, 써먹을 자리가 없으면 와닿지 않아요. 기초 문법부터라면 다른 걸 먼저 하세요."],
-          ["🗣️", "발음·스피킹 교정을 원하는 분", "말하기를 직접 봐드리진 않아요. 입으로 뱉는 연습이 필요하시면 유비챌 쪽이 맞아요."],
-          ["📚", "하루 30분 이상 제대로 파고 싶은 분", "5분 안에 끝나게 설계했어요. 더 깊게 하고 싶은 분껜 오히려 성에 안 찰 수 있어요."],
-        ].map(c => (
-          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{c[0]}</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
-              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
-        반대로 <strong>영어로 일은 하는데 늘 쓰던 표현만 나오는 분</strong>이라면,<br/>
-        딱 그 자리를 메우려고 만든 서비스예요.
-      </div>
-
-      <Divider />
-
       <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
+      {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
+        {[
+          ["🏢", "외국계 대기업 7년차"],
+          ["✍️", "현업에서 실제로 쓰는 표현만"],
+          ["📚", "7년치 표현 수집본"],
+        ].map(t => (
+          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
+            <span>{t[0]}</span>{t[1]}
+          </span>
+        ))}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accent)", color: "#fff", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 800 }}>
+          💳 월 13,900원 · 언제든 해지
+        </span>
+      </div>
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
         {[["📩", "하루 하나, 새로운 Day 도착"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
           <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
@@ -1761,6 +1738,27 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           반대로 매일 쌓는 게 잘 맞는 분이 4주 실전까지 더하고 싶다면 둘 다 하셔도 좋아요.
           다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 여유가 없을 땐 1일1비만으로도 충분해요.
         </div>
+      </div>
+
+      <Divider />
+
+      {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
+      <SectionTitle eyebrow="FAQ" title="사기 전에 다들 물어보는 것" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
+        {[
+          ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
+          ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
+          ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 갑니다. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요."],
+          ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 하실 수 있어요. 표현 노트와 진도는 해지 후 2개월간 보관되니, 그 안에 재구독하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
+          ["누구한테 잘 맞나요?", "슬랙·메일·회의에서 영어를 이미 쓰고 계신 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스랍니다."],
+          ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
+          ["매일 알림이 오나요?", "카톡 출근 알림을 켜면 내가 정한 시각에 오늘의 표현이 카톡으로 와요 (앱을 안 열어도요). 가입 첫날 가이드에서 켜드리고, 사원증 → 설정에서 시간을 바꾸거나 끌 수 있어요. 1일1비 공지방(카톡)도 같은 곳에서 들어가요."],
+        ].map(q => (
+          <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
+            <summary style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, padding: "0 14px 13px" }}>{q[1]}</div>
+          </details>
+        ))}
       </div>
 
       {/* ── 마지막 CTA ── */}
