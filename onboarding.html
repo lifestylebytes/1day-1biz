@@ -1189,64 +1189,24 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <Divider />
 
-      {/* ── 1.5 실제 화면 재현: 매일 받는 책상 (Day 88 그대로) ── */}
-      <SectionTitle eyebrow="REAL SCREEN" title="카톡이 끝이 아니에요" sub="알림을 받고 들어오면, 그 표현을 실제로 써보는 자리가 기다리고 있어요." />
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))", gap: 8, marginBottom: 14 }}>
-        {[["💬", "카톡 알림", "오늘의 표현이 도착"], ["👔", "출근", "그 표현이 오가는 상황"], ["✍️", "한 줄 쓰기", "사수가 바로 첨삭"], ["📓", "내 어휘 사전", "오늘 것 한 칸 추가"]].map((x, i) => (
-          <div key={x[1]} style={{ position: "relative", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 10px 11px", textAlign: "center" }}>
-            <span style={{ position: "absolute", top: 7, left: 8, fontSize: 9.5, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{i + 1}</span>
-            <div style={{ fontSize: 20, marginBottom: 4 }}>{x[0]}</div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", lineHeight: 1.35 }}>{x[1]}</div>
-            <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 3, lineHeight: 1.45 }}>{x[2]}</div>
+      {/* ── 1.5 WHAT IS 1일1비 (2026-10-16 개편안): 손으로 재현한 책상 대신 실제 앱 화면 캡처 + 3칸 요약 ── */}
+      <SectionTitle eyebrow="WHAT IS 1일1비"
+        title={<>하루 하나, 비즈니스 영어로<br/>외국계 회사에 출근해요</>}
+        sub={<>매일 오늘의 단어가 도착하면, 그 단어가 실제로 오가는 회사 상황에 들어가 팀장님의 말에 내가 직접 영어로 답장을 써요. 하루 5분이면 끝나요.</>} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, textAlign: "center", marginBottom: 14 }}>
+        {[["1", "오늘의 단어", "뜻·발음 한눈에"], ["2", "회사 상황 속으로", "팀장님이 말을 걸어요"], ["3", "내가 직접 답장", "오늘 단어를 살려서"]].map(st => (
+          <div key={st[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 5px", display: "flex", flexDirection: "column", gap: 2 }}>
+            <b style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--accent)", fontSize: 13 }}>{st[0]}</b>
+            <b style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.35 }}>{st[1]}</b>
+            <span style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.4 }}>{st[2]}</span>
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", marginBottom: 12 }}>
-        <strong>딱 5분이에요.</strong> 아래가 멤버들이 실제로 보는 화면이고요.
-      </div>
-      <div style={{ border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "0 14px 34px -14px rgba(58,40,18,0.25)", marginBottom: 10 }}>
-        <div style={{ background: "var(--paper-warm)", padding: "8px 14px", display: "flex", gap: 6, alignItems: "center", borderBottom: "1px solid var(--line)" }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#E8968B" }} />
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#F0CC8A" }} />
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#A8C8A0" }} />
-          <span style={{ fontSize: 10.5, color: "var(--ink-mute)", marginLeft: 8, fontFamily: "JetBrains Mono, monospace" }}>1day-1biz.youbuddy.co.kr</span>
-        </div>
-        <div style={{ background: "var(--paper)", padding: "16px 16px 18px" }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 5, fontFamily: "JetBrains Mono, monospace" }}>2026.08.08 · DAY 18 / 90 · <span style={{ color: "var(--accent)" }}>수집 표현 18</span></div>
-          <div style={{ fontSize: 21, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em", marginBottom: 12 }}><span style={{ color: "var(--accent)" }}>오늘의</span> 책상 위</div>
-          <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 8, overflow: "hidden", marginBottom: 12, fontSize: 10.5 }}>
-            <div style={{ flex: 1.3, padding: "8px 11px", borderRight: "1px solid var(--line)" }}>
-              <div style={{ color: "var(--ink-mute)", letterSpacing: "0.1em", fontWeight: 700, marginBottom: 3 }}>문서번호 / DOC</div>
-              <div style={{ fontWeight: 800, color: "var(--ink)", fontFamily: "JetBrains Mono, monospace" }}>YB-20260501-1018</div>
-            </div>
-            <div style={{ flex: 1, padding: "8px 11px" }}>
-              <div style={{ color: "var(--ink-mute)", letterSpacing: "0.1em", fontWeight: 700, marginBottom: 3 }}>담당 / APPLICANT</div>
-              <div style={{ fontWeight: 800, color: "var(--ink)" }}>나 (수습)</div>
-            </div>
-          </div>
-          <div style={{ border: "1.5px solid var(--ink)", borderRadius: 4, padding: "0 0 14px", position: "relative", background: "var(--paper)" }}>
-            <div style={{ display: "inline-block", background: "var(--ink)", color: "var(--paper)", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.14em", padding: "6px 12px" }}>오늘의 시추에이션 · DAY 18</div>
-            <div style={{ position: "absolute", top: 10, right: 12, width: 52, height: 52, borderRadius: "50%", border: "2.5px solid #B23A2C", color: "#B23A2C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, letterSpacing: "0.08em", transform: "rotate(14deg)", opacity: 0.85 }}>PENDING</div>
-            <div style={{ padding: "12px 14px 0" }}>
-              <div style={{ fontSize: 10.5, letterSpacing: "0.12em", color: "var(--ink-mute)", fontWeight: 700, marginBottom: 7, fontFamily: "JetBrains Mono, monospace" }}>#slack #teamwork</div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 12 }}>📍 11:05. 옆자리 동기 한도윤이 슬랙을 보냈다. 같이 하자는 건 고마운데, 뭐라고 답하지.</div>
-              <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
-                <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13 }}>한</div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", marginBottom: 4 }}>한도윤 · 동기 / Marketing</div>
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink)", lineHeight: 1.55, background: "var(--paper-warm)", borderRadius: "2px 12px 12px 12px", padding: "9px 12px" }}>
-                    "Got any <span style={{ background: "#F6E27C", padding: "1px 5px", borderRadius: 3 }}>bandwidth</span> this week? It'd be great to put the design team's materials together with you."
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, textAlign: "center", marginBottom: 4 }}>
-        입사 3주차쯤 되면 이런 게 옵니다. Day 90까지 가면 <strong style={{ color: "var(--ink)" }}>리더의 영어</strong>, 그 뒤엔 TF 트랙으로 이어지고요.<br/>
-        <span style={{ color: "var(--ink-mute)" }}>물론 Day 1은 훨씬 쉬운 것부터 시작해요. 직접 볼까요?</span>
-      </div>
+      <figure style={{ margin: "0 0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <img src="img/landing-what-is.png" alt="1일1비 실제 화면: 오늘의 단어 trade-off, 김 팀장의 질문, 영어로 답장을 쓰는 입력창과 사수 메모" loading="lazy"
+          style={{ display: "block", width: "100%", height: "auto", borderRadius: 14, border: "1px solid var(--line)", boxShadow: "0 16px 36px -22px rgba(42,31,20,0.55)" }} />
+        <figcaption style={{ fontSize: 12, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.5 }}>실제 1일1비 화면 · 오늘의 단어 “trade-off”로 김 팀장에게 직접 답장 쓰기</figcaption>
+      </figure>
       {/* 책상을 본 직후: 이 화면이 매일 어떻게 굴러가는지 3단계 */}
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 4 }}>매일 이렇게 굴러가요</div>
