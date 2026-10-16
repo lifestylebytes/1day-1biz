@@ -166,6 +166,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   function show(s){document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.dataset.s!==s;});setTimeout(ph,50);}
   function ph(){send({qe:{ph:document.documentElement.scrollHeight}});}
   if(q.dleft!=null&&q.dleft!=='')document.querySelectorAll('[data-dleft]').forEach(function(e){e.textContent='D-'+q.dleft;});
+  if(q.r==='senior'){var op=document.querySelector('.pane[data-s="open"]');if(op){var w=document.createTreeWalker(op,NodeFilter.SHOW_TEXT),n,R=[['사원 진급 평가','대리 진급 평가'],['Day 1~30','Day 31~90'],['사원증과 진급 리포트','대리 사원증과 진급 리포트']];while(n=w.nextNode()){var t=n.nodeValue;R.forEach(function(r){t=t.split(r[0]).join(r[1]);});if(t!==n.nodeValue)n.nodeValue=t;}}}
   if(q.have==='1')document.querySelectorAll('[data-ticket]').forEach(function(e){e.textContent='🎟️ 갖고 있는 Preview Ticket 쓰기 →';e.dataset.use='1';});
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-ticket]');if(t){send({qe:{nav:t.dataset.use?'use':'perk'}});return;}

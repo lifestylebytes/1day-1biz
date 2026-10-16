@@ -11074,12 +11074,13 @@ function QuarterEvalDev({ setActive }) {
   const email = _retEmail();
   const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
   const rk = USER.rankId || "intern";
-  const evalDay = (rk === "intern" || rk === "probation") ? 30 : rk === "fulltime" ? 90 : 0;
+  // ★ Day 90 은 진도 기준으로 이미 '대리'로 잡히지만(_progressRankId), 그날이 바로 대리 진급 평가 날이라 평가를 연다.
+  const evalDay = (rk === "intern" || rk === "probation") ? 30 : (rk === "fulltime" || (rk === "senior" && rd <= 90)) ? 90 : 0;
   const rec = _qeLoad(email);
   const have = (Number(_retInv(email).preview) || 0) > 0;
   const [mode, setMode] = React.useState(() => { try { if (sessionStorage.getItem("__OD_RET_PREVIEW") === "1") return "peek"; } catch (e) {} return null; });
   const [h, setH] = React.useState(900);
-  const base = !evalDay ? "staff" : (rd >= evalDay && !(rec.main && rec.main.evalDay === evalDay)) ? "open" : (rk === "fulltime" ? "staff" : "intern");
+  const base = !evalDay ? "staff" : (rd >= evalDay && !(rec.main && rec.main.evalDay === evalDay)) ? "open" : (evalDay === 90 ? "staff" : "intern");
   const state = mode || base;
   React.useEffect(() => {
     const on = (e) => {
@@ -11103,8 +11104,8 @@ function QuarterEvalDev({ setActive }) {
     window.addEventListener("message", on);
     return () => window.removeEventListener("message", on);
   }, [email, evalDay]);
-  const src = state === "test" ? "promo/test.html" : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + "#" + state);
-  const title = rk === "fulltime" ? "대리 진급 평가" : "사원 진급 평가";
+  const src = state === "test" ? "promo/test.html" : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + (evalDay === 90 ? "&r=senior" : "") + "#" + state);
+  const title = evalDay === 90 ? "대리 진급 평가" : "사원 진급 평가";
   return (
     <div>
       <div className="desk-header">
