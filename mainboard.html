@@ -1337,6 +1337,9 @@ span.ret-hud-item { cursor: default; }
 .pag-letter .stamp { position: absolute; right: 22px; top: 16px; width: 58px; height: 58px; border: 2.5px solid #D85A2A; border-radius: 50%; color: #D85A2A; font-weight: 900; font-size: 12px; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-12deg); }
 .pag-foot { margin-top: 12px; font-size: 11px; color: #8A7964; text-align: right; }
 .pag-dev { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; background: #2A1F14; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+.qe-frame { width: 100%; border: 0; display: block; background: transparent; }
+.qe-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); background: var(--cream); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; font-size: 13px; } .qe-bar b { color: var(--orange); } .qe-bar span { flex: 1; color: var(--ink-mute); font-size: 12px; }
+.qe-rec { font-size: 12.5px; color: var(--ink-soft); background: var(--cream); border: 1px dashed var(--line); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; } .qe-rec small { color: var(--ink-mute); margin-left: 6px; }
 .ret-consult { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
 .ret-consult-head { width: 100%; display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; background: var(--paper); border: none; font-family: inherit; text-align: left; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--ink); }
 .ret-consult-head small { font-size: 11px; color: var(--ink-mute); } .ret-consult-head i { font-style: normal; color: var(--ink-mute); font-size: 11px; }
@@ -7086,7 +7089,7 @@ function Locker({ active, setActive, user, unread }) {
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
-    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? "🚧" : "✍️", locked: _RET_ON(), tag: _RET_ON() ? "준비 중" : undefined },
+    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? (_isDevNext() ? "📝" : "🚧") : "✍️", locked: _RET_ON() && !_isDevNext(), tag: _RET_ON() ? (_isDevNext() ? "개발 뷰" : "준비 중") : undefined },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -7199,7 +7202,7 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
     { id: "inbox", label: "메모", icon: "📨", badge: unread },
     { id: "mypage", label: "사원증", icon: "🪪" },
   ];
-  const notesActive = active === "library" || active === "mynotes";
+  const notesActive = active === "library" || active === "mynotes" || (_RET_ON() && _isDevNext() && active === "test");
   const optionStyle = { display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 16px", background: "transparent", border: "none", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "var(--ink)" };
   return (
     <>
@@ -7225,6 +7228,15 @@ function MobileTabbar({ active, setActive, unread, isFulltime }) {
                 <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>{(_RET_ON() && _RET_SOON.mynotes) ? "진급 리포트 · PDF 보관함 · 사수 리포트는 준비 중" : _myNotesOpen(user) ? (_RET_ON() ? "진급 리포트 · 사수 리포트 · 표현 카드 복습" : _isNextFeature() ? "들어가서 복기하면 연봉협상에 유리해져요" : "내가 저장한 표현, 메모") : "Day " + MYNOTES_OPEN_DAY + "에 열려요"}</small>
               </span>
             </button>
+            {_RET_ON() && _isDevNext() && (
+              <button onClick={() => { setActive("test"); setNotesOpen(false); }} style={{ ...optionStyle, borderTop: "1px solid var(--line)" }}>
+                <span style={{ fontSize: 20 }}>📝</span>
+                <span style={{ display: "grid" }}>
+                  <b style={{ fontSize: 14 }}>분기 평가</b>
+                  <small style={{ fontSize: 11, color: "var(--ink-mute)" }}>진급 테스트 · Preview Ticket (개발 뷰)</small>
+                </span>
+              </button>
+            )}
           </div>
         </>
       )}
@@ -10289,8 +10301,10 @@ async function _retClaimGrants(email) {
 function _retInv(email) { return _retLoad("INV", email, {}); }
 function _retInvAdd(email, id, n) { const inv = _retInv(email); inv[id] = (Number(inv[id]) || 0) + (n || 1); _retSave("INV", email, inv); _retPing(); }
 function _retInvUse(email, id) { const inv = _retInv(email); if ((Number(inv[id]) || 0) <= 0) return false; inv[id] = inv[id] - 1; _retSave("INV", email, inv); _retPing(); return true; }
+// ★ 2026-10-16 (개발 뷰): Preview Ticket 판매 · 수습도 살 수 있음(사원 평가 전에 씀) · 1장만
+function _retPerkOf(it) { return (it && it.id === "preview" && _isDevNext()) ? { ...it, soon: false, rank: "probation", stack: false, desc: "응시일 전에 분기 평가를 먼저 봐요. ① 구성 보기 → ② 연습 1회 (본 평가와 같은 화면, 다른 단어). 1장만." } : it; }
 function _retBuy(email, id) {
-  const it = RET_PERKS.find(x => x.id === id); if (!it) return { ok: false, why: "없는 아이템" };
+  const it = _retPerkOf(RET_PERKS.find(x => x.id === id)); if (!it) return { ok: false, why: "없는 아이템" };
   if (!_retItemOpen(it)) return { ok: false, why: _retItemLockLabel(it) + " 살 수 있어요" };
   if (!it.stack && (Number(_retInv(email)[id]) || 0) > 0) return { ok: false, why: "이미 갖고 있어요" };
   if (!_retSpendWp(email, it.cost, id, it.name)) return { ok: false, why: "복지포인트가 모자라요" };
@@ -11065,6 +11079,62 @@ function RetReportsSoonPage({ setActive }) {
     </div>
   );
 }
+// ★ 2026-10-16 (개발 뷰): 분기 평가 탭. 화면은 promo/ 폴더의 정적 페이지를 iframe 으로 넣는다 (진급 테스트 15문항 · Preview Ticket 연습).
+//   상태: intern(잠김) · peek(Ticket ① 구성 보기) · practice(Ticket ② 연습) · open(응시 가능) · staff(사원, 대리 평가 잠김) · test(본 평가)
+//   결과는 일단 기기에만 저장 (__OD_PROMO_TEST_<email>). 서버 저장(M2 · M6)은 SQL 실행 후 다음 PR.
+function _qeKey(email) { return "__OD_PROMO_TEST_" + (email || "anon"); }
+function _qeLoad(email) { try { return JSON.parse(localStorage.getItem(_qeKey(email)) || "{}") || {}; } catch (e) { return {}; } }
+function _qeSave(email, v) { try { localStorage.setItem(_qeKey(email), JSON.stringify(v)); } catch (e) {} }
+function QuarterEvalDev({ setActive }) {
+  _useRetTick();
+  const { USER } = window.__SIM;
+  const email = _retEmail();
+  const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+  const rk = USER.rankId || "intern";
+  const evalDay = (rk === "intern" || rk === "probation") ? 30 : rk === "fulltime" ? 90 : 0;
+  const rec = _qeLoad(email);
+  const have = (Number(_retInv(email).preview) || 0) > 0;
+  const [mode, setMode] = React.useState(() => { try { if (sessionStorage.getItem("__OD_RET_PREVIEW") === "1") return "peek"; } catch (e) {} return null; });
+  const [h, setH] = React.useState(900);
+  const base = !evalDay ? "staff" : (rd >= evalDay && !(rec.main && rec.main.evalDay === evalDay)) ? "open" : (rk === "fulltime" ? "staff" : "intern");
+  const state = mode || base;
+  React.useEffect(() => {
+    const on = (e) => {
+      const d = (e && e.data) || {};
+      if (d.qe) {
+        if (d.qe.ph) setH(Math.max(400, d.qe.ph + 8));
+        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); r.ticket = Object.assign({}, r.ticket, { practiceStartAt: new Date().toISOString() }); _qeSave(email, r); }
+        if (d.qe.nav === "perk") setActive && setActive("perk");
+        if (d.qe.nav === "use") { if (_retInvUse(email, "preview")) { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString(), evalDay }; _qeSave(email, r); try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e2) {} setMode("peek"); } }
+        if (d.qe.start === "test") setMode("test");
+      }
+      if (d.ph && !d.qe) setH(Math.max(400, d.ph + 8));
+      if (d.promo) {
+        const r = _qeLoad(email); const at = new Date().toISOString();
+        const row = { at, evalDay, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {} };
+        if (d.promo.set === "main") { if (!r.main || r.main.evalDay !== evalDay) r.main = Object.assign({ firstTry: true }, row); }
+        else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
+        _qeSave(email, r);
+      }
+    };
+    window.addEventListener("message", on);
+    return () => window.removeEventListener("message", on);
+  }, [email, evalDay]);
+  const src = state === "test" ? "promo/test.html" : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + "#" + state);
+  const title = rk === "fulltime" ? "대리 진급 평가" : "사원 진급 평가";
+  return (
+    <div>
+      <div className="desk-header">
+        <div><div className="desk-eyebrow">OFFICE · 분기 평가 · 12F 인사팀 <span className="pag-dev">개발 뷰</span></div><h1 className="desk-title"><em>분기</em> 평가</h1></div>
+        <div className="desk-meta"><b>{USER.name}</b> · {USER.position}<br/>Day {rd}</div>
+      </div>
+      {state === "test" && <div className="qe-bar"><b>📝 {title}</b><span>15문항 · 5분 · 끝나면 결과가 여기 저장돼요</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {(state === "practice") && <div className="qe-bar"><b>🎟️ 아이템 사용 중</b><span>Preview Ticket ② 연습</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {rec.main && state !== "test" && <div className="qe-rec">지난 기록 · {title} 첫 시도 <b>{rec.main.ok} / {rec.main.total}</b>{rec.main.miss && rec.main.miss.length ? <> · 헷갈린 표현 {rec.main.miss.slice(0, 4).join(" · ")}</> : null} <small>{String(rec.main.at).slice(0, 10)}</small></div>}
+      <iframe key={src} className="qe-frame" title="분기 평가" src={src} style={{ height: h }} />
+    </div>
+  );
+}
 function RetComingSoonPage({ title, desc, setActive }) {
   return (
     <div>
@@ -11096,7 +11166,7 @@ function RetPerkShopPage({ setActive }) {
     const r = _retBuy(email, it.id);
     setMsg(r.ok ? "✅ " + it.name + " 구매했어요" + (it.id === "pdf" ? " · 아래 'PDF 받기' 를 누르면 인쇄 창이 열려요" : it.note ? " · " + it.note.replace(/^⚠️ /, "") : "") : "⚠️ " + r.why);
   };
-  const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} setActive("test"); };
+  const usePreview = () => { if (!_retInvUse(email, "preview")) return; try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e) {} try { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString() }; _qeSave(email, r); } catch (e) {} setActive("test"); };
   // 적립 방법 → 그 화면으로 데려가기 (심부름 이동과 같은 방식)
   const go = (nav, sel, evt) => {
     setActive(nav);
@@ -11143,8 +11213,8 @@ function RetPerkShopPage({ setActive }) {
       {msg && <div className="ret-shop-msg">{msg}</div>}
       <RetCodeBox email={email} />
       <div className="ret-shop-grid">
-        {RET_PERKS.map(it => {
-          const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
+        {RET_PERKS.map(it0 => {
+          const it = _retPerkOf(it0); const ok = _retItemOpen(it); const have = Number(inv[it.id]) || 0;
           const owned = !it.stack && have > 0;
           return (
             <div key={it.id} className={"ret-shop-item" + (!ok || it.soon ? " locked" : "")} data-shop={it.id}>
@@ -21646,7 +21716,7 @@ function App() {
         {active === "mynotes" && (_RET_ON() && _RET_SOON.mynotes) && <RetReportsSoonPage setActive={setActive} />}
         {false && <RetComingSoonPage title="성장 리포트" desc="진급 리포트와 사수 리포트가 쌓이고, 표현 카드를 기억 강도별로 복습하는 곳이에요. 지금은 준비 중이에요. 그동안 쓴 문장과 복기는 업무 노트에서 그대로 볼 수 있어요." setActive={setActive} />}
         {active === "mynotes" && !(_RET_ON() && _RET_SOON.mynotes) && ((_isNextFeature() && _myNotesOpen(USER)) ? <WordBookPage openScene={setScene} /> : <MyNotesPage openScene={setScene} />)}
-        {active === "test" && (_RET_ON() ? <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} /> : <TestPage />)}
+        {active === "test" && (_RET_ON() ? (_isDevNext() ? <QuarterEvalDev setActive={setActive} /> : <RetComingSoonPage title="분기 평가" desc="분기마다 김 팀장과 마주 앉는 협상 자리예요. 출근율 · EXP · 내 문장이 카드가 되고, 등급에 따라 호봉과 복지포인트가 올라가요. 지금은 준비 중이에요. 그때까지 카드를 쌓아두면 유리해요." setActive={setActive} />) : <TestPage />)}
         {active === "inbox" && <InboxPage openMemo={handleOpenMemo} />}
         {active === "perk" && _RET_ON() && <RetPerkShopPage setActive={setActive} />}
         {active === "mypage" && <MyPage setActive={setActive} setViewingDay={setViewingDay} />}
