@@ -8198,7 +8198,7 @@ function MilestoneCard() {
             </div>
             <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
               수습 30일을 완주하면 <b style={{ color: "var(--ink)" }}>정직원 전환</b>, 사원(Associate) 발령이에요.
-              네이비 새 사원증과 <b style={{ color: "var(--ink)" }}>📒 나만의 노트 인쇄·PDF 내보내기</b>가 보상으로 열려요.
+              네이비 새 사원증과 {_isDevNext() ? <b style={{ color: "var(--ink)" }}>📑 사원 진급 리포트</b> : <b style={{ color: "var(--ink)" }}>📒 나만의 노트 인쇄·PDF 내보내기</b>}{_isDevNext() ? "가 성장 리포트 탭에 발행돼요." : "가 보상으로 열려요."}
               단, <b style={{ color: "var(--ink)" }}>그날 학습을 마쳐야 다음 Day가 열려요.</b> 하루 하나씩 채우는 게 규칙이에요.
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginBottom: 12 }}>
@@ -8732,7 +8732,15 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       title: "시즌 2 단어는 더 묵직해요",
       body: "지금까지가 '알아듣는' 단어였다면, 이제는 회의를 주도하고 의사결정에 쓰는 표현이에요. escalate, own the room 같은.",
     },
-    {
+    // ★ 2026-10-16 (개발 뷰): '나만의 노트 인쇄·PDF' 보상 안내 대신, 진급 테스트를 보고 발행된 진급 리포트를 가리킨다.
+    _isDevNext() ? {
+      selector: isMobile ? ".m-tabbar .m-tab:nth-child(2)" : ".locker-link[data-nav='mynotes']",
+      placement: isMobile ? "top" : "right",
+      title: "📑 사원 진급 리포트가 발행됐어요",
+      body: isMobile
+        ? "진급 테스트까지 마친 30일 기록이 리포트 한 부로 나왔어요. 아래 노트 > 성장 리포트에서 봉투를 열면 출근부, 잘 쓴 문장, 사수 편지까지 볼 수 있어요."
+        : "진급 테스트까지 마친 30일 기록이 리포트 한 부로 나왔어요. 왼쪽 성장 리포트 탭에서 봉투를 열면 출근부, 잘 쓴 문장, 사수 편지까지 볼 수 있어요.",
+    } : {
       selector: ".locker-link, .m-tab",
       placement: "right",
       title: "🎁 보상: 나만의 노트 인쇄·PDF",
@@ -21155,7 +21163,7 @@ function PromotionCeremony({ realDay }) {
               color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 20, textAlign: "left",
             }}>
               <b style={{ color: "var(--ink)" }}>앞으로 30일, 이런 게 기다려요</b><br/>
-              📒 <b style={{ color: "var(--ink)" }}>나만의 노트 인쇄·PDF 내보내기</b> 지금 열림<br/>
+              {_isDevNext() ? <>📑 <b style={{ color: "var(--ink)" }}>사원 진급 리포트</b> 성장 리포트 탭에 발행됨<br/></> : <>📒 <b style={{ color: "var(--ink)" }}>나만의 노트 인쇄·PDF 내보내기</b> 지금 열림<br/></>}
               🌱 Day 37 정직원 첫 주 완주 · ⚡ Day 44 절반 돌파<br/>
               🔥 Day 51 50일 달성 · 🌟 Day 60 <b style={{ color: "var(--orange)" }}>특별 면담</b> (60일 누적 통계 + 다음 레벨 부서 평가)
             </div>
