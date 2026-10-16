@@ -11068,26 +11068,67 @@ function RetReportsSoonPage({ setActive }) {
 function _qeKey(email) { return "__OD_PROMO_TEST_" + (email || "anon"); }
 function _qeLoad(email) { try { return JSON.parse(localStorage.getItem(_qeKey(email)) || "{}") || {}; } catch (e) { return {}; } }
 function _qeSave(email, v) { try { localStorage.setItem(_qeKey(email), JSON.stringify(v)); } catch (e) {} }
+// 평가 기록: r.evals[평가일] = 첫 시도 결과. r.main 은 가장 최근 본 평가 (예전 기록 호환).
+function _qeDone(rec, day) { return !!((rec.evals && rec.evals[day]) || (rec.main && rec.main.evalDay === day)); }
+function _qeFor(rec, day) { if (!rec) return null; if (rec.evals && rec.evals[day]) return rec.evals[day]; return rec.main && (!rec.main.evalDay || rec.main.evalDay === day) ? rec.main : null; }
+// 지금 이 계정이 볼 평가: 사원(Day 30) → 대리(Day 90) → TF 수료(트랙 마지막 날)
+function _qeTarget(USER, rec) {
+  const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+  const rk = USER.rankId || "probation";
+  if (rk === "intern" || rk === "probation") return { kind: "p30", evalDay: 30, title: "사원 진급 평가", from: 1, to: 30 };
+  // ★ Day 90 은 진도 기준으로 이미 '대리'로 잡히지만(_progressRankId), 그날이 바로 대리 진급 평가 날이라 평가를 연다.
+  if (rk === "fulltime" || (rk === "senior" && rd <= 90 && !_qeDone(rec, 90))) return { kind: "p90", evalDay: 90, title: "대리 진급 평가", from: 31, to: 90, j: "s" };
+  let tfs = { track: null, done: [] }; try { tfs = _tfState() || tfs; } catch (e) {}
+  const done = tfs.done || []; const tr = tfs.track ? (tfs.track.id || tfs.track) : null;
+  const meta = (typeof TF_TRACKS !== "undefined" && TF_TRACKS.find(t => t.id === tr)) || null;
+  const anchor = 91 + 30 * done.length;
+  return { kind: "tf", evalDay: anchor + 29, title: "TF 수료 평가", from: anchor, to: anchor + 29, j: "t", tf: tr, tfName: meta ? meta.name : "" };
+}
+// 덜 익은 표현부터: 업무 노트 '기억 강도'가 낮을수록, 복습에서 '몰랐음'이 많을수록, 내 문장으로 안 써봤을수록 앞으로.
+//   TF 는 아직 기억 강도 카드가 없어서 그날 영작을 안 했으면 0, 사수가 고쳐줬으면 30, 잘 썼으면 60.
+function _qeWeakIds(USER, T) {
+  const tie = (n) => ((n * 37) % 11) / 100;
+  let rows = [];
+  if (T.kind === "tf") {
+    if (!T.tf) return [];
+    for (let n = 1; n <= 30; n++) {
+      const c = _loadCompletion(T.from + n - 1); const fb = c && c.feedback && c.feedback.aiFb;
+      const sc = !(c && c.sentence) ? 0 : (fb && fb.corrected && _wbNorm(fb.corrected) !== _wbNorm(c.sentence) ? 30 : 60);
+      rows.push({ id: T.tf + n, sc: sc + tie(n) });
+    }
+  } else {
+    const cards = _wbBuild(USER, SCENARIOS, _wbLoadRev(USER.email || "guest")).filter(c => c.day >= T.from && c.day <= T.to);
+    rows = cards.map(c => ({ id: "D" + c.day, sc: c.strength - 10 * ((c.rev && c.rev.lapses) || 0) - (c.used ? 0 : 5) + tie(c.day) }));
+  }
+  return rows.sort((a, b) => a.sc - b.sc).map(r => r.id);
+}
 function QuarterEvalDev({ setActive }) {
   _useRetTick();
   const { USER } = window.__SIM;
   const email = _retEmail();
   const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
-  const rk = USER.rankId || "intern";
-  // ★ Day 90 은 진도 기준으로 이미 '대리'로 잡히지만(_progressRankId), 그날이 바로 대리 진급 평가 날이라 평가를 연다.
-  const evalDay = (rk === "intern" || rk === "probation") ? 30 : (rk === "fulltime" || (rk === "senior" && rd <= 90)) ? 90 : 0;
   const rec = _qeLoad(email);
+  const T = _qeTarget(USER, rec);
+  const evalDay = T.evalDay;
   const have = (Number(_retInv(email).preview) || 0) > 0;
   const [mode, setMode] = React.useState(() => { try { if (sessionStorage.getItem("__OD_RET_PREVIEW") === "1") return "peek"; } catch (e) {} return null; });
   const [h, setH] = React.useState(900);
-  const base = !evalDay ? "staff" : (rd >= evalDay && !(rec.main && rec.main.evalDay === evalDay)) ? "open" : (evalDay === 90 ? "staff" : "intern");
+  const open = rd >= evalDay && !_qeDone(rec, evalDay) && (T.kind !== "tf" || !!T.tf);
+  const base = open ? "open" : T.kind === "p30" ? "intern" : T.kind === "p90" ? "staff" : "tf";
   const state = mode || base;
+  // 문제 고르기: 연습은 덜 익은 순서 16~30번째, 본 평가는 1~15번째 (연습에 나온 표현은 빼고). 시험 페이지가 유형을 나눠 담는다.
+  const weak = React.useMemo(() => _qeWeakIds(USER, T), [evalDay, T.tf, state]);
+  const tk = rec.ticket && rec.ticket.evalDay === evalDay ? rec.ticket : null;
+  const pracIds = (tk && tk.practiceIds) || weak.slice(15, 45);
+  const used = {}; ((tk && tk.practice && tk.practice.ids) || []).forEach(x => { used[String(x).split(".").pop()] = 1; });
+  const mainIds = weak.filter(id => !used[id]).slice(0, 30);
+  const qs = (ids) => "ids=" + ids.join(",") + (T.j ? "&j=" + T.j : "") + (T.tf ? "&tf=" + T.tf : "") + "&title=" + encodeURIComponent(T.title) + (T.kind === "tf" ? "&mode=t" : "");
   React.useEffect(() => {
     const on = (e) => {
       const d = (e && e.data) || {};
       if (d.qe) {
         if (d.qe.ph) setH(Math.max(400, d.qe.ph + 8));
-        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); r.ticket = Object.assign({}, r.ticket, { practiceStartAt: new Date().toISOString() }); _qeSave(email, r); }
+        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); r.ticket = Object.assign({ evalDay }, r.ticket, { practiceStartAt: new Date().toISOString(), practiceIds: pracIds }); _qeSave(email, r); }
         if (d.qe.nav === "perk") setActive && setActive("perk");
         if (d.qe.nav === "use") { if (_retInvUse(email, "preview")) { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString(), evalDay }; _qeSave(email, r); try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e2) {} setMode("peek"); } }
         if (d.qe.start === "test") setMode("test");
@@ -11095,26 +11136,30 @@ function QuarterEvalDev({ setActive }) {
       if (d.ph && !d.qe) setH(Math.max(400, d.ph + 8));
       if (d.promo) {
         const r = _qeLoad(email); const at = new Date().toISOString();
-        const row = { at, evalDay, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {} };
-        if (d.promo.set === "main") { if (!r.main || r.main.evalDay !== evalDay) r.main = Object.assign({ firstTry: true }, row); }
+        const row = { at, evalDay, kind: T.kind, title: T.title, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {}, ids: d.promo.ids || [] };
+        if (d.promo.set === "main") { r.evals = r.evals || {}; if (!r.evals[evalDay]) { r.evals[evalDay] = Object.assign({ firstTry: true }, row); r.main = r.evals[evalDay]; } }
         else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
         _qeSave(email, r);
       }
     };
     window.addEventListener("message", on);
     return () => window.removeEventListener("message", on);
-  }, [email, evalDay]);
-  const src = state === "test" ? "promo/test.html" : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + (evalDay === 90 ? "&r=senior" : "") + "#" + state);
-  const title = evalDay === 90 ? "대리 진급 평가" : "사원 진급 평가";
+  }, [email, evalDay, pracIds.join(",")]);
+  const tfName = T.tfName || "";
+  const src = state === "test" ? ("promo/test.html?" + qs(mainIds))
+    : ("promo/quarter-eval.html?dleft=" + Math.max(0, evalDay - rd) + "&have=" + (have ? 1 : 0) + (T.kind === "p90" ? "&r=senior" : T.kind === "tf" ? "&r=tf&tfn=" + encodeURIComponent(tfName) + (T.tf ? "" : "&notr=1") : "")
+      + "&pq=" + encodeURIComponent(qs(pracIds)) + "#" + state);
+  const title = T.title + (T.kind === "tf" && tfName ? " · " + tfName : "");
+  const last = rec.main && rec.main.total ? rec.main : null;
   return (
     <div>
       <div className="desk-header">
         <div><div className="desk-eyebrow">OFFICE · 분기 평가 · 12F 인사팀 <span className="pag-dev">개발 뷰</span></div><h1 className="desk-title"><em>분기</em> 평가</h1></div>
         <div className="desk-meta"><b>{USER.name}</b> · {USER.position}<br/>Day {rd}</div>
       </div>
-      {state === "test" && <div className="qe-bar"><b>📝 {title}</b><span>15문항 · 5분 · 끝나면 결과가 여기 저장돼요</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
-      {(state === "practice") && <div className="qe-bar"><b>🎟️ 아이템 사용 중</b><span>Preview Ticket ② 연습</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
-      {rec.main && state !== "test" && <div className="qe-rec">지난 기록 · {title} 첫 시도 <b>{rec.main.ok} / {rec.main.total}</b>{rec.main.miss && rec.main.miss.length ? <> · 헷갈린 표현 {rec.main.miss.slice(0, 4).join(" · ")}</> : null} <small>{String(rec.main.at).slice(0, 10)}</small></div>}
+      {state === "test" && <div className="qe-bar"><b>📝 {title}</b><span>{T.kind === "tf" ? "15문항 + 롤플레이 8턴" : "15문항 · 5분"} · 덜 익은 표현부터 나와요 · 끝나면 결과가 여기 저장돼요</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {(state === "practice") && <div className="qe-bar"><b>🎟️ 아이템 사용 중</b><span>Preview Ticket ② 연습 · 본 평가와 다른 표현</span><button className="btn btn-ghost btn-mini" onClick={() => setMode(null)}>나가기</button></div>}
+      {last && state !== "test" && <div className="qe-rec">지난 기록 · {last.title || "사원 진급 평가"} 첫 시도 <b>{last.ok} / {last.total}</b>{last.miss && last.miss.length ? <> · 헷갈린 표현 {last.miss.slice(0, 4).join(" · ")}</> : null} <small>{String(last.at).slice(0, 10)}</small></div>}
       <iframe key={src} className="qe-frame" title="분기 평가" src={src} style={{ height: h }} />
     </div>
   );
@@ -11669,7 +11714,7 @@ function _agHTML(r, D, ai, X) {
   const lv = (n) => n <= 0 ? "" : n === 1 ? "h1" : n === 2 ? "h2" : n === 3 ? "h3" : "h4";
   const heat = '<div class="w s2"><h4>하루하루 <small>진할수록 그날 많이</small></h4><div class="heat">' + D.weeks.map(w => w.days.map(x => '<i class="' + (x.iso < D.dates[0] ? "no" : lv(x.n)) + '" title="' + _agMD(x.iso) + ' · ' + x.n + '개"></i>').join("")).join("") + '</div><div class="legend2"><span><i style="background:rgba(255,255,255,.7)"></i>쉰 날</span><span><i style="background:#F6B999"></i>1개</span><span><i style="background:#EE8A55"></i>2개</span><span><i style="background:#D85A2A"></i>3개</span><span><i style="background:#9C3F18"></i>4개 이상</span></div></div>';
   // 진급 테스트 게이지 (새 테스트 결과, 없으면 예전 승급 테스트 점수)
-  let gv = null; try { const t = _qeLoad(_retEmail()); if (t && t.main && t.main.total) gv = [t.main.ok, t.main.total]; } catch (e) {}
+  let gv = null; try { const t = _qeFor(_qeLoad(_retEmail()), D.to); if (t && t.total) gv = [t.ok, t.total]; } catch (e) {}
   if (!gv && rank === "사원") { const sc = Number(_wbUser().levelupTestScore); if (sc >= 0 && _wbUser().levelupTestScore != null) gv = [sc, 100]; }
   const gauge = gv ? '<div class="w"><h4>진급 테스트</h4><div class="gauge"><svg viewBox="0 0 170 96"><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="14" stroke-linecap="round"/><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + (219.9 * Math.min(1, gv[0] / Math.max(1, gv[1]))).toFixed(1) + ' 219.9"/></svg><b>' + gv[0] + '<small style="font-size:14px;color:var(--ink2)"> / ' + gv[1] + '</small></b></div></div>' : '';
   // 모은 표현 한 줄
@@ -11725,7 +11770,7 @@ function _agHTML(r, D, ai, X) {
   const cm = A.comments || {};
   const cards = D.best.length ? '<section class="mod w3"><h3>잘 쓴 문장 <small>' + E(nick) + '씨가 직접 쓴 문장</small></h3><div class="cards">' + D.best.map(b => { const c = cm[b.day] || cm[String(b.day)] || b.praise; return '<article class="card"><div class="top"><span>DAY ' + b.day + ' · ' + E(String(b.word).toUpperCase()) + '</span><span>' + _agMD(b.date).split(".").map(x => x.padStart(2, "0")).join(".") + '</span></div><div class="en">"' + E(b.text) + '"</div>' + (b.fixed ? '<div class="fx"><b>사수가 다듬은 문장</b> ' + E(b.fixed) + '</div>' : '') + (c ? '<div class="pr"><span class="cm2"><span class="av">' + E(ini) + '</span><span><small>사수 코멘트</small>' + E(c) + '</span></span></div>' : '') + '</article>'; }).join("") + '</div></section>' : '';
   // 진급 테스트
-  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = t.main; } catch (e) {}
+  let tres = null; try { tres = _qeFor(_qeLoad(_retEmail()), D.to); } catch (e) {}
   const testSec = '<section class="mod w2"><h3>진급 테스트 <small>' + E(rank) + ' 진급 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " 진급") + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
   // 그때 한 말
   const saidSec = XE.said.length ? '<section class="mod"><h3>그때 한 말</h3>' + XE.said.map(x => '<div class="field"><div class="lb">' + E(x.label) + '</div><div class="q">' + E(x.text) + '</div></div>').join("") + (A.reply ? '<div class="reply2"><span class="av">' + E(ini) + '</span><div><small>사수 답장 · 사수 ' + E(mentor) + '</small><p>' + E(A.reply) + '</p></div></div>' : '') + '</section>' : '';
@@ -11742,7 +11787,7 @@ function _agEnsureAI(r, D, onDone, X) {
   if (r.ai || _agAsking[r.id] || !(window.OD && window.OD.enabled && window.OD.getMentorAiFeedback)) return;
   _agAsking[r.id] = true;
   const { USER, CHARACTERS } = window.__SIM; const rank = r.rankLabel || "사원";
-  let tres = null; try { const t = _qeLoad(_retEmail()); if (t && t.main) tres = { ok: t.main.ok, total: t.main.total }; } catch (e) {}
+  let tres = null; try { const t = _qeFor(_qeLoad(_retEmail()), D.to); if (t) tres = { ok: t.ok, total: t.total }; } catch (e) {}
   const payload = { name: _agNick(USER.name), rank, period: "Day " + D.from + "~" + D.to, total: D.total, done: D.doneN, studyDays: D.studyDays, streak: D.streak, streakFrom: D.sFrom, streakTo: D.sTo,
     maxN: D.maxN, maxDate: D.maxDate, bestMonth: D.bestMonth, bestMonthDays: D.bestMonthDays, gapDays: D.gapDays, gapFrom: D.gapFrom, gapBack: D.gapBack, firstDate: D.dates[0] || "", lastDate: D.dates[D.dates.length - 1] || "",
     sentences: D.best.concat(D.sentences.filter(s => D.best.indexOf(s) < 0)).slice(0, 6).map(s => ({ day: s.day, word: s.word, text: s.text, fixed: s.fixed })), words: D.words.map(w => w.word), sentenceCount: D.sentences.length, test: tres };
