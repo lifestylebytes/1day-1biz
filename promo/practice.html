@@ -218,6 +218,9 @@ html.pcfit .wrap{width:1160px;max-width:none}
 .psc{font-size:12px;font-weight:800;color:#5C4A36;white-space:nowrap}.psc b{color:#D85A2A}.pmiss{display:flex;gap:4px;flex-wrap:wrap}.pmiss span{font-size:11px;font-weight:800;border:1.5px solid #C0392B;color:#C0392B;border-radius:999px;padding:1px 8px}
 .phead{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px;font-size:12px;font-weight:800;color:#8A7964}.ptag{color:#fff;border-radius:999px;padding:3px 10px}.pnav button{border:1.5px solid #C9BBA0;border-radius:8px;padding:3px 10px;background:#fff;font-weight:800;cursor:pointer;margin-left:4px}
 #pstage>[hidden],#pstage [hidden]{display:none!important}
+.rtry{background:#FFF4EC;border:1.5px dashed #E0562B;border-radius:12px;padding:10px 14px;margin:0 0 10px;font-size:13.5px;color:#7A2E12;line-height:1.55}.rtry b{color:#E0562B;font-weight:900;margin-right:6px}
+.gf .gres.again{background:#FFE3E3;color:#B0291A}.gf.shake{animation:rshk .35s}@keyframes rshk{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#pcells i.fx{box-shadow:inset 0 0 0 2px #2E7D4F}
 .pfoot{display:flex;justify-content:flex-end;padding:10px 0 0}.fbk .rev{display:flex;justify-content:flex-end}
 .pres{background:#fff;border:1.5px solid #E2D6BC;border-radius:16px;padding:22px}.pres-in{display:grid;gap:8px;justify-items:start}.pres small{font-size:12px;font-weight:900;color:#D85A2A}.pres b{font-size:28px;font-weight:900}.pres p{margin:0;font-size:14px}.pres .sv{font-size:12px;color:#8A7964}
 #pstage .ptabs{display:none}
@@ -790,14 +793,14 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
       var ko=solved?'<span class="ko">해석 · '+esc(o.ko)+'</span>':'';
       return '<button class="opt'+(isOk?' ok':(show?' no':''))+'" data-k="'+k+'"'+((solved||w)?' disabled':'')+'><span><span class="k">'+String.fromCharCode(65+pos)+'</span>'+hl(o.t)+'</span>'+why+ko+'</button>';}).join('');
   }
-  function missNote(S){return S.missedNow?'<div class="miss">이 문제는 <b>마지막에 한 번 더</b> 나와요. 정답과 해설을 보고 넘어가요.</div>':'';}
+  function missNote(S){return S.missedNow?'<div class="miss">이 문제는 <b>다 풀고 나서 한 번 더</b> 나와요. 정답과 해설을 보고 넘어가요.</div>':'';}
   function scoreLine(S,n){var f=n-S.miss.length;return '<div class="score">첫 시도 <b>'+f+'/'+n+'</b>'+(S.miss.length?' · 틀린 '+S.miss.length+'문제 다시 풀어서 <b>100점</b>':' · 한 번에 <b>100점</b>')+'</div>';}
   function retryIntro(S,n){return '<div class="endc"><b>첫 시도 '+(n-S.miss.length)+'/'+n+' · 틀린 '+S.miss.length+'문제만 다시</b><p>정답을 고를 때까지 몇 번이든 다시 고를 수 있어요. 끝나면 100점으로 저장돼요. 선택지 순서는 바뀌어요.</p></div><div class="rev"><span class="note2">처음 점수와 문항별 답은 따로 저장돼요</span><button class="btn" data-retry>틀린 문제 다시 풀기 →</button></div>';}
 
   // ───── 사내 메신저 ─────
   function Msg(root,cfg){
     var S,N=cfg.turns.length;
-    function reset(){S={i:0,feed:(cfg.pre||[]).concat(cfg.turns[0].npc.map(function(m){return {npc:m};})),state:'ask',wrong:{},ko:{},typing:false,react:null,miss:[],missedNow:false,retry:false,q:[],ord:null};render();}
+    function reset(){S={i:0,feed:(cfg.pre||[]).concat(cfg.turns[0].npc.map(function(m){return {npc:m};})),state:'ask',wrong:{},ko:{},typing:false,react:null,miss:[],missedNow:false,retry:!!cfg.retryMode,q:[],ord:cfg.retryMode?rot(cfg.turns[0].options.length):null};render();}
     function item(it,ix){
       if(it.pin) return '<div class="pinned"><b>📌 고정됨 · '+esc(it.pin.t)+'</b>'+hl(it.pin.text)+'</div>';
       if(it.sep) return '<div class="daysep'+(it.hot?' hot':'')+'">'+esc(it.sep)+'</div>';
@@ -815,9 +818,9 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
       if(S.state==='end') comp+=scoreLine(S,N)+'<div class="endc"><b>'+cfg.end.title+'</b><p>'+cfg.end.text+'</p></div><div class="rev"><span></span><button class="btn ghost" data-reset>처음부터 다시</button></div>';
       else if(S.state==='retryIntro') comp+=retryIntro(S,N);
       else if(!S.typing){
-        var lbl=S.retry?'다시 풀기 · '+(S.miss.length-S.q.length+1)+'/'+S.miss.length:'보낼 답장 고르기 · '+(S.i+1)+'/'+N;
+        var lbl=cfg.retryMode?'다시 풀기 · 첫 풀이에서 틀린 문제':S.retry?'다시 풀기 · '+(S.miss.length-S.q.length+1)+'/'+S.miss.length:'보낼 답장 고르기 · '+(S.i+1)+'/'+N;
         comp+='<div class="lbl"><span>'+lbl+'</span><span>'+(S.state==='solved'?(S.missedNow?'정답 확인':'전송됨 · 나머지 답도 확인해요'):(S.retry?'맞힐 때까지 다시 골라도 돼요':'3개 중 하나'))+'</span></div>'+optsHTML(t,S)+missNote(S);
-        if(S.state==='solved') comp+='<div class="rev"><span class="note2">세 답장 모두 해석이 열렸어요</span><button class="btn" data-next>'+(S.retry?(S.q.length>1?'다음 문제 →':'마무리 →'):(cfg.nextLabel&&S.i>=N-1?cfg.nextLabel():(S.i<N-1?'다음 메시지 →':'마무리 →')))+'</button></div>';
+        if(S.state==='solved') comp+='<div class="rev"><span class="note2">세 답장 모두 해석이 열렸어요</span><button class="btn" data-next>'+((S.retry&&!cfg.retryMode)?(S.q.length>1?'다음 문제 →':'마무리 →'):(cfg.nextLabel&&S.i>=N-1?cfg.nextLabel():(S.i<N-1?'다음 메시지 →':'마무리 →')))+'</button></div>';
         else comp+='<div class="box">메시지 보내기… (위 답장 중 하나를 골라요)</div>';}
       comp+='</div>';
       root.innerHTML=rail+'<div class="main">'+head+thr+comp+'</div>';
@@ -1266,10 +1269,26 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
 
   if(window.PRACTICE){(function(){var posted=false,D=window.PRACTICE,stage=document.getElementById('pstage'),roots=[],ans={},cur=0,mode=window.PMODE||'s',done=false;
     var N=D.types.length,PS=D.types.indexOf('F'),PL=N-PS,TFI=N;
+    // ★ 2026-10-17: 다 풀면 바로 마무리 대신, 첫 풀이에서 틀린 문제(메신저 · 빈칸)를 '틀린 문제 다시 풀기'로 한 번 더. 맞힐 때까지 다시 고를 수 있다.
+    //   점수는 첫 풀이 그대로. 첫 풀이 결과는 다 풀자마자 저장(stage first), 다시 풀기까지 끝나면 다시 맞힌 표현을 더해 한 번 더(stage final).
+    var rq=null,retried=false,fixed={},postedFirst=false,LIM=PS<0?N:PS;
+    function wrongs(){var w=[];for(var q=0;q<N;q++){if(ans[q]!==false)continue;if(q<LIM){if(D.items[q]&&(D.items[q].kind==='msg'||D.items[q].kind==='card'))w.push(q);}else if(!passed[q-PS])w.push(q);}return w;}
+    function panelDoneNow(){return !!(fixed[cur]&&pRoot.querySelector('.endc'));}
     function total(){return mode==='t'?N+1:N;}
     function allDone(){for(var q=0;q<total();q++)if(ans[q]==null)return false;return true;}
     function nextUnanswered(from){for(var k=1;k<=total();k++){var q=(from+k)%total();if(ans[q]==null)return q;}return -1;}
-    window.PNEXT=function(){return allDone()?'마무리 →':'다음 문제 →';};
+    window.PNEXT=function(){if(rq)return rq.length>1?'다음 틀린 문제 →':'마무리 →';if(!allDone())return '다음 문제 →';return (!retried&&wrongs().length)?'틀린 문제 다시 풀기 →':'마무리 →';};
+    function remount(q){
+      if(PS>=0&&q>=PS&&q<N){var pe=roots[PS];if(!pe.querySelector('.rtry')){var nt=document.createElement('div');nt.className='rtry';nt.innerHTML='<b>다시 풀기</b>첫 풀이에서 도장을 못 받은 심사위원이에요. 맞힐 때까지 다시 골라도 돼요. 점수는 첫 풀이 그대로 저장돼요.';pe.insertBefore(nt,pe.firstChild);}
+        jIdx=q-PS;retryP=true;pend=[jIdx];mountPanel();return;}
+      var it=D.items[q],old=roots[q],el=document.createElement('div');el.dataset.q=q;el.hidden=true;
+      el.innerHTML='<div class="rtry"><b>다시 풀기</b>첫 풀이에서 틀린 문제예요. 맞힐 때까지 다시 골라도 돼요. 점수는 첫 풀이 그대로 저장돼요.</div>';
+      if(it.kind==='msg'){var box=document.createElement('div');box.className='app';box.dataset.kind=it.k;el.appendChild(box);var c=Object.assign({},it.cfg,{retryMode:true});Msg(box,c);}
+      else{var w=document.createElement('div');w.innerHTML=it.html;el.appendChild(w);}
+      old.parentNode.replaceChild(el,old);roots[q]=el;}
+    function post(stage){var ok=0,no=0,miss=[];for(var q=0;q<total();q++){var a=ans[q];if(a!=null){a?ok++:(no++,miss.push(D.words[q]));}}
+      var fx=Object.keys(fixed).map(function(q){return D.words[q];});
+      try{parent.postMessage({promo:{set:D.set,ids:D.ids,title:window.PTITLE,mode:mode,ok:ok,no:no,total:total(),miss:miss,ans:ans,stage:stage,fixed:fx}},'*');}catch(e){}}
     D.items.forEach(function(it,n){var el=document.createElement('div');el.hidden=true;stage.appendChild(el);
       if(it.kind==='msg'){el.className='app';el.dataset.kind=it.k;el.dataset.q=n;var c=it.cfg;c.counter=function(){return (n+1)+'/'+N;};c.nextLabel=window.PNEXT;c.turns.forEach(function(t){t.options=t.options.map(function(o){return O(o.t,o.ko,o.ok,o.tag,o.note);});});Msg(el,c);}
       else if(it.kind==='card'){el.innerHTML=it.html;el.dataset.q=n;}
@@ -1280,27 +1299,39 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
     var tft=document.createElement('div');tft.className='pfoot';tft.hidden=true;tft.innerHTML='<button class="btn" data-padv>마무리 →</button>';tfEl.appendChild(tft);
     var res=document.createElement('div');res.hidden=true;res.className='pres';stage.appendChild(res);
     function idxRoot(q){return q===TFI?tfEl:(q>=PS?roots[PS]:roots[q]);}
-    function advance(){if(allDone()){done=true;draw();return;}var q=nextUnanswered(cur);cur=q<0?0:q;draw();}
+    function advance(){
+      if(rq){if(!fixed[rq[0]])return;rq.shift();if(rq.length){cur=rq[0];remount(cur);draw();}else{rq=null;done=true;draw();}return;}
+      if(allDone()){var w=wrongs();if(w.length&&!retried){retried=true;rq=w;cur=rq[0];remount(cur);draw();window.scrollTo(0,0);return;}done=true;draw();return;}var q=nextUnanswered(cur);cur=q<0?0:q;draw();}
     function draw(){roots.concat([tfEl,res]).forEach(function(r){r.hidden=true;});
       var ok=0,no=0,miss=[];for(var q=0;q<total();q++){var a=ans[q];if(a!=null){a?ok++:(no++,miss.push(D.words[q]));}}
-      if(done&&!posted){posted=true;try{parent.postMessage({promo:{set:D.set,ids:D.ids,title:window.PTITLE,mode:mode,ok:ok,no:no,total:total(),miss:miss,ans:ans}},'*');}catch(e){}}
-      if(done){res.hidden=false;res.innerHTML='<div class="pres-in"><small>'+(D.set==='main'?'평가 끝 · '+window.PTITLE:'연습 끝 · '+(mode==='t'?'TF 연습':window.PTITLE.replace(' 진급 평가','')+' 연습'))+'</small><b>'+ok+' / '+total()+' 맞힘</b><p>'+(miss.length?'헷갈린 표현 · '+miss.map(esc).join(' · '):'헷갈린 표현이 없어요.')+'</p><p class="sv">'+(D.set==='main'?'첫 시도 점수와 문항별 답이 저장되고 진급 리포트로 이어져요.':'점수와 틀린 문항은 저장돼요. 본 평가 날 같은 표현이 나와도 다른 유형으로 나와요.')+'</p>'+(D.set==='main'?'':'<button class="btn ghost" data-again>처음부터 다시</button>')+'</div>';}
+      if(allDone()&&!postedFirst&&wrongs().length){postedFirst=true;post('first');}
+      if(done&&!posted){posted=true;post('final');}
+      if(done){res.hidden=false;res.innerHTML='<div class="pres-in"><small>'+(D.set==='main'?'평가 끝 · '+window.PTITLE:'연습 끝 · '+(mode==='t'?'TF 연습':window.PTITLE.replace(' 진급 평가','')+' 연습'))+'</small><b>'+ok+' / '+total()+' 맞힘</b><p>'+(miss.length?'헷갈린 표현 · '+miss.map(esc).join(' · '):'헷갈린 표현이 없어요.')+'</p>'+(Object.keys(fixed).length?'<p>틀린 '+Object.keys(fixed).length+'문제는 다시 풀어서 모두 맞혔어요.</p>':'')+'<p class="sv">'+(D.set==='main'?'첫 시도 점수와 문항별 답이 저장되고 진급 리포트로 이어져요.':'점수와 틀린 문항은 저장돼요. 본 평가 날 같은 표현이 나와도 다른 유형으로 나와요.')+'</p>'+(D.set==='main'?'':'<button class="btn ghost" data-again>처음부터 다시</button>')+'</div>';}
       else idxRoot(cur).hidden=false;
-      var ty=cur===TFI?'G':D.types[cur];var tg=document.getElementById('ptag');tg.textContent=done?(D.set==='main'?'평가 결과':'연습 결과'):ty+' · '+(cur===TFI?'TF 수료 롤플레이':D.tn[cur]);tg.style.background=done?'#241B13':D.col[ty];
+      var ty=cur===TFI?'G':D.types[cur];var tg=document.getElementById('ptag');tg.textContent=done?(D.set==='main'?'평가 결과':'연습 결과'):(rq?'다시 풀기 · ':'')+ty+' · '+(cur===TFI?'TF 수료 롤플레이':D.tn[cur]);tg.style.background=done?'#241B13':D.col[ty];
       var pj=(typeof jIdx==='number')?jIdx:0;
-      document.getElementById('ppg').textContent=done?'':(cur>=PS&&cur<N?(PS+1+pj)+' / '+N+' · 심사위원 '+(pj+1)+'/'+PL:(cur===TFI?'롤플레이 8턴':(cur+1)+' / '+N));
-      var cells='';for(var q=0;q<total();q++){var t=q===TFI?'G':D.types[q],a=ans[q],c=a==null?'':(a?'ok':'no');cells+='<i data-q="'+q+'" class="'+c+(!done&&q===cur?' cur':'')+'" style="--c:'+D.col[t]+'"></i>';}
+      document.getElementById('ppg').textContent=done?'':rq?'틀린 문제 '+(wrongs().length-rq.length+1)+' / '+wrongs().length:(cur>=PS&&cur<N?(PS+1+pj)+' / '+N+' · 심사위원 '+(pj+1)+'/'+PL:(cur===TFI?'롤플레이 8턴':(cur+1)+' / '+N));
+      var cells='';for(var q=0;q<total();q++){var t=q===TFI?'G':D.types[q],a=ans[q],c=a==null?'':(a?'ok':'no');cells+='<i data-q="'+q+'" class="'+c+(fixed[q]?' fx':'')+(!done&&q===cur?' cur':'')+'" style="--c:'+D.col[t]+'"></i>';}
       document.getElementById('pcells').innerHTML=cells;document.getElementById('pok').textContent=ok;document.getElementById('pno').textContent=no;
-      roots[PS].querySelector('.pfoot').hidden=!(PS<N&&(function(){for(var q=PS;q<N;q++)if(ans[q]==null)return false;return true;})());
+      roots[PS].querySelector('.pfoot').hidden=rq?!(cur>=PS&&cur<N&&panelDoneNow()):!(PS<N&&(function(){for(var q=PS;q<N;q++)if(ans[q]==null)return false;return true;})());
       var pf=roots[PS].querySelector('.pfoot button');if(pf)pf.textContent=window.PNEXT();
       tft.hidden=ans[TFI]==null;tft.querySelector('button').textContent=window.PNEXT();
       try{parent.postMessage({ph:document.documentElement.scrollHeight},'*');}catch(e){}}
     // 심사위원 화면: 지금 질문하는 심사위원 = 지금 문항
     setInterval(function(){if(!done&&cur>=PS&&cur<N&&typeof jIdx==='number'&&PS+jIdx!==cur&&!retryP){cur=PS+jIdx;draw();}
-      if(ans[TFI]==null&&tRoot.querySelector('.endc')){ans[TFI]=true;draw();}},400);
+      if(ans[TFI]==null&&tRoot.querySelector('.endc')){ans[TFI]=true;draw();}
+      if(rq&&cur>=PS&&cur<N){var pf=roots[PS].querySelector('.pfoot'),sh=panelDoneNow();if(pf.hidden===sh){pf.hidden=!sh;pf.querySelector('button').textContent=window.PNEXT();}}},400);
     // 채점: 고른 보기 글자로 문항 찾기
     document.addEventListener('click',function(e){var o=e.target.closest('#pstage .opt');if(!o||o.disabled)return;var t=(o.textContent||'').replace(/^\s*[ABC]\s*/,'').replace(/\s+/g,' ').trim().toLowerCase();
-      for(var k in D.map){if(t.indexOf(k.slice(0,40))===0){var m=D.map[k];if(ans[m[0]]==null)ans[m[0]]=m[1];break;}}setTimeout(draw,30);},true);
+      for(var k in D.map){if(t.indexOf(k.slice(0,40))===0){var m=D.map[k];if(ans[m[0]]==null)ans[m[0]]=m[1];if(rq&&m[0]===rq[0]&&m[1])fixed[m[0]]=true;break;}}setTimeout(draw,30);},true);
+    // 다시 풀기 중 빈칸 문제: 틀리면 정답을 안 보여주고 다시 하게 한다
+    function gn(x){return (x||'').toLowerCase().replace(/[^a-z0-9' -]/g,'').replace(/\s+/g,' ').trim();}
+    function gOk(c,v){return c.dataset.ans.split('|').some(function(a){return gn(a)===gn(v);});}
+    function gAgain(c,btn){c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');if(btn&&btn.dataset.gpick){btn.disabled=true;btn.classList.add('wrong');}
+      var r=c.querySelector('.gres');r.hidden=false;r.className='gres again';r.textContent='아쉬워요. 정답이 아니에요. 다시 해보세요.';}
+    document.addEventListener('click',function(e){if(!rq)return;var c=e.target.closest('#pstage .gf');if(!c||c.dataset.done)return;
+      var p=e.target.closest('[data-gpick]'),k=e.target.closest('[data-gchk]'),v=null;if(p)v=p.dataset.gpick;else if(k){v=c.querySelector('input').value;if(!gn(v))return;}else return;
+      if(gOk(c,v)){fixed[rq[0]]=true;return;}e.stopImmediatePropagation();e.preventDefault();gAgain(c,p);},true);
     // 메신저 문항: 다음 문제 버튼은 연습 순서대로 넘기기
     document.addEventListener('click',function(e){var b=e.target.closest('#pstage .app [data-next],#pstage .app [data-retry]');if(!b)return;e.stopPropagation();e.preventDefault();advance();},true);
     function toks(x){return x.split(/\s+/).filter(Boolean);}
@@ -1312,7 +1343,7 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
       var fx=b.map(function(t,j){var h=esc(t);if(!kb[j])return '<mark class="fx">'+h+'</mark>';return isW(t)?'<span class="lw">'+h+'</span>':h;}).join(' ').replace(/<\/mark> <mark class="fx">/g,' ').replace(/<\/span> <span class="lw">/g,' ');
       var mn=a.map(function(t,i){var h=esc(t);return ka[i]?h:'<del>'+h+'</del>';}).join(' ');
       return {fx:fx,mn:mn,cnt:(fx.match(/<mark/g)||[]).length};}
-    document.addEventListener('click',function(e){var c=e.target.closest('#pcells i');if(c){done=false;cur=+c.dataset.q;draw();return;}
+    document.addEventListener('click',function(e){if(rq&&(e.target.closest('#pcells i')||e.target.closest('[data-pm]')))return;var c=e.target.closest('#pcells i');if(c){done=false;cur=+c.dataset.q;draw();return;}
       var b=e.target.closest('[data-pm]');if(b){done=false;cur=(cur+(+b.dataset.pm)+total())%total();if(+b.dataset.pm>0&&cur>PS&&cur<N)cur=N<total()?N:0;if(+b.dataset.pm<0&&cur>PS&&cur<N)cur=PS;draw();return;}
       if(e.target.closest('[data-padv]')){advance();return;}
       if(e.target.closest('[data-again]')){location.reload();return;}

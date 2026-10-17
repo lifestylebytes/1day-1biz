@@ -1304,6 +1304,9 @@ span.ret-hud-item { cursor: default; }
 .ag-env-new { position: absolute; right: 10px; top: 10px; background: var(--orange); color: #fff; font-size: 9.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
 .ag-env-open { font-size: 11px; font-weight: 800; color: var(--orange); margin-top: 10px; display: inline-block; }
 .ag-env.on .ag-env-open::after { content: " · 펼쳐짐"; }
+.ag-env-dl { display: inline-block; margin-top: 10px; font-size: 11.5px; font-weight: 800; color: #fff; background: var(--orange); padding: 5px 12px; border-radius: 999px; box-shadow: 0 6px 12px -8px rgba(216,90,42,.8); }
+.ag-env.pdf:hover .ag-env-dl { background: var(--stamp-red); }
+.ag-env.pdf .ag-env-stamp { font-size: 11px; letter-spacing: .04em; }
 .ag-env.next { border-style: dashed; background: transparent; cursor: default; }
 .ag-env.next .ag-env-t { color: var(--ink-mute); }
 .ag-sheet-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; font-size: 12px; color: var(--ink-mute); flex-wrap: wrap; } .ag-sheet-bar b { color: var(--ink); }
@@ -11072,7 +11075,7 @@ function RetReportsSoonPage({ setActive }) {
           <span style={{ flex: 1, minWidth: 200 }}>사수가 내 기록을 읽고 써주는 리포트예요. <b>준비 중</b>이라 열리면 사내 게시판 공지로 알려드려요. 그동안 쓴 문장과 복기는 <b>업무 노트</b>에서 그대로 볼 수 있어요.</span>
           {setActive && <button className="btn btn-ghost btn-mini" onClick={() => setActive("library")}>업무 노트 →</button>}
         </div>
-        {legacy.length > 0 && (
+        {legacy.length > 0 && !_isDevNext() && (
           <>
             <div className="ret-growth-head" style={{ marginTop: 22 }}>📋 예전 AI 성장 리포트 <small>{legacy.length}건 · 발급된 그대로</small></div>
             {legacy.map(r => { const ms = r.milestone && _REPORT_MILESTONES.find(m => m.id === r.milestone); return (
@@ -11093,7 +11096,22 @@ function RetReportsSoonPage({ setActive }) {
         {pdfs.length > 0 && (
           <>
             <div className="ret-growth-head" style={{ marginTop: 22 }}>📄 받은 단어 모음 PDF <small>그때 그 PDF 그대로 다시</small></div>
+            {_isDevNext() ? (
+              // ★ 2026-10-17 (개발 뷰): 진급 리포트 봉투 카드와 같은 모양. 받은 날짜 · Day 몇까지 · 표현 몇 개 + 다시 받기 버튼
+              <div className="ag-env-row">
+                {pdfs.slice().reverse().map((p, i) => { const iso = _agKST(String(p.at || "")); const dd = Number(p.day) || 0; return (
+                  <button key={p.at} type="button" className="ag-env pdf" onClick={() => { try { _odPrintHtml(p.html); } catch (e) {} }}>
+                    {i === 0 && pdfs.length > 1 && <span className="ag-env-new">최근</span>}
+                    <div className="ag-env-eb">WORD BOOK PDF</div>
+                    <div className="ag-env-t">{dd ? "Day 1–" + dd + " 단어 모음" : (p.title || "내 단어 모음")}</div>
+                    <div className="ag-env-d">{iso ? iso.replace(/-/g, ".") + " 받음" : "받은 날짜 모름"}{p.n ? " · 표현 " + p.n + "개" : ""}</div>
+                    <span className="ag-env-dl">다시 받기 ↓</span>
+                    <span className="ag-env-stamp">PDF</span>
+                  </button>); })}
+              </div>
+            ) : (
             <div className="ret-shop-pdfs">{pdfs.map(p => <button key={p.at} className="ret-shop-pdf" onClick={() => { try { _odPrintHtml(p.html); } catch (e) {} }}>{String(p.at).slice(0, 10)} · {p.title || "내 단어 모음"} · 다시 받기</button>)}</div>
+            )}
           </>
         )}
       </div>
@@ -11112,7 +11130,7 @@ function _qeSave(email, v) { try { localStorage.setItem(_qeKey(email), JSON.stri
 function _qeSync(email, day, row) {
   try {
     if (!email || !row || !window.OD || !window.OD.enabled || !window.OD.saveTaskProgress) return;
-    const c = { at: row.at, evalDay: row.evalDay, kind: row.kind, title: row.title, ok: row.ok, total: row.total, miss: (row.miss || []).slice(0, 15), ids: (row.ids || []).slice(0, 20), firstTry: !!row.firstTry };
+    const c = { at: row.at, evalDay: row.evalDay, kind: row.kind, title: row.title, ok: row.ok, total: row.total, miss: (row.miss || []).slice(0, 15), ids: (row.ids || []).slice(0, 20), firstTry: !!row.firstTry, fixed: (row.fixed || []).slice(0, 15) };
     window.OD.saveTaskProgress(email, Number(day), { _qe: c }).catch(() => {});
   } catch (e) {}
 }
@@ -11203,6 +11221,9 @@ function QuarterEvalDev({ setActive }) {
   ((tk && tk.practiceIds) || []).forEach(x => { used[String(x).split(".").pop()] = 1; });
   const mainIds = (() => { const a = weak.filter(id => !used[id]).slice(0, 30); weak.forEach(id => { if (a.length < 15 && a.indexOf(id) < 0) a.push(id); }); return a; })();
   const live = React.useRef({}); live.current = { T, mainIds };
+  const pendFlow = React.useRef(null);   // 다시 풀기 중에 나가면 이때 팝업 흐름 시작
+  React.useEffect(() => { if (state !== "test" && pendFlow.current) { const f = pendFlow.current; pendFlow.current = null; f(); } }, [state]);
+  React.useEffect(() => () => { if (pendFlow.current) { const f = pendFlow.current; pendFlow.current = null; f(); } }, []);
   if (mode === "test" && !frozen.current) frozen.current = { T, ids: mainIds };   // 팝업에서 바로 시작한 경우
   const qs = (ids) => "ids=" + ids.join(",") + (T.j ? "&j=" + T.j : "") + (T.tf ? "&tf=" + T.tf : "") + "&title=" + encodeURIComponent(T.title) + (T.kind === "tf" ? "&mode=t" : "");
   React.useEffect(() => {
@@ -11219,13 +11240,21 @@ function QuarterEvalDev({ setActive }) {
       if (d.promo) {
         const r = _qeLoad(email); const at = new Date().toISOString();
         const row = { at, evalDay, kind: T.kind, title: T.title, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {}, ids: d.promo.ids || [] };
-        if (d.promo.set === "main") { r.evals = r.evals || {}; if (!r.evals[evalDay]) { r.evals[evalDay] = Object.assign({ firstTry: true }, row); r.main = r.evals[evalDay];
+        // ★ 2026-10-17: 틀린 문제가 있으면 시험 페이지가 두 번 보낸다. stage "first" = 첫 풀이 끝(점수 · 틀린 문항 저장, 팝업 흐름은 아직),
+        //   stage "final" = 틀린 문제 다시 풀기까지 끝(다시 맞힌 표현 기록 + 팝업 흐름 시작). 다시 풀기 중에 나가면 그때 흐름을 시작한다.
+        const flowGo = ((TT, pr) => () => { try { _retIssueReport(email, TT.kind, TT); _ppFlowSet({ kind: TT.kind, evalDay, step: TT.kind === "tf" ? "tfdone" : "word", ok: pr.ok, total: pr.total, miss: (pr.miss || []).slice(0, 5), tf: TT.tf || null, tfName: TT.tfName || "", from: TT.from, to: TT.to }); } catch (e2) {} })(T, d.promo);
+        if (d.promo.set === "main" && d.promo.stage === "final" && r.evals && r.evals[evalDay] && r.evals[evalDay].retryPending) {
+          const ev = r.evals[evalDay]; delete ev.retryPending; ev.fixed = (d.promo.fixed || []).slice(0, 15); ev.retryAt = at; r.main = ev;
+          try { _qeSync(email, evalDay, ev); } catch (e2) {}
+          _qeSave(email, r); pendFlow.current = null; flowGo(); return;
+        }
+        if (d.promo.set === "main") { r.evals = r.evals || {}; if (!r.evals[evalDay]) { r.evals[evalDay] = Object.assign({ firstTry: true }, row, d.promo.stage === "first" ? { retryPending: true } : {}); r.main = r.evals[evalDay];
           // ★ 2026-10-17: 평가를 보면 진급 처리. 사원 = 예전 승급 의례와 같은 저장(_persistLevelUp), 대리 = 심사 본 걸로(TF 신청서가 열린다).
           try { if (T.kind === "p30") _persistLevelUp(Math.round(100 * (Number(d.promo.ok) || 0) / Math.max(1, Number(d.promo.total) || 15))); } catch (e2) {}
           try { if (T.kind === "p90") localStorage.setItem("__OD_S3_SEEN_v2_" + email, "1"); } catch (e2) {}
           try { _qeSync(email, evalDay, r.evals[evalDay]); } catch (e2) {}
           // ★ 2026-10-17: 결과가 오면 인포그래픽 팝업 흐름으로 (사원 · 대리: 한마디 → 발령 → 리포트 / TF: 수료 → 리포트). 리포트는 바로 발급.
-          try { _retIssueReport(email, T.kind, T); _ppFlowSet({ kind: T.kind, evalDay, step: T.kind === "tf" ? "tfdone" : "word", ok: d.promo.ok, total: d.promo.total, miss: (d.promo.miss || []).slice(0, 5), tf: T.tf || null, tfName: T.tfName || "", from: T.from, to: T.to }); } catch (e2) {}
+          if (d.promo.stage === "first") pendFlow.current = flowGo; else flowGo();
         } }
         else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
         _qeSave(email, r);
@@ -11823,9 +11852,11 @@ function _agHTML(r, D, ai, X) {
   const _QV = (() => { try { const em = _retEmail(); const st = JSON.parse(localStorage.getItem("__OD_QZ_STAT_" + em) || "{}") || {}; const wr = JSON.parse(localStorage.getItem("__OD_QZ_WRONG_" + em) || "{}") || {}; const rv = _wbLoadRev(em);
     let cards = {}; try { _wbBuild(USER, SCENARIOS, rv).forEach(c => { cards[c.day] = c; }); } catch (e) {}
     const f = {}; let any = false;
+    // ★ 2026-10-17: 진급 · 수료 평가 첫 풀이에서 틀린 표현도 '한 번 더 볼 표현'으로
+    let tm = {}; try { const t = _qeFor(_qeLoad(em), D.to); (t && t.miss || []).forEach(x => { tm[String(x).toLowerCase()] = 1; }); if (t && (t.miss || []).length) any = true; } catch (e) {}
     D.words.forEach(w => { const q = st[w.day] || null, r = rv[w.day] || null;
       if (q || r) any = true;
-      const missNow = !!wr[w.word] || !!(q && q.lw && (!q.lk || q.lw > q.lk)) || !!(r && r.reps === 0 && r.lapses);
+      const missNow = !!tm[String(w.word).toLowerCase()] || !!wr[w.word] || !!(q && q.lw && (!q.lk || q.lw > q.lk)) || !!(r && r.reps === 0 && r.lapses);
       const own = !missNow && (!!(q && q.k) || !!(r && r.reps > 0));
       const stg = cards[w.day] ? cards[w.day].strength : 0;
       f[w.day] = { own, miss: missNow, lv: stg >= 75 ? "l4" : stg >= 55 ? "l3" : stg >= 30 ? "l2" : "l1" }; });
@@ -11887,7 +11918,10 @@ function _agHTML(r, D, ai, X) {
   const cards = D.best.length ? '<section class="mod w3"><h3>잘 쓴 문장 <small>' + E(nick) + '씨가 직접 쓴 문장</small></h3><div class="cards">' + D.best.map(b => { const c = cm[b.day] || cm[String(b.day)] || b.praise; return '<article class="card"><div class="top"><span>DAY ' + b.day + ' · ' + E(String(b.word).toUpperCase()) + '</span><span>' + _agMD(b.date).split(".").map(x => x.padStart(2, "0")).join(".") + '</span></div><div class="en">"' + E(b.text) + '"</div>' + (b.fixed ? '<div class="fx"><b>사수가 다듬은 문장</b> ' + E(b.fixed) + '</div>' : '') + (c ? '<div class="pr"><span class="cm2"><span class="av">' + E(ini) + '</span><span><small>사수 코멘트</small>' + E(c) + '</span></span></div>' : '') + '</article>'; }).join("") + '</div></section>' : '';
   // 진급 테스트
   let tres = null; try { tres = _qeFor(_qeLoad(_retEmail()), D.to); } catch (e) {}
-  const testSec = '<section class="mod w2"><h3>' + KIND + ' 테스트 <small>' + E(rank) + ' ' + KIND + ' 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " " + KIND) + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
+  // ★ 2026-10-17: 첫 풀이에서 틀린 문제 · 다시 풀어 맞힌 문제를 테스트 칸에 보여준다
+  const tMiss = (tres && tres.miss || []).slice(0, 4), tFix = {}; (tres && tres.fixed || []).forEach(x => { tFix[String(x).toLowerCase()] = 1; });
+  const tMissF = tMiss.map((m, i) => { const w = D.words.find(x => String(x.word).toLowerCase() === String(m).toLowerCase()); return '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">' + (w ? 'Day ' + w.day + ' · ' : '') + E(m) + ' <em>첫 풀이에서 틀림' + (tFix[String(m).toLowerCase()] ? ' · 다시 풀어 맞힘' : '') + '</em></div><div>' + (w ? E(w.meaning) + '. ' : '') + '리뷰퀴즈에서 한 번 더 만나요.</div></div>'; }).join("");
+  const testSec = '<section class="mod w2"><h3>' + KIND + ' 테스트 <small>' + E(rank) + ' ' + KIND + ' 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " " + KIND) + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' + ((tres.miss || []).length ? '틀린 ' + tres.miss.length + '문제' + ((tres.fixed || []).length ? '는 다시 풀어서 맞혔어요. ' : '가 있어요. ') : '한 번에 다 맞혔어요. ') : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + tMissF + again.filter(w => !tMiss.some(m => String(m).toLowerCase() === String(w.word).toLowerCase())).slice(0, Math.max(0, 2 - tMiss.length)).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
   // 그때 한 말
   const saidSec = XE.said.length ? '<section class="mod"><h3>그때 한 말</h3>' + XE.said.map(x => '<div class="field"><div class="lb">' + E(x.label) + '</div><div class="q">' + E(x.text) + '</div></div>').join("") + (A.reply ? '<div class="reply2"><span class="av">' + E(ini) + '</span><div><small>사수 답장 · 사수 ' + E(mentor) + '</small><p>' + E(A.reply) + '</p></div></div>' : '') + '</section>' : '';
   // 사수 편지
@@ -11903,7 +11937,7 @@ function _agEnsureAI(r, D, onDone, X) {
   if (r.ai || _agAsking[r.id] || !(window.OD && window.OD.enabled && window.OD.getMentorAiFeedback)) return;
   _agAsking[r.id] = true;
   const { USER, CHARACTERS } = window.__SIM; const rank = r.rankLabel || "사원";
-  let tres = null; try { const t = _qeFor(_qeLoad(_retEmail()), D.to); if (t) tres = { ok: t.ok, total: t.total }; } catch (e) {}
+  let tres = null; try { const t = _qeFor(_qeLoad(_retEmail()), D.to); if (t) tres = { ok: t.ok, total: t.total, miss: (t.miss || []).slice(0, 5) }; } catch (e) {}
   const payload = { name: _agNick(USER.name), rank, kind: r.tf ? "tf" : "promo", period: "Day " + D.from + "~" + D.to, total: D.total, done: D.doneN, studyDays: D.studyDays, streak: D.streak, streakFrom: D.sFrom, streakTo: D.sTo,
     maxN: D.maxN, maxDate: D.maxDate, bestMonth: D.bestMonth, bestMonthDays: D.bestMonthDays, gapDays: D.gapDays, gapFrom: D.gapFrom, gapBack: D.gapBack, firstDate: D.dates[0] || "", lastDate: D.dates[D.dates.length - 1] || "",
     sentences: D.best.concat(D.sentences.filter(s => D.best.indexOf(s) < 0)).slice(0, 6).map(s => ({ day: s.day, word: s.word, text: s.text, fixed: s.fixed })), words: D.words.map(w => w.word), sentenceCount: D.sentences.length, test: tres };
