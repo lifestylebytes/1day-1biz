@@ -11132,7 +11132,10 @@ function QuarterEvalDev({ setActive }) {
     return out;
   }, [weak.join(","), tk && (tk.practiceIds || []).join(","), rd]);
   const used = {}; ((tk && tk.practice && tk.practice.ids) || []).forEach(x => { used[String(x).split(".").pop()] = 1; });
-  const mainIds = weak.filter(id => !used[id]).slice(0, 30);
+  // ★ 2026-10-17: 연습에 '나온' 표현만이 아니라 연습용으로 뽑아 둔 표현 전부를 본 평가에서 뺀다 (연습을 중간에 그만둬도 겹치지 않게).
+  //   범위가 좁아 15개가 안 남으면 그때만 덜 익은 순으로 다시 채운다.
+  ((tk && tk.practiceIds) || []).forEach(x => { used[String(x).split(".").pop()] = 1; });
+  const mainIds = (() => { const a = weak.filter(id => !used[id]).slice(0, 30); weak.forEach(id => { if (a.length < 15 && a.indexOf(id) < 0) a.push(id); }); return a; })();
   const qs = (ids) => "ids=" + ids.join(",") + (T.j ? "&j=" + T.j : "") + (T.tf ? "&tf=" + T.tf : "") + "&title=" + encodeURIComponent(T.title) + (T.kind === "tf" ? "&mode=t" : "");
   React.useEffect(() => {
     const on = (e) => {
