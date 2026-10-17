@@ -34,15 +34,16 @@ revoke all on function complete_senior(text, int) from public;
 grant execute on function complete_senior(text, int) to anon, authenticated;
 
 -- 2) 라이브 때: 실제 학습 Day 91 이상 사원 → 대리 (평가 없이, 그동안 대리 저장이 없어서 생긴 공백 메우기)
---    실제 학습 Day = 앱과 같은 완주 기준(일지 또는 일정 4개 이상)으로 끝낸 Day 수. 90개 이상이면 Day 91 이상.
+--    실제 학습 Day = users.real_day (운영자 뷰 · 회원 화면의 오늘 Day). 중간에 건너뛴 Day 가 있어도 지금 있는 Day 기준.
+--    real_day 가 없는 회원(10/6 이전에만 접속)은 끝낸 Day 수(일지 또는 일정 4개 이상)로 대신 센다 (90개 이상 = Day 91 이상).
 --    수습(아직 사원도 안 된 회원)은 빼고, 앱에서 대리 진급 평가 하나만 보게 한다.
 -- update users u set level = jsonb_build_object('id', 'senior', 'ko', '대리', 'en', 'Senior Associate', 'at', now(), 'by', 'backfill')
 --  where coalesce(u.level->>'id', 'probation') = 'fulltime'
 --    and coalesce(u.is_operator, false) = false
---    and (select count(distinct day) from (
+--    and coalesce(u.real_day, 1 + (select count(distinct day) from (
 --          select tp.day from task_progress tp
 --           where lower(tp.email) = lower(u.email)
 --             and (select count(*) from jsonb_each_text(tp.tasks) e where e.value = 'true' and left(e.key, 1) <> '_') >= 4
 --          union
 --          select j.day from journals j where lower(j.email) = lower(u.email) and coalesce(j.text, '') <> ''
---        ) z) >= 90;
+--        ) z)) >= 91;
