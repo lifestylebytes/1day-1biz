@@ -7458,9 +7458,9 @@ const _UNLOCK_AT = _isNextFeature()
   ? { schedule: 1, memo: 1, board: 2, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
   : { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
 const _UNLOCK_LABEL = _isNextFeature()
-  ? { schedule: "오늘 일정표", memo: "사내 게시판", board: "WEEKLY BIZ SCORE", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: "분기 평가 (준비 중)" }
+  ? { schedule: "오늘 일정표", memo: "사내 게시판", board: "WEEKLY BIZ SCORE", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: _isDevNext() ? "분기 평가 (진급 평가 · Preview Ticket)" : "분기 평가 (준비 중)" }   // ★ 2026-10-17: 개발 뷰는 분기 평가 오픈
   : { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
-const _UNLOCK_EMOJI = { board: "🏆", schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: "🤝", reports: "🧭" };
+const _UNLOCK_EMOJI = { board: "🏆", schedule: "🗓️", attendance: "🗓️", accum: "📚", promo: "🏅", skills: "📊", doc: "🗂️", memo: _isNextFeature() ? "🏆" : "✉️", errands: "🏃", mynotes: "📒", points: "🎁", aireport: "🧠", goal: "🎯", shop: "🎁", pdf: "📄", nego: _isDevNext() ? "📝" : "🤝", reports: "🧭" };
 function _lockedNext(key, rd, viewingPast) {
   if ((key === "errands" || key === "aireport" || key === "points") && !_isNextFeature()) return false;   // 심부름(타이쿤)·AI 리포트는 아직 개발 뷰
   if (_isNextFeature() && !(key in _UNLOCK_AT)) return false;   // 리텐션 뷰 사다리에 없는 것(승진 마일스톤·역량 스탯 등)은 잠그지 않는다
@@ -9235,7 +9235,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {!USER.isViewingPast && !_RET_ON() && <RetHud setActive={setActive} top />}
 
       {_isDevNext() && !USER.isViewingPast && (
-        <ReportIssuePopup rd={_rdNow} email={USER.email} onGo={() => setActive("mypage")} />
+        null /* ★ 2026-10-17: 성장 리포트 발급 안내 팝업은 일단 끈다 (ReportIssuePopup) */
       )}
       {retDebuff && !retQuiz && _slAbsence && (
         <RetDebuffPopup rec={retDebuff}
@@ -10721,14 +10721,17 @@ const _RET_UNLOCK_GO = {
   shop: { nav: "perk", sel: ".ret-shop-grid", how: "사이드바 · 연차·휴가·엿보기 티켓을 복지포인트로 사요" },
   mynotes: { nav: "mynotes", sel: ".ret-growth", how: "사이드바 · 진급 리포트가 쌓이고 표현 카드를 복습해요" },
   pdf: { nav: "perk", sel: ".ret-shop-item[data-shop='pdf']", how: "복지몰 · 1회권(200P)으로 지금까지 모은 표현을 PDF 로" },
+  nego: { nav: "test", sel: ".qe-frame", how: "사이드바 · 진급 평가를 보는 곳. Preview Ticket 으로 미리 구성 보고 연습도 해요" },
 };
 // 성장 리포트 · 사수 리포트 4종 · 분기 평가는 '준비 중' (사다리엔 보이지만 열림 팝업은 안 띄운다)
 const _RET_SOON = { mynotes: true, reports: true, nego: true };
+// ★ 2026-10-17: 개발 뷰에선 진급 리포트(성장 리포트)와 분기 평가가 열렸으니 '열린 기능' 팝업에도 띄운다. 일반 뷰는 정식 전환 때.
+const _retSoon = (k) => !!_RET_SOON[k] && !(_isDevNext() && (k === "mynotes" || k === "nego"));
 function _retUnlockSeen(email) { const v = _retLoad("UNLOCK_SEEN", email, { ids: [] }); return Array.isArray(v.ids) ? v.ids : []; }
 function _retUnlockPending(email, rd) {
   if (!_RET_ON()) return [];
   const seen = new Set(_retUnlockSeen(email));
-  return Object.keys(_RET_UNLOCK_GO).filter(k => !_RET_SOON[k] && (_UNLOCK_AT[k] || 999) <= rd && (_UNLOCK_AT[k] || 0) > 1 && !seen.has(k)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b]);
+  return Object.keys(_RET_UNLOCK_GO).filter(k => !_retSoon(k) && (_UNLOCK_AT[k] || 999) <= rd && (_UNLOCK_AT[k] || 0) > 1 && !seen.has(k)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b]);
 }
 function RetUnlockPopup({ keys, rd, email, setActive, onClose, replay }) {
   const done = () => { if (!replay) { try { _retSave("UNLOCK_SEEN", email, { ids: [...new Set(_retUnlockSeen(email).concat(keys))] }); } catch (e) {} } onClose(); };
@@ -15619,7 +15622,7 @@ function MyPage({ setActive, setViewingDay }) {
             <span className="hr-row-value" style={{ color: "#F38A5C", fontWeight: 700 }}>목록 →</span>
           </button>
         )}
-        {unlockReplay && <RetUnlockPopup replay keys={Object.keys(_RET_UNLOCK_GO).filter(k => !_RET_SOON[k] && (_UNLOCK_AT[k] || 999) <= (USER.realCurrentDay || USER.currentDay || 1)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b])} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setUnlockReplay(false)} />}
+        {unlockReplay && <RetUnlockPopup replay keys={Object.keys(_RET_UNLOCK_GO).filter(k => !_retSoon(k) && (_UNLOCK_AT[k] || 999) <= (USER.realCurrentDay || USER.currentDay || 1)).sort((a, b) => _UNLOCK_AT[a] - _UNLOCK_AT[b])} rd={USER.realCurrentDay || USER.currentDay || 1} email={USER.email} setActive={setActive} onClose={() => setUnlockReplay(false)} />}
       </div>
 
       {/* 설정 (쓰기), 디스클로저 */}
@@ -20735,6 +20738,39 @@ function PvFrame({ label, sub, pv, render, scale }) {
     </div>
   );
 }
+// 토스트 · 슬랙 핑 예시 (실제와 같은 클래스로 그린 그림. 사라지지 않게 멈춰 둔다)
+function PvToasts({ kind }) {
+  if (kind === "corner") return (
+    <div style={{ position: "fixed", top: 16, right: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="ret-toast exp in"><span className="ret-toast-ico">⚡</span><b>+25 EXP</b><small>출근 도장</small></div>
+      <div className="ret-toast exp in"><span className="ret-toast-ico">⚡</span><b>+100 EXP</b><small>오늘의 시추에이션</small></div>
+      <div className="ret-toast wp in"><span className="ret-toast-ico">🎁</span><b>복지포인트 +300P</b><small>7일 연속 출근 목표 달성</small></div>
+      <div className="ret-toast wp in"><span className="ret-toast-ico">↩️</span><b>연차 돌려드렸어요</b><small>다른 기기 기록으로 출근이 확인됐어요</small></div>
+    </div>
+  );
+  if (kind === "bottom") return (
+    <div style={{ position: "fixed", left: 0, right: 0, bottom: 28, display: "grid", gap: 10, justifyItems: "center" }}>
+      {["🎊 Day 31 완주! 내일 또 봐요.", "🎖️ 호봉 승급! 사원 3호봉이 됐어요", "👍 다시 풀어봤어요, 표현이 더 자연스러워질 거예요"].map((t, i) => (
+        <div key={i} style={{ background: "#2A1F14", color: "#F4EFE3", padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, lineHeight: 1.5, boxShadow: "0 16px 40px rgba(0,0,0,0.35)", maxWidth: 420 }}>{t}</div>
+      ))}
+    </div>
+  );
+  const U = (window.__SIM || {}).USER || {}; const scn = _qzScn(Number(U.realCurrentDay || U.currentDay) || 1) || ((window.__SIM || {}).SCENARIOS || [])[0] || {};
+  const npc = (((window.__SIM || {}).CHARACTERS || {})[scn.npc]) || { name: "사수", role: "사수", avatar: "박", color: "#D85A2A" };
+  return (
+    <div className="slack-ping" role="status" style={{ animation: "none" }}>
+      <button className="slack-ping-card">
+        <div className="slack-ping-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
+        <div className="slack-ping-body">
+          <div className="slack-ping-from"><b>{npc.name}</b> · {npc.role} <span>지금</span></div>
+          <div className="slack-ping-text">{_hlQuote(scn.quote || "", scn.word || "")}</div>
+          <div className="slack-ping-hint">탭해서 답하기 →</div>
+        </div>
+      </button>
+      <button className="slack-ping-x" aria-label="닫기">✕</button>
+    </div>
+  );
+}
 function _pgTiming(q) {
   if (typeof q === "number") return q < 100 ? { t: "🚪 접속하자마자 · 오늘 일정 전", c: "#2F4A66" } : { t: "✅ 오늘 일정 끝낸 뒤", c: "#2F7A4C" };
   return { t: "↔ " + q, c: "#8A7964" };
@@ -20768,7 +20804,6 @@ function _pgCatalog2(email) {
       { label: "4 / 5 발령", sub: "점수에 따라", render: (c) => <PPAppoint kind="p30" ok={14} total={15} miss={["table"]} onNext={c} onClose={c} /> },
       { label: "5 / 5 진급 리포트", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={14} total={15} onOpen={c} onClose={c} /> }] },
     { day: 30, name: "👔 정직원 모드 가이드 (투어)", when: "사원 진급 직후 (Day 60 전)", cond: "6단계. 5단계가 '사원 진급 리포트 발행' 안내.", queue: "투어", replay: () => { try { localStorage.removeItem("__OD_S2_TOUR_DONE_" + em); } catch (e) {} location.reload(); } },
-    { day: 30, name: "📑 성장 리포트 발급 안내", when: "Day 30 · 60 · 90 을 지났는데 그 AI 성장 리포트가 없을 때", cond: "다른 팝업이 다 닫히고 조용할 때 1번.", queue: "줄 밖 · 조용할 때", v: [30, 60, 90].map(d => ({ label: "Day " + d, render: (c) => <ReportIssuePopup rd={d} email={em} onGo={c} force onClose={c} /> })) },
     { day: 60, name: "🌟 Day 60 설문 (인포그래픽)", when: "Day 60~89, 1번", cond: "대리 진급 리포트에 넣을 질문 3개. Q1 답으로 TF 신청서의 '사수 추천'이 정해져요.", queue: 150, v: [{ label: "설문", render: (c) => <PPDay60 onClose={c} /> }] },
     { day: 89, name: "🏅 대리 진급 흐름 (인포그래픽)", when: "Day 89 예고 → Day 90 심사", cond: "Day 90 일정을 끝내면 심사가 떠요. 심사(분기 평가 탭) → 한마디 → 발령 → 리포트 → TF 신청서 → 발령 완료. 심사를 봐야 Day 91이 열려요.", queue: "130 · 135 · 50", v: [
       { label: "Day 89 · 내일 심사", sub: "줄 130", render: (c) => <PPEve kind="p90" onClose={c} /> },
@@ -20787,6 +20822,7 @@ function _pgCatalog2(email) {
       { label: "결근 1일", sub: "줄 60", render: (c) => <RetDebuffPopup rec={{ level: 1, gap: 1 }} onOpenQuiz={c} onClose={c} /> },
       { label: "결근 2일", render: (c) => <RetDebuffPopup rec={{ level: 2, gap: 2 }} onOpenQuiz={c} onClose={c} /> },
       { label: "결근 5일+", render: (c) => <RetDebuffPopup rec={{ level: 3, gap: 5 }} onOpenQuiz={c} onClose={c} /> },
+      { label: "아이템 안 쓰고 → 복습 퀴즈", sub: "결근 뒤 5문제 고정", render: (c) => { const U = (window.__SIM || {}).USER || {}; const td = _qzScn(Number(U.realCurrentDay || U.currentDay) || 1) || ((window.__SIM || {}).SCENARIOS || [])[0]; return <ReviewQuizModal today={td} email={em} attemptNo={1} afterAbsence onFinished={() => {}} onClose={c} />; } },
       { label: "복귀 설문", sub: "줄 160 · 일정 뒤", render: (c) => <RetComebackSurvey rec={{ gap: 8, level: 3 }} hasNext onDone={c} /> },
       { label: "새 목표", sub: "줄 170", render: (c) => <RetNewGoalPopup step="2 / 2" onDone={c} /> }] },
     { day: 0, name: "📦 인수인계 D-7", when: "멤버십 끝나기 7일 전, 세션당 1번", cond: "지금은 꺼져 있어요 (_d7Warning = false). 켜면 이렇게 떠요.", queue: 10, v: [
@@ -20799,7 +20835,10 @@ function _pgCatalog2(email) {
       { label: "Day 60 면담 (옛)", render: (c) => <Day60Checkpoint onClose={c} /> },
       { label: "대리 승진 심사 (옛)", render: (c) => <Season3Checkpoint onClose={c} /> },
       { label: "TF 신청서 (옛)", render: (c) => <TrackSelectModal done={[]} onClose={c} /> }] },
-    { day: 0, name: "🔔 알림 토스트 · 슬랙 핑", when: "그때그때 (EXP · 복지포인트 · 호봉 승급 · 사수 슬랙 메시지)", cond: "팝업이 아니라 화면 아래/위에 잠깐 떴다 사라지는 알림. 다른 팝업이 떠 있으면 기다렸다 떠요.", queue: "줄 밖" },
+    { day: 0, name: "🔔 알림 토스트 · 슬랙 핑", when: "그때그때 (EXP · 복지포인트 · 호봉 승급 · 사수 슬랙 메시지)", cond: "팝업이 아니라 화면 위/아래에 잠깐(2~4초) 떴다 사라지는 알림. 슬랙 핑은 다른 팝업이 다 닫히고 조용할 때 오고, 누르기 전까지 남아 있어요.", queue: "줄 밖", v: [
+      { label: "오른쪽 위 · EXP · 복지포인트", sub: "할 일을 끝낼 때마다 2초", render: () => <PvToasts kind="corner" /> },
+      { label: "화면 아래 · 완주 · 호봉 승급", sub: "4초", render: () => <PvToasts kind="bottom" /> },
+      { label: "사수 슬랙 핑", sub: "오늘 시추에이션으로 데려가요", render: () => <PvToasts kind="ping" /> }] },
   ];
   return L.sort((a, b) => (a.day === 0) - (b.day === 0) || a.day - b.day);
 }
@@ -20820,7 +20859,7 @@ function PopupGalleryDev({ onClose }) {
   if (cur) {
     const tm = _pgTiming(cur.queue);
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "var(--paper)", overflow: "auto", padding: "16px 18px 40px" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 9990, background: "var(--paper)", overflow: "auto", padding: "16px 18px 40px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", position: "sticky", top: -16, background: "var(--paper)", padding: "8px 0", zIndex: 2, borderBottom: "1px solid var(--line)" }}>
           <button className="btn btn-ghost btn-mini" onClick={() => setOpen(null)}>← 목록</button>
           <b style={{ fontSize: 17 }}>{cur.name}</b>
@@ -20829,7 +20868,7 @@ function PopupGalleryDev({ onClose }) {
           <label style={{ marginLeft: "auto", fontSize: 12, display: "flex", gap: 4, alignItems: "center" }}><input type="checkbox" checked={big} onChange={e => setBig(e.target.checked)} />크게</label>
           <button className="btn btn-primary btn-mini" onClick={() => { setOpen(null); onClose(); }}>닫기</button>
         </div>
-        <div style={{ fontSize: 12.5, color: "var(--ink-soft)", margin: "10px 0 14px" }}><b>언제</b> {cur.when} · {cur.cond} <span style={{ color: "var(--ink-mute)" }}>· 줄 {cur.queue}</span></div>
+        <div style={{ fontSize: 12.5, color: "var(--ink-soft)", margin: "10px 0 14px" }}><b>언제</b> {cur.when} · {cur.cond} <span style={{ color: "var(--ink-mute)" }}>· {typeof cur.queue === "number" ? "줄 " + cur.queue : cur.queue}</span></div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(" + (big ? 630 : 400) + "px, 1fr))", gap: 18 }}>
           {cur.v.map((x, i) => <PvFrame key={i} label={x.label} sub={x.sub} pv={x.pv} render={x.render} scale={big ? 1 : 0.62} />)}
         </div>
@@ -20837,7 +20876,7 @@ function PopupGalleryDev({ onClose }) {
     );
   }
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(20,15,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9990, background: "rgba(20,15,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
       <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, width: "min(1000px, 100%)", maxHeight: "92vh", overflow: "auto", padding: "20px 22px" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
           <b style={{ fontSize: 18 }}>🗂 팝업 전체보기</b><span className="pag-dev">개발 뷰</span>
@@ -20847,7 +20886,7 @@ function PopupGalleryDev({ onClose }) {
         <div style={{ marginTop: 14, display: "grid", gap: 6 }}>
           {list.map((p, i) => { const tm = _pgTiming(p.queue); const passed = p.day && rd >= p.day; return (
             <div key={i} style={{ display: "grid", gridTemplateColumns: "70px 1fr auto", gap: 12, alignItems: "center", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 10, background: passed ? "var(--paper-warm)" : "var(--paper)" }}>
-              <div style={{ textAlign: "center" }}><b style={{ fontSize: 13, color: "var(--orange)" }}>{p.day ? "Day " + p.day : "언제든"}</b><div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2 }}>줄 {p.queue}</div></div>
+              <div style={{ textAlign: "center" }}><b style={{ fontSize: 13, color: "var(--orange)" }}>{p.day ? "Day " + p.day : "언제든"}</b><div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2 }}>{typeof p.queue === "number" ? "줄 " + p.queue : p.queue}</div></div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 13.5, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{p.name}<span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: tm.c, borderRadius: 999, padding: "1px 7px" }}>{tm.t}</span>{p.v && p.v.length > 1 ? <span style={{ fontSize: 10.5, color: "var(--ink-mute)" }}>경우 {p.v.length}개</span> : null}</div>
                 <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 2 }}><b>언제</b> {p.when} · {p.cond}</div>
