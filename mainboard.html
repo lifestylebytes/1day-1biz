@@ -191,6 +191,7 @@ body::before {
 }
 .locker-link-l { display: flex; align-items: center; gap: 10px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .locker-link-icon { font-size: 14px; width: 18px; text-align: center; }
+.locker-tag.locker-upd { background: var(--orange); color: #fff; letter-spacing: 0.06em; }  /* 2026-10-17 성장 리포트·분기 평가 새 버전 표시 (개발 뷰) */
 .locker-tag { font-size: 9.5px; font-weight: 800; letter-spacing: 0.02em; color: var(--orange); border: 1px solid var(--orange); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
 .locker-badge {
   background: var(--stamp-red); color: var(--cream);
@@ -7064,8 +7065,8 @@ function Locker({ active, setActive, user, unread }) {
     { id: "home", label: "오늘의 책상", icon: "📋" },
     { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
-    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
-    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? (_isDevNext() ? "📝" : "🚧") : "✍️", locked: _RET_ON() && !_isDevNext(), tag: _RET_ON() ? (_isDevNext() ? "개발 뷰" : "준비 중") : undefined },
+    { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _isDevNext()) ? "UPDATE" : (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
+    { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? (_isDevNext() ? "📝" : "🚧") : "✍️", locked: _RET_ON() && !_isDevNext(), tag: _RET_ON() ? (_isDevNext() ? "UPDATE" : "준비 중") : undefined },
     { id: "inbox", label: _RET_ON() ? "사내 게시판" : "사내 메모", icon: _RET_ON() ? "🏆" : "✉️", badge: unread > 0 ? unread : null },
     ...(_RET_ON() ? [{ id: "perk", label: "복지몰 SHOP", icon: _retShopOpen() ? "🎁" : "🔒", locked: !_retShopOpen() }] : []),
     { id: "mypage", label: "사원증 / 인사", icon: "🪪" },
@@ -7105,7 +7106,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(1, 3).map(it => (
           <button key={it.id} data-nav={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)} style={it.locked ? { opacity: 0.62 } : null}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.tag ? <span className="locker-tag">{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : it.id === "perk" ? "Day " + RET_SHOP_OPEN_DAY : "사원 ☆"}</span> : null}
+            {it.tag ? <span className={"locker-tag" + (it.tag === "UPDATE" ? " locker-upd" : "")}>{it.tag}</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : it.locked ? <span className="locker-badge" style={{ background: "var(--paper-warm)", color: "var(--ink-mute)", border: "1px solid var(--line)" }}>{it.id === "mynotes" ? "Day " + MYNOTES_OPEN_DAY : it.id === "perk" ? "Day " + RET_SHOP_OPEN_DAY : "사원 ☆"}</span> : null}
           </button>
         ))}
       </div>
@@ -7114,7 +7115,7 @@ function Locker({ active, setActive, user, unread }) {
         {items.slice(3).map(it => (
           <button key={it.id} data-nav={it.id} className={"locker-link " + (active === it.id ? "active" : "")} onClick={() => setActive(it.id)}>
             <span className="locker-link-l"><span className="locker-link-icon">{it.icon}</span>{it.label}</span>
-            {it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : null}
+            {it.tag === "UPDATE" ? <span className="locker-tag locker-upd">UPDATE</span> : it.badge ? <span className={"locker-badge" + (it.id === "inbox" ? " unread-dot" : "")}>{it.badge}</span> : null}
           </button>
         ))}
       </div>
@@ -11119,7 +11120,17 @@ function QuarterEvalDev({ setActive }) {
   // 문제 고르기: 연습은 덜 익은 순서 16~30번째, 본 평가는 1~15번째 (연습에 나온 표현은 빼고). 시험 페이지가 유형을 나눠 담는다.
   const weak = React.useMemo(() => _qeWeakIds(USER, T), [evalDay, T.tf, state]);
   const tk = rec.ticket && rec.ticket.evalDay === evalDay ? rec.ticket : null;
-  const pracIds = (tk && tk.practiceIds) || weak.slice(15, 45);
+  // ★ 2026-10-17: 평가일 전엔 범위 안에 배운 Day 가 15개도 안 돼서(예: Day 49 에 대리 범위 31~90 → 19개, 16번째부터는 4개뿐)
+  //   연습이 4문항짜리 빈 화면처럼 뜨고 심사위원 자리에서 멈췄다. 15개가 안 되면 범위 안 나머지 → 그 전에 배운 Day 중 덜 익은 것 순으로 채운다.
+  const pracIds = React.useMemo(() => {
+    const saved = tk && tk.practiceIds;
+    if (saved && saved.length >= 15) return saved;
+    const out = weak.slice(15, 45);
+    const add = (id) => { if (out.length < 30 && out.indexOf(id) < 0) out.push(id); };
+    if (out.length < 15) weak.forEach(add);
+    if (out.length < 15 && T.kind !== "tf") _qeWeakIds(USER, Object.assign({}, T, { from: 1, to: rd })).forEach(add);
+    return out;
+  }, [weak.join(","), tk && (tk.practiceIds || []).join(","), rd]);
   const used = {}; ((tk && tk.practice && tk.practice.ids) || []).forEach(x => { used[String(x).split(".").pop()] = 1; });
   const mainIds = weak.filter(id => !used[id]).slice(0, 30);
   const qs = (ids) => "ids=" + ids.join(",") + (T.j ? "&j=" + T.j : "") + (T.tf ? "&tf=" + T.tf : "") + "&title=" + encodeURIComponent(T.title) + (T.kind === "tf" ? "&mode=t" : "");
