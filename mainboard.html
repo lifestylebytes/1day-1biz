@@ -5948,6 +5948,22 @@ const _gateDoneSet = (u) => {
   return days;
 };
 // 게이트 값 계산. 학습을 마칠 때마다 다시 불러 "밀린 Day 이어하기"를 즉시 열어준다.
+// ★ 2026-10-17 (개발 뷰): 진급 평가 날(Day 30 · 90 · TF 마지막 날 120 · 150 · 180 · 210)에 평가를 안 봤으면 다음 Day 로 못 넘어간다.
+//   평가 전에 리뷰 퀴즈 · 업무 노트 복습은 그대로 할 수 있다. 이미 예전 방식으로 진급한 기록이 있으면 막지 않는다.
+function _odEvalBlocked(d, u) {
+  try {
+    if (localStorage.getItem("__OD_NEXT") !== "1") return false;
+    if (!(u && u.email && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode))) return false;
+    if (!(d === 30 || d === 90 || (d > 90 && d <= 210 && (d - 90) % 30 === 0))) return false;
+    const r = JSON.parse(localStorage.getItem("__OD_PROMO_TEST_" + u.email) || "{}") || {};
+    if ((r.evals && r.evals[d]) || (r.main && r.main.evalDay === d)) return false;
+    if (d === 30 && (u.levelupCompletedAt || u.levelup_completed_at)) return false;
+    if (d === 90 && localStorage.getItem("__OD_S3_SEEN_v2_" + u.email) === "1") return false;
+    if (d > 90) { const dn = JSON.parse(localStorage.getItem("__OD_TF_DONE_" + u.email) || "[]"); if (Array.isArray(dn) && dn.length >= (d - 90) / 30) return false; }
+    return true;
+  } catch (e) { return false; }
+}
+window.__odEvalBlocked = _odEvalBlocked;
 function _computeGatedDay() {
   // ★ 2026-10-02: 로그인 정보(이메일)를 못 읽으면 예전엔 달력 Day 를 돌려줘서, 그 값이 저장·동기화되며
   //   "학습 안 했는데 Day 7" 이 됐다 (운영자 뷰 앱 Day 가 달력 Day 와 같던 사고). 이제는 1 또는 저장된 값 중 작은 쪽.
@@ -5998,7 +6014,7 @@ function _computeGatedDay() {
       return k < _todayKST;
     } catch (e) { return true; }
   };
-  while (_d < _autoDay && _doneSet.has(_d) && (_ack.indexOf(_d) >= 0 || _doneBeforeToday(_d))) _d++;
+  while (_d < _autoDay && _doneSet.has(_d) && !_odEvalBlocked(_d, _u) && (_ack.indexOf(_d) >= 0 || _doneBeforeToday(_d))) _d++;
   // ★ 안전장치: 어떤 경로로도 "완주한 가장 큰 Day + 1" 을 넘지 못한다 (floor 가 잘못 커진 경우 포함. 게이트 도입 전 회원의 floor 는 예외)
   try { const _maxDone = _doneSet.size ? Math.max(..._doneSet) : 0; const _cap = Math.max(_floor, _maxDone + 1); if (_signupKST >= _GATE_EPOCH && _d > _cap) _d = _cap; } catch (e) {}
   return _d;
@@ -6012,6 +6028,7 @@ function _odNeedsAdvance() {
     if (_d >= _autoDay) return 0;
     let _u = _localUser;
     try { _u = JSON.parse(localStorage.getItem('__OD_USER') || 'null') || _localUser; } catch (e) {}
+    if (_odEvalBlocked(_d, _u)) return 0;   // 진급 평가를 봐야 넘어간다 (다음 Day 열기 버튼 대신 평가 안내)
     return _gateDoneSet(_u).has(_d) ? _d : 0;
   } catch (e) { return 0; }
 }
@@ -7061,9 +7078,11 @@ function PushToggle({ email }) {
 // Sidebar = 사물함
 // ============================================================
 function Locker({ active, setActive, user, unread }) {
+  const [, _setTfT] = React.useState(0);
+  React.useEffect(() => { const f = () => _setTfT(t => t + 1); window.addEventListener("tf-scn-loaded", f); try { if (window.__odLoadTf) window.__odLoadTf(); } catch (e) {} return () => window.removeEventListener("tf-scn-loaded", f); }, []);
   const items = [
     { id: "home", label: "오늘의 책상", icon: "📋" },
-    { id: "library", label: "업무 노트", icon: "📓", badge: user.studiedDays },
+    { id: "library", label: "업무 노트", icon: "📓", badge: _libCount(user) },
     // 나만의 노트: 정직원 보상. 수습에겐 🔒 잠금 상태로 노출해 기대감 유도
     { id: "mynotes", label: _RET_ON() ? "성장 리포트" : (_isNextFeature() ? "복습" : "나만의 노트"), icon: (_RET_ON() && _RET_SOON.mynotes) ? "📑" : _myNotesOpen(user) ? "📒" : "🔒", locked: !(_RET_ON() && _RET_SOON.mynotes) && !_myNotesOpen(user), tag: (_RET_ON() && _isDevNext()) ? "UPDATE" : (_RET_ON() && _RET_SOON.mynotes) ? "보관함" : _isNextFeature() && _myNotesOpen(user) && !_RET_ON() ? "연봉협상 준비" : null },
     { id: "test", label: _RET_ON() ? "분기 평가" : "분기 평가", icon: _RET_ON() ? (_isDevNext() ? "📝" : "🚧") : "✍️", locked: _RET_ON() && !_isDevNext(), tag: _RET_ON() ? (_isDevNext() ? "UPDATE" : "준비 중") : undefined },
@@ -7539,7 +7558,7 @@ const _POP_ORDER = {
   // 🚪 접속하자마자
   "retire-d7": 10, "notice-personal": 20, "promo-ceremony": 30, "senior": 40, "tf-select": 50, "absence": 60, "first-week": 70,
   // ✅ 오늘 일정 끝낸 뒤
-  "exp": 110, "setup": 120, "milestone": 130, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
+  "exp": 110, "setup": 120, "milestone": 130, "promo-eval": 135, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
   "notice-all": 180, "unlock": 190, "kakao": 200, "push": 210, "notice-room": 220, "curriculum": 230, "pulse": 240,
 };
 function _popQ() { if (!window.__odPopQ) window.__odPopQ = { want: {}, owner: null, doneAt: 0, timer: null }; return window.__odPopQ; }
@@ -7775,6 +7794,14 @@ function _odRestoreMetaFromTasks(email, task_progress) {
         if (w && t._qzw.cleared && wrong[w]) { delete wrong[w]; wrongChanged = true; }
       }
     });
+    // ★ 2026-10-17: 진급 평가 결과(_qe) · 연습 기록(_qeh) 복원. 이 기기에 없을 때만 받는다 (첫 시도 기록은 바뀌지 않으니까).
+    try {
+      const QK = "__OD_PROMO_TEST_" + email; const qr = JSON.parse(localStorage.getItem(QK) || "{}") || {}; let qCh = false;
+      Object.keys(task_progress).forEach(dayKey => { const t = task_progress[dayKey] || {};
+        if (t._qe && typeof t._qe === "object" && t._qe.total) { qr.evals = qr.evals || {}; if (!qr.evals[dayKey] || qr.evals[dayKey].devFill) { qr.evals[dayKey] = t._qe; qCh = true; } }
+        if (Array.isArray(t._qeh)) { qr.tkHist = qr.tkHist || {}; if (!qr.tkHist[dayKey] || qr.tkHist[dayKey].length < t._qeh.length) { qr.tkHist[dayKey] = t._qeh; qCh = true; } } });
+      if (qCh) { const last = Object.keys(qr.evals || {}).map(Number).sort((a, b) => b - a)[0]; if (last) qr.main = qr.evals[last]; localStorage.setItem(QK, JSON.stringify(qr)); }
+    } catch (e) {}
     // ★ 2026-10-17: 퀴즈 누적 기록(_qzst) 복원. 횟수가 더 많은 쪽을 쓴다.
     try {
       const SK = "__OD_QZ_STAT_" + email; const st = JSON.parse(localStorage.getItem(SK) || "{}") || {}; let stCh = false;
@@ -11029,7 +11056,7 @@ function RetReportsSoonPage({ setActive }) {
         <div className="desk-meta"><b>{USER.name}</b> · {USER.position}<br/>Day {rd}</div>
       </div>
       <div className="ret-growth">
-        <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
+        <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때, TF를 마칠 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
         {_isDevNext() ? <RetPromoReportsAG list={list} preview={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString() }} /> : list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
         {!list.length && !_isDevNext() && (
           <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)" }}>
@@ -11077,6 +11104,18 @@ function _qeKey(email) { return "__OD_PROMO_TEST_" + (email || "anon"); }
 function _qeLoad(email) { try { return JSON.parse(localStorage.getItem(_qeKey(email)) || "{}") || {}; } catch (e) { return {}; } }
 function _qeSave(email, v) { try { localStorage.setItem(_qeKey(email), JSON.stringify(v)); } catch (e) {} }
 // 평가 기록: r.evals[평가일] = 첫 시도 결과. r.main 은 가장 최근 본 평가 (예전 기록 호환).
+// ★ 2026-10-17: 진급 평가 결과 서버 저장. task_progress 의 그 평가 Day 칸에 밑줄 메타(_qe)로 올린다 (복습 기록 _rev 와 같은 길).
+//   기기를 바꾸면 _odRestoreMetaFromTasks 가 내려받는다. 문항별 답(ans)은 크기가 커서 빼고, 점수 · 헷갈린 표현 · 나온 문제만.
+function _qeSync(email, day, row) {
+  try {
+    if (!email || !row || !window.OD || !window.OD.enabled || !window.OD.saveTaskProgress) return;
+    const c = { at: row.at, evalDay: row.evalDay, kind: row.kind, title: row.title, ok: row.ok, total: row.total, miss: (row.miss || []).slice(0, 15), ids: (row.ids || []).slice(0, 20), firstTry: !!row.firstTry };
+    window.OD.saveTaskProgress(email, Number(day), { _qe: c }).catch(() => {});
+  } catch (e) {}
+}
+function _qeSyncTickets(email, day, hist) {
+  try { if (email && window.OD && window.OD.enabled && window.OD.saveTaskProgress) window.OD.saveTaskProgress(email, Number(day), { _qeh: (hist || []).slice(-10) }).catch(() => {}); } catch (e) {}
+}
 function _qeDone(rec, day) { return !!((rec.evals && rec.evals[day]) || (rec.main && rec.main.evalDay === day)); }
 function _qeFor(rec, day) { if (!rec) return null; if (rec.evals && rec.evals[day]) return rec.evals[day]; return rec.main && (!rec.main.evalDay || rec.main.evalDay === day) ? rec.main : null; }
 // 지금 이 계정이 볼 평가: 사원(Day 30) → 대리(Day 90) → TF 수료(트랙 마지막 날)
@@ -11099,7 +11138,11 @@ function _qeWeakIds(USER, T) {
   let rows = [];
   if (T.kind === "tf") {
     if (!T.tf) return [];
-    for (let n = 1; n <= 30; n++) {
+    // ★ 2026-10-17: TF 도 업무 노트 기억 강도(영작 · 복습 · 퀴즈 기록)로. 카드가 아직 없으면(트랙 데이터 로딩 전) 영작 기록으로.
+    let cards = []; try { cards = _wbBuild(USER, SCENARIOS, _wbLoadRev(USER.email || "guest")).filter(c => c.day >= T.from && c.day <= T.to); } catch (e) {}
+    if (cards.length) {
+      rows = cards.map(c => ({ id: T.tf + (c.day - T.from + 1), sc: c.strength - 10 * ((c.rev && c.rev.lapses) || 0) - 4 * Math.min(5, (c.quiz && c.quiz.w) || 0) - (c.quizWrongNow ? 8 : 0) - (c.used ? 0 : 5) + tie(c.day) }));
+    } else for (let n = 1; n <= 30; n++) {
       const c = _loadCompletion(T.from + n - 1); const fb = c && c.feedback && c.feedback.aiFb;
       const sc = !(c && c.sentence) ? 0 : (fb && fb.corrected && _wbNorm(fb.corrected) !== _wbNorm(c.sentence) ? 30 : 60);
       rows.push({ id: T.tf + n, sc: sc + tie(n) });
@@ -11163,7 +11206,7 @@ function QuarterEvalDev({ setActive }) {
       const d = (e && e.data) || {};
       if (d.qe) {
         if (d.qe.ph) setH(Math.max(400, d.qe.ph + 8));
-        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); const had = r.ticket && r.ticket.practiceIds; r.ticket = Object.assign({ evalDay }, r.ticket, { practiceStartAt: new Date().toISOString(), practiceIds: pracIds }); if (!had) { r.tkHist = r.tkHist || {}; r.tkHist[evalDay] = (r.tkHist[evalDay] || []).concat([pracIds]).slice(-10); } _qeSave(email, r); }
+        if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); const had = r.ticket && r.ticket.practiceIds; r.ticket = Object.assign({ evalDay }, r.ticket, { practiceStartAt: new Date().toISOString(), practiceIds: pracIds }); if (!had) { r.tkHist = r.tkHist || {}; r.tkHist[evalDay] = (r.tkHist[evalDay] || []).concat([pracIds]).slice(-10); _qeSyncTickets(email, evalDay, r.tkHist[evalDay]); } _qeSave(email, r); }
         if (d.qe.nav === "perk") setActive && setActive("perk");
         if (d.qe.nav === "use") { if (_retInvUse(email, "preview")) { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString(), evalDay }; _qeSave(email, r); try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e2) {} setMode("peek"); } }
         if (d.qe.start === "test") { frozen.current = { T: live.current.T, ids: live.current.mainIds }; setMode("test"); }
@@ -11172,7 +11215,12 @@ function QuarterEvalDev({ setActive }) {
       if (d.promo) {
         const r = _qeLoad(email); const at = new Date().toISOString();
         const row = { at, evalDay, kind: T.kind, title: T.title, ok: d.promo.ok, total: d.promo.total, miss: d.promo.miss || [], ans: d.promo.ans || {}, ids: d.promo.ids || [] };
-        if (d.promo.set === "main") { r.evals = r.evals || {}; if (!r.evals[evalDay]) { r.evals[evalDay] = Object.assign({ firstTry: true }, row); r.main = r.evals[evalDay]; } }
+        if (d.promo.set === "main") { r.evals = r.evals || {}; if (!r.evals[evalDay]) { r.evals[evalDay] = Object.assign({ firstTry: true }, row); r.main = r.evals[evalDay];
+          // ★ 2026-10-17: 평가를 보면 진급 처리. 사원 = 예전 승급 의례와 같은 저장(_persistLevelUp), 대리 = 심사 본 걸로(TF 신청서가 열린다).
+          try { if (T.kind === "p30") _persistLevelUp(Math.round(100 * (Number(d.promo.ok) || 0) / Math.max(1, Number(d.promo.total) || 15))); } catch (e2) {}
+          try { if (T.kind === "p90") localStorage.setItem("__OD_S3_SEEN_v2_" + email, "1"); } catch (e2) {}
+          try { _qeSync(email, evalDay, r.evals[evalDay]); } catch (e2) {}
+        } }
         else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
         _qeSave(email, r);
       }
@@ -11467,6 +11515,15 @@ function _retEnsurePromoReports(email) {
   };
   if ((USER.rankId === "fulltime" || USER.rankId === "senior") && !has("p30")) l.list.push(mk("p30", "수습 → 사원 진급 리포트", 1, 30, "사원"));
   if (USER.rankId === "senior" && !has("p90")) l.list.push(mk("p90", "사원 → 대리 진급 리포트", 31, 90, "대리"));
+  // ★ 2026-10-17: TF 수료 리포트. 수료한 TF 마다 그 30일(Day 91~120, 121~150 ...)로 한 부씩.
+  try {
+    const st = _tfState(); (st.done || []).forEach((id, i) => {
+      if (has("tf-" + id)) return;
+      const meta = (typeof TF_TRACKS !== "undefined" && TF_TRACKS.find(t => t.id === id)) || { name: id + " TF" };
+      const r = mk("tf-" + id, meta.name + " 수료 리포트", 91 + 30 * i, 120 + 30 * i, meta.name);
+      r.tf = id; r.tfName = meta.name; l.list.push(r);
+    });
+  } catch (e) {}
   _retSave("PROMO", email, l);
   return l.list;
 }
@@ -11649,7 +11706,7 @@ function _agMD(iso) { return iso ? Number(iso.slice(5, 7)) + "." + Number(iso.sl
 function _agKo(iso) { return iso ? Number(iso.slice(5, 7)) + "월 " + Number(iso.slice(8, 10)) + "일" : ""; }
 function _agEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
 function _agNick(name) { const n = String(name || "").trim(); return /^[가-힣]{3}$/.test(n) ? n.slice(1) : n; }
-function _agScn(d) { try { return SCENARIOS.find(s => s.day === d) || {}; } catch (e) { return {}; } }
+function _agScn(d) { try { return SCENARIOS.find(s => s.day === d) || (d > 90 ? (_tfRowsFor((window.__SIM || {}).USER || {}).find(s => s.day === d) || {}) : {}); } catch (e) { return {}; } }
 function _agData(r) {
   const u = _wbUser();
   const from = r.from || (r.stats && r.stats.from) || 1, to = r.to || (r.stats && r.stats.to) || 30, total = to - from + 1;
@@ -11699,7 +11756,7 @@ function _agDefaultAI(r, D, nick, rank) {
     note: r.mentorLine || (D.streak >= 5 ? "출근부 보면서 제일 먼저 눈에 띈 게 " + D.streak + "일 연속이었어요. 그 얘기부터 할게요." : "빈 날도 있었지만 여기까지 왔어요. 그 얘기부터 할게요."),
     pins: pins.slice(0, 4).sort((a, b) => (a.iso < b.iso ? -1 : 1)),
     comments: {},
-    letter: { to: nick + "씨, " + rank + " 진급 축하해요.", paragraphs: [
+    letter: { to: nick + "씨, " + rank + (r.tf ? " 수료" : " 진급") + " 축하해요.", paragraphs: [
       D.total + "칸 중 " + D.doneN + "칸을 채웠어요. 제일 길게 이어간 건 " + D.streak + "일 연속" + (D.maxN > 1 ? ", 하루에 제일 많이 한 날은 " + _agKo(D.maxDate) + "(" + D.maxN + "개)" : "") + "이에요.",
       b0 ? "Day " + b0.day + " 문장이 좋았어요. \"" + b0.text + "\" 그날 표현(" + b0.word + ")을 상황에 맞게 썼어요." : "다음 단계에서는 하루 한 문장씩 직접 써봐요. 그 문장들이 다음 리포트의 주인공이 돼요.",
       rank === "대리" ? "이제 회의를 이끄는 문장이 필요한 자리예요. 다음 TF에서 같이 연습해요." : "사원 기간에도 지금처럼 하루 한 칸씩 이어가요. 남은 칸은 같이 채워가요." ] },
@@ -11729,7 +11786,8 @@ function _agHTML(r, D, ai, X) {
   const E = _agEsc, nick = _agNick(USER.name), rank = r.rankLabel || "사원";
   const mentor = (CHARACTERS && CHARACTERS.mentor && CHARACTERS.mentor.name) || "사수", ini = mentor.charAt(0);
   const A = ai || _agDefaultAI(r, D, nick, rank);
-  const prevRank = rank === "대리" ? "사원" : rank === "사원" ? "수습" : "";
+  const KIND = r.tf ? "수료" : "진급";   // TF 수료 리포트는 "진급" 대신 "수료"
+  const prevRank = r.tf ? "대리" : rank === "대리" ? "사원" : rank === "사원" ? "수습" : "";
   const issued = String(r.at || "").slice(0, 10);
   // 출근부 기록
   const C = 326.7, dash = (C * Math.min(1, D.doneN / Math.max(1, D.total))).toFixed(1);
@@ -11751,11 +11809,26 @@ function _agHTML(r, D, ai, X) {
   // 진급 테스트 게이지 (새 테스트 결과, 없으면 예전 승급 테스트 점수)
   let gv = null; try { const t = _qeFor(_qeLoad(_retEmail()), D.to); if (t && t.total) gv = [t.ok, t.total]; } catch (e) {}
   if (!gv && rank === "사원") { const sc = Number(_wbUser().levelupTestScore); if (sc >= 0 && _wbUser().levelupTestScore != null) gv = [sc, 100]; }
-  const gauge = gv ? '<div class="w"><h4>진급 테스트</h4><div class="gauge"><svg viewBox="0 0 170 96"><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="14" stroke-linecap="round"/><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + (219.9 * Math.min(1, gv[0] / Math.max(1, gv[1]))).toFixed(1) + ' 219.9"/></svg><b>' + gv[0] + '<small style="font-size:14px;color:var(--ink2)"> / ' + gv[1] + '</small></b></div></div>' : '';
+  const gauge = gv ? '<div class="w"><h4>' + KIND + ' 테스트</h4><div class="gauge"><svg viewBox="0 0 170 96"><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="14" stroke-linecap="round"/><path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#D85A2A" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + (219.9 * Math.min(1, gv[0] / Math.max(1, gv[1]))).toFixed(1) + ' 219.9"/></svg><b>' + gv[0] + '<small style="font-size:14px;color:var(--ink2)"> / ' + gv[1] + '</small></b></div></div>' : '';
   // 모은 표현 한 줄
   const pc = (n) => (100 * n / Math.max(1, D.doneN)).toFixed(1) + "%";
+  // ★ 2026-10-17: 시안(성장 리포트 탭)대로 '완전 내 표현'(리뷰 · 미니 퀴즈에서 맞히고 다시 안 틀린 것) / '한 번 더 볼 표현'(틀리고 아직 못 맞힌 것).
+  //   기간 안에 퀴즈 · 복습 기록이 하나도 없으면 예전처럼 영작 기준(첨삭 없이 통과 / 사수가 다듬음)으로 보여준다.
+  const _QV = (() => { try { const em = _retEmail(); const st = JSON.parse(localStorage.getItem("__OD_QZ_STAT_" + em) || "{}") || {}; const wr = JSON.parse(localStorage.getItem("__OD_QZ_WRONG_" + em) || "{}") || {}; const rv = _wbLoadRev(em);
+    let cards = {}; try { _wbBuild(USER, SCENARIOS, rv).forEach(c => { cards[c.day] = c; }); } catch (e) {}
+    const f = {}; let any = false;
+    D.words.forEach(w => { const q = st[w.day] || null, r = rv[w.day] || null;
+      if (q || r) any = true;
+      const missNow = !!wr[w.word] || !!(q && q.lw && (!q.lk || q.lw > q.lk)) || !!(r && r.reps === 0 && r.lapses);
+      const own = !missNow && (!!(q && q.k) || !!(r && r.reps > 0));
+      const stg = cards[w.day] ? cards[w.day].strength : 0;
+      f[w.day] = { own, miss: missNow, lv: stg >= 75 ? "l4" : stg >= 55 ? "l3" : stg >= 30 ? "l2" : "l1" }; });
+    return { any, f }; } catch (e) { return { any: false, f: {} }; } })();
+  const nOwn = D.words.filter(w => (_QV.f[w.day] || {}).own).length, nMiss = D.words.filter(w => (_QV.f[w.day] || {}).miss).length;
   const nClean = D.words.filter(w => w.clean).length, nFix = D.sentences.length - D.clean.length, nRest = Math.max(0, D.doneN - nClean - nFix);
-  const stack = '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nClean) + ';background:#D85A2A"></i><i style="width:' + pc(nFix) + ';background:#F6B999"></i><i style="width:' + pc(nRest) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>첨삭 없이 통과한 문장 ' + nClean + '</span><span><i style="background:#F6B999"></i>사수가 다듬은 문장 ' + nFix + '</span><span><i style="background:#fff"></i>나머지 ' + nRest + '</span></div></div>';
+  const stack = _QV.any
+    ? '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nOwn) + ';background:#D85A2A"></i><i style="width:' + pc(nMiss) + ';background:#F6B999"></i><i style="width:' + pc(Math.max(0, D.doneN - nOwn - nMiss)) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>완전 내 표현 ' + nOwn + '</span><span><i style="background:#F6B999"></i>한 번 더 볼 표현 ' + nMiss + '</span><span><i style="background:#fff"></i>나머지 ' + Math.max(0, D.doneN - nOwn - nMiss) + '</span></div></div>'
+    : '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nClean) + ';background:#D85A2A"></i><i style="width:' + pc(nFix) + ';background:#F6B999"></i><i style="width:' + pc(nRest) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>첨삭 없이 통과한 문장 ' + nClean + '</span><span><i style="background:#F6B999"></i>사수가 다듬은 문장 ' + nFix + '</span><span><i style="background:#fff"></i>나머지 ' + nRest + '</span></div></div>';
   // 여정
   const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
   const road = '<div class="w"><h4>여정 <small>' + (D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지") + '</small></h4><div class="steps2"><span class="fill" style="width:' + D.rate + '%"></span>' + q.map(n => '<span class="' + (D.doneN >= n ? "on" : "") + '">' + n + '</span>').join("") + '</div></div>';
@@ -11796,7 +11869,9 @@ function _agHTML(r, D, ai, X) {
   if (tok.length < 4) tok.push(['✍️ 첨삭 없이 통과한 문장', D.clean.length + '<small>개</small>', '직접 쓴 ' + D.sentences.length + '개 중에서요.']);
   const rec = '<section class="mod w3"><h3>기록 <small>' + E(nick) + '씨 ' + E(prevRank) + ' 기간 기록</small></h3><div class="tok" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">' + tok.map(t => '<div><span>' + E(t[0]) + '</span><b>' + t[1] + '</b><span>' + E(t[2]) + '</span></div>').join("") + '</div></section>';
   // 모은 표현 칩 · 다시 볼 표현 · 다음에 열어볼 Day
-  const chips = '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
+  const chips = _QV.any
+    ? '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 리뷰퀴즈에서 맞힌 완전 내 표현 · 주황 테두리 = 한 번 더 볼 표현 · 회색이 진할수록 생생</p><div class="chips">' + D.words.map(w => { const f = _QV.f[w.day] || {}; return '<span class="' + (f.own ? "own" : f.miss ? "miss" : (f.lv || "l1")) + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>'; }).join("") + '</div></section>'
+    : '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
   const today = _agKST(new Date().toISOString());
   const again = D.words.filter(w => !w.clean && w.at).sort((a, b) => (a.at < b.at ? -1 : 1)).slice(0, 3);
   const againSec = again.length ? '<section class="mod"><h3>다시 볼 표현</h3>' + again.map((w, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">!</span><div><b>' + E(w.word) + '</b> <small>Day ' + w.day + ' · ' + E(w.meaning) + ' · ' + Math.max(0, _agDiff(w.at, today)) + '일 전에 배움</small><br>리뷰퀴즈에서 한 번 더 만나면 완전히 내 표현이 돼요.' + (w.tip ? '<br><small>' + E(String(w.tip).slice(0, 140)) + '</small>' : '') + '</div></div>').join("") + '</section>' : '';
@@ -11806,13 +11881,13 @@ function _agHTML(r, D, ai, X) {
   const cards = D.best.length ? '<section class="mod w3"><h3>잘 쓴 문장 <small>' + E(nick) + '씨가 직접 쓴 문장</small></h3><div class="cards">' + D.best.map(b => { const c = cm[b.day] || cm[String(b.day)] || b.praise; return '<article class="card"><div class="top"><span>DAY ' + b.day + ' · ' + E(String(b.word).toUpperCase()) + '</span><span>' + _agMD(b.date).split(".").map(x => x.padStart(2, "0")).join(".") + '</span></div><div class="en">"' + E(b.text) + '"</div>' + (b.fixed ? '<div class="fx"><b>사수가 다듬은 문장</b> ' + E(b.fixed) + '</div>' : '') + (c ? '<div class="pr"><span class="cm2"><span class="av">' + E(ini) + '</span><span><small>사수 코멘트</small>' + E(c) + '</span></span></div>' : '') + '</article>'; }).join("") + '</div></section>' : '';
   // 진급 테스트
   let tres = null; try { tres = _qeFor(_qeLoad(_retEmail()), D.to); } catch (e) {}
-  const testSec = '<section class="mod w2"><h3>진급 테스트 <small>' + E(rank) + ' 진급 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " 진급") + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
+  const testSec = '<section class="mod w2"><h3>' + KIND + ' 테스트 <small>' + E(rank) + ' ' + KIND + ' 심사</small></h3><div class="btn">' + E(_agMD(issued) + " " + rank + " " + KIND) + '<small>' + (tres ? '첫 시도 ' + tres.ok + ' / ' + tres.total + '. ' : '') + '다음 심사는 한 번 더 보면 좋은 표현과 다시 써보면 좋은 문장으로 준비했어요.</small></div>' + again.slice(0, 2).map((w, i) => '<div class="field' + (i === 0 ? " focus" : "") + '"><div class="lb">Day ' + w.day + ' · ' + E(w.word) + ' <em>한 번 더 볼 표현</em></div><div>' + E(w.meaning) + '. 리뷰퀴즈에서 한 번 더 만나요.</div></div>').join("") + D.sentences.filter(s => s.fixed).slice(0, 1).map(s => '<div class="field"><div class="lb">Day ' + s.day + ' · ' + E(s.word) + ' <em>다시 써보기</em></div><div class="q">"' + E(s.text) + '"</div><div>' + E(s.fixed) + '</div></div>').join("") + '</section>';
   // 그때 한 말
   const saidSec = XE.said.length ? '<section class="mod"><h3>그때 한 말</h3>' + XE.said.map(x => '<div class="field"><div class="lb">' + E(x.label) + '</div><div class="q">' + E(x.text) + '</div></div>').join("") + (A.reply ? '<div class="reply2"><span class="av">' + E(ini) + '</span><div><small>사수 답장 · 사수 ' + E(mentor) + '</small><p>' + E(A.reply) + '</p></div></div>' : '') + '</section>' : '';
   // 사수 편지
   const L = A.letter || {};
-  const letter = '<section class="mod w3"><h3>사수 편지 <small>' + E(mentor) + ' 사수가 ' + E(nick) + ' ' + E(rank) + '에게</small></h3><div class="typo letter2"><span class="lstamp">사수<br>편지</span><div class="to">' + E(String(L.to || (nick + "씨, " + rank + " 진급 축하해요.")).replace(/\s*같은 첫 줄\s*$/, "")) + '</div>' + (L.paragraphs || []).map(p => '<p>' + E(p) + '</p>').join("") + '<div class="sig">' + E(mentor) + '<small>담당 사수 · ' + E(issued.replace(/-/g, ".")) + '</small></div></div></section>';
-  const head = '<div class="sub" style="margin-top:0"><div class="ko">' + E(nick) + '씨, <em>' + E(rank) + '</em> 진급 리포트예요.</div><div class="tabs"><span>PROMOTION REPORT</span><span>' + E(prevRank + " → " + rank) + '</span><span>DAY ' + D.from + '–' + D.to + '</span><span>' + E(issued.replace(/-/g, ".")) + ' 발급</span></div></div>';
+  const letter = '<section class="mod w3"><h3>사수 편지 <small>' + E(mentor) + ' 사수가 ' + E(nick) + ' ' + E(rank) + '에게</small></h3><div class="typo letter2"><span class="lstamp">사수<br>편지</span><div class="to">' + E(String((r.tf ? "" : L.to) || (nick + "씨, " + rank + " " + KIND + " 축하해요.")).replace(/\s*같은 첫 줄\s*$/, "")) + '</div>' + (L.paragraphs || []).map(p => '<p>' + E(p) + '</p>').join("") + '<div class="sig">' + E(mentor) + '<small>담당 사수 · ' + E(issued.replace(/-/g, ".")) + '</small></div></div></section>';
+  const head = '<div class="sub" style="margin-top:0"><div class="ko">' + E(nick) + '씨, <em>' + E(rank) + '</em> ' + KIND + ' 리포트예요.</div><div class="tabs"><span>' + (r.tf ? "TF COMPLETION REPORT" : "PROMOTION REPORT") + '</span><span>' + E(r.tf ? rank : prevRank + " → " + rank) + '</span><span>DAY ' + D.from + '–' + D.to + '</span><span>' + E(issued.replace(/-/g, ".")) + (r.tf ? " 수료" : " 발급") + '</span></div></div>';
   const body = head + '<div class="grid"><section class="quote"><p>' + E(A.note) + '</p><b>사수 ' + E(mentor) + '</b></section>' + att + flow + wk + heat + gauge + stack + road + calSec + pins + rec + chips + againSec + openSec + cards + testSec + saidSec + letter + '</div>';
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"><style>' + _AG_CSS + 'html,body{overflow:hidden}body{padding:18px!important}body *,body *::before,body *::after{font-family:\'Noto Sans KR\',\'Apple SD Gothic Neo\',sans-serif!important}</style></head><body><div class="sheet">' + body + '</div></body></html>';
 }
@@ -11873,32 +11948,45 @@ function RetPromoSheetAG({ r, preview }) {
   );
 }
 // 성장 리포트 탭: 봉투 묶음 → 하나 펼쳐 보기 (성장 리포트 탭 아티팩트와 같은 구성)
+// 봉투 날짜: 제때 발급이면 "2026.09.16 발급(TF 는 수료)", 그 구간을 끝낸 날보다 이틀 넘게 늦게 발급됐으면 "늦게 발급 · 원래 9.14" (시안대로)
+function _agIssueLabel(x) {
+  const at = String(x.at || "").slice(0, 10);
+  try {
+    const ts = localStorage.getItem("__OD_TASKS_DAY_" + x.to + "_ts");
+    if (ts && Date.parse(at) - Date.parse(ts) > 2 * 86400000) { const d = new Date(Date.parse(ts) + 9 * 3600000); return "늦게 발급 · 원래 " + (d.getUTCMonth() + 1) + "." + d.getUTCDate(); }
+  } catch (e) {}
+  return at.replace(/-/g, ".") + (x.tf ? " 수료" : " 발급");
+}
 function RetPromoReportsAG({ list, preview }) {
   const { USER } = window.__SIM;
   const items = list.length ? list : (preview ? [preview] : []);
   const [cur, setCur] = React.useState(items.length ? items[items.length - 1].id : null);
   const rk = USER.rankId;
-  const next = (rk === "intern" || !rk) ? { t: "수습 → 사원", d: "Day 30 진급 때 이 자리에 와요" } : rk === "fulltime" ? { t: "사원 → 대리", d: "Day 90 진급 때 이 자리에 와요" } : { t: "다음 TF 수료 리포트", d: "다음 TF 30칸을 마치면 이 자리에 와요" };
+  const next = (rk === "intern" || !rk) ? { t: "수습 → 사원", d: "Day 30 진급 때 이 자리에 와요" } : rk === "fulltime" ? { t: "사원 → 대리", d: "Day 90 진급 때 이 자리에 와요" } : (((_tfState().done || []).length >= 4) ? { t: "과장 승진 심사", d: "TF 4개를 모두 수료했어요. 다음은 과장 심사예요" } : { t: "다음 TF 수료 리포트", d: "다음 TF 30칸을 마치면 이 자리에 와요" });
   const r = items.find(x => x.id === cur) || items[items.length - 1];
   return (
     <div className="ag-wrap">
       <div className="ag-env-row">
         {items.map((x, i) => {
-          const rank = x.rankLabel || "사원", prev = rank === "대리" ? "사원" : "수습";
+          const rank = x.rankLabel || "사원", prev = x.tf ? "대리" : rank === "대리" ? "사원" : "수습";
           return (
             <button key={x.id} type="button" className={"ag-env" + (x.id === (r && r.id) ? " on" : "")} onClick={() => setCur(x.id)}>
               {i === items.length - 1 && <span className="ag-env-new">NEW</span>}
-              <div className="ag-env-eb">PROMOTION REPORT</div>
-              <div className="ag-env-t">{prev} → {rank}</div>
-              <div className="ag-env-d">Day {x.from}–{x.to} · {String(x.at || "").slice(0, 10).replace(/-/g, ".")} 발급</div>
+              <div className="ag-env-eb">{x.tf ? "TF COMPLETION REPORT" : "PROMOTION REPORT"}</div>
+              <div className="ag-env-t">{x.tf ? rank : prev + " → " + rank}</div>
+              <div className="ag-env-d">Day {x.from}–{x.to} · {_agIssueLabel(x)}</div>
               <span className="ag-env-open">펼쳐 보기</span>
-              <span className="ag-env-stamp">{rank}</span>
+              <span className="ag-env-stamp">{x.tf ? "수료" : rank}</span>
             </button>
           );
         })}
         <div className="ag-env next"><div className="ag-env-eb">NEXT</div><div className="ag-env-t">{next.t}</div><div className="ag-env-d">{next.d}</div></div>
       </div>
-      {r && <div className="ag-sheet-bar"><span>펼친 리포트: <b>{r.title || ((r.rankLabel === "대리" ? "사원" : "수습") + " → " + (r.rankLabel || "사원") + " 진급 리포트")} (Day {r.from}–{r.to})</b></span></div>}
+      {r && <div className="ag-sheet-bar"><span>펼친 리포트: <b>{r.tf ? r.tfName + " 수료" : (r.title || ((r.rankLabel === "대리" ? "사원" : "수습") + " → " + (r.rankLabel || "사원") + " 진급 리포트"))} (Day {r.from}–{r.to})</b></span>
+        <span style={{ display: "flex", gap: 6 }}>
+          <button className="btn btn-ghost btn-mini" onClick={() => { try { const f = document.querySelector(".ag-wrap iframe"); if (f && f.contentWindow) { f.contentWindow.focus(); f.contentWindow.print(); } } catch (e) {} }}>PDF로 저장</button>
+          <button className="btn btn-ghost btn-mini" onClick={() => { try { const u = location.origin + location.pathname + "#mynotes"; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => alert("링크를 복사했어요. 로그인한 본인만 열 수 있어요."), () => prompt("이 링크를 복사하세요", u)); } catch (e) {} }}>링크 복사</button>
+        </span></div>}
       {r && <RetPromoSheetAG key={r.id} r={r} preview={!list.length} />}
     </div>
   );
@@ -11919,7 +12007,7 @@ function RetGrowthReports() {
     mentorLine: "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요." };
   return (
     <div className="ret-growth">
-      <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
+      <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때, TF를 마칠 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
       {sample && (_isDevNext() ? <RetPromoReportAG preview r={{ ...sample, mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} /> : <RetPromoReportCard r={sample} sample />)}
       {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
@@ -13089,6 +13177,8 @@ const _WB_GRADE_KO = { again: "몰랐음", hard: "가물가물", good: "떠올�
 
 // 카드 모델: 표현마다 내 기록을 전부 모으고 기억 강도를 계산
 function _wbBuild(USER, SCENARIOS, rev) {
+  // ★ 2026-10-17: TF(Day 91+) 표현도 카드로. 기억 강도 · 복습 · 진급 평가 출제가 같이 쓴다 (예전엔 Day 1~90 만).
+  try { if (SCENARIOS && !SCENARIOS.__withTf) { const tf = _tfRowsFor(USER); if (tf.length) { SCENARIOS = SCENARIOS.concat(tf.filter(t => !SCENARIOS.some(x => x.day === t.day))); } } } catch (e) {}
   const em = USER.email || "guest";
   const rd = USER.realCurrentDay || USER.currentDay || 1;
   const today = _wbTodayKST();
@@ -13965,6 +14055,36 @@ function _libCategory(s) {
 }
 const _libCatLabel = (id) => (_LIB_CATS.find(c => c.id === id) || {}).label || "일정·업무";
 
+// ★ 2026-10-17: Day 91+ TF 에서 배운 표현 줄 (업무 노트 · 업무 노트 메뉴 숫자 · TF 기억 강도 · 진급 평가 출제가 같이 쓴다)
+function _tfRowsFor(USER) {
+  const CHARACTERS = (window.__SIM && window.__SIM.CHARACTERS) || {};
+    try {
+    const st = (typeof _tfState === "function") ? _tfState() : null; if (!st) return [];
+    const realDay = Number(USER.realCurrentDay || USER.currentDay) || 1; if (realDay < 91) return [];
+    const done = Array.isArray(st.done) ? st.done : [];
+    const cur = st.track ? (st.track.id || st.track) : null;
+    const tracks = done.map((id, i) => ({ id, anchor: 91 + 30 * i, upto: 30 })).concat(cur ? [{ id: cur, anchor: 91 + 30 * done.length, upto: Math.max(0, Math.min(30, realDay - (91 + 30 * done.length) + 1)) }] : []);
+    const out = [];
+    tracks.forEach(t => {
+      const d = window.__TF_SCN && window.__TF_SCN[t.id];
+      if (!d) { try { if (window.__odLoadTf) window.__odLoadTf(t.id); } catch (e) {} return; }
+      if (d === "missing" || !d.scenarios) return;
+      d.scenarios.forEach(raw => {
+        const n = Number(raw.tfDay) || 0; if (n < 1 || n > t.upto) return;
+        out.push({ day: t.anchor + n - 1, word: raw.word, pos: raw.pos || "", meaning: raw.meaning, scene: raw.scene, npc: (raw.npc === "yoona") ? "mentor" : (CHARACTERS[raw.npc] ? raw.npc : "manager"),
+          quote: raw.quote, quoteKo: raw.quoteKo || "", mentorTip: raw.mentorTip, mentorNuance: raw.mentorNuance, buddyAnswers: raw.buddyAnswers, sampleAnswer: (raw.sampleAnswers || [])[0] || "", sampleAnswers: raw.sampleAnswers || [],
+          tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[t.id]) || ["tf"],
+          status: (t.anchor + n - 1) === realDay ? "today" : "studied", _tf: String(d.trackName || (t.id + " TF")).replace(/\s*TF$/, "") + " TF · " + n + "/30" });
+      });
+    });
+    return out;
+  } catch (e) { return []; }
+}
+// 업무 노트 '전체' 숫자와 같은 기준 (Day 1~90 모은 표현 + TF 표현). 메뉴 배지가 90에서 멈추던 것 (2026-10-17)
+function _libCount(user) {
+  try { const SC = (window.__SIM && window.__SIM.SCENARIOS) || []; const U = (window.__SIM && window.__SIM.USER) || user || {};
+    return SC.filter(x => x.day <= (U.wordsCollected || 0)).length + _tfRowsFor(U).length; } catch (e) { return user.studiedDays; }
+}
 function LibraryPage({ openScene }) {
   const { SCENARIOS, CHARACTERS, USER } = window.__SIM;
   const [filter, setFilter] = useState("all");
@@ -13990,29 +14110,7 @@ function LibraryPage({ openScene }) {
   //   실제 Day(91+) 를 그대로 써서 같은 표 안에 섞이고, 내가 쓴 문장·즐겨찾기도 그 Day 키로 연결된다.
   const [tfTick, setTfTick] = useState(0);
   React.useEffect(() => { const f = () => setTfTick(t => t + 1); window.addEventListener("tf-scn-loaded", f); return () => window.removeEventListener("tf-scn-loaded", f); }, []);
-  const tfRows = useMemo(() => {
-    try {
-      const st = (typeof _tfState === "function") ? _tfState() : null; if (!st) return [];
-      const realDay = Number(USER.realCurrentDay || USER.currentDay) || 1; if (realDay < 91) return [];
-      const done = Array.isArray(st.done) ? st.done : [];
-      const cur = st.track ? (st.track.id || st.track) : null;
-      const tracks = done.map((id, i) => ({ id, anchor: 91 + 30 * i, upto: 30 })).concat(cur ? [{ id: cur, anchor: 91 + 30 * done.length, upto: Math.max(0, Math.min(30, realDay - (91 + 30 * done.length) + 1)) }] : []);
-      const out = [];
-      tracks.forEach(t => {
-        const d = window.__TF_SCN && window.__TF_SCN[t.id];
-        if (!d) { try { if (window.__odLoadTf) window.__odLoadTf(t.id); } catch (e) {} return; }
-        if (d === "missing" || !d.scenarios) return;
-        d.scenarios.forEach(raw => {
-          const n = Number(raw.tfDay) || 0; if (n < 1 || n > t.upto) return;
-          out.push({ day: t.anchor + n - 1, word: raw.word, pos: raw.pos || "", meaning: raw.meaning, scene: raw.scene, npc: (raw.npc === "yoona") ? "mentor" : (CHARACTERS[raw.npc] ? raw.npc : "manager"),
-            quote: raw.quote, quoteKo: raw.quoteKo || "", mentorTip: raw.mentorTip, mentorNuance: raw.mentorNuance, buddyAnswers: raw.buddyAnswers, sampleAnswer: (raw.sampleAnswers || [])[0] || "", sampleAnswers: raw.sampleAnswers || [],
-            tags: raw.tags || ({ nego: ["negotiation", "deal"], people: ["people", "leadership"], docs: ["writing", "email"], meeting: ["meeting", "speakup"] }[t.id]) || ["tf"],
-            status: (t.anchor + n - 1) === realDay ? "today" : "studied", _tf: String(d.trackName || (t.id + " TF")).replace(/\s*TF$/, "") + " TF · " + n + "/30" });
-        });
-      });
-      return out;
-    } catch (e) { return []; }
-  }, [tfTick, USER.realCurrentDay, USER.currentDay]);
+  const tfRows = useMemo(() => _tfRowsFor(USER), [tfTick, USER.realCurrentDay, USER.currentDay]);
   const accessible = SCENARIOS.filter(s => s.day <= USER.wordsCollected).concat(tfRows);
   const filtered = accessible.filter(s => {
     if (filter === "fav" && !favSet.has(s.word)) return false;
@@ -19955,7 +20053,10 @@ const _PROBATION_MILESTONES = [
 
 // ── 사원(정직원) 구간 마일스톤: 대리 승진 시험 D-1 예고 ──
 const _FULLTIME_MILESTONES = [
-  { at: 89, icon: "📋", title: "내일, 대리 승진 시험", body: "89일 출근했어요. 내일 Day 90은 대리 승진 시험이에요. Day 61~90에서 직접 써본 표현으로 10문항이 나와요. 통과하면 내 일에 맞는 TF 트랙이 열려요.", cta: "오늘 복습하고 가기 →" },
+  // ★ 2026-10-17 (개발 뷰): 새 분기 평가 기준 문구 (대리 진급 평가 15문항 · Day 31~90 · 심사위원 사수 · 김 팀장 · Daniel)
+  (_isDevNext()
+    ? { at: 89, icon: "📋", title: "내일, 대리 진급 평가", body: "89일 출근했어요. 내일 Day 90은 대리 진급 평가예요. Day 31~90 표현 중 덜 익은 것으로 15문항, 마지막엔 사수 · 김 팀장 · Daniel 심사위원 셋이 한 명씩 물어요. 평가를 봐야 Day 91이 열리고, 끝나면 TF 를 골라요.", cta: "오늘 복습하고 가기 →" }
+    : { at: 89, icon: "📋", title: "내일, 대리 승진 시험", body: "89일 출근했어요. 내일 Day 90은 대리 승진 시험이에요. Day 61~90에서 직접 써본 표현으로 10문항이 나와요. 통과하면 내 일에 맞는 TF 트랙이 열려요.", cta: "오늘 복습하고 가기 →" }),
 ];
 
 // ── 마일스톤 축하 팝업 ──
@@ -20591,17 +20692,20 @@ function _pgCatalog(email) {
     { day: 3, sort: 3.6, name: "📌 공지 자동 팝업", when: "Day 3부터, 접속 1번에 1개", cond: "개인 공지(줄 20) → 전체 공지(180) → 푸시 안내(210) · 공지방(220) · 커리큘럼(230). 사내 게시판 메모 창으로 열려요.", queue: "20 · 180 · 210~230", once: "__OD_AUTOPOP" },
     { day: 8, sort: 8.5, name: "🙋 요즘 어떠세요? (의견 설문)", when: "Day 8 이상 + 출근 5일 이상", cond: "계정당 1번. 다른 기기에서 냈으면 안 떠요.", queue: 240, once: "__OD_SURVEY_2026_08", render: (close) => <PulseSurveyModal surveyKey={"__OD_PULSE_PREVIEW"} onClose={close} />, warn: "끝까지 내면 실제로 제출돼요" },
     { day: 29, sort: 29, name: "⏳ 내일 사원 진급 (D-1)", when: "Day 29 (수습)", cond: "수습인데 Day 29 이면 1번.", queue: 140, once: "D1 닫음 기록", render: (close) => <PromotionD1Popup onClose={close} /> },
-    { day: 30, sort: 30, name: "🎓 사원 승급 의례", when: "Day 30 이상 + 아직 수습", cond: "회고 → 테스트 → 소감 → 결과. 끝내면 사원으로 발령돼요.", queue: 30, once: "levelupCompletedAt", warn: "실제로 승급 처리돼서 여기선 못 띄워요. dev 런처 ?forcetest=levelup 로 열어요" },
+    { day: 30, sort: 30, name: "🎓 사원 승급 의례 (옛 버전)", when: "Day 30 이상 + 아직 수습", cond: "회고 → 테스트 → 소감 → 결과. 개발 뷰에선 분기 평가 탭의 사원 진급 평가가 대신해요.", queue: 30, once: "levelupCompletedAt", example: true, render: (close) => <PromotionCeremony realDay={30} preview onClose={close} /> },
+    { day: 30, sort: 29.9, name: "📝 진급 평가 날 안내 (개발 뷰)", when: "Day 30 · 90 · TF 마지막 날(120 · 150 · 180 · 210), 평가를 아직 안 봤을 때", cond: "오늘 일정을 끝낸 뒤 하루 1번. 평가를 봐야 다음 Day 가 열려요. 리뷰 퀴즈 · 업무 노트 복습은 먼저 해도 돼요.", queue: 135, once: "__OD_PEVAL_POP_<Day>_<날짜>", days: [30, 90, 120], dayLabel: (d) => "Day " + d, render: (close, d) => <PromoEvalDayPopup T={d === 30 ? { kind: "p30", evalDay: 30, title: "사원 진급 평가", from: 1, to: 30 } : d === 90 ? { kind: "p90", evalDay: 90, title: "대리 진급 평가", from: 31, to: 90 } : { kind: "tf", evalDay: 120, title: "TF 수료 평가", from: 91, to: 120, tfName: "협상 TF" }} onGo={close} onReview={close} onClose={close} /> },
     { day: 30, sort: 30.1, name: "👔 정직원 모드 가이드 (투어)", when: "사원 승급 직후 (Day 60 전)", cond: "6단계. 5단계가 '사원 진급 리포트 발행' 안내 (개발 뷰).", queue: "투어 (줄 밖)", once: "__OD_S2_TOUR_DONE_" + em, replay: () => { try { localStorage.removeItem("__OD_S2_TOUR_DONE_" + em); } catch (e) {} location.reload(); } },
     { day: 30, sort: 30.2, name: "📑 진급 리포트 발급 안내", when: "Day 30 · 60 · 90 을 지났는데 그 리포트가 없을 때 (개발 뷰)", cond: "다른 팝업이 다 닫히고 조용할 때 1번.", queue: "줄 밖 (조용할 때)", once: "__OD_REPORT_ISSUE_POP_" + em + "_<id>" },
     { day: 60, sort: 60, name: "🌟 Day 60 특별 면담", when: "Day 60~89, 1번", cond: "60일 누적 통계 + 대리 트랙 안내 + 업계 설문.", queue: 150, once: "__OD_DAY60_SEEN_" + em, render: (close) => <Day60Checkpoint onClose={close} />, warn: "설문을 끝까지 내면 실제로 저장돼요" },
   );
   _FULLTIME_MILESTONES.forEach(m => L.push({ day: m.at, sort: m.at + 0.5, name: m.icon + " " + m.title, when: "출근(완주) " + m.at + "일째 (사원)", cond: "대리 승진 시험 예고.", queue: 130, once: "__OD_MILESTONES_SEEN_FT", render: (close) => <MilestonePopup milestone={m} onClose={close} /> }));
   L.push(
-    { day: 90, sort: 90, name: "🏅 대리 승진 심사", when: "Day 90 이상, 1번 (TF 고르기 전)", cond: "옛 대리 승진 심사 팝업. 분기 평가 탭의 '대리 진급 평가'와 겹쳐서 정리가 필요해요.", queue: 40, once: "__OD_S3_SEEN_v2_" + em, render: (close) => <Season3Checkpoint onClose={close} />, warn: "끝까지 하면 실제로 저장돼요" },
-    { day: 90, sort: 90.1, name: "🗂 TF 신청서", when: "대리 심사를 본 뒤 + 진행 중인 TF 없음", cond: "Day 90 심사 직후 첫 TF. 30일마다(Day 121 · 151 · 181) 수료하면 다음 TF 를 고르러 다시 떠요.", queue: 50, once: "__OD_TF_TRACK_" + em, render: (close) => <TrackSelectModal done={[]} onClose={close} />, warn: "고르고 확인을 누르면 실제로 TF 가 바뀌어요" },
-    { day: 0, sort: 900, name: "😴 결근 복귀", when: "결근하고 다시 들어온 날 (아무 Day)", cond: "결근 1일·2일·5일·8일+ 단계별. 복습 퀴즈 → 아이템으로 연속 출근 지키기. dev 패널 '결근 n일'로 띄워 봐요.", queue: 60, once: "결근 기록 seen" },
+    { day: 90, sort: 90, name: "🏅 대리 승진 심사 (옛 버전)", when: "Day 90 이상, 1번 (TF 고르기 전)", cond: "일반 회원 화면에만 떠요. 개발 뷰에선 분기 평가 탭의 대리 진급 평가가 대신하고, 평가를 마치면 TF 신청서가 떠요.", queue: 40, once: "__OD_S3_SEEN_v2_" + em, render: (close) => <Season3Checkpoint onClose={close} />, warn: "끝까지 하면 실제로 저장돼요" },
+    { day: 90, sort: 90.1, name: "🗂 TF 신청서", when: "대리 심사를 본 뒤 + 진행 중인 TF 없음", cond: "Day 90 대리 진급 평가(개발 뷰) 또는 대리 심사 직후 첫 TF. TF 수료 평가를 보고 다음 날(Day 121 · 151 · 181)마다 다음 TF 를 고르러 다시 떠요.", queue: 50, once: "__OD_TF_TRACK_" + em, render: (close) => <TrackSelectModal done={[]} onClose={close} />, warn: "고르고 확인을 누르면 실제로 TF 가 바뀌어요" },
+    { day: 0, sort: 900, name: "😴 결근 복귀", when: "결근하고 다시 들어온 날 (아무 Day)", cond: "결근 1일·2일·5일·8일+ 단계별. 복습 퀴즈 → 아이템으로 연속 출근 지키기. 실제로 해 보려면 dev 패널 '결근 n일'.", queue: 60, once: "결근 기록 seen", days: [1, 2, 3], dayLabel: (k) => ["결근 1일", "2일", "5일+"][k - 1], example: "look", render: (close, k) => <RetDebuffPopup rec={{ level: k || 1, gap: [1, 2, 5][(k || 1) - 1] }} onOpenQuiz={() => {}} onClose={close} /> },
+    { day: 0, sort: 900.5, name: "🗒 복귀 설문", when: "오래 쉬다(8일+) 돌아온 날, 오늘 일정 + EXP 팝업 뒤", cond: "좋았던 점 · 힘들었던 점. 다음에 새 목표.", queue: 160, once: "결근 기록 surveyDone", example: "look", render: (close) => <RetComebackSurvey rec={{ gap: 8, level: 3 }} hasNext onDone={close} /> },
     { day: 0, sort: 901, name: "🗒 복귀 설문 → 새 목표", when: "결근 복귀한 날, 오늘 일정 + EXP 팝업이 끝난 뒤", cond: "오래 쉬었으면 설문(160) 다음 새 목표(170).", queue: "160 · 170", once: "결근 기록", render: (close) => <RetNewGoalPopup step={null} onDone={close} />, warn: "목표를 고르면 실제로 저장돼요" },
+    { day: 0, sort: 903, name: "🔔 알림 토스트 · 슬랙 핑", when: "그때그때 (EXP · 복지포인트 · 호봉 승급 · 사수 슬랙 메시지)", cond: "팝업이 아니라 화면 아래/위에 잠깐 떴다 사라지는 알림. 다른 팝업이 떠 있으면 기다렸다 떠요.", queue: "줄 밖", once: "없음 (그때마다)" },
     { day: 0, sort: 902, name: "📦 인수인계 D-7", when: "멤버십 끝나기 7일 전", cond: "지금은 꺼져 있어요 (_d7Warning = false).", queue: 10, once: "세션당 1번" },
   );
   return L.sort((a, b) => (a.day === 0) - (b.day === 0) || a.sort - b.sort);
@@ -20619,7 +20723,20 @@ function PopupGalleryDev({ onClose }) {
   const rd = Number((((window.__SIM || {}).USER || {}).realCurrentDay) || 1);
   const cur = open ? list[open.i] : null;
   // 미리보기 중엔 목록을 숨기고 그 팝업만 (팝업마다 겹침 순서가 달라 목록 뒤로 숨는 것 방지). 닫으면 목록으로 돌아온다.
-  if (cur && cur.render) return cur.render(() => setOpen(null), open.d);
+  if (cur && cur.render) {
+    const close = () => setOpen(null);
+    if (!cur.example) return cur.render(close, open.d);
+    // 예시 보기: 저장 · 전송이 안 되게. "look" 은 화면만 (눌러도 반응 없음), true 는 눌러 볼 수 있지만 저장은 안 하는 미리보기 모드
+    return (
+      <>
+        {cur.example === "look" ? <div style={{ pointerEvents: "none" }}>{cur.render(close, open.d)}</div> : cur.render(close, open.d)}
+        <div style={{ position: "fixed", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 99990, display: "flex", gap: 8, alignItems: "center", background: "var(--ink)", color: "var(--paper)", padding: "7px 8px 7px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 800, boxShadow: "0 10px 30px rgba(0,0,0,.3)" }}>
+          예시 보기 · 실제로 저장 안 돼요{cur.example === "look" ? " · 화면만" : ""}
+          <button className="btn btn-primary btn-mini" onClick={close}>닫기</button>
+        </div>
+      </>
+    );
+  }
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(20,15,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
       <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, width: "min(980px, 100%)", maxHeight: "92vh", overflow: "auto", padding: "20px 22px" }} onClick={e => e.stopPropagation()}>
@@ -20640,13 +20757,37 @@ function PopupGalleryDev({ onClose }) {
                   <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2 }}>1번만 뜨게 하는 기록: {p.once}{p.warn ? <span style={{ color: "#C0392B", fontWeight: 800 }}> · ⚠️ {p.warn}</span> : null}</div>
                 </div>
                 <div style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                  {p.render && (p.days ? p.days.map(d => <button key={d} className="btn btn-ghost btn-mini" onClick={() => setOpen({ i, d })}>Day {d}</button>) : <button className="btn btn-primary btn-mini" onClick={() => setOpen({ i })}>미리보기</button>)}
+                  {p.render && (p.days ? p.days.map(d => <button key={d} className="btn btn-ghost btn-mini" onClick={() => setOpen({ i, d })}>{p.dayLabel ? p.dayLabel(d) : "Day " + d}</button>) : <button className="btn btn-primary btn-mini" onClick={() => setOpen({ i })}>{p.example ? "예시 보기" : "미리보기"}</button>)}
                   {p.replay && <button className="btn btn-ghost btn-mini" onClick={p.replay}>다시 띄우기 ↻</button>}
                   {!p.render && !p.replay && <small style={{ color: "var(--ink-mute)", fontSize: 11 }}>설명만</small>}
                 </div>
               </div>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+// 진급 평가 날 안내 팝업 (개발 뷰). 평가 → 다음 Day. 복습하고 와도 된다.
+function PromoEvalDayPopup({ T, onGo, onReview, onClose }) {
+  const next = T.evalDay + 1;
+  const who = T.kind === "p30" ? "사수 · 김 팀장 · 인사팀" : T.kind === "p90" ? "사수 · 김 팀장 · Daniel" : "TF 상대역 · 김 팀장 · 사수";
+  const range = T.kind === "tf" ? "이번 TF 30일" : "Day " + T.from + "~" + T.to;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9150, background: "rgba(20,15,8,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, maxWidth: 440, width: "100%", padding: "26px 24px", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.45)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 11, letterSpacing: "0.22em", fontWeight: 800, color: "var(--orange)" }}>12F 인사팀 · 분기 평가</div>
+        <div style={{ fontSize: 34, margin: "12px 0 6px" }}>📝</div>
+        <div style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.35 }}>오늘은 {T.title}{T.tfName ? " (" + T.tfName + ")" : ""} 날이에요</div>
+        <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, margin: "10px 0 14px" }}>
+          평가를 봐야 <b style={{ color: "var(--ink)" }}>Day {next}</b>이 열려요. {range} 표현 중 덜 익은 것으로 15문항{T.kind === "tf" ? " + 롤플레이 8턴" : ""}, 마지막엔 심사위원({who})이 한 명씩 물어요.
+          바로 봐도 되고, <b style={{ color: "var(--ink)" }}>리뷰 퀴즈나 업무 노트 복습</b>을 먼저 하고 와도 돼요.
+        </p>
+        <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={onGo}>{T.title} 보러 가기 →</button>
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={onReview}>업무 노트 복습 먼저</button>
+          <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={onClose}>나중에</button>
         </div>
       </div>
     </div>
@@ -21074,7 +21215,7 @@ function PromotionD1Popup({ onClose }) {
 }
 
 // ── Day 30: 인사팀 상담 (회고 → 통계 → 영어 테스트 → 승급) ──
-function PromotionCeremony({ realDay }) {
+function PromotionCeremony({ realDay, preview, onClose }) {   // preview: 팝업 전체보기 예시 (저장 · 전송 안 함)
   const [step, setStep] = useState(0);           // 0 인트로 / 1 회고·통계 / 2 테스트 / 3 소감 / 4 결과
   const [qIdx, setQIdx] = useState(0);
   const [picks, setPicks] = useState([]);
@@ -21104,7 +21245,7 @@ function PromotionCeremony({ realDay }) {
   React.useEffect(() => {
     if (step === 4 && !saved) {
       setSaved(true);
-      _persistLevelUp(score);
+      if (!preview) _persistLevelUp(score);
     }
   }, [step]);
 
@@ -21124,7 +21265,7 @@ function PromotionCeremony({ realDay }) {
     if (reflectSent) { setStep(4); return; }
     setReflectSent(true);
     const email = local.email;
-    if (email && (reflectText.trim() || reflectRating) && window.OD?.submitFeedback) {
+    if (!preview && email && (reflectText.trim() || reflectRating) && window.OD?.submitFeedback) {
       const stars = reflectRating ? "★".repeat(reflectRating) + "☆".repeat(5 - reflectRating) : "(미선택)";
       window.OD.submitFeedback({
         email,
@@ -21363,7 +21504,7 @@ function PromotionCeremony({ realDay }) {
                 💌 회고 잘 받았어요. 다음 학습에 꼭 반영할게요.
               </div>
             )}
-            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => location.reload()}>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={() => preview && onClose ? onClose() : location.reload()}>
               👔 정직원으로 첫 출근하기 →
             </button>
           </div>
@@ -21744,7 +21885,7 @@ function App() {
   // ★ 이미 정직원 회고/승급을 끝낸 사람(levelup_completed_at 있음)에겐 다시 안 띄움.
   //   기기 바꿔도 hydrate가 DB의 levelup_completed_at을 로컬에 동기화하므로 재트리거 방지.
   const _levelupDone = !!(_localUserNow?.levelupCompletedAt || _localUserNow?.levelup_completed_at);
-  const _showCeremony = _isProbationNow && !_levelupDone && !!_localUserNow && _realDay >= 30;
+  const _showCeremony = _isProbationNow && !_levelupDone && !!_localUserNow && _realDay >= 30 && !_isDevNext();   // 개발 뷰: 분기 평가 탭의 사원 진급 평가가 대신
 
   // ── 대리 승진: Day 90 완주 시 1회 (90일 완주 → 대리 승진) ──
   const _S3_KEY = '__OD_S3_SEEN_v2_' + (_localUserNow?.email || 'guest');   // v2: 시험 포함 버전으로 갱신 (이전 닫음 무시)
@@ -21766,10 +21907,10 @@ function App() {
   const _studiedEnough = USER.streak >= 60 || _realDay >= 90 || _isInternalTester;
   //   ★ 이미 트랙을 고른 회원(_tf.track)에겐 절대 다시 띄우지 않는다. _s3Seen 은 기기별
   //   localStorage 라, 기기를 바꾸면 이미 대리가 된 분에게 심사가 또 뜰 수 있다.
-  const _showS3Checkpoint = !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen
+  const _showS3Checkpoint = !_isDevNext() && !!_localUserNow && _realDay >= 90 && _studiedEnough && !_s3Seen
     && !_tf.track && (_tf.done || []).length === 0 && !_showCeremony && !_showD1Popup;
   // TF 신청서: 대리(90+) + 승진 심사를 이미 마쳤고 + 현재 트랙 없음 (반드시 _showS3Checkpoint 선언 이후!)
-  const _showTfSelect = !!_localUserNow && _realDay >= 90 && _s3Seen && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
+  const _showTfSelect = !!_localUserNow && _realDay >= 90 && (_isDevNext() ? (() => { try { return localStorage.getItem(_S3_KEY) === "1"; } catch (e) { return false; } })() : _s3Seen) && !_tf.track && (_tf.done || []).length < 4 && !_showS3Checkpoint && !_showCeremony && !_showD1Popup;
 
   // ── Day 60 체크포인트: 60일 완주 축하 + 대리 트랙 안내 + 업계 설문 (Day 60-89 1회) ──
   const _DAY60_KEY = '__OD_DAY60_SEEN_' + (_localUserNow?.email || 'guest');
@@ -21932,6 +22073,13 @@ function App() {
 
   // ── 팝업 줄 세우기 (2026-10-13): 순서표 _POP_ORDER 대로 한 번에 1개 ──
   const _absSurveyToday = (() => { try { const d = _retDebuff(_localUserNow?.email || USER.email); return !!(d && d.date === _tyTodayISO() && d.surveyDone); } catch (e) { return false; } })();
+  // ★ 2026-10-17 (개발 뷰): 진급 평가 날 안내. 평가를 봐야 다음 Day 가 열린다. 오늘 일정 끝낸 뒤 줄(135), 하루 1번.
+  const _peT = (() => { try { if (!_isDevNext() || !_localUserNow) return null; const rec = _qeLoad(_retEmail()); const T = _qeTarget(USER, rec);
+    return (_realDay === T.evalDay && !_qeDone(rec, T.evalDay) && (T.kind !== "tf" || T.tf)) ? T : null; } catch (e) { return null; } })();
+  const _PE_KEY = "__OD_PEVAL_POP_" + ((_localUserNow && _localUserNow.email) || "guest") + "_" + _realDay + "_" + new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });   // 평가 볼 때까지 하루 1번씩
+  const [_peClosed, _setPeClosed] = useState(() => { try { return localStorage.getItem(_PE_KEY) === "1"; } catch (e) { return false; } });
+  const _closePe = () => { try { localStorage.setItem(_PE_KEY, "1"); } catch (e) {} _setPeClosed(true); };
+  const _slPromoEval = usePopSlot("promo-eval", !!_peT && !_peClosed);
   const _slD7 = usePopSlot("retire-d7", !!_showD7Popup);
   const _slCeremony = usePopSlot("promo-ceremony", !!_showCeremony);
   const _slSenior = usePopSlot("senior", !!_showS3Checkpoint);
@@ -22241,6 +22389,7 @@ function App() {
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
       {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
+      {_peT && !_peClosed && _slPromoEval && <PromoEvalDayPopup T={_peT} onGo={() => { _closePe(); setActive("test"); }} onReview={() => { _closePe(); setActive("library"); }} onClose={_closePe} />}
       {_showD1Popup && _slD1 && <PromotionD1Popup onClose={_dismissD1} />}
       {_showCeremony && _slCeremony && <PromotionCeremony realDay={_realDay} />}
       {_showS3Checkpoint && _slSenior && <Season3Checkpoint onClose={_dismissS3} />}
@@ -23361,7 +23510,12 @@ window.SimApp = App;
       save(u); reloadCleanUrl(); return;
     }
     switch (act) {
-      case 'd+1': devJump(u, Math.min(365, (u.dayInCompany || 1) + 1)); break;
+      case 'd+1': {
+        // 진급 평가 날이면 평가를 봐야 다음 Day (회원과 같은 규칙). 건너뛰려면 'Day로 점프'.
+        const c0 = u.dayInCompany || 1;
+        try { if (window.__odEvalBlocked && window.__odEvalBlocked(c0, u)) { alert('Day ' + c0 + ' 는 진급 평가 날이에요. 분기 평가 탭에서 평가를 봐야 Day ' + (c0 + 1) + ' 로 넘어가요.\n(건너뛰려면 \'Day로 점프\' 를 쓰세요. 그건 평가를 본 걸로 쳐요)'); return; } } catch (e) {}
+        devJump(u, Math.min(365, c0 + 1)); break;
+      }
       case 'd-1': devJump(u, Math.max(1, (u.dayInCompany || 1) - 1)); break;
       case 'd+7': devJump(u, Math.min(365, (u.dayInCompany || 1) + 7)); break;
       case 'd-7': devJump(u, Math.max(1, (u.dayInCompany || 1) - 7)); break;
