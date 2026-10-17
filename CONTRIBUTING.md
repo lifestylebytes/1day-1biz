@@ -69,3 +69,5 @@ PR 화면에 "This branch has conflicts"가 뜨면 당황하지 말고:
 - 이 레포에서 Claude가 작업하면 `CLAUDE.md`를 먼저 읽고 이 문서의 규칙을 따른다.
 - 대표 계정의 Claude 세션은 main에 바로 push할 수 있게 설정돼 있다. 그 외 사람의 세션에서는 Claude도 브랜치 + PR로 올린다.
 - Claude에게 "PR 열어줘"라고 하면 브랜치 생성부터 PR 본문 작성까지 해준다.
+- **팝업 규칙 (사람 · Claude 공통)**: 팝업을 새로 만들면 팝업 줄(`_POP_ORDER` + `usePopSlot`)에 세워서 두 팝업이 동시에 안 뜨게 하고, dev panel > 팝업 전체보기(`_pgCatalog2`)에도 추가한다. 자세한 건 CLAUDE.md "팝업 규칙".
+- **진급 개편 라이브**: `PROMO_LIVE.md` 순서대로.

@@ -1307,6 +1307,12 @@ span.ret-hud-item { cursor: default; }
 .ag-env-dl { display: inline-block; margin-top: 10px; font-size: 11.5px; font-weight: 800; color: #fff; background: var(--orange); padding: 5px 12px; border-radius: 999px; box-shadow: 0 6px 12px -8px rgba(216,90,42,.8); }
 .ag-env.pdf:hover .ag-env-dl { background: var(--stamp-red); }
 .ag-env.pdf .ag-env-stamp { font-size: 11px; letter-spacing: .04em; }
+.ag-env.lock { cursor: default; background: repeating-linear-gradient(135deg, var(--cream) 0 10px, rgba(58,40,18,.04) 10px 20px); }
+.ag-env.lock .ag-env-t { color: var(--ink-soft); }
+.ag-env.lock .ag-env-stamp { border-color: var(--ink-mute); color: var(--ink); font-size: 18px; }
+.ag-env.next.go { cursor: pointer; border-color: var(--orange); }
+.ag-env.next.go .ag-env-eb, .ag-env.next.go .ag-env-d { color: var(--orange); }
+.ag-lock-note { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 10px; background: var(--cream); font-size: 13px; color: var(--ink-soft); }
 .ag-env.next { border-style: dashed; background: transparent; cursor: default; }
 .ag-env.next .ag-env-t { color: var(--ink-mute); }
 .ag-sheet-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; font-size: 12px; color: var(--ink-mute); flex-wrap: wrap; } .ag-sheet-bar b { color: var(--ink); }
@@ -11087,7 +11093,7 @@ function RetReportsSoonPage({ setActive }) {
       </div>
       <div className="ret-growth">
         <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때, TF를 마칠 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
-        {_isDevNext() ? <RetPromoReportsAG list={list} preview={{ id: "dev-preview", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString() }} /> : list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
+        {_isDevNext() ? (list.length ? <RetPromoReportsAG list={list} setActive={setActive} /> : <RetPromoLockedAG setActive={setActive} />) : list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
         {!list.length && !_isDevNext() && (
           <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)" }}>
             아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
@@ -11693,7 +11699,7 @@ body{background:#E8DFCB;font-family:var(--f);color:var(--ink);padding:24px max(1
 .alert.hot{box-shadow:0 0 0 2px rgba(216,90,42,.35),0 10px 24px -12px rgba(216,90,42,.6)}
 .alert .ic{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;display:grid;place-items:center}
 .alert.hot .ic{background:var(--or)}
-.alert b{font-size:15px}.alert small{color:var(--mute)}
+.alert b{font-size:15px}.alert small{color:var(--mute)}.alert .ago{display:table;margin-bottom:6px;background:var(--or);color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700}.alert .ago b{font-size:14px;font-weight:900}
 .space{display:grid;gap:6px;font-size:12.5px}
 .space div{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center}
 .space i{display:block;height:10px;background:#DDD0B6;border-radius:2px}
@@ -11827,7 +11833,9 @@ function _agData(r) {
   const clean = sentences.filter(s => !s.fixed);
   const best = sentences.slice().sort((a, b) => ((b.praise ? 1 : 0) - (a.praise ? 1 : 0)) || (b.text.length - a.text.length)).slice(0, 3).sort((a, b) => a.day - b.day);
   const learnedAt = {}; dates.forEach(iso => byDate[iso].forEach(d => { if (!learnedAt[d]) learnedAt[d] = iso; }));
-  const words = doneDays.map(d => { const sc = _agScn(d); return { day: d, word: sc.word || "", meaning: sc.meaning || "", tip: (sc.buddyAnswers && (sc.buddyAnswers.default || sc.buddyAnswers.nuance)) || sc.mentorTip || "", at: learnedAt[d] || "", clean: clean.some(x => x.day === d) }; });
+  // ★ 2026-10-18: 직접 문장을 쓴 Day / 예시 문장으로 채운 Day 구분 (예시 = 피드백에 isExample 이거나 모범 답안 그대로)
+  const isEx = (s) => !!(s.feedback && s.feedback.isExample) || (String(s.sentence || "").trim() !== "" && String(s.sentence).trim() === String(_agScn(s.day).sampleAnswer || "").trim());
+  const words = doneDays.map(d => { const sc = _agScn(d); const sub = list.find(x => x.day === d); return { day: d, word: sc.word || "", meaning: sc.meaning || "", tip: (sc.buddyAnswers && (sc.buddyAnswers.default || sc.buddyAnswers.nuance)) || sc.mentorTip || "", at: learnedAt[d] || "", clean: clean.some(x => x.day === d), wrote: !!(sub && String(sub.sentence || "").trim() && !isEx(sub)) }; });
   return { from, to, total, doneN: doneDays.length, rate: total ? Math.round(100 * doneDays.length / total) : 0, open, byDate, dates, studyDays: dates.length, streak, sFrom, sTo, maxN, maxDate, gapDays, gapFrom, gapBack, bestMonth: bm, bestMonthDays: months[bm] || 0, wd, weeks, sentences, clean, best, words };
 }
 // 기본 문장 (AI 편지를 아직 못 받았을 때)
@@ -11915,9 +11923,13 @@ function _agHTML(r, D, ai, X) {
     return { any, f }; } catch (e) { return { any: false, f: {} }; } })();
   const nOwn = D.words.filter(w => (_QV.f[w.day] || {}).own).length, nMiss = D.words.filter(w => (_QV.f[w.day] || {}).miss).length;
   const nClean = D.words.filter(w => w.clean).length, nFix = D.sentences.length - D.clean.length, nRest = Math.max(0, D.doneN - nClean - nFix);
+  // ★ 2026-10-18: 퀴즈 · 복습 기록이 없을 때(예전 회원)는 '직접 쓴 표현 / 퀴즈에서 틀린 표현 / 예시 문장으로 채운 표현'으로 나눈다
+  const _FB = (() => { const f = {}; try { const em = _retEmail(); const wr = JSON.parse(localStorage.getItem("__OD_QZ_WRONG_" + em) || "{}") || {}; let tm = {}; try { const t = _qeFor(_qeLoad(em), D.to); (t && t.miss || []).forEach(x => { tm[String(x).toLowerCase()] = 1; }); } catch (e) {}
+    D.words.forEach(w => { const miss = !!(wr[w.word] && !wr[w.word].cleared) || !!tm[String(w.word).toLowerCase()]; f[w.day] = { miss, own: !miss && w.wrote }; }); } catch (e) {} return f; })();
+  const fOwn = D.words.filter(w => (_FB[w.day] || {}).own).length, fMiss = D.words.filter(w => (_FB[w.day] || {}).miss).length, fEx = Math.max(0, D.doneN - fOwn - fMiss);
   const stack = _QV.any
     ? '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nOwn) + ';background:#D85A2A"></i><i style="width:' + pc(nMiss) + ';background:#F6B999"></i><i style="width:' + pc(Math.max(0, D.doneN - nOwn - nMiss)) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>완전 내 표현 ' + nOwn + '</span><span><i style="background:#F6B999"></i>한 번 더 볼 표현 ' + nMiss + '</span><span><i style="background:#fff"></i>나머지 ' + Math.max(0, D.doneN - nOwn - nMiss) + '</span></div></div>'
-    : '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(nClean) + ';background:#D85A2A"></i><i style="width:' + pc(nFix) + ';background:#F6B999"></i><i style="width:' + pc(nRest) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>첨삭 없이 통과한 문장 ' + nClean + '</span><span><i style="background:#F6B999"></i>사수가 다듬은 문장 ' + nFix + '</span><span><i style="background:#fff"></i>나머지 ' + nRest + '</span></div></div>';
+    : '<div class="w s2"><h4>모은 표현 ' + D.doneN + '개 <small>한 줄로 보기</small></h4><div class="stack"><i style="width:' + pc(fOwn) + ';background:#D85A2A"></i><i style="width:' + pc(fMiss) + ';background:#F6B999"></i><i style="width:' + pc(fEx) + ';background:rgba(255,255,255,.9)"></i></div><div class="legend2"><span><i style="background:#D85A2A"></i>직접 문장을 쓴 표현 ' + fOwn + '</span><span><i style="background:#F6B999"></i>퀴즈에서 틀린 표현 ' + fMiss + '</span><span><i style="background:#fff"></i>예시 문장으로 채운 표현 ' + fEx + '</span></div></div>';
   // 여정
   const q = [0.25, 0.5, 0.75, 1].map(f => Math.round(D.total * f));
   const road = '<div class="w"><h4>여정 <small>' + (D.doneN >= D.total ? D.total + "칸 완주" : D.doneN + "칸까지") + '</small></h4><div class="steps2"><span class="fill" style="width:' + D.rate + '%"></span>' + q.map(n => '<span class="' + (D.doneN >= n ? "on" : "") + '">' + n + '</span>').join("") + '</div></div>';
@@ -11960,10 +11972,13 @@ function _agHTML(r, D, ai, X) {
   // 모은 표현 칩 · 다시 볼 표현 · 다음에 열어볼 Day
   const chips = _QV.any
     ? '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 리뷰퀴즈에서 맞힌 완전 내 표현 · 주황 테두리 = 한 번 더 볼 표현 · 회색이 진할수록 생생</p><div class="chips">' + D.words.map(w => { const f = _QV.f[w.day] || {}; return '<span class="' + (f.own ? "own" : f.miss ? "miss" : (f.lv || "l1")) + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>'; }).join("") + '</div></section>'
-    : '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 첨삭 없이 통과한 문장의 표현 · 회색 = 모은 표현</p><div class="chips">' + D.words.map(w => '<span class="' + (w.clean ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>').join("") + '</div></section>';
+    : '<section class="mod"><h3>모은 표현 <small>' + D.doneN + '개</small></h3><p class="lede">주황 채움 = 직접 문장을 쓴 표현 · 주황 테두리 = 퀴즈에서 틀린 표현 · 회색 = 예시 문장으로 채운 표현</p><div class="chips">' + D.words.map(w => { const f = _FB[w.day] || {}; return '<span class="' + (f.miss ? "miss" : f.own ? "own" : "l1") + '" title="Day ' + w.day + ' · ' + E(w.meaning) + '">' + E(w.word) + '</span>'; }).join("") + '</div></section>';
   const today = _agKST(new Date().toISOString());
-  const again = D.words.filter(w => !w.clean && w.at).sort((a, b) => (a.at < b.at ? -1 : 1)).slice(0, 3);
-  const againSec = again.length ? '<section class="mod"><h3>다시 볼 표현</h3>' + again.map((w, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">!</span><div><b>' + E(w.word) + '</b> <small>Day ' + w.day + ' · ' + E(w.meaning) + ' · ' + Math.max(0, _agDiff(w.at, today)) + '일 전에 배움</small><br>리뷰퀴즈에서 한 번 더 만나면 완전히 내 표현이 돼요.' + (w.tip ? '<br><small>' + E(String(w.tip).slice(0, 140)) + '</small>' : '') + '</div></div>').join("") + '</section>' : '';
+  // ★ 2026-10-18: '00일 전에 배움' → '00일 전 마지막 학습'(영작 · 업무 노트 복습 중 가장 최근)을 크게. 오래 안 본 표현부터.
+  const _rvAll = (() => { try { return _wbLoadRev(_retEmail()) || {}; } catch (e) { return {}; } })();
+  const lastOf = (w) => { const r = _rvAll[w.day]; const rl = r && r.last ? _agKST(r.last) : ""; return rl && rl > (w.at || "") ? rl : w.at; };
+  const again = D.words.filter(w => !w.clean && w.at).map(w => Object.assign({}, w, { last: lastOf(w) })).sort((a, b) => (a.last < b.last ? -1 : 1)).slice(0, 3);
+  const againSec = again.length ? '<section class="mod"><h3>다시 볼 표현</h3>' + again.map((w, i) => '<div class="alert' + (i === 0 ? " hot" : "") + '"><span class="ic">!</span><div><div class="ago"><b>' + Math.max(0, _agDiff(w.last, today)) + '일 전</b> 마지막 학습</div><b>' + E(w.word) + '</b> <small>Day ' + w.day + ' · ' + E(w.meaning) + '</small><br>리뷰퀴즈에서 한 번 더 만나면 완전히 내 표현이 돼요.' + (w.tip ? '<br><small>' + E(String(w.tip).slice(0, 140)) + '</small>' : '') + '</div></div>').join("") + '</section>' : '';
   const openSec = D.open.length ? '<section class="mod"><h3>다음에 열어볼 Day <small>' + D.open.length + '개</small></h3><p class="lede">하루 하나씩 열면 이 칸도 금방 채워져요.</p><div class="space">' + D.open.slice(0, 10).map(d => '<div><span>' + d + '</span><span>' + E(_agScn(d).word || "") + '</span></div>').join("") + '</div></section>' : '';
   // 잘 쓴 문장
   const cm = A.comments || {};
@@ -12049,13 +12064,44 @@ function _agIssueLabel(x) {
   } catch (e) {}
   return at.replace(/-/g, ".") + (x.tf ? " 수료" : " 발급");
 }
-function RetPromoReportsAG({ list, preview }) {
+// ★ 2026-10-18 (개발 뷰): 받은 진급 리포트가 없으면 잠긴 봉투. 예전엔 내 기록으로 그린 미리보기 리포트를 보여줘서
+//   평가를 안 본 회원도 리포트를 다 볼 수 있었다. 이제 평가를 보면 열린다.
+function _promoRetroPending() { try { const b = _retLoad("PBATCH", _retEmail(), null); const R = b && b.retro; return R && !_qeDone(_qeLoad(_retEmail()), R.evalDay) ? R : null; } catch (e) { return null; } }
+function RetPromoLockedAG({ setActive }) {
+  const { USER } = window.__SIM; const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const R = _promoRetroPending();
+  let T = null; try { T = _qeTarget(USER, _qeLoad(_retEmail())); } catch (e) {}
+  const k = (R || T || {}).kind || "p30";
+  const t = k === "p30" ? "수습 → 사원" : k === "p90" ? "사원 → 대리" : ((R || T).tfName || "TF") + " 수료";
+  const evalDay = (R || T || {}).evalDay || 30, open = !!R || rd >= evalDay;
+  const go = () => { try { sessionStorage.setItem("__OD_QE_AUTOSTART", "1"); } catch (e) {} setActive && setActive("test"); };
+  return (
+    <div className="ag-wrap">
+      <div className="ag-env-row">
+        <div className="ag-env lock" role="group" aria-label="잠긴 진급 리포트">
+          <div className="ag-env-eb">{k === "tf" ? "TF COMPLETION REPORT" : "PROMOTION REPORT"}</div>
+          <div className="ag-env-t">{t}</div>
+          <div className="ag-env-d">{open ? (R ? "늦게 열린 평가를 보면 바로 열려요" : "진급 평가를 보면 바로 열려요") : "Day " + evalDay + " 진급 평가 뒤에 열려요 (D-" + Math.max(0, evalDay - rd) + ")"}</div>
+          <span className="ag-env-stamp">🔒</span>
+        </div>
+      </div>
+      <div className="ag-lock-note">
+        <span>📑 진급 리포트는 <b>진급 평가를 본 뒤</b>에 발행돼요. 출근부, 잘 쓴 문장, 사수 편지에 평가 점수와 헷갈린 표현까지 담겨요.</span>
+        {open && setActive && <button className="btn btn-mini" onClick={go}>평가 보고 새 리포트 받기 →</button>}
+      </div>
+    </div>
+  );
+}
+function RetPromoReportsAG({ list, preview, setActive }) {
   const { USER } = window.__SIM;
   const items = list.length ? list : (preview ? [preview] : []);
   const [cur, setCur] = React.useState(items.length ? items[items.length - 1].id : null);
   const rk = USER.rankId;
   const next = (rk === "intern" || !rk) ? { t: "수습 → 사원", d: "Day 30 진급 때 이 자리에 와요" } : rk === "fulltime" ? { t: "사원 → 대리", d: "Day 90 진급 때 이 자리에 와요" } : (((_tfState().done || []).length >= 4) ? { t: "과장 승진 심사", d: "TF 4개를 모두 수료했어요. 다음은 과장 심사예요" } : { t: "다음 TF 수료 리포트", d: "다음 TF 30칸을 마치면 이 자리에 와요" });
   const r = items.find(x => x.id === cur) || items[items.length - 1];
+  // 늦게 열린 평가가 남아 있으면 NEXT 칸에서 바로 평가로
+  const RP = _promoRetroPending();
+  const nextR = RP ? { t: (RP.kind === "p30" ? "수습 → 사원" : RP.kind === "p90" ? "사원 → 대리" : (RP.tfName || "TF") + " 수료"), d: "늦게 열린 평가를 보면 새 리포트가 여기 와요 · 평가 보러 가기 →" } : null;
   return (
     <div className="ag-wrap">
       <div className="ag-env-row">
@@ -12072,7 +12118,8 @@ function RetPromoReportsAG({ list, preview }) {
             </button>
           );
         })}
-        <div className="ag-env next"><div className="ag-env-eb">NEXT</div><div className="ag-env-t">{next.t}</div><div className="ag-env-d">{next.d}</div></div>
+        {nextR ? <button type="button" className="ag-env next go" onClick={() => { try { sessionStorage.setItem("__OD_QE_AUTOSTART", "1"); } catch (e) {} setActive && setActive("test"); }}><div className="ag-env-eb">NEXT · 평가 열림</div><div className="ag-env-t">{nextR.t}</div><div className="ag-env-d">{nextR.d}</div></button>
+          : <div className="ag-env next"><div className="ag-env-eb">NEXT</div><div className="ag-env-t">{next.t}</div><div className="ag-env-d">{next.d}</div></div>}
       </div>
       {r && <div className="ag-sheet-bar"><span>펼친 리포트: <b>{r.tf ? r.tfName + " 수료" : (r.title || ((r.rankLabel === "대리" ? "사원" : "수습") + " → " + (r.rankLabel || "사원") + " 진급 리포트"))} (Day {r.from}–{r.to})</b></span>
         <span style={{ display: "flex", gap: 6 }}>
@@ -12101,8 +12148,8 @@ function RetGrowthReports() {
     <div className="ret-growth">
       <div className="ret-growth-head">📑 진급 리포트 <small>사원·대리로 올라갈 때, TF를 마칠 때 자동 발급 · 여기 차곡차곡 쌓여요</small></div>
       {list.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-      {sample && (_isDevNext() ? <RetPromoReportAG preview r={{ ...sample, mentorLine: "개발 뷰 미리보기예요. 지금까지 내 기록(Day 1~30)으로 그린 진급 리포트 모양이에요." }} /> : <RetPromoReportCard r={sample} sample />)}
-      {sample && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
+      {sample && (_isDevNext() ? <RetPromoLockedAG /> : <RetPromoReportCard r={sample} sample />)}
+      {sample && !_isDevNext() && <div className="ret-growth-note">Day 30 사원 진급 때 첫 리포트가 발급돼요. 위는 어떤 모양인지 보여주는 샘플이에요.</div>}
       {(() => {
         const legacy = (typeof _reportsList === "function") ? _reportsList() : [];
         const rd = (window.__SIM && window.__SIM.USER && (window.__SIM.USER.realCurrentDay || window.__SIM.USER.currentDay)) || 1;
@@ -15334,7 +15381,8 @@ function HrRecordsSection() {
                   <div className="modal-doc-head"><span>📑 진급 리포트</span><button type="button" onClick={() => setPromoOpen(false)} style={{ color: "var(--paper)", fontSize: 16 }} aria-label="닫기">✕</button></div>
                   <div style={{ padding: 16 }}>
                     {_promo.map(r => <RetPromoReportCard key={r.id} r={r} />)}
-                    {!_promo.length && (
+                    {!_promo.length && _isDevNext() && <RetPromoLockedAG />}
+                    {!_promo.length && !_isDevNext() && (
                       <>
                         <RetPromoReportCard sample r={{ id: "sample", title: "수습 → 사원 진급 리포트", rankLabel: "사원", from: 1, to: 30, at: new Date().toISOString(),
                           stats: { from: 1, to: 30, total: 30, attended: 27, absent: 3, rate: 90, words: 27, sentences: 27, corrected: 24, ot: 6, pre: 9, rev: 11, topTags: ["meeting", "email", "project"] },
@@ -21523,7 +21571,7 @@ function PPRetroIntro({ T, onGo, onReview, onClose }) {
       <div className="hd" style={{ paddingTop: 12 }}><span className="eb">늦게 열린 평가 · DAY {T.evalDay}</span><h2>이미 {rank}{k === "tf" ? "하셨지만" : "이시지만"},<br/><em>{what}</em>가 열렸어요</h2><p className="lede">새 평가가 조금 늦게 열렸어요. 진급은 그대로니까 부담 없이, 재미로 한 번 봐주세요.</p></div>
       <div className="bd">
         <div className="steps"><b>15문항{k === "tf" ? " + 롤플레이" : ""}</b>→<span>헷갈린 표현 다시 풀기</span>→<span>새 {rep}</span></div>
-        <button className="btn t" onClick={onGo}>재미로 평가 보기</button>
+        <button className="btn t" onClick={onGo}>평가 보고 새 리포트 받기</button>
         <div className="lnk">{onReview && <button onClick={onReview}>업무 노트 복습 먼저</button>}<button onClick={onClose}>나중에</button></div>
         <div className="sub">보시면 평가 점수와 헷갈린 표현까지 담은 새 {rep}를 발행해 드려요 · 볼 때까지 접속하면 다시 떠요</div>
       </div>
@@ -23998,6 +24046,30 @@ window.SimApp = App;
   const panel = document.createElement('div');
   panel.id = 'dev-panel';
 
+  // ★ 2026-10-18: 폰 화면 / PC 화면 바꾸기. 폰 화면 = 같은 페이지를 폰 크기(390×844) 창 안에 띄운다.
+  //   창 안은 진짜 폰 너비라서 모바일 화면(하단 탭바 등)이 그대로 나온다. 같은 계정 · 같은 기록.
+  const _inPhoneFrame = (() => { try { return window.self !== window.top && /[?&]phoneframe=1/.test(location.search); } catch (e) { return true; } })();
+  function phoneFrameOpen() {
+    if (_inPhoneFrame || document.getElementById('dev-phone-wrap')) return;
+    const u = new URL(location.href); u.searchParams.set('phoneframe', '1');
+    const w = document.createElement('div'); w.id = 'dev-phone-wrap';
+    w.style.cssText = 'position:fixed;inset:0;z-index:9995;background:rgba(20,15,8,.78);display:flex;align-items:center;justify-content:center;gap:18px;padding:16px;flex-wrap:wrap';
+    w.innerHTML = '<div style="background:#111;border-radius:44px;padding:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.7)"><iframe title="폰 화면" src="' + u.toString().replace(/"/g, '&quot;') + '" style="width:390px;height:min(844px,calc(100vh - 80px));border:0;border-radius:34px;background:#fff;display:block"></iframe></div>'
+      + '<div style="display:grid;gap:8px"><b style="color:#F4EFE3;font:800 14px sans-serif">📱 폰 화면 · 390 × 844</b><button type="button" data-phone-close style="padding:10px 14px;border:0;border-radius:10px;background:#D85A2A;color:#fff;font:800 13px sans-serif;cursor:pointer">🖥 PC 화면으로</button><button type="button" data-phone-reload style="padding:8px 14px;border:1px solid #6b5a47;border-radius:10px;background:transparent;color:#F4EFE3;font:700 12px sans-serif;cursor:pointer">↻ 폰 화면 새로고침</button></div>';
+    w.addEventListener('click', (e) => {
+      if (e.target.closest('[data-phone-close]')) { phoneFrameClose(); }
+      if (e.target.closest('[data-phone-reload]')) { const f = w.querySelector('iframe'); if (f) f.src = f.src; }
+    });
+    document.body.appendChild(w);
+    try { sessionStorage.setItem('__OD_DEV_PHONE', '1'); } catch (e) {}
+    try { render(); } catch (e) {}
+  }
+  function phoneFrameClose() {
+    const w = document.getElementById('dev-phone-wrap'); if (w) w.remove();
+    try { sessionStorage.removeItem('__OD_DEV_PHONE'); } catch (e) {}
+    try { render(); } catch (e) {}
+  }
+
   function render() {
     const u = load();
     if (panel.classList.contains('collapsed')) {
@@ -24111,6 +24183,8 @@ window.SimApp = App;
           <button class="dp-btn" data-act="clear-learning" title="답변·일정체크·저널·팝업기록 전부 비우기">🧹 학습 비우기</button>
           <button class="dp-btn" data-act="reset-popups" style="grid-column: span 2" title="첫 주 팝업/투어/설문 1회 노출 기록만 초기화">🎁 팝업 기록만 리셋 (다시 보기)</button>
           <button class="dp-btn" data-act="popup-gallery" style="grid-column: span 2" title="회원에게 뜨는 팝업을 Day · 조건 · 순서대로 모아 보고 미리보기">🗂 팝업 전체보기</button>
+          <button class="dp-btn" data-act="view-phone" style="${document.getElementById('dev-phone-wrap') ? 'background:rgba(243,138,92,0.4)' : ''}" title="같은 화면을 폰 크기(390×844)로">📱 폰 화면</button>
+          <button class="dp-btn" data-act="view-pc" style="${document.getElementById('dev-phone-wrap') ? '' : 'background:rgba(243,138,92,0.4)'}" title="원래 PC 화면">🖥 PC 화면</button>
         </div>
       </div>
 
@@ -24515,12 +24589,17 @@ window.SimApp = App;
         location.reload();
         break;
       }
+      case 'view-phone': phoneFrameOpen(); break;
+      case 'view-pc': phoneFrameClose(); break;
       case 'popup-gallery': try { panel.classList.add('collapsed'); render(); window.dispatchEvent(new Event('od-open-popup-gallery')); } catch (e) {} break;
       case 'reload': location.reload(); break;
     }
   }
 
   document.body.appendChild(panel);
+  // 폰 화면 창 안에서는 dev 패널을 숨기고, 새로고침해도 폰 화면이 유지되게
+  if (_inPhoneFrame) panel.style.display = 'none';
+  else { try { if (sessionStorage.getItem('__OD_DEV_PHONE') === '1') setTimeout(phoneFrameOpen, 600); } catch (e) {} }
   render();
 })();
 </script>
