@@ -290,7 +290,7 @@ body::before {
   border-radius: 50%;
   color: var(--stamp-red);
   font-weight: 900; font-size: 13px; letter-spacing: -0.02em;
-  transform: rotate(-12deg);
+  transform: rotate(0deg);
   font-family: 'Noto Sans KR', sans-serif;
   background: rgba(178,58,44,0.04);
   text-align: center; line-height: 1.05;
@@ -627,7 +627,7 @@ body::before {
 .wp-writing { margin: 0 18px 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
 .wp-writing-head { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 10px; }
 .wp-writing-pen { display: inline-block; font-size: 20px; animation: wpPen 1.1s ease-in-out infinite; transform-origin: 20% 80%; }
-@keyframes wpPen { 0%, 100% { transform: rotate(-6deg) translateX(0); } 50% { transform: rotate(4deg) translateX(3px); } }
+@keyframes wpPen { 0%, 100% { transform: rotate(0deg) translateX(0); } 50% { transform: rotate(4deg) translateX(3px); } }
 .wp-writing-bar { height: 6px; border-radius: 999px; background: var(--paper-warm); border: 1px solid var(--line); overflow: hidden; margin-bottom: 12px; }
 .wp-writing-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--orange), #F5B08A, var(--orange)); background-size: 200% 100%; animation: wpBar 1.4s linear infinite; transition: width 0.6s ease-out; }
 @keyframes wpBar { from { background-position: 0 0; } to { background-position: 200% 0; } }
@@ -1282,7 +1282,7 @@ span.ret-hud-item { cursor: default; }
 .ret-promo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .ret-promo-eyebrow { font-size: 10px; letter-spacing: .18em; font-weight: 900; color: var(--orange); }
 .ret-promo-title { font-size: 17px; font-weight: 900; letter-spacing: -0.01em; margin-top: 2px; }
-.ret-promo-stamp { border: 2px solid var(--orange); color: var(--orange); font-weight: 900; font-size: 12px; padding: 4px 10px; transform: rotate(-4deg); letter-spacing: .1em; }
+.ret-promo-stamp { border: 2px solid var(--orange); color: var(--orange); font-weight: 900; font-size: 12px; padding: 4px 10px; transform: rotate(0deg); letter-spacing: .1em; }
 .ret-promo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .ret-promo-grid div { background: var(--cream); border-radius: 8px; padding: 8px 10px; }
 .ret-promo-grid small { display: block; font-size: 10px; color: var(--ink-mute); font-weight: 800; letter-spacing: .04em; }
@@ -1300,7 +1300,7 @@ span.ret-hud-item { cursor: default; }
 .ag-env-eb { font-size: 9.5px; letter-spacing: .18em; font-weight: 800; color: var(--ink-mute); }
 .ag-env-t { font-size: 16px; font-weight: 900; letter-spacing: -.02em; margin: 4px 0 2px; }
 .ag-env-d { font-size: 11.5px; color: var(--ink-soft); }
-.ag-env-stamp { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--stamp-red); color: var(--stamp-red); display: grid; place-items: center; font-size: 12px; font-weight: 900; transform: rotate(-12deg); opacity: .85; background: rgba(255,255,255,.4); }
+.ag-env-stamp { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--stamp-red); color: var(--stamp-red); display: grid; place-items: center; font-size: 12px; font-weight: 900; transform: rotate(0deg); opacity: .85; background: rgba(255,255,255,.4); }
 .ag-env-new { position: absolute; right: 10px; top: 10px; background: var(--orange); color: #fff; font-size: 9.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
 .ag-env-open { font-size: 11px; font-weight: 800; color: var(--orange); margin-top: 10px; display: inline-block; }
 .ag-env.on .ag-env-open::after { content: " · 펼쳐짐"; }
@@ -1359,12 +1359,12 @@ span.ret-hud-item { cursor: default; }
   font-size: 13px; line-height: 1.6;
   color: var(--ink);
   box-shadow: 2px 4px 8px rgba(58,40,18,0.18);
-  transform: rotate(-1.2deg);
+  transform: rotate(0deg);
   position: relative;
   font-weight: 500;
 }
 .postit::before {
-  content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+  content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(0deg);
   width: 60px; height: 18px;
   background: rgba(255,255,255,0.4);
   border: 1px dashed rgba(58,40,18,0.2);
@@ -1854,7 +1854,7 @@ body.od-modal-open { overflow: hidden !important; }
 .next-cta-adv .next-cta-sub { opacity: 0.82; }
 @keyframes advGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(216,90,42,0.55); } 50% { box-shadow: 0 0 0 8px rgba(216,90,42,0); } }
 /* 첨삭이 끝나고 도장이 나타날 때 한 번 쿵 */
-@keyframes stampDrop { 0% { opacity: 0; transform: rotate(-6deg) scale(1.5); } 60% { opacity: 1; transform: rotate(-6deg) scale(0.94); } 100% { opacity: 1; transform: rotate(-6deg) scale(1); } }
+@keyframes stampDrop { 0% { opacity: 0; transform: rotate(-6deg) scale(1.5); } 60% { opacity: 1; transform: rotate(-6deg) scale(0.94); } 100% { opacity: 1; transform: rotate(0deg) scale(1); } }
 .stamp-pop { animation: stampDrop 0.42s cubic-bezier(.2,.9,.3,1.2) both; }
 .modal-bg { overscroll-behavior: contain; }
 .modal-doc, .modal-card, .act-shell { overscroll-behavior: contain; }
@@ -8193,7 +8193,7 @@ function MilestoneCard() {
               <span style={{
                 fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
                 color: "var(--orange)", border: "2px solid var(--orange)",
-                padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
+                padding: "3px 9px", transform: "rotate(0deg)", whiteSpace: "nowrap",
               }}>수습 기간</span>
               <b style={{ fontSize: 14.5, color: "var(--ink)" }}>30일 채우면 사원으로 승진해요 🎓</b>
             </div>
@@ -8264,7 +8264,7 @@ function MilestoneCard() {
             }}>
               <button onClick={toggleS2Card} title="접기" style={{ position: "absolute", top: 8, right: 10, background: "transparent", border: "none", fontSize: 11, fontWeight: 700, color: "var(--ink-mute)", cursor: "pointer", fontFamily: "inherit", padding: 4 }}>▲ 접기</button>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 10, letterSpacing: "0.16em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
+                <span style={{ fontSize: 10, letterSpacing: "0.16em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "3px 9px", transform: "rotate(0deg)", whiteSpace: "nowrap" }}>과장 승진 트랙</span>
                 <b style={{ fontSize: 14.5, color: "var(--ink)" }}>전문 TF 4개를 수료하면, 과장 🗂</b>
               </div>
               <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
@@ -8350,7 +8350,7 @@ function MilestoneCard() {
               <span style={{
                 fontSize: 10, letterSpacing: "0.16em", fontWeight: 900,
                 color: "var(--orange)", border: "2px solid var(--orange)",
-                padding: "3px 9px", transform: "rotate(-3deg)", whiteSpace: "nowrap",
+                padding: "3px 9px", transform: "rotate(0deg)", whiteSpace: "nowrap",
               }}>{_s3 ? "대리 승진 트랙" : "인사 발령"}</span>
               <b style={{ fontSize: 14.5, color: "var(--ink)" }}>{_s3 ? "시즌 3, 대리 승진 트랙 🎖️" : "정직원 전환, 사원(Associate) 발령 🎉"}</b>
             </div>
@@ -9670,7 +9670,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           color: var(--stamp-red);
           border: 2px solid var(--stamp-red);
           border-radius: 5px;
-          transform: rotate(-6deg);
+          transform: rotate(0deg);
           background: rgba(178,58,44,0.06);
           white-space: nowrap;
           padding: 0 2px;
@@ -9689,7 +9689,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
         @keyframes stampInk {
           0%   { opacity: 0; transform: rotate(-25deg) scale(1.8); }
           60%  { opacity: 1; transform: rotate(-4deg) scale(0.94); }
-          100% { opacity: 1; transform: rotate(-8deg) scale(1); }
+          100% { opacity: 1; transform: rotate(0deg) scale(1); }
         }
 
         /* todo 완료 시 등장 애니메이션 */
@@ -9697,7 +9697,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           0%   { opacity: 0; transform: translateY(-32px) rotate(-12deg) scale(0.86); }
           55%  { opacity: 1; transform: translateY(6px)   rotate(-1deg)  scale(1.03); }
           75%  { transform: translateY(-2px) rotate(0deg) scale(0.99); }
-          100% { opacity: 1; transform: translateY(0)    rotate(-1deg)  scale(1); }
+          100% { opacity: 1; transform: translateY(0)    rotate(0deg)  scale(1); }
         }
         @keyframes buddySlide {
           0%   { opacity: 0; transform: translateX(36px) scale(0.96); }
@@ -11609,7 +11609,7 @@ body{background:#E8DFCB;font-family:var(--f);color:var(--ink);padding:24px max(1
 .letter2 p{font-family:'Noto Serif KR',serif;font-size:16.5px;line-height:2.05;margin:0 0 12px}
 .letter2 p b{background:linear-gradient(transparent 60%,#FBD3BD 60%);color:var(--ink)}
 .letter2 .sig{font-family:var(--serif);font-size:24px;color:var(--ink)}
-.lstamp{position:absolute;right:22px;top:18px;width:62px;height:62px;border:2.5px solid var(--or);border-radius:50%;color:var(--or);font-weight:900;font-size:13px;line-height:1.15;display:grid;place-items:center;text-align:center;transform:rotate(-12deg);background:rgba(255,253,247,.85)}
+.lstamp{position:absolute;right:22px;top:18px;width:62px;height:62px;border:2.5px solid var(--or);border-radius:50%;color:var(--or);font-weight:900;font-size:13px;line-height:1.15;display:grid;place-items:center;text-align:center;transform:rotate(0deg);background:rgba(255,253,247,.85)}
 .mod.w3:has(.letter2)>h3{color:var(--or)}
 .reply2{position:relative;display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;margin-top:14px;background:linear-gradient(135deg,#D85A2A,#E8743F);color:#fff;border-radius:16px 16px 16px 4px;padding:14px 16px;box-shadow:0 16px 28px -16px rgba(216,90,42,.8)}
 .reply2::before{content:"";position:absolute;left:18px;top:-9px;border:9px solid transparent;border-bottom-color:#D85A2A;border-top:0}
@@ -18343,7 +18343,7 @@ function WrapupScreen({ today, onDone }) {
   return (
     <div className="wrapup">
       <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
-        <div style={{ display: "inline-block", padding: "12px 24px", border: "3px solid var(--stamp-red)", color: "var(--stamp-red)", fontSize: 17, fontWeight: 900, letterSpacing: "0.16em", transform: "rotate(-5deg)" }}>
+        <div style={{ display: "inline-block", padding: "12px 24px", border: "3px solid var(--stamp-red)", color: "var(--stamp-red)", fontSize: 17, fontWeight: 900, letterSpacing: "0.16em", transform: "rotate(0deg)" }}>
           {fixes === 0 ? "원샷 통과 · DAY " + today.day : "퇴근 · DAY " + today.day + " 완주"}
         </div>
         {(fixes === 0 || today.day === 1 || today.day === 3) && (
@@ -18570,7 +18570,7 @@ function JournalActivity({ today, item, onClose, onComplete }) {
                 border: "3px solid var(--stamp-red)",
                 color: "var(--stamp-red)",
                 fontSize: 18, fontWeight: 900, letterSpacing: "0.18em",
-                transform: "rotate(-6deg)",
+                transform: "rotate(0deg)",
                 fontFamily: "'Noto Sans KR', sans-serif",
               }}>
                 퇴근 · DAY {today.day} 완주
@@ -19448,13 +19448,13 @@ function QzCelebrate({ pct, attempt, total }) {
       <style>{`
         .qz-celebrate { position: relative; margin: 2px 0 14px; padding: 20px 18px 18px; border: 2px solid; border-radius: 14px; text-align: center; overflow: hidden; animation: qzPop 0.45s cubic-bezier(.2,1.3,.4,1) both; }
         .qz-celebrate-emoji { font-size: 52px; line-height: 1; animation: qzBounce 0.7s cubic-bezier(.2,1.4,.4,1) 0.12s both; }
-        .qz-celebrate-stamp { display: inline-block; margin-top: 10px; padding: 4px 12px; border: 2.5px solid; border-radius: 6px; font-size: 12px; font-weight: 900; letter-spacing: 0.18em; transform: rotate(-4deg); animation: qzStamp 0.5s cubic-bezier(.2,1.2,.4,1) 0.3s both; }
+        .qz-celebrate-stamp { display: inline-block; margin-top: 10px; padding: 4px 12px; border: 2.5px solid; border-radius: 6px; font-size: 12px; font-weight: 900; letter-spacing: 0.18em; transform: rotate(0deg); animation: qzStamp 0.5s cubic-bezier(.2,1.2,.4,1) 0.3s both; }
         .qz-celebrate-ko { margin-top: 10px; font-size: 19px; font-weight: 900; letter-spacing: -0.02em; }
         .qz-celebrate-line { margin-top: 7px; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
         .qz-celebrate-again { margin-top: 11px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.12); font-size: 12px; color: var(--ink-soft); }
         @keyframes qzPop { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: none; } }
         @keyframes qzBounce { 0% { transform: scale(0.3) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
-        @keyframes qzStamp { 0% { opacity: 0; transform: rotate(-22deg) scale(1.9); } 65% { opacity: 1; transform: rotate(-2deg) scale(0.94); } 100% { opacity: 1; transform: rotate(-4deg) scale(1); } }
+        @keyframes qzStamp { 0% { opacity: 0; transform: rotate(-22deg) scale(1.9); } 65% { opacity: 1; transform: rotate(-2deg) scale(0.94); } 100% { opacity: 1; transform: rotate(0deg) scale(1); } }
         @media (prefers-reduced-motion: reduce) { .qz-celebrate, .qz-celebrate-emoji, .qz-celebrate-stamp { animation: none; } }
       `}</style>
     </div>
@@ -19926,7 +19926,7 @@ function MilestonePopup({ milestone, onClose }) {
         <div style={{
           display: "inline-block", fontSize: 11, letterSpacing: "0.18em", fontWeight: 900,
           color: "var(--orange)", border: "2px solid var(--orange)",
-          padding: "4px 12px", transform: "rotate(-3deg)", marginBottom: 14,
+          padding: "4px 12px", transform: "rotate(0deg)", marginBottom: 14,
         }}>마일스톤 달성</div>
         <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", marginBottom: 12, letterSpacing: "-0.01em" }}>{milestone.title}</h2>
         <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 22 }}>{milestone.body}</p>
@@ -20659,7 +20659,7 @@ function Season3Checkpoint({ onClose }) {
         {step === 2 && (
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 52, marginBottom: 10 }}>🎖️</div>
-            <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.18em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "4px 12px", transform: "rotate(-3deg)", marginBottom: 12 }}>대리 승진</div>
+            <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.18em", fontWeight: 900, color: "var(--orange)", border: "2px solid var(--orange)", padding: "4px 12px", transform: "rotate(0deg)", marginBottom: 12 }}>대리 승진</div>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", marginBottom: 8 }}>대리로 승진했어요</h2>
             <p style={{ fontSize: 15, color: "var(--orange)", fontWeight: 800, marginBottom: 12 }}>시험 {score}점 · {scoreMent}</p>
             <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 20 }}>
@@ -21193,7 +21193,7 @@ function PromotionCeremony({ realDay }) {
               display: "inline-block",
               fontSize: 13, letterSpacing: "0.18em", fontWeight: 900,
               color: "var(--orange)", border: "3px solid var(--orange)",
-              padding: "10px 18px", transform: "rotate(-4deg)",
+              padding: "10px 18px", transform: "rotate(0deg)",
               marginBottom: 18,
             }}>
               정직원 전환 · 사원 발령
@@ -21824,7 +21824,7 @@ function App() {
           <main className="desk">
             <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(42,31,20,0.78)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
               <div style={{ background: "var(--paper)", border: "2px solid var(--accent)", borderRadius: 14, padding: "36px 32px 28px", maxWidth: 460, width: "100%", textAlign: "center", boxShadow: "0 30px 70px -10px rgba(0,0,0,0.4)" }}>
-                <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", borderRadius: 4, transform: "rotate(-4deg)", marginBottom: 18 }}>체험 완료</div>
+                <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", borderRadius: 4, transform: "rotate(0deg)", marginBottom: 18 }}>체험 완료</div>
                 <h1 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.35, marginBottom: 14, color: "var(--ink)" }}>{_trialName}이<br/><span style={{ color: "var(--accent)" }}>끝났어요</span></h1>
                 <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
                   지난 7일처럼 매일 한 표현씩 계속 쌓으려면<br/>멤버십으로 이어가세요.<br/>
@@ -21861,7 +21861,7 @@ function App() {
                 display: "inline-block",
                 fontSize: 15, letterSpacing: "0.2em", fontWeight: 900,
                 color: "#993C1D", border: "3px solid #993C1D",
-                padding: "12px 22px", transform: "rotate(-4deg)",
+                padding: "12px 22px", transform: "rotate(0deg)",
                 marginBottom: 24,
               }}>
                 휴직 중
@@ -21946,7 +21946,7 @@ function App() {
                 display: "inline-block",
                 fontSize: 11, letterSpacing: "0.22em", fontWeight: 800,
                 color: "var(--accent)", border: "2px solid var(--accent)",
-                padding: "5px 14px", borderRadius: 4, transform: "rotate(-4deg)",
+                padding: "5px 14px", borderRadius: 4, transform: "rotate(0deg)",
                 marginBottom: 18,
               }}>
                 체험 완료

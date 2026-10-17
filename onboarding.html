@@ -103,7 +103,7 @@ textarea { resize: vertical; min-height: 70px; }
   position: absolute; top: 22px; right: 22px;
   font-size: 10px; letter-spacing: 0.2em; font-weight: 800;
   color: var(--accent); border: 2px solid var(--accent);
-  padding: 4px 10px; border-radius: 4px; transform: rotate(-6deg);
+  padding: 4px 10px; border-radius: 4px; transform: rotate(0deg);
   opacity: 0.85;
 }
 
@@ -1065,7 +1065,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
   return (
     <>
     <style>{`
-      @keyframes odStampIn { 0% { transform: scale(2.2) rotate(-18deg); opacity: 0; } 60% { transform: scale(0.94) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 1; } }
+      @keyframes odStampIn { 0% { transform: scale(2.2) rotate(-18deg); opacity: 0; } 60% { transform: scale(0.94) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -1328,7 +1328,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
           {renderRow(0, "09:00", "출근 + 오늘의 단어 받기", <>
             <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0" }}>사수 <strong>차윤아</strong>님이 자리에 노란 포스트잇을 붙여놨어요.</p>
-            <div style={{ background: "#F6E27C", borderRadius: 4, padding: "16px 15px 13px", boxShadow: "2px 4px 10px rgba(58,40,18,0.18)", transform: "rotate(-1.5deg)", maxWidth: 300, margin: "0 auto 12px" }}>
+            <div style={{ background: "#F6E27C", borderRadius: 4, padding: "16px 15px 13px", boxShadow: "2px 4px 10px rgba(58,40,18,0.18)", transform: "rotate(0deg)", maxWidth: 300, margin: "0 auto 12px" }}>
               <div style={{ fontSize: 10.5, fontWeight: 800, color: "#8A6D1A", letterSpacing: "0.1em", marginBottom: 5 }}>오늘의 단어</div>
               <div style={{ fontSize: 23, fontWeight: 900, color: "#3A2E10" }}>down the line</div>
               <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6B5513", marginTop: 3 }}>나중에, 시간이 좀 지나서</div>
@@ -1444,7 +1444,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         {allDone && (
           <div className="od-rise" style={{ padding: "18px 0 8px" }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(-8deg)" }}>DAY 1 완료</div>
+              <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(0deg)" }}>DAY 1 완료</div>
               <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "12px 0 4px" }}>
                 방금 그게 1일1비의 하루예요. <strong style={{ color: "var(--ink)" }}>딱 5분.</strong>
               </p>
