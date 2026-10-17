@@ -7575,7 +7575,7 @@ function UnlockChip({ k, rd }) {
 const _POP_ORDER = {
   // 🚪 접속하자마자
   // ★ 2026-10-17 (개발 뷰): 투어(첫 출근 · 정직원 모드 가이드)와 진급 결과 흐름도 같은 줄에 선다. 예전엔 줄 밖이라 EXP 팝업과 같이 떴다.
-  "tour": 5, "retire-d7": 10, "notice-personal": 20, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "promo-eval-late": 45, "tf-select": 50, "absence": 60, "first-week": 70,
+  "tour": 5, "retire-d7": 10, "notice-personal": 20, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "promo-batch": 44, "promo-eval-late": 45, "promo-retro": 46, "tf-select": 50, "absence": 60, "first-week": 70,
   // ✅ 오늘 일정 끝낸 뒤
   "exp": 110, "setup": 120, "milestone": 130, "promo-eval": 135, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
   "notice-all": 180, "unlock": 190, "kakao": 200, "push": 210, "notice-room": 220, "curriculum": 230, "pulse": 240,
@@ -10094,6 +10094,8 @@ function _retSave(k, email, v) { _saveJSON(_retKey(k, email), v); try { _retStat
 //   PC/폰을 오가면 서로 다른 세상이 됐다 (폰에서 어제 완주했는데 PC 가 3일 결근으로 판정해 휴가를 쓰게 한 사고).
 //   users.ret_state 에 키별 {v, at} 로 올리고, 접속 때 내려받아 더 최신 쪽을 쓴다. ATT 는 합집합, WP 는 항목 합집합.
 const _RET_SYNC_KEYS = ["GOAL", "INV", "WP", "DEBUFF", "ATT"];
+// ★ 2026-10-18 (개발 뷰): 진급 리포트 보관함(PROMO)과 라이브 전환 일괄 처리 기록(PBATCH)도 기기 사이에 맞춘다.
+try { if (localStorage.getItem("__OD_NEXT") === "1") _RET_SYNC_KEYS.push("PROMO", "PBATCH"); } catch (e) {}
 const _retMetaKey = (email) => "__OD_RET_META_" + (email || "guest");
 function _retMeta(email) { return _loadJSON(_retMetaKey(email)) || {}; }
 let _retPushTimer = null; const _retPushPending = {};
@@ -11162,7 +11164,20 @@ function _qeSyncTickets(email, day, hist) {
 function _qeDone(rec, day) { return !!((rec.evals && rec.evals[day]) || (rec.main && rec.main.evalDay === day)); }
 function _qeFor(rec, day) { if (!rec) return null; if (rec.evals && rec.evals[day]) return rec.evals[day]; return rec.main && (!rec.main.evalDay || rec.main.evalDay === day) ? rec.main : null; }
 // 지금 이 계정이 볼 평가: 사원(Day 30) → 대리(Day 90) → TF 수료(트랙 마지막 날)
+// ★ 2026-10-18 (개발 뷰): 라이브 전환 때 '늦게 열린 평가'(PBATCH.retro)가 있으면 그걸 연다. 단, 지금 Day 의 정규 평가가 열려 있으면 그게 먼저.
 function _qeTarget(USER, rec) {
+  const N = _qeTargetBase(USER, rec);
+  try {
+    if (!_isDevNext()) return N;
+    const b = _retLoad("PBATCH", _retEmail(), null); const R = b && b.retro;
+    if (!R || _qeDone(rec, R.evalDay)) return N;
+    const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+    const nOpen = rd >= N.evalDay && !_qeDone(rec, N.evalDay) && (N.kind !== "tf" || !!N.tf) && N.evalDay !== R.evalDay;
+    if (nOpen) return N;
+    return Object.assign({}, R, { retro: true });
+  } catch (e) { return N; }
+}
+function _qeTargetBase(USER, rec) {
   const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
   const rk = USER.rankId || "probation";
   // ★ 2026-10-17: Day 90 이 지났는데 아직 수습이면 평가 두 개(사원 · 대리)를 다 보게 하지 않고, 가장 최근에 봤어야 할 대리 평가 하나만.
@@ -11275,11 +11290,13 @@ function QuarterEvalDev({ setActive }) {
           const sc = Math.round(100 * (Number(d.promo.ok) || 0) / Math.max(1, Number(d.promo.total) || 15));
           // ★ 2026-10-17: 평가를 보면 진급 처리. 사원 = 예전 승급 의례와 같은 저장(_persistLevelUp), 대리 = 대리 직급 저장(_persistSenior) + 심사 본 걸로(TF 신청서가 열린다).
           //   Day 90 이 지났는데 아직 수습이면 대리 평가 하나만 보고(T.skip30), 통과하면 사원 · 대리를 한 번에 저장한다.
-          try { if (T.kind === "p30" || T.skip30) _persistLevelUp(sc); } catch (e2) {}
+          // ★ 2026-10-18: 늦게 열린 평가(T.retro)는 이미 진급한 분이라 사원 저장은 안 하고, 대리는 직급 저장만 한다. 리포트는 새로 발행.
+          if (T.retro) r.evals[evalDay].retro = true;
+          try { if ((T.kind === "p30" || T.skip30) && !T.retro) _persistLevelUp(sc); } catch (e2) {}
           try { if (T.kind === "p90") { localStorage.setItem("__OD_S3_SEEN_v2_" + email, "1"); _persistSenior(sc); } } catch (e2) {}
           try { _qeSync(email, evalDay, r.evals[evalDay]); } catch (e2) {}
           // ★ 2026-10-17: 결과가 오면 인포그래픽 팝업 흐름으로 (사원 · 대리: 한마디 → 발령 → 리포트 / TF: 수료 → 리포트). 리포트는 바로 발급.
-          try { if (T.skip30) _retIssueReport(email, "p30", { from: 1, to: 30 }); _retIssueReport(email, T.kind, T); _ppFlowSet({ kind: T.kind, evalDay, step: T.kind === "tf" ? "tfdone" : "word", ok: d.promo.ok, total: d.promo.total, miss: (d.promo.miss || []).slice(0, 5), tf: T.tf || null, tfName: T.tfName || "", from: T.from, to: T.to }); } catch (e2) {}
+          try { if (T.skip30) _retIssueReport(email, "p30", { from: 1, to: 30 }); _retIssueReport(email, T.kind, T, T.retro ? { retro: true } : null); _ppFlowSet({ kind: T.kind, evalDay, retro: !!T.retro, step: T.retro ? "report" : T.kind === "tf" ? "tfdone" : "word", ok: d.promo.ok, total: d.promo.total, miss: (d.promo.miss || []).slice(0, 5), tf: T.tf || null, tfName: T.tfName || "", from: T.from, to: T.to }); } catch (e2) {}
         } }
         else { r.ticket = Object.assign({}, r.ticket, { practiceEndAt: at, practice: row }); try { sessionStorage.removeItem("__OD_RET_PREVIEW"); } catch (e2) {} }
         _qeSave(email, r);
@@ -11573,10 +11590,20 @@ function _retEnsurePromoReports(email) {
       : "빈 날이 꽤 있었어요. 그래도 여기까지 왔다는 게 중요해요. 다음 단계는 한 주 단위로 목표를 잡아봐요.";
     return { id, title, rankLabel, from, to, at: new Date().toISOString(), stats: st, mentorLine };
   };
+  // ★ 2026-10-18 (개발 뷰): 진급 리포트는 평가를 봐야(또는 라이브 전환 일괄 발급 때) 나온다. 직급만 보고 자동으로 만들지 않는다.
+  //   평가 기록이 있는데 리포트가 없으면(dev 점프로 채운 평가 등) 그 평가 몫만 만든다. TF 리포트는 평가 때 · 일괄 발급 때만.
+  if (_isDevNext()) {
+    try { const ev = _qeLoad(email).evals || {};
+      if (ev[30] && !has("p30")) l.list.push(mk("p30", "수습 → 사원 진급 리포트", 1, 30, "사원"));
+      if (ev[90] && !has("p90")) l.list.push(mk("p90", "사원 → 대리 진급 리포트", 31, 90, "대리"));
+    } catch (e) {}
+    _retSave("PROMO", email, l);
+    return l.list;
+  }
   if ((USER.rankId === "fulltime" || USER.rankId === "senior") && !has("p30")) l.list.push(mk("p30", "수습 → 사원 진급 리포트", 1, 30, "사원"));
   if (USER.rankId === "senior" && !has("p90")) l.list.push(mk("p90", "사원 → 대리 진급 리포트", 31, 90, "대리"));
-  // ★ 2026-10-17: TF 수료 리포트. 수료한 TF 마다 그 30일(Day 91~120, 121~150 ...)로 한 부씩. (개발 뷰)
-  if (_isDevNext()) try {
+  // (예전) TF 수료 리포트: 수료한 TF 마다 한 부씩. 지금은 위 개발 뷰 분기로 안 온다.
+  if (false) try {
     const st = _tfState(); (st.done || []).forEach((id, i) => {
       if (has("tf-" + id)) return;
       const meta = (typeof TF_TRACKS !== "undefined" && TF_TRACKS.find(t => t.id === id)) || { name: id + " TF" };
@@ -20865,6 +20892,15 @@ function _pgCatalog2(email) {
       { label: "5 / 5 진급 리포트", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={14} total={15} onOpen={c} onClose={c} /> }] },
     { day: 30, name: "👔 정직원 모드 가이드 (투어)", when: "사원 진급 직후 (Day 60 전)", cond: "6단계. 5단계가 '사원 진급 리포트 발행' 안내.", queue: "투어", replay: () => { try { localStorage.removeItem("__OD_S2_TOUR_DONE_" + em); } catch (e) {} location.reload(); } },
     { day: 60, name: "🌟 Day 60 설문 (인포그래픽)", when: "Day 60~89, 1번", cond: "대리 진급 리포트에 넣을 질문 3개. Q1 답으로 TF 신청서의 '사수 추천'이 정해져요.", queue: 150, v: [{ label: "설문", render: (c) => <PPDay60 onClose={c} /> }] },
+    { day: 31, name: "📬 진급 리포트 도착 (라이브 일괄 발급)", when: "라이브 후 첫 접속, 1번", cond: "새 진급 평가 전에 이미 지난 평가 중 가장 최근 것 하나만 빼고, 그 앞 단계 리포트를 평가 없이 바로 발급해요. 발급된 게 있을 때만.", queue: 44, v: [
+      { label: "3부 (사원 · 대리 · TF)", sub: "예: Day 150+ 대리", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }, { id: "p90", kind: "p90", from: 31, to: 90 }, { id: "tf-people", kind: "tf", from: 91, to: 120, tfName: "피플 TF" }]} onOpen={c} onClose={c} /> },
+      { label: "2부 (사원 · 대리)", sub: "예: Day 121~149", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }, { id: "p90", kind: "p90", from: 31, to: 90 }]} onOpen={c} onClose={c} /> },
+      { label: "1부 (사원)", sub: "예: Day 91~120", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }]} onOpen={c} onClose={c} /> }] },
+    { day: 31, name: "⏰ 늦게 열린 평가 (재미로)", when: "라이브 후 접속마다, 평가 볼 때까지", cond: "이미 진급한 분에게 가장 최근에 지난 평가 하나를 열어요. 진급은 그대로, 보면 새 리포트 발행. 지금 Day 의 정규 평가가 열려 있으면 그게 먼저.", queue: 46, v: [
+      { label: "사원 평가", sub: "Day 31~89 사원", render: (c) => <PPRetroIntro T={{ kind: "p30", evalDay: 30, from: 1, to: 30 }} onGo={c} onReview={c} onClose={c} /> },
+      { label: "대리 심사", sub: "Day 90~119", render: (c) => <PPRetroIntro T={{ kind: "p90", evalDay: 90, from: 31, to: 90 }} onGo={c} onReview={c} onClose={c} /> },
+      { label: "TF 수료 평가", sub: "Day 120+", render: (c) => <PPRetroIntro T={{ kind: "tf", evalDay: 150, from: 121, to: 150, tfName: "미팅 TF" }} onGo={c} onReview={c} onClose={c} /> },
+      { label: "보고 나면 · 새 리포트", sub: "흐름 줄 25", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={13} total={15} retro onOpen={c} onClose={c} /> }] },
     { day: 89, name: "🏅 대리 진급 흐름 (인포그래픽)", when: "Day 89 예고 → Day 90 심사", cond: "Day 90 일정을 끝내면 심사가 떠요. 심사(분기 평가 탭) → 한마디 → 발령 → 리포트 → TF 신청서 → 발령 완료. 심사를 봐야 Day 91이 열려요.", queue: "130 · 135 · 50", v: [
       { label: "Day 89 · 내일 심사", sub: "줄 130", render: (c) => <PPEve kind="p90" onClose={c} /> },
       { label: "Day 90 · 심사실", sub: "줄 135", render: (c) => <PPEvalIntro T={T90} onGo={c} onReview={c} onClose={c} /> },
@@ -21302,11 +21338,11 @@ function PPAppoint({ kind, ok, total, miss, onNext, onClose }) {
   );
 }
 // 진급 리포트 발급 (사원 · 대리 · TF 수료)
-function PPReportIssued({ kind, from, to, ok, total, tfName, onOpen, onClose }) {
+function PPReportIssued({ kind, from, to, ok, total, tfName, retro, onOpen, onClose }) {
   let D = {}; try { D = _agData({ from, to }); } catch (e) {}
   const items = [["출근부", (D.doneN || 0) + "칸"], ["모은 표현", String(D.doneN || 0)], ["잘 쓴 문장", String((D.best || []).length)], [kind === "tf" ? "수료 평가" : "진급 테스트", (ok != null ? ok : "-") + "/" + (total || 15)], ["사수 편지", "1통"]];
   const svg = _ppSvg(150, _ppT(24, 30, "리포트 한 권에 든 것", 13, 800) + items.map(([k, v], i) => '<rect x="' + (24 + i * 72) + '" y="46" width="64" height="80" rx="10" fill="' + (i < 4 ? "#fff" : _PPK.OR) + '" stroke="' + (i < 4 ? _PPK.LN : _PPK.OR) + '"/>' + _ppT(56 + i * 72, 86, v, 17, 900, i < 4 ? _PPK.INK : "#fff", "middle") + _ppT(56 + i * 72, 110, k, 10.5, 600, i < 4 ? _PPK.MU : "#fff", "middle")).join(""));
-  const step = kind === "p30" ? "5 / 5 · 진급 리포트 발급" : kind === "p90" ? "4 / 4 · 진급 리포트 발급" : "TF 수료 리포트 발급";
+  const step = retro ? "늦게 열린 평가 · 새 리포트 발급" : kind === "p30" ? "5 / 5 · 진급 리포트 발급" : kind === "p90" ? "4 / 4 · 진급 리포트 발급" : "TF 수료 리포트 발급";
   return (
     <PPShell onClose={onClose}>
       <PpIll svg={svg} />
@@ -21402,7 +21438,7 @@ function PPTfDone({ tf, ok, total, doneList, onNext, onClose }) {
   );
 }
 // 진급 리포트 강제 발급 (평가를 본 그 자리에서. 직급 계산을 기다리지 않는다)
-function _retIssueReport(email, kind, T) {
+function _retIssueReport(email, kind, T, opts) {
   try {
     const l = _retLoad("PROMO", email, { list: [] }); if (!Array.isArray(l.list)) l.list = [];
     const id = kind === "p30" ? "p30" : kind === "p90" ? "p90" : "tf-" + T.tf; if (l.list.some(r => r.id === id)) return;
@@ -21410,8 +21446,89 @@ function _retIssueReport(email, kind, T) {
     const r = { id, title: kind === "p30" ? "수습 → 사원 진급 리포트" : kind === "p90" ? "사원 → 대리 진급 리포트" : (T.tfName || "TF") + " 수료 리포트", rankLabel: kind === "p30" ? "사원" : kind === "p90" ? "대리" : (T.tfName || "TF"), from: T.from, to: T.to, at: new Date().toISOString(), stats: st,
       mentorLine: st.rate >= 90 ? "빠진 날이 거의 없어요. 이 페이스면 다음 단계는 문제없어요." : st.rate >= 70 ? "한두 번 비긴 했지만 돌아왔어요. 돌아오는 힘이 제일 중요한 능력이에요." : "빈 날이 꽤 있었어요. 그래도 여기까지 왔다는 게 중요해요." };
     if (kind === "tf") { r.tf = T.tf; r.tfName = T.tfName; }
+    if (opts) Object.assign(r, opts);
     l.list.push(r); _retSave("PROMO", email, l);
   } catch (e) {}
+}
+// ★ 2026-10-18 (개발 뷰 · 라이브 때 그대로): 라이브 전환 일괄 처리.
+//   새 진급 평가가 생기기 전에 이미 지나간 평가들(사원 Day 30 · 대리 Day 90 · TF 수료 Day 120/150/...) 중
+//   가장 최근 것 하나 = '늦게 열린 평가'(이미 진급했으니 재미로, 보면 새 리포트), 그 이전 것들 = 평가 없이 리포트를 바로 발급.
+//   아직 사원도 안 된 분(수습)은 여기 해당 없음 → '밀린 평가'(진짜 진급 평가). 기록은 처음 계산할 때 한 번 정하고 그대로 둔다.
+function _pbStages(USER, u, rec, tfs) {
+  const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
+  const lv = (u && u.level && u.level.id) || "probation";
+  if (!(lv !== "probation" || (u && (u.levelupCompletedAt || u.levelup_completed_at)))) return [];
+  const out = [];
+  if (rd >= 30) out.push({ kind: "p30", evalDay: 30, from: 1, to: 30, title: "사원 진급 평가" });
+  if (rd >= 90) out.push({ kind: "p90", evalDay: 90, from: 31, to: 90, title: "대리 진급 평가", j: "s" });
+  ((tfs && tfs.done) || []).forEach((id, i) => {
+    const from = 91 + 30 * i; if (rd < from + 29) return;
+    const meta = (typeof TF_TRACKS !== "undefined" && TF_TRACKS.find(t => t.id === id)) || { name: id + " TF" };
+    out.push({ kind: "tf", evalDay: from + 29, from, to: from + 29, title: "TF 수료 평가", j: "t", tf: id, tfName: meta.name });
+  });
+  return out.filter(x => !_qeDone(rec, x.evalDay));
+}
+function _promoBatch(email) {
+  if (!_isDevNext() || !email || email === "guest") return null;
+  const b0 = _retLoad("PBATCH", email, null); if (b0 && b0.at) return b0;
+  const USER = window.__SIM && window.__SIM.USER; if (!USER) return null;
+  let u = {}; try { u = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+  let tfs = { done: [] }; try { tfs = _tfState() || tfs; } catch (e) {}
+  const P = _pbStages(USER, u, _qeLoad(email), tfs);
+  const retro = P.length ? P[P.length - 1] : null, issued = [];
+  P.slice(0, -1).forEach(x => { _retIssueReport(email, x.kind, x, { batch: true }); issued.push({ id: x.kind === "tf" ? "tf-" + x.tf : x.kind, kind: x.kind, from: x.from, to: x.to, tfName: x.tfName || "" }); });
+  const b = { at: new Date().toISOString(), rd: USER.realCurrentDay || USER.currentDay, retro, issued, seen: !issued.length };
+  _retSave("PBATCH", email, b);
+  return b;
+}
+function _pbSeen(email) { try { const b = _retLoad("PBATCH", email, null); if (b && b.at) { b.seen = true; _retSave("PBATCH", email, b); } } catch (e) {} }
+// 일괄 발급 도착 팝업 (업데이트 축하 톤)
+function PPBatchArrived({ issued, onOpen, onClose }) {
+  const L = (issued || []).slice(0, 4);
+  const lab = (x) => x.kind === "p30" ? ["수습 → 사원", "사원"] : x.kind === "p90" ? ["사원 → 대리", "대리"] : [x.tfName || "TF", "수료"];
+  const cols = ["#E0562B", "#E8A400", "#2F7A4C", "#3D4DA8", "#241B13", "#D9367A"];
+  let conf = ""; for (let i = 0; i < 64; i++) { const x = 6 + (i * 61) % 388, y = 4 + (i * 29) % 64 + (i % 4 === 0 ? 120 : 0), c = cols[i % cols.length], r = (i * 37) % 180, w = 6 + (i % 3) * 2;
+    conf += (i % 5 === 0 ? '<circle class="cf" style="animation-delay:' + ((i % 9) * 0.1).toFixed(2) + 's" cx="' + x + '" cy="' + y + '" r="' + (w / 2.2).toFixed(1) + '" fill="' + c + '"/>' : '<rect class="cf" style="animation-delay:' + ((i % 9) * 0.1).toFixed(2) + 's" x="' + x + '" y="' + y + '" width="' + w + '" height="' + (w * 1.7).toFixed(1) + '" rx="1.5" fill="' + c + '" transform="rotate(' + r + ' ' + (x + 3) + ' ' + (y + 5) + ')"/>'); }
+  const spark = (cx, cy, rr, c) => '<path d="M' + cx + ' ' + (cy - rr) + ' L' + (cx + rr * 0.28) + ' ' + (cy - rr * 0.28) + ' L' + (cx + rr) + ' ' + cy + ' L' + (cx + rr * 0.28) + ' ' + (cy + rr * 0.28) + ' L' + cx + ' ' + (cy + rr) + ' L' + (cx - rr * 0.28) + ' ' + (cy + rr * 0.28) + ' L' + (cx - rr) + ' ' + cy + ' L' + (cx - rr * 0.28) + ' ' + (cy - rr * 0.28) + 'Z" fill="' + c + '"/>';
+  conf += spark(40, 40, 11, "#E8A400") + spark(362, 52, 13, "#E0562B") + spark(330, 18, 7, "#3D4DA8") + spark(70, 176, 8, "#2F7A4C");
+  const n = Math.max(1, L.length), W = n >= 3 ? 100 : 112, gap = n >= 3 ? 12 : 16, x0 = 200 - (n * W + (n - 1) * gap) / 2;
+  const envs = L.map((x, i) => { const [t, st] = lab(x), ex = x0 + i * (W + gap), rot = (i - (n - 1) / 2) * 5;
+    return '<g transform="rotate(' + rot + ' ' + (ex + W / 2) + ' 140)"><rect x="' + (ex + 3) + '" y="73" width="' + W + '" height="96" rx="9" fill="' + _PPK.INK + '" opacity=".18"/><rect x="' + ex + '" y="70" width="' + W + '" height="96" rx="9" fill="#fff" stroke="' + _PPK.INK + '" stroke-width="2"/><path d="M' + ex + ' 72 L' + (ex + W / 2) + ' 112 L' + (ex + W) + ' 72" fill="none" stroke="' + _PPK.LN + '" stroke-width="2"/>' + _ppT(ex + W / 2, 136, t, 11.5, 900, _PPK.INK, "middle") + _ppT(ex + W / 2, 152, "Day " + x.from + "–" + x.to, 10, 600, _PPK.MU, "middle") + '<circle cx="' + (ex + W - 16) + '" cy="88" r="15" fill="#fff" stroke="#B0291A" stroke-width="2"/>' + _ppT(ex + W - 16, 92, st, 9.5, 900, "#B0291A", "middle") + '</g>'; }).join("");
+  const svg = _ppSvg(190, conf + '<rect x="146" y="22" width="108" height="26" rx="13" fill="' + _PPK.INK + '"/>' + _ppT(200, 40, "✦ UPDATE ✦", 12, 900, "#F4D97A", "middle") + envs);
+  return (
+    <PPShell onClose={onClose}>
+      <style>{`.ppx .cf{animation:ppcf 1.6s ease-out both}@keyframes ppcf{from{opacity:0;transform:translateY(-26px)}to{opacity:1}}@media (prefers-reduced-motion:reduce){.ppx .cf{animation:none}}.ppx .pbl{display:flex;flex-wrap:wrap;gap:6px}.ppx .pbl span{border:1.5px solid var(--tom);color:var(--tom);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800;background:#fff}`}</style>
+      <PpIll svg={svg} />
+      <div className="hd" style={{ paddingTop: 12 }}><span className="eb">NEW · 진급 리포트 업데이트</span><h2>진급 리포트 <em>{L.length}부</em>가<br/>도착했어요! 🎉</h2><p className="lede">그동안 채운 Day가 사수가 쓴 리포트로 나왔어요. 출근부, 잘 쓴 문장, 사수 편지까지 한 부에 한 권씩.</p></div>
+      <div className="bd">
+        <div className="pbl">{L.map(x => <span key={x.id}>📑 {x.kind === "tf" ? (x.tfName || "TF") + " 수료" : lab(x)[0]}</span>)}</div>
+        <button className="btn t" onClick={onOpen}>봉투 열어보기</button>
+        <div className="sub">닫아도 성장 리포트 탭에 그대로 있어요</div>
+      </div>
+    </PPShell>
+  );
+}
+// 늦게 열린 평가 (이미 진급한 분 · 재미로 · 보면 새 리포트)
+function PPRetroIntro({ T, onGo, onReview, onClose }) {
+  const k = T.kind, nm = k === "tf" ? (T.tfName || "TF") : "";
+  const rank = k === "p30" ? "사원" : k === "p90" ? "대리" : nm + " 수료";
+  const what = k === "p30" ? "사원 진급 평가" : k === "p90" ? "대리 진급 심사" : nm + " 수료 평가";
+  const rep = k === "tf" ? nm + " 수료 리포트" : (k === "p30" ? "사원" : "대리") + " 진급 리포트";
+  const svg = _ppSvg(150, '<rect x="24" y="28" width="168" height="98" rx="12" fill="#fff" stroke="' + _PPK.LN + '" stroke-width="2"/>' + _ppT(40, 52, "DAY " + T.evalDay + " · " + (k === "tf" ? "TF 수료" : what), 11, 800, _PPK.MU) + _ppT(40, 80, k === "tf" ? nm : rank, k === "tf" ? 20 : 24, 900, _PPK.INK) + '<g transform="rotate(-8 150 108)"><rect x="104" y="94" width="80" height="24" rx="5" fill="#fff" stroke="' + _PPK.GR + '" stroke-width="2.5"/>' + _ppT(144, 111, k === "tf" ? "수료 완료" : "진급 완료", 12, 900, _PPK.GR, "middle") + '</g>'
+    + '<path d="M204 77 h30" stroke="' + _PPK.OR + '" stroke-width="3" stroke-dasharray="5 5"/><path d="M230 70 l9 7 -9 7" fill="none" stroke="' + _PPK.OR + '" stroke-width="3"/>'
+    + '<rect x="248" y="28" width="128" height="98" rx="12" fill="' + _PPK.OR + '"/>' + _ppT(312, 58, "지금 열림", 11, 800, "#fff", "middle") + _ppT(312, 86, "재미로 한 번", 15, 900, "#fff", "middle") + _ppT(312, 108, "→ 새 리포트", 12, 800, "#FBE3D6", "middle"));
+  return (
+    <PPShell onClose={onClose}>
+      <PpIll svg={svg} />
+      <div className="hd" style={{ paddingTop: 12 }}><span className="eb">늦게 열린 평가 · DAY {T.evalDay}</span><h2>이미 {rank}{k === "tf" ? "하셨지만" : "이시지만"},<br/><em>{what}</em>가 열렸어요</h2><p className="lede">새 평가가 조금 늦게 열렸어요. 진급은 그대로니까 부담 없이, 재미로 한 번 봐주세요.</p></div>
+      <div className="bd">
+        <div className="steps"><b>15문항{k === "tf" ? " + 롤플레이" : ""}</b>→<span>헷갈린 표현 다시 풀기</span>→<span>새 {rep}</span></div>
+        <button className="btn t" onClick={onGo}>재미로 평가 보기</button>
+        <div className="lnk">{onReview && <button onClick={onReview}>업무 노트 복습 먼저</button>}<button onClick={onClose}>나중에</button></div>
+        <div className="sub">보시면 평가 점수와 헷갈린 표현까지 담은 새 {rep}를 발행해 드려요 · 볼 때까지 접속하면 다시 떠요</div>
+      </div>
+    </PPShell>
+  );
 }
 // 평가 결과 뒤 이어지는 팝업 (개발 뷰). 상태는 _ppFlow (기기 저장이라 새로고침해도 이어진다)
 function PromoFlowHost({ setActive }) {
@@ -21425,7 +21542,7 @@ function PromoFlowHost({ setActive }) {
   if (f.step === "word") return <PPWord kind={f.kind} evalDay={f.evalDay} onNext={() => go("appoint")} onClose={() => go("appoint")} />;
   if (f.step === "appoint") return <PPAppoint kind={f.kind} ok={f.ok} total={f.total} miss={f.miss} onNext={() => go("report")} onClose={() => go("report")} />;
   if (f.step === "tfdone") return <PPTfDone tf={f.tf} ok={f.ok} total={f.total} doneList={(() => { try { return _tfState().done || []; } catch (e) { return []; } })()} onNext={() => go("report")} onClose={() => go("report")} />;
-  if (f.step === "report") return <PPReportIssued kind={f.kind} from={f.from} to={f.to} ok={f.ok} total={f.total} tfName={f.tfName} onOpen={openReport} onClose={end} />;
+  if (f.step === "report") return <PPReportIssued kind={f.kind} from={f.from} to={f.to} ok={f.ok} total={f.total} tfName={f.tfName} retro={f.retro} onOpen={openReport} onClose={end} />;
   return null;
 }
 // 인수인계 D-7 팝업 (2026-10-17: 팝업 전체보기에서도 띄우려고 컴포넌트로 뺐다. 내용은 그대로)
@@ -22796,6 +22913,7 @@ function App() {
   const _peT = (() => { try { if (!_isDevNext() || !_localUserNow) return null; const rec = _qeLoad(_retEmail()); const T = _qeTarget(USER, rec);
     // ★ 2026-10-17: 평가 Day 가 이미 지났는데 아직 안 본 회원(밀린 평가)도 띄운다. 학습 Day 는 되돌리지 않고 그대로,
     //   라이브 다음 날부터(_PROMO_LATE_FROM) 접속할 때마다 평가를 볼 때까지 뜬다. 개발 뷰는 바로.
+    if (T.retro) return null;   // 늦게 열린 평가는 따로 (PPRetroIntro)
     if (_realDay > T.evalDay && !_promoLateOn()) return null;
     return (_realDay >= T.evalDay && !_qeDone(rec, T.evalDay) && (T.kind !== "tf" || T.tf)) ? Object.assign({}, T, { late: _realDay > T.evalDay ? _realDay - T.evalDay : 0 }) : null; } catch (e) { return null; } })();
   // ★ 2026-10-17: 평가를 볼 때까지 접속할 때마다 (예전: 하루 1번). 닫으면 그 접속 동안만 안 뜬다.
@@ -22803,6 +22921,16 @@ function App() {
   const [_peClosed, _setPeClosed] = useState(() => { try { return sessionStorage.getItem(_PE_KEY) === "1"; } catch (e) { return false; } });
   const _closePe = () => { try { sessionStorage.setItem(_PE_KEY, "1"); } catch (e) {} _setPeClosed(true); };
   const [_peStep, _setPeStep] = useState("intro");
+  // ★ 2026-10-18: 라이브 전환 일괄 처리 (PBATCH). 앱이 뜬 뒤 한 번 계산한다 (서버 기록을 다 받은 뒤라야 맞다).
+  const [_pb, _setPb] = useState(null);
+  useEffect(() => { const t = setTimeout(() => { try { _setPb(_promoBatch(_retEmail())); } catch (e) {} }, 1500); return () => clearTimeout(t); }, []);
+  const _pbShowBatch = !!(_pb && !_pb.seen && (_pb.issued || []).length);
+  const _slPromoBatch = usePopSlot("promo-batch", _pbShowBatch);
+  const _pbR = (() => { try { const R = _pb && _pb.retro; if (!R || _qeDone(_qeLoad(_retEmail()), R.evalDay)) return null; const T = _qeTarget(USER, _qeLoad(_retEmail())); return T && T.retro ? T : null; } catch (e) { return null; } })();
+  const _PR_KEY = "__OD_PRETRO_POP_" + ((_localUserNow && _localUserNow.email) || "guest");
+  const [_prClosed, _setPrClosed] = useState(() => { try { return sessionStorage.getItem(_PR_KEY) === "1"; } catch (e) { return false; } });
+  const _closePr = () => { try { sessionStorage.setItem(_PR_KEY, "1"); } catch (e) {} _setPrClosed(true); };
+  const _slPromoRetro = usePopSlot("promo-retro", !!_pbR && !_prClosed);
   // 밀린 평가는 접속하자마자(줄 45), 평가 당일은 그날 일정 끝낸 뒤(줄 135)
   const _slPromoEval = usePopSlot(_peT && _peT.late ? "promo-eval-late" : "promo-eval", !!_peT && !_peClosed);
   const _slD7 = usePopSlot("retire-d7", !!_showD7Popup);
@@ -23114,6 +23242,8 @@ function App() {
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
 
       {/* ── 시즌 2: Day 29 D-1 팝업 / Day 30+ 승급 의례 ── */}
+      {_pbShowBatch && _slPromoBatch && <PPBatchArrived issued={_pb.issued} onOpen={() => { _pbSeen(_retEmail()); _setPb(Object.assign({}, _pb, { seen: true })); setActive("mynotes"); }} onClose={() => { _pbSeen(_retEmail()); _setPb(Object.assign({}, _pb, { seen: true })); }} />}
+      {_pbR && !_prClosed && _slPromoRetro && <PPRetroIntro T={_pbR} onGo={() => { _closePr(); try { sessionStorage.setItem("__OD_QE_AUTOSTART", "1"); } catch (e) {} setActive("test"); }} onReview={() => { _closePr(); setActive("library"); }} onClose={_closePr} />}
       {_peT && !_peClosed && _slPromoEval && (_peStep === "review"
         ? (() => { const R = _ppReviewData(_peT.from, _peT.to); return <PPReview30 D={R.D} extra={R.ex} onGo={() => { _closePe(); try { sessionStorage.setItem("__OD_QE_AUTOSTART", "1"); } catch (e) {} setActive("test"); }} onClose={_closePe} />; })()
         : <PPEvalIntro T={_peT} onGo={() => { if (_peT.kind === "p30") { _setPeStep("review"); return; } _closePe(); try { sessionStorage.setItem("__OD_QE_AUTOSTART", "1"); } catch (e) {} setActive("test"); }} onReview={() => { _closePe(); setActive("library"); }} onClose={_closePe} />)}
@@ -24132,6 +24262,9 @@ window.SimApp = App;
       if (n <= 90) localStorage.removeItem('__OD_S3_SEEN_v2_' + em);   // 대리 심사 전으로
       if (n <= 60) { localStorage.removeItem('__OD_DAY60_SEEN_' + em); localStorage.removeItem('__OD_D60_ANS_' + em); }
       localStorage.removeItem('__OD_PFLOW_' + em);
+      // ★ 2026-10-18: 라이브 전환 일괄 처리(PBATCH)와 진급 리포트 보관함도 비워서 점프한 Day 기준으로 다시 계산되게 (서버 사본도 빈 값으로 덮는다)
+      try { if (typeof _retSave === 'function') { _retSave('PBATCH', em, {}); _retSave('PROMO', em, { list: [] }); } else { localStorage.setItem('__OD_RET_PBATCH_' + em, '{}'); localStorage.setItem('__OD_RET_PROMO_' + em, '{"list":[]}'); } } catch (e) {}
+      sessionStorage.removeItem('__OD_PRETRO_POP_' + em);
       Object.keys(localStorage).forEach(kk => { const m = /^__OD_PEVAL_POP_.*_(\d+)_\d{4}-\d{2}-\d{2}$/.exec(kk); if (m && Number(m[1]) >= n) localStorage.removeItem(kk); });
       Object.keys(sessionStorage).forEach(kk => { const m = /^__OD_PEVAL_POP_.*_(\d+)$/.exec(kk); if (m && Number(m[1]) >= n) sessionStorage.removeItem(kk); });
       sessionStorage.removeItem('__OD_QE_AUTOSTART');
