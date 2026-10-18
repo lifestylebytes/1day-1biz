@@ -17592,7 +17592,7 @@ function MissionComboActivity({ today, item, onClose, onComplete }) {
   const [pick6, setPick6] = useState(null);          // 슬랙 실전
   const [wrong6, setWrong6] = useState([]);
 
-  const _norm = s => (s || "").toLowerCase().replace(/[^a-z0-9']/g, "");
+  const _norm = s => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");   // 2026-10-18 하이픈·띄어쓰기·아포스트로피 차이는 같은 답 (trade-off = tradeoff, devil's = devils)
   const word = today.word || "";
   // 스펠링 마스크: 각 어절 첫 글자 + 힌트만큼 앞에서 추가 공개, 나머지는 ·
   const masked = word.split("").map((ch, i) => {
@@ -19092,7 +19092,7 @@ function _qzAll() {
   } catch (e) { return base; }
 }
 function _qzDayOfWord(word) { const sc = _qzAll().find(x => x.word === word); return sc ? sc.day : 0; }
-function _qzNorm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9']+/g, " ").trim(); }
+function _qzNorm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, ""); }   // 2026-10-18 정답 비교 전용: 하이픈·띄어쓰기·아포스트로피 무시
 function _qzScn(day) { return _qzAll().find(s => s.day === day) || null; }
 function _qzLearned(rd) { return _qzAll().filter(s => s.day <= rd && s.day >= 1 && s.word); }
 

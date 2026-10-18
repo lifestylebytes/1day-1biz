@@ -1365,7 +1365,7 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
 <script>
 </script>
 <script>(function(){
-  function norm(x){return (x||'').toLowerCase().replace(/[\u2018\u2019`]/g,"'").replace(/[-\u2010-\u2015]/g,' ').replace(/[^a-z0-9' ]/g,'').replace(/\s+/g,' ').trim();}  /* 2026-10-18 하이픈·띄어쓰기·둥근 따옴표 차이는 같은 답으로 */
+  function norm(x){return (x||'').toLowerCase().replace(/[^a-z0-9]/g,'');}  /* 2026-10-18 정답 비교: 하이픈·띄어쓰기·아포스트로피·문장부호 차이는 같은 답 (trade-off = tradeoff = trade off, devil's = devils, tl;dr = TLDR) */
   function esc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
   function finish(c,v,mode,btn){if(c.dataset.done)return;var ok=c.dataset.ans.split('|').some(function(a){return norm(a)===norm(v);});c.dataset.done='1';
     var bl=c.querySelector('.gblank');bl.textContent=c.dataset.show;bl.classList.add('fill');if(!ok)bl.classList.add('miss');
