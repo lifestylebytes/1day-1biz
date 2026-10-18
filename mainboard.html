@@ -1259,6 +1259,9 @@ span.ret-hud-item { cursor: default; }
 .ret-board-err { padding: 14px; text-align: center; font-size: 12.5px; color: var(--ink-mute); line-height: 1.6; }
 .ret-board-foot { margin-top: 10px; font-size: 11px; color: var(--ink-mute); line-height: 1.5; }
 .od-flash { animation: odFlash 1s ease-in-out 3; border-radius: 10px; }
+.ret-shop-item.od-flash { animation: odShopFlash .9s ease-in-out 3; border-radius: 12px; position: relative; z-index: 1; }
+@keyframes odShopFlash { 0%, 100% { box-shadow: 0 0 0 0 rgba(216,90,42,0); border-color: var(--line); transform: none; } 50% { box-shadow: 0 0 0 4px rgba(216,90,42,0.5), 0 14px 28px -14px rgba(216,90,42,0.6); border-color: var(--orange); transform: scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .ret-shop-item.od-flash { animation: none; box-shadow: 0 0 0 3px rgba(216,90,42,0.5); } }
 @keyframes odFlash { 0%, 100% { box-shadow: 0 0 0 0 rgba(216,90,42,0); background-color: transparent; } 50% { box-shadow: 0 0 0 4px rgba(216,90,42,0.45); background-color: rgba(216,90,42,0.10); } }
 .ret-board-rk { font-style: normal; font-size: 10px; font-weight: 800; color: var(--ink-mute); background: var(--paper-warm); border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
 .ret-board-gap { text-align: center; font-size: 11px; color: var(--ink-mute); padding: 4px 0; }
@@ -10375,6 +10378,17 @@ function _retBuy(email, id) {
 function _retPdfList(email) { const l = _retLoad("PDFS", email, { list: [] }); if (!Array.isArray(l.list)) l.list = []; return l.list; }
 function _retPdfSave(email, rec) { const l = { list: _retPdfList(email).concat([rec]).slice(-6) }; try { _retSave("PDFS", email, l); } catch (e) { l.list = l.list.slice(-2); try { _retSave("PDFS", email, l); } catch (e2) {} } _retPing(); }
 // ── 데려간 곳 하이라이트 (2026-09-14): 링크로 이동한 뒤 3초 동안 그 자리를 반짝여서 '여기예요' ──
+// ★ 2026-10-17 다른 화면에서 복지몰로 보낼 때 그 상품으로 스크롤 + 반짝 (예: 분기 평가 'Preview Ticket 사기')
+function _odFocusShopItem(id) {
+  let n = 0;
+  const go = () => {
+    const el = document.querySelector(".ret-shop-item[data-shop='" + id + "']");
+    if (!el) { if (++n < 20) setTimeout(go, 150); return; }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => _odFlash(el, 3200), 350);
+  };
+  setTimeout(go, 200);
+}
 function _odFlash(el, ms) {
   try { if (!el) return; el.classList.add("od-flash"); setTimeout(() => { try { el.classList.remove("od-flash"); } catch (e) {} }, ms || 3000); } catch (e) {}
 }
@@ -11282,7 +11296,7 @@ function QuarterEvalDev({ setActive }) {
       if (d.qe) {
         if (d.qe.ph) setH(Math.max(400, d.qe.ph + 8));
         if (d.qe.go === "practice") { setMode("practice"); const r = _qeLoad(email); const had = r.ticket && r.ticket.practiceIds; r.ticket = Object.assign({ evalDay }, r.ticket, { practiceStartAt: new Date().toISOString(), practiceIds: pracIds }); if (!had) { r.tkHist = r.tkHist || {}; r.tkHist[evalDay] = (r.tkHist[evalDay] || []).concat([pracIds]).slice(-10); _qeSyncTickets(email, evalDay, r.tkHist[evalDay]); } _qeSave(email, r); }
-        if (d.qe.nav === "perk") setActive && setActive("perk");
+        if (d.qe.nav === "perk") { setActive && setActive("perk"); _odFocusShopItem("preview"); }
         if (d.qe.nav === "use") { if (_retInvUse(email, "preview")) { const r = _qeLoad(email); r.ticket = { usedAt: new Date().toISOString(), evalDay }; _qeSave(email, r); try { sessionStorage.setItem("__OD_RET_PREVIEW", "1"); } catch (e2) {} setMode("peek"); } }
         if (d.qe.start === "test") { frozen.current = { T: live.current.T, ids: live.current.mainIds }; setMode("test"); }
       }
