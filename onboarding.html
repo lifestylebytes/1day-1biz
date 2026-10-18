@@ -1561,7 +1561,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <Divider />
 
-      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 언제든 해지 · 누적 입사 50명+" />
+      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 10월 23일(금)까지만 신청 가능 · 언제든 해지" />
       {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
         {[
@@ -1599,8 +1599,11 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: "var(--paper)", border: "1.5px solid var(--accent)", borderRadius: 9 }}>
             <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--accent)", flexShrink: 0 }}>2차 공채</span>
-            <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)" }}>월 13,900원</span>
-            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--accent)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>지금 접수 중</span>
+            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.35 }}>
+              <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)" }}>월 13,900원</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>10/23(금)까지만 신청 가능</span>
+            </span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--accent)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>~10/23 마감</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
             <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>3차 공채</span>
