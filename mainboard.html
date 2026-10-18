@@ -5883,6 +5883,12 @@ const RECAP_DATA = {
 
 // 사용자 상태, localStorage 우선, 없으면 데모 기본값
 const _localUser = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null'); } catch(e) { return null; } })();
+// ★ 2026-10-18 예문 속 기본 인물 '지원 씨 / Jiwon' 을 로그인한 사람 이름으로. (영어는 이름 로마자, 한국어는 이름 + 씨)
+//   성은 떼고 이름만 쓴다 (김지원 → 지원). 이름을 모르면 원문 그대로.
+function _odRomanize(h){var I=['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'],V=['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'],F=['','k','k','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','p','t','t','ng','t','t','k','t','p','t'];var o='';for(var i=0;i<h.length;i++){var c=h.charCodeAt(i)-0xAC00;if(c<0||c>11171){o+=h[i];continue;}o+=I[Math.floor(c/588)]+V[Math.floor((c%588)/28)]+F[c%28];}return o?o.charAt(0).toUpperCase()+o.slice(1):o;}
+function _odGivenName(){try{var u=JSON.parse(localStorage.getItem('__OD_USER')||'null');var n=String((u&&u.name)||'').replace(/\s+/g,'');if(!n)return null;var han=/^[가-힣]+$/.test(n);var g=han?(n.length>=4?n.slice(2):n.length===3?n.slice(1):n):n;var en=han?_odRomanize(g):g;return {ko:g,en:en};}catch(e){return null;}}
+function _odPersonalize(root){var G=_odGivenName();if(!G||(G.ko==='지원'))return root;var seen=[];function fix(s){return s.replace(/지원 ?씨/g,G.ko+' 씨').replace(/\bJiwon\b/g,G.en);}function walk(x){if(!x||typeof x!=='object'||seen.indexOf(x)>=0)return;seen.push(x);for(var k in x){if(!Object.prototype.hasOwnProperty.call(x,k))continue;var v=x[k];if(typeof v==='string'){if(v.indexOf('지원')>=0||v.indexOf('Jiwon')>=0)x[k]=fix(v);}else if(v&&typeof v==='object')walk(v);}}walk(root);return root;}
+try { [SCENARIOS, SCENARIOS_V2, LUNCH_SCRIPTS, LUNCH_SCRIPTS_V2, RECAP_DATA, RECAP_DATA_V2].forEach(_odPersonalize); } catch (e) {}
 
 // ── 가입일 기반 자동 day 계산 (KST 타임존) ──
 // 사용자가 학습 안 해도 매일 자정(KST)이 지나면 다음 day 자동 공개.
@@ -6598,6 +6604,7 @@ const _LUNCH_PARTNERS = [
   { day: 54, who: "Daniel Park (UK 본사 화상)", lead: "Daniel", greet: "Jiwon, quick virtual lunch? There's something I wanted to mention." },
   { day: 58, who: "박 대리 + 한도윤",       lead: "박 대리", greet: "지원 씨, 마감 주간인데 밥은 먹어야죠. 다 같이 가요." },
 ];
+try { _odPersonalize(_LUNCH_PARTNERS); } catch (e) {}
 function _lunchForDay(day) {
   // 가장 가까운 lower-bound 매칭
   const sorted = [..._LUNCH_PARTNERS].sort((a,b) => b.day - a.day);
