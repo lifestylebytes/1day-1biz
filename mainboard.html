@@ -5971,7 +5971,7 @@ const _gateDoneSet = (u) => {
 // ★ 2026-10-19 진급 개편 라이브 스위치 (PROMO_LIVE.md). true = 회원에게도 진급 평가 · 진급 리포트 · 일괄 발급 · 팝업 줄이 열린다.
 //   false 로 바꾸면 예전처럼 개발 뷰(운영자 + 개발 뷰 ON)에서만. 호봉 · 위장 모드 · 내일 미리 쓰기 같은 다른 개발 뷰 기능은 그대로 _isDevNext.
 function _promoLive() { return true; }
-function _promoLiveDay() { return "2026-10-19"; }   // 라이브 날 (한국 시간). 밀린 평가는 다음 날부터, Day 막힘은 이날부터 끝낸 평가 날만
+function _promoLiveDay() { return "2026-10-19"; }   // 라이브 날 (한국 시간). 밀린 평가는 이날부터, Day 막힘은 이날부터 끝낸 평가 날만
 function _promoDevOn() { try { if (localStorage.getItem("__OD_NEXT") !== "1") return false; const u = JSON.parse(localStorage.getItem("__OD_USER") || "null"); return !!(u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode)); } catch (e) { return false; } }
 function _isPromoNext() { return _promoLive() || _promoDevOn(); }
 function _odEvalBlocked(d, u) {
@@ -6128,7 +6128,25 @@ const _rankIdBase = (_RANK_ORDER[_levelId] || 0) > (_RANK_ORDER[_progressRankId]
 // ★ 2026-10-17 (개발 뷰): 진급은 평가를 마무리해야 된다. 학습 Day 만 넘었다고 직급이 오르지 않는다.
 //   사원 = 저장된 직급이 사원 이상이거나 승급 기록 / 사원 평가 기록이 있을 때. 대리 = 저장된 직급이 대리이거나 대리 평가 기록이 있을 때.
 //   단, 대리 저장이 없던 시절에 이미 Day 91 을 넘은 사원은 대리로 본다 (라이브 때 서버에도 일괄 저장 예정, 20261017_senior_level.sql 2번).
-const _rankId = (() => {
+// ★ 2026-10-19 라이브: 회원 화면 직급은 내려가지 않는다 (사용자 요청 · 위로 진급만).
+//   라이브 날 전에 이미 보이던 직급(저장된 직급 · 그때까지 끝낸 Day 기준)이 바닥. 평가 기준 직급은 __OD_EVAL_RANK 로 따로 둬서
+//   어떤 평가를 열지(_qeTargetBase)는 그걸로 정한다. 개발 뷰는 평가 기준 그대로.
+const _rankFloor = (() => {
+  try {
+    let dl = 0; const live = _promoLiveDay();
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i); const mm = /^__OD_TASKS_DAY_(\d+)$/.exec(k || ""); if (!mm) continue;
+      const t = JSON.parse(localStorage.getItem(k) || "{}") || {};
+      if (Object.entries(t).filter(([kk, v]) => v === true && !String(kk).startsWith("_")).length < 4) continue;
+      const ts = localStorage.getItem(k + "_ts"); const n = Number(mm[1]);
+      if (!ts || new Date(Date.parse(ts) + 9 * 3600000).toISOString().slice(0, 10) < live) dl = Math.max(dl, n);
+    }
+    const fd = Math.min(_resolvedDay, dl + 1);
+    const pr = fd >= 90 ? "senior" : (fd >= 31 ? "fulltime" : "probation");
+    return (_RANK_ORDER[_levelId] || 0) > (_RANK_ORDER[pr] || 0) ? _levelId : pr;
+  } catch (e) { return _rankIdBase; }
+})();
+const _rankIdEval = (() => {
   try {
     if (!_isPromoNext()) return _rankIdBase;
     const em = (_localUser && _localUser.email) || "";
@@ -6140,6 +6158,9 @@ const _rankId = (() => {
     return "fulltime";
   } catch (e) { return _rankIdBase; }
 })();
+try { window.__OD_EVAL_RANK = _rankIdEval; } catch (e) {}
+const _rankId = (!_isPromoNext() || _promoDevOn()) ? _rankIdEval
+  : ((_RANK_ORDER[_rankFloor] || 0) > (_RANK_ORDER[_rankIdEval] || 0) ? _rankFloor : _rankIdEval);
 const _rankCap = _rankId === "senior" ? (_resolvedDay > 90 ? 210 : 90) : (_rankId === "fulltime" ? 60 : 30);
 const _phaseCap = Math.max(_dayCap, _rankCap);
 // 정직원 여부 = 헤더에 표시되는 직급 기준 (DB 승급 or 진도 Day 31+ 둘 중 하나면 사원)
@@ -11224,7 +11245,7 @@ function _qeTarget(USER, rec) {
 }
 function _qeTargetBase(USER, rec) {
   const rd = Number(USER.realCurrentDay || USER.currentDay) || 1;
-  const rk = USER.rankId || "probation";
+  const rk = (typeof window !== "undefined" && window.__OD_EVAL_RANK) || USER.rankId || "probation";   // ★ 2026-10-19: 화면 직급(안 내려감) 말고 평가 기준 직급
   // ★ 2026-10-17: Day 90 이 지났는데 아직 수습이면 평가 두 개(사원 · 대리)를 다 보게 하지 않고, 가장 최근에 봤어야 할 대리 평가 하나만.
   //   통과하면 사원 · 대리 진급을 한 번에 저장하고 리포트도 둘 다 발급한다 (skip30).
   if ((rk === "intern" || rk === "probation") && rd >= 90) return { kind: "p90", evalDay: 90, title: "대리 진급 평가", from: 31, to: 90, j: "s", skip30: true };
@@ -21273,11 +21294,11 @@ function PPEve({ kind, onClose }) {
 // 평가 날 첫 화면 (Day 30 면담 · Day 90 심사 · TF 마지막 날)
 // ★ 2026-10-17: 밀린 진급 평가(평가 Day 가 지났는데 아직 안 본 회원) 팝업을 언제부터 띄울지. 라이브 하는 날 "YYYY-MM-DD" 로 넣으면
 //   그 다음 날부터 뜬다. 비워 두면(null) 개발 뷰에서만 바로 뜬다.
-const _PROMO_LATE_FROM = _promoLiveDay();   // ★ 라이브 날. 다음 날부터 밀린 평가 팝업
+const _PROMO_LATE_FROM = _promoLiveDay();   // ★ 라이브 날부터 밀린 평가 팝업
 function _promoLateOn() {
   if (_isDevNext()) return true;
   if (!_PROMO_LATE_FROM) return false;
-  try { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) > _PROMO_LATE_FROM; } catch (e) { return false; }
+  try { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) >= _PROMO_LATE_FROM; } catch (e) { return false; }   // ★ 라이브 날부터 (사용자 요청)
 }
 function PPEvalIntro({ T, onGo, onReview, onClose }) {
   if (T.kind === "p30") {
