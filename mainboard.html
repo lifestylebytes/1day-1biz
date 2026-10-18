@@ -7591,9 +7591,11 @@ function UnlockChip({ k, rd }) {
 const _POP_ORDER = {
   // 🚪 접속하자마자
   // ★ 2026-10-17 (개발 뷰): 투어(첫 출근 · 정직원 모드 가이드)와 진급 결과 흐름도 같은 줄에 선다. 예전엔 줄 밖이라 EXP 팝업과 같이 떴다.
-  "tour": 5, "retire-d7": 10, "notice-personal": 20, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "promo-batch": 44, "promo-eval-late": 45, "promo-retro": 46, "tf-select": 50, "absence": 60, "first-week": 70,
+  "tour": 5, "retire-d7": 10, "notice-personal": 20, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "promo-eval-late": 45, "tf-select": 50, "absence": 60, "first-week": 70,
   // ✅ 오늘 일정 끝낸 뒤
-  "exp": 110, "setup": 120, "milestone": 130, "promo-eval": 135, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
+  "exp": 110,
+  // ★ 2026-10-18: 리포트 도착 · 늦게 열린 평가는 오늘 일정 끝낸 뒤로 (사용자 요청). 학습 먼저, 선물은 그 다음.
+  "promo-batch": 114, "promo-retro": 116, "setup": 120, "milestone": 130, "promo-eval": 135, "promo-d1": 140, "day60": 150, "cb-survey": 160, "cb-goal": 170,
   "notice-all": 180, "unlock": 190, "kakao": 200, "push": 210, "notice-room": 220, "curriculum": 230, "pulse": 240,
 };
 function _popQ() { if (!window.__odPopQ) window.__odPopQ = { want: {}, owner: null, doneAt: 0, timer: null }; return window.__odPopQ; }
@@ -20926,7 +20928,11 @@ function PvToasts({ kind }) {
     </div>
   );
 }
-function _pgTiming(q) {
+function _pgTiming(q, tm) {
+  // tm: 줄 번호가 하나가 아닌 팝업(투어 · 흐름 · 여러 단계)에 직접 적는 언제 뜨는지. "in" = 접속하자마자, "after" = 오늘 일정 끝낸 뒤, 그 밖 = 섞임 설명
+  if (tm === "in") return { t: "🚪 접속하자마자 · 오늘 일정 전", c: "#2F4A66" };
+  if (tm === "after") return { t: "✅ 오늘 일정 끝낸 뒤", c: "#2F7A4C" };
+  if (tm) return { t: "🔀 " + tm, c: "#8A5A2B" };
   if (typeof q === "number") return q < 100 ? { t: "🚪 접속하자마자 · 오늘 일정 전", c: "#2F4A66" } : { t: "✅ 오늘 일정 끝낸 뒤", c: "#2F7A4C" };
   return { t: "↔ " + q, c: "#8A7964" };
 }
@@ -20937,20 +20943,20 @@ function _pgCatalog2(email) {
   const unlockDays = {}; try { Object.keys(_UNLOCK_AT).forEach(k => { const d = _UNLOCK_AT[k]; if (d > 1) (unlockDays[d] = unlockDays[d] || []).push(k); }); } catch (e) {}
   const nop = () => {};
   const L = [
-    { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
+    { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", tm: "in", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
     { day: 1, name: "👋 첫 주 웰컴 (Day 1~5)", when: "Day 1~5 매일 1번", cond: "Day 1은 투어 뒤, Day 2는 1일차 후기 설문 뒤에 이어서 떠요.", queue: 70, v: [1, 2, 3, 4, 5].map(d => ({ label: "Day " + d, render: (c) => <FirstWeekPopup day={d} onClose={c} /> })) },
     { day: 1, name: "🛠 출근 환경 세팅", when: "Day 1 학습을 다 끝낸 직후", cond: "③ 카톡 알림 칸이 회원 상태에 따라 달라요.", queue: 120, v: [
       { label: "카톡 알림 아직 안 켬", sub: "번호 입력 칸", pv: { kakao: "off" }, render: (c) => <SetupPopup onClose={c} /> },
       { label: "번호는 있고 알림만 안 켬", pv: { kakao: "phone" }, render: (c) => <SetupPopup onClose={c} /> },
       { label: "이미 켬", sub: "매일 9시", pv: { kakao: "on" }, render: (c) => <SetupPopup onClose={c} /> }] },
     { day: 1, name: "⚡ 오늘의 EXP", when: "매일, 오늘 일정 4개를 끝낸 뒤", cond: "그날 처음 다 끝냈을 때 1번. 밀린 Day 를 따라잡는 중이면 +0 안내로 바뀌어요.", queue: 110, v: [{ label: "오늘 기준", render: (c) => <RetDayPopup day={((window.__SIM || {}).USER || {}).currentDay || 1} email={em} onClose={c} /> }] },
-    { day: 2, name: "📝 1일차 후기 설문", when: "Day 2 첫 접속, 홈에서 2.5초 뒤", cond: "끝까지 내도 연습 모드라 저장 안 돼요.", queue: "홈 화면 (줄 밖)", v: [{ label: "설문", render: (c) => <SurveyModal email={em} onClose={c} /> }] },
+    { day: 2, name: "📝 1일차 후기 설문", when: "Day 2 첫 접속, 홈에서 2.5초 뒤", cond: "끝까지 내도 연습 모드라 저장 안 돼요.", queue: "홈 화면 (줄 밖)", tm: "in", v: [{ label: "설문", render: (c) => <SurveyModal email={em} onClose={c} /> }] },
     { day: 2, name: "💬 카톡 출근 알림 안내", when: "Day 2부터, 알림을 아직 안 켠 회원", cond: "계정당 1번. 이미 켰으면 안 떠요.", queue: 200, v: [{ label: "안 켠 회원", pv: { kakao: "off" }, render: (c) => <KakaoNudgePopup email={em} onClose={c} /> }] },
     { day: 2, name: "🔓 기능 열림", when: "그 기능이 열리는 날, 오늘 일정 뒤", cond: "Day 마다 열리는 것이 달라요.", queue: 190, v: Object.keys(unlockDays).sort((a, b) => a - b).map(d => ({ label: "Day " + d, sub: unlockDays[d].map(k => _UNLOCK_LABEL[k] || k).join(" · "), render: (c) => <RetUnlockPopup keys={unlockDays[d]} rd={Number(d)} email={em} setActive={nop} onClose={c} replay /> })) },
-    { day: 3, name: "📌 공지 자동 팝업", when: "Day 3부터, 접속 1번에 1개", cond: "개인 공지(줄 20) → 전체 공지(180) → 푸시 안내(210) · 공지방(220) · 커리큘럼(230). 사내 게시판 메모 창으로 열려서 미리보기 대신 게시판에서 봐요.", queue: "20 · 180 · 210~230" },
+    { day: 3, name: "📌 공지 자동 팝업", when: "Day 3부터, 접속 1번에 1개", cond: "개인 공지(줄 20) → 전체 공지(180) → 푸시 안내(210) · 공지방(220) · 커리큘럼(230). 사내 게시판 메모 창으로 열려서 미리보기 대신 게시판에서 봐요.", queue: "20 · 180 · 210~230", tm: "개인 공지는 접속하자마자 · 나머지는 일정 끝낸 뒤" },
     { day: 7, name: "🌱 수습 마일스톤 (인포그래픽)", when: "출근(완주) 7 · 15 · 21일째", cond: "달력이 아니라 끝낸 날 수 기준. 여러 개를 한꺼번에 넘기면 제일 높은 것 하나만.", queue: 130, v: [7, 15, 21].map(at => ({ label: at + "일째", render: (c) => <PPMilestone at={at} total={30} {..._ppMilestoneData(at)} onClose={c} /> })) },
     { day: 8, name: "🙋 요즘 어떠세요? (의견 설문)", when: "Day 8 이상 + 출근 5일 이상", cond: "계정당 1번.", queue: 240, v: [{ label: "설문", render: (c) => <PulseSurveyModal surveyKey={"__OD_PULSE_PREVIEW"} onClose={c} /> }] },
-    { day: 29, name: "🎓 사원 진급 흐름 (인포그래픽)", when: "Day 29 예고 → Day 30 면담", cond: "Day 30 일정을 끝내면 면담이 떠요. 회고 → 진급 테스트(분기 평가 탭) → 한마디 → 발령 → 리포트. 평가를 봐야 Day 31이 열려요.", queue: "135 · 140", v: [
+    { day: 29, name: "🎓 사원 진급 흐름 (인포그래픽)", when: "Day 29 예고 → Day 30 면담", cond: "Day 30 일정을 끝내면 면담이 떠요. 회고 → 진급 테스트(분기 평가 탭) → 한마디 → 발령 → 리포트. 평가를 봐야 Day 31이 열려요.", queue: "135 · 140 · 45 · 25", tm: "예고 · 면담은 일정 끝낸 뒤 · 밀린 평가 · 결과는 접속하자마자", v: [
       { label: "Day 29 · 내일 면담", sub: "줄 140 · 일정 뒤", render: (c) => <PPEve kind="p30" onClose={c} /> },
       { label: "Day 30 · 면담 시작", sub: "줄 135 · 일정 뒤", render: (c) => <PPEvalIntro T={T30} onGo={c} onReview={c} onClose={c} /> },
       { label: "밀린 평가 · Day 31+ 수습", sub: "줄 135 · 볼 때까지 접속마다", render: (c) => <PPEvalIntro T={Object.assign({}, T30, { late: 3 })} onGo={c} onReview={c} onClose={c} /> },
@@ -20959,18 +20965,18 @@ function _pgCatalog2(email) {
       { label: "3 / 5 한마디", render: (c) => <PPWord kind="p30" evalDay={30} onNext={c} onClose={c} /> },
       { label: "4 / 5 발령", sub: "점수에 따라", render: (c) => <PPAppoint kind="p30" ok={14} total={15} miss={["table"]} onNext={c} onClose={c} /> },
       { label: "5 / 5 진급 리포트", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={14} total={15} onOpen={c} onClose={c} /> }] },
-    { day: 30, name: "👔 정직원 모드 가이드 (투어)", when: "사원 진급 직후 (Day 60 전)", cond: "6단계. 5단계가 '사원 진급 리포트 발행' 안내.", queue: "투어", replay: () => { try { localStorage.removeItem("__OD_S2_TOUR_DONE_" + em); } catch (e) {} location.reload(); } },
+    { day: 30, name: "👔 정직원 모드 가이드 (투어)", when: "사원 진급 직후 (Day 60 전)", cond: "6단계. 5단계가 '사원 진급 리포트 발행' 안내.", queue: "투어", tm: "in", replay: () => { try { localStorage.removeItem("__OD_S2_TOUR_DONE_" + em); } catch (e) {} location.reload(); } },
     { day: 60, name: "🌟 Day 60 설문 (인포그래픽)", when: "Day 60~89, 1번", cond: "대리 진급 리포트에 넣을 질문 3개. Q1 답으로 TF 신청서의 '사수 추천'이 정해져요.", queue: 150, v: [{ label: "설문", render: (c) => <PPDay60 onClose={c} /> }] },
-    { day: 31, name: "📬 진급 리포트 도착 (라이브 일괄 발급)", when: "라이브 후 첫 접속, 1번", cond: "새 진급 평가 전에 이미 지난 평가 중 가장 최근 것 하나만 빼고, 그 앞 단계 리포트를 평가 없이 바로 발급해요. 발급된 게 있을 때만.", queue: 44, v: [
+    { day: 31, name: "📬 진급 리포트 도착 (라이브 일괄 발급)", when: "라이브 후 오늘 일정을 끝낸 뒤, 1번", cond: "새 진급 평가 전에 이미 지난 평가 중 가장 최근 것 하나만 빼고, 그 앞 단계 리포트를 평가 없이 바로 발급해요. 발급된 게 있을 때만. 리포트 탭에는 접속하자마자 들어가 있어요.", queue: 114, v: [
       { label: "3부 (사원 · 대리 · TF)", sub: "예: Day 150+ 대리", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }, { id: "p90", kind: "p90", from: 31, to: 90 }, { id: "tf-people", kind: "tf", from: 91, to: 120, tfName: "피플 TF" }]} onOpen={c} onClose={c} /> },
       { label: "2부 (사원 · 대리)", sub: "예: Day 121~149", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }, { id: "p90", kind: "p90", from: 31, to: 90 }]} onOpen={c} onClose={c} /> },
       { label: "1부 (사원)", sub: "예: Day 91~120", render: (c) => <PPBatchArrived issued={[{ id: "p30", kind: "p30", from: 1, to: 30 }]} onOpen={c} onClose={c} /> }] },
-    { day: 31, name: "⏰ 늦게 열린 평가 (재미로)", when: "라이브 후 접속마다, 평가 볼 때까지", cond: "이미 진급한 분에게 가장 최근에 지난 평가 하나를 열어요. 진급은 그대로, 보면 새 리포트 발행. 지금 Day 의 정규 평가가 열려 있으면 그게 먼저.", queue: 46, v: [
+    { day: 31, name: "⏰ 늦게 열린 평가 (재미로)", when: "라이브 후 오늘 일정을 끝낸 뒤, 평가 볼 때까지 접속마다", cond: "이미 진급한 분에게 가장 최근에 지난 평가 하나를 열어요. 진급은 그대로, 보면 새 리포트 발행. 지금 Day 의 정규 평가가 열려 있으면 그게 먼저.", queue: 116, v: [
       { label: "사원 평가", sub: "Day 31~89 사원", render: (c) => <PPRetroIntro T={{ kind: "p30", evalDay: 30, from: 1, to: 30 }} onGo={c} onReview={c} onClose={c} /> },
       { label: "대리 심사", sub: "Day 90~119", render: (c) => <PPRetroIntro T={{ kind: "p90", evalDay: 90, from: 31, to: 90 }} onGo={c} onReview={c} onClose={c} /> },
       { label: "TF 수료 평가", sub: "Day 120+", render: (c) => <PPRetroIntro T={{ kind: "tf", evalDay: 150, from: 121, to: 150, tfName: "미팅 TF" }} onGo={c} onReview={c} onClose={c} /> },
-      { label: "보고 나면 · 새 리포트", sub: "흐름 줄 25", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={13} total={15} retro onOpen={c} onClose={c} /> }] },
-    { day: 89, name: "🏅 대리 진급 흐름 (인포그래픽)", when: "Day 89 예고 → Day 90 심사", cond: "Day 90 일정을 끝내면 심사가 떠요. 심사(분기 평가 탭) → 한마디 → 발령 → 리포트 → TF 신청서 → 발령 완료. 심사를 봐야 Day 91이 열려요.", queue: "130 · 135 · 50", v: [
+      { label: "보고 나면 · 새 리포트", sub: "흐름 줄 25 · 평가 마친 직후", render: (c) => <PPReportIssued kind="p30" from={1} to={30} ok={13} total={15} retro onOpen={c} onClose={c} /> }] },
+    { day: 89, name: "🏅 대리 진급 흐름 (인포그래픽)", when: "Day 89 예고 → Day 90 심사", cond: "Day 90 일정을 끝내면 심사가 떠요. 심사(분기 평가 탭) → 한마디 → 발령 → 리포트 → TF 신청서 → 발령 완료. 심사를 봐야 Day 91이 열려요.", queue: "130 · 135 · 50", tm: "예고 · 심사는 일정 끝낸 뒤 · TF 신청서는 접속하자마자", v: [
       { label: "Day 89 · 내일 심사", sub: "줄 130", render: (c) => <PPEve kind="p90" onClose={c} /> },
       { label: "Day 90 · 심사실", sub: "줄 135", render: (c) => <PPEvalIntro T={T90} onGo={c} onReview={c} onClose={c} /> },
       { label: "밀린 평가 · Day 90+ 수습", sub: "대리 심사 하나만", render: (c) => <PPEvalIntro T={Object.assign({}, T90, { late: 12, skip30: true })} onGo={c} onReview={c} onClose={c} /> },
@@ -20978,13 +20984,13 @@ function _pgCatalog2(email) {
       { label: "3 / 4 발령", render: (c) => <PPAppoint kind="p90" ok={13} total={15} miss={["scope creep"]} onNext={c} onClose={c} /> },
       { label: "4 / 4 진급 리포트", render: (c) => <PPReportIssued kind="p90" from={31} to={90} ok={13} total={15} onOpen={c} onClose={c} /> },
       { label: "TF 신청서 · 첫 TF", sub: "줄 50 · 접속하자마자", render: (c) => <PPTfPick done={[]} onClose={c} /> }] },
-    { day: 120, name: "🤝 TF 수료 흐름 (인포그래픽)", when: "TF 마지막 날(120 · 150 · 180 · 210) → 다음 날 신청서", cond: "그날 일정을 끝내면 수료 평가가 떠요. 평가(15문항 + 롤플레이) → 수료 → 수료 리포트. 다음 날(121 · 151 · 181) 다음 TF 신청서.", queue: "135 · 50", v: [
+    { day: 120, name: "🤝 TF 수료 흐름 (인포그래픽)", when: "TF 마지막 날(120 · 150 · 180 · 210) → 다음 날 신청서", cond: "그날 일정을 끝내면 수료 평가가 떠요. 평가(15문항 + 롤플레이) → 수료 → 수료 리포트. 다음 날(121 · 151 · 181) 다음 TF 신청서.", queue: "135 · 50", tm: "수료 평가는 일정 끝낸 뒤 · 다음 TF 신청서는 접속하자마자", v: [
       { label: "TF Day 30 · 수료 평가", sub: "줄 135", render: (c) => <PPEvalIntro T={TTF} onGo={c} onReview={c} onClose={c} /> },
       { label: "수료", render: (c) => <PPTfDone tf="nego" ok={14} total={16} doneList={[]} onNext={c} onClose={c} /> },
       { label: "TF 수료 리포트", render: (c) => <PPReportIssued kind="tf" from={91} to={120} ok={14} total={16} tfName="협상 TF" onOpen={c} onClose={c} /> },
       { label: "다음 TF 신청서 (2 / 4)", sub: "Day 121 · 줄 50", render: (c) => <PPTfPick done={["nego"]} onClose={c} /> },
       { label: "4개 다 수료", render: (c) => <PPTfDone tf="meeting" ok={15} total={16} doneList={["nego", "people", "docs"]} onNext={c} onClose={c} /> }] },
-    { day: 0, name: "😴 결근 복귀 흐름", when: "결근하고 다시 들어온 날 (아무 Day)", cond: "결근 기간에 따라 단계가 달라요. 복습 퀴즈 → 아이템으로 연속 출근 지키기 → (오래 쉬었으면) 일정 뒤 복귀 설문 → 새 목표.", queue: "60 · 160 · 170", v: [
+    { day: 0, name: "😴 결근 복귀 흐름", when: "결근하고 다시 들어온 날 (아무 Day)", cond: "결근 기간에 따라 단계가 달라요. 복습 퀴즈 → 아이템으로 연속 출근 지키기 → (오래 쉬었으면) 일정 뒤 복귀 설문 → 새 목표.", queue: "60 · 160 · 170", tm: "결근 안내 · 복습은 접속하자마자 · 복귀 설문 · 새 목표는 일정 끝낸 뒤", v: [
       { label: "결근 1일", sub: "줄 60", render: (c) => <RetDebuffPopup rec={{ level: 1, gap: 1 }} onOpenQuiz={c} onClose={c} /> },
       { label: "결근 2일", render: (c) => <RetDebuffPopup rec={{ level: 2, gap: 2 }} onOpenQuiz={c} onClose={c} /> },
       { label: "결근 5일+", render: (c) => <RetDebuffPopup rec={{ level: 3, gap: 5 }} onOpenQuiz={c} onClose={c} /> },
@@ -21023,7 +21029,7 @@ function PopupGalleryDev({ onClose }) {
   React.useEffect(() => () => _pvOff(), []);
   const cur = open != null ? list[open] : null;
   if (cur) {
-    const tm = _pgTiming(cur.queue);
+    const tm = _pgTiming(cur.queue, cur.tm);
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 9990, background: "var(--paper)", overflow: "auto", padding: "16px 18px 40px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", position: "sticky", top: -16, background: "var(--paper)", padding: "8px 0", zIndex: 2, borderBottom: "1px solid var(--line)" }}>
@@ -21050,7 +21056,7 @@ function PopupGalleryDev({ onClose }) {
           <button className="btn btn-ghost btn-mini" style={{ marginLeft: "auto" }} onClick={onClose}>닫기</button>
         </div>
         <div style={{ marginTop: 14, display: "grid", gap: 6 }}>
-          {list.map((p, i) => { const tm = _pgTiming(p.queue); const passed = p.day && rd >= p.day; return (
+          {list.map((p, i) => { const tm = _pgTiming(p.queue, p.tm); const passed = p.day && rd >= p.day; return (
             <div key={i} style={{ display: "grid", gridTemplateColumns: "70px 1fr auto", gap: 12, alignItems: "center", padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 10, background: passed ? "var(--paper-warm)" : "var(--paper)" }}>
               <div style={{ textAlign: "center" }}><b style={{ fontSize: 13, color: "var(--orange)" }}>{p.day ? "Day " + p.day : "언제든"}</b><div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2 }}>{typeof p.queue === "number" ? "줄 " + p.queue : p.queue}</div></div>
               <div style={{ minWidth: 0 }}>
