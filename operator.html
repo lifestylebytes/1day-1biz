@@ -2871,8 +2871,9 @@ function App() {
                 <div><b>실제 학습 Day</b> = 회원 앱 화면에 떠 있는 오늘 Day (접속할 때 앱이 보낸 값). 어제 이전에 받은 값이면, 그 뒤로 끝낸 Day(일지 또는 일정 4개)만큼 이어서 세요. 새 버전 앱에 아직 접속 안 한 회원은 '-'</div>
                 <div><b>앱 Day</b> = 예전 방식 값 (접속 때 앱이 보낸 값 중 가장 큰 값, 내려가지 않아요). 참고용</div>
                 <div><b>달력 Day</b> = 가입일 기준 원래 와 있어야 할 Day</div>
-                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
-                <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day 포함)</div>
+                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day 전날까지 중 아직 안 한 Day · 앞으로 해야 할 몫 (오늘 달력 Day는 빼고, 출근 달력에 '오늘 Day N 아직 안 함'으로 따로)</div>
+                <div><b>건너뛴 Day</b> = 실제 학습 Day 전인데 완주 기록이 없는 Day · 지나온 날 중 빈 Day (회원 출근 달력에도 같은 숫자)</div>
+                <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day · 건너뛴 Day · 오늘 Day 포함)</div>
                 <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 고객 앱과 같은 규칙: 실제 학습 Day 수습(~30) · 사원(31~89) · 대리(90~), 정직원 전환 시험 기록이 있으면 둘 중 높은 쪽.</div>
                 {progMap === null && <div style={{ marginTop: 4, color: '#B23A2C' }}>⚠️ 완주 기록 RPC(get_progress_overview)가 아직 없어요. supabase/migrations/20260914_progress_overview.sql 을 실행하면 밀린·빠뜨린 Day 가 채워져요.</div>}
               </div>
