@@ -3048,7 +3048,7 @@ const SCENARIOS = [
     sampleAnswer: "Sounds good, let's circle back Tuesday with the updated numbers.", tags: ["meeting", "schedule"], status: "studied",
     task: { to: "daniel", channel: "video-call",
       promptKo: "화상 회의 중 Daniel의 제안에 한 줄로 답하세요. (다음 미팅 시점까지 구체적으로 약속)",
-      koSentence: "좋아요, 다음 주 화요일로 후속 미팅 잡아둘게요." },
+      koSentence: "좋아요, 화요일에 수정된 숫자 가지고 다시 얘기해요." },
     mcOptions: [
       { text: "Sounds good, I'll circle back with a Tuesday slot on your calendar.", ko: "좋아요, 화요일 일정을 캘린더에 잡아서 다시 연락드릴게요.", kind: "correct",
         note: "✓ Daniel의 'circle back'을 그대로 받아서 자연스럽게 + 구체적 액션(Tuesday slot 잡음). 회의 매끄러운 마무리." },
@@ -3545,7 +3545,7 @@ const SCENARIOS = [
     tags: ["schedule", "team"], status: "locked",
     task: { to: "mentor", channel: "slack-dm",
       promptKo: "사수의 OOO 공지에 응답.",
-      koSentence: "알겠어요, 급한 일 생기면 박 대리님께 loop in 할게요." },
+      koSentence: "알겠어요, 자리 비우신 동안 급한 일 생기면 박 대리님께 loop in 할게요." },
     mcOptions: [
       { text: "Noted, I'll cover things while you're OOO and loop in Mr. Park for anything urgent.", ko: "알겠어요, 부재중에 제가 커버하고 급한 건 박 부장님께 공유할게요.", kind: "correct", note: "✓ 'Noted' 한 단어로 확인 + 부재(OOO) 동안 내가 커버한다는 책임까지 명확. 사수 안심시키는 답." },
       { text: "Acknowledged. I shall delegate urgent matters to Mr. Park in your absence.", ko: "확인했습니다. 부재 중 긴급 사안은 박 부장님께 위임하겠습니다.", kind: "formal", note: "군대 보고. 'acknowledged', 'delegate' = 사수와 단톡에 너무 무거움." },
@@ -3564,7 +3564,7 @@ const SCENARIOS = [
     youDo: null,
     mentorTip: "전략 회의·임원 보고에서 핵심 표현. 단 하나의 지향점이 north star. 여러 개면 의미 없어.",
     mentorNuance: "여러 지표 중 딱 하나만 남길 때 쓰는 말이야. 팀장이 이 단어를 꺼내면 '나머진 뒤로 미루자'는 뜻이니까 그 하나에 맞춰 말하면 돼.",
-    sampleAnswer: "If retention is our north star, this feature deprioritizes.",
+    sampleAnswer: "If retention is our north star, this feature should be deprioritized.",
     tags: ["strategy", "exec"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "전사 미팅 김 팀장 발언에 동의 + 본인 의견.",
@@ -3660,7 +3660,7 @@ const SCENARIOS = [
     tags: ["milestone", "promotion", "career"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "수습 종료 milestone, 본인 의지 솔직히.",
-      koSentence: "Marketing에 한 분기 더 있고 싶고, 장기적으로 BD가 궁금해요." },
+      koSentence: "이 마일스톤을 맞이하니 정말 뜻깊어요. Marketing에 한 분기 더 있고 싶고, 그다음엔 BD도 경험해보고 싶어요." },
     mcOptions: [
       { text: "Stay in Marketing one more quarter, but I'd love to explore BD long-term.", ko: "마케팅에 한 분기 더 있고 싶은데, 장기적으로는 BD도 해 보고 싶어요.", kind: "correct", note: "✓ 현재 선택(Marketing) + 미래 의지(BD long-term). 명확하고 솔직한 정규직 답변." },
       { text: "I respectfully request continued tenure in Marketing with future BD aspirations.", ko: "향후 BD 지향을 전제로, 마케팅 재직 연장을 정중히 요청드립니다.", kind: "formal", note: "공식 발령 신청서 톤. 김 팀장과의 1:1 자리엔 무거움. 정규직 전환은 마음 편히 솔직하게." },
@@ -3844,7 +3844,7 @@ const SCENARIOS = [
     tags: ["milestone", "growth"], status: "locked",
     task: { to: "manager", channel: "face",
       promptKo: "팀장의 칭찬을 겸손하되 당당하게 받고, 다음 주 의지까지 한 줄로 답하세요.",
-      koSentence: "감사합니다! 수습 30일 덕분에 바로 달릴 수 있었어요. 다음 주가 더 기대돼요." },
+      koSentence: "감사합니다! 수습 30일 덕분에 바로 달릴 수 있었어요. 앞으로 더 보여드릴게요." },
     mcOptions: [
       { text: "Thanks! Probation prepped me well, so I could hit the ground running. More to come.", ko: "고마워요! 수습 기간에 준비가 잘 돼서 바로 치고 나갈 수 있었어요. 더 보여 드릴게요.", kind: "correct",
         note: "✓ 감사 + 단어 사용 + 미래 의지(more to come). 칭찬은 부정하지 말고 받되, 한 줄 겸손과 다음 약속을 얹는 게 프로야." },
@@ -4138,7 +4138,7 @@ const SCENARIOS = [
     tags: ["leadership", "milestone"], status: "locked",
     task: { to: "daniel", channel: "slack-dm",
       promptKo: "초대에 감사를 표하고, 첫 플래닝에 뭘 준비해 갈지 한 줄로 답하세요.",
-      koSentence: "영광이에요. 우리 팀 우선순위 톱3 정리해서 들어갈게요." },
+      koSentence: "그 자리에 함께하게 돼서 영광이에요. 우리 팀 우선순위 톱3 정리해서 들어갈게요." },
     mcOptions: [
       { text: "Honored to have a seat at the table. I'll bring our team's top three priorities mapped out.", ko: "그 자리에 끼게 되어 영광이에요. 우리 팀 우선순위 상위 3개를 정리해서 가져갈게요.", kind: "correct",
         note: "✓ 감사 + 단어 사용(seat at the table) + 기여 준비(top 3 priorities). 자리를 받았으면 '거기서 뭘 보탤지'로 답하는 게 자격 증명이야." },
@@ -9032,6 +9032,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           scene: `[${_meta.emoji} ${_meta.name} · Day ${raw.tfDay}/30] ` + raw.scene,
           npc: (raw.npc === 'yoona') ? 'mentor' : (CHARACTERS[raw.npc] ? raw.npc : 'manager'),
           quote: raw.quote,
+          quoteKo: raw.quoteKo || "",   // 시추에이션 시트 '한국어 보기' 버튼용 (2026-10-19)
           sampleAnswer: (raw.sampleAnswers || [])[0] || "",
           sampleAnswers: raw.sampleAnswers || [],
           mentorTip: raw.mentorTip,

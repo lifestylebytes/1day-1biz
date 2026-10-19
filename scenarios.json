@@ -355,7 +355,7 @@
     "meaning": "(전략의) 가장 중요한 지향점",
     "phonetic": "/nɔːrθ stɑːr/",
     "quote": "Let me be clear about our north star this year: it's user retention. Every feature we build should have to earn its place against that.",
-    "sampleAnswer": "If retention is our north star, this feature deprioritizes.",
+    "sampleAnswer": "If retention is our north star, this feature should be deprioritized.",
     "mentorTip": "전략 회의·임원 보고에서 핵심 표현. 단 하나의 지향점이 north star. 여러 개면 의미 없어.",
     "buddyAnswers": {
       "nuance": "north star = '북극성'. 항해의 길잡이가 되는 단 하나의 별. 비즈니스에선 단 하나의 지향점·KPI.\n\n중요한 건 '단 하나'. 여러 개면 north star 의미 없어.\n\n비슷한 표현 비교:\n• north star metric = 가장 중요한 단일 지표\n• KPI = 여러 핵심 지표 (복수 가능)\n• goal = 일반 목표 (가벼움)\n• vision = 큰 그림 (추상적)\n\n전략 회의에서 'what's our north star?' = 가장 중요한 거 단 하나만 골라라.",
