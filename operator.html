@@ -92,6 +92,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .attcal-chip { display: block; border-radius: 4px; padding: 0 4px; margin-top: 2px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; }
 .attcal-chip.s { color: #2E6B2A; border: 1px solid #B9DBA9; }
 .attcal-chip.s.j { border-style: dashed; }
+/* ★ 2026-10-19 추정 날짜 (문장 제출 · 일정 마지막 저장 시각). 회원 화면은 일반 칩으로 보인다 */
+.attcal-chip.s.g { border-style: dotted; border-width: 1.5px; background: #F7FBF4; }
+.attcal-chip .gs { font-size: 9px; font-weight: 800; color: #8A7964; margin-left: 3px; }
+.attcal-chip.s.g.sel .gs { color: #DDEBD6; }
 .attcal-chip.i { color: #8A6200; border: 1px solid #EBCB72; }
 .attcal-chip.w { background: #D9782E; color: #fff; border: 0; font-size: 9.5px; white-space: normal; }
 .attcal-leg { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; font-size: 11px; color: #5C4A36; }
@@ -1930,6 +1934,8 @@ function ContentEditsReview() {
 // ★ 2026-10-08 출근 달력: 한 사람이 며칠에 Day 몇을 완주했는지 (실제 학습 기록 기준, 회원 화면 출근부와 다를 수 있음)
 //   날짜 출처: 서버 완주 시각(배포 이후 완주) > 일지 처음 작성 시각(배포 전 완주). 둘 다 없으면 "날짜 기록 없음".
 //   아이템 방어일: item_uses 기록이 있으면 그 아이템, 없으면(배포 전 사용) 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일+ 휴가).
+// ★ 2026-10-19 날짜를 추정한 출처 (20261019_attendance_calendar_guess.sql). 운영자 뷰만 점선 + '추정', 회원 화면은 일반 칩
+const ATTCAL_GUESS = { submission: '문장 제출 시각', progress: '일정 마지막 저장 시각' };
 const ATTCAL_ITEMS = { extend: { icon: '🕐', name: '연장권' }, annual: { icon: '🌴', name: '연차' }, vacay: { icon: '✈️', name: '휴가' } };
 function _acKst(at) { const t = Date.parse(at); return isNaN(t) ? null : new Date(t + 9 * 3600000).toISOString().slice(0, 10); }
 function _acAdd(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
@@ -2087,7 +2093,7 @@ function AttendanceCalendarModal({ open, onClose }) {
                   <div key={d} className={cls.join(' ')}>
                     <div className="d">{Number(d.slice(8, 10))}{d === todayK ? ' 오늘' : ''}</div>
                     {!other && c && c.days.map(x => (
-                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '') + (showDay === x.day ? ' sel' : '')} onClick={() => setSelDay(x.day)} title={fmtAt(x.at) + (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각') + ((actsByDay[x.day] || []).length ? '\n' + actsByDay[x.day].map(a => fmtHm(a.at) + '  ' + _acActLabel(a)).join('\n') : '') + '\n(누르면 아래에 활동 시각)'}><span className="lg">Day </span>{x.day}</span>
+                      <span key={x.day} className={'attcal-chip s' + (x.src === 'journal' ? ' j' : '') + (ATTCAL_GUESS[x.src] ? ' g' : '') + (showDay === x.day ? ' sel' : '')} onClick={() => setSelDay(x.day)} title={fmtAt(x.at) + (ATTCAL_GUESS[x.src] ? ' · 추정: ' + ATTCAL_GUESS[x.src] : (x.src === 'journal' ? ' · 일지 처음 작성 시각' : ' · 서버 완주 시각')) + ((actsByDay[x.day] || []).length ? '\n' + actsByDay[x.day].map(a => fmtHm(a.at) + '  ' + _acActLabel(a)).join('\n') : '') + '\n(누르면 아래에 활동 시각)'}><span className="lg">Day </span>{x.day}{ATTCAL_GUESS[x.src] ? <span className="gs">추정</span> : null}</span>
                     ))}
                     {!other && it && <span className="attcal-chip i" title={c.item.guess ? '아이템 기록 없음. 연달아 막은 날 수로 판별했어요' : '아이템 사용 기록'}>{it.icon}<span className="lg"> {it.name}</span>{c.item.guess ? '?' : ''}</span>}
                     {!other && c && c.days.length > 0 && c.item && <span className="attcal-chip w" title="학습했는데 방어">⚠<span className="lg"> 학습했는데 방어</span></span>}
@@ -2153,7 +2159,7 @@ function AttendanceCalendarModal({ open, onClose }) {
               {wp && wp.has ? <span><b className="wp-e">+P</b> 그날 모은 복지포인트 · <b className="wp-s">−P</b> 그날 쓴 복지포인트</span> : null}
             </div>
             <div className="attcal-note">
-              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주). 칸에 마우스를 올리면 시각이 보여요.<br />
+              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주) · 점점선 + '추정': 완주 시각도 일지도 없어서 문장 제출 시각(없으면 일정 마지막 저장 시각)으로 짐작한 날짜 (한꺼번에 올린 기록이면 실제 공부한 날과 다를 수 있어요. 회원 화면엔 '추정' 표시 없이 보여요). 칸에 마우스를 올리면 시각이 보여요.<br />
               아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).<br />
               🎁 복지포인트: 아이템은 복지몰에서 <b>산 날</b> 빠지고, 결근을 막은 날엔 안 빠져요. 서버 기록은 9/24부터예요.
             </div>
