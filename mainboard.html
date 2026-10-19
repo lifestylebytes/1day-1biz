@@ -1689,11 +1689,14 @@ span.ret-hud-item { cursor: default; }
 .acx-left > div.soft { background: #F6F1E6; }
 .acx-left h4 { margin: 0 0 8px; font-size: 12.5px; font-weight: 800; display: flex; gap: 6px; align-items: baseline; }
 .acx-left h4 em { font-style: normal; font-size: 17px; font-weight: 900; color: var(--orange); }
+.acx-left h4 small { font-size: 11px; font-weight: 500; color: var(--ink-mute); }
 .acx-left .soft h4 em { color: var(--ink); }
 .acx-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .acx-chips span, .acx-chips button { min-width: 30px; text-align: center; font-size: 11px; font-weight: 700; border: 1px solid var(--al); background: var(--sf); border-radius: 999px; padding: 2px 8px; color: var(--ink-soft); font-family: inherit; }
 .acx-chips span.now { background: var(--orange); border-color: var(--orange); color: #fff; }
-.acx-chips button { cursor: pointer; color: var(--orange); border-color: var(--orange); }
+.acx-chips button { cursor: pointer; }
+.acx-chips button.d:hover { border-color: var(--orange); color: var(--orange); }
+.acx-chips button.more { color: var(--orange); border-color: var(--orange); }
 @media (max-width: 640px) {
   .acx-big { padding: 14px; margin-top: 20px; }
   .acx-tok { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -8728,15 +8731,12 @@ function _acxMonth(data, ym, wp) {
   const signupK = data && data.signup ? _acxKst(data.signup) : null;
   return { built, todayK, total, month, cells, signupK, minYm: signupK ? signupK.slice(0, 7) : null, maxYm: todayK.slice(0, 7) };
 }
-// 이어서 할 Day (운영자 뷰 '밀린 Day' 와 같은 기준: 실제 학습 Day 부터 달력 Day 전날까지 안 끝낸 Day)
-function _acxLeft(data, signupK) {
+// ★ 2026-10-19 건너뛴 Day (이어서 할 Day 는 회원에게 안 보여줌): 지금 Day 이전인데 그날 일정 4개를 다 끝내지 못한 Day (출근부와 같은 완주 기준 _odDayTasksDone)
+function _acxLeft() {
   const { USER } = window.__SIM;
   const rd = USER.realCurrentDay || USER.currentDay || 1;
-  const todayK = _acxKst(new Date().toISOString());
-  const cd = signupK ? Math.max(1, Math.min(240, Math.round((Date.parse(todayK) - Date.parse(signupK)) / 86400000) + 1)) : rd;
-  const done = new Set(((data && data.days) || []).map(x => Number(x.day)));
-  const miss = []; for (let d = 1; d <= cd; d++) if (!done.has(d)) miss.push(d);
-  return { rd, cd, overdue: miss.filter(d => d >= rd && d < cd), past: miss.filter(d => d < rd), todayLeft: miss.includes(cd) };
+  const missed = []; for (let d = 1; d < rd; d++) if (!_odDayTasksDone(d)) missed.push(d);
+  return { rd, missed };
 }
 const _acxMoveYm = (ym, n) => { const [y, m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7); };
 function AcxNav({ ym, setYm, M }) {
@@ -8765,7 +8765,7 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
   if (!st) return <div className="attendance acx">{head(null)}<div className="acx-load" /></div>;
   const wp = _acxWp(USER.email);
   const M = _acxMonth(st.data, ym, wp);
-  const L = _acxLeft(st.data, M.signupK);
+  const L = _acxLeft();
   return (
     <div className="attendance acx">
       {head(M)}
@@ -8798,7 +8798,7 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
           : <div className="acx-tile bg"><b>{M.month.itemDates}<small>일</small></b><span>아이템으로 지킨 날</span></div>}
       </div>
       <div className="acx-foot">
-        {L.overdue.length > 0 && <span className="acx-pill">이어서 할 Day {L.overdue.length}</span>}
+        {L.missed.length > 0 && <span className="acx-pill">건너뛴 Day {L.missed.length}</span>}
         {onOpenBig && <button className="acx-btn" onClick={onOpenBig}>크게 보기 ›</button>}
       </div>
     </div>
@@ -8806,7 +8806,7 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
 }
 
 // 사원증 탭 (크게)
-function AttendCalBig() {
+function AttendCalBig({ onGoDay }) {
   const { USER } = window.__SIM;
   const st = _useAttCal(0);
   const [ym, setYm] = useState(() => _acxKst(new Date().toISOString()).slice(0, 7));
@@ -8816,7 +8816,7 @@ function AttendCalBig() {
   const data = st.data;
   const wp = _acxWp(USER.email);
   const M = _acxMonth(data, ym, wp);
-  const L = _acxLeft(data, M.signupK);
+  const L = _acxLeft();
   // Day → 활동 시각
   const acts = {};
   ((data && data.acts) || []).forEach(a => { if (a && a.day) (acts[a.day] = acts[a.day] || []).push(a); });
@@ -8836,7 +8836,7 @@ function AttendCalBig() {
   })();
   const pick = (d) => { setSel(d); try { const el = document.getElementById("acx-det"); if (el && window.innerWidth < 760) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) {} };
   const LIM = 18;
-  const leftShown = allLeft ? L.overdue : L.overdue.slice(0, LIM);
+  const leftShown = allLeft ? L.missed : L.missed.slice(0, LIM);
   return (
     <div className="acx acx-big" id="acx-big">
       <div className="acx-head">
@@ -8900,22 +8900,15 @@ function AttendCalBig() {
           </ul>
         ) : <div className="acx-empty">달력의 Day를 누르면 그날 시각이 보여요.</div>}
       </div>
-      {(L.overdue.length > 0 || L.past.length > 0 || L.todayLeft || M.built.unknown.length > 0) && (
+      {(L.missed.length > 0 || M.built.unknown.length > 0) && (
         <div className="acx-left">
-          {(L.overdue.length > 0 || L.todayLeft) && (
+          {L.missed.length > 0 && (
             <div>
-              <h4>이어서 할 Day <em>{L.overdue.length}</em></h4>
+              <h4>건너뛴 Day <em>{L.missed.length}</em><small>오늘 일정 4개를 다 못 끝낸 날</small></h4>
               <div className="acx-chips">
-                {L.todayLeft && <span className="now">오늘 Day {L.cd}</span>}
-                {leftShown.map(d => <span key={d}>{d}</span>)}
-                {L.overdue.length > LIM && <button onClick={() => setAllLeft(v => !v)}>{allLeft ? "접기" : "+" + (L.overdue.length - LIM)}</button>}
+                {leftShown.map(d => <button key={d} className="d" onClick={() => onGoDay && onGoDay(d)} title={"Day " + d + " 채우러 가기"}>{d}</button>)}
+                {L.missed.length > LIM && <button className="more" onClick={() => setAllLeft(v => !v)}>{allLeft ? "접기" : "+" + (L.missed.length - LIM)}</button>}
               </div>
-            </div>
-          )}
-          {L.past.length > 0 && (
-            <div className="soft">
-              <h4>다음에 열어볼 Day <em>{L.past.length}</em></h4>
-              <div className="acx-chips">{L.past.map(d => <span key={d}>{d}</span>)}</div>
             </div>
           )}
           {M.built.unknown.length > 0 && (
@@ -16127,7 +16120,7 @@ function MyPage({ setActive, setViewingDay }) {
       {_isDevNext() && <PromotionCard />}
 
       {/* ★ 2026-10-19 (개발 뷰): 출근 달력 크게 (PC · 폰 공통) */}
-      {_isDevNext() && !_lockedNext("attendance", _rdNow, USER.isViewingPast) && <AttendCalBig />}
+      {_isDevNext() && !_lockedNext("attendance", _rdNow, USER.isViewingPast) && <AttendCalBig onGoDay={_goDay} />}
 
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
