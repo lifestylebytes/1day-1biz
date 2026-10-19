@@ -10229,7 +10229,15 @@ function _retDebuffRevalidate(email) {
   try {
     const rec = _retDebuff(email); const today = _tyTodayISO();
     if (!rec || rec.date !== today || rec.forced) return false;
-    const gap = _retAbsenceGap(email);
+    // ★ 2026-10-19: 아이템으로 막은 날은 ATT 에 출근으로 채워져 있다. 그대로 세면 gap 이 0 이 돼서
+    //   '다른 기기에서 출근했었네' 로 오해하고 아이템을 돌려줬다 (밀린 Day 끝내고 다음 Day 로 넘어가며 새로고침될 때).
+    //   그래서 아이템이 채운 날은 빼고, 진짜 완주 기록만으로 다시 센다. (defDates 없는 옛 기록은 어제부터 gap 일)
+    let skip = null;
+    if (rec.defended) {
+      const dd = Array.isArray(rec.defDates) && rec.defDates.length ? rec.defDates : Array.from({ length: Number(rec.gap) || 0 }, (_, i) => _retAddDays(today, -(i + 1)));
+      skip = new Set(dd);
+    }
+    const gap = _retAbsenceGap(email, skip);
     if (gap >= rec.gap) return false;
     if (gap === 0) {
       if (rec.defended) { try { _retInvAdd(email, rec.defended); _retToast("wp", "↩️", (RET_PERKS.find(x => x.id === rec.defended) || {}).name + " 돌려드렸어요", "다른 기기 기록을 확인해 보니 결근이 아니었어요"); } catch (e) {} }
@@ -10478,11 +10486,12 @@ function _retWpToast(p, label) { if (_RET_ON()) _retToast("wp", "🎁", "복지�
 
 // ── 출근 날짜 집합 (KST 날짜 문자열). 출근 도장(checkin)이 찍힌 날 기준. ──
 //   1) __OD_TASKS_DAY_<n>_ts (그 Day 마지막 저장 시각)  2) 리텐션 엔진이 직접 남기는 __OD_RET_ATT (정확)
-function _retActivityDates(email) {
+//   skipAtt: 이 날짜들은 ATT(출근 인정 장부)에서 온 것만 빼고 센다. 아이템으로 채운 날을 '진짜 출근'으로 오해하지 않게 (2026-10-19)
+function _retActivityDates(email, skipAtt) {
   const set = new Set();
   try {
     const att = _retLoad("ATT", email, { dates: [] });
-    (att.dates || []).forEach(d => set.add(d));
+    (att.dates || []).forEach(d => { if (!(skipAtt && skipAtt.has(d))) set.add(d); });
     Object.keys(localStorage).forEach(k => {
       if (!k.startsWith("__OD_TASKS_DAY_") || k.endsWith("_ts")) return;
       const t = _loadJSON(k); if (!t || !_retTasksDone(t)) return;   // ★ 2026-09-15: 출근 = 그날 일정 완주 (접속·출근 도장만으론 안 침)
@@ -10502,8 +10511,8 @@ function _retMarkToday(email) {
   if (att.dates.indexOf(today) < 0) { att.dates.push(today); att.dates = att.dates.slice(-400); _retSave("ATT", email, att); }
 }
 // 오늘 직전 연속 결근 일수 (어제부터 거꾸로 세서 출근한 날을 만나면 멈춤). 도입일·가입일 이전은 안 센다.
-function _retAbsenceGap(email) {
-  const dates = _retActivityDates(email);
+function _retAbsenceGap(email, skipAtt) {
+  const dates = _retActivityDates(email, skipAtt);
   const today = _tyTodayISO();
   let floor = _RET_EPOCH;
   try { const u = _wbUser(); if (u.signupDate) { const s = _retISO(new Date(u.signupDate)); if (s > floor) floor = s; } } catch (e) {}
@@ -11010,7 +11019,7 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz }) {
         window.OD.logItemUse(email, id, _dd).then(r => { if (!r || !r.ok) window.OD.pushOutbox && window.OD.pushOutbox({ type: "item", email, item: id, dates: _dd }); }).catch(() => {});
       }
     } catch (e) {}
-    _retDebuffPatch(email, { defended: id, seen: true });
+    _retDebuffPatch(email, { defended: id, seen: true, defDates: _defDates });   // defDates: 다시 확인할 때 이 날짜는 빼고 센다
     onClose();
   };
   const useItem = () => {
