@@ -249,7 +249,7 @@
    "quoteKo": "Daniel이 진행 상황 내놓으라고 나를 쪼고 있어. 런던은 아직 아무것도 못 봤거든. 초안 앞 절반, 오늘 퇴근 전까지 나한테 줄 수 있나? 거칠어도 돼, 모양만 보면 되니까.",
    "task": {
     "promptKo": "EOD까지 절반을 보내겠다고 팀장에게 답하세요.",
-    "koSentence": "네, 오늘 퇴근 전까지 앞 절반 보내드리겠습니다. 다듬기는 내일 마저 하겠습니다."
+    "koSentence": "네, 오늘 퇴근 전까지 앞 절반 보내드리겠습니다. 거칠어도 읽을 수 있게 보내드릴게요."
    },
    "sampleAnswers": [
     "You'll have the first half by EOD. Rough but readable.",
@@ -296,7 +296,7 @@
     "koSentence": "네, 목요일 런던 업무 마감 전까지 전체 초안 보내겠습니다. 기준 시간 짚어주셔서 감사합니다."
    },
    "sampleAnswers": [
-    "Confirmed: full draft by COB Thursday, London time.",
+    "Confirmed: full draft by COB Thursday, London time. Thanks for flagging the time zone.",
     "Will do. The complete draft will be in your inbox before COB Thursday your time."
    ],
    "mentorTip": "COB는 close of business, EOD의 정장 버전이야. 어제 EOD랑 사실상 같은 뜻인데, COB는 좀 더 격식 있는 메일에서 자주 봐. 진짜 중요한 건 '어느 도시의 COB냐'. Daniel처럼 먼저 명시하는 사람이 일 잘하는 사람이야.",
@@ -428,7 +428,7 @@
     "koSentence": "8단계를 3단계로 간소화하겠습니다. 중복 단계부터 합칠게요."
    },
    "sampleAnswers": [
-    "I'll streamline the process section from eight steps down to three.",
+    "I'll streamline the process section from eight steps down to three. I'll start by merging the overlapping steps.",
     "On it. Streamlining now: merging the duplicates and cutting two steps nobody follows."
    ],
    "mentorTip": "streamline은 물고기 유선형에서 온 말이야. 저항 없이 미끄러지는 모양. 글에서도 프로세스에서도, 읽다가 걸리는 데가 있으면 거기가 군살이야.",
@@ -909,7 +909,7 @@
    "quoteKo": "전사 공지용으로 회사 소개를 처음부터 쓰진 말아 주세요. 프레스 킷의 공식 보일러플레이트를 쓰세요. 그 문구는 법무 검토가 이미 끝났어요. 새로 쓰실 건 리포트 하이라이트 부분만요.",
    "task": {
     "promptKo": "공식 문구와 새로 쓸 부분을 어떻게 나눌지 인사팀에 답하세요.",
-    "koSentence": "회사 소개는 공식 문구를 그대로 쓰고, 하이라이트 세 줄만 새로 작성하겠습니다."
+    "koSentence": "회사 소개는 공식 문구를 그대로 쓰고, 하이라이트만 새로 작성하겠습니다."
    },
    "sampleAnswers": [
     "Got it. I'll use the approved boilerplate for the intro and only write the highlights fresh.",
@@ -1261,7 +1261,7 @@
    "quoteKo": "작은 매듭이 하나 생겼어요. 홍보팀은 보도자료를 목요일에 내고 싶어 하는데, 사내 공지는 이미 수요일에 나갔거든요. 공지를 수정할까요, 아니면 그대로 두고 보도자료가 따라가게 할까요? 어떻게 할지 알려주세요. 이 건은 담당자가 대리님이니까.",
    "task": {
     "promptKo": "보도자료 문구의 최종 컨펌 권한은 런던에 있습니다. Daniel에게 옵션을 정리해 판단을 요청하세요.",
-    "koSentence": "보도자료를 이번 주 목요일에 내는 안과 다음 주 월요일로 미루는 안이 있습니다. 어느 쪽이 좋을지 알려주세요."
+    "koSentence": "보도자료를 이번 주 목요일에 내는 안과 다음 주 월요일에 미디어 키트까지 갖춰서 내는 안이 있습니다. 어느 쪽이 좋을지 알려주세요."
    },
    "sampleAnswers": [
     "Two options for the press release: Thursday this week, or Monday with the full media kit. Please advise.",

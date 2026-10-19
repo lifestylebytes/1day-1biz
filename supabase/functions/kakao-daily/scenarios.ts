@@ -766,7 +766,7 @@ export const TF_SCENARIOS: Record<string, Scn[]> = {
    "word": "deal-breaker",
    "meaning": "이건 절대 안 되는 조건",
    "scene": "협상 TF 첫날.",
-   "quoteKo": "Nexa야. 2년간 우리 데이터 분석을 맡아온 파트너사지. 계약이 다음 달에 끝나는데, 갱신 협상은 네가 리드해. 먼저 할 일: 우리의 deal-breaker가 뭔지 알아둬.",
+   "quoteKo": "Nexa야. 2년간 우리 데이터 분석을 맡아온 파트너사지. 계약이 다음 달에 끝나는데, 갱신 협상은 네가 리드해. 먼저, 우리의 deal-breaker는 뭐야?",
    "hint": "계약 조건 검토하면서 \"이건 절대 양보 못 한다\"를 상대에게 선 긋듯 말할 때 써요"
   },
   {
@@ -910,7 +910,7 @@ export const TF_SCENARIOS: Record<string, Scn[]> = {
    "word": "upper hand",
    "meaning": "유리한 위치",
    "scene": "뉴스 속보.",
-   "quoteKo": "경쟁사가 방금 대형 계약을 땄어. 이제 우리가 유리한 위치야. 품위 있게 쓰도록.",
+   "quoteKo": "경쟁사가 방금 코엑스 계약을 땄어. 이제 우리가 유리한 위치야. 품위 있게 쓰도록.",
    "hint": "상황이 우리 쪽에 유리해졌을 때 내부 보고에서 써요"
   },
   {
@@ -1676,7 +1676,7 @@ export const TF_SCENARIOS: Record<string, Scn[]> = {
    "word": "you're on mute",
    "meaning": "화상회의 국민 대사: 음소거예요",
    "scene": "QBR 당일 밤(미국은 아침).",
-   "quoteKo": "이렇게 시작하게 해서 미안한데... 음소거예요! 다시 한번요. 입 모양은 완벽했어요.",
+   "quoteKo": "이렇게 시작하게 해서 미안한데... 음소거예요! 다시 한번요. 인트로는 좋아 보였어요.",
    "hint": "화상회의에서 상대 소리가 안 들릴 때 써요"
   },
   {
