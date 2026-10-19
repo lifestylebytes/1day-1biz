@@ -8731,11 +8731,14 @@ function _acxMonth(data, ym, wp) {
   const signupK = data && data.signup ? _acxKst(data.signup) : null;
   return { built, todayK, total, month, cells, signupK, minYm: signupK ? signupK.slice(0, 7) : null, maxYm: todayK.slice(0, 7) };
 }
-// ★ 2026-10-19 건너뛴 Day (이어서 할 Day 는 회원에게 안 보여줌): 지금 Day 이전인데 그날 일정 4개를 다 끝내지 못한 Day (출근부와 같은 완주 기준 _odDayTasksDone)
-function _acxLeft() {
+// ★ 2026-10-19 건너뛴 Day = 실제 학습 Day 전인데 완주 기록이 없는 Day. 운영자 뷰 출근 달력의 '건너뛴 Day' 와 같은 계산.
+//   완주 기록 = 문장 제출 · 일지 · 일정 4개 중 하나 (get_attendance_calendar 의 days, 운영자 뷰 get_progress_overview 와 같은 기준)
+//   이어서 할 Day(밀린 Day: 실제 학습 Day ~ 달력 Day 전날)는 회원에게 안 보여준다.
+function _acxLeft(data) {
   const { USER } = window.__SIM;
   const rd = USER.realCurrentDay || USER.currentDay || 1;
-  const missed = []; for (let d = 1; d < rd; d++) if (!_odDayTasksDone(d)) missed.push(d);
+  const done = new Set(((data && data.days) || []).map(x => Number(x && x.day)));
+  const missed = []; for (let d = 1; d < rd; d++) if (!done.has(d)) missed.push(d);
   return { rd, missed };
 }
 const _acxMoveYm = (ym, n) => { const [y, m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7); };
@@ -8765,7 +8768,7 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
   if (!st) return <div className="attendance acx">{head(null)}<div className="acx-load" /></div>;
   const wp = _acxWp(USER.email);
   const M = _acxMonth(st.data, ym, wp);
-  const L = _acxLeft();
+  const L = _acxLeft(st.data);
   return (
     <div className="attendance acx">
       {head(M)}
@@ -8816,7 +8819,7 @@ function AttendCalBig({ onGoDay }) {
   const data = st.data;
   const wp = _acxWp(USER.email);
   const M = _acxMonth(data, ym, wp);
-  const L = _acxLeft();
+  const L = _acxLeft(data);
   // Day → 활동 시각
   const acts = {};
   ((data && data.acts) || []).forEach(a => { if (a && a.day) (acts[a.day] = acts[a.day] || []).push(a); });
@@ -8904,7 +8907,7 @@ function AttendCalBig({ onGoDay }) {
         <div className="acx-left">
           {L.missed.length > 0 && (
             <div>
-              <h4>건너뛴 Day <em>{L.missed.length}</em><small>오늘 일정 4개를 다 못 끝낸 날</small></h4>
+              <h4>건너뛴 Day <em>{L.missed.length}</em><small>지나온 Day 중 완주 기록이 없는 날</small></h4>
               <div className="acx-chips">
                 {leftShown.map(d => <button key={d} className="d" onClick={() => onGoDay && onGoDay(d)} title={"Day " + d + " 채우러 가기"}>{d}</button>)}
                 {L.missed.length > LIM && <button className="more" onClick={() => setAllLeft(v => !v)}>{allLeft ? "접기" : "+" + (L.missed.length - LIM)}</button>}
