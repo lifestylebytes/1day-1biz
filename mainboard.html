@@ -10123,13 +10123,12 @@ const RET_GOALS = [
 ];
 // ── PERK SHOP ──
 const RET_PERKS = [
+  { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 쓰다 막힐 때 시추에이션 시트에서 바로 열어요.", stack: true },
+  { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 100,  rank: "probation", desc: "하루 결근했을 때 써요. 어제도 출근한 걸로 인정돼서 내 목표(연속 출근)가 안 끊겨요. 학습 진도는 그대로. 다음 날 접속하면 팝업에서 물어봐요.", stack: true },
   { id: "annual",  icon: "🌴", name: "연차",              cost: 200,  rank: "probation", desc: "이틀 결근했을 때 써요. Review Quiz 먼저 안 풀어도 되고, 내 목표(연속 출근)도 안 끊겨요. 학습 진도는 그대로.", stack: true },
   { id: "vacay",   icon: "✈️", name: "휴가",              cost: 500,  rank: "probation", desc: "3~7일 결근을 막아줘요. 복습 없이 바로 들어가고 내 목표도 안 끊겨요. 8일 이상은 못 막아요.", stack: true },
-  { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true, soon: true },
-  { id: "report",  icon: "🧭", name: "사수 리포트 4종",     cost: 1000, rank: "probation", minDay: 30, soon: true, desc: "커리어 · 직무 고민 · 영어 학습 처방 · 직장생활. 내 기록을 다 읽고 사수가 한 장으로 써줘요. 아래에서 고르고, 성장 리포트에 보관돼요.", stack: false },
   { id: "pdf",     icon: "📄", name: "내 단어 모음 PDF",  cost: 200,  rank: "probation", minDay: 15, desc: "지금까지 모은 표현을 PDF 한 권으로 소장해요. 1회권 · 받은 PDF 는 이 카드에 남아서 언제든 다시 열 수 있어요.", stack: true },
-  { id: "extend",  icon: "🕐", name: "출근 시간 연장권",   cost: 100,  rank: "probation", desc: "하루 결근했을 때 써요. 어제도 출근한 걸로 인정돼서 내 목표(연속 출근)가 안 끊겨요. 학습 진도는 그대로. 다음 날 접속하면 팝업에서 물어봐요.", stack: true },
-  { id: "peek",    icon: "👀", name: "동기 문장 엿보기",   cost: 100,  rank: "probation", desc: "같은 Day 다른 동기 3명의 문장을 익명으로 봐요. 쓰다 막힐 때 시추에이션 시트에서 바로 열어요.", stack: true },
+  { id: "preview", icon: "🎟️", name: "분기평가 Preview Ticket", cost: 200, rank: "fulltime", desc: "분기 평가를 슬쩍 먼저 풀어봐요. 본 평가 점수가 좋아질 확률이 올라가요.", stack: true, soon: true },
 ];
 const _RET_RANK_N = { probation: 0, fulltime: 1, senior: 2 };
 const _retRankOk = (need) => { const u = (window.__SIM && window.__SIM.USER) || {}; return (_RET_RANK_N[u.rankId] || 0) >= (_RET_RANK_N[need] || 0); };
@@ -11159,12 +11158,6 @@ function RetReportsSoonPage({ setActive }) {
             아직 발급된 진급 리포트가 없어요. {nextAt ? <>Day <b>{nextAt}</b> 진급 때 첫 리포트가 나와요 (D-{Math.max(0, nextAt - rd)}). 기간 출근율 · 모은 표현 · 사수 첨삭 수가 한 장으로 정리돼요.</> : null}
           </div>
         )}
-        <div className="ret-growth-head" style={{ marginTop: 22 }}>🧭 사수 리포트 4종 <small>실전 대본 · 오늘 표현 첨삭 · 회의 리허설 · 이메일 교정</small></div>
-        <div className="ret-growth-note" style={{ padding: "18px 16px", border: "1px dashed var(--line)", borderRadius: 10, background: "var(--cream)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 28 }}>🚧</span>
-          <span style={{ flex: 1, minWidth: 200 }}>사수가 내 기록을 읽고 써주는 리포트예요. <b>준비 중</b>이라 열리면 사내 게시판 공지로 알려드려요. 그동안 쓴 문장과 복기는 <b>업무 노트</b>에서 그대로 볼 수 있어요.</span>
-          {setActive && <button className="btn btn-ghost btn-mini" onClick={() => setActive("library")}>업무 노트 →</button>}
-        </div>
         {legacy.length > 0 && !_isPromoNext() && (
           <>
             <div className="ret-growth-head" style={{ marginTop: 22 }}>📋 예전 AI 성장 리포트 <small>{legacy.length}건 · 발급된 그대로</small></div>
@@ -11492,10 +11485,13 @@ function RetPerkShopPage({ setActive }) {
             </div>
           );
         })}
+        <div className="ret-shop-item locked" data-shop="soon">
+          <div className="ret-shop-ico">🎁</div>
+          <div className="ret-shop-name">새로운 아이템</div>
+          <div className="ret-shop-desc">새 아이템을 준비하고 있어요. 열리면 사내 게시판 공지로 알려드려요.</div>
+          <div className="ret-shop-foot"><b>?P</b><span className="ret-shop-lock">🚧 준비 중</span></div>
+        </div>
       </div>
-      {!_RET_SOON.reports && _retDayNow() >= 30
-        ? <WelfarePointsSection embed />
-        : <div className="ret-growth-note" style={{ marginTop: 14 }}>🧭 사수 리포트 4종(커리어 · 직무 고민 · 영어 학습 처방 · 직장생활)은 <b>준비 중</b>이에요. 열리면 Day 30부터 일주일에 한 종씩 · 그때까지 쓴 문장이 많을수록 리포트가 정확해져요.</div>}
       <div className="ret-shop-how">
         <div className="ret-shop-how-head">복지포인트는 이렇게 쌓여요</div>
         <ul className="ret-shop-ways">
