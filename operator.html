@@ -107,6 +107,16 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .attcal-acts td { padding: 4px 6px 4px 0; border-top: 1px solid #F1E8DA; vertical-align: top; }
 .attcal-acts td.t { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; width: 1%; }
 .attcal-acts .sub { color: #8A7964; font-size: 11px; }
+/* ★ 2026-10-19 복지포인트 */
+.attcal-wp { display: block; margin-top: 2px; font-size: 10px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attcal-wp.e, .wp-e { color: #2E6B2A; }
+.attcal-wp.s, .wp-s { color: #A3401E; }
+.attcal-wp .lg { font-weight: 500; }
+.attcal-acts .attcal-wp { display: inline; font-size: 11px; }
+.attcal-num.wp-e { background: #E3F1DC; } .attcal-num.wp-s { background: #FBE5DC; }
+.attcal-num.wp-e b, .attcal-num.wp-s b { color: inherit; }
+.prog-wp { font-size: 11px; color: #6B5B4A; margin-top: 3px; }
+.prog-wp.none { color: #A8997F; }
 /* ★ 2026-10-08 회원 행 이력 보기 버튼 */
 .hist-btn { display: inline-block; margin-left: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; color: #4A3B2A; background: #F3ECE0; border: 1px solid #CDBDA3; border-radius: 999px; cursor: pointer; vertical-align: 1px; font-family: inherit; line-height: 1.5; }
 .hist-btn:hover { background: #E9DFCF; }
@@ -128,6 +138,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .memo-edit-row { display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
 .memo-edit-row .hist-btn { margin-left: 0; }
 .memo-hint { font-size: 10px; color: #A8997F; margin-left: auto; }
+@media (max-width: 560px) { .attcal-wp .lg { display: none; } }
 @media (max-width: 560px) { .attcal { padding: 16px 12px; } .attcal-chip { padding: 0 2px; font-size: 10px; text-overflow: clip; } .attcal-chip .lg { display: none; } .attcal-c { min-height: 56px; padding: 3px; } }
 .prog-line2 { font-size: 11.5px; color: #6B5B4A; margin-top: 2px; }
 .prog-line3 { font-size: 11.5px; color: #B23A2C; font-weight: 700; margin-top: 1px; }
@@ -1958,6 +1969,30 @@ function _acActLabel(a) {
   if (a.activity === 'pre_write' && a.detail && a.detail.edit) return base + ' (고쳐 씀)';
   return base;
 }
+// ★ 2026-10-19 복지포인트 장부 (users.ret_state.WP = { v: { earn: [{key, p, label, at}], spend: [{cost, item, title, at}] } })
+//   9/24 부터 서버에 올라와요. 장부가 없으면(9/24 이후 포인트를 받거나 쓴 적 없음) has: false.
+//   운영자 테스트 포인트(op:bonus)는 뺀다. 아이템은 '산 날' 포인트가 빠지고, 결근을 막은 날엔 안 빠진다.
+const ATTCAL_WP_ITEM = { extend: '연장권', annual: '연차', vacay: '휴가', preview: 'Preview Ticket', report: '사수 리포트', pdf: 'PDF 1회권', peek: '동기 문장 엿보기' };
+function _wpOf(rs) {
+  const v = rs && rs.WP && rs.WP.v;
+  if (!v || typeof v !== 'object') return { has: false, earn: [], spend: [], earned: 0, spent: 0 };
+  const earn = (Array.isArray(v.earn) ? v.earn : []).filter(e => e && e.key !== 'op:bonus' && Number(e.p) > 0)
+    .map(e => ({ at: e.at, p: Number(e.p), label: e.label || e.key || '' }));
+  const spend = (Array.isArray(v.spend) ? v.spend : []).filter(s => s && Number(s.cost) > 0)
+    .map(s => ({ at: s.at, p: Number(s.cost), label: s.title || ATTCAL_WP_ITEM[s.item] || s.item || '' }));
+  const sum = (l) => l.reduce((n, x) => n + x.p, 0);
+  return { has: true, earn, spend, earned: sum(earn), spent: sum(spend) };
+}
+const _wpFmt = (n) => Number(n || 0).toLocaleString('ko-KR') + 'P';
+// 날짜별 묶기: 'YYYY-MM-DD' → { earn, spend, list: [{at, p, label, kind}] }
+function _wpByDate(wp) {
+  const out = {};
+  const put = (x, kind) => { const d = x.at ? _acKst(x.at) : null; if (!d) return; const c = (out[d] = out[d] || { earn: 0, spend: 0, list: [] }); c[kind] += x.p; c.list.push({ ...x, kind }); };
+  (wp.earn || []).forEach(x => put(x, 'earn'));
+  (wp.spend || []).forEach(x => put(x, 'spend'));
+  Object.values(out).forEach(c => c.list.sort((a, b) => String(a.at).localeCompare(String(b.at))));
+  return out;
+}
 function AttendanceCalendarModal({ open, onClose }) {
   const todayK = _acKst(new Date().toISOString());
   const [ym, setYm] = useState(todayK.slice(0, 7));
@@ -1966,6 +2001,8 @@ function AttendanceCalendarModal({ open, onClose }) {
   if (!open) return null;
   const { name, email, loading, error, data } = open;
   const built = data ? _acBuild(data) : null;
+  const wp = open.wp || null;   // ★ 2026-10-19 복지포인트 (회원 목록에서 받은 users.ret_state)
+  const wpDay = wp && wp.has ? _wpByDate(wp) : {};
   // ★ 2026-10-08 Day → 활동 시각 목록 (activity_log). 배포 이후부터 쌓여요
   const actsByDay = {};
   ((data && data.acts) || []).forEach(a => { if (a && a.day) (actsByDay[a.day] = actsByDay[a.day] || []).push(a); });
@@ -1989,6 +2026,9 @@ function AttendanceCalendarModal({ open, onClose }) {
     };
     const inM = vals.filter(([d]) => d.slice(0, 7) === ym);
     month = { studyDates: inM.filter(([, c]) => c.days.length).length, dayCount: inM.reduce((n, [, c]) => n + c.days.length, 0), itemDates: inM.filter(([, c]) => c.item).length };
+    const wpM = Object.entries(wpDay).filter(([d]) => d.slice(0, 7) === ym);
+    month.wpEarn = wpM.reduce((n, [, c]) => n + c.earn, 0);
+    month.wpSpend = wpM.reduce((n, [, c]) => n + c.spend, 0);
     const first = ym + '-01';
     const lead = new Date(first + 'T00:00:00Z').getUTCDay();   // 0 = 일요일
     const start = _acAdd(first, -lead);
@@ -2017,6 +2057,13 @@ function AttendanceCalendarModal({ open, onClose }) {
               <div className="attcal-num">완주한 Day<b>{total.done}개</b></div>
               <div className="attcal-num">실제 학습한 날<b>{total.studyDates}일</b></div>
               <div className="attcal-num">아이템 방어일<b>{total.itemDates}일</b></div>
+              {wp && (wp.has ? (
+                <>
+                  <div className="attcal-num wp-e" title="이벤트·목표·퇴근 후 컨텐츠 등으로 모은 복지포인트 합계 (운영자 테스트 포인트 제외)">🎁 모은<b>{_wpFmt(wp.earned)}</b></div>
+                  <div className="attcal-num wp-s" title="복지몰에서 아이템을 사거나 예문 채우기에 쓴 합계">쓴<b>{_wpFmt(wp.spent)}</b></div>
+                  <div className="attcal-num">남은<b>{_wpFmt(Math.max(0, wp.earned - wp.spent))}</b></div>
+                </>
+              ) : <div className="attcal-num" title="9/24 이후 복지포인트를 받거나 쓴 기록이 서버에 없어요">🎁 포인트 기록 없음</div>)}
               {total.both > 0 && <div className="attcal-num warn" title="실제로 학습했는데 결근으로 판정돼 아이템이 쓰인 날 (예전 가짜 날짜 버그 피해 의심)">겹친 날 (확인 필요)<b>{total.both}일</b></div>}
             </div>
             <div className="attcal-nav">
@@ -2024,7 +2071,7 @@ function AttendanceCalendarModal({ open, onClose }) {
               <span>{ym.slice(0, 4)}년 {Number(ym.slice(5, 7))}월</span>
               <button onClick={() => moveYm(1)} disabled={ym >= maxYm}>다음 달 ▶</button>
             </div>
-            <div className="attcal-msum">이번 달 실제 학습 <b>{month.studyDates}일</b> · Day <b>{month.dayCount}개</b> 완주 · 아이템 방어 <b>{month.itemDates}일</b></div>
+            <div className="attcal-msum">이번 달 실제 학습 <b>{month.studyDates}일</b> · Day <b>{month.dayCount}개</b> 완주 · 아이템 방어 <b>{month.itemDates}일</b>{wp && wp.has ? <> · 🎁 <b className="wp-e">+{_wpFmt(month.wpEarn)}</b> / <b className="wp-s">−{_wpFmt(month.wpSpend)}</b></> : null}</div>
             <div className="attcal-grid">
               {['일', '월', '화', '수', '목', '금', '토'].map((w, k) => <div key={w} className={'attcal-dow' + (k === 0 ? ' sun' : (k === 6 ? ' sat' : ''))}>{w}</div>)}
               {cells.map(d => {
@@ -2044,6 +2091,15 @@ function AttendanceCalendarModal({ open, onClose }) {
                     ))}
                     {!other && it && <span className="attcal-chip i" title={c.item.guess ? '아이템 기록 없음. 연달아 막은 날 수로 판별했어요' : '아이템 사용 기록'}>{it.icon}<span className="lg"> {it.name}</span>{c.item.guess ? '?' : ''}</span>}
                     {!other && c && c.days.length > 0 && c.item && <span className="attcal-chip w" title="학습했는데 방어">⚠<span className="lg"> 학습했는데 방어</span></span>}
+                    {!other && wpDay[d] && (() => {
+                      const w = wpDay[d];
+                      const tip = w.list.map(x => fmtHm(x.at) + '  ' + (x.kind === 'earn' ? '+' : '−') + _wpFmt(x.p) + '  ' + x.label).join('\n');
+                      const spendWhat = Array.from(new Set(w.list.filter(x => x.kind === 'spend').map(x => x.label))).join(' · ');
+                      return <>
+                        {w.earn > 0 && <span className="attcal-wp e" title={tip}>+{_wpFmt(w.earn)}</span>}
+                        {w.spend > 0 && <span className="attcal-wp s" title={tip}>−{_wpFmt(w.spend)}<span className="lg"> {spendWhat}</span></span>}
+                      </>;
+                    })()}
                   </div>
                 );
               })}
@@ -2060,28 +2116,46 @@ function AttendanceCalendarModal({ open, onClose }) {
               </div>
               {showDay == null ? (
                 <div className="sub">활동 시각 기록이 아직 없어요. 배포 이후 회원이 활동을 끝낼 때마다 쌓여요.</div>
-              ) : !(actsByDay[showDay] || []).length ? (
-                <div className="sub">Day {showDay} 은 활동 시각 기록이 없어요 (배포 전에 한 Day 예요).</div>
-              ) : (
-                <table><tbody>{actsByDay[showDay].map((a, i) => {
-                  const off = a.client_at && Math.abs(Date.parse(a.client_at) - Date.parse(a.at)) > 60000;
-                  return (
-                    <tr key={i}>
-                      <td className="t">{fmtHm(a.at)}</td>
-                      <td>{_acActLabel(a)}{off && <div className="sub">기기 시각 {fmtHm(a.client_at)} (48시간 넘게 늦게 도착해서 도착 시각으로 기록)</div>}{a.detail && a.detail.backfill && <div className="sub">완료 표시가 빠져 있던 걸 나중에 채운 기록</div>}</td>
-                    </tr>
-                  );
-                })}</tbody></table>
-              )}
+              ) : (() => {
+                // ★ 2026-10-19 그 Day 를 끝낸 날짜(완주 기록 + 활동 기록)의 복지포인트를 활동 기록과 상관없이 같이 보여준다
+                const acts = actsByDay[showDay] || [];
+                const dates = new Set(acts.map(a => _acKst(a.at)).filter(Boolean));
+                ((data && data.days) || []).forEach(x => { if (x && x.day === showDay && x.at) { const d = _acKst(x.at); if (d) dates.add(d); } });
+                const pRows = [];
+                dates.forEach(d => ((wpDay[d] && wpDay[d].list) || []).forEach(x => pRows.push(x)));
+                const rows = pRows.map(x => ({ at: x.at, wp: x })).concat(acts.map(a => ({ at: a.at, act: a })))
+                  .sort((x, y) => String(x.at).localeCompare(String(y.at)));
+                return <>
+                  {!acts.length && <div className="sub">Day {showDay} 은 활동 시각 기록이 없어요 (배포 전에 한 Day 예요).{pRows.length ? ' 그날 복지포인트는 아래에 있어요.' : ''}</div>}
+                  {rows.length > 0 && <table><tbody>{rows.map((r, i) => {
+                    if (r.wp) return (
+                      <tr key={i}>
+                        <td className="t">{fmtHm(r.at)}</td>
+                        <td><span className={'attcal-wp ' + (r.wp.kind === 'earn' ? 'e' : 's')}>🎁 {r.wp.kind === 'earn' ? '+' : '−'}{_wpFmt(r.wp.p)}</span> {r.wp.label}</td>
+                      </tr>
+                    );
+                    const a = r.act;
+                    const off = a.client_at && Math.abs(Date.parse(a.client_at) - Date.parse(a.at)) > 60000;
+                    return (
+                      <tr key={i}>
+                        <td className="t">{fmtHm(a.at)}</td>
+                        <td>{_acActLabel(a)}{off && <div className="sub">기기 시각 {fmtHm(a.client_at)} (48시간 넘게 늦게 도착해서 도착 시각으로 기록)</div>}{a.detail && a.detail.backfill && <div className="sub">완료 표시가 빠져 있던 걸 나중에 채운 기록</div>}</td>
+                      </tr>
+                    );
+                  })}</tbody></table>}
+                </>;
+              })()}
             </div>
             <div className="attcal-leg">
               <span><i style={{ background: '#E3F1DC' }}></i>실제 학습 (완주한 Day)</span>
               <span><i style={{ background: '#FFF4CF' }}></i>아이템 방어 (🕐 연장권 · 🌴 연차 · ✈️ 휴가)</span>
               <span><i style={{ background: '#FFE1C7', outline: '1.5px dashed #D9782E' }}></i>둘 다 (버그 피해 의심)</span>
+              {wp && wp.has ? <span><b className="wp-e">+P</b> 그날 모은 복지포인트 · <b className="wp-s">−P</b> 그날 쓴 복지포인트</span> : null}
             </div>
             <div className="attcal-note">
               Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주). 칸에 마우스를 올리면 시각이 보여요.<br />
-              아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).
+              아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).<br />
+              🎁 복지포인트: 아이템은 복지몰에서 <b>산 날</b> 빠지고, 결근을 막은 날엔 안 빠져요. 서버 기록은 9/24부터예요.
             </div>
             {open.prog && open.prog.missing ? (() => {
               const P = open.prog; const rd = P.realDay || 0; const cd = P.calDay || 0;
@@ -2196,9 +2270,10 @@ function App() {
   const [attCalOpen, setAttCalOpen] = useState(null);   // ★ 2026-10-08 출근 달력 { email, name, loading, error, data }
   const openAttCal = async (u) => {
     let prog = null; try { prog = calcProgress(u); } catch (e) {}
-    setAttCalOpen({ email: u.email, name: u.name, loading: true, prog });
+    const wp = _wpOf(u.ret_state);   // ★ 2026-10-19 복지포인트
+    setAttCalOpen({ email: u.email, name: u.name, loading: true, prog, wp });
     const r = (window.OD && window.OD.fetchAttendanceCalendar) ? await window.OD.fetchAttendanceCalendar(u.email) : { ok: false, error: 'fetchAttendanceCalendar 없음' };
-    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null, prog } : cur);
+    setAttCalOpen(cur => (cur && cur.email === u.email) ? { email: u.email, name: u.name, loading: false, error: r.ok ? null : (r.error || '알 수 없는 오류'), data: r.ok ? r.result : null, prog, wp } : cur);
   };
   const [showDayHelp, setShowDayHelp] = useState(false);
   const [openMissing, setOpenMissing] = useState({});   // email → true (빠뜨린 Day 전체보기)
@@ -2796,8 +2871,9 @@ function App() {
                 <div><b>실제 학습 Day</b> = 회원 앱 화면에 떠 있는 오늘 Day (접속할 때 앱이 보낸 값). 어제 이전에 받은 값이면, 그 뒤로 끝낸 Day(일지 또는 일정 4개)만큼 이어서 세요. 새 버전 앱에 아직 접속 안 한 회원은 '-'</div>
                 <div><b>앱 Day</b> = 예전 방식 값 (접속 때 앱이 보낸 값 중 가장 큰 값, 내려가지 않아요). 참고용</div>
                 <div><b>달력 Day</b> = 가입일 기준 원래 와 있어야 할 Day</div>
-                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day까지 중 아직 안 한 Day · 앞으로 해야 할 몫</div>
-                <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day 포함)</div>
+                <div><b>밀린 Day</b> = 실제 학습 Day부터 달력 Day 전날까지 중 아직 안 한 Day · 앞으로 해야 할 몫 (오늘 달력 Day는 빼고, 출근 달력에 '오늘 Day N 아직 안 함'으로 따로)</div>
+                <div><b>건너뛴 Day</b> = 실제 학습 Day 전인데 완주 기록이 없는 Day · 지나온 날 중 빈 Day (회원 출근 달력에도 같은 숫자)</div>
+                <div><b>빠뜨린 Day</b> = 1부터 달력 Day까지 완주 기록이 없는 Day 전부 (밀린 Day · 건너뛴 Day · 오늘 Day 포함)</div>
                 <div style={{ marginTop: 4, color: '#8A7964' }}>완주 = 시추에이션 답안 · 일지 · 일정 체크 4개 중 하나라도 있는 Day. 직급은 고객 앱과 같은 규칙: 실제 학습 Day 수습(~30) · 사원(31~89) · 대리(90~), 정직원 전환 시험 기록이 있으면 둘 중 높은 쪽.</div>
                 {progMap === null && <div style={{ marginTop: 4, color: '#B23A2C' }}>⚠️ 완주 기록 RPC(get_progress_overview)가 아직 없어요. supabase/migrations/20260914_progress_overview.sql 을 실행하면 밀린·빠뜨린 Day 가 채워져요.</div>}
               </div>
@@ -3011,6 +3087,9 @@ function App() {
                         <>
                           <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="달력 Day (가입일부터 오늘까지 며칠째)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span></div>
                           <div className="prog-tools"><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a>{tfBlock}</div>
+                          {(() => { const w = _wpOf(u.ret_state); return w.has
+                            ? <div className="prog-wp" title="복지포인트 (운영자 테스트 포인트 제외)">🎁 모은 <b className="wp-e">{_wpFmt(w.earned)}</b> · 쓴 <b className="wp-s">{_wpFmt(w.spent)}</b> · 남은 <b>{_wpFmt(Math.max(0, w.earned - w.spent))}</b></div>
+                            : <div className="prog-wp none" title="9/24 이후 복지포인트를 받거나 쓴 기록이 서버에 없어요">🎁 포인트 기록 없음</div>; })()}
                           {m ? (
                             pr.behind > 0 ? <div className="prog-line3" title="전체 목록은 📅 출근 달력 아래에">밀린 Day {pr.behind}개 · 빠뜨린 {shown.join(', ')}{m.length > 5 ? ' 외 ' + (m.length - 5) + '개' : ''}</div> : null
                           ) : (

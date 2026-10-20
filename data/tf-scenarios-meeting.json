@@ -106,7 +106,7 @@
       "quoteKo": "너 혼자 20분 내리 말했어. 다음엔 발언권을 일찍 열어. 그리고 속으로 5초 세. 침묵이 일을 하게 둬.",
       "task": {
         "promptKo": "안건 공유를 끝내고 참석자들에게 발언권을 여는 말을 하세요.",
-        "koSentence": "제 쪽 공유는 여기까지입니다. 이제 의견 듣겠습니다. 어느 부분이든 좋아요."
+        "koSentence": "제 쪽 공유는 여기까지입니다. 이제 의견 듣겠습니다. 일정에 대해 의견 있으세요?"
       },
       "sampleAnswers": [
         "That's it from me. I'd like to open the floor, any thoughts on the timeline?",
@@ -194,7 +194,7 @@
       "quoteKo": "너 마이크 켰다가 포기하는 거 두 번 봤어. 화상회의에선 끼어들어야 해. 정중하지만 단호하게. 'Sorry, can I jump in here?' 이거면 백발백중이야.",
       "task": {
         "promptKo": "화상회의에서 정중하게 끼어들어 의견을 말하는 첫 문장을 쓰세요.",
-        "koSentence": "잠깐 끼어들어도 될까요? 일정 쪽에 짚을 게 하나 있어요."
+        "koSentence": "끼어들어서 죄송한데, 일정 쪽에 짚을 게 하나 있어요."
       },
       "sampleAnswers": [
         "Sorry to jump in, but I have one flag on the timeline.",
@@ -590,10 +590,10 @@
       "quoteKo": "나아졌어. 이제 프로와 아마추어를 가르는 습관 하나. 매 리허설 뒤 5분 복기. 뭐가 됐고, 뭐가 안 됐고, 뭘 바꿀지.",
       "task": {
         "promptKo": "빈칸 채우기: 기억이 생생할 때 바로 복기하자고 팀에 제안하세요.",
-        "koSentence": "기억이 생생할 때 바로 15분만 복기하시죠."
+        "koSentence": "기억이 생생할 때 바로 5분만 복기하시죠."
       },
       "sampleAnswers": [
-        "Let's do a quick debrief now while it's fresh, fifteen minutes.",
+        "Let's do a quick debrief now while it's fresh, five minutes.",
         "Can we debrief right away? I want the feedback while it's still warm."
       ],
       "mentorTip": "debrief의 골든타임은 종료 직후 30분이야. 하루 지나면 기억이 미화돼. 그리고 잘된 것부터 말해. 못한 것부터 시작하는 복기엔 아무도 다시 안 와.",
@@ -765,12 +765,12 @@
       "quote": "The monthly chart hides everything. Let's drill down by week, then by account tier. I bet the dip is just two big accounts.",
       "quoteKo": "월간 차트는 다 가려버려요. 주 단위로, 그다음 고객 등급별로 파고들어 보죠. 그 하락, 큰 고객 두 곳 때문일걸요?",
       "task": {
-        "promptKo": "빈칸 채우기: 지역별로 한 단계 더 파고들자고 제안하세요.",
-        "koSentence": "지역별로 한 단계 더 파고들어 보죠. 어디서 빠졌는지 나올 거예요."
+        "promptKo": "빈칸 채우기: 주 단위, 고객 등급별로 한 단계 더 파고들자고 제안하세요.",
+        "koSentence": "주 단위로, 그다음 고객 등급별로 파고들어 보죠. 어디서 빠졌는지 나올 거예요."
       },
       "sampleAnswers": [
-        "Let's drill down by region and see exactly where the drop came from.",
-        "Can we drill down one more level, by region this time?"
+        "Let's drill down by week, then by account tier, and see exactly where the drop came from.",
+        "Can we drill down one more level, by account tier this time?"
       ],
       "mentorTip": "drill down은 방향이 있는 딥다이브야. 무작정 파지 말고 가설을 들고 파. 박 대리처럼 '두 계정 때문일걸?' 하고 드릴을 대는 거지. 가설 없는 드릴링은 그냥 소음이야.",
       "mentorNuance": "특정 숫자 속으로 더 파고들자고 할 때 써. 대시보드 앞에서 데이터 얘기를 할 때 어울려.",
@@ -1027,10 +1027,10 @@
       "scene": "22:00. QBR 당일 밤(미국은 아침). 심호흡, 접속. 참가자 12명. 준비한 오프닝 멘트를 완벽하게 말했다. 그런데 화면 속 모두가 고요하다. Sarah가 웃음을 참으며 입 모양으로 말한다.",
       "npc": "sarah",
       "quote": "I'm so sorry to start us off like this, but... you're on mute! Take two, the intro looked great though.",
-      "quoteKo": "이렇게 시작하게 해서 미안한데... 음소거예요! 다시 한번요. 입 모양은 완벽했어요.",
+      "quoteKo": "이렇게 시작하게 해서 미안한데... 음소거예요! 다시 한번요. 인트로는 좋아 보였어요.",
       "task": {
         "promptKo": "뮤트 사고를 웃음으로 넘기고 다시 시작하는 첫 마디를 하세요.",
-        "koSentence": "화상회의 10년 차인데 이러네요. 다시 갈게요. 2분기 리뷰에 오신 걸 환영합니다!"
+        "koSentence": "아이스브레이킹은 이걸로 끝났네요. 다시 갈게요. 2분기 리뷰에 오신 걸 환영합니다!"
       },
       "sampleAnswers": [
         "Well, that's my icebreaker done. Take two: welcome, everyone, to our Q2 business review!",
@@ -1162,7 +1162,7 @@
       "quoteKo": "잘됐다며! 다음 콜까지 3분 남았어. 엘리베이터 피치로 줘봐. 어떻게 됐고, 나한테 필요한 게 뭐야?",
       "task": {
         "promptKo": "QBR 결과를 30초 엘리베이터 피치로 정리해 보고하세요.",
-        "koSentence": "30초 요약입니다. QBR 성공, Sarah가 갱신 논의 공식화에 동의했고, 금요일까지 가격 범위에 대한 본사 승인이 필요합니다."
+        "koSentence": "30초 요약입니다. QBR 성공, Sarah가 갱신 논의 공식화에 동의했고, 금요일까지 조건에 대한 팀장님 승인이 필요합니다."
       },
       "sampleAnswers": [
         "The elevator pitch: the QBR landed, Sarah agreed to formal renewal talks, and I need your sign-off on terms by Friday.",
