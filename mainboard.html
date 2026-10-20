@@ -24012,8 +24012,13 @@ window.SimApp = App;
       box-shadow: 0 16px 40px rgba(0,0,0,0.35);
       width: 280px; max-width: calc(100vw - 40px);
       font-size: 12px;
+      /* 2026-10-20 버튼이 늘어 화면보다 길어지면 접기 버튼이 위로 사라졌다 → 패널 안에서 스크롤 + 머리줄 고정 */
+      max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px);
+      overflow-y: auto; overscroll-behavior: contain;
     }
-    #dev-panel.collapsed { width: auto; padding: 8px 14px; }
+    #dev-panel .dp-head { position: sticky; top: -14px; z-index: 2; background: #2A1F14; margin-top: -14px; padding-top: 14px; padding-bottom: 6px; }
+    #dev-panel.collapsed .dp-head { position: static; margin-top: 0; padding: 0; }
+    #dev-panel.collapsed { width: auto; padding: 8px 14px; overflow: visible; }
     #dev-panel.collapsed .dp-body { display: none; }
     #dev-panel .dp-head {
       display: flex; align-items: center; justify-content: space-between;
@@ -24107,7 +24112,7 @@ window.SimApp = App;
       panel.innerHTML = `
         <div class="dp-head">
           <div class="dp-title">🛠 DEV PANEL</div>
-          <button class="dp-toggle" id="dp-collapse">접기</button>
+          <button class="dp-toggle" id="dp-collapse">✕ 접기</button>
         </div>
         <div class="dp-info">
           <div class="muted">등록된 사용자 없음</div>
@@ -24140,7 +24145,7 @@ window.SimApp = App;
     panel.innerHTML = `
       <div class="dp-head">
         <div class="dp-title">🛠 DEV PANEL</div>
-        <button class="dp-toggle" id="dp-collapse">접기</button>
+        <button class="dp-toggle" id="dp-collapse">✕ 접기</button>
       </div>
       <div class="dp-info">
         <div><strong>${u.name || ''}</strong> <span class="muted">· ${u.email || ''}</span></div>

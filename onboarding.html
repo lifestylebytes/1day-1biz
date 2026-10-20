@@ -321,7 +321,9 @@ const TRIAL_CODES = {
   // 2026-09-07 종료. active:false 면 입력해도 "유효하지 않은 코드". 정의는 운영자 뷰 라벨용으로 남긴다.
   "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7", active: false },
   // ★ 2026-10-12 유비챌 10기 전용 7일 체험. 8일째 아침부터 '체험 완료' 화면 → 멤버십 결제 안내. 끝낼 땐 active:false
-  "UBC10-7DAYS": { label: "유비챌 10기 7일 체험", days: 7, cohort: "trial-ubc10" },
+  // ★ 2026-10-18 신청 마감(until): 10/25(일) 밤까지 등록한 사람만. 그래야 체험이 11/1 전에 다 끝나고, 수료 보상(1개월)과 안 겹친다.
+  "UBC10-7DAYS": { label: "유비챌 10기 7일 체험", days: 7, cohort: "trial-ubc10", until: "2026-10-25T23:59:59+09:00", untilLabel: "10/25(일)",
+    existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 구독 중이시면 체험권 대신 7일 연장으로 넣어드려요! 1일1비 고객센터(카톡)로 이메일만 알려주세요." },
   // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
   //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
   //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
@@ -416,6 +418,11 @@ function OnboardingApp() {
         const _isStaffCode = !!STAFF_CODES[code];
         const _isMemberCode = !!MEMBER_CODES[code];
         const _isTrialCode = !!TRIAL_CODES[code];
+        if (_isTrialCode && TRIAL_CODES[code].until && Date.now() > Date.parse(TRIAL_CODES[code].until)) {
+          setSubmitError(TRIAL_CODES[code].label + " 신청 기간(" + (TRIAL_CODES[code].untilLabel || "") + "까지)이 끝났어요. 궁금한 점은 1일1비 고객센터(카톡)로 물어봐 주세요.");
+          setSubmitting(false);
+          return;
+        }
         if (_isTrialCode && TRIAL_CODES[code].active === false && !(TRIAL_CODES[code].preview && _isPreview)) {
           setSubmitError(TRIAL_CODES[code].preview
             ? "7일 무료 체험은 아직 오픈 전이에요. 곧 열리니 조금만 기다려 주세요!"
@@ -451,7 +458,7 @@ function OnboardingApp() {
         const existing = await window.OD.emailExists(emailTrimmed);
         if (existing && existing.ok && existing.exists) {
           setSubmitError(_isTrialCode
-            ? "이미 가입된 이메일이에요. 무료 체험은 처음 오신 분만 쓸 수 있어요. 처음 화면에서 \"다시 출근하기\"로 로그인해주세요."
+            ? (TRIAL_CODES[code].existingMsg || "이미 가입된 이메일이에요. 무료 체험은 처음 오신 분만 쓸 수 있어요. 처음 화면에서 \"다시 출근하기\"로 로그인해주세요.")
             : "이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
           setSubmitting(false);
           return;
@@ -2491,7 +2498,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       }}>
         🎁 <span style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).label}</span>으로 입사해요
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
-          결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
+          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
           결제하면 쌓은 기록 그대로 Day 8부터 이어져요.
         </div>
       </div>
