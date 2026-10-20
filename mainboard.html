@@ -8626,7 +8626,7 @@ function MilestoneCard() {
 //   데이터는 운영자 뷰 출근 달력과 같다: get_attendance_calendar RPC (Day별 완주 시각, 아이템 방어일, 활동 시각)
 //   + 복지포인트 장부(WP). 서버를 못 읽으면 이 기기 학습 기록으로 대신 그린다.
 //   회원 화면이라 운영용 표시(아이템 추정 "?", 겹친 날 경고, 시각 출처 설명)는 뺀다.
-//   ★ 2026-10-19 날짜 기록 없던 Day 는 서버가 문장 제출 · 일정 저장 시각으로 추정해 채운다(src submission / progress). 회원 화면은 일반 날짜와 똑같이 보여준다.
+//   ★ 2026-10-19 날짜 기록 없던 Day 는 서버가 문장 제출 시각으로 추정해 채운다(src submission). 회원 화면은 일반 날짜와 똑같이 보여준다.
 // ============================================================
 const _ACX_ITEMS = { extend: { icon: "🕐", name: "연장권" }, annual: { icon: "🌴", name: "연차" }, vacay: { icon: "✈️", name: "휴가" } };
 const _ACX_ACT = { checkin: "09:00 출근", scenario: "10:00 오늘의 시추에이션", wrapup: "17:00 내 시추에이션 + 퇴근", review_quiz: "Review Quiz", pre_write: "내일 문장 쓰기" };

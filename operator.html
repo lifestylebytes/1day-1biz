@@ -1935,7 +1935,7 @@ function ContentEditsReview() {
 //   날짜 출처: 서버 완주 시각(배포 이후 완주) > 일지 처음 작성 시각(배포 전 완주). 둘 다 없으면 "날짜 기록 없음".
 //   아이템 방어일: item_uses 기록이 있으면 그 아이템, 없으면(배포 전 사용) 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일+ 휴가).
 // ★ 2026-10-19 날짜를 추정한 출처 (20261019_attendance_calendar_guess.sql). 운영자 뷰만 점선 + '추정', 회원 화면은 일반 칩
-const ATTCAL_GUESS = { submission: '문장 제출 시각', progress: '일정 마지막 저장 시각' };
+const ATTCAL_GUESS = { submission: '문장 제출 시각' };
 const ATTCAL_ITEMS = { extend: { icon: '🕐', name: '연장권' }, annual: { icon: '🌴', name: '연차' }, vacay: { icon: '✈️', name: '휴가' } };
 function _acKst(at) { const t = Date.parse(at); return isNaN(t) ? null : new Date(t + 9 * 3600000).toISOString().slice(0, 10); }
 function _acAdd(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
@@ -2159,7 +2159,7 @@ function AttendanceCalendarModal({ open, onClose }) {
               {wp && wp.has ? <span><b className="wp-e">+P</b> 그날 모은 복지포인트 · <b className="wp-s">−P</b> 그날 쓴 복지포인트</span> : null}
             </div>
             <div className="attcal-note">
-              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주) · 점점선 + '추정': 완주 시각도 일지도 없어서 문장 제출 시각(없으면 일정 마지막 저장 시각)으로 짐작한 날짜 (한꺼번에 올린 기록이면 실제 공부한 날과 다를 수 있어요. 회원 화면엔 '추정' 표시 없이 보여요). 칸에 마우스를 올리면 시각이 보여요.<br />
+              Day 칸 실선: 서버 완주 시각 (배포 이후 완주) · 점선: 일지 처음 작성 시각 (배포 전 완주) · 점점선 + '추정': 완주 시각도 일지도 없어서 문장 제출 시각으로 짐작한 날짜 (한꺼번에 올린 기록이면 실제 공부한 날과 다를 수 있어요. 회원 화면엔 '추정' 표시 없이 보여요). 칸에 마우스를 올리면 시각이 보여요.<br />
               아이템 이름 끝 "?": 사용 기록이 없어서 연달아 막은 날 수로 판별 (1일 연장권, 2일 연차, 3일 이상 휴가).<br />
               🎁 복지포인트: 아이템은 복지몰에서 <b>산 날</b> 빠지고, 결근을 막은 날엔 안 빠져요. 서버 기록은 9/24부터예요.
             </div>
