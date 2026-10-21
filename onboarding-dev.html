@@ -1047,7 +1047,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
   const CTAButtons = (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <button className="btn" onClick={() => _goDomestic("bottom")} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
+      <button className="btn" onClick={() => _goDomestic("bottom")} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 플랜 보고 입사하기 →</button>
       <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 코드 받았어요! 지원서 작성하기</button>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>구매 완료 메일의 코드를 지원서에 입력하면 Day 1이 시작돼요.</div>
     </div>
@@ -1572,61 +1572,81 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
       <Divider />
 
-      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 10월 23일(금)까지만 신청 가능 · 언제든 해지" />
-      {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
-        {[
-          ["🏢", "외국계 대기업 7년차"],
-          ["✍️", "현업에서 실제로 쓰는 표현만"],
-          ["📚", "7년치 표현 수집본"],
-        ].map(t => (
-          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
-            <span>{t[0]}</span>{t[1]}
-          </span>
-        ))}
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accent)", color: "#fff", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 800 }}>
-          💳 월 13,900원 · 언제든 해지
-        </span>
-      </div>
-      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
-        {[["📩", "하루 하나, 새로운 Day 도착"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
-          <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
-            <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
-          </div>
-        ))}
-      </div>
-      {/* ── 5.5 Phase 안내: 공채 기수 프레임 + 가격 사다리 ── */}
-      <div style={{ border: "1.5px solid var(--ink)", borderRadius: 12, padding: "16px 17px", marginBottom: 16, background: "var(--paper)" }}>
-        <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.45, marginBottom: 10 }}>
-          1일1비는 계속 커지고 있어요.
-        </div>
+      <SectionTitle eyebrow="START FREE" title="먼저 7일, 무료로 다녀보세요" sub="결제 정보는 필요 없어요. 7일 다녀보고 8일째에 계속 다닐지 정해주세요." />
 
-        {/* 공채 타임라인 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>1차 공채</span>
-            <span style={{ fontSize: 12, color: "var(--ink-soft)", textDecoration: "line-through" }}>월 9,900원</span>
-            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px solid var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>모집 마감</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: "var(--paper)", border: "1.5px solid var(--accent)", borderRadius: 9 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--accent)", flexShrink: 0 }}>2차 공채</span>
-            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.35 }}>
-              <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)" }}>월 13,900원</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>10/23(금)까지만 신청 가능</span>
-            </span>
-            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--accent)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>~10/23 마감</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>3차 공채</span>
-            <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>AI 맞춤 학습 탑재 후, 인상 예정</span>
-            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px dashed var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>준비 중</span>
-          </div>
+      {/* ── 7일 무료 체험 (가장 먼저, 가장 크게) ── */}
+      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 14, padding: "22px 20px", marginBottom: 18 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", color: "#F0A67E", marginBottom: 10 }}>7 DAYS FREE</div>
+        <div style={{ fontSize: 19, fontWeight: 900, lineHeight: 1.4, marginBottom: 12 }}>7일이면 이만큼 쌓여요</div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {[["7개", "새로 배운 표현"], ["7줄", "첨삭받은 내 문장"], ["35분", "전부 합쳐 쓰는 시간"]].map(t => (
+            <div key={t[0]} style={{ flex: 1, background: "rgba(255,253,247,0.08)", borderRadius: 9, padding: "12px 6px", textAlign: "center" }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#F0A67E" }}>{t[0]}</div>
+              <div style={{ fontSize: 10.5, color: "#D9CDB8", marginTop: 4, lineHeight: 1.4 }}>{t[1]}</div>
+            </div>
+          ))}
         </div>
+        <div style={{ fontSize: 12.5, lineHeight: 1.75, color: "#D9CDB8" }}>
+          무료기간 동안 결제하시면 <strong style={{ color: "#F0A67E" }}>마지막 만료일에 추가돼</strong> 그만큼 이용 기간이 길어져요. 하루도 손해 안 보세요.<br/>
+          안 하셔도 괜찮아요. 아무것도 빠져나가지 않아요. 카드를 안 받았으니까요.
+        </div>
+        <button className="btn" onClick={() => { track("cta_trial_click"); onNext(); }} style={{ justifyContent: "center", width: "100%", marginTop: 16, fontSize: 15, padding: "15px 20px" }}>7일 무료로 시작하기 →</button>
+      </div>
 
-        <div style={{ background: "var(--paper-warm)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
-          1차 공채 가격은 다시 안 열려요. 대신 <strong style={{ color: "var(--accent)" }}>지금 입사한 분은 지금 가격 그대로</strong> 계속 이용해요.<br/>
-          <span style={{ color: "var(--ink-mute)" }}>커리큘럼과 기능이 늘어날수록 다음 공채 가격은 올라갑니다.</span>
+      <Divider />
+
+      <SectionTitle eyebrow="PLANS" title="계속 다니실 분을 위한 플랜" sub="전부 1회 결제예요. 자동으로 다시 빠져나가지 않아요." />
+
+      {/* 48시간 사은품 안내 */}
+      <div style={{ background: "rgba(216,90,42,0.08)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "12px 14px", marginBottom: 14, fontSize: 12.5, lineHeight: 1.7, color: "var(--ink-soft)" }}>
+        🎁 <strong style={{ color: "var(--accent)" }}>가입하고 48시간 안에 결제하면</strong> 2027 상반기 단어 달력을 집으로 보내드려요. 6개월권부터예요.
+      </div>
+
+      {[
+        { nm: "사원 / 6개월", hot: true, tag: "⭐ 가장 많이 고르는 기간", desc: "대리 달고 TF 트랙까지 가는 기간이에요",
+          was: "101,400원", now: "94,900원",
+          li: ["앱 전체 이용 + AI 첨삭 무제한", "Day 180까지, 대리 + TF 트랙"], gift: true,
+          up: "💡 84,100원 더하면 유비챌 4주 + 90일 워크북까지 받으실 수 있어요." },
+        { nm: "인턴 / 3개월", desc: "Day 90, 대리 달고 끝나는 기간이에요",
+          was: "50,700원", now: "49,900원",
+          li: ["앱 전체 이용 + AI 첨삭 무제한", "습관이 붙기엔 조금 짧아요 (습관 형성은 보통 66일)"], gift: false },
+        { nm: "대리 / 6개월 + 유비챌", desc: "혼자 쌓기 + 4주 실전을 같이 해요",
+          was: "200,400원", now: "179,000원",
+          li: ["1일1비 6개월", "유비챌 1기수 (4주 코호트 챌린지)", "90일 워크북 (124쪽)"], gift: true },
+        { nm: "임원 / 12개월 + 유비챌", desc: "1년 내내 끊기지 않게 가요",
+          was: "301,800원", now: "285,000원",
+          li: ["1일1비 12개월", "유비챌 1기수 + 90일 워크북"], gift: true },
+      ].map(p => (
+        <div key={p.nm} style={{
+          position: "relative", background: p.hot ? "#FFFBF7" : "var(--paper)",
+          border: p.hot ? "2px solid var(--accent)" : "1px solid var(--line)",
+          borderRadius: 14, padding: p.hot ? "24px 18px 18px" : "18px", marginBottom: 12,
+        }}>
+          {p.tag && (
+            <div style={{ position: "absolute", top: -11, left: 16, background: "var(--accent)", color: "#fff", fontSize: 11, fontWeight: 800, padding: "4px 11px", borderRadius: 20 }}>{p.tag}</div>
+          )}
+          <div style={{ fontSize: 16.5, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em" }}>{p.nm}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 4 }}>{p.desc}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 13 }}>
+            <span style={{ fontSize: 12.5, color: "var(--ink-mute)", textDecoration: "line-through" }}>{p.was}</span>
+            <span style={{ fontSize: 25, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.02em" }}>{p.now}</span>
+          </div>
+          <div style={{ marginTop: 13, paddingTop: 11, borderTop: "1px dashed var(--line)" }}>
+            {p.li.map(x => (
+              <div key={x} style={{ fontSize: 12.5, color: "var(--ink-soft)", padding: "3px 0", display: "flex", gap: 7 }}><span>·</span><span>{x}</span></div>
+            ))}
+            {p.gift && (
+              <div style={{ fontSize: 12.5, color: "var(--accent)", fontWeight: 800, padding: "3px 0", display: "flex", gap: 7 }}><span>🎁</span><span>48시간 안에 결제하면 단어 달력 증정</span></div>
+            )}
+          </div>
+          {p.up && (
+            <div style={{ marginTop: 12, background: "var(--paper-warm)", borderRadius: 8, padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink-soft)", lineHeight: 1.55 }}>{p.up}</div>
+          )}
         </div>
+      ))}
+
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "12px 14px", marginBottom: 16, fontSize: 12, lineHeight: 1.75, color: "var(--ink-soft)" }}>
+        이미 월 구독 중이세요? 지금 요금이 더 싸니까 그대로 두시는 게 이득이에요. 달력만 따로 받고 싶으시면 1일1비 고객센터로 알려주세요.
       </div>
 
       {CTAButtons}
