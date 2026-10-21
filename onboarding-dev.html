@@ -120,11 +120,11 @@ textarea { resize: vertical; min-height: 70px; }
 .btn-ghost:hover:not(:disabled) { background: transparent; color: var(--ink); transform: none; }
 
 .stamp {
-  position: absolute; top: 22px; right: 22px;
+  position: absolute; top: 34px; right: 22px; transform: translateY(-50%);
   font-size: 10px; letter-spacing: 0.2em; font-weight: 800;
   color: var(--accent); border: 2px solid var(--accent);
-  padding: 4px 10px; border-radius: 4px; transform: rotate(0deg);
-  opacity: 0.85;
+  padding: 4px 10px; border-radius: 4px; line-height: 1;
+  opacity: 0.85; pointer-events: none;
 }
 
 /* 메일 스타일 */
@@ -169,7 +169,7 @@ textarea { resize: vertical; min-height: 70px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 13px; color: var(--ink-soft); }
 
-.steps { display: flex; gap: 6px; margin-bottom: 22px; }
+.steps { display: flex; gap: 6px; margin-bottom: 22px; margin-right: 88px; min-height: 26px; align-items: center; }
 .step-pip { flex: 1; height: 3px; background: var(--line); border-radius: 99px; transition: background 0.3s ease; }
 .step-pip.done { background: var(--accent); }
 
@@ -186,11 +186,13 @@ textarea { resize: vertical; min-height: 70px; }
   background: var(--ink); color: var(--paper); border-radius: 14px;
   padding: 12px 13px; box-shadow: 0 14px 34px -8px rgba(0,0,0,0.45);
   font-family: 'Noto Sans KR', sans-serif;
-  transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  transform: translateY(150%); opacity: 0; pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.35s ease, visibility 0s linear 0.5s;
+  visibility: hidden;
   gap: 10px;
 }
 @media (max-width: 768px) { .mb-toast { display: flex; } }
-.mb-toast.show { transform: translateY(0); }
+.mb-toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; visibility: visible; transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.35s ease; }
 .mb-toast.dismissed { display: none !important; }
 .mb-toast-av { width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
   display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
@@ -278,6 +280,8 @@ h1, h2, h3, .lead, .eyebrow, summary, .btn { text-wrap: balance; }
       setTimeout(function(){ toast.classList.add('show'); }, 1400);
       // 8초 뒤엔 스스로 내려간다 (입사 버튼 근처에 오래 머물지 않게)
       setTimeout(function(){ toast.classList.remove('show'); }, 9400);
+      // 내려간 뒤엔 아예 치운다 (예전엔 아랫부분이 화면에 남아 보였다)
+      setTimeout(function(){ toast.classList.add('dismissed'); }, 10200);
     }
     var x = document.getElementById('mb-toast-x');
     if (x) x.addEventListener('click', function(){
@@ -354,6 +358,10 @@ const TRIAL_CODES = {
   "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d" },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
 };
 const _isPreview = (() => { try { return new URLSearchParams(location.search).get("preview") === "1"; } catch (e) { return false; } })();
+// ★ 개발용 상세페이지(onboarding-dev.html)이거나 ?preview=1 일 때만 테스트 도구를 보여준다
+const _isDevSite = () => { try { return _isPreview || /onboarding-dev/.test(location.pathname); } catch (e) { return false; } };
+// 테스트 계정이 쓸 받은편지함. 지메일 +태그라 실제로는 이 주소로 전부 도착한다
+const DEV_TEST_MAILBOX = "dmsgktn0523@gmail.com";
 function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
 
 // ============================================================
@@ -1328,7 +1336,7 @@ function WhyMock({ kind }) {
     <div className="od-bottom-cta">
       <div className="od-bottom-inner">
       <div style={{ minWidth: 0, flex: 1, lineHeight: 1.35 }}>
-        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>카드 등록 없어요 / 자동결제 없어요</div>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>무료등록</div>
         <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>7일 다녀보고 정하시면 돼요</div>
       </div>
       <button onClick={() => _goTrial("bottom")}
@@ -1697,7 +1705,7 @@ function WhyMock({ kind }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
         {[
           ["📰", "부산일보", "2030 칼럼 연재 중"],
-          ["✍️", "네이버 블로그", "유가비의 하루"],
+          ["📸", "인스타그램", "@youbuddy_day · 3.6만"],
           ["👥", "누적 입사", "50명+"],
         ].map(x => (
           <div key={x[1]} style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 10px", textAlign: "center" }}>
@@ -2806,11 +2814,39 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
     setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
   };
   const pwOk = (signupPw || "").length >= 8;  // 비번 필수, 8자 이상
+  // ★ 2026-10-21: 개발자 전용 테스트 계정 채우기. 48시간 사은품 플로우를 반복해서 보려면
+  //   매번 새 이메일이 필요한데, 지메일 +태그(you+xxx@gmail.com)는 같은 받은편지함으로 와서
+  //   인증 메일을 그대로 받으면서 1일1비 쪽에선 새 이메일로 잡힌다. 운영자 뷰에서 지우면 끝.
+  const _devFill = () => {
+    const d = new Date();
+    const p2 = (v) => String(v).padStart(2, "0");
+    const tag = p2(d.getMonth() + 1) + p2(d.getDate()) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds());
+    setInviteCode("TRY7DAYS");
+    setName("테스트 " + tag.slice(-4));
+    setEmail(DEV_TEST_MAILBOX.replace("@", "+1b" + tag + "@"));
+    setSignupPw("test12345678");
+    setMotivation("개발 테스트 계정이에요.");
+    setPhone("");
+    setKakaoOptIn(false);
+    setAgreeAge(true); setAgreeTerms(true); setAgreePrivacy(true);
+  };
   const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && motivation.trim().length >= 2;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
       <StepBar idx={stageIdx} total={totalStages} />
+      {_isDevSite() && (
+        <div style={{ marginBottom: 16, background: "#2A1F14", borderRadius: 10, padding: "11px 13px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#F0A67E" }}>DEV ONLY</span>
+            <span style={{ display: "block", fontSize: 11.5, color: "#D9CDB8", marginTop: 3, lineHeight: 1.5 }}>테스트 계정을 새로 만들어요. 인증 메일은 {DEV_TEST_MAILBOX} 로 와요.</span>
+          </span>
+          <button type="button" onClick={_devFill}
+            style={{ flexShrink: 0, background: "#F0A67E", color: "#2A1F14", border: "none", borderRadius: 8, padding: "9px 13px", fontSize: 12, fontWeight: 900, fontFamily: "inherit", cursor: "pointer" }}>
+            테스트 계정 채우기
+          </button>
+        </div>
+      )}
       <div className="eyebrow">STEP 1 · 입사 지원서</div>
       <h1>환영해요!<br/>입사 <em>지원서</em> 작성하기</h1>
       <p className="lead">실제 입사 지원서처럼, 이름과 본인 확인을 위한 메일을 작성해주세요.</p>
