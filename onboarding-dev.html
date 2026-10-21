@@ -46,17 +46,37 @@
 html, body, #root { height: 100%; }
 body {
   font-family: 'Noto Sans KR', sans-serif;
-  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  background: #1D2531;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+/* 창밖으로 보이는 도심 (좌우 여백) */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-image: url(img/city-blur.jpg);
+  background-size: cover; background-position: center 62%; background-repeat: no-repeat;
 }
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background-image:
     radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(14,19,27,0.42) 0%, rgba(14,19,27,0.28) 45%, rgba(14,19,27,0.5) 100%);
+  background-size: 32px 32px, 8px 8px, auto;
+}
+/* 창밖 배경 위에 본문이 떠 보이게 */
+@media (min-width: 761px) {
+  .card { box-shadow: 0 40px 90px -20px rgba(8,12,18,0.6), 0 10px 30px rgba(8,12,18,0.3); }
+}
+/* 좁은 화면에선 여백이 없으니 기존 베이지 그대로 */
+@media (max-width: 760px) {
+  body { background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%); }
+  body::after { display: none; }
+  body::before { background-image:
+    radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
     radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
-  background-size: 32px 32px, 8px 8px;
+    background-size: 32px 32px, 8px 8px; }
 }
 
 .stage {
@@ -1937,28 +1957,7 @@ function WhyMock({ kind }) {
       <Divider />
 
       {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
-      <div style={{
-        position: "relative", borderRadius: 16, overflow: "hidden",
-        margin: "0 -6px", padding: "0 14px 18px",
-        backgroundImage: "linear-gradient(rgba(255,253,247,0.93), rgba(255,253,247,0.97)), url(img/city-blur.jpg)",
-        backgroundSize: "auto, cover", backgroundPosition: "center, center",
-      }}>
-        {/* 창밖 도심: 사무실 창 느낌 */}
-        <div style={{ position: "relative", height: 170, margin: "0 -14px 16px", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "url(img/city-blur.jpg)", backgroundSize: "cover", backgroundPosition: "62% 64%" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(rgba(20,26,36,0.04) 0%, rgba(20,26,36,0.2) 48%, rgba(20,26,36,0.62) 100%)" }} />
-          {/* 창틀 */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 6, marginLeft: -3, background: "rgba(246,240,228,0.5)" }} />
-            <div style={{ position: "absolute", left: 0, right: 0, top: "34%", height: 6, marginTop: -3, background: "rgba(246,240,228,0.5)" }} />
-            <div style={{ position: "absolute", inset: 0, border: "10px solid rgba(246,240,228,0.68)", borderRadius: 2, boxShadow: "inset 0 0 26px rgba(0,0,0,0.3)" }} />
-          </div>
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 18, textAlign: "center", padding: "0 24px" }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.2em", color: "#F0A67E", textShadow: "0 1px 6px rgba(0,0,0,0.55)" }}>YOUBUDDY LINE-UP</div>
-            <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.35, margin: "7px 0 0", color: "#FFFDF7", letterSpacing: "-0.01em", textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>유비챌이랑 뭐가 달라요?</h2>
-          </div>
-        </div>
-        <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "0 0 16px", textAlign: "center" }}>같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요.</p>
+      <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요." />
       <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "11px 14px", marginBottom: 10 }}>
         둘 다 <strong style={{ color: "var(--ink)" }}>비즈니스 영어에 꼭 필요한 단어</strong>만 모았어요. 다른 건 <strong style={{ color: "var(--ink)" }}>고르는 방식</strong>이에요. 1일1비는 직급이 올라가는 순서대로, 유비챌은 <strong style={{ color: "var(--ink)" }}>기수마다 주제를 새로 큐레이션</strong>해요.
       </div>
@@ -2048,8 +2047,6 @@ function WhyMock({ kind }) {
         </div>
       </div>
 
-      </div>
-
       <Divider />
 
       {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
@@ -2058,7 +2055,7 @@ function WhyMock({ kind }) {
         {[
           ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
           ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
-          ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 갑니다. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요."],
+          ["결제하면 바로 시작되나요?", "결제 후에 1:1 톡으로 입사 코드를 보내드려요. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요. 궁금한 건 그 톡으로 바로 물어보시면 돼요."],
           ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 하실 수 있어요. 표현 노트와 진도는 해지 후 2개월간 보관되니, 그 안에 재구독하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
           ["누구한테 잘 맞나요?", "슬랙·메일·회의에서 영어를 이미 쓰고 계신 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스랍니다."],
           ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
