@@ -5,6 +5,13 @@
   (페이지 ID: 3cb910a8-ed7a-45d3-b3d9-f460f083d71c, "관련 메모" 섹션에 `### YYYY-MM-DD 개발·운영 변경 로그` 형식으로 추가)
 - 사소한 수정은 생략, 사용자·운영에 영향 가는 것만. 개인 식별 정보(고객 실명+이메일)는 쓰지 않는다.
 
+## 🪞 랜딩 카피 노션 미러 (onboarding.html 커밋마다, 2026-10-21 사용자 요청)
+- `onboarding.html`의 랜딩(WelcomeScreenV3, 1156~1778행 부근)을 고쳐 커밋하면 **같은 세션에서 노션 미러 페이지도 바로 갱신한다.**
+  (페이지 ID: 4001fc05-de1e-8154-92b0-f5a7733d18d1, "1일1비 랜딩 페이지 (onboarding) 카피 미러", 파라 > 1일1비 하위)
+- 갱신 범위: 바뀐 섹션의 카피만 update_content로 고치고, 맨 위 인용 블록의 "기준 커밋"과 "마지막 동기화" 날짜를 바꾼다.
+- 로그인/가입 플로우 화면(LoginScreen, ApplicationScreen 등) 변경은 미러 대상이 아니다. 랜딩 카피만.
+- 다른 사람 PR로 onboarding이 바뀐 걸 `git pull`에서 발견하면 그때도 미러를 맞춘다.
+
 ## 🚀 배포 (Claude 직접 push 가능)
 - **Claude가 커밋+push를 직접 한다** (원격 URL에 fine-grained 토큰 저장됨, 2026-08 설정. 이 레포 contents:write 한정).
 - 세션 시작 후 첫 git 작업 시 `.git/index.lock` 삭제 권한 승인이 필요할 수 있음 (allow_cowork_file_delete).
