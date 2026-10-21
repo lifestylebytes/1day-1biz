@@ -366,10 +366,7 @@ const DEV_TEST_MAILBOX = "dmsgktn0523@gmail.com";
 //   매번 새 48시간 플로우를 보려면 가입일이 새로 찍혀야 해서 뒤에 +시각 태그를 붙인다.
 const DEV_TEST_EMAIL = "testtestlogin@gmail.com";
 const _isDevTestEmail = (e) => /^testtestlogin(\+[^@]*)?@gmail\.com$/i.test(String(e || "").trim());
-const _devTestEmailNow = () => {
-  const d = new Date(); const p2 = (v) => String(v).padStart(2, "0");
-  return "testtestlogin+" + p2(d.getMonth() + 1) + p2(d.getDate()) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds()) + "@gmail.com";
-};
+const _devTestEmailNow = () => "testtestlogin+" + Date.now().toString(36).slice(-4) + "@gmail.com";
 function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
 
 // ============================================================
