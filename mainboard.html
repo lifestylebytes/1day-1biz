@@ -9782,7 +9782,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
       )}
       {retQuiz && today && (
-        <ReviewQuizModal today={today} email={USER.email} attemptNo={1} afterAbsence
+        <ReviewQuizModal today={today} email={USER.email} attemptNo={1} afterAbsence gapDays={retDebuff && retDebuff.gap}
           onFinished={() => { _retMarkQuizDone(USER.email); _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); window.dispatchEvent(new Event("od-ret-recon")); } catch (e) {} }}
           onClose={() => { setRetQuiz(false); if (!_retNeedsQuizFirst(USER.email)) setRetDebuff(null); }} />
       )}
@@ -20517,7 +20517,7 @@ function MiniQuizActivity({ today, item, onClose, onComplete }) {
 }
 
 // ── 퇴근 후 Review Quiz (OvertimeCard 안에서 연다) ──
-function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished, afterAbsence }) {
+function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished, afterAbsence, gapDays }) {
   const rd = today.day;
   const [n, setN] = useState(null);
   const questions = useMemo(() => (n ? _qzBuildReview(today, n) : []), [n, today.day]);
@@ -20541,18 +20541,40 @@ function ReviewQuizModal({ today, email, attemptNo, onClose, onFinished, afterAb
     const k = sizes.length ? (sizes.indexOf(5) >= 0 ? 5 : sizes[0]) : 0;
     return (
       <ActivityShell title="REVIEW QUIZ" onClose={onClose}>
-        <div style={{ textAlign: "center", padding: "6px 0 2px" }}>
-          <div style={{ fontSize: 48, lineHeight: 1 }}>📝</div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink)", marginTop: 10 }}>감 찾고 들어가요</div>
-          {k > 0 && <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>{Array.from({ length: k }).map((_, i) => <span key={i} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #C79233", background: "var(--cream)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "var(--ink)" }}>{i + 1}</span>)}</div>}
-          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12.5, fontWeight: 800, background: "var(--paper-warm)", padding: "6px 12px", borderRadius: 999 }}>⏱️ 3분</span>
-            <span style={{ fontSize: 12.5, fontWeight: 800, background: "var(--paper-warm)", padding: "6px 12px", borderRadius: 999 }}>📚 배운 표현만</span>
+        <div style={{ padding: "4px 0 2px" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 14 }}>
+            <span style={{ width: 42, height: 42, flexShrink: 0, borderRadius: 11, background: "var(--paper-warm)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🔒</span>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>DAY {rd}</span>
+              <span style={{ display: "block", fontSize: 19, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em", marginTop: 2 }}>오늘 일정이 잠겨 있어요</span>
+            </span>
           </div>
-          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>📝 {k || 5}문제 <span style={{ color: "var(--ink-mute)" }}>→</span> 🔓 오늘 일정 열림</div>
+
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "var(--ink-soft)", marginBottom: 16 }}>
+            {gapDays > 1 ? <>{gapDays}일 쉬셨네요. 배운 표현 감부터 되찾고 들어가요.<br/></> : <>배운 표현 감부터 되찾고 들어가요.<br/></>}
+            <b style={{ color: "var(--ink)" }}>복습 {k || 5}문제를 풀면</b> 오늘 일정이 열려요.
+          </div>
+
+          {k > 0 && (
+            <div style={{ background: "var(--paper-warm)", borderRadius: 11, padding: "14px 15px", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 9 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink-soft)" }}>복습 진행</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink-mute)" }}><b style={{ fontSize: 15, color: "var(--accent)" }}>0</b> / {k}</span>
+              </div>
+              <div style={{ display: "flex", gap: 5 }}>
+                {Array.from({ length: k }).map((_, i) => <span key={i} style={{ flex: 1, height: 8, borderRadius: 999, background: "var(--line)" }} />)}
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 11, fontSize: 11.5, color: "var(--ink-mute)" }}>
+                <span>⏱️ 3분이면 끝나요</span>
+                <span>📚 배운 표현에서만 나와요</span>
+              </div>
+            </div>
+          )}
+
           {k > 0
-            ? <button className="btn btn-primary" style={{ width: "100%", marginTop: 18, justifyContent: "center" }} onClick={() => setN(k)}>복습 시작 →</button>
-            : <button className="btn btn-primary" style={{ width: "100%", marginTop: 18, justifyContent: "center" }} onClick={() => { if (onFinished) onFinished({ score: 0, total: 0, at: new Date().toISOString(), n: 0 }); onClose(); }}>아직 복습할 표현이 적어요. 오늘 출근하기 →</button>}
+            ? <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={() => setN(k)}>복습 시작하고 출근하기 →</button>
+            : <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={() => { if (onFinished) onFinished({ score: 0, total: 0, at: new Date().toISOString(), n: 0 }); onClose(); }}>아직 복습할 표현이 적어요. 오늘 출근하기 →</button>}
         </div>
       </ActivityShell>
     );
