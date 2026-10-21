@@ -362,6 +362,14 @@ const _isPreview = (() => { try { return new URLSearchParams(location.search).ge
 const _isDevSite = () => { try { return _isPreview || /onboarding-dev/.test(location.pathname); } catch (e) { return false; } };
 // 테스트 계정이 쓸 받은편지함. 지메일 +태그라 실제로는 이 주소로 전부 도착한다
 const DEV_TEST_MAILBOX = "dmsgktn0523@gmail.com";
+// ★ 2026-10-21 개발 전용 테스트 계정. 이 주소로 가입하면 메일 인증(6자리 코드)을 건너뛴다.
+//   매번 새 48시간 플로우를 보려면 가입일이 새로 찍혀야 해서 뒤에 +시각 태그를 붙인다.
+const DEV_TEST_EMAIL = "testtestlogin@gmail.com";
+const _isDevTestEmail = (e) => /^testtestlogin(\+[^@]*)?@gmail\.com$/i.test(String(e || "").trim());
+const _devTestEmailNow = () => {
+  const d = new Date(); const p2 = (v) => String(v).padStart(2, "0");
+  return "testtestlogin+" + p2(d.getMonth() + 1) + p2(d.getDate()) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds()) + "@gmail.com";
+};
 function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
 
 // ============================================================
@@ -487,6 +495,15 @@ function OnboardingApp() {
         }
         // 2) ★ 중복 가입 가드, RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
         const emailTrimmed = (email || "").trim().toLowerCase();
+        // ★ 개발 전용 테스트 계정: 메일 인증 단계를 통째로 건너뛰고 바로 심사로 넘어간다.
+        //   (비밀번호는 저장 안 되니 나중에 로그인은 안 되고, 가입 직후 플로우 확인용이다)
+        if (_isDevSite() && _isDevTestEmail(emailTrimmed)) {
+          setVerifiedCode(code);
+          setVerifiedCohort(_cohort);
+          setSubmitting(false);
+          setStage("reviewing");
+          return;
+        }
         const existing = await window.OD.emailExists(emailTrimmed);
         if (existing && existing.ok && existing.exists) {
           setSubmitError(_isTrialCode
@@ -1554,16 +1571,173 @@ function WhyMock({ kind }) {
 
       <Divider />
 
-      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 14, padding: "20px 18px", marginBottom: 18, textAlign: "center" }}>
-        <div style={{ fontSize: 15.5, fontWeight: 900, lineHeight: 1.45 }}>
-          구경 말고, 직접 출근해보세요
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 18, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
+      </div>
+      {/* ── 2. 인터랙티브 체험: 실제 인트라넷 오늘 일정 ── */}
+      <SectionTitle eyebrow="LIVE DEMO" title="구경 말고, 직접 출근해보세요" sub="Day 1을 가입 없이 그대로 해봅니다. 마지막엔 진짜 AI 사수가 첨삭해줘요." />
+
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 10px" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)" }}>📋 오늘 일정 · DAY 1</span>
+          <span style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>{doneCount} / 4 완료</span>
         </div>
-        <div style={{ fontSize: 12.5, color: "#D9CDB8", lineHeight: 1.75, marginTop: 9 }}>
-          Day 1부터 7일을 그대로 해보실 수 있어요.<br/>결제 정보는 필요 없어요.
+        <div style={{ display: "grid", gap: 8 }}>
+
+          {renderRow(0, "09:00", "출근 + 오늘의 단어 받기", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0" }}>사수 <strong>차윤아</strong>님이 자리에 노란 포스트잇을 붙여놨어요.</p>
+            <div style={{ background: "#F6E27C", borderRadius: 4, padding: "16px 15px 13px", boxShadow: "2px 4px 10px rgba(58,40,18,0.18)", transform: "rotate(0deg)", maxWidth: 300, margin: "0 auto 12px" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#8A6D1A", letterSpacing: "0.1em", marginBottom: 5 }}>오늘의 단어</div>
+              <div style={{ fontSize: 23, fontWeight: 900, color: "#3A2E10" }}>down the line</div>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6B5513", marginTop: 3 }}>나중에, 시간이 좀 지나서</div>
+            </div>
+            <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+              💡 길(line)을 따라 쭉 걸어가면 닿는 곳 = <strong style={{ color: "var(--ink)" }}>미래의 어느 시점</strong>이라는 그림이에요.<br/>
+              "in the future"보다 훨씬 네이티브다운 표현!<br/><br/>
+              🗣 <em>"We can hire more people down the line."</em><br/>
+              <span style={{ color: "var(--ink-mute)" }}>(나중에 사람을 더 뽑을 수 있어요.)</span>
+            </div>
+            <button className="btn" onClick={() => markDone(0)} style={{ width: "100%", justifyContent: "center" }}>단어 접수! 다음 일정 →</button>
+          </>)}
+
+          {renderRow(1, "10:00", "오늘의 시추에이션 (회의)", <>
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0 4px" }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#3A4A5C", color: "#fff", fontWeight: 800, fontSize: 13 }}>김</div>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>김 팀장</div>
+                <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.55, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "9px 12px" }}>
+                  "We can’t add designers right now, but <strong>down the line</strong>, definitely."
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 4, lineHeight: 1.5 }}>지금은 디자이너 충원이 어렵지만, <strong>나중엔</strong> 꼭 할 거예요.</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", margin: "12px 0 8px" }}>💬 어떻게 답하는 게 자연스러울까요? (한국어 해석 참고!)</div>
+            <div style={{ display: "grid", gap: 7 }}>
+              {OPTIONS.map(o => {
+                const show = !!pick, isP = pick === o.id, isC = o.kind === "correct";
+                return (
+                  <button key={o.id} onClick={() => { if (!pick) { setPick(o.id); track("demo_quiz_answer", { correct: o.kind === "correct" }); } }} style={{
+                    textAlign: "left", padding: "10px 12px", borderRadius: 9, fontFamily: "inherit", lineHeight: 1.5,
+                    border: "1.5px solid " + (show && isC ? "#4A7C59" : (show && isP ? "#B23A2C" : "var(--line)")),
+                    background: show && isC ? "rgba(74,124,89,0.08)" : (show && isP ? "rgba(178,58,44,0.06)" : "var(--paper)"),
+                    cursor: pick ? "default" : "pointer",
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{o.en}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 3 }}>{o.ko}</div>
+                    {show && (isC || isP) && <div style={{ fontSize: 11.5, fontWeight: 600, color: isC ? "#4A7C59" : "#B23A2C", marginTop: 6 }}>{o.note}</div>}
+                  </button>
+                );
+              })}
+            </div>
+            {pick && <button className="btn od-rise" onClick={() => markDone(1)} style={{ width: "100%", justifyContent: "center", marginTop: 10 }}>{picked && picked.kind === "correct" ? "🎉 정답! 다음 일정 →" : "그럴 수 있어요! 다음 일정 →"}</button>}
+          </>)}
+
+          {renderRow(2, "14:00", "사수 1:1 피드백 (슬랙 DM)", <>
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0" }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>차윤아 · 사수</div>
+                <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.65, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "11px 13px" }}>
+                  오늘 회의 잘 들었어요 👀 첫날인데 감 좋은데요?<br/><br/>
+                  하나만 더: <strong>down the line</strong> 앞에는 somewhere나 further를 붙여서 <em>"somewhere down the line"</em>(언젠가는)으로도 진짜 많이 써요. 이런 디테일이 네이티브 느낌을 만들어요.
+                </div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 12, background: "var(--paper)", border: "1px dashed var(--line)", borderRadius: 8, padding: "9px 12px" }}>
+              실제 서비스에선 <strong>내가 쓴 영어 문장</strong>을 AI 사수가 이렇게 1:1로 고쳐주고, 왜 그런지 이유까지 설명해줘요.
+            </div>
+            <button className="btn" onClick={() => markDone(2)} style={{ width: "100%", justifyContent: "center" }}>확인했어요! 마지막 일정 →</button>
+          </>)}
+
+          {renderRow(3, "17:00", "오늘의 영작 미션 (AI 사수 첨삭)", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 6px" }}>퇴근 전 마지막 미션! 김 팀장에게 <strong style={{ color: "var(--ink)" }}>오늘 단어를 살려 한 줄 답장</strong>을 영어로 써보세요.</p>
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", background: "var(--paper)", border: "1px dashed var(--line)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.55, marginBottom: 8 }}>
+              💡 이런 뜻으로: "알겠습니다. 지금은 있는 인원으로 진행하고, 나중에 디자이너를 충원하시죠."
+            </div>
+            <textarea value={journal} onChange={e => setJournal(e.target.value)} rows={2}
+              placeholder="예: Got it. Let's start now and hire designers down the line."
+              style={{ width: "100%", boxSizing: "border-box", borderRadius: 9, border: "1px solid var(--line)", padding: "10px 12px", fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", background: "var(--paper)", color: "var(--ink)", resize: "none", marginBottom: 10 }} />
+            {jrFb && (
+              <div className="od-rise" style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+                  <div style={{ flex: 1, fontSize: 13, color: "var(--ink)", lineHeight: 1.6, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "10px 13px" }}>
+                    {jrFb.praise || "좋아요, 바로 첨삭 들어갈게요!"}
+                  </div>
+                </div>
+                <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ background: "rgba(74,124,89,0.08)", borderBottom: "1px solid var(--line)", padding: "10px 13px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "#4A7C59", marginBottom: 4 }}>NATIVE VERSION · 사수의 한 문장</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.55 }}>"{jrFb.corrected}"</div>
+                  </div>
+                  {jrFb.grammar && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📐 문법</strong> · {jrFb.grammar}
+                    </div>
+                  )}
+                  {jrFb.vocab && (jrFb.vocab.to || jrFb.vocab.reason) && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📚 어휘</strong> · {jrFb.vocab.from ? <span><em>{jrFb.vocab.from}</em> 대신 <em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span> : <span><em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span>}{jrFb.vocab.reason}
+                    </div>
+                  )}
+                  {jrFb.nuance && (
+                    <div style={{ padding: "9px 13px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>🎯 뉘앙스</strong> · {jrFb.nuance}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 7, textAlign: "center" }}>매일 이렇게 4구획 첨삭을 받아요. 이게 1일1비의 핵심이에요.</div>
+              </div>
+            )}
+            {!jrFb ? (
+              <button className="btn" onClick={askJournalAi} disabled={jrLoading || !journal.trim()} style={{ width: "100%", justifyContent: "center", opacity: (jrLoading || !journal.trim()) ? 0.6 : 1 }}>
+                {jrLoading ? "사수가 첨삭 중..." : "✍️ 사수에게 제출하기"}
+              </button>
+            ) : (
+              <button className="btn od-rise" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>미션 완료, 퇴근하기 →</button>
+            )}
+          </>)}
         </div>
-        <button className="btn" onClick={() => _goTrial("demo")} style={{ width: "100%", justifyContent: "center", marginTop: 15, fontSize: 14.5, padding: "14px 18px" }}>
-          🎟 7일 무료로 시작하기 →
-        </button>
+
+        {allDone && (
+          <div className="od-rise" style={{ padding: "18px 0 8px" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(0deg)" }}>DAY 1 완료</div>
+              <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "12px 0 4px" }}>
+                방금 그게 1일1비의 하루예요. <strong style={{ color: "var(--ink)" }}>딱 5분.</strong>
+              </p>
+              <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--accent)", margin: "0 0 14px" }}>
+                그리고... 이게 다가 아니에요. 오늘 건 맛보기예요 👀
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              {[
+                ["🍱", "English Lunch", "동료와 영어 점심 수다 (콩글리시 함정 주의)"],
+                ["🎲", "매일 바뀌는 활동", "미니미션 퀴즈, 복습, 메일 빈칸까지 순환"],
+                ["🎓", "Day 30 승진 시험", "통과하면 정직원 발령 + 네이비 사원증"],
+                ["📒", "나만의 표현 노트", "30일 완주 보상. 내가 모은 표현 사전이 생겨요"],
+                ["🌟", "Day 60 특별 면담", "런던 본사 Director와 1:1, 뭘 듣게 될까요"],
+                ["🎖️", "Day 90 대리 승진", "승진 시험 통과하면 레드 사원증"],
+                ["🔔", "저녁 출근 리마인드", "까먹지 않게 푸시가 살짝 찔러줘요"],
+                ["🚀", "대리부터 TF 트랙", "협상·피플·문서·미팅 중 내 일에 맞는 쪽으로"],
+              ].map(f => (
+                <div key={f[1]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 11px" }}>
+                  <div style={{ fontSize: 16 }}>{f[0]}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginTop: 3 }}>{f[1]}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2, lineHeight: 1.45 }}>{f[2]}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 12px", lineHeight: 1.6 }}>
+              90일 완주가 목표가 아니에요. <strong style={{ color: "var(--ink)" }}>내일 회의에서 쓸 한 문장</strong>이 목표예요. 그건 Day 1부터 돼요.<br/>
+              내일이면 Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
+            </p>
+            <button className="btn od-rise" onClick={() => { track("cta_trial_demo"); onNext(); }} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
+              🎟 이대로 7일 무료로 시작하기 →
+            </button>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", textAlign: "center", marginTop: 7 }}>언제든 해지 · 기록은 그대로 보관돼요</div>
+          </div>
+        )}
       </div>
 
       <Divider />
@@ -2817,13 +2991,13 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
   // ★ 2026-10-21: 개발자 전용 테스트 계정 채우기. 48시간 사은품 플로우를 반복해서 보려면
   //   매번 새 이메일이 필요한데, 지메일 +태그(you+xxx@gmail.com)는 같은 받은편지함으로 와서
   //   인증 메일을 그대로 받으면서 1일1비 쪽에선 새 이메일로 잡힌다. 운영자 뷰에서 지우면 끝.
-  const _devFill = () => {
+  const _devFill = (skipVerify) => {
     const d = new Date();
     const p2 = (v) => String(v).padStart(2, "0");
     const tag = p2(d.getMonth() + 1) + p2(d.getDate()) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds());
     setInviteCode("TRY7DAYS");
     setName("테스트 " + tag.slice(-4));
-    setEmail(DEV_TEST_MAILBOX.replace("@", "+1b" + tag + "@"));
+    setEmail(skipVerify ? _devTestEmailNow() : DEV_TEST_MAILBOX.replace("@", "+1b" + tag + "@"));
     setSignupPw("test12345678");
     setMotivation("개발 테스트 계정이에요.");
     setPhone("");
@@ -2836,15 +3010,21 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       <div className="stamp">DRAFT</div>
       <StepBar idx={stageIdx} total={totalStages} />
       {_isDevSite() && (
-        <div style={{ marginBottom: 16, background: "#2A1F14", borderRadius: 10, padding: "11px 13px", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#F0A67E" }}>DEV ONLY</span>
-            <span style={{ display: "block", fontSize: 11.5, color: "#D9CDB8", marginTop: 3, lineHeight: 1.5 }}>테스트 계정을 새로 만들어요. 인증 메일은 {DEV_TEST_MAILBOX} 로 와요.</span>
-          </span>
-          <button type="button" onClick={_devFill}
-            style={{ flexShrink: 0, background: "#F0A67E", color: "#2A1F14", border: "none", borderRadius: 8, padding: "9px 13px", fontSize: 12, fontWeight: 900, fontFamily: "inherit", cursor: "pointer" }}>
-            테스트 계정 채우기
-          </button>
+        <div style={{ marginBottom: 16, background: "#2A1F14", borderRadius: 10, padding: "12px 13px" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#F0A67E" }}>DEV ONLY</div>
+          <div style={{ fontSize: 11.5, color: "#D9CDB8", marginTop: 4, lineHeight: 1.55 }}>
+            가입일이 새로 찍혀야 48시간 플로우가 다시 돌아서, 매번 새 주소로 만들어요.
+          </div>
+          <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
+            <button type="button" onClick={() => _devFill(true)}
+              style={{ flex: 1, background: "#F0A67E", color: "#2A1F14", border: "none", borderRadius: 8, padding: "10px 8px", fontSize: 12, fontWeight: 900, fontFamily: "inherit", cursor: "pointer", lineHeight: 1.35 }}>
+              인증 건너뛰고 바로<br/><span style={{ fontSize: 10.5, fontWeight: 700 }}>testtestlogin@gmail.com</span>
+            </button>
+            <button type="button" onClick={() => _devFill(false)}
+              style={{ flex: 1, background: "transparent", color: "#D9CDB8", border: "1px solid rgba(240,166,126,0.5)", borderRadius: 8, padding: "10px 8px", fontSize: 12, fontWeight: 800, fontFamily: "inherit", cursor: "pointer", lineHeight: 1.35 }}>
+              메일 인증까지 진짜로<br/><span style={{ fontSize: 10.5, fontWeight: 600 }}>내 받은편지함으로</span>
+            </button>
+          </div>
         </div>
       )}
       <div className="eyebrow">STEP 1 · 입사 지원서</div>
