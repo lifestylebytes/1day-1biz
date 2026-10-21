@@ -8802,7 +8802,7 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
       {(() => {
         // ★ 예전 출근부와 같은 안내: 대리 승진 시험 응시 조건 (출근 도장 60일)
         const _rdA = USER.realCurrentDay || USER.currentDay;
-        if (_rdA < 61 || USER.streak >= 60) return null;
+        if (_isPromoNext() || _rdA < 61 || USER.streak >= 60) return null;   // 2026-10-21 진급 개편 뒤엔 출근 60일 조건 없음 (Day 90 이면 대리 진급 평가) → 옛 안내 숨김
         return (
           <div className="acx-note">
             {_rdA >= 90
@@ -9052,7 +9052,7 @@ function AttendanceCard({ setViewingDay, todayDone, onOpenBig, hideCard }) {
         {/* ★ 대리 승진 시험 응시 조건 안내: 출근 60일 미만이면 조건과 현재 진행을 보여줌 (silent trap 방지) */}
         {(() => {
           const _rdA = USER.realCurrentDay || USER.currentDay;
-          if (_rdA < 61 || USER.streak >= 60) return null;
+          if (_isPromoNext() || _rdA < 61 || USER.streak >= 60) return null;   // 2026-10-21 진급 개편 뒤엔 출근 60일 조건 없음 (Day 90 이면 대리 진급 평가) → 옛 안내 숨김
           return (
             <div style={{ margin: "8px 0 10px", padding: "8px 11px", borderRadius: 8, background: "var(--paper-warm)", border: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
               {_rdA >= 90
