@@ -2502,8 +2502,8 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       }}>
         🎁 <span style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).label}</span>으로 입사해요
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
-          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
-          결제하면 쌓은 기록 그대로 Day 8부터 이어져요.
+          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 다녀보고 8일째에 계속 다닐지 정해주세요.
+          무료기간 동안 결제하시면 마지막 만료일에 추가돼 그만큼 이용 기간이 길어집니다.
         </div>
       </div>
       ) : (
