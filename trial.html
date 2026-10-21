@@ -101,7 +101,7 @@ footer a{color:var(--ink-soft)}
   <div class="hero">
     <div class="badge">결제 정보 없이 바로 시작</div>
     <h1>외국계에서 매일 쓰는 영어,<br><em>7일 동안 무료로</em> 써보세요</h1>
-    <p class="lead">하루에 표현 하나씩, 5분이면 끝나요.<br>7일 뒤에 계속할지 그때 정하시면 돼요.</p>
+    <p class="lead">하루에 표현 하나씩, 5분이면 끝나요.<br>7일 다녀보고 8일째에 계속 다닐지 정해주세요.</p>
     <div class="nocard">카드 등록 없어요 / 자동결제 없어요</div>
   </div>
 
@@ -136,8 +136,9 @@ footer a{color:var(--ink-soft)}
     <div class="eyb">AFTER 7 DAYS</div>
     <h2>7일 뒤엔 어떻게 되나요?</h2>
     <div class="after">
-      <div class="t">8일째 아침에 한 번 물어봐요.<br>계속하실래요?</div>
+      <div class="t">8일째 아침에 한 번 물어봐요.<br>계속 다니실래요?</div>
       <p>계속하시면 <b>Day 8부터 그대로 이어져요.</b> 그동안 모은 표현, 쓴 문장, 출근 기록이 하나도 안 사라져요.</p>
+      <p><b>무료기간 동안 결제하시면 마지막 만료일에 추가돼</b> 그만큼 이용 기간이 길어집니다. 남은 체험 날짜를 손해 보지 않아요.</p>
       <p>안 하셔도 괜찮아요. 아무것도 빠져나가지 않아요. <b>카드를 안 받았으니까요.</b></p>
     </div>
   </section>
@@ -171,7 +172,12 @@ footer a{color:var(--ink-soft)}
 (function(){
   try{
     var p = new URLSearchParams(location.search);
-    if (p.get("preview") === "1") {
+    if (p.get("dev") === "1") {
+      // ?dev=1 : 실제로 끝까지 해보는 테스트 (onboarding-dev.html 로 보냄)
+      document.querySelectorAll('a[href*="onboarding.html"]').forEach(function(a){
+        a.href = a.href.replace("onboarding.html", "onboarding-dev.html");
+      });
+    } else if (p.get("preview") === "1") {
       document.querySelectorAll('a[href*="code=TRY7DAYS"]').forEach(function(a){ a.href += "&preview=1"; });
     }
   }catch(e){}

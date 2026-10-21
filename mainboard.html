@@ -808,7 +808,7 @@ body::before {
 .ot-card-locked .ot-head { background: var(--paper-warm); color: var(--ink-soft); }
 .ot-body { padding: 16px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }   /* ★ 2026-09-23: 1fr 의 최소가 auto 라 넓은 자식(입력줄 등)이 트랙을 오른쪽으로 밀어 좌우가 안 맞던 문제. minmax(0,1fr) 로 컨테이너 폭에 가둔다 */
 .ot-body > * { min-width: 0; max-width: 100%; }
-/* ★ 2026-09-18: 개발 뷰 — 퇴근 후 SIDE PROJECT 는 '오늘 일정' 표의 5번째 줄 */
+/* ★ 2026-09-18: 개발 뷰: 퇴근 후 SIDE PROJECT 는 '오늘 일정' 표의 5번째 줄 */
 .schedule .ot-card.ot-inrow { margin: 0; border: none; border-radius: 0; background: transparent; border-top: 1px dashed var(--line); }
 .ot-inrow .ot-head { display: grid; grid-template-columns: 60px 1fr auto; gap: 14px; align-items: center; padding: 11px 16px; background: transparent; color: var(--ink); font-size: 13px; font-weight: 400; }
 .ot-inrow .ot-head:hover { background: rgba(216,90,42,0.04); }
@@ -2237,7 +2237,7 @@ body.od-modal-open { overflow: hidden !important; }
   font-size: 13px;
 }
 .hr-row:last-child { border-bottom: none; }
-/* ★ 2026-09-19: 줄 겹침(실선+점선 더블) 방지 — 행 사이 구분은 점선 하나만 */
+/* ★ 2026-09-19: 줄 겹침(실선+점선 더블) 방지. 행 사이 구분은 점선 하나만 */
 .hr-section .hr-row + .hr-row, .hr-section .hr-row + button.hr-row, .hr-section button.hr-row + .hr-row { border-top: none; }
 .hr-row-label { color: var(--ink-soft); font-weight: 600; min-width: 0; }
 .hr-row-value { font-weight: 800; color: var(--ink); flex-shrink: 0; text-align: right; white-space: nowrap; }
@@ -6092,6 +6092,14 @@ function _promoLive() { return true; }
 function _promoLiveDay() { return "2026-10-19"; }   // 라이브 날 (한국 시간). 밀린 평가는 이날부터, Day 막힘은 이날부터 끝낸 평가 날만
 function _promoDevOn() { try { if (localStorage.getItem("__OD_NEXT") !== "1") return false; const u = JSON.parse(localStorage.getItem("__OD_USER") || "null"); return !!(u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode)); } catch (e) { return false; } }
 function _isPromoNext() { return _promoLive() || _promoDevOn(); }
+
+// ★ 2026-10-21 48시간 사은품(단어 달력) 배너.
+//   가입(체험 시작) 시각 + 48시간 안에 결제하면 2027 상반기 단어 달력을 보내준다.
+//   라이브할 땐 _gift48Live() 를 true 로 바꾸면 회원에게도 열린다. 되돌릴 땐 false.
+function _gift48Live() { return false; }
+function _isGift48On() { return _gift48Live() || _isDevNext(); }
+const GIFT48_HOURS = 48;
+const GIFT48_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_gift48&utm_campaign=sat_launch";
 // ★ 2026-10-21 출근 달력 라이브: true 면 회원에게도 출근 달력(홈 출근부 자리 작게 + 사원증 탭 크게). 되돌릴 땐 false (개발 뷰에서만)
 function _attCalLive() { return true; }
 function _isAttCalOn() { return _attCalLive() || _isDevNext(); }
@@ -10018,6 +10026,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           </div>
 
           <CatchUpBanner user={USER} />
+          <Gift48Banner user={USER} />
           {_lockedNext("errands", _rdNow, USER.isViewingPast) && <LockedCard k="errands" rd={_rdNow} />}
           {_isNextFeature() && !_lockedNext("errands", _rdNow, USER.isViewingPast) && <ErrandsCard setActive={setActive} toast={showToast} />}
           {/* ★ 역량 스탯 + 출근부. 모바일에선 사원증 탭으로 (2026-09-09) */}
@@ -10952,7 +10961,7 @@ function _retActivityDates(email, skipAtt) {
   } catch (e) {}
   return set;
 }
-// 그날 일정 완주 여부 (체크 4개 이상, _ 로 시작하는 메타 제외) — 출근부·연속 출근·내 목표의 기준
+// 그날 일정 완주 여부 (체크 4개 이상, _ 로 시작하는 메타 제외) : 출근부·연속 출근·내 목표의 기준
 function _retTasksDone(t) { try { return Object.entries(t || {}).filter(([k, v]) => v === true && !String(k).startsWith("_")).length >= 4; } catch (e) { return false; } }
 function _retMarkToday(email) {
   const today = _tyTodayISO();
@@ -12067,7 +12076,7 @@ function RetWeeklyBoard() {
       {showMine && (
         <div style={{ marginTop: 8 }}>
           {mineRows.length === 0 && <div className="ret-board-err">최근 7일에 기록된 EXP 가 없어요. 오늘 출근·시추에이션·퇴근을 하면 바로 쌓여요.</div>}
-          {myRow && myRow.exp !== mine && <div className="ret-board-err" style={{ marginBottom: 6 }}>이 기기 기준 {mine.toLocaleString()} · 순위판(서버) 기준 {Number(myRow.exp).toLocaleString()} — 아직 안 올라간 항목은 ⏳ 로 표시돼요. <a style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => { try { _retSyncExp(email, true); setTimeout(load, 2500); } catch (e) {} }}>지금 올리기</a></div>}
+          {myRow && myRow.exp !== mine && <div className="ret-board-err" style={{ marginBottom: 6 }}>이 기기 기준 {mine.toLocaleString()} · 순위판(서버) 기준 {Number(myRow.exp).toLocaleString()} , 아직 안 올라간 항목은 ⏳ 로 표시돼요. <a style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => { try { _retSyncExp(email, true); setTimeout(load, 2500); } catch (e) {} }}>지금 올리기</a></div>}
           {mineRows.slice(0, 60).map(e => <div key={e.key} className="ret-shop-hist"><span>{String(e.at).slice(5, 10).replace("-", ".")}{e.s ? "" : " ⏳"}</span><span>{e.label}</span><b>+{e.exp}</b></div>)}
         </div>
       )}
@@ -13134,6 +13143,99 @@ function TycoonBoot({ toast }) {
 //   다만 게이트 값이 페이지 로드 때 한 번만 계산돼서, 한 Day를 끝내도
 //   새로고침 전에는 다음 Day가 안 열려 보였다. 완료 직후 다시 계산해 알려준다.
 // ============================================================
+// ★ 48시간 사은품 배너. 체험 회원(cohort가 trial로 시작)에게만, 가입 + 48시간 안에만 보인다.
+//   결제해서 cohort가 member 로 바뀌면(웹훅/CSV 동기화) 조건이 깨져서 자동으로 사라진다.
+function Gift48Banner({ user }) {
+  const [left, setLeft] = React.useState(null);
+  const [folded, setFolded] = React.useState(false);
+
+  const deadline = React.useMemo(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+      const s = (u && u.signupDate) || null;
+      if (!s) return null;
+      const t = new Date(s).getTime();
+      if (!isFinite(t)) return null;
+      return t + GIFT48_HOURS * 3600000;
+    } catch (e) { return null; }
+  }, []);
+
+  React.useEffect(() => {
+    if (!deadline) return;
+    const tick = () => setLeft(deadline - Date.now());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [deadline]);
+
+  if (!_isGift48On()) return null;
+  const _coh = typeof user?.cohort === "string" ? user.cohort : "";
+  if (!_coh.startsWith("trial")) return null;     // 유료 전환되면 여기서 끝
+  if (user?.isViewingPast) return null;
+  if (!deadline || left == null || left <= 0) return null;
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const hh = Math.floor(left / 3600000);
+  const mm = Math.floor((left % 3600000) / 60000);
+  const ss = Math.floor((left % 60000) / 1000);
+  const urgent = left < 6 * 3600000;
+
+  if (folded) return (
+    <div onClick={() => setFolded(false)} style={{
+      margin: "10px 0 0", padding: "9px 14px", borderRadius: 10, cursor: "pointer",
+      background: "var(--paper-2, #F1E6CF)", border: "1px dashed var(--line)",
+      fontSize: 12.5, fontWeight: 700, color: "var(--ink-soft)",
+      display: "flex", alignItems: "center", gap: 8,
+    }}>
+      🎁 단어 달력 받을 수 있는 시간 <b style={{ color: "#D85A2A" }}>{pad(hh)}:{pad(mm)}:{pad(ss)}</b>
+      <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>펼치기</span>
+    </div>
+  );
+
+  return (
+    <div style={{
+      margin: "12px 0 0", borderRadius: 12, overflow: "hidden",
+      background: "#2A1F14", color: "#FFFDF7",
+      boxShadow: "0 10px 26px -12px rgba(42,31,20,.5)",
+    }}>
+      <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "#F0A67E" }}>LIMITED GIFT</span>
+        <button onClick={() => setFolded(true)} style={{
+          marginLeft: "auto", background: "transparent", border: "none",
+          color: "rgba(255,253,247,0.55)", fontSize: 11, fontWeight: 700, cursor: "pointer", padding: 2,
+        }}>접기</button>
+      </div>
+
+      <div style={{ padding: "8px 16px 0", fontSize: 15.5, fontWeight: 900, lineHeight: 1.45, letterSpacing: "-0.01em" }}>
+        지금 결제하면 <span style={{ color: "#F0A67E" }}>2027 상반기 단어 달력</span>을<br />집으로 보내드려요
+      </div>
+
+      <div style={{
+        margin: "12px 16px 0", padding: "10px 12px", borderRadius: 9,
+        background: urgent ? "rgba(216,90,42,0.22)" : "rgba(255,253,247,0.08)",
+        border: urgent ? "1px solid rgba(240,166,126,0.5)" : "1px solid rgba(255,253,247,0.12)",
+        display: "flex", alignItems: "center", gap: 10,
+      }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#D9CDB8" }}>남은 시간</span>
+        <span style={{
+          marginLeft: "auto", fontSize: 19, fontWeight: 900, letterSpacing: "0.04em",
+          color: urgent ? "#FFC9A6" : "#FFFDF7", fontVariantNumeric: "tabular-nums",
+        }}>{pad(hh)}:{pad(mm)}:{pad(ss)}</span>
+      </div>
+
+      <div style={{ padding: "11px 16px 0", fontSize: 12, lineHeight: 1.7, color: "#D9CDB8" }}>
+        6개월권부터 드려요. 무료 기간에 결제하시면 남은 체험 날짜가 그대로 더해져서, 하루도 손해 안 보세요.
+      </div>
+
+      <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
+        display: "block", margin: "14px 16px 16px", padding: "13px 0", borderRadius: 9,
+        background: "#D85A2A", color: "#fff", textAlign: "center",
+        fontSize: 14, fontWeight: 800, textDecoration: "none",
+      }}>플랜 보고 이어서 다니기 →</a>
+    </div>
+  );
+}
+
 function CatchUpBanner({ user }) {
   const [next, setNext] = React.useState(0);
   const cur = user.realCurrentDay || user.currentDay || 1;
@@ -16159,7 +16261,7 @@ function MyPage({ setActive, setViewingDay }) {
         </div>
       )}
 
-      {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) — 라이브 제외 */}
+      {/* 업무 위장 모드 (타이쿤 이식, 로컬 전용) : 라이브 제외 */}
       {_isDevNext() && (
         <div className="hr-section" style={{ marginTop: 28 }}>
           <div className="hr-section-head" data-errand="stealth">업무 위장 모드 🥸</div>

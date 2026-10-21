@@ -2479,7 +2479,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
     setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
   };
   const pwOk = (signupPw || "").length >= 8;  // 비번 필수, 8자 이상
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk;
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && motivation.trim().length >= 2;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -2498,8 +2498,8 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       }}>
         🎁 <span style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).label}</span>으로 입사해요
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
-          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
-          결제하면 쌓은 기록 그대로 Day 8부터 이어져요.
+          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 다녀보고 8일째에 계속 다닐지 정해주세요.
+          무료기간 동안 결제하시면 마지막 만료일에 추가돼 그만큼 이용 기간이 길어집니다.
         </div>
       </div>
       ) : (
@@ -2565,8 +2565,9 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         </label>
       </div>
       <div className="form-row">
-        <label>지원 동기 (한 줄, 선택)</label>
+        <label>지원 동기 (한 줄)</label>
         <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
+        <span className="fine-print" style={{ marginTop: 6 }}>한 줄이면 충분해요. 첫 출근 때 사수가 읽고 인사해요.</span>
       </div>
 
       {/* ── 법적 동의 (필수) ── */}
