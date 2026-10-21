@@ -10025,6 +10025,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             )}
           </div>
 
+          <TrialBuyBar user={USER} />
           <CatchUpBanner user={USER} />
           <Gift48Banner user={USER} />
           {_lockedNext("errands", _rdNow, USER.isViewingPast) && <LockedCard k="errands" rd={_rdNow} />}
@@ -13145,6 +13146,32 @@ function TycoonBoot({ toast }) {
 // ============================================================
 // ★ 48시간 사은품 배너. 체험 회원(cohort가 trial로 시작)에게만, 가입 + 48시간 안에만 보인다.
 //   결제해서 cohort가 member 로 바뀌면(웹훅/CSV 동기화) 조건이 깨져서 자동으로 사라진다.
+// ★ 체험 회원에게 상시로 보이는 구매 줄. 48시간이 지나도 계속 보인다 (Gift48Banner 는 48시간 안에만).
+function TrialBuyBar({ user }) {
+  if (!_isGift48On()) return null;
+  const _coh = typeof user?.cohort === "string" ? user.cohort : "";
+  if (!_coh.startsWith("trial")) return null;
+  if (user?.isViewingPast) return null;
+  const d = Number(user?.currentDay || user?.realCurrentDay || 1);
+  return (
+    <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
+      display: "flex", alignItems: "center", gap: 10, textDecoration: "none",
+      margin: "0 0 2px", padding: "10px 14px", borderRadius: 10,
+      background: "var(--paper-2, #F1E6CF)", border: "1px solid var(--line)",
+    }}>
+      <span style={{ fontSize: 15, flexShrink: 0 }}>🎟</span>
+      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.45 }}>
+        <span style={{ display: "block", fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>지금 결제하면 Day {d + 1}부터 그대로 이어져요</span>
+        <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-soft)", marginTop: 2 }}>남은 체험 날짜는 만료일에 더해드려요</span>
+      </span>
+      <span style={{
+        flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff",
+        borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap",
+      }}>플랜 보기 →</span>
+    </a>
+  );
+}
+
 function Gift48Banner({ user }) {
   const [left, setLeft] = React.useState(null);
   const [folded, setFolded] = React.useState(false);

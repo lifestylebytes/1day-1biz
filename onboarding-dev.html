@@ -731,7 +731,7 @@ function StepBar({ idx, total }) {
 // 사용하려면 아래 USE_V2 를 true 로. 갈아끼우기 한 줄.
 // ============================================================
 const USE_V2 = true;
-const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
+const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=landing&utm_campaign=sat_launch";
 
 function WelcomeScreenV2({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
@@ -1047,9 +1047,9 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 
   const CTAButtons = (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <button className="btn" onClick={() => _goDomestic("bottom")} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 플랜 보고 입사하기 →</button>
+      <button className="btn" onClick={() => { track("cta_trial_cta"); onNext(); }} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 7일 무료로 시작하기 →</button>
       <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 코드 받았어요! 지원서 작성하기</button>
-      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>구매 완료 메일의 코드를 지원서에 입력하면 Day 1이 시작돼요.</div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>결제 정보 없이 바로 시작해요. 7일 뒤에 정하시면 돼요.</div>
     </div>
   );
 
@@ -1116,9 +1116,9 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto", whiteSpace: "nowrap" }}>
           🚪 <span className="od-bar-enter-t">입장하기</span>
         </button>
-        <button onClick={() => _goDomestic("sticky")} className="od-bar-cta"
+        <button onClick={() => { track("cta_trial_sticky"); onNext(); }} className="od-bar-cta"
           style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-          <span className="od-bar-cta-long">13,900원으로 시작하기 →</span><span className="od-bar-cta-short">13,900원 시작 →</span>
+          <span className="od-bar-cta-long">7일 무료로 시작하기 →</span><span className="od-bar-cta-short">7일 무료 시작 →</span>
         </button>
       </div>
     </div>
@@ -1128,12 +1128,12 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
     <div className="od-bottom-cta">
       <div className="od-bottom-inner">
       <div style={{ minWidth: 0, flex: 1, lineHeight: 1.35 }}>
-        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>월 13,900원 · 언제든 해지</div>
-        <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>내일 아침 첫 표현이 도착해요</div>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>카드 등록 없어요 / 자동결제 없어요</div>
+        <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>7일 다녀보고 정하시면 돼요</div>
       </div>
-      <button onClick={() => _goDomestic("bottom_sticky")}
+      <button onClick={() => { track("cta_trial_bottom"); onNext(); }}
         style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 18px", fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 6px 16px -8px rgba(216,90,42,0.8)" }}>
-        지금 바로 입사하기 →
+        7일 무료로 시작 →
       </button>
       </div>
     </div>
@@ -1485,8 +1485,8 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
               90일 완주가 목표가 아니에요. <strong style={{ color: "var(--ink)" }}>내일 회의에서 쓸 한 문장</strong>이 목표예요. 그건 Day 1부터 돼요.<br/>
               내일이면 Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
             </p>
-            <button className="btn od-rise" onClick={() => _goDomestic("demo_complete")} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
-              🎟 이대로 입사하기 → <span style={{ fontWeight: 600, fontSize: 12, opacity: 0.9 }}>월 13,900원</span>
+            <button className="btn od-rise" onClick={() => { track("cta_trial_demo"); onNext(); }} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
+              🎟 이대로 7일 무료로 시작하기 →
             </button>
             <div style={{ fontSize: 11, color: "var(--ink-mute)", textAlign: "center", marginTop: 7 }}>언제든 해지 · 기록은 그대로 보관돼요</div>
           </div>
@@ -1600,6 +1600,66 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
       {/* 48시간 사은품 안내 */}
       <div style={{ background: "rgba(216,90,42,0.08)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "12px 14px", marginBottom: 14, fontSize: 12.5, lineHeight: 1.7, color: "var(--ink-soft)" }}>
         🎁 <strong style={{ color: "var(--accent)" }}>가입하고 48시간 안에 결제하면</strong> 2027 상반기 단어 달력을 집으로 보내드려요. 6개월권부터예요.
+      </div>
+
+      {/* ── 받는 것 전부 (가치 스택) ── */}
+      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 14, padding: "20px 18px", marginBottom: 14 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.18em", color: "#F0A67E" }}>ALL IN ONE</div>
+        <div style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.4, marginTop: 8, marginBottom: 14 }}>
+          승진 패스트트랙 하나에<br />이게 전부 들어있어요
+        </div>
+        {[
+          ["📩", "1일1비 6개월", "표현 180개 + AI 첨삭 무제한", "101,400원"],
+          ["🔥", "유비챌 4주 1기수", "동료와 함께 매일 문장 인증", "99,000원"],
+          ["📒", "90일 워크북 (124쪽)", "표현 90개 전부 담긴 종이책", "30,000원"],
+          ["🗓", "2027 상반기 단어 달력", "A1 포스터, 디자인 3종 중 선택", "15,000원"],
+        ].map(x => (
+          <div key={x[1]} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "9px 0", borderBottom: "1px dashed rgba(255,253,247,0.16)" }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>{x[0]}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800 }}>{x[1]}</span>
+              <span style={{ display: "block", fontSize: 11.5, color: "#D9CDB8", marginTop: 2 }}>{x[2]}</span>
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#D9CDB8", flexShrink: 0, paddingTop: 2 }}>{x[3]}</span>
+          </div>
+        ))}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 14 }}>
+          <span style={{ fontSize: 12.5, color: "#D9CDB8" }}>다 합치면</span>
+          <span style={{ fontSize: 14, color: "#D9CDB8", textDecoration: "line-through" }}>245,400원</span>
+          <span style={{ marginLeft: "auto", fontSize: 24, fontWeight: 900, color: "#F0A67E", letterSpacing: "-0.02em" }}>179,000원</span>
+        </div>
+        <div style={{ marginTop: 10, background: "rgba(216,90,42,0.3)", borderRadius: 8, padding: "9px 11px", fontSize: 12.5, fontWeight: 800, textAlign: "center" }}>
+          66,400원 아끼는 거예요 (27%)
+        </div>
+      </div>
+
+      {/* ── 사은품 2종 ── */}
+      <div style={{ marginBottom: 16 }}>
+        {[
+          { img: "img/gift-workbook.png", tag: "GIFT 01", nm: "90일 워크북",
+            sub: "124쪽 / 6개월권 이상 전부",
+            li: "Day 1부터 90까지 표현을 전부 담은 종이책이에요. 표현 하나당 한 쪽씩, 발음기호와 뜻, 실제 슬랙 대화 예시, 사수 노트, 예문 세 줄, 내 문장 쓰는 칸까지 있어요. 10일마다 회고 페이지랑 빈칸 퀴즈도 껴 있고요.",
+            when: null },
+          { img: "img/gift-calendar.png", tag: "GIFT 02", nm: "2027 상반기 단어 달력",
+            sub: "A1 포스터 / 디자인 3종 중 선택 / 48시간 안에 결제한 분만",
+            li: "월~토 매일 표현 하나씩, 상반기 154개가 한 장에 다 들어있어요. 망각곡선에 맞춰 1일 / 3일 / 7일 뒤에 같은 표현이 다시 올라오고, 복습까지 합치면 303번이에요. 써먹은 날은 체크하면서 채워가요. 주황 바탕 / 주황 포인트 / 6칸 스트립 세 가지 디자인 중에 고르실 수 있어요.",
+            when: "가입하고 48시간 안에 결제하셔야 받으실 수 있어요" },
+        ].map(g => (
+          <div key={g.nm} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", marginBottom: 10 }}>
+            <img src={g.img} alt={g.nm} style={{ width: "100%", display: "block" }} />
+            <div style={{ padding: "14px 16px 16px" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.16em", color: "var(--accent)" }}>{g.tag}</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ink)", marginTop: 5 }}>{g.nm}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 3 }}>{g.sub}</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.75, marginTop: 9 }}>{g.li}</div>
+              {g.when && (
+                <div style={{ marginTop: 11, background: "rgba(216,90,42,0.09)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "9px 11px", fontSize: 12, fontWeight: 800, color: "var(--accent)", lineHeight: 1.55 }}>
+                  ⏳ {g.when}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {[
@@ -1775,12 +1835,12 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           하루 5분이면 돼요. 한 달 뒤엔 어휘 사전에 30칸이 채워져 있고요.<br/>
           맞지 않으면 언제든 해지, 기록은 그대로 남아요.
         </div>
-        <button onClick={() => _goDomestic("footer")}
+        <button onClick={() => { track("cta_trial_footer"); onNext(); }}
           style={{ width: "100%", background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 11, padding: "15px 18px", fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 24px -12px rgba(216,90,42,0.9)" }}>
-          🚪 지금 바로 입사하기 · 월 13,900원
+          🚪 7일 무료 체험 시작하기 →
         </button>
         <div style={{ fontSize: 11, color: "rgba(245,238,221,0.6)", marginTop: 10, lineHeight: 1.6 }}>
-          결제 완료 메일의 코드로 지원서를 쓰면 사번이 바로 나와요
+          결제 정보는 필요 없어요. 7일 다녀보고 8일째에 계속 다닐지 정해주세요.
         </div>
       </div>
 
@@ -2524,6 +2584,10 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
           {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 다녀보고 8일째에 계속 다닐지 정해주세요.
           무료기간 동안 결제하시면 마지막 만료일에 추가돼 그만큼 이용 기간이 길어집니다.
+        </div>
+        <div style={{ marginTop: 10, background: "rgba(216,90,42,0.1)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink-soft)", lineHeight: 1.65 }}>
+          🎁 사은품은 <b style={{ color: "var(--ink)" }}>90일 워크북</b>과 <b style={{ color: "var(--ink)" }}>2027 상반기 단어 달력</b> 두 가지예요.<br/>
+          <b style={{ color: "var(--accent)" }}>달력은 가입하고 48시간 이내에 구매하신 분께만 증정돼요.</b>
         </div>
       </div>
       ) : (
