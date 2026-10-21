@@ -1594,7 +1594,7 @@ span.ret-hud-item { cursor: default; }
   .skillgrid-cells { grid-template-columns: 1fr; }
 }
 
-/* ★ 2026-10-19 (개발 뷰) 출근 달력: 출근부 자리(작게) + 사원증 탭(크게). 진급 리포트 A×G 톤 (흰 카드 · 얇은 선 · 고딕) */
+/* ★ 2026-10-19 출근 달력 (10-21 회원 라이브, _attCalLive): 출근부 자리(작게) + 사원증 탭(크게). 진급 리포트 A×G 톤 (흰 카드 · 얇은 선 · 고딕) */
 .acx { --al: #E0D3B8; --sf: #FFFDF7; font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; color: var(--ink); }
 .attendance.acx { background: var(--sf); border: 1px solid var(--al); border-radius: 12px; padding: 16px; }
 .acx-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
@@ -1634,6 +1634,8 @@ span.ret-hud-item { cursor: default; }
 .acx-tile span { font-size: 10.5px; color: var(--ink-mute); white-space: nowrap; }
 .acx-tile.or { background: var(--orange); border-color: var(--orange); } .acx-tile.or b, .acx-tile.or span { color: #fff; }
 .acx-tile.bg { background: var(--paper-warm); border-color: var(--paper-warm); }
+.acx-note { margin-top: 10px; padding: 8px 11px; border-radius: 10px; background: var(--paper-warm); font-size: 11.5px; color: var(--ink-soft); line-height: 1.55; }
+.acx-note b.or { color: var(--orange); }
 .acx-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 .acx-pill { font-size: 11px; font-weight: 800; color: var(--orange); background: var(--orange-soft); border-radius: 999px; padding: 3px 10px; }
 .acx-btn { margin-left: auto; font-size: 12px; font-weight: 800; color: #fff; background: var(--ink); border: 0; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-family: inherit; }
@@ -6090,6 +6092,9 @@ function _promoLive() { return true; }
 function _promoLiveDay() { return "2026-10-19"; }   // 라이브 날 (한국 시간). 밀린 평가는 이날부터, Day 막힘은 이날부터 끝낸 평가 날만
 function _promoDevOn() { try { if (localStorage.getItem("__OD_NEXT") !== "1") return false; const u = JSON.parse(localStorage.getItem("__OD_USER") || "null"); return !!(u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode)); } catch (e) { return false; } }
 function _isPromoNext() { return _promoLive() || _promoDevOn(); }
+// ★ 2026-10-21 출근 달력 라이브: true 면 회원에게도 출근 달력(홈 출근부 자리 작게 + 사원증 탭 크게). 되돌릴 땐 false (개발 뷰에서만)
+function _attCalLive() { return true; }
+function _isAttCalOn() { return _attCalLive() || _isDevNext(); }
 function _odEvalBlocked(d, u) {
   try {
     if (!_isPromoNext()) return false;
@@ -8622,7 +8627,7 @@ function MilestoneCard() {
 }
 
 // ============================================================
-// ★ 2026-10-19 (개발 뷰) 출근 달력. 출근부 자리엔 작은 달력, 사원증 탭엔 큰 달력.
+// ★ 2026-10-19 출근 달력 (10-21 회원 라이브, _attCalLive). 출근부 자리엔 작은 달력, 사원증 탭엔 큰 달력.
 //   데이터는 운영자 뷰 출근 달력과 같다: get_attendance_calendar RPC (Day별 완주 시각, 아이템 방어일, 활동 시각)
 //   + 복지포인트 장부(WP). 서버를 못 읽으면 이 기기 학습 기록으로 대신 그린다.
 //   회원 화면이라 운영용 표시(아이템 추정 "?", 겹친 날 경고, 시각 출처 설명)는 뺀다.
@@ -8794,6 +8799,18 @@ function AttendCalMini({ onOpenBig, setViewingDay, todayDone }) {
           );
         })}
       </div>
+      {(() => {
+        // ★ 예전 출근부와 같은 안내: 대리 승진 시험 응시 조건 (출근 도장 60일)
+        const _rdA = USER.realCurrentDay || USER.currentDay;
+        if (_rdA < 61 || USER.streak >= 60) return null;
+        return (
+          <div className="acx-note">
+            {_rdA >= 90
+              ? <>🔒 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b>부터 응시할 수 있어요. 지금 <b className="or">{USER.streak}/60</b></>
+              : <>📌 Day 90 <b>대리 승진 시험</b>은 출근 도장 <b>60일</b> 이상부터. 지금 <b className="or">{USER.streak}/60</b></>}
+          </div>
+        );
+      })()}
       <div className="acx-tiles">
         <div className="acx-tile or"><b>{M.month.studyDates}<small>일</small></b><span>출근</span></div>
         <div className="acx-tile"><b>{M.month.dayCount}<small>개</small></b><span>완주 Day</span></div>
@@ -8940,7 +8957,7 @@ function AttendanceCard({ setViewingDay, todayDone, onOpenBig, hideCard }) {
   const _rdNow = USER.realCurrentDay || USER.currentDay || 1;
   const [showFullAttend, setShowFullAttend] = useState(false);
   // ★ 2026-10-19 (개발 뷰): 출근부 자리는 출근 달력(작게). 크게 보기는 사원증 탭. hideCard = 사원증 탭에 큰 달력이 이미 있을 때
-  if (_isDevNext()) {
+  if (_isAttCalOn()) {
     const _lk = _lockedNext("attendance", _rdNow, USER.isViewingPast);
     return (
       <>
@@ -9334,13 +9351,13 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     } : isMobile ? {
       selector: _MYPAGE_TAB_SEL,
       placement: "top",
-      title: "출근부는 사원증 탭에",
-      body: "오늘 일정 다 끝내면 출근부 '오늘' 칸에 빨간 출근 도장이 찍혀요. 출근부와 승진 마일스톤은 아래 사원증 탭에 모아뒀어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
+      title: _isAttCalOn() ? "출근 달력은 사원증 탭에" : "출근부는 사원증 탭에",
+      body: _isAttCalOn() ? "오늘 일정 다 끝내면 출근 달력 오늘 칸에 그날 Day가 찍혀요. 출근 달력과 승진 마일스톤은 아래 사원증 탭에 모아뒀어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨" : "오늘 일정 다 끝내면 출근부 '오늘' 칸에 빨간 출근 도장이 찍혀요. 출근부와 승진 마일스톤은 아래 사원증 탭에 모아뒀어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
     } : {
       selector: ".attendance",
       placement: "left",
-      title: "출근부 · 14일",
-      body: "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
+      title: _isAttCalOn() ? "출근 달력" : "출근부 · 14일",
+      body: _isAttCalOn() ? "오늘 일정 다 끝내면 달력 오늘 칸에 그날 Day가 찍혀요. '크게 보기'를 누르면 사원증 탭에서 날짜별 기록을 볼 수 있어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨" : "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
     },
     // ★ 2026-10-12 (재참여 설문): 카톡 알림·휴대폰 출근·공지방을 아무도 몰랐다. 첫 출근 가이드에서 한 번 짚어 준다.
     {
@@ -16123,8 +16140,8 @@ function MyPage({ setActive, setViewingDay }) {
 
       {_isDevNext() && <PromotionCard />}
 
-      {/* ★ 2026-10-19 (개발 뷰): 출근 달력 크게 (PC · 폰 공통) */}
-      {_isDevNext() && !_lockedNext("attendance", _rdNow, USER.isViewingPast) && <AttendCalBig onGoDay={_goDay} />}
+      {/* ★ 2026-10-19 출근 달력 크게 (PC · 폰 공통). 10-21 회원 라이브 */}
+      {_isAttCalOn() && !_lockedNext("attendance", _rdNow, USER.isViewingPast) && <AttendCalBig onGoDay={_goDay} />}
 
       <div className="badge-row" style={{ justifyContent: "center", marginTop: 22 }}>
         {USER.badges.map(b => <span key={b} className="badge">{b}</span>)}
