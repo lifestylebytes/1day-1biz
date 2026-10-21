@@ -2483,7 +2483,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
     setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
   };
   const pwOk = (signupPw || "").length >= 8;  // 비번 필수, 8자 이상
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk;
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && motivation.trim().length >= 2;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -2569,8 +2569,9 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         </label>
       </div>
       <div className="form-row">
-        <label>지원 동기 (한 줄, 선택)</label>
+        <label>지원 동기 (한 줄)</label>
         <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
+        <span className="fine-print" style={{ marginTop: 6 }}>한 줄이면 충분해요. 첫 출근 때 사수가 읽고 인사해요.</span>
       </div>
 
       {/* ── 법적 동의 (필수) ── */}
