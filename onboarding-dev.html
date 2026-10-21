@@ -1208,6 +1208,28 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
         </div>
       </div>
 
+      {/* ── 유버디가 걸어온 길 ── */}
+      <div style={{ marginTop: 18, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "18px 18px 10px" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.18em", color: "var(--accent)", marginBottom: 14 }}>7 YEARS</div>
+        {[
+          ["1년차", "화상회의에서 말문이 막힌 날, 들린 표현을 하나씩 적기 시작했어요."],
+          ["3년차", "적어둔 표현이 실제 회의에서 그대로 나왔어요. 그때부터 확신이 생겼어요."],
+          ["5년차", "팀장이 됐어요. 이번엔 제가 북미 본사랑 매일 부딪히는 자리예요."],
+          ["7년차", "7년치 표현 수집본으로 1일1비를 열었어요."],
+        ].map((t, i, arr) => (
+          <div key={t[0]} style={{ display: "flex", gap: 12 }}>
+            <div style={{ flexShrink: 0, width: 44, textAlign: "right", paddingTop: 1 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: i === arr.length - 1 ? "var(--accent)" : "var(--ink-mute)" }}>{t[0]}</span>
+            </div>
+            <div style={{ flexShrink: 0, width: 13, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: i === arr.length - 1 ? "var(--accent)" : "var(--line)", marginTop: 5 }} />
+              {i < arr.length - 1 && <span style={{ flex: 1, width: 1.5, background: "var(--line)" }} />}
+            </div>
+            <div style={{ flex: 1, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, paddingBottom: 14 }}>{t[1]}</div>
+          </div>
+        ))}
+      </div>
+
       <Divider />
 
       {/* ── 1.5 WHAT IS 1일1비 (2026-10-16 개편안): 손으로 재현한 책상 대신 실제 앱 화면 캡처 + 3칸 요약 ── */}
@@ -1591,6 +1613,150 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
           안 하셔도 괜찮아요. 아무것도 빠져나가지 않아요. 카드를 안 받았으니까요.
         </div>
         <button className="btn" onClick={() => { track("cta_trial_click"); onNext(); }} style={{ justifyContent: "center", width: "100%", marginTop: 16, fontSize: 15, padding: "15px 20px" }}>7일 무료로 시작하기 →</button>
+      </div>
+
+      <Divider />
+
+      {/* ── AS SEEN ON ── */}
+      <SectionTitle eyebrow="AS SEEN ON" title="이렇게 소개되고 있어요" />
+      <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+        {[
+          ["📰", "부산일보", "2030 칼럼 연재 중"],
+          ["✍️", "네이버 블로그", "유가비의 하루"],
+          ["👥", "누적 입사", "50명+"],
+        ].map(x => (
+          <div key={x[1]} style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 10px", textAlign: "center" }}>
+            <div style={{ fontSize: 17 }}>{x[0]}</div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginTop: 6 }}>{x[1]}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 3, lineHeight: 1.45 }}>{x[2]}</div>
+          </div>
+        ))}
+      </div>
+
+      <Divider />
+
+      {/* ── WHY QUIZ: 망각곡선 ── */}
+      <SectionTitle eyebrow="WHY QUIZ" title={<>외운 건 금방 잊혀요.<br/>그래서 다시 꺼내게 해요</>} sub="복습하면 좋다는 말 대신, 연구 숫자로 보여드릴게요." />
+
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 16px 14px", marginBottom: 10 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>① 그냥 두면 / 에빙하우스 망각 곡선</div>
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 5, lineHeight: 1.65 }}>
+          하루만 지나도 <b style={{ color: "var(--accent)" }}>34%</b>, 한 달이면 <b style={{ color: "var(--accent)" }}>21%</b>만 남아요.
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 80, marginTop: 12 }}>
+          {[["20분", 58], ["1시간", 44], ["1일", 34], ["6일", 25], ["31일", 21]].map(b => (
+            <div key={b[0]} style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", marginBottom: 3 }}>{b[1]}%</div>
+              <div style={{ height: b[1] * 0.85, background: "var(--accent)", opacity: 0.25 + b[1] / 160, borderRadius: "3px 3px 0 0" }} />
+              <div style={{ fontSize: 10, color: "var(--ink-mute)", marginTop: 4 }}>{b[0]}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 10, lineHeight: 1.6 }}>
+          외운 단어를 다시 외울 때 아낀 노력 기준이에요. 2015년에 같은 방식으로 다시 해봤을 때도 거의 같은 곡선이 나왔어요.
+        </div>
+      </div>
+
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px", marginBottom: 10 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>② 다시 꺼내면 / 퍼듀대 실험 (대학생 40명, 1주 뒤 시험)</div>
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 5, lineHeight: 1.65 }}>
+          외운 뒤에도 퀴즈로 다시 꺼낸 사람은 기억이 <b style={{ color: "var(--accent)" }}>2배 넘게</b> 남았어요.
+        </div>
+        {[["외운 뒤에도 퀴즈로 계속 다시 꺼냄", 80, true], ["외웠으면 퀴즈에서 빼고 끝", 35, false]].map(r => (
+          <div key={r[0]} style={{ marginTop: 11 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, color: r[2] ? "var(--ink)" : "var(--ink-mute)" }}>
+              <span>{r[0]}</span><span>{r[2] ? "약 80%" : "33~36%"}</span>
+            </div>
+            <div style={{ height: 9, background: "var(--paper-warm)", borderRadius: 5, marginTop: 5, overflow: "hidden" }}>
+              <div style={{ width: r[1] + "%", height: "100%", background: r[2] ? "var(--accent)" : "var(--ink-mute)", borderRadius: 5 }} />
+            </div>
+          </div>
+        ))}
+        <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 11, lineHeight: 1.6 }}>
+          낯선 외국어 단어로 한 실험이에요. "이미 외웠으니 그만"이 가장 손해였어요.
+        </div>
+      </div>
+
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px", marginBottom: 12 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>③ 언제 꺼낼까 / 1,350명 이상 참여한 실험</div>
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 5, lineHeight: 1.65 }}>
+          가장 좋은 타이밍은 <b style={{ color: "var(--accent)" }}>잊힐 때쯤</b>이었어요.
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 11 }}>
+          {[["1주 뒤에 쓸 표현이면", "1~3일 뒤 복습"], ["1년 뒤에도 쓸 표현이면", "3~5주 뒤 복습"]].map(x => (
+            <div key={x[0]} style={{ flex: 1, background: "var(--paper-warm)", borderRadius: 9, padding: "11px 10px" }}>
+              <div style={{ fontSize: 10.5, color: "var(--ink-mute)", lineHeight: 1.45 }}>{x[0]}</div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginTop: 4 }}>{x[1]}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 11, lineHeight: 1.6 }}>
+          너무 빨리 복습하는 게, 오히려 조금 늦게 복습하는 것보다 손해였어요.
+        </div>
+      </div>
+
+      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 12, padding: "18px 16px", marginBottom: 12 }}>
+        <div style={{ fontSize: 14.5, fontWeight: 900, lineHeight: 1.45, marginBottom: 12 }}>그래서 1일1비는 외웠다고 끝내지 않아요</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["오늘 배우고", "다음 날 퀴즈", "며칠 뒤 복습", "몇 주 뒤 다시"].map(x => (
+            <div key={x} style={{ flex: 1, background: "rgba(255,253,247,0.1)", borderRadius: 8, padding: "10px 4px", textAlign: "center", fontSize: 11, fontWeight: 700, lineHeight: 1.4 }}>{x}</div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "#D9CDB8", marginTop: 12, lineHeight: 1.65 }}>
+          사은품으로 드리는 단어 달력도 같은 원리로 짰어요. 한 번 나온 표현이 1일 / 3일 / 7일 뒤에 다시 올라와요.
+        </div>
+      </div>
+
+      <div style={{ fontSize: 10, color: "var(--ink-mute)", lineHeight: 1.7, marginBottom: 4 }}>
+        출처: Ebbinghaus (1885), Murre &amp; Dros (2015, PLOS ONE) / Karpicke &amp; Roediger (2008, Science) / Cepeda 외 (2008, Psychological Science)
+      </div>
+
+      <Divider />
+
+      {/* ── 이미 여러 방법 써보셨죠 ── */}
+      <SectionTitle eyebrow="YOU TRIED" title={<>유튜브, 학원, 전화영어 다 해봤는데<br/>왜 회의에선 여전히 막힐까요?</>} sub="대부분 이미 돈과 시간을 써보셨어요. 그만둔 이유는 늘 비슷했습니다." />
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
+        {[
+          ["유튜브", "볼 땐 알 것 같은데, 내 문장으로 써볼 기회가 없어요."],
+          ["학원", "시간 맞춰 가기 힘들고, 교재 표현이 내 업무와 멀어요."],
+          ["1:1 전화 / 화상영어", "바로 쓸 실무 표현을 배우는 데는 한계가 있어요."],
+          ["회화 앱", "콘텐츠가 부족하고, 비싸요."],
+          ["쉐도잉", "지루해서 잘 안 하게 되고, 비즈니스 상황엔 못 써요."],
+          ["혼자 공부", "뭘 외울지부터 막막하고, 며칠 지나면 끊겨요."],
+        ].map(x => (
+          <div key={x[0]} style={{ display: "flex", gap: 10, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "11px 13px" }}>
+            <span style={{ flexShrink: 0, width: 92, fontSize: 12, fontWeight: 800, color: "var(--ink)" }}>{x[0]}</span>
+            <span style={{ flex: 1, fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>{x[1]}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: "rgba(216,90,42,0.07)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "13px 15px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.75, marginBottom: 4 }}>
+        공통점은 하나예요. <b style={{ color: "var(--ink)" }}>혼자, 내 업무와 상관없이, 끊기게</b> 했다는 거요.<br/>
+        1일1비는 <b style={{ color: "var(--accent)" }}>내 업무 표현을, 매일 안 할 수 없게, 끝까지</b> 이어가게 합니다.
+      </div>
+
+      <Divider />
+
+      {/* ── WHY 1일1비: 할 수밖에 없게 만드는 구조 ── */}
+      <SectionTitle eyebrow="WHY 1일1비" title={<>단어가 아니라,<br/>할 수밖에 없게 만드는 구조</>} sub="표현만 모아둔 자료와 결정적으로 다른, 1일1비만의 습관 장치예요." />
+      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 6 }}>
+        {[
+          ["01", "하루가 회사 일정표로 짜여 있어요", "출근 → 시추에이션 → 퀴즈 → 퇴근. 하나 끝내야 다음이 열려서 자연스럽게 끝까지 가요."],
+          ["02", "연속 출근이 불꽃으로 쌓여요", "며칠째 출근 중인지 눈에 보여서, 쌓인 기록이 아까워 오늘도 들어오게 돼요."],
+          ["03", "배운 표현이 전부 업무 노트에 쌓여요", "지금까지 만난 표현을 한눈에 봐요. 즐겨찾기(★)한 표현은 리뷰 퀴즈에 더 자주 나와요."],
+          ["04", "동기들과 주간 순위로 같이 가요", "이번 주 EXP 순위판에서 같이 출근하는 동기들이 보여요. 혼자 하다 끊기지 않아요."],
+          ["05", "AI 사수가 내 문장을 바로 첨삭해요", "문법만이 아니라 원어민 동료라면 이렇게 쓴다까지. 어디를 왜 고쳤는지 문법 / 어휘 / 뉘앙스로 나눠 알려줘요."],
+          ["06", "헷갈리는 뉘앙스를 바로 물어봐요", "뉘앙스가 헷갈려요, 어떻게 외워요? 한 번 누르면 버디가 바로 답해줘요. 마음에 드는 답은 노트에 저장해요."],
+          ["07", "결근해도 연속 출근은 지킬 수 있어요", "복지 포인트로 연장권이나 연차를 쓰면 출근한 걸로 인정돼요. 한 번 빠졌다고 다 무너지지 않아요."],
+        ].map(x => (
+          <div key={x[0]} style={{ display: "flex", gap: 12, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 15px" }}>
+            <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 800, color: "var(--accent)", paddingTop: 2, letterSpacing: "0.06em" }}>{x[0]}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "var(--ink)", lineHeight: 1.4 }}>{x[1]}</span>
+              <span style={{ display: "block", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.65, marginTop: 5 }}>{x[2]}</span>
+            </span>
+          </div>
+        ))}
       </div>
 
       <Divider />
