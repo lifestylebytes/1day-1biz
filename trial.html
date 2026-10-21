@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1일1비 7일 무료 체험</title>
+<meta name="description" content="외국계에서 매일 쓰는 비즈니스 영어, 7일 동안 무료로 써보세요. 결제 정보 없이 바로 시작해요.">
+<meta property="og:title" content="1일1비 7일 무료 체험">
+<meta property="og:description" content="하루 5분, 외국계에서 진짜 쓰는 영어 표현 하나씩. 7일 무료로 먼저 해보세요.">
+<meta property="og:image" content="https://1day-1biz.youbuddy.co.kr/img/landing-what-is.png">
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#F4EFE3; --paper-warm:#ECE3CF; --card:#FFFDF8;
+  --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8A7964;
+  --line:#E3D7C3; --accent:#D85A2A; --accent-soft:rgba(216,90,42,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased;word-break:keep-all;line-height:1.6;padding-bottom:88px}
+.wrap{max-width:520px;margin:0 auto;padding:0 20px}
+.eyb{font-size:11px;letter-spacing:.22em;font-weight:800;color:var(--accent);text-transform:uppercase}
+
+/* HERO */
+.hero{padding:44px 0 34px;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;
+  font-size:12px;font-weight:800;padding:7px 14px;border-radius:999px;margin-bottom:18px}
+h1{font-size:30px;font-weight:900;line-height:1.3;letter-spacing:-.02em;margin-bottom:14px}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:15px;color:var(--ink-soft);line-height:1.75}
+.nocard{display:inline-flex;align-items:center;gap:7px;margin-top:18px;background:var(--card);
+  border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+
+/* SHOT */
+.shot{margin:28px 0 8px;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  box-shadow:0 18px 40px -18px rgba(42,31,20,.3);background:var(--card)}
+.shot img{width:100%;display:block}
+.cap{font-size:12px;color:var(--ink-mute);text-align:center;margin-top:10px}
+
+/* SECTION */
+section{padding:34px 0;border-top:1px solid var(--line)}
+h2{font-size:21px;font-weight:900;letter-spacing:-.02em;margin:10px 0 8px;line-height:1.35}
+.sub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+
+/* STEPS */
+.step{display:flex;gap:14px;padding:16px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.step b{display:block;font-size:15px;font-weight:800;margin-bottom:4px}
+.step p{font-size:13.5px;color:var(--ink-soft);line-height:1.65}
+
+/* GET */
+.get{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.get div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center}
+.get b{display:block;font-size:24px;font-weight:900;color:var(--accent);letter-spacing:-.02em}
+.get span{display:block;font-size:12px;color:var(--ink-mute);margin-top:5px;line-height:1.45}
+
+/* WORDS */
+.words{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.words i{font-style:normal;font-size:14px;font-weight:700;padding:8px 13px;border-radius:999px;
+  background:var(--card);border:1px solid var(--line)}
+.words i.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* AFTER */
+.after{background:var(--ink);color:var(--paper);border-radius:14px;padding:24px 22px;margin-top:4px}
+.after .t{font-size:17px;font-weight:900;line-height:1.4;margin-bottom:12px}
+.after p{font-size:13.5px;line-height:1.75;color:#D9CDB8}
+.after p + p{margin-top:10px}
+.after b{color:#F0A67E}
+
+/* FAQ */
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}
+summary{cursor:pointer;list-style:none;padding:15px 16px;font-size:14px;font-weight:800;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--accent);font-weight:900;flex:none}
+details[open] summary::after{content:"\2212"}
+details p{padding:0 16px 15px;font-size:13.5px;color:var(--ink-soft);line-height:1.75}
+
+/* CTA BAR */
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(244,239,227,.94);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom));z-index:50}
+.bar .in{max-width:520px;margin:0 auto}
+.btn{display:block;width:100%;text-align:center;background:var(--ink);color:var(--paper);text-decoration:none;
+  padding:16px 0;border-radius:10px;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.btn:active{transform:translateY(1px)}
+.barnote{text-align:center;font-size:11.5px;color:var(--ink-mute);margin-top:7px}
+
+footer{padding:26px 0 10px;text-align:center;font-size:11.5px;color:var(--ink-mute);line-height:1.8;border-top:1px solid var(--line)}
+footer a{color:var(--ink-soft)}
+.inline-cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;
+  padding:15px 0;border-radius:10px;font-size:15px;font-weight:800;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="badge">결제 정보 없이 바로 시작</div>
+    <h1>외국계에서 매일 쓰는 영어,<br><em>7일 동안 무료로</em> 써보세요</h1>
+    <p class="lead">하루에 표현 하나씩, 5분이면 끝나요.<br>7일 뒤에 계속할지 그때 정하시면 돼요.</p>
+    <div class="nocard">카드 등록 없어요 / 자동결제 없어요</div>
+  </div>
+
+  <div class="shot"><img src="img/landing-what-is.png" alt="1일1비 앱 화면"></div>
+  <p class="cap">실제 1일1비 화면이에요. 오늘의 표현으로 김 팀장에게 직접 답장을 써요.</p>
+
+  <section>
+    <div class="eyb">HOW IT WORKS</div>
+    <h2>하루 5분, 이렇게 굴러가요</h2>
+    <p class="sub">단어장이 아니라 가상의 외국계 회사에 출근하는 방식이에요.</p>
+    <div class="step"><div class="n">1</div><div><b>오늘 표현이 도착해요</b><p>팀장이나 동료가 그 표현을 써서 말을 걸어요. 어떤 상황에서 쓰는 말인지 먼저 읽어요.</p></div></div>
+    <div class="step"><div class="n">2</div><div><b>영어로 직접 답장을 써요</b><p>읽고 끝이 아니라 내 손으로 한 줄 써요. 보기에서 골라볼 수도 있어요.</p></div></div>
+    <div class="step"><div class="n">3</div><div><b>AI 사수가 바로 고쳐줘요</b><p>문법만이 아니라 원어민 동료라면 이렇게 쓴다는 것까지 알려줘요.</p></div></div>
+  </section>
+
+  <section>
+    <div class="eyb">7 DAYS</div>
+    <h2>7일이면 이만큼 쌓여요</h2>
+    <div class="get">
+      <div><b>7개</b><span>새로 배운<br>비즈니스 표현</span></div>
+      <div><b>7줄</b><span>직접 쓰고<br>첨삭받은 문장</span></div>
+      <div><b>35분</b><span>전부 합쳐서<br>쓰는 시간</span></div>
+    </div>
+    <p class="sub" style="margin:18px 0 10px">체험 7일 동안 만나는 표현이에요.</p>
+    <div class="words">
+      <i class="on">on someone's plate</i><i>back-to-back</i><i>keep you posted</i><i class="on">pencil in</i><i>circle back</i><i>loop in</i><i class="on">deliverable</i>
+    </div>
+    <p class="cap" style="text-align:left;margin-top:12px">교과서엔 없는데 슬랙에선 매일 날아오는 말들이에요.</p>
+  </section>
+
+  <section>
+    <div class="eyb">AFTER 7 DAYS</div>
+    <h2>7일 뒤엔 어떻게 되나요?</h2>
+    <div class="after">
+      <div class="t">8일째 아침에 한 번 물어봐요.<br>계속하실래요?</div>
+      <p>계속하시면 <b>Day 8부터 그대로 이어져요.</b> 그동안 모은 표현, 쓴 문장, 출근 기록이 하나도 안 사라져요.</p>
+      <p>안 하셔도 괜찮아요. 아무것도 빠져나가지 않아요. <b>카드를 안 받았으니까요.</b></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyb">FAQ</div>
+    <h2>먼저 물어보시는 것들</h2>
+    <details><summary>진짜 공짜예요?</summary><p>네. 카드 정보를 아예 안 받아요. 이메일만 있으면 바로 시작돼요. 7일 뒤에 자동으로 결제되는 것도 없어요.</p></details>
+    <details><summary>영어 초보인데 할 수 있나요?</summary><p>모든 영어 문장에 한국어 해석이 붙어요. 체험 7일은 제일 쉬운 Day 1부터 7까지라, 슬랙이나 메일에서 영어를 조금이라도 쓰고 계시면 따라오실 수 있어요.</p></details>
+    <details><summary>하루 놓치면요?</summary><p>다음 날로 자동으로 넘어가지 않아요. 밀린 걸 다 하면 그날까지 몰아서 하실 수 있어요.</p></details>
+    <details><summary>폰으로도 되나요?</summary><p>가입부터 매일 출근까지 전부 폰에서 돼요. 앱 설치는 없어요. 홈 화면에 추가하면 앱처럼 열려요.</p></details>
+    <details><summary>체험은 한 번만 되나요?</summary><p>네, 이메일 하나당 한 번이에요. 이미 1일1비 계정이 있으시면 체험 대신 다른 방법을 안내해드릴게요. 고객센터로 물어봐 주세요.</p></details>
+  </section>
+
+  <a class="inline-cta" href="onboarding.html?go=signup&code=TRY7DAYS">7일 무료로 시작하기 →</a>
+
+  <footer>
+    1일1비 / YOUBUDDY KOREA<br>
+    문의는 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">1일1비 고객센터(카카오톡)</a>로 주세요.<br>
+    이미 입사하셨어요? <a href="onboarding.html?go=login">다시 출근하기 →</a>
+  </footer>
+</div>
+
+<div class="bar"><div class="in">
+  <a class="btn" id="cta" href="onboarding.html?go=signup&code=TRY7DAYS">7일 무료로 시작하기</a>
+  <div class="barnote">카드 등록 없어요 / 1분이면 입사해요</div>
+</div></div>
+
+<script>
+// preview=1 로 들어오면 가입 링크에도 그대로 붙여준다 (라이브 전 테스트용)
+(function(){
+  try{
+    var p = new URLSearchParams(location.search);
+    if (p.get("preview") === "1") {
+      document.querySelectorAll('a[href*="code=TRY7DAYS"]').forEach(function(a){ a.href += "&preview=1"; });
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
