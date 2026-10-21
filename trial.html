@@ -171,7 +171,12 @@ footer a{color:var(--ink-soft)}
 (function(){
   try{
     var p = new URLSearchParams(location.search);
-    if (p.get("preview") === "1") {
+    if (p.get("dev") === "1") {
+      // ?dev=1 : 실제로 끝까지 해보는 테스트 (onboarding-dev.html 로 보냄)
+      document.querySelectorAll('a[href*="onboarding.html"]').forEach(function(a){
+        a.href = a.href.replace("onboarding.html", "onboarding-dev.html");
+      });
+    } else if (p.get("preview") === "1") {
       document.querySelectorAll('a[href*="code=TRY7DAYS"]').forEach(function(a){ a.href += "&preview=1"; });
     }
   }catch(e){}

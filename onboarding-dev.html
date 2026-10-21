@@ -1,0 +1,2848 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8117WHRMS4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8117WHRMS4');
+</script>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>1일1비 · 입사 안내</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#2A1F14" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="1일1비" />
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase-client.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --paper: #F4EFE3;
+  --paper-warm: #ECE3CF;
+  --ink: #2A1F14;
+  --ink-soft: #5C4A36;
+  --ink-mute: #8A7964;
+  --line: #C9BBA0;
+  --accent: #D85A2A;
+  --accent-soft: rgba(216,90,42,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #E8DFCB 0%, #DBCFB4 100%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(rgba(58,40,18,0.05) 1px, transparent 1px),
+    radial-gradient(rgba(58,40,18,0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 8px 8px;
+}
+
+.stage {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 32px 20px;
+}
+.card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 12px; padding: 40px 36px; width: 100%; max-width: 540px;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.25), 0 8px 24px rgba(58,40,18,0.08);
+  animation: cardIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  position: relative;
+}
+@keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.eyebrow { font-size: 11px; letter-spacing: 0.24em; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+h1 { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 14px; }
+h1 em { font-style: normal; font-weight: 900; color: var(--accent); }
+.lead { font-size: 14px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 28px; }
+
+.form-row { margin-bottom: 18px; }
+label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+input, textarea, select {
+  width: 100%; padding: 12px 14px; font-size: 14px; font-family: inherit;
+  background: var(--paper-warm); border: 1px solid var(--line); border-radius: 6px; color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; min-height: 70px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; font-size: 14px; font-weight: 700; font-family: inherit;
+  background: var(--ink); color: var(--paper); border: none; border-radius: 8px;
+  cursor: pointer; transition: transform 0.1s ease, background 0.15s ease;
+}
+.btn:hover:not(:disabled) { background: #1a120a; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; }
+.btn-ghost { background: transparent; color: var(--ink-soft); padding-left: 0; padding-right: 0; }
+.btn-ghost:hover:not(:disabled) { background: transparent; color: var(--ink); transform: none; }
+
+.stamp {
+  position: absolute; top: 22px; right: 22px;
+  font-size: 10px; letter-spacing: 0.2em; font-weight: 800;
+  color: var(--accent); border: 2px solid var(--accent);
+  padding: 4px 10px; border-radius: 4px; transform: rotate(0deg);
+  opacity: 0.85;
+}
+
+/* 메일 스타일 */
+.email-card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 4px; max-width: 580px; width: 100%;
+  box-shadow: 0 30px 60px -20px rgba(58,40,18,0.3);
+  overflow: hidden;
+  animation: cardIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.email-head {
+  background: var(--paper-warm); padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft);
+}
+.email-head .from { color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.email-head .subject { color: var(--ink); font-weight: 700; font-size: 14px; margin-top: 8px; font-family: 'Noto Sans KR'; }
+.email-body { padding: 28px 30px; font-size: 14px; line-height: 1.85; color: var(--ink-soft); }
+.email-body p { margin-bottom: 16px; }
+.email-body strong { color: var(--ink); }
+.email-body .signature { margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.email-body .signature b { display: block; font-size: 15px; color: var(--ink); }
+.email-body .signature small { color: var(--ink-mute); font-size: 12px; }
+
+/* 배정 카드 (사번 등) */
+.assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0; }
+.assign-cell {
+  background: var(--paper-warm); border: 1px dashed var(--line);
+  border-radius: 6px; padding: 14px;
+  text-align: center;
+}
+.assign-cell .lab { font-size: 10px; letter-spacing: 0.16em; color: var(--ink-mute); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+.assign-cell .val { font-size: 15px; font-weight: 800; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+.assign-cell.full { grid-column: 1 / -1; }
+
+/* 로딩 */
+.loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; }
+.spinner {
+  width: 24px; height: 24px; border: 3px solid var(--line); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--ink-soft); }
+
+.steps { display: flex; gap: 6px; margin-bottom: 22px; }
+.step-pip { flex: 1; height: 3px; background: var(--line); border-radius: 99px; transition: background 0.3s ease; }
+.step-pip.done { background: var(--accent); }
+
+.fine-print { font-size: 11px; color: var(--ink-mute); line-height: 1.6; margin-top: 16px; }
+
+@media (max-width: 600px) {
+  .card { padding: 30px 24px; }
+  h1 { font-size: 24px; }
+  .assign-grid { grid-template-columns: 1fr; }
+}
+
+/* ── 모바일 권고 토스트 (유버디 메시지 톤). 막지 않고, 내용 먼저 보인 뒤 부드럽게 안내 ── */
+.mb-toast { display: none; position: fixed; left: 12px; right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 9198;   /* ★ 2026-09-20: 하단 고정 '지금 바로 입사하기' 바(z 9200) 위에, 가리지 않게 */
+  background: var(--ink); color: var(--paper); border-radius: 14px;
+  padding: 12px 13px; box-shadow: 0 14px 34px -8px rgba(0,0,0,0.45);
+  font-family: 'Noto Sans KR', sans-serif;
+  transform: translateY(150%); transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  gap: 10px;
+}
+@media (max-width: 768px) { .mb-toast { display: flex; } }
+.mb-toast.show { transform: translateY(0); }
+.mb-toast.dismissed { display: none !important; }
+.mb-toast-av { width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
+.mb-toast-body { flex: 1; }
+.mb-toast-name { font-size: 11px; font-weight: 800; color: #F3CBB5; margin-bottom: 2px; }
+.mb-toast-msg { font-size: 12.5px; line-height: 1.55; color: var(--paper); word-break: keep-all; }
+
+/* 한글은 기본값이 글자 단위 줄바꿈이라 "가져왔어/요" 처럼 끝 글자가 떨어진다.
+   어절 단위로 끊고, 긴 영문/URL 만 예외적으로 강제 개행. */
+body { word-break: keep-all; overflow-wrap: break-word; text-wrap: pretty; }
+/* ★ 2026-09-13: keep-all 만으로는 "말을 안 / 해." 처럼 짧은 어절 하나가 마지막 줄에 혼자
+   떨어지는 걸 못 막는다. 본문은 pretty(고아 줄 방지), 제목은 balance(줄 길이 고르게). */
+h1, h2, h3, .lead, .eyebrow, summary, .btn { text-wrap: balance; }
+.mb-toast-msg b { color: #FFE9A6; }
+.mb-toast-x { background: transparent; border: none; color: rgba(244,239,227,0.6);
+  font-size: 15px; cursor: pointer; padding: 0 2px; flex: 0 0 auto; font-family: inherit; align-self: flex-start; }
+</style>
+<script>
+/* ★ 2026-09-13: 고아 줄 방지(widont).
+   keep-all 은 어절 중간 분리를, text-wrap:pretty 는 일부 브라우저만 막아준다.
+   마지막 어절이 짧으면 앞 어절과 줄바꿈 불가 공백(\u00A0)으로 묶어, 어떤 화면 폭에서도
+   "말을 안 / 해." 처럼 한 조각만 떨어지지 않게 한다. React 재렌더에도 다시 적용된다. */
+(function () {
+  var NB = "\u00A0", busy = false, queued = 0;
+  var SKIP = "code,pre,input,textarea,select,script,style,option,[data-nowidont]";
+  function fix(root) {
+    if (busy) return;
+    busy = true;
+    try {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var n, list = [];
+      while ((n = w.nextNode())) list.push(n);
+      for (var i = 0; i < list.length; i++) {
+        var node = list[i], t = node.textContent;
+        if (!t || t.length < 14 || t.indexOf(NB) >= 0) continue;
+        var el = node.parentElement;
+        if (!el || (el.closest && el.closest(SKIP))) continue;
+        var m = t.match(/^([\s\S]*\S)[ \t]+(\S{1,7})(\s*)$/);
+        if (!m) continue;
+        if (m[1].replace(/\s+/g, "").length < 8) continue;
+        node.textContent = m[1] + NB + m[2] + m[3];
+      }
+    } catch (e) {}
+    busy = false;
+  }
+  function schedule() {
+    if (queued) return;
+    queued = requestAnimationFrame(function () { queued = 0; fix(document.body); });
+  }
+  function start() {
+    fix(document.body);
+    try { new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
+    window.addEventListener("resize", schedule);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+</script>
+</head>
+<body>
+<div id="__devbar" style="position:fixed;left:0;right:0;top:0;z-index:99999;background:#2A1F14;color:#F0A67E;font:700 12px/1.4 -apple-system,BlinkMacSystemFont,'Pretendard',sans-serif;padding:7px 14px;text-align:center;letter-spacing:-.01em">
+테스트 페이지예요. 여기서 가입하면 진짜 계정이 만들어져요. 테스트용 이메일로 해주세요.
+</div><style>body{padding-top:30px !important}</style>
+
+
+<!-- 모바일 권고 토스트 (유버디 메시지 톤, 막지 않음) -->
+<div id="mb-toast" class="mb-toast">
+  <div class="mb-toast-av">🤝</div>
+  <div class="mb-toast-body">
+    <div class="mb-toast-name">유버디</div>
+    <!-- ★ 2026-10-12: 예전엔 "PC·노트북 추천" 이었는데, 재참여 설문에서 "데스크탑으로만 되는 줄 알았다" 는 답이 나와서 폰 환영 문구로 바꿈 -->
+    <div class="mb-toast-msg">폰으로 보고 계시네요! 1일1비는 <b>폰에서도 그대로</b> 출근할 수 있어요. 가입하면 홈 화면에 추가하는 법도 알려드릴게요 :)</div>
+  </div>
+  <button id="mb-toast-x" class="mb-toast-x" aria-label="닫기">✕</button>
+</div>
+
+<script>
+  // 모바일이면 내용 먼저 보여준 뒤(1.4초) 유버디 토스트를 부드럽게 노출. 닫으면 세션 동안 다시 안 뜸.
+  (function() {
+    var toast = document.getElementById('mb-toast');
+    if (!toast) return;
+    var dismissed = false;
+    try { dismissed = sessionStorage.getItem('__OD_MB_TOAST') === '1'; } catch (e) {}
+    if (!dismissed && window.matchMedia('(max-width: 768px)').matches) {
+      setTimeout(function(){ toast.classList.add('show'); }, 1400);
+      // 8초 뒤엔 스스로 내려간다 (입사 버튼 근처에 오래 머물지 않게)
+      setTimeout(function(){ toast.classList.remove('show'); }, 9400);
+    }
+    var x = document.getElementById('mb-toast-x');
+    if (x) x.addEventListener('click', function(){
+      toast.classList.remove('show');
+      toast.classList.add('dismissed');
+      try { sessionStorage.setItem('__OD_MB_TOAST', '1'); } catch (e) {}
+    });
+  })();
+</script>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+// ============================================================
+// 데이터 풀: 부서, 사수 NPC, 입사 동기 NPC
+// ============================================================
+const DEPARTMENTS = [
+  { id: "growth", name: "Growth & Marketing", short: "마케팅" },
+  { id: "ops", name: "Business Operations", short: "운영" },
+  { id: "biz", name: "Business Development", short: "BD" },
+  { id: "product", name: "Product", short: "프로덕트" },
+  { id: "people", name: "People & Culture", short: "P&C (인사)" },
+];
+
+const MENTORS = [
+  { id: "kim", name: "김주연 대리", role: "Senior Associate", trait: "차분하고 꼼꼼함. 메일 문장을 빨갛게 봐줌." },
+  { id: "park", name: "박지훈 과장", role: "Manager", trait: "츤데레. 무뚝뚝한데 신입 챙김 1등." },
+  { id: "lee", name: "이서윤 대리", role: "Senior Associate", trait: "외국계 7년차. 영어 미팅 살아남는 법 알려줌." },
+  { id: "jung", name: "정민호 과장", role: "Manager", trait: "커피 사주는 게 취미. 대신 회식 조율은 너 시킴." },
+];
+
+const COWORKERS = [
+  { id: "co1", name: "한도윤", role: "동기 입사자 / Marketing", note: "너랑 같은 날 들어왔어." },
+  { id: "co2", name: "임재희", role: "동기 입사자 / Product", note: "유학파. 영어 잘함. 부럽지." },
+];
+
+// Dev 모드 코드, 모듈 최상위에 둬야 ApplicationScreen에서도 접근 가능
+// dev      : Day 점프 패널 (?dev=1) 표시 여부
+// operator : 운영자 뷰 / 모든 사용자 데이터 권한 여부
+const DEV_CODES = {
+  "DEV-TEST":  { dev: true,  cohort: null,             operator: false, label: "기본 베타테스터" },
+  "DEV-2026":  { dev: true,  cohort: "season-2026-1",  operator: false, label: "1기 시즌 베타" },
+  "DEV-OPS":   { dev: true,  cohort: "team",           operator: true,  label: "운영팀 (Crew)" },
+  "DEV-BUDDY": { dev: true,  cohort: null,             operator: true,  label: "운영자 (유버디)" },
+};
+
+// 내부 테스터 코드: 일반 유저처럼 보이되 Latpeed 결제 없이 입장.
+// dev 패널 X, 베타 만료 X, 통계 분리(isTester), cohort='staff'라 Latpeed 동기화가 안 건드림.
+const STAFF_CODES = {
+  "VIP-001": { cohort: "staff", label: "내부 테스터" },
+};
+
+// 유료 회원 코드: 결제 완료 안내 메시지로만 전달. 입력하면 진짜 멤버(통계 포함)로 입장.
+// 베타 만료 X. 결제 갱신/취소는 LS 웹훅이 이메일 기준으로 멤버십을 계속 동기화.
+const MEMBER_CODES = {
+  "1DAY1BIZ365": { label: "유료 회원", plan: "part1" },
+  "1DAY1BIZ365-2": { label: "유료 회원 (Part 2)", plan: "part2" },   // 13,900원 신규 멤버십 (2026-08)
+};
+
+// 체험 코드: 가입 시점부터 N일 무료, 만료되면 자동으로 휴직 화면(복직=결제 안내).
+// 유비챌 7기 후기 이벤트 (2026-08). 코드 추가는 여기 한 줄이면 됨.
+const TRIAL_CODES = {
+  // 2026-09-07 종료. active:false 면 입력해도 "유효하지 않은 코드". 정의는 운영자 뷰 라벨용으로 남긴다.
+  "UBC7-1DAY1BIZ": { label: "유비챌 7기 후기 체험", days: 7, cohort: "trial-ubc7", active: false },
+  // ★ 2026-10-12 유비챌 10기 전용 7일 체험. 8일째 아침부터 '체험 완료' 화면 → 멤버십 결제 안내. 끝낼 땐 active:false
+  // ★ 2026-10-18 신청 마감(until): 10/25(일) 밤까지 등록한 사람만. 그래야 체험이 11/1 전에 다 끝나고, 수료 보상(1개월)과 안 겹친다.
+  "UBC10-7DAYS": { label: "유비챌 10기 7일 체험", days: 7, cohort: "trial-ubc10", until: "2026-10-25T23:59:59+09:00", untilLabel: "10/25(일)",
+    existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 구독 중이시면 체험권 대신 7일 연장으로 넣어드려요! 1일1비 고객센터(카톡)로 이메일만 알려주세요." },
+  // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
+  //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
+  //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
+  "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d" },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
+};
+const _isPreview = (() => { try { return new URLSearchParams(location.search).get("preview") === "1"; } catch (e) { return false; } })();
+function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
+
+// ============================================================
+// 유틸, 사번 / 입사일 / 추정값 생성
+// ============================================================
+function generateEmpNumber(date, seed) {
+  const yyyymmdd = date.toISOString().slice(0,10).replace(/-/g, "");
+  const last4 = String(1000 + (seed % 9000)).padStart(4, "0");
+  return `${yyyymmdd}-${last4}`;
+}
+function pickRandom(arr, seed) { return arr[seed % arr.length]; }
+function hashString(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
+
+// 새 계정 가입/로그인 시 이전 계정의 브라우저 단위 잔여 데이터 정리
+// (오늘의 태스크 체크, 투어 완료, 공지 읽음, 주말 이벤트 등, 계정과 분리되어 누수되던 값들)
+function clearStaleLocalData() {
+  try {
+    const PREFIXES = ["__OD_TASKS_", "__OD_TOUR_", "__OD_NOTICE_READS_", "__OD_WEEKEND_"];
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+      if (k === "__OD_USER" || PREFIXES.some(p => k.startsWith(p))) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (e) { console.warn("clearStaleLocalData 실패:", e); }
+}
+
+// ============================================================
+// 메인 앱, 단계 머신
+// ============================================================
+// 공유용 진입 URL (2026-09-05): /onboarding?go=login (로그인) · /onboarding?go=signup (입사 지원서). #login / #signup 도 같음.
+const _goParam = (() => { try { const q = new URLSearchParams(location.search).get("go") || location.hash.replace(/^#/, ""); return /^(login|signup|join)$/.test(q) ? (q === "join" ? "signup" : q) : ""; } catch (e) { return ""; } })();
+function _setGoUrl(go) { try { const u = new URL(location.href); if (go) u.searchParams.set("go", go); else u.searchParams.delete("go"); u.hash = ""; history.replaceState(null, "", u.toString()); } catch (e) {} }
+function OnboardingApp() {
+  const [stage, setStage] = useState(_goParam === "signup" ? "application" : "welcome"); // welcome → application → reviewing → offer → assignment → ceo → ready
+  useEffect(() => { if (stage === "application") _setGoUrl("signup"); else if (stage !== "welcome") _setGoUrl(""); }, [stage]);
+
+  // URL ?code=PILOT-XXXX 자동 인식 + localStorage __OD_INVITES 매칭
+  const urlCode = useMemo(() => {
+    try { return new URLSearchParams(location.search).get('code') || ""; } catch(e) { return ""; }
+  }, []);
+  const [inviteCode, setInviteCode] = useState(urlCode.toUpperCase());
+
+  // 입사 지원 가능 여부, 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
+  // 운영자(DEV-OPS/DEV-BUDDY)는 operator.html로 직접 접근하므로 이 흐름과 무관
+  const hasValidInvite = useMemo(() => /^PILOT-[A-Z0-9]{4}$/.test(inviteCode || ""), [inviteCode]);
+
+  // 같은 기기에 운영자가 발급한 코드 있으면 이름 자동 채움
+  const matchedInvite = useMemo(() => {
+    if (!inviteCode || !/^PILOT-[A-Z0-9]{4}$/.test(inviteCode)) return null;
+    try {
+      const list = JSON.parse(localStorage.getItem('__OD_INVITES') || '[]');
+      return list.find(i => i.code === inviteCode) || null;
+    } catch(e) { return null; }
+  }, [inviteCode]);
+
+  const [name, setName] = useState(matchedInvite ? matchedInvite.name : "");
+  const [email, setEmail] = useState("");
+  const [motivation, setMotivation] = useState("");
+  const [signupPw, setSignupPw] = useState("");  // 가입 시 비밀번호 (선택)
+  // ★ 2026-09-13: 카톡 출근 알림을 기본값으로. 번호는 선택이고, 적으면 매일 09:00 알림이 켜진다.
+  const [phone, setPhone] = useState("");
+  const [kakaoOptIn, setKakaoOptIn] = useState(true);
+
+  // 코드 검증, 지원서 제출 시 서버에서 pilot_codes 화이트리스트 대조
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  // 검증 통과한 코드 정보, finishOnboarding에서 cohort 저장 + used_count 증가에 사용
+  const [verifiedCode, setVerifiedCode] = useState(null);
+  const [verifiedCohort, setVerifiedCohort] = useState(null);
+
+  const handleApplicationSubmit = async () => {
+    if (submitting) return;
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      const code = (inviteCode || "").trim().toUpperCase();
+      if (!code) {
+        setSubmitError("초대 코드를 입력해주세요.");
+        setSubmitting(false);
+        return;
+      }
+      if (window.OD && window.OD.enabled) {
+        // 1) 코드 검증 (내부 테스터/유료 회원 코드는 pilot_codes 서버 검증 생략)
+        const _isStaffCode = !!STAFF_CODES[code];
+        const _isMemberCode = !!MEMBER_CODES[code];
+        const _isTrialCode = !!TRIAL_CODES[code];
+        if (_isTrialCode && TRIAL_CODES[code].until && Date.now() > Date.parse(TRIAL_CODES[code].until)) {
+          setSubmitError(TRIAL_CODES[code].label + " 신청 기간(" + (TRIAL_CODES[code].untilLabel || "") + "까지)이 끝났어요. 궁금한 점은 1일1비 고객센터(카톡)로 물어봐 주세요.");
+          setSubmitting(false);
+          return;
+        }
+        if (_isTrialCode && TRIAL_CODES[code].active === false && !(TRIAL_CODES[code].preview && _isPreview)) {
+          setSubmitError(TRIAL_CODES[code].preview
+            ? "7일 무료 체험은 아직 오픈 전이에요. 곧 열리니 조금만 기다려 주세요!"
+            : "이 코드는 사용 기간이 끝났어요. 멤버십 결제 후 받은 코드로 입장해주세요.");
+          setSubmitting(false);
+          return;
+        }
+        let _cohort = null;
+        if (!_isStaffCode && !_isMemberCode && !_isTrialCode) {
+          const result = await window.OD.checkInviteCode(code);
+          if (!result || !result.valid) {
+            // 만료/소진/잘못된 코드 구분해서 안내
+            let msg = "유효하지 않은 초대 코드예요. 다시 확인해주세요.";
+            if (result && result.reason === 'expired') {
+              msg = "이 코드는 사용 기간이 끝났어요. 베타가 종료됐거나 코드가 만료된 거예요. 운영자에게 문의해주세요.";
+            } else if (result && result.reason === 'exhausted') {
+              msg = "이 코드는 사용 가능 횟수를 모두 채웠어요. 운영자에게 문의해주세요.";
+            }
+            setSubmitError(msg);
+            setSubmitting(false);
+            return;
+          }
+          _cohort = result.cohort || null;
+        } else if (_isStaffCode) {
+          _cohort = STAFF_CODES[code].cohort || 'staff';
+        } else if (_isTrialCode) {
+          _cohort = TRIAL_CODES[code].cohort || 'trial';
+        } else {
+          _cohort = 'member';
+        }
+        // 2) ★ 중복 가입 가드, RLS 우회 emailExists RPC 사용 (anon 권한에서도 작동)
+        const emailTrimmed = (email || "").trim().toLowerCase();
+        const existing = await window.OD.emailExists(emailTrimmed);
+        if (existing && existing.ok && existing.exists) {
+          setSubmitError(_isTrialCode
+            ? (TRIAL_CODES[code].existingMsg || "이미 가입된 이메일이에요. 무료 체험은 처음 오신 분만 쓸 수 있어요. 처음 화면에서 \"다시 출근하기\"로 로그인해주세요.")
+            : "이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
+          setSubmitting(false);
+          return;
+        }
+        // 검증 정보 저장, finishOnboarding에서 사용
+        setVerifiedCode(code);
+        setVerifiedCohort(_cohort);
+        // 이메일 인증 코드 발송 → verify 단계로 (진짜 메일인지 확인 + 비번 저장)
+        const sendRes = await window.OD.sendMagicLink(emailTrimmed);
+        if (!sendRes || !sendRes.ok) {
+          const msg = String(sendRes && sendRes.error || "");
+          const m = msg.match(/after\s+(\d+)\s+seconds/i);
+          setSubmitError(m
+            ? ("잠시 후 다시 시도해주세요 (" + m[1] + "초). 이미 보낸 메일이 곧 도착해요.")
+            : ("인증 코드 발송에 실패했어요: " + (sendRes && sendRes.error || "잠시 후 다시")));
+          setSubmitting(false);
+          return;
+        }
+        setSubmitting(false);
+        setStage("verify");
+        return;
+      }
+      // 서버 비활성(로컬 전용 dev) 폴백: 인증 없이 진행
+      setStage("reviewing");
+    } catch (e) {
+      setSubmitError("코드 확인에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setSubmitting(false);
+    }
+  };
+
+  // Dev 모드 (테스터 전용), DEV-XXXX 코드 입력하면 시뮬레이터 ?dev=1로 자동 진입
+  const [devMode, setDevMode] = useState(false);
+  const [devCode, setDevCode] = useState("");
+  const matchedDevCode = devMode ? DEV_CODES[devCode.toUpperCase()] : null;
+  const isDevValid = !!matchedDevCode;
+
+  // matchedInvite 바뀌면 이름 자동 갱신
+  useEffect(() => {
+    if (matchedInvite && !name) setName(matchedInvite.name);
+  }, [matchedInvite]);
+
+  const seed = useMemo(() => hashString(email + name) || Date.now(), [email, name]);
+  const today = useMemo(() => new Date(), []);
+  const empNumber = useMemo(() => generateEmpNumber(today, seed), [seed, today]);
+  const dept = useMemo(() => pickRandom(DEPARTMENTS, seed), [seed]);
+  const mentor = useMemo(() => pickRandom(MENTORS, seed >> 3), [seed]);
+
+  const stageOrder = ["welcome", "application", "verify", "reviewing", "offer", "assignment", "ceo", "ready"];
+  const stageIdx = stageOrder.indexOf(stage);
+
+  // reviewing → offer 자동 전환 (3초)
+  useEffect(() => {
+    if (stage === "reviewing") {
+      const t = setTimeout(() => setStage("offer"), 2800);
+      return () => clearTimeout(t);
+    }
+  }, [stage]);
+
+  const finishOnboarding = async () => {
+    const profile = {
+      // identity
+      email: email.trim().toLowerCase(),  // ★ 항상 소문자로 저장 (대소문자 가입 불일치 방지)
+      name: name.trim(),
+      signupDate: new Date().toISOString(),
+      // 법적 동의 기록 (PIPA 의무) - 가입 시점에 약관·개인정보·만 14세 모두 체크됨
+      agreedAt: new Date().toISOString(),
+      // 가입 단계에서 코드 검증 통과한 사용자는 unlock 마킹 (mainboard 직행)
+      unlocked: true,
+      // fictional identity
+      empNumber,
+      department: dept,
+      mentor,
+      coworkers: COWORKERS,
+      // progression
+      level: { id: "probation", ko: "수습", en: "Probation" },
+      dayInCompany: 1,
+      // metrics scaffold (학습 과학 측정용)
+      productionAttempts: { correct: 0, total: 0 },
+      noveltyEvents: [],
+      scenariosCompleted: [],
+      wordsStudied: [],
+      lastActive: new Date().toISOString(),
+      totalSessions: 1,
+      totalSessionMs: 0,
+      // settings
+      preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null },
+      phone: (phone || "").trim() || null,
+      // 운영 메타
+      onboardingMotivation: motivation.trim(),
+      schemaVersion: 1,
+      // 시범 입사자 마킹 (코드 있으면)
+      inviteCode: inviteCode || null,
+      referredBy: matchedInvite ? "유버디" : (inviteCode ? "유버디" : null),
+      isPilotHire: !!inviteCode,
+      // Dev 모드 마킹 + 코드별 권한 적용
+      // 테스터(DEV-TEST/2026)는 dev:false라 isDevMode도 false → 일반 사용자 흐름
+      isDevMode: !!(matchedDevCode && matchedDevCode.dev),
+      devCode: isDevValid ? devCode.toUpperCase() : null,
+      // cohort: DEV 코드 우선, 그 다음 PILOT 코드 검증 결과의 cohort
+      cohort: (matchedDevCode && matchedDevCode.cohort) || verifiedCohort || null,
+      isOperator: !!(matchedDevCode && matchedDevCode.operator),
+      // 테스터 마킹 (운영자 뷰 통계에서 분리하기 위함)
+      isTester: !!(matchedDevCode && !matchedDevCode.operator),
+    };
+    // 내부 테스터 코드: 일반 유저처럼(dev 패널 X) 입장하되, 베타 만료 X + Latpeed 미간섭.
+    if (STAFF_CODES[(inviteCode || "").trim().toUpperCase()]) {
+      profile.isPilotHire = false;   // 베타 만료(_isPilot) 대상에서 제외 → 안 튕김
+      profile.isTester = true;        // 통계 분리 (UI엔 영향 없음, dev 패널과 무관)
+      profile.isDevMode = false;      // dev 패널 안 뜸
+      profile.isOperator = false;
+      profile.cohort = 'staff';       // Latpeed 동기화는 'member'만 건드려서 안전
+    }
+    // 유료 회원 코드: 진짜 멤버로 입장 (통계 포함, 베타 만료 X). 결제 갱신/취소는 LS 웹훅이 동기화.
+    if (MEMBER_CODES[(inviteCode || "").trim().toUpperCase()]) {
+      profile.isPilotHire = false;
+      profile.isTester = false;
+      profile.isDevMode = false;
+      profile.isOperator = false;
+      profile.cohort = 'member';
+      profile.unlocked = true;
+      // 멤버십 티어 구분 (part1 = 9,900 / part2 = 13,900). cohort는 게이트 때문에 'member' 유지, 구분은 preferences.plan
+      const _mplan = MEMBER_CODES[(inviteCode || "").trim().toUpperCase()].plan;
+      if (_mplan) profile.preferences = { ...(profile.preferences || {}), plan: _mplan };
+    }
+    // 체험 코드: N일 뒤 만료일을 박아서 자동 종료 (비유료 게이트가 만료일 기준으로 차단 → 휴직 화면 → 결제 유도)
+    const _trialDef = TRIAL_CODES[(inviteCode || "").trim().toUpperCase()];
+    if (_trialDef) {
+      profile.isPilotHire = false;
+      profile.isTester = false;
+      profile.isDevMode = false;
+      profile.isOperator = false;
+      profile.cohort = _trialDef.cohort || 'trial';
+      profile.unlocked = true;
+      const _tEnd = new Date(Date.now() + ((_trialDef.days || 7) - 1) * 86400000);
+      _tEnd.setHours(23, 59, 59, 0);
+      profile.membershipEndsAt = _tEnd.toISOString();
+      profile.membership_ends_at = _tEnd.toISOString();
+    }
+    // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
+    if (window.OD && window.OD.enabled) {
+      try {
+        const result = await window.OD.signup(profile);
+        if (result && result.duplicate) {
+          alert("이미 가입된 이메일이에요. 처음 화면에서 \"다시 출근하기\"로 진입해주세요.");
+          window.location.href = "onboarding-dev.html";
+          return;
+        }
+        if (!result || !result.ok) {
+          // ★ 서버 저장 실패 → 가입 진행 금지 (localStorage 진입 차단)
+          console.error("[Supabase] 가입 동기화 실패:", result?.error);
+          alert("가입 저장에 실패했어요. 잠시 후 다시 시도해주세요.\n\n오류: " + (result?.error || "알 수 없음"));
+          return;  // localStorage 도 안 건드림
+        }
+        console.log("[Supabase] 가입 동기화 완료");
+        // ★ 번호를 적고 동의하셨으면 매일 09:00 카톡 알림을 바로 켠다 (실패해도 가입은 계속)
+        try {
+          const _ph = (phone || "").trim();
+          if (_ph && kakaoOptIn && window.OD.setKakaoNotify) {
+            await window.OD.setKakaoNotify(email.trim().toLowerCase(), _ph, 9);
+          }
+        } catch (_) {}
+        if (verifiedCode && window.OD.incrementCodeUsage) {
+          try { await window.OD.incrementCodeUsage(verifiedCode); } catch (_) {}
+        }
+        // 비밀번호는 verify 단계(SignupVerifyScreen)에서 이미 저장됨 (이메일 인증 세션으로).
+      } catch (err) {
+        console.error("[Supabase] 가입 동기화 예외:", err);
+        alert("가입 중 네트워크 오류가 발생했어요. 새로고침 후 다시 시도해주세요.");
+        return;
+      }
+    }
+
+    // 서버 저장 성공한 뒤에야 localStorage + 이동
+    try {
+      clearStaleLocalData();
+      localStorage.setItem("__OD_USER", JSON.stringify(profile));
+      if (matchedInvite) {
+        const list = JSON.parse(localStorage.getItem('__OD_INVITES') || '[]');
+        const updated = list.map(i => i.code === matchedInvite.code
+          ? { ...i, usedAt: new Date().toISOString(), usedBy: email.trim().toLowerCase(), currentDay: 1, lastActive: new Date().toISOString() }
+          : i);
+        localStorage.setItem('__OD_INVITES', JSON.stringify(updated));
+      }
+    } catch (e) { console.warn("localStorage 저장 실패 (사파리 프라이빗 모드?)", e); }
+
+    // 가입 후 이동, 코드 검증을 이미 ApplicationScreen에서 통과했으므로 바로 사옥으로
+    // - DEV-BUDDY / DEV-OPS (운영자) → operator.html 직행
+    // - DEV-TEST / DEV-2026 (테스터) → mainboard.html?dev=1
+    // - 일반 사용자 (unlocked) → mainboard.html 직행
+    if (matchedDevCode && matchedDevCode.operator) {
+      window.location.href = "operator.html";
+    } else if (matchedDevCode && matchedDevCode.dev) {
+      window.location.href = "mainboard.html?dev=1";
+    } else {
+      window.location.href = "mainboard.html";
+    }
+  };
+
+  return (
+    <div className="stage">
+      {stage === "welcome" && (
+        <WelcomeScreen onNext={() => setStage("application")} initialLogin={_goParam === "login"} />
+      )}
+      {stage === "application" && (
+        <ApplicationScreen
+          name={name} setName={setName}
+          email={email} setEmail={setEmail}
+          signupPw={signupPw} setSignupPw={setSignupPw}
+          phone={phone} setPhone={setPhone}
+          kakaoOptIn={kakaoOptIn} setKakaoOptIn={setKakaoOptIn}
+          motivation={motivation} setMotivation={setMotivation}
+          inviteCode={inviteCode} setInviteCode={setInviteCode}
+          devMode={devMode} setDevMode={setDevMode}
+          devCode={devCode} setDevCode={setDevCode}
+          isDevValid={isDevValid}
+          submitting={submitting} submitError={submitError}
+          stageIdx={stageIdx} totalStages={stageOrder.length}
+          onSubmit={handleApplicationSubmit}
+          onBack={() => setStage("welcome")}
+        />
+      )}
+      {stage === "verify" && (
+        <SignupVerifyScreen
+          email={email} password={signupPw}
+          stageIdx={stageIdx} totalStages={stageOrder.length}
+          onVerified={() => setStage("reviewing")}
+          onBack={() => setStage("application")}
+        />
+      )}
+      {stage === "reviewing" && <ReviewingScreen name={name} stageIdx={stageIdx} totalStages={stageOrder.length} />}
+      {stage === "offer" && (
+        <OfferScreen name={name} dept={dept} empNumber={empNumber} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("assignment")} />
+      )}
+      {stage === "assignment" && (
+        <AssignmentScreen empNumber={empNumber} dept={dept} mentor={mentor} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("ceo")} />
+      )}
+      {stage === "ceo" && (
+        <CEOScreen name={name} dept={dept} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onNext={() => setStage("ready")} />
+      )}
+      {stage === "ready" && (
+        <ReadyScreen name={name} mentor={mentor} stageIdx={stageIdx} totalStages={stageOrder.length}
+          onStart={finishOnboarding} />
+      )}
+    </div>
+  );
+}
+
+function StepBar({ idx, total }) {
+  return (
+    <div className="steps">
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} className={"step-pip " + (i <= idx ? "done" : "")} />
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// 0. Welcome, 신규 가입 OR 로그인 선택
+// ============================================================
+// ============================================================
+// WelcomeScreen V2, 정식 멤버십 출시용 (대기등록 제거 + 구매 버튼 + 지원서 작성)
+// 사용하려면 아래 USE_V2 를 true 로. 갈아끼우기 한 줄.
+// ============================================================
+const USE_V2 = true;
+const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/memberships/69535224c4fa5959f488270f";
+
+function WelcomeScreenV2({ onNext }) {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showPay, setShowPay] = useState(false);
+  const _goDomestic = () => {
+    const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
+    window.open(url, "_blank", "noopener");
+  };
+  const _goIntl = () => {
+    const base = (window.__PAY_CONFIG && window.__PAY_CONFIG.lemonCheckoutUrl) || "";
+    if (!base) { alert("해외 결제는 준비 중이에요. 국내 카드를 이용해주세요."); return; }
+    // 로그인된 사용자면 이메일을 조용히 prefill (없으면 결제창에서 직접 입력)
+    let email = "";
+    try { email = ((JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}).email) || ""; } catch (e) {}
+    let url = base;
+    if (email) {
+      const sep = base.indexOf("?") >= 0 ? "&" : "?";
+      url = base + sep + "checkout[email]=" + encodeURIComponent(email) + "&checkout[custom][email]=" + encodeURIComponent(email);
+    }
+    window.open(url, "_blank", "noopener");
+  };
+  const INTRO_SNOOZE_KEY = "__OD_INTRO_SNOOZE";
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      const until = parseInt(localStorage.getItem(INTRO_SNOOZE_KEY) || "0", 10);
+      return !(until && until > Date.now());
+    } catch (e) { return true; }
+  });
+  const dismissIntro = () => setShowIntro(false);
+  const dismissIntroFor7Days = () => {
+    try { localStorage.setItem(INTRO_SNOOZE_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000)); } catch (e) {}
+    setShowIntro(false);
+  };
+
+  if (showLogin) {
+    return <LoginScreen onBack={() => setShowLogin(false)} />;
+  }
+
+  return (
+    <>
+    {showIntro && (
+      <>
+        <div onClick={dismissIntro} style={{
+          position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9000,
+        }} />
+        <div style={{
+          position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "var(--paper)", border: "2px solid var(--accent)",
+          borderRadius: 16, padding: "26px 24px 18px",
+          maxWidth: 384, width: "calc(100% - 36px)",
+          boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+          zIndex: 9001, textAlign: "center",
+        }}>
+          <div style={{ fontSize: 34, lineHeight: 1, marginBottom: 8 }}>📨</div>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "var(--accent)", marginBottom: 6 }}>
+            1일 1비란?
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.35, margin: "0 0 10px", color: "var(--ink)", letterSpacing: "-0.01em" }}>
+            하루 한 단어,<br/>출근하며 배우는 비즈니스 영어
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "0 0 16px" }}>
+            외국계 회사로 매일 5분 출근. 실제 업무 상황에서 표현을 써보고, 사수가 바로 코칭해줘요.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9, textAlign: "left", marginBottom: 18, background: "var(--paper-warm)", borderRadius: 10, padding: "13px 15px" }}>
+            {[["📩", "매일 비즈니스 영어 표현 1개"], ["💬", "외국계 실제 상황에서 써보기"], ["✍️", "1:1 사수가 바로 피드백"], ["📈", "30일 후 정직원 전환 · 월 구독제"]].map(function(it) {
+              return (
+                <div key={it[1]} style={{ display: "flex", gap: 9, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>
+                  <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
+                </div>
+              );
+            })}
+          </div>
+          <button
+            onClick={dismissIntro}
+            style={{
+              background: "var(--accent)", color: "white", border: "none",
+              padding: "13px 22px", borderRadius: 9,
+              fontSize: 14, fontWeight: 800, cursor: "pointer", width: "100%",
+            }}
+          >
+            알겠어요, 시작할게요 →
+          </button>
+          <a onClick={dismissIntroFor7Days} style={{ display: "inline-block", marginTop: 11, fontSize: 12, color: "var(--ink-mute)", cursor: "pointer", textDecoration: "underline" }}>
+            7일간 안 보기
+          </a>
+        </div>
+      </>
+    )}
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 신입 채용 #2026</div>
+      <h1 style={{ lineHeight: 1.25 }}>하루 한 단어,<br/><em>출근하며</em> 배우는<br/>비즈니스 영어</h1>
+      <p className="lead" style={{ marginBottom: 16 }}>
+        외국계 회사로 매일 <strong>5분 출근</strong>. 그날의 표현을 <strong>진짜 업무 상황</strong>에서 써보고, <strong>1:1 사수</strong>가 바로 고쳐줘요.
+      </p>
+
+      {/* 오늘의 단어 샘플 (한눈에 "뭘 받는지" 보이게) */}
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 13 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.16em", color: "var(--accent)", marginBottom: 7 }}>오늘의 단어 · DAY 1</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 25, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--ink)" }}>stakeholder</span>
+          <span style={{ fontSize: 13, color: "var(--ink-soft)", fontWeight: 700 }}>이해관계자</span>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 7, lineHeight: 1.5 }}>
+          📍 입사 첫 회의. 김 팀장: "Let's start with the <span style={{ color: "var(--ink-soft)", fontWeight: 700 }}>stakeholder</span> map."
+        </div>
+      </div>
+
+      {/* 3스텝 한 줄 요약 */}
+      <div style={{ display: "flex", gap: 7, marginBottom: 15 }}>
+        {[["📩", "매일 표현 1개"], ["💬", "상황에서 써보기"], ["✍️", "사수 피드백"]].map(function(s) {
+          return (
+            <div key={s[1]} style={{ flex: 1, textAlign: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 4px" }}>
+              <div style={{ fontSize: 19 }}>{s[0]}</div>
+              <div style={{ fontSize: 10, color: "var(--ink-soft)", fontWeight: 700, marginTop: 4, lineHeight: 1.25 }}>{s[1]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginBottom: 2, lineHeight: 1.5 }}>
+        매일 5분 · 30일 수습 후 <strong style={{ color: "var(--ink-soft)" }}>정직원 전환</strong> · 월 구독제
+      </div>
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
+        {showPay && (
+          <div onClick={() => setShowPay(false)} style={{ position: "fixed", inset: 0, background: "rgba(42,31,20,0.6)", zIndex: 9200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, maxWidth: 400, width: "100%", padding: "24px 22px", boxShadow: "0 30px 60px -20px rgba(58,40,18,0.5)", textAlign: "left" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.2em", fontWeight: 800, color: "var(--accent, #D85A2A)", textTransform: "uppercase" }}>MEMBERSHIP</div>
+                <a onClick={() => setShowPay(false)} style={{ cursor: "pointer", color: "var(--ink-mute)", fontSize: 18, lineHeight: 1 }}>✕</a>
+              </div>
+              <h2 style={{ fontSize: 19, fontWeight: 900, margin: "0 0 6px" }}>멤버십 구매</h2>
+              <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "0 0 16px" }}>결제수단만 고르면 돼요. 결제 시 입력한 이메일로 멤버십이 켜져요.</p>
+              <button className="btn" onClick={_goDomestic} style={{ width: "100%", justifyContent: "center", marginTop: 2 }}>
+                🇰🇷 국내 카드로 결제
+              </button>
+              <button className="btn" onClick={_goIntl} style={{ width: "100%", justifyContent: "center", marginTop: 10, background: "transparent", border: "2px solid var(--accent, #D85A2A)", color: "var(--accent, #D85A2A)" }}>
+                🌍 해외 카드로 결제 (International)
+              </button>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginTop: 13, lineHeight: 1.6 }}>
+                해외 카드(Visa·Master 등)는 "해외 카드로 결제"를 눌러주세요.<br/>
+                결제 시 쓴 이메일로 가입 / 로그인하면 바로 출근돼요.
+              </div>
+            </div>
+          </div>
+        )}
+        {/* 1) 멤버십 구매 → 국내/해외 선택 모달 */}
+        <button
+          className="btn"
+          onClick={() => setShowPay(true)}
+          style={{ textAlign: "center", justifyContent: "center" }}
+        >
+          🎟 멤버십 구매하기 →
+        </button>
+        {/* 2) 구매 후 지원서 작성 (기존 가입 흐름) */}
+        <button
+          className="btn"
+          onClick={onNext}
+          style={{
+            justifyContent: "center",
+            background: "transparent",
+            border: "2px solid var(--orange, #D85A2A)",
+            color: "var(--orange, #D85A2A)",
+            fontWeight: 700,
+          }}
+        >
+          📝 (구매 후) 지원서 작성하기
+        </button>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", marginTop: -2, lineHeight: 1.55 }}>
+          구매 완료 메일에 발송된 코드를 지원서 작성 시 입력해주세요.
+        </div>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={() => setShowLogin(true)}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        구매 안 하셨으면 위 멤버십 구매하기로 · 이미 구매하셨으면 지원서 작성하기
+      </div>
+    </div>
+    </>
+  );
+}
+
+// ============================================================
+// ★ V3: 인터랙티브 체험 랜딩 (2026-08-08)
+// 설명 대신 "지금 바로 Day 1을 30초 체험"시키는 상세페이지.
+// 체험 단어는 코스(90일)에 없는 down the line. GA 이벤트로 퍼널 측정.
+// 롤백: 아래 USE_V3 = false 로.
+// ============================================================
+const USE_V3 = true;
+
+function WelcomeScreenV3({ onNext, initialLogin }) {
+  const [showLogin, setShowLogin] = useState(!!initialLogin);
+  const [showEnter, setShowEnter] = useState(false);   // 입장하기: 신규 입사 / 로그인 고르기
+  useEffect(() => { _setGoUrl(showLogin ? "login" : ""); }, [showLogin]);
+  const [showPay, setShowPay] = useState(false);
+  const [openIdx, setOpenIdx] = useState(null);   // 펼쳐진 일정 (아코디언)
+  const [done, setDone] = useState({});            // 완료된 일정 {0:true,...}
+  const [pick, setPick] = useState(null);          // 퀴즈 선택
+  const [journal, setJournal] = useState("");
+  const [jrLoading, setJrLoading] = useState(false);
+  const [jrFb, setJrFb] = useState(null);          // 일지 AI 피드백 (실제 mentor-feedback 함수 호출)
+
+  const askJournalAi = async () => {
+    if (jrLoading) return;
+    setJrLoading(true);
+    try { if (window.gtag) window.gtag("event", "demo_journal_ai"); } catch (e) {}
+    // 실제 서비스와 동일한 풀 첨삭 (교정문 + 문법 + 어휘 + 뉘앙스 + 칭찬)
+    const FALLBACK = {
+      corrected: "Understood. Let’s go with the current team and add designers down the line.",
+      grammar: "문법은 정확해요. 어순도 자연스럽습니다.",
+      vocab: { from: "", to: "go with", reason: "\"~로 진행하다\"를 가장 캐주얼하게 말하는 네이티브 표현이에요.", similar: ["proceed with", "stick with"] },
+      nuance: "회의 직후 슬랙 답장이라 가볍고 빠른 톤이 딱 맞아요.",
+      praise: "첫날인데 오늘 단어를 문장에 바로 살렸네요. 감 좋아요!",
+    };
+    try {
+      const r = window.OD && window.OD.enabled && window.OD.getMentorAiFeedback
+        ? await window.OD.getMentorAiFeedback({
+            sentence: journal.trim(),
+            word: "down the line", meaning: "나중에, 시간이 좀 지나서",
+            scene: "회의 직후, 김 팀장에게 슬랙으로 한 줄 답장하는 상황",
+            sampleAnswer: "Understood. Let’s go with the current team and add designers down the line.",
+            koSentence: "알겠습니다. 지금은 있는 인원으로 진행하고, 나중에 디자이너를 충원하시죠.",
+            promptKo: "김 팀장의 말을 받아서, 오늘 단어를 살려 한 줄로 답장하세요.",
+            mentorName: "차윤아",
+          })
+        : null;
+      setJrFb(r && r.ok && r.fb && (r.fb.corrected || r.fb.grammar) ? r.fb : FALLBACK);
+    } catch (e) { setJrFb(FALLBACK); }
+    setJrLoading(false);
+  };
+
+  const track = (n, p) => { try { if (window.gtag) window.gtag("event", n, p || {}); } catch (e) {} };
+  // 클릭 시점의 스크롤 깊이(%)와 데모 진행도를 같이 실어 보냄. "어디쯤에서 눌렀나" 측정용.
+  const _scrollPct = () => {
+    try {
+      const el = document.documentElement;
+      const top = el.scrollTop || document.body.scrollTop || 0;
+      const max = (el.scrollHeight - el.clientHeight) || 1;
+      return Math.max(0, Math.min(100, Math.round((top / max) * 100)));
+    } catch (e) { return -1; }
+  };
+  const _payParams = (channel) => ({
+    channel: channel,
+    scroll_pct: _scrollPct(),
+    demo_done: [0, 1, 2, 3].filter(i => done[i]).length,
+  });
+  const _goDomestic = (channel) => {
+    const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
+    track("cta_purchase_click", _payParams(channel || "domestic"));
+    window.open(url, "_blank", "noopener");
+  };
+  const _goIntl = (channel) => {
+    const base = (window.__PAY_CONFIG && window.__PAY_CONFIG.lemonCheckoutUrl) || "";
+    if (!base) { alert("해외 결제는 준비 중이에요. 국내 카드를 이용해주세요."); return; }
+    track("cta_purchase_click", _payParams(channel || "intl"));
+    window.open(base, "_blank", "noopener");
+  };
+
+  const doneCount = [0, 1, 2, 3].filter(i => done[i]).length;
+  const allDone = doneCount === 4;
+  const markDone = (i) => {
+    setDone(d => {
+      const next = { ...d, [i]: true };
+      if ([0, 1, 2, 3].every(k => next[k])) track("demo_complete");
+      return next;
+    });
+    track("demo_step_done", { step: i });
+    setOpenIdx(i + 1 < 4 ? i + 1 : null);
+  };
+  const toggleRow = (i) => {
+    // 순서대로: 이전 일정 완료해야 다음 열림 (첫 번째는 항상)
+    const unlocked = i === 0 || done[i - 1] || done[i];
+    if (!unlocked) return;
+    if (openIdx !== i) track("demo_open_step", { step: i });
+    setOpenIdx(openIdx === i ? null : i);
+  };
+
+  if (showLogin) return <LoginScreen onBack={() => setShowLogin(false)} />;
+
+  const OPTIONS = [
+    { id: "a", kind: "correct",
+      en: "Got it! I’ll design it so we can add designers down the line.",
+      ko: "알겠습니다! 나중에 디자이너를 더 늘릴 수 있게 설계해둘게요.",
+      note: "정답! 오늘 단어(down the line)를 그대로 살려서 답했어요. 팀장이 원한 딱 그 대답." },
+    { id: "b", kind: "formal",
+      en: "Duly noted. Expansion shall be contemplated in due course.",
+      ko: "정식으로 접수되었습니다. 확장은 적절한 시기에 검토될 예정입니다.",
+      note: "뜻은 맞지만 법률 문서 톤이에요. 회의 즉답으로는 로봇처럼 들려요." },
+    { id: "c", kind: "weak",
+      en: "Okay... so no new designers? That’s sad.",
+      ko: "아 네... 그럼 디자이너 안 뽑는 거죠? 슬프네요.",
+      note: "팀장은 \"지금 말고 나중에!\"라고 했는데 거절로만 들었어요. 뉘앙스를 놓치면 이렇게 어긋나요." },
+  ];
+  const picked = OPTIONS.find(o => o.id === pick);
+
+  const SectionTitle = ({ eyebrow, title, sub }) => (
+    <div style={{ textAlign: "center", margin: "0 0 18px" }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 7 }}>{eyebrow}</div>
+      <h2 style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.35, margin: 0, color: "var(--ink)", letterSpacing: "-0.01em" }}>{title}</h2>
+      {sub && <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "8px 0 0" }}>{sub}</p>}
+    </div>
+  );
+
+  const Divider = () => <div style={{ borderTop: "1px dashed var(--line)", margin: "30px 0" }} />;
+
+  const CTAButtons = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <button className="btn" onClick={() => _goDomestic("bottom")} style={{ justifyContent: "center", fontSize: 15, padding: "15px 20px" }}>🎟 멤버십 구매하고 입사하기 →</button>
+      <button className="btn" onClick={() => { track("cta_apply_click"); onNext(); }} style={{ justifyContent: "center", background: "transparent", border: "2px solid var(--orange, #D85A2A)", color: "var(--orange, #D85A2A)", fontWeight: 700 }}>📝 (구매 후) 코드 받았어요! 지원서 작성하기</button>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>구매 완료 메일의 코드를 지원서에 입력하면 Day 1이 시작돼요.</div>
+    </div>
+  );
+
+  // 아코디언 한 줄 (★ 컴포넌트가 아니라 렌더 함수: 리마운트로 textarea 포커스 날아가는 버그 방지)
+  const renderRow = (i, time, title, body) => {
+    const unlocked = i === 0 || done[i - 1] || done[i];
+    const isOpen = openIdx === i;
+    return (
+      <div style={{ border: "1px solid " + (isOpen ? "var(--accent)" : "var(--line)"), borderRadius: 11, overflow: "hidden", background: "var(--paper)" }}>
+        <div onClick={() => toggleRow(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", cursor: unlocked ? "pointer" : "default", opacity: unlocked ? 1 : 0.5 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", fontFamily: "JetBrains Mono, monospace", flexShrink: 0 }}>{time}</span>
+          <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>{title}</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: done[i] ? "#4A7C59" : "var(--ink-mute)", flexShrink: 0 }}>
+            {done[i] ? "✓ 완료" : (unlocked ? (isOpen ? "▲" : "👉 눌러보기") : "🔒")}
+          </span>
+        </div>
+        {isOpen && <div className="od-rise" style={{ padding: "2px 14px 16px", borderTop: "1px dashed var(--line)" }}>{body}</div>}
+      </div>
+    );
+  };
+
+  const TICKER = "YOUBUDDY KOREA\u2003 NOW HIRING\u2003·\u2003신입 공채 접수 중\u2003·\u2003하루 5분 출근\u2003·\u20031:1 사수 코칭\u2003·\u2003Day 90 대리 승진\u2003·\u2003구독료 인상 예정 · 기존 회원 가격 유지\u2003·\u2003";
+
+  return (
+    <>
+    <style>{`
+      @keyframes odStampIn { 0% { transform: scale(2.2) rotate(-18deg); opacity: 0; } 60% { transform: scale(0.94) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+      @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .od-rise { animation: odRise 0.4s ease both; }
+      @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
+      .od-bar-cta-short { display: none; }
+      /* ★ 2026-09-13: 하단 고정 CTA. 엄지가 닿는 자리라 모바일에서만 (데스크톱은 상단바로 충분) */
+      .od-bottom-cta {
+        display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9200;
+        align-items: center; gap: 12px; padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(245,238,221,0.97); border-top: 1.5px solid var(--line, #E2D8C4);
+        box-shadow: 0 -8px 22px -14px rgba(58,40,18,0.5); backdrop-filter: blur(6px);
+      }
+      .od-bottom-inner { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 720px; margin: 0 auto; }
+      @media (max-width: 600px) {
+        .od-bar-title { font-size: 12px !important; flex: 0 1 auto; }
+        .od-bar-sub { display: none; }
+        .od-bar-enter { padding: 8px 10px !important; }
+        .od-bar-cta { padding: 9px 12px !important; font-size: 12.5px !important; }
+        .od-bar-cta-long { display: none; } .od-bar-cta-short { display: inline; }
+      }
+      @media (max-width: 380px) { .od-bar-enter-t { display: none; } }
+    `}</style>
+
+    {/* ── 상단 고정: 흐르는 사내 전광판 + 바로 입사 바 ── */}
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 8000 }}>
+      <div style={{ background: "var(--ink, #2A1F14)", color: "var(--paper, #F5EEDD)", overflow: "hidden", fontSize: 9, fontWeight: 500, letterSpacing: "0.08em", padding: "5px 0", opacity: 0.82 }}>
+        <div className="od-ticker-track">
+          <span>{TICKER}</span>
+          <span aria-hidden="true">{TICKER}</span>
+        </div>
+      </div>
+      <div style={{ background: "var(--paper, #F5EEDD)", borderBottom: "1.5px solid var(--line, #E2D8C4)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 14px", boxShadow: "0 6px 18px -12px rgba(58,40,18,0.35)" }}>
+        <div className="od-bar-title" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          1일1비 <span className="od-bar-sub" style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
+        </div>
+        <button onClick={() => setShowEnter(true)} className="od-bar-enter"
+          style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto", whiteSpace: "nowrap" }}>
+          🚪 <span className="od-bar-enter-t">입장하기</span>
+        </button>
+        <button onClick={() => _goDomestic("sticky")} className="od-bar-cta"
+          style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          <span className="od-bar-cta-long">13,900원으로 시작하기 →</span><span className="od-bar-cta-short">13,900원 시작 →</span>
+        </button>
+      </div>
+    </div>
+    <div style={{ height: 86 }} />
+
+    {/* 하단 고정 CTA (모바일) */}
+    <div className="od-bottom-cta">
+      <div className="od-bottom-inner">
+      <div style={{ minWidth: 0, flex: 1, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>월 13,900원 · 언제든 해지</div>
+        <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>내일 아침 첫 표현이 도착해요</div>
+      </div>
+      <button onClick={() => _goDomestic("bottom_sticky")}
+        style={{ flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 10, padding: "12px 18px", fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 6px 16px -8px rgba(216,90,42,0.8)" }}>
+        지금 바로 입사하기 →
+      </button>
+      </div>
+    </div>
+
+    {showEnter && (
+      <div onClick={() => setShowEnter(false)} style={{ position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div onClick={e => e.stopPropagation()} className="od-rise" style={{ background: "var(--paper)", border: "1.5px solid var(--ink)", borderRadius: 16, padding: "22px 22px 18px", width: "100%", maxWidth: 420, boxShadow: "6px 6px 0 var(--ink)" }}>
+          <div style={{ fontSize: 10.5, letterSpacing: "0.2em", fontWeight: 800, color: "var(--accent, #D85A2A)", marginBottom: 6 }}>YOUBUDDY KOREA · 출입구</div>
+          <h3 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 900, lineHeight: 1.3 }}>어느 쪽이세요?</h3>
+          <p style={{ margin: "0 0 14px", fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.55 }}>멤버십을 이미 구매하셨으면 <b>처음이에요</b>로 들어와 지원서를 쓰고, 전에 입사하셨으면 <b>이미 직원이에요</b>로 로그인하세요.</p>
+          <button onClick={() => { setShowEnter(false); onNext(); }} style={{ display: "block", width: "100%", textAlign: "left", background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 10, padding: "14px 16px", fontFamily: "inherit", cursor: "pointer", marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 900 }}>🆕 처음이에요 · 신규 입사</div>
+            <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>멤버십 구매한 이메일로 입사 지원서를 써요. 초대 코드가 필요해요.</div>
+          </button>
+          <button onClick={() => { setShowEnter(false); setShowLogin(true); }} style={{ display: "block", width: "100%", textAlign: "left", background: "#fff", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 10, padding: "14px 16px", fontFamily: "inherit", cursor: "pointer" }}>
+            <div style={{ fontSize: 15, fontWeight: 900 }}>🪪 이미 직원이에요 · 로그인</div>
+            <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 2 }}>가입한 이메일로 들어가면 진도가 그대로 이어져요.</div>
+          </button>
+          <button onClick={() => setShowEnter(false)} style={{ marginTop: 12, background: "none", border: "none", color: "var(--ink-mute)", fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>닫기</button>
+        </div>
+      </div>
+    )}
+
+    <div className="card">
+
+      {/* ★ 2026-10-16 개편안 순서로 재배치 (내용은 그대로): 히어로 → 파운더 노트 → 실제 화면·3단계 → 안 맞는 분 → 후기 → 지원 동기 → 데모 → 승진 → 폰(+카톡 미리보기) → 멤버십(+가격 칩) → 유비챌 → FAQ → 마지막 CTA */}
+      {/* ── 1. 히어로 ── */}
+      {/* ★ 광고(입사 시뮬레이션) message match: 클릭한 사람 머릿속 단어를 첫 줄에 */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, marginBottom: 12, letterSpacing: "-0.01em" }}>
+        👔 회사에 입사한 것처럼, 매일 영어로 출근해요
+      </div>
+      <div className="eyebrow">하루 5분 · 혼자 · 매일</div>
+      <h1 style={{ lineHeight: 1.25 }}>영어로 일은 하는데,<br/>늘 <em>쓰던 표현만</em> 나와요</h1>
+      <p className="lead" style={{ marginBottom: 12 }}>
+        그 상황에서 원어민이 실제로 쓰는 한마디를 <strong>매일 아침 카톡으로</strong> 하나씩 보내드려요.<br/>
+        그 자리에서 한 번 써보면 <strong>내 비즈니스 어휘 사전</strong>에 한 칸이 채워져요.
+      </p>
+
+      <Divider />
+
+      {/* ── 4.3 파운더 노트: 왜 이렇게까지 하나 ── */}
+      <SectionTitle eyebrow="FROM YOUBUDDY" title="제가 이걸 만든 이유" />
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 13, padding: "20px 19px", marginBottom: 4 }}>
+        <div style={{ fontSize: 13.5, color: "var(--ink)", lineHeight: 1.85 }}>
+          안녕하세요, 유버디예요. 외국계에서 팀장을 맡으며 7년째 일하고 있습니다.<br/><br/>
+          "한국인들은 화상회의에서 웃기만 하고 말을 안 해."<br/>
+          저는 이 말을 그만 듣고 싶어요.<br/><br/>
+          근데 실력이 없어서가 아니잖아요? 다 아는 단어인데 저 사람들이 쓰는 조합은 처음 들어봐서,
+          알아듣는 데 반 박자 걸리는 거죠. 근데 매번 그 사이에 화제는 넘어가 있고요.
+          저도 그랬답니다.<br/><br/>
+          충격받은 1년차 때부터 회의에서 들린 표현을 하나씩 적어뒀어요.
+          팀장님이 슬랙에서 쓴 말, 메일에서 본 문장, 회의에서 안 들렸던 아메리칸 농담까지.
+          적어두니까 신기하게, 같은 상황이 다시 왔을 때 어렴풋이 어떤 의미인지는 알겠더라고요.<br/><br/>
+          근데 우리 바쁜데 언제 영어까지 챙기나요. 그래서 제가 하던 그대로,
+          <strong>하루에 하나씩 어휘를 보내드리고 카톡으로도 알려드리기로 했어요.</strong>
+          페이지에서는 그 표현으로 진짜 외국계 상황을 시뮬레이션할 수 있고요.
+          슬랙, 화상회의, 동기와의 스몰톡까지 유버디 경험을 쫙 담았습니다.<br/><br/>
+          더 이상 한국 직장인들이 영어 앞에서 작아지지 않았으면 좋겠어요.<br/>
+          <strong style={{ color: "var(--accent)" }}>오늘 당신의 라이브러리에 단어를 담고, 다음에 쓸 수 있게 버디<sup style={{ fontSize: 9 }}>*</sup>가 도와드릴게요.</strong>
+          <div style={{ marginTop: 14, paddingTop: 11, borderTop: "1px dashed var(--line)", fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.65 }}>
+            <strong style={{ color: "var(--ink-soft)" }}>* 버디 제도</strong> · 외국계에서 신입이 입사하면 옆자리 선배 한 명을 짝지어주는 제도예요.
+            모르는 걸 물어봐도 되는 사람이 한 명 있다는 것만으로 회사 생활이 달라지거든요.
+            1일1비의 사수와 유버디가 그 역할이에요.
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, paddingTop: 13, borderTop: "1px dashed var(--line)" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>유</div>
+          <div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>버디 드림</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>@youbuddy_day · 외국계 7년차</div>
+          </div>
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* ── 1.5 WHAT IS 1일1비 (2026-10-16 개편안): 손으로 재현한 책상 대신 실제 앱 화면 캡처 + 3칸 요약 ── */}
+      <SectionTitle eyebrow="WHAT IS 1일1비"
+        title={<>하루 하나, 비즈니스 영어로<br/>외국계 회사에 출근해요</>}
+        sub={<>매일 오늘의 단어가 도착하면, 그 단어가 실제로 오가는 회사 상황에 들어가 팀장님의 말에 내가 직접 영어로 답장을 써요. 하루 5분이면 끝나요.</>} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, textAlign: "center", marginBottom: 14 }}>
+        {[["1", "오늘의 단어", "뜻·발음 한눈에"], ["2", "회사 상황 속으로", "팀장님이 말을 걸어요"], ["3", "내가 직접 답장", "오늘 단어를 살려서"]].map(st => (
+          <div key={st[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 5px", display: "flex", flexDirection: "column", gap: 2 }}>
+            <b style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--accent)", fontSize: 13 }}>{st[0]}</b>
+            <b style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.35 }}>{st[1]}</b>
+            <span style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.4 }}>{st[2]}</span>
+          </div>
+        ))}
+      </div>
+      <figure style={{ margin: "0 0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <img src="img/landing-what-is.png" alt="1일1비 실제 화면: 오늘의 단어 trade-off, 김 팀장의 질문, 영어로 답장을 쓰는 입력창과 사수 메모" loading="lazy"
+          style={{ display: "block", width: "100%", height: "auto", borderRadius: 14, border: "1px solid var(--line)", boxShadow: "0 16px 36px -22px rgba(42,31,20,0.55)" }} />
+        <figcaption style={{ fontSize: 12, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.5 }}>실제 1일1비 화면 · 오늘의 단어 “trade-off”로 김 팀장에게 직접 답장 쓰기</figcaption>
+      </figure>
+      {/* 책상을 본 직후: 이 화면이 매일 어떻게 굴러가는지 3단계 */}
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "var(--accent)", marginBottom: 4 }}>매일 이렇게 굴러가요</div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginBottom: 9 }}>
+          단어장 앱이 아니라, <b style={{ color: "var(--ink-soft)" }}>가상의 외국계 회사에 입사</b>해서 배우는 방식이에요.
+        </div>
+        {[
+          ["1", "하루 한 번, 회사 메시지가 와요", "오늘의 비즈니스 표현이 담긴, 팀장이나 동료의 말 한마디. 출퇴근길이든 자기 전이든, 편한 때 열면 돼요"],
+          ["2", "답장을 영어로 직접 써봐요", "읽고 끝이 아니라 내 손으로. 하루 5분이면 충분해요"],
+          ["3", "AI 사수가 그 자리에서 고쳐줘요", "사수 = 나를 가르쳐주는 선배. 문법만이 아니라 \"원어민 동료라면 이렇게 써요\"까지"],
+        ].map(st => (
+          <div key={st[0]} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0" }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{st[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{st[1]}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.55, marginTop: 1 }}>{st[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Divider />
+
+      {/* ── 4.7 이런 분껜 안 맞아요 (결제 직전 자가 필터) ── */}
+      <SectionTitle eyebrow="BEFORE YOU JOIN" title="이런 분껜 안 맞아요" sub="솔직하게 먼저 말씀드릴게요. 아래에 해당되시면 지금은 안 하시는 게 나아요." />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["🎯", "토익·오픽 점수가 목표인 분", "시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았어요. 점수에는 도움이 안 돼요."],
+          ["🌱", "영어를 아예 안 쓰는 환경인 분", "회의·슬랙·메일에서 쓰는 표현이라, 써먹을 자리가 없으면 와닿지 않아요. 기초 문법부터라면 다른 걸 먼저 하세요."],
+          ["🗣️", "발음·스피킹 교정을 원하는 분", "말하기를 직접 봐드리진 않아요. 입으로 뱉는 연습이 필요하시면 유비챌 쪽이 맞아요."],
+          ["📚", "하루 30분 이상 제대로 파고 싶은 분", "5분 안에 끝나게 설계했어요. 더 깊게 하고 싶은 분껜 오히려 성에 안 찰 수 있어요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.7, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        반대로 <strong>영어로 일은 하는데 늘 쓰던 표현만 나오는 분</strong>이라면,<br/>
+        딱 그 자리를 메우려고 만든 서비스예요.
+      </div>
+
+      <Divider />
+
+      {/* ── 4. 후기 ── */}
+      <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문과 30일 수료 회고에서 그대로 가져왔어요. 별점은 실제 제출된 만족도예요." />
+      <div style={{ display: "grid", gap: 10, marginBottom: 4 }}>
+        {[
+          ["\"간단하게 부담 없이 하루에 하나씩 할 수 있어서 좋고, 진짜 비즈니스 영어라 도움 돼요.\"", "Day 40 멤버 · 주간 설문 ★★★★★"],
+          ["\"매일 하기는 어려웠는데 롤플레잉을 하니까 단어가 더 잘 외워졌어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"유용한 실제 비즈니스 영어를 업무 상황처럼 재미있게 배울 수 있었고, 한 달 사이에도 점점 사용하기 편해졌어요.\"", "30일 완주 멤버 · 수료 시험 100점"],
+          ["\"문장 피드백 해주는 방식이 중간에 더 상세해져서 좋았어요.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"이렇게 사용하는구나 싶은 것들이 많은 것 같아요.\"", "Day 33 멤버 · 주간 설문 ★★★★★"],
+          ["\"유저 피드백이 빨리 반영되고 개선되는 점이 좋았습니다.\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"쉽고 빨라요. 유비챌보다 간단하고 쉽게 접근할 수 있는 것 같아요.\"", "베타 테스터 · 10일 체험"],
+          ["\"오늘의 한줄에 AI 피드백 생긴 거 넘 좋아요~ 감사합니다 :)\"", "Day 52 멤버"],
+          ["\"해놓으신 단어들이나 만들어놓으신 건 정말 너무 좋았어요!\"", "30일 완주 멤버 · ★★★★★"],
+          ["\"점심 대화가 랜덤 말고 매일 있으면 좋겠어요.\"", "30일 완주 멤버 · ★★★★★ (더 달라는 요청이 최고의 후기죠)"],
+        ].map(r => (
+          <div key={r[1]} style={{ borderLeft: "3px solid var(--accent)", padding: "4px 2px 4px 13px" }}>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, fontStyle: "italic" }}>{r[0]}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 5 }}>{r[1]}</div>
+          </div>
+        ))}
+      </div>
+
+      <Divider />
+
+      {/* ── 1.2 페인 체크: 타깃 3명의 순간 (지원 동기) ── */}
+      <SectionTitle eyebrow="지원 동기" title="혹시 이런 순간 있으셨어요?" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["📮", "메일 보내기 전, 번역기로 두 번 검사해요", "표현은 아는데 이게 자연스러운지 확신이 없어서요. 외국계 다니면서도 그래요."],
+          ["🎤", "회의에서 할 말이 있었는데, 정리하다 화제가 넘어갔어요", "어휘가 부족한 게 아니라, 그 상황에서 말해본 적이 없어서요."],
+          ["🧳", "갑자기 영어 쓰는 자리로 가게 됐어요", "보직이 바뀌었거나, 외국계로 옮기고 싶은데 영어로 일하는 감이 없어서 막막해요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 19, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.75, textAlign: "center", background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 11, padding: "13px 16px", marginBottom: 4 }}>
+        셋 다 원인은 같아요. <strong>몰라서가 아니라, 써본 적이 없어서.</strong><br/>
+        그래서 1일1비는 표현 대신 <strong style={{ color: "var(--accent)" }}>매일 써볼 자리</strong>를 드려요. 아래가 그 자리예요.
+      </div>
+
+      <Divider />
+
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "11px 14px", marginBottom: 18, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, textAlign: "center" }}>
+        👇 아래에서 <strong style={{ color: "var(--ink)" }}>Day 1을 직접 눌러보세요</strong><br/><span style={{ color: "var(--ink-mute)" }}>가입 없이 30초면 끝나요</span>
+      </div>
+      {/* ── 2. 인터랙티브 체험: 실제 인트라넷 오늘 일정 ── */}
+      <SectionTitle eyebrow="LIVE DEMO" title="구경 말고, 직접 출근해보세요" sub="Day 1을 가입 없이 그대로 해봅니다. 마지막엔 진짜 AI 사수가 첨삭해줘요." />
+
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 10px" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)" }}>📋 오늘 일정 · DAY 1</span>
+          <span style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700 }}>{doneCount} / 4 완료</span>
+        </div>
+        <div style={{ display: "grid", gap: 8 }}>
+
+          {renderRow(0, "09:00", "출근 + 오늘의 단어 받기", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0" }}>사수 <strong>차윤아</strong>님이 자리에 노란 포스트잇을 붙여놨어요.</p>
+            <div style={{ background: "#F6E27C", borderRadius: 4, padding: "16px 15px 13px", boxShadow: "2px 4px 10px rgba(58,40,18,0.18)", transform: "rotate(0deg)", maxWidth: 300, margin: "0 auto 12px" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#8A6D1A", letterSpacing: "0.1em", marginBottom: 5 }}>오늘의 단어</div>
+              <div style={{ fontSize: 23, fontWeight: 900, color: "#3A2E10" }}>down the line</div>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: "#6B5513", marginTop: 3 }}>나중에, 시간이 좀 지나서</div>
+            </div>
+            <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.65, marginBottom: 12 }}>
+              💡 길(line)을 따라 쭉 걸어가면 닿는 곳 = <strong style={{ color: "var(--ink)" }}>미래의 어느 시점</strong>이라는 그림이에요.<br/>
+              "in the future"보다 훨씬 네이티브다운 표현!<br/><br/>
+              🗣 <em>"We can hire more people down the line."</em><br/>
+              <span style={{ color: "var(--ink-mute)" }}>(나중에 사람을 더 뽑을 수 있어요.)</span>
+            </div>
+            <button className="btn" onClick={() => markDone(0)} style={{ width: "100%", justifyContent: "center" }}>단어 접수! 다음 일정 →</button>
+          </>)}
+
+          {renderRow(1, "10:00", "오늘의 시추에이션 (회의)", <>
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0 4px" }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#3A4A5C", color: "#fff", fontWeight: 800, fontSize: 13 }}>김</div>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>김 팀장</div>
+                <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.55, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "9px 12px" }}>
+                  "We can’t add designers right now, but <strong>down the line</strong>, definitely."
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 4, lineHeight: 1.5 }}>지금은 디자이너 충원이 어렵지만, <strong>나중엔</strong> 꼭 할 거예요.</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", margin: "12px 0 8px" }}>💬 어떻게 답하는 게 자연스러울까요? (한국어 해석 참고!)</div>
+            <div style={{ display: "grid", gap: 7 }}>
+              {OPTIONS.map(o => {
+                const show = !!pick, isP = pick === o.id, isC = o.kind === "correct";
+                return (
+                  <button key={o.id} onClick={() => { if (!pick) { setPick(o.id); track("demo_quiz_answer", { correct: o.kind === "correct" }); } }} style={{
+                    textAlign: "left", padding: "10px 12px", borderRadius: 9, fontFamily: "inherit", lineHeight: 1.5,
+                    border: "1.5px solid " + (show && isC ? "#4A7C59" : (show && isP ? "#B23A2C" : "var(--line)")),
+                    background: show && isC ? "rgba(74,124,89,0.08)" : (show && isP ? "rgba(178,58,44,0.06)" : "var(--paper)"),
+                    cursor: pick ? "default" : "pointer",
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{o.en}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 3 }}>{o.ko}</div>
+                    {show && (isC || isP) && <div style={{ fontSize: 11.5, fontWeight: 600, color: isC ? "#4A7C59" : "#B23A2C", marginTop: 6 }}>{o.note}</div>}
+                  </button>
+                );
+              })}
+            </div>
+            {pick && <button className="btn od-rise" onClick={() => markDone(1)} style={{ width: "100%", justifyContent: "center", marginTop: 10 }}>{picked && picked.kind === "correct" ? "🎉 정답! 다음 일정 →" : "그럴 수 있어요! 다음 일정 →"}</button>}
+          </>)}
+
+          {renderRow(2, "14:00", "사수 1:1 피드백 (슬랙 DM)", <>
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start", margin: "12px 0" }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--ink)", marginBottom: 3 }}>차윤아 · 사수</div>
+                <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.65, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "11px 13px" }}>
+                  오늘 회의 잘 들었어요 👀 첫날인데 감 좋은데요?<br/><br/>
+                  하나만 더: <strong>down the line</strong> 앞에는 somewhere나 further를 붙여서 <em>"somewhere down the line"</em>(언젠가는)으로도 진짜 많이 써요. 이런 디테일이 네이티브 느낌을 만들어요.
+                </div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 12, background: "var(--paper)", border: "1px dashed var(--line)", borderRadius: 8, padding: "9px 12px" }}>
+              실제 서비스에선 <strong>내가 쓴 영어 문장</strong>을 AI 사수가 이렇게 1:1로 고쳐주고, 왜 그런지 이유까지 설명해줘요.
+            </div>
+            <button className="btn" onClick={() => markDone(2)} style={{ width: "100%", justifyContent: "center" }}>확인했어요! 마지막 일정 →</button>
+          </>)}
+
+          {renderRow(3, "17:00", "오늘의 영작 미션 (AI 사수 첨삭)", <>
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, margin: "10px 0 6px" }}>퇴근 전 마지막 미션! 김 팀장에게 <strong style={{ color: "var(--ink)" }}>오늘 단어를 살려 한 줄 답장</strong>을 영어로 써보세요.</p>
+            <div style={{ fontSize: 11.5, color: "var(--ink-mute)", background: "var(--paper)", border: "1px dashed var(--line)", borderRadius: 8, padding: "8px 11px", lineHeight: 1.55, marginBottom: 8 }}>
+              💡 이런 뜻으로: "알겠습니다. 지금은 있는 인원으로 진행하고, 나중에 디자이너를 충원하시죠."
+            </div>
+            <textarea value={journal} onChange={e => setJournal(e.target.value)} rows={2}
+              placeholder="예: Got it. Let's start now and hire designers down the line."
+              style={{ width: "100%", boxSizing: "border-box", borderRadius: 9, border: "1px solid var(--line)", padding: "10px 12px", fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", background: "var(--paper)", color: "var(--ink)", resize: "none", marginBottom: 10 }} />
+            {jrFb && (
+              <div className="od-rise" style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#E8743C", color: "#fff", fontWeight: 800, fontSize: 13 }}>차</div>
+                  <div style={{ flex: 1, fontSize: 13, color: "var(--ink)", lineHeight: 1.6, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: "2px 11px 11px 11px", padding: "10px 13px" }}>
+                    {jrFb.praise || "좋아요, 바로 첨삭 들어갈게요!"}
+                  </div>
+                </div>
+                <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ background: "rgba(74,124,89,0.08)", borderBottom: "1px solid var(--line)", padding: "10px 13px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "#4A7C59", marginBottom: 4 }}>NATIVE VERSION · 사수의 한 문장</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.55 }}>"{jrFb.corrected}"</div>
+                  </div>
+                  {jrFb.grammar && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📐 문법</strong> · {jrFb.grammar}
+                    </div>
+                  )}
+                  {jrFb.vocab && (jrFb.vocab.to || jrFb.vocab.reason) && (
+                    <div style={{ padding: "9px 13px", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>📚 어휘</strong> · {jrFb.vocab.from ? <span><em>{jrFb.vocab.from}</em> 대신 <em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span> : <span><em style={{ color: "var(--accent)" }}>{jrFb.vocab.to}</em>. </span>}{jrFb.vocab.reason}
+                    </div>
+                  )}
+                  {jrFb.nuance && (
+                    <div style={{ padding: "9px 13px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                      <strong style={{ color: "var(--ink)" }}>🎯 뉘앙스</strong> · {jrFb.nuance}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 7, textAlign: "center" }}>매일 이렇게 4구획 첨삭을 받아요. 이게 1일1비의 핵심이에요.</div>
+              </div>
+            )}
+            {!jrFb ? (
+              <button className="btn" onClick={askJournalAi} disabled={jrLoading || !journal.trim()} style={{ width: "100%", justifyContent: "center", opacity: (jrLoading || !journal.trim()) ? 0.6 : 1 }}>
+                {jrLoading ? "사수가 첨삭 중..." : "✍️ 사수에게 제출하기"}
+              </button>
+            ) : (
+              <button className="btn od-rise" onClick={() => markDone(3)} style={{ width: "100%", justifyContent: "center" }}>미션 완료, 퇴근하기 →</button>
+            )}
+          </>)}
+        </div>
+
+        {allDone && (
+          <div className="od-rise" style={{ padding: "18px 0 8px" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ display: "inline-block", animation: "odStampIn 0.5s ease both", border: "4px solid #B23A2C", color: "#B23A2C", borderRadius: 10, padding: "9px 15px", fontWeight: 900, fontSize: 15, letterSpacing: "0.12em", transform: "rotate(0deg)" }}>DAY 1 완료</div>
+              <p style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.65, margin: "12px 0 4px" }}>
+                방금 그게 1일1비의 하루예요. <strong style={{ color: "var(--ink)" }}>딱 5분.</strong>
+              </p>
+              <p style={{ fontSize: 13.5, fontWeight: 800, color: "var(--accent)", margin: "0 0 14px" }}>
+                그리고... 이게 다가 아니에요. 오늘 건 맛보기예요 👀
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              {[
+                ["🍱", "English Lunch", "동료와 영어 점심 수다 (콩글리시 함정 주의)"],
+                ["🎲", "매일 바뀌는 활동", "미니미션 퀴즈, 복습, 메일 빈칸까지 순환"],
+                ["🎓", "Day 30 승진 시험", "통과하면 정직원 발령 + 네이비 사원증"],
+                ["📒", "나만의 표현 노트", "30일 완주 보상. 내가 모은 표현 사전이 생겨요"],
+                ["🌟", "Day 60 특별 면담", "런던 본사 Director와 1:1, 뭘 듣게 될까요"],
+                ["🎖️", "Day 90 대리 승진", "승진 시험 통과하면 레드 사원증"],
+                ["🔔", "저녁 출근 리마인드", "까먹지 않게 푸시가 살짝 찔러줘요"],
+                ["🚀", "대리부터 TF 트랙", "협상·피플·문서·미팅 중 내 일에 맞는 쪽으로"],
+              ].map(f => (
+                <div key={f[1]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 11px" }}>
+                  <div style={{ fontSize: 16 }}>{f[0]}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginTop: 3 }}>{f[1]}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2, lineHeight: 1.45 }}>{f[2]}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", margin: "12px 0 12px", lineHeight: 1.6 }}>
+              90일 완주가 목표가 아니에요. <strong style={{ color: "var(--ink)" }}>내일 회의에서 쓸 한 문장</strong>이 목표예요. 그건 Day 1부터 돼요.<br/>
+              내일이면 Day 2 단어가 책상에 도착해요. <strong style={{ color: "var(--ink)" }}>오늘 입사하면, 진짜로 도착해요.</strong>
+            </p>
+            <button className="btn od-rise" onClick={() => _goDomestic("demo_complete")} style={{ width: "100%", justifyContent: "center", fontSize: 14.5, padding: "14px 18px" }}>
+              🎟 이대로 입사하기 → <span style={{ fontWeight: 600, fontSize: 12, opacity: 0.9 }}>월 13,900원</span>
+            </button>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", textAlign: "center", marginTop: 7 }}>언제든 해지 · 기록은 그대로 보관돼요</div>
+          </div>
+        )}
+      </div>
+
+      <Divider />
+
+      {/* ── 3. 어떻게 진행되나 ── */}
+      <SectionTitle eyebrow="HOW IT WORKS" title="게임처럼 승진해요" sub="출근 도장이 쌓이면 직급이 올라요. 90일이 끝이 아니라, 대리부터 트랙이 새로 열려요." />
+      <div style={{ display: "flex", alignItems: "stretch", gap: 7, marginBottom: 12 }}>
+        {[["🌱", "수습", "Day 1-30", "기본 표현 30개"], ["👔", "사원", "Day 31-90", "회의를 주도하는 표현"], ["🎖️", "대리", "Day 91~", "내 일에 맞는 트랙 선택"]].map(s => (
+          <div key={s[1]} style={{ flex: 1, textAlign: "center", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 6px" }}>
+            <div style={{ fontSize: 21 }}>{s[0]}</div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)", marginTop: 4 }}>{s[1]}</div>
+            <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 800, marginTop: 2 }}>{s[2]}</div>
+            <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 4, lineHeight: 1.4 }}>{s[3]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "12px 15px", marginBottom: 10 }}>
+        Day 30엔 <strong>정직원 전환 시험</strong>, Day 90엔 <strong>대리 승진 시험</strong>. 통과할 때마다 사원증이 바뀌어요.
+        대리가 되면 <strong>협상·피플·문서·미팅</strong> 중에서 내 일에 맞는 TF를 골라 이어가실 수 있고, 표현은 계속 업데이트되고 있답니다.
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.75, background: "rgba(42,31,20,0.04)", border: "1px dashed var(--line)", borderRadius: 10, padding: "13px 15px" }}>
+        🚪 그리고 대리 위로는 과장, 부장, 임원실이 이어져요.<br/>
+        맨 꼭대기엔 <strong>사장실</strong>이 있는데... <strong>누가 사장인지는 승진한 사람만 볼 수 있어요.</strong>
+      </div>
+
+      <Divider />
+
+      {/* ── 3.5 폰·알림·동료 (2026-10-12 재참여 설문: 폰으로 못 하는 줄 알았고, 알림·공지방이 있는 줄 몰랐다. 있는 기능을 처음부터 보여준다) ── */}
+      <SectionTitle eyebrow="ON YOUR PHONE" title="출퇴근길 폰으로, 혼자가 아니게" sub="컴퓨터 앞이 아니어도 돼요. 폰 하나로 출근하고, 알림이 챙겨주고, 동기들이 같이 가요." />
+      {/* ── 1.1 카톡 미리보기: '매일 아침 카톡으로' 를 말이 아니라 화면으로 ── */}
+      <div style={{ background: "#9FB4C7", borderRadius: 14, padding: "14px 12px 16px", marginTop: 2 }}>
+        <div style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 10, letterSpacing: "0.02em" }}>
+          내일 아침 9시, 카톡함에 이렇게 도착해요
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <span style={{ width: 32, height: 32, borderRadius: 11, background: "var(--accent)", color: "#fff", fontWeight: 800, fontSize: 12.5, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>유</span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.95)", fontWeight: 700, marginBottom: 4 }}>1일1비</div>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 5 }}>
+              <div style={{ background: "#fff", borderRadius: "3px 13px 13px 13px", padding: "12px 13px", fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, boxShadow: "0 1px 2px rgba(0,0,0,0.08)", minWidth: 0 }}>
+                ☀️ 좋은 아침이에요! 오늘의 표현이 도착했어요.<br/><br/>
+                <strong style={{ fontSize: 14 }}>low-hanging fruit</strong><br/>
+                <span style={{ color: "var(--ink-soft)" }}>쉽게 얻을 수 있는 성과</span>
+                <div style={{ marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  💬 오늘 이런 자리에서 써요<br/>
+                  <span style={{ color: "var(--ink)" }}>"Let's knock out the low-hanging fruit first."</span><br/>
+                  <span style={{ fontSize: 11.5 }}>쉽게 처리할 수 있는 것부터 먼저 해치웁시다.</span>
+                </div>
+                <div style={{ marginTop: 10, textAlign: "center", background: "var(--accent)", color: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800 }}>
+                  출근해서 한 번 써보기 →
+                </div>
+              </div>
+              <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.85)", flexShrink: 0, paddingBottom: 2 }}>오전 9:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 9 }}>
+        앱을 안 열어도 와요. 받을 시간은 <strong>24시간 중 원하는 시각</strong>으로 직접 고르시면 돼요. 해외 시차도 괜찮아요.
+      </div>
+      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+        {[
+          ["📱", "폰으로 출근해요", "회원가입부터 매일 출근까지 전부 휴대폰에서 돼요. 홈 화면에 추가하면 앱처럼 한 번에 열리고, 컴퓨터와 폰을 오가도 진도·표현 노트가 그대로 이어져요."],
+          ["⏰", "정한 시간에 카톡이 와요", "아침 7시든 밤 11시든, 내가 고른 시각에 오늘의 표현이 카톡으로 도착해요. 앱을 안 열어도요. 출근을 깜빡할 틈이 없어요."],
+          ["👥", "1일1비 공지방에서 같이 가요", "카톡 공지방에서 공지·업데이트를 받고, 같이 출근하는 동기들을 봐요. 사내 게시판엔 이번 주 EXP 순위판도 있어서, 혼자 조용히 하다가 끊기는 일이 줄어요."],
+        ].map(c => (
+          <div key={c[1]} style={{ display: "flex", gap: 11, alignItems: "flex-start", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px" }}>
+            <span style={{ fontSize: 21, flexShrink: 0 }}>{c[0]}</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", lineHeight: 1.5 }}>{c[1]}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }}>{c[2]}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginBottom: 4 }}>
+        알림 시간과 공지방 입장은 가입 첫날 가이드에서 바로 켜드려요. 나중에 사원증 → 설정에서 언제든 바꿀 수 있고요.
+      </div>
+
+      <Divider />
+
+      <SectionTitle eyebrow="MEMBERSHIP" title="매일 5분, 하루 460원꼴" sub="월 13,900원 구독제 · 10월 23일(금)까지만 신청 가능 · 언제든 해지" />
+      {/* 선별 기준(신뢰 칩) + 가격: 페인에 공감한 다음 '누가 · 얼마에'를 보여준다 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 8 }}>
+        {[
+          ["🏢", "외국계 대기업 7년차"],
+          ["✍️", "현업에서 실제로 쓰는 표현만"],
+          ["📚", "7년치 표현 수집본"],
+        ].map(t => (
+          <span key={t[1]} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 700, color: "var(--ink-soft)" }}>
+            <span>{t[0]}</span>{t[1]}
+          </span>
+        ))}
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--accent)", color: "#fff", borderRadius: 20, padding: "6px 12px", fontSize: 11.5, fontWeight: 800 }}>
+          💳 월 13,900원 · 언제든 해지
+        </span>
+      </div>
+      <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+        {[["📩", "하루 하나, 새로운 Day 도착"], ["💬", "실제 업무 상황 시뮬레이션 + 미니 퀴즈"], ["✍️", "AI 사수의 1:1 영작 첨삭 (매일)"], ["🎖️", "직급 승진 시스템 + 나만의 표현 노트"]].map(it => (
+          <div key={it[1]} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: "var(--ink)", fontWeight: 600, padding: "6px 0" }}>
+            <span style={{ fontSize: 16 }}>{it[0]}</span><span>{it[1]}</span>
+          </div>
+        ))}
+      </div>
+      {/* ── 5.5 Phase 안내: 공채 기수 프레임 + 가격 사다리 ── */}
+      <div style={{ border: "1.5px solid var(--ink)", borderRadius: 12, padding: "16px 17px", marginBottom: 16, background: "var(--paper)" }}>
+        <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.45, marginBottom: 10 }}>
+          1일1비는 계속 커지고 있어요.
+        </div>
+
+        {/* 공채 타임라인 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>1차 공채</span>
+            <span style={{ fontSize: 12, color: "var(--ink-soft)", textDecoration: "line-through" }}>월 9,900원</span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px solid var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>모집 마감</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 12px", background: "var(--paper)", border: "1.5px solid var(--accent)", borderRadius: 9 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--accent)", flexShrink: 0 }}>2차 공채</span>
+            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.35 }}>
+              <span style={{ fontSize: 13, fontWeight: 900, color: "var(--ink)" }}>월 13,900원</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>10/23(금)까지만 신청 가능</span>
+            </span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "#fff", background: "var(--accent)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>~10/23 마감</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", background: "var(--paper-warm)", borderRadius: 9, opacity: 0.62 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", color: "var(--ink-mute)", flexShrink: 0 }}>3차 공채</span>
+            <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>AI 맞춤 학습 탑재 후, 인상 예정</span>
+            <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", border: "1px dashed var(--ink-mute)", borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>준비 중</span>
+          </div>
+        </div>
+
+        <div style={{ background: "var(--paper-warm)", borderRadius: 9, padding: "11px 13px", fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+          1차 공채 가격은 다시 안 열려요. 대신 <strong style={{ color: "var(--accent)" }}>지금 입사한 분은 지금 가격 그대로</strong> 계속 이용해요.<br/>
+          <span style={{ color: "var(--ink-mute)" }}>커리큘럼과 기능이 늘어날수록 다음 공채 가격은 올라갑니다.</span>
+        </div>
+      </div>
+
+      {CTAButtons}
+
+      <Divider />
+
+      {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
+      <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요." />
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "11px 14px", marginBottom: 10 }}>
+        둘 다 <strong style={{ color: "var(--ink)" }}>비즈니스 영어에 꼭 필요한 단어</strong>만 모았어요. 다른 건 <strong style={{ color: "var(--ink)" }}>고르는 방식</strong>이에요. 1일1비는 직급이 올라가는 순서대로, 유비챌은 <strong style={{ color: "var(--ink)" }}>기수마다 주제를 새로 큐레이션</strong>해요.
+      </div>
+      {/* 자리 그림: 축이 달라서 안 겹친다는 걸 한눈에 */}
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 14px 10px", marginBottom: 10 }}>
+        <div style={{ position: "relative", height: 190, margin: "0 8px" }}>
+          {/* 축 */}
+          <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, background: "var(--line)" }} />
+          <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: 1, background: "var(--line)" }} />
+          {/* 축 라벨 */}
+          <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%) translateX(-2px)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "2px 3px" }}>혼자</div>
+          <div style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%) translateX(2px)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "2px 3px", textAlign: "right" }}>함께</div>
+          <div style={{ position: "absolute", left: "50%", top: -2, transform: "translateX(-50%)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "0 5px" }}>기간 안에 몰아서</div>
+          <div style={{ position: "absolute", left: "50%", bottom: -2, transform: "translateX(-50%)", fontSize: 10, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper)", padding: "0 5px" }}>매일 조금씩</div>
+          {/* 1일1비: 혼자 + 매일 (좌하단) */}
+          <div style={{ position: "absolute", left: "13%", top: "70%", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 11, height: 11, borderRadius: "50%", background: "var(--accent)", flexShrink: 0, boxShadow: "0 0 0 4px rgba(216,90,42,0.16)" }} />
+            <span style={{ fontSize: 12.5, fontWeight: 900, color: "var(--accent)", whiteSpace: "nowrap" }}>1일1비</span>
+          </div>
+          {/* 유비챌: 함께 + 4주 (우상단) */}
+          <div style={{ position: "absolute", right: "13%", top: "22%", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--ink-soft)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>유비챌</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.6, textAlign: "center", marginTop: 6 }}>
+          같은 목적지인데 <strong style={{ color: "var(--ink-soft)" }}>가는 길이 정반대</strong>예요. 그래서 둘이 겹치지 않아요.
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <div style={{ flex: 1, background: "var(--paper-warm)", border: "2px solid var(--accent)", borderRadius: 11, padding: "13px 14px" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 6 }}>MEMBERSHIP</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>1일1비</div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>혼자 · 매일 5분 · 쌓기</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>단톡방도 인증 압박도 마감도 없어요. <strong style={{ color: "var(--ink)" }}>혼자 하는 게 편한 분</strong>이 내 속도로 어휘 사전을 채워가요.</div>
+        </div>
+        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup"
+           target="_blank" rel="noopener"
+           onClick={() => track("lineup_ubc_click")}
+           style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px", textDecoration: "none", display: "block" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--ink-mute)", marginBottom: 6 }}>PROGRAM</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: "var(--ink)" }}>유비챌 <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>↗</span></div>
+          <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>동료와 함께 · 4주 · 문장 인증</div>
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>매일 인증하고 같은 기수 동료가 옆에 있어요. <strong style={{ color: "var(--ink)" }}>혼자선 자꾸 미루는 분</strong>께 끝까지 가는 힘을 붙여드려요.</div>
+          <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 800, marginTop: 8 }}>유비챌 보러가기 →</div>
+        </a>
+      </div>
+
+      {/* 한눈에 비교 */}
+      <div style={{ border: "1px solid var(--line)", borderRadius: 11, overflow: "hidden", marginBottom: 12 }}>
+        {[
+          ["방식", "혼자, 매일", "동료와 함께, 4주"],
+          ["하루 부담", "5분", "하루 3문장 인증"],
+          ["마감", "없음 · 내 속도대로", "4주 안에 끝내기"],
+          ["어휘 구성", "직급 순서대로 차곡차곡", "기수별 주제 큐레이션"],
+          ["난이도", "★★★☆☆ (3)", "★★★★☆ (4)"],
+          ["남는 것", "매일 채워지는 내 어휘 사전", "4주간 매일 직접 써낸 문장들"],
+          ["이런 분께", "혼자 하는 게 편한 분\n매일 조금씩 쌓고 싶은 분", "혼자선 자꾸 미루는 분\n끝까지 가는 힘이 필요한 분"],
+        ].map((r, i) => (
+          <div key={r[0]} style={{ display: "grid", gridTemplateColumns: "72px 1fr 1fr", borderTop: i === 0 ? "none" : "1px solid var(--line)" }}>
+            <div style={{ padding: "10px 10px", fontSize: 11, fontWeight: 800, color: "var(--ink-mute)", background: "var(--paper-warm)", display: "flex", alignItems: "center" }}>{r[0]}</div>
+            <div style={{ padding: "10px 11px", fontSize: 12, color: "var(--ink)", lineHeight: 1.55, whiteSpace: "pre-line", background: "rgba(216,90,42,0.05)", fontWeight: 700 }}>{r[1]}</div>
+            <div style={{ padding: "10px 11px", fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.55, whiteSpace: "pre-line" }}>{r[2]}</div>
+          </div>
+        ))}
+        <div style={{ display: "grid", gridTemplateColumns: "72px 1fr 1fr", borderTop: "1px solid var(--line)", background: "var(--paper-warm)" }}>
+          <div />
+          <div style={{ padding: "7px 11px", fontSize: 10.5, fontWeight: 900, letterSpacing: "0.06em", color: "var(--accent)" }}>1일1비</div>
+          <div style={{ padding: "7px 11px", fontSize: 10.5, fontWeight: 900, letterSpacing: "0.06em", color: "var(--ink-mute)" }}>유비챌</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "var(--paper-warm)", borderRadius: 10, padding: "14px 15px" }}>
+        <div style={{ fontSize: 13.5, fontWeight: 900, color: "var(--ink)", marginBottom: 7 }}>👉 혼자선 자꾸 미뤄지시나요?</div>
+        솔직히 말하면, 매일 알림이 와도 안 여는 분들이 계세요. 의지 문제가 아니라 <strong style={{ color: "var(--ink)" }}>마감이 없으면 안 움직이는 타입</strong>인 거예요.<br/><br/>
+        그런 분껜 <strong style={{ color: "var(--ink)" }}>유비챌</strong>을 권해요. 4주 마감, 매일 인증, 같은 기수 동료가 있어서 <strong style={{ color: "var(--ink)" }}>안 하면 티가 나거든요.</strong> 그 강제성이 필요한 분이 분명히 있어요.
+        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=route_lazy"
+           target="_blank" rel="noopener"
+           onClick={() => track("lineup_ubc_route_click")}
+           style={{ display: "block", textAlign: "center", marginTop: 12, background: "var(--ink)", color: "var(--paper)", borderRadius: 9, padding: "12px 14px", fontSize: 13.5, fontWeight: 900, textDecoration: "none" }}>
+          유비챌 보러가기 →
+        </a>
+        <div style={{ marginTop: 10, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.65 }}>
+          반대로 매일 쌓는 게 잘 맞는 분이 4주 실전까지 더하고 싶다면 둘 다 하셔도 좋아요.
+          다만 지금 4주가 너무 바쁘시면 무리하지 마세요. 여유가 없을 땐 1일1비만으로도 충분해요.
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* ── 4.5 FAQ: 사기 전 막히는 질문들 ── */}
+      <SectionTitle eyebrow="FAQ" title="사기 전에 다들 물어보는 것" />
+      <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
+        {[
+          ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
+          ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
+          ["결제하면 바로 시작되나요?", "결제 완료 메일로 입사 코드가 갑니다. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요."],
+          ["해지하면 기록은 사라지나요?", "해지는 결제 페이지에서 언제든 하실 수 있어요. 표현 노트와 진도는 해지 후 2개월간 보관되니, 그 안에 재구독하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
+          ["누구한테 잘 맞나요?", "슬랙·메일·회의에서 영어를 이미 쓰고 계신 직장인이요. 시험 영어가 아니라 내일 회의에서 쓸 한 문장을 만드는 서비스랍니다."],
+          ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
+          ["매일 알림이 오나요?", "카톡 출근 알림을 켜면 내가 정한 시각에 오늘의 표현이 카톡으로 와요 (앱을 안 열어도요). 가입 첫날 가이드에서 켜드리고, 사원증 → 설정에서 시간을 바꾸거나 끌 수 있어요. 1일1비 공지방(카톡)도 같은 곳에서 들어가요."],
+        ].map(q => (
+          <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
+            <summary style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
+            <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, padding: "0 14px 13px" }}>{q[1]}</div>
+          </details>
+        ))}
+      </div>
+
+      {/* ── 마지막 CTA ── */}
+      <div style={{ marginTop: 20, background: "var(--ink)", borderRadius: 14, padding: "24px 20px 22px", textAlign: "center" }}>
+        <div style={{ fontSize: 10.5, letterSpacing: "0.18em", fontWeight: 800, color: "rgba(245,238,221,0.65)", textTransform: "uppercase", marginBottom: 10 }}>NOW HIRING</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: "var(--paper)", lineHeight: 1.45, marginBottom: 8 }}>
+          오늘 결제하면<br/><span style={{ color: "#F0A57A" }}>내일 아침 첫 표현</span>이 도착해요
+        </div>
+        <div style={{ fontSize: 12.5, color: "rgba(245,238,221,0.75)", lineHeight: 1.7, marginBottom: 16 }}>
+          하루 5분이면 돼요. 한 달 뒤엔 어휘 사전에 30칸이 채워져 있고요.<br/>
+          맞지 않으면 언제든 해지, 기록은 그대로 남아요.
+        </div>
+        <button onClick={() => _goDomestic("footer")}
+          style={{ width: "100%", background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 11, padding: "15px 18px", fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 24px -12px rgba(216,90,42,0.9)" }}>
+          🚪 지금 바로 입사하기 · 월 13,900원
+        </button>
+        <div style={{ fontSize: 11, color: "rgba(245,238,221,0.6)", marginTop: 10, lineHeight: 1.6 }}>
+          결제 완료 메일의 코드로 지원서를 쓰면 사번이 바로 나와요
+        </div>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a onClick={() => setShowLogin(true)} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}>이미 입사하셨어요? <strong>다시 출근하기 →</strong></a>
+        <div style={{ height: 74 }} />
+      </div>
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        해지는 결제 페이지에서 언제든 · 재구독 시 하던 Day 그대로 이어져요
+      </div>
+    </div>
+    </>
+  );
+}
+
+// ============================================================
+// WelcomeScreen 디스패처 (Rules of Hooks 보호 위해 별도 함수)
+// USE_V3 = 체험형 랜딩 / USE_V2 = 설명형 / false = V1
+// ============================================================
+function WelcomeScreen({ onNext, initialLogin }) {
+  if (USE_V3) return <WelcomeScreenV3 onNext={onNext} initialLogin={!!initialLogin} />;
+  return USE_V2 ? <WelcomeScreenV2 onNext={onNext} /> : <WelcomeScreenV1 onNext={onNext} />;
+}
+
+// ============================================================
+// WelcomeScreen V1 (현행, 베타 기간 기본)
+// ============================================================
+function WelcomeScreenV1({ onNext }) {
+  const [showLogin, setShowLogin] = useState(false);
+  // 새로고침할 때마다 인트로 팝업 다시 노출 (localStorage 저장 X)
+  const [showIntro, setShowIntro] = useState(true);
+  const dismissIntro = () => setShowIntro(false);
+
+  if (showLogin) {
+    return <LoginScreen onBack={() => setShowLogin(false)} />;
+  }
+
+  return (
+    <>
+    {showIntro && (
+      <>
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(42,31,20,0.55)", zIndex: 9000,
+        }} />
+        <div style={{
+          position: "fixed", left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "var(--paper)", border: "2px solid var(--accent)",
+          borderRadius: 14, padding: "30px 30px 22px",
+          maxWidth: 460, width: "calc(100% - 40px)",
+          boxShadow: "0 30px 60px -10px rgba(58,40,18,0.5)",
+          zIndex: 9001,
+          textAlign: "left",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)", marginBottom: 4 }}>
+            ℹ️ 1일 1비란?
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginBottom: 14 }}>
+            = 1일 1비즈니스 표현 배우기
+          </div>
+          <p style={{ fontSize: 15, color: "var(--ink)", lineHeight: 1.7, marginBottom: 18, fontWeight: 500 }}>
+            <strong>비즈니스 영어 표현</strong>이 매일 한 개씩 제공돼요.
+          </p>
+          <ul style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.85, marginBottom: 22, paddingLeft: 0, listStyle: "none" }}>
+            <li>· <strong>유버디가 외국계 7년 다니며 건진 표현들</strong> 위주</li>
+            <li>· <strong>실제 외국계 회사에서 일어나는 다양한 상황</strong> 제공 (유버디 전매특허!)</li>
+            <li>· 모은 표현으로 <strong>테스트 보기</strong> 가능</li>
+            <li>· <strong>월 구독제</strong>로 진행됩니다</li>
+          </ul>
+          <button
+            onClick={dismissIntro}
+            style={{
+              background: "var(--accent)", color: "white", border: "none",
+              padding: "12px 22px", borderRadius: 8,
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            알겠어요, 시작할게요 →
+          </button>
+        </div>
+      </>
+    )}
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 채용공고 #2026-05</div>
+      <h1>이 회사,<br/><em>30일만</em> 다녀볼까요?</h1>
+      <p className="lead">
+        유버디 코리아입니다.<br/>
+        한국에 지점을 둔 <strong>외국계 대기업</strong>이에요.
+        <br/><br/>
+        이번에 신입 사원을 뽑고 있습니다.
+        <br/><br/>
+        · 매일 짧은 출근 (약 <strong>5~10분</strong>)<br/>
+        · 1:1 사수가 비즈니스 표현·문화 코칭 (디지털 사수라 잠도 안 자고 24시간 대기, 답장도 빠릅니다)<br/>
+        · <strong>수습 30일 후 정규직 전환 기회</strong>가 있습니다. 승진 제도(사원·대리·과장·임원)도 운영 중이니 열심히 임해주시길 바랍니다<br/>
+        · <strong>유버디 컴퍼니 TIP</strong>: 회장님을 아직 뵌 사람이 없대요 (알려진 건, 임원으로 승진하면 볼 기회가 있다는 것 정도..?)
+        <br/><br/>
+        지원서 제출 시 사번이 즉시 부여되고, 오늘부터 출근 가능합니다.
+      </p>
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 18 }}>
+        <button className="btn" onClick={onNext} style={{ justifyContent: "center" }}>
+          지원서 작성하기
+        </button>
+        <a
+          className="btn btn-ghost"
+          href="waitlist.html"
+          style={{ textDecoration: "none", textAlign: "center", justifyContent: "center" }}
+        >
+          ✉️ 대기 등록하기 →
+        </a>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={() => setShowLogin(true)}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        초대 안 받으셨으면 대기 등록 추천 · 정식 출시 시 우선 안내
+      </div>
+    </div>
+    </>
+  );
+}
+
+// ============================================================
+// 0b. Login, 다른 기기에서 다시 출근
+// ============================================================
+function LoginScreen({ onBack }) {
+  // step: 'email' (이메일/비번 입력) → 'code' (6자리 코드) → 'setpw' (비번 설정)
+  // 비밀번호가 있으면 email 화면에서 바로 로그인. 비번 잊으면 코드 인증 후 setpw로 재설정.
+  const [step, setStep] = useState("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [pw, setPw] = useState("");            // 비밀번호 (로그인 또는 설정)
+  const [pw2, setPw2] = useState("");          // 비밀번호 확인 (설정 시)
+  const [pwIntent, setPwIntent] = useState(false);  // true면 코드 인증 후 비번 설정 화면으로
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ★ rate limit cooldown (60초)
+  const [cooldownUntil, setCooldownUntil] = useState(() => {
+    try {
+      const v = parseInt(localStorage.getItem("__OD_MAGIC_COOLDOWN") || "0", 10);
+      return v > Date.now() ? v : 0;
+    } catch (e) { return 0; }
+  });
+  const [now, setNow] = useState(Date.now());
+  React.useEffect(() => {
+    if (!cooldownUntil) return;
+    const t = setInterval(() => setNow(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [cooldownUntil]);
+  const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+
+  // 코드 input ref (자동 포커스용)
+  const codeInputRef = React.useRef(null);
+
+  // === 인증 성공(코드/비번) 후 공통: DB 사용자 → __OD_USER 채우고 mainboard 이동 ===
+  const finishLogin = async (emailLower) => {
+    try {
+      if (window.OD?.fetchByEmail) {
+        const userRes = await window.OD.fetchByEmail(emailLower);
+        if (userRes.ok && userRes.user) {
+          const u = userRes.user;
+          let existing = {};
+          try { existing = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; } catch (e) {}
+          const merged = {
+            ...existing,
+            email: u.email,
+            name: u.name || existing.name,
+            empNumber: u.emp_number || existing.empNumber,
+            department: u.department || existing.department,
+            mentor: u.mentor || existing.mentor,
+            level: u.level || existing.level,
+            signupDate: u.signup_date || existing.signupDate,
+            signup_date: u.signup_date,
+            agreedAt: u.agreed_at || existing.agreedAt,
+            dayInCompany: u.day_in_company || existing.dayInCompany || 1,
+            cohort: u.cohort,
+            unlocked: !!u.unlocked,
+            isOperator: !!u.is_operator,
+            isDevMode: !!u.is_dev_mode,
+            isPilotHire: !!u.is_pilot_hire,
+            isTester: !!u.is_tester,
+            membership_ends_at: u.membership_ends_at,
+            membershipEndsAt: u.membership_ends_at,
+            membership_cancel_reason: u.membership_cancel_reason,
+            membershipCancelReason: u.membership_cancel_reason,
+            lastActive: new Date().toISOString(),
+            scenariosCompleted: existing.scenariosCompleted || [],
+            savedNotes: existing.savedNotes || {},
+            dailyJournals: existing.dailyJournals || {},
+            wordsStudied: existing.wordsStudied || [],
+          };
+          localStorage.setItem("__OD_USER", JSON.stringify(merged));
+        } else {
+          return { ok: false, error: "가입 기록을 찾을 수 없어요. 운영자에게 문의해주세요." };
+        }
+      }
+    } catch (e) {
+      console.warn("[login] finishLogin populate 실패:", e);
+    }
+    window.location.href = "mainboard.html";
+    return { ok: true };
+  };
+
+  // === 비밀번호로 로그인 ===
+  const handlePasswordLogin = async () => {
+    const emailLower = email.trim().toLowerCase();
+    if (!emailLower || !/\S+@\S+\.\S+/.test(emailLower)) { setError("이메일을 정확히 입력해주세요."); return; }
+    if (!pw) { setError("비밀번호를 입력해주세요."); return; }
+    if (!window.OD?.signInWithPassword) { setError("서버 연결이 필요해요. 운영자에게 문의해주세요."); return; }
+    setLoading(true); setError("");
+    const res = await window.OD.signInWithPassword(emailLower, pw);
+    if (!res.ok) { setLoading(false); setError(res.error || "로그인 실패"); return; }
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) { setLoading(false); setError(fin.error); }
+  };
+
+  // === 비밀번호 설정/변경/찾기 시작: 코드 발송 후 setpw 화면으로 유도 ===
+  const startPasswordSetup = async () => {
+    setPwIntent(true);
+    setPw(""); setPw2("");
+    await handleSendCode();  // 코드 발송 → step 'code'. 인증되면 pwIntent라서 setpw로.
+  };
+
+  // === 비밀번호 저장 (코드 인증으로 세션 만든 직후) ===
+  const handleSetPassword = async () => {
+    if (!pw || pw.length < 8) { setError("비밀번호는 8자 이상으로 정해주세요."); return; }
+    if (pw !== pw2) { setError("두 비밀번호가 일치하지 않아요."); return; }
+    if (!window.OD?.setPassword) { setError("서버 연결이 필요해요."); return; }
+    setLoading(true); setError("");
+    const res = await window.OD.setPassword(pw);
+    if (!res.ok) { setLoading(false); setError(res.error || "비밀번호 설정 실패"); return; }
+    const emailLower = email.trim().toLowerCase();
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) { setLoading(false); setError(fin.error); }
+  };
+
+  // === STEP 1: 이메일 입력 → 코드 발송 ===
+  const handleSendCode = async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
+      setError("이메일을 정확히 입력해주세요.");
+      return;
+    }
+
+    if (!window.OD || !window.OD.enabled) {
+      setError("서버 연결이 필요한 기능입니다. 운영자에게 문의해주세요.");
+      return;
+    }
+
+    if (cooldownLeft > 0) {
+      setError(cooldownLeft + "초 후 다시 시도해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    // 가입 기록 확인 (코드 발송 전)
+    const check = await window.OD.emailExists(trimmed);
+    if (!check.ok) {
+      setLoading(false);
+      setError("연결 실패. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    if (!check.exists) {
+      setLoading(false);
+      setError("가입 기록이 없어요. 처음이신 분은 지원서 작성하기로 이동해주세요.");
+      return;
+    }
+
+    // 코드 발송 (Supabase signInWithOtp가 매직링크 + 6자리 토큰 둘 다 보냄. 템플릿에서 토큰만 노출.)
+    const result = await window.OD.sendMagicLink(trimmed);
+    setLoading(false);
+
+    if (!result.ok) {
+      const msg = String(result.error || "");
+      const m = msg.match(/after\s+(\d+)\s+seconds/i);
+      if (m) {
+        const secs = parseInt(m[1], 10);
+        const until = Date.now() + secs * 1000;
+        setCooldownUntil(until);
+        try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
+        setError("아직 " + secs + "초 더 기다려주세요. 이미 보낸 메일이 곧 도착할 거예요.");
+      } else {
+        setError("코드 발송 실패: " + (result.error || "잠시 후 다시"));
+      }
+      return;
+    }
+
+    // 발송 성공, 60초 cooldown + 코드 입력 화면으로 이동
+    const until = Date.now() + 60 * 1000;
+    setCooldownUntil(until);
+    try { localStorage.setItem("__OD_MAGIC_COOLDOWN", String(until)); } catch (e) {}
+    setStep("code");
+    setCode("");
+    // 코드 입력 칸에 자동 포커스
+    setTimeout(() => { try { codeInputRef.current?.focus(); } catch (e) {} }, 100);
+  };
+
+  // === STEP 2: 코드 검증 → 세션 생성 → mainboard 이동 ===
+  const handleVerifyCode = async (codeOverride) => {
+    const codeToVerify = (codeOverride || code).replace(/\D/g, "").trim();
+    if (codeToVerify.length !== 6) {
+      setError("6자리 숫자 코드를 입력해주세요.");
+      return;
+    }
+
+    if (!window.OD?.verifyOtpCode) {
+      setError("서버 연결 필요. 운영자에게 문의해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    const emailLower = email.trim().toLowerCase();
+    const result = await window.OD.verifyOtpCode(emailLower, codeToVerify);
+
+    if (!result.ok) {
+      setLoading(false);
+      setError(result.error || "코드 확인 실패. 다시 시도해주세요.");
+      setCode("");
+      setTimeout(() => { try { codeInputRef.current?.focus(); } catch (e) {} }, 50);
+      return;
+    }
+
+    // 코드 인증 성공. 비밀번호 설정/찾기 흐름이면 비번 정하는 화면으로 (세션은 이미 생김).
+    if (pwIntent) {
+      setLoading(false);
+      setStep("setpw");
+      setCode("");
+      setError("");
+      return;
+    }
+
+    // 일반 로그인: DB 사용자 채우고 mainboard 이동 (finishLogin 안에서 redirect).
+    const fin = await finishLogin(emailLower);
+    if (!fin.ok) {
+      setLoading(false);
+      setError(fin.error);
+      setCode("");
+      return;
+    }
+  };
+
+  // 코드 입력 변화 처리 (숫자만 + 6자리 자동 제출)
+  const onCodeChange = (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setCode(v);
+    if (v.length === 6 && !loading) {
+      handleVerifyCode(v);
+    }
+  };
+
+  // === STEP 2 화면: 코드 입력 ===
+  if (step === "code") {
+    return (
+      <div className="card">
+        <div className="eyebrow">YOUBUDDY KOREA · 출근 코드 입력</div>
+        <h1>✉️ 메일로 코드를<br/><em>보내드렸어요</em></h1>
+        <p className="lead">
+          <strong>{email}</strong> 메일함을 확인하고 6자리 숫자 코드를 입력해주세요.<br/>
+          <strong>어느 기기에서든 OK!</strong> 모바일에서 코드 받고 PC에서 입력하셔도 됩니다.
+        </p>
+
+        <div className="form-row" style={{ marginTop: 18 }}>
+          <label>출근 코드 (6자리 숫자)</label>
+          <input
+            ref={codeInputRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={onCodeChange}
+            placeholder="123456"
+            maxLength={6}
+            autoFocus
+            onKeyDown={e => e.key === "Enter" && code.length === 6 && !loading && handleVerifyCode()}
+            style={{
+              fontSize: 28,
+              letterSpacing: 10,
+              textAlign: "center",
+              fontFamily: "JetBrains Mono, monospace",
+              fontWeight: 800,
+              padding: "16px 12px",
+            }}
+          />
+        </div>
+
+        {error && (
+          <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+            ⚠ {error}
+          </div>
+        )}
+
+        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+          <button
+            className="btn"
+            onClick={() => handleVerifyCode()}
+            disabled={loading || code.length !== 6}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "확인 중..." : pwIntent ? "✓ 코드 확인 후 비밀번호 설정" : "✓ 코드 확인 후 출근"}
+          </button>
+
+          <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            💡 메일이 안 보이시면:<br/>
+            · <strong>스팸함</strong>도 확인해보세요<br/>
+            · 코드는 1시간 동안 유효해요<br/>
+            · 6자리 모두 입력하면 자동으로 확인됩니다
+          </div>
+
+          <div className="btn-row" style={{ gap: 8 }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => { setStep("email"); setCode(""); setError(""); setPwIntent(false); }}
+              style={{ flex: 1, justifyContent: "center", fontSize: 13 }}
+            >
+              ← 이메일 다시 입력
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={handleSendCode}
+              disabled={cooldownLeft > 0 || loading}
+              style={{ flex: 1, justifyContent: "center", fontSize: 13 }}
+            >
+              {cooldownLeft > 0 ? `재발송 (${cooldownLeft}초)` : "코드 재발송"}
+            </button>
+          </div>
+
+          <a onClick={onBack} style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}>
+            ← 처음 화면으로
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // === STEP 3 화면: 비밀번호 설정 (코드 인증 후) ===
+  if (step === "setpw") {
+    return (
+      <div className="card">
+        <div className="eyebrow">YOUBUDDY KOREA · 비밀번호 설정</div>
+        <h1>🔑 비밀번호를<br/><em>정해주세요</em></h1>
+        <p className="lead">
+          <strong>{email}</strong> 인증 완료!<br/>
+          이제 비밀번호를 정하면 다음부턴 코드 안 기다리고 바로 로그인할 수 있어요.
+        </p>
+
+        <div className="form-row" style={{ marginTop: 18 }}>
+          <label>새 비밀번호 (8자 이상)</label>
+          <input
+            type="password"
+            value={pw}
+            onChange={e => setPw(e.target.value)}
+            placeholder="비밀번호 입력"
+            autoComplete="new-password"
+            autoFocus
+          />
+        </div>
+        <div className="form-row">
+          <label>비밀번호 확인</label>
+          <input
+            type="password"
+            value={pw2}
+            onChange={e => setPw2(e.target.value)}
+            placeholder="한 번 더 입력"
+            autoComplete="new-password"
+            onKeyDown={e => e.key === "Enter" && !loading && handleSetPassword()}
+          />
+        </div>
+
+        {error && (
+          <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+            ⚠ {error}
+          </div>
+        )}
+
+        <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+          <button
+            className="btn"
+            onClick={handleSetPassword}
+            disabled={loading || !pw || !pw2}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "저장 중..." : "✓ 비밀번호 저장하고 출근"}
+          </button>
+          <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+            💡 비밀번호를 잊어도 괜찮아요. 언제든 <strong>이메일 코드</strong>로 로그인해서 다시 정할 수 있어요.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === STEP 1 화면: 이메일 + 비밀번호 입력 ===
+  return (
+    <div className="card">
+      <div className="eyebrow">YOUBUDDY KOREA · 로그인</div>
+      <h1>다시 만나서 반가워요.<br/><em>출근하시죠.</em></h1>
+      <p className="lead">
+        가입 이메일로 들어가시면 진도가 그대로 이어져요.<br/>
+        <strong>비밀번호를 정해두면 다음부턴 바로 로그인</strong>할 수 있어요.
+      </p>
+
+      <div className="form-row" style={{ marginTop: 18 }}>
+        <label>가입 이메일</label>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          autoComplete="username"
+          autoFocus
+          onKeyDown={e => e.key === "Enter" && !loading && (pw ? handlePasswordLogin() : handleSendCode())}
+        />
+      </div>
+
+      <div className="form-row">
+        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 없으면 비워두세요 (이메일 인증 후 비밀번호 설정으로 넘어가요)</span></label>
+        <input
+          type="password"
+          value={pw}
+          onChange={e => setPw(e.target.value)}
+          placeholder="비밀번호"
+          autoComplete="current-password"
+          onKeyDown={e => e.key === "Enter" && !loading && (pw ? handlePasswordLogin() : handleSendCode())}
+        />
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>
+          ⚠ {error}
+        </div>
+      )}
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+        {pw ? (
+          <button
+            className="btn"
+            onClick={handlePasswordLogin}
+            disabled={loading || !email.trim()}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "로그인 중..." : "🔓 비밀번호로 로그인"}
+          </button>
+        ) : (
+          <button
+            className="btn"
+            onClick={() => { setPwIntent(true); handleSendCode(); }}
+            disabled={loading || !email.trim() || cooldownLeft > 0}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "코드 발송 중..."
+              : cooldownLeft > 0 ? "잠시만요... " + cooldownLeft + "초"
+              : "✉️ 이메일 코드 받기"}
+          </button>
+        )}
+        {cooldownLeft > 0 && (
+          <div style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.5 }}>
+            메일이 곧 도착해요. 받은편지함과 <strong>스팸함</strong>을 확인해주세요.<br/>
+            연속 클릭하시면 차단 시간이 늘어나니 잠시만 기다려주세요.
+          </div>
+        )}
+        {/* ★ 비밀번호를 입력한 상태에서도 복구 경로가 항상 보이게. 예전엔 pw가 차 있으면
+            '비밀번호로 로그인' 버튼만 남아서, 비밀번호를 잊은 회원이 막다른 길에 갇혔다. */}
+        <button
+          type="button"
+          onClick={startPasswordSetup}
+          disabled={loading || !email.trim() || cooldownLeft > 0}
+          style={{
+            background: "transparent", border: "1px solid var(--line)", borderRadius: 8,
+            padding: "11px 14px", fontSize: 13, fontWeight: 700, color: "var(--ink-soft)",
+            cursor: (loading || !email.trim() || cooldownLeft > 0) ? "default" : "pointer",
+            fontFamily: "inherit", textAlign: "center",
+            opacity: (loading || !email.trim() || cooldownLeft > 0) ? 0.55 : 1,
+          }}
+        >
+          ✉️ 비밀번호를 잊으셨나요? 이메일 코드로 로그인
+        </button>
+        <a
+          onClick={onBack}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textAlign: "center", padding: "8px 0" }}
+        >
+          ← 신규 입사 / 대기 등록으로 돌아가기
+        </a>
+      </div>
+
+      <div className="fine-print" style={{ marginTop: 12 }}>
+        비밀번호를 잊어도 이메일 코드로 언제든 로그인 · 모바일·PC 어느 기기에서든 OK<br/>
+        가입하신 이메일이 기억나지 않으시면 <b>youbuddy.co@gmail.com</b> 또는 인스타 <b>@youbuddy_day</b> DM으로 알려주세요. 확인해서 안내해 드릴게요.
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 가입 이메일 인증 (코드 6자리) + 비밀번호 저장
+// 가입 폼 제출 직후 단계. 진짜 메일인지 확인 + 그 세션으로 비번 저장.
+// ============================================================
+function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, totalStages }) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [cooldownUntil, setCooldownUntil] = useState(Date.now() + 60000);
+  const [now, setNow] = useState(Date.now());
+  const codeRef = React.useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 500);
+    setTimeout(() => { try { codeRef.current?.focus(); } catch (e) {} }, 100);
+    return () => clearInterval(t);
+  }, []);
+  const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+
+  const verify = async (codeOverride) => {
+    const c = (codeOverride || code).replace(/\D/g, "").trim();
+    if (c.length !== 6) { setError("6자리 숫자 코드를 입력해주세요."); return; }
+    if (!window.OD?.verifyOtpCode) { setError("서버 연결이 필요해요."); return; }
+    setLoading(true); setError("");
+    const emailLower = (email || "").trim().toLowerCase();
+    const res = await window.OD.verifyOtpCode(emailLower, c);
+    if (!res.ok) {
+      setLoading(false);
+      setError(res.error || "코드가 일치하지 않아요. 메일을 다시 확인해주세요.");
+      setCode("");
+      setTimeout(() => { try { codeRef.current?.focus(); } catch (e) {} }, 50);
+      return;
+    }
+    // 인증 성공 → 이 세션으로 비밀번호 저장
+    if (password && window.OD?.setPassword) {
+      const pwRes = await window.OD.setPassword(password);
+      if (!pwRes.ok) console.warn("[가입] 비밀번호 저장 실패:", pwRes.error);
+    }
+    // 세션 정리 (가입 진행은 localStorage 게이트로, 기존 동작 유지)
+    try { if (window.OD?.signOut) await window.OD.signOut(); } catch (e) {}
+    setLoading(false);
+    onVerified();
+  };
+
+  const onCodeChange = (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setCode(v);
+    if (v.length === 6 && !loading) verify(v);
+  };
+
+  const resend = async () => {
+    if (cooldownLeft > 0 || loading || !window.OD?.sendMagicLink) return;
+    setLoading(true); setError("");
+    const r = await window.OD.sendMagicLink((email || "").trim().toLowerCase());
+    setLoading(false);
+    if (!r || !r.ok) { setError("재발송 실패: " + (r && r.error || "잠시 후 다시")); return; }
+    setCooldownUntil(Date.now() + 60000);
+  };
+
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 2 · 이메일 인증</div>
+      <h1>메일로 <em>코드</em>를 보냈어요.</h1>
+      <p className="lead">
+        <strong>{email}</strong> 로 6자리 코드를 보냈어요.<br/>
+        진짜 메일인지 확인하는 단계예요. 코드를 입력하면 비밀번호까지 저장돼요.
+      </p>
+
+      <div className="form-row" style={{ marginTop: 18 }}>
+        <label>인증 코드 (6자리 숫자)</label>
+        <input
+          ref={codeRef}
+          type="text" inputMode="numeric" autoComplete="one-time-code"
+          value={code} onChange={onCodeChange} placeholder="123456" maxLength={6} autoFocus
+          onKeyDown={e => e.key === "Enter" && code.length === 6 && !loading && verify()}
+          style={{ fontSize: 28, letterSpacing: 10, textAlign: "center", fontFamily: "JetBrains Mono, monospace", fontWeight: 800, padding: "16px 12px" }}
+        />
+      </div>
+
+      {error && (
+        <div style={{ fontSize: 12, color: "#B8431A", marginTop: -4, marginBottom: 10, fontWeight: 600 }}>⚠ {error}</div>
+      )}
+
+      <div className="btn-row" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginTop: 8 }}>
+        <button className="btn" onClick={() => verify()} disabled={loading || code.length !== 6} style={{ justifyContent: "center" }}>
+          {loading ? "확인 중..." : "✓ 인증하고 계속"}
+        </button>
+        <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", borderRadius: 6, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7 }}>
+          💡 메일이 안 보이면 <strong>스팸함</strong>도 확인해주세요. 6자리 모두 입력하면 자동으로 확인돼요.
+        </div>
+        <div className="btn-row" style={{ gap: 8 }}>
+          <button className="btn btn-ghost" onClick={onBack} disabled={loading} style={{ flex: 1, justifyContent: "center", fontSize: 13 }}>
+            ← 정보 다시 입력
+          </button>
+          <button className="btn btn-ghost" onClick={resend} disabled={cooldownLeft > 0 || loading} style={{ flex: 1, justifyContent: "center", fontSize: 13 }}>
+            {cooldownLeft > 0 ? "재발송 (" + cooldownLeft + "초)" : "코드 재발송"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 1. Application Form
+// ============================================================
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
+  // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
+  const [agreeAge, setAgreeAge] = React.useState(false);
+  const [agreeTerms, setAgreeTerms] = React.useState(false);
+  const [agreePrivacy, setAgreePrivacy] = React.useState(false);
+  const allAgreed = agreeAge && agreeTerms && agreePrivacy;
+  const toggleAll = () => {
+    const next = !allAgreed;
+    setAgreeAge(next); setAgreeTerms(next); setAgreePrivacy(next);
+  };
+  const pwOk = (signupPw || "").length >= 8;  // 비번 필수, 8자 이상
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk;
+  return (
+    <div className="card">
+      <div className="stamp">DRAFT</div>
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 1 · 입사 지원서</div>
+      <h1>환영해요!<br/>입사 <em>지원서</em> 작성하기</h1>
+      <p className="lead">실제 입사 지원서처럼, 이름과 본인 확인을 위한 메일을 작성해주세요.</p>
+
+      {_trialDefOf(inviteCode) ? (
+      <div style={{
+        marginBottom: 20, padding: "12px 14px",
+        background: "var(--paper-warm)",
+        border: "1.5px solid var(--accent)",
+        borderRadius: 8,
+        fontSize: 13, color: "var(--ink)", lineHeight: 1.65, fontWeight: 700,
+      }}>
+        🎁 <span style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).label}</span>으로 입사해요
+        <div style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
+          {_trialDefOf(inviteCode).untilLabel ? <b style={{ color: "var(--accent)" }}>{_trialDefOf(inviteCode).untilLabel}까지 신청 가능 · </b> : null}결제 정보는 필요 없어요. {_trialDefOf(inviteCode).days || 7}일 동안 매일 출근해 보고, 8일째에 계속 다닐지 정하면 돼요.
+          결제하면 쌓은 기록 그대로 Day 8부터 이어져요.
+        </div>
+      </div>
+      ) : (
+      <div style={{
+        marginBottom: 20, padding: "12px 14px",
+        background: "var(--paper-warm)",
+        border: "1px dashed var(--accent)",
+        borderRadius: 8,
+        fontSize: 12.5, color: "var(--ink)", lineHeight: 1.65, fontWeight: 600,
+      }}>
+        🎟 <span style={{ color: "var(--accent)" }}>초대 코드가 있어야</span> 등록이 가능해요.
+        <div style={{ fontSize: 11.5, fontWeight: 500, color: "var(--ink-soft)", marginTop: 4 }}>
+          운영자가 보내드린 베타 코드를 아래에 입력해주세요.
+        </div>
+      </div>
+      )}
+
+      <div className="form-row">
+        <label>초대 코드</label>
+        <input
+          value={inviteCode}
+          onChange={e => setInviteCode(e.target.value.toUpperCase())}
+          readOnly={!!_trialDefOf(inviteCode)}
+          placeholder="초대받으신 코드를 입력하세요"
+          style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+        />
+      </div>
+      <div className="form-row">
+        <label>이름</label>
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
+      </div>
+      <div className="form-row">
+        <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· {_trialDefOf(inviteCode) ? "나중에 결제할 때도 이 이메일로 해주세요" : "이용권 구매하신 이메일로 작성해주세요"}</span></label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={_trialDefOf(inviteCode) ? "자주 쓰는 이메일 (예: you@gmail.com)" : "구매하신 이메일 입력 (예: you@gmail.com)"} />
+      </div>
+      <div className="form-row">
+        <label>비밀번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 8자 이상</span></label>
+        <input type="password" value={signupPw} onChange={e => setSignupPw(e.target.value)} placeholder="비밀번호 (8자 이상)" autoComplete="new-password" />
+        {signupPw && signupPw.length < 8 && (
+          <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>비밀번호는 8자 이상으로 정해주세요.</div>
+        )}
+      </div>
+      {/* ★ 카톡 출근 알림: 번호는 선택, 동의는 기본 체크 */}
+      <div className="form-row">
+        <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 선택</span></label>
+        <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
+        <label
+          onClick={() => setKakaoOptIn(v => !v)}
+          style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", marginTop: 9,
+                   fontSize: 12.5, fontWeight: 700, color: "var(--ink)", textTransform: "none", letterSpacing: "normal", lineHeight: 1.55 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                         width: 18, height: 18, marginTop: 1, borderRadius: 5,
+                         border: "1.6px solid " + (kakaoOptIn ? "var(--accent)" : "var(--line)"),
+                         background: kakaoOptIn ? "var(--accent)" : "transparent", color: "#fff", fontSize: 12, fontWeight: 900 }}>
+            {kakaoOptIn ? "✓" : ""}
+          </span>
+          <span>
+            이 번호로 <strong>매일 아침 9시</strong> 오늘의 표현 받기
+            <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", marginTop: 2 }}>
+              앱을 안 열어도 카톡으로 와요. 시간 변경·해제는 사원증 → 설정에서 언제든.
+            </span>
+          </span>
+        </label>
+      </div>
+      <div className="form-row">
+        <label>지원 동기 (한 줄, 선택)</label>
+        <textarea value={motivation} onChange={e => setMotivation(e.target.value)} placeholder="왜 이 회사에 오고 싶은지 솔직하게…" />
+      </div>
+
+      {/* ── 법적 동의 (필수) ── */}
+      <div style={{
+        marginTop: 18, padding: "14px 16px",
+        background: "var(--paper-warm)",
+        border: "1px solid var(--line)",
+        borderRadius: 8,
+      }}>
+        <label
+          onClick={toggleAll}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            cursor: "pointer", marginBottom: 10,
+            fontSize: 13, fontWeight: 800, color: "var(--ink)",
+            textTransform: "none", letterSpacing: "normal",
+            paddingBottom: 8, borderBottom: "1px dashed var(--line)",
+          }}
+        >
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 18, height: 18, borderRadius: 4,
+            border: "1.5px solid " + (allAgreed ? "var(--accent)" : "var(--line)"),
+            background: allAgreed ? "var(--accent)" : "transparent",
+            color: "#fff", fontSize: 11, fontWeight: 900,
+          }}>{allAgreed ? "✓" : ""}</span>
+          전체 동의 (필수)
+        </label>
+
+        {[
+          { v: agreeAge,     set: setAgreeAge,     text: "만 14세 이상입니다.", req: true, link: null },
+          { v: agreeTerms,   set: setAgreeTerms,   text: "이용약관에 동의합니다.", req: true, link: "terms.html" },
+          { v: agreePrivacy, set: setAgreePrivacy, text: "개인정보처리방침에 동의합니다 (Supabase 미국 서버 국외 이전 포함).", req: true, link: "privacy.html" },
+        ].map((it, i) => (
+          <label key={i} onClick={() => it.set(!it.v)} style={{
+            display: "flex", alignItems: "flex-start", gap: 8,
+            cursor: "pointer", marginBottom: 6,
+            fontSize: 12.5, color: "var(--ink-soft)",
+            textTransform: "none", letterSpacing: "normal", fontWeight: 500,
+            lineHeight: 1.55,
+          }}>
+            <span style={{
+              flexShrink: 0,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 16, height: 16, borderRadius: 3,
+              border: "1.5px solid " + (it.v ? "var(--accent)" : "var(--line)"),
+              background: it.v ? "var(--accent)" : "transparent",
+              color: "#fff", fontSize: 10, fontWeight: 900,
+              marginTop: 1,
+            }}>{it.v ? "✓" : ""}</span>
+            <span style={{ flex: 1 }}>
+              <span style={{ color: "var(--accent)", fontWeight: 700 }}>[필수]</span> {it.text}
+              {it.link && (
+                <a href={it.link} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}
+                   style={{ marginLeft: 6, fontSize: 11.5, color: "var(--ink-mute)", textDecoration: "underline" }}>
+                  전문 보기
+                </a>
+              )}
+            </span>
+          </label>
+        ))}
+      </div>
+
+      {submitError && (
+        <div style={{
+          marginTop: 12, padding: "10px 12px",
+          background: "#fdecea", border: "1px solid #f5c2c0",
+          borderRadius: 6, fontSize: 12.5, color: "#B8431A", fontWeight: 600,
+        }}>
+          ⚠ {submitError}
+        </div>
+      )}
+      <div className="btn-row">
+        <button className="btn" disabled={!valid || submitting} onClick={onSubmit}>
+          {submitting ? "코드 확인 중…" : "지원서 제출 →"}
+        </button>
+        <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>
+          {submitting ? "" : "✓ 진도·기록 자동 저장"}
+        </span>
+      </div>
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
+        <a
+          onClick={onBack}
+          style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
+        >
+          ← 1일1비 메인으로 돌아가기
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 2. Reviewing (자동 진행)
+// ============================================================
+function ReviewingScreen({ name, stageIdx, totalStages }) {
+  const [phase, setPhase] = useState(0);
+  const phases = [
+    "지원서 접수 확인 중…",
+    "인사팀이 검토하고 있어요…",
+    "임원진 면접 결과 회신 대기…",
+    "결과 확정. 잠시만요!",
+  ];
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => Math.min(p + 1, phases.length - 1)), 700);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 2 · 심사 중</div>
+      <h1>{name}님,<br/>지원서를 <em>검토하고 있어요</em>.</h1>
+      <div className="loading">
+        <div className="spinner"></div>
+        <div className="loading-text">{phases[phase]}</div>
+      </div>
+      <p className="fine-print">실제 회사보다 100배 빠릅니다.</p>
+    </div>
+  );
+}
+
+// ============================================================
+// 3. Offer Letter (이메일 형태)
+// ============================================================
+function OfferScreen({ name, dept, empNumber, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="email-card">
+      <div className="email-head">
+        <div className="from">From. <strong>유버디 컴퍼니 인사팀</strong> &lt;hr@youbuddy.co.kr&gt;</div>
+        <div>To. {name} &lt;you@example.com&gt;</div>
+        <div className="subject">[유버디 컴퍼니] 최종 합격을 축하드립니다 🎉</div>
+      </div>
+      <div className="email-body">
+        <p><strong>{name}님께,</strong></p>
+        <p>
+          유버디 컴퍼니에 지원해주셔서 감사합니다. 임원진 회의에서 만장일치로 <strong>최종 합격</strong>이 결정되었습니다.
+        </p>
+        <p>
+          {name}님께 부여된 사번은 <strong style={{ fontFamily: "JetBrains Mono, monospace" }}>{empNumber}</strong> 입니다.
+        </p>
+        <p>
+          첫 출근일은 <strong>오늘</strong>입니다. 다음 화면에서 사수와 첫 업무를 안내드릴게요.
+          처음 30일은 수습 기간이고, 매일 짧은 시나리오로 회사에 적응하시면 됩니다.
+        </p>
+        <p>
+          <strong>오신 걸 환영합니다. 1일1비 컴퍼니에서 새로운 시작을!</strong>
+        </p>
+        <div className="signature">
+          <b>유버디 컴퍼니 인사팀</b>
+          <small>YouBuddy Korea · People & Culture</small>
+        </div>
+      </div>
+      <div style={{ padding: "16px 30px", background: "var(--paper-warm)", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "flex-end" }}>
+        <button className="btn" onClick={onNext}>배정 확인하기 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 4. Assignment (사번/부서/사수)
+// ============================================================
+function AssignmentScreen({ empNumber, dept, mentor, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 4 · 배정 안내</div>
+      <h1>당신의 <em>자리</em>가 준비됐어요.</h1>
+      <p className="lead">전담 사수가 배정됐어요. 첫 30일 수습 기간 동안 가장 많이 대화하게 될 거예요.</p>
+
+      <div className="assign-grid">
+        <div className="assign-cell full">
+          <div className="lab">사번</div>
+          <div className="val">{empNumber}</div>
+        </div>
+        <div className="assign-cell full">
+          <div className="lab">배정 사수 (Mentor)</div>
+          <div className="val" style={{ fontFamily: "Noto Sans KR" }}>{mentor.name} · {mentor.role}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 8, fontStyle: "italic" }}>
+            "{mentor.trait}"
+          </div>
+        </div>
+      </div>
+
+      <div className="btn-row">
+        <button className="btn" onClick={onNext}>다음 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 5. CEO Welcome (유버디 직접 인사)
+// ============================================================
+function CEOScreen({ name, dept, stageIdx, totalStages, onNext }) {
+  return (
+    <div className="card">
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 5 · 버디 인사</div>
+      <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 22, padding: "16px", background: "var(--paper-warm)", borderRadius: 8, border: "1px dashed var(--line)" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #D85A2A, #8B3A18)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900, fontSize: 22, flexShrink: 0 }}>🤝</div>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 14 }}>유버디 (YouBuddy)</div>
+          <div style={{ fontSize: 11, color: "var(--ink-mute)" }}>1일1비를 만든 사람 · 외국계 7년차</div>
+        </div>
+      </div>
+      <h1>"오늘부터 제가<br/><em>{name}님의 버디</em>예요."</h1>
+      <p className="lead">
+        반갑습니다, {name}님. 유버디예요. <strong>외국계에서 7년째 일하면서 신입 버디를 여러 번 맡아봤어요.</strong>
+        <br/><br/>
+        외국계에 입사하면 "버디"가 한 명 붙어요. 모르는 걸 부담 없이 물어볼 수 있는, 한 발 앞선 동료요.
+        그런데 그런 사람이 없어서 혼자 헤매는 분들이 많더라고요.
+        <strong>1일1비는 그 버디를 누구나 한 명 갖게 하려고 만들었어요.</strong>
+        <br/><br/>
+        매일 5~10분이면 충분해요. 무리하지 마시고, 대신 오래 가요.
+      </p>
+      <div style={{ marginTop: 18, padding: "14px 16px", background: "rgba(58,40,18,0.05)", borderRadius: 8, fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.75 }}>
+        💡 <strong>내일부터 이렇게 진행돼요</strong>
+        <br/>
+        하루 한 번, 회사에서 실제로 오가는 표현이 상황과 함께 도착해요.
+        읽고 넘기지 말고 <strong>한 줄만 직접 써보세요.</strong> 그 자리에서 사수 첨삭이 붙고, 그 표현은 <strong>내 노트</strong>에 남아요.
+      </div>
+      <div className="btn-row">
+        <button className="btn" onClick={onNext}>네, 잘 부탁드려요 →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 6. Ready (출근 시작)
+// ============================================================
+function ReadyScreen({ name, mentor, stageIdx, totalStages, onStart }) {
+  return (
+    <div className="card">
+      <div className="stamp">READY</div>
+      <StepBar idx={stageIdx} total={totalStages} />
+      <div className="eyebrow">STEP 6 · 첫 출근</div>
+      <h1>{name}님, 9시예요.<br/><em>출근하세요.</em></h1>
+      <p className="lead">
+        {mentor.name}님이 사옥 로비에서 기다리고 있어요. 첫날은 자기소개와 자리 안내, 그리고 아주 짧은 첫 미팅으로 끝나요.
+        <br/><br/>
+        부담 갖지 않으셔도 돼요. 오늘은 딱 5분이면 충분해요.
+      </p>
+      <div style={{
+        background: "rgba(216,90,42,0.06)", border: "1px dashed rgba(216,90,42,0.4)",
+        borderRadius: 10, padding: "16px 18px", margin: "8px 0 20px", textAlign: "left",
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", color: "#C2410C", marginBottom: 10 }}>
+          🎁 승진하면 기능이 점차 열려요
+        </div>
+        <div style={{ display: "grid", gap: 8, fontSize: 13, lineHeight: 1.5, color: "#4A3C2E" }}>
+          <div><b>👤 수습 (Day 1-30)</b> · 매일 시추에이션, 미니 미션, 점심 대화</div>
+          <div><b>🎓 사원 전환 (Day 30)</b> · 30일 완주하면 정직원 발령</div>
+          <div><b>📒 사원 보상</b> · 저장한 표현을 모아보는 <b>나만의 노트</b>, 회의 주도 표현(Day 31-60), 네이비 새 사원증</div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "#8A7A66", marginTop: 10, lineHeight: 1.5 }}>
+          그날 학습을 마쳐야 다음 Day가 열려요. 꾸준히 출근할수록 직급이 오르고, 새로운 기능과 콘텐츠가 하나씩 해제됩니다.
+        </div>
+      </div>
+      <div className="btn-row">
+        <button className="btn" onClick={onStart} style={{ fontSize: 15, padding: "14px 28px" }}>
+          🏢 사옥으로 출근하기
+        </button>
+      </div>
+      <div className="fine-print">출근 후엔 매일 새로운 시나리오가 기다리고 있어요.</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<OnboardingApp />);
+</script>
+</body>
+</html>
