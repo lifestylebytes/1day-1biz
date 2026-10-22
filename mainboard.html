@@ -8979,9 +8979,10 @@ function AttendanceCard({ setViewingDay, todayDone, onOpenBig, hideCard }) {
     const _lk = _lockedNext("attendance", _rdNow, USER.isViewingPast);
     return (
       <>
-        {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
         {_lk && <LockedCard k="attendance" rd={_rdNow} />}
         {!_lk && !hideCard && <AttendCalMini onOpenBig={onOpenBig} setViewingDay={setViewingDay} todayDone={todayDone} />}
+        {/* ★ 2026-10-22: 이번 주 출근 띠는 출근 달력 아래로 */}
+        {_isNextFeature() && _rdNow >= _UNLOCK_AT.errands && <AttendStrip user={USER} />}
       </>
     );
   }
@@ -10040,10 +10041,12 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
           <Gift48Banner user={USER} />
           {_lockedNext("errands", _rdNow, USER.isViewingPast) && <LockedCard k="errands" rd={_rdNow} />}
           {_isNextFeature() && !_lockedNext("errands", _rdNow, USER.isViewingPast) && <ErrandsCard setActive={setActive} toast={showToast} />}
+          {/* ★ 2026-10-22: 출근 달력은 오늘의 심부름 바로 아래 (그 아래 이번 주 출근 띠) */}
+          {!isMobile && _isAttCalOn() && <AttendanceCard setViewingDay={setViewingDay} todayDone={allTodayDone} onOpenBig={() => { setActive("mypage"); setTimeout(() => { try { const el = document.getElementById("acx-big"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 150); }} />}
           {/* ★ 역량 스탯 + 출근부. 모바일에선 사원증 탭으로 (2026-09-09) */}
           {!isMobile && _lockedNext("skills", _rdNow, USER.isViewingPast) && <LockedCard k="skills" rd={_rdNow} />}
           {!isMobile && _isHomeLive() && !_lockedNext("skills", _rdNow, USER.isViewingPast) && <SkillGrid user={USER} onGoDay={setViewingDay} />}
-          {!isMobile && <AttendanceCard setViewingDay={setViewingDay} todayDone={allTodayDone} onOpenBig={() => { setActive("mypage"); setTimeout(() => { try { const el = document.getElementById("acx-big"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 150); }} />}
+          {!isMobile && !_isAttCalOn() && <AttendanceCard setViewingDay={setViewingDay} todayDone={allTodayDone} />}
 
           {/* ★ 사내 메모·분기 평가 버튼: 모바일엔 메모·평가 탭이 따로 있어 홈에서 뺀다 (2026-09-09) */}
           {!isMobile && (
