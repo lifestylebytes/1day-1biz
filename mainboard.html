@@ -8730,6 +8730,7 @@ function _useAttCal(refresh) {
       const v = (r && r.ok && r.result) ? { data: r.result } : { data: _acxLocalData(_localUser || USER), local: true };
       _acxCache[email] = v;
       if (!dead) setSt(v);
+      try { window.dispatchEvent(new Event("od-attcal")); } catch (e) {}   // 이번 주 출근 · 성실왕이 같은 날짜 기록으로 다시 센다
     })();
     return () => { dead = true; };
   }, [email, refresh]);
@@ -10338,19 +10339,41 @@ const _TY_DAY = 86400000;
 const _tySignup0 = () => { try { const sd = _localUser && _localUser.signupDate ? new Date(_localUser.signupDate) : null; if (!sd || isNaN(sd.getTime())) return null; return Date.UTC(sd.getUTCFullYear(), sd.getUTCMonth(), sd.getUTCDate()); } catch (e) { return null; } };
 const _tyToday0 = () => { const n = new Date(Date.now() + 9 * 3600000); return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()); };
 const _tyTodayISO = () => new Date(_tyToday0()).toISOString().slice(0, 10);
+// ★ 2026-10-22 출근한 날짜(한국 날짜) 모음: 출근 달력과 같은 서버 기록(그 날짜에 끝낸 Day 가 하나라도 있으면 출근)
+//   + 오늘 이 기기에서 방금 끝낸 Day (서버에 아직 안 올라갔을 수 있어서). 서버 기록을 아직 못 읽었으면 null.
+function _tyStudyDates() {
+  try {
+    const em = (window.__SIM && window.__SIM.USER && window.__SIM.USER.email) || (_localUser && _localUser.email) || "";
+    const c = _acxCache[em];
+    if (!c || !c.data || c.local) return null;
+    const set = new Set();
+    (c.data.days || []).forEach(x => { const d = x && x.at ? _acxKst(x.at) : null; if (d) set.add(d); });
+    const today = _tyTodayISO();
+    Object.keys(localStorage).forEach(k => {
+      const m = /^__OD_TASKS_DAY_(\d+)_ts$/.exec(k); if (!m) return;
+      const v = localStorage.getItem(k); const d = v ? _acxKst(v) : null;
+      if (d === today && _odDayTasksDone(Number(m[1]))) set.add(today);
+    });
+    return set;
+  } catch (e) { return null; }
+}
 // 이번 주(월~오늘) 출근 통계. offsetWeeks=1 이면 지난주(월~일).
+//   ★ 2026-10-22: 그 날짜에 Day 를 하나라도 끝냈으면 출근 (Day 번호가 달력 Day 와 같을 필요 없음, 밀려서 하는 회원도 셈).
+//   서버 기록을 아직 못 읽었을 때만 예전 방식(달력 Day = 끝낸 Day 번호).
 function _tyWeek(offsetWeeks) {
   const s0 = _tySignup0(); if (s0 === null) return null;
   const t0 = _tyToday0();
   const dowM = (Math.round(t0 / _TY_DAY) + 3) % 7; // 0=월요일
   const mon = t0 - (dowM + (offsetWeeks || 0) * 7) * _TY_DAY;
   const end = offsetWeeks ? mon + 6 * _TY_DAY : t0;
-  const done = _tyDone();
+  const dates = _tyStudyDates();
+  const done = dates ? null : _tyDone();
   let due = 0, att = 0;
   for (let ts = Math.max(mon, s0); ts <= end; ts += _TY_DAY) {
     const d = Math.round((ts - s0) / _TY_DAY) + 1;
     if (d < 1 || d > 240) continue;
-    due++; if (done.has(d)) att++;
+    due++;
+    if (dates ? dates.has(new Date(ts).toISOString().slice(0, 10)) : done.has(d)) att++;
   }
   return { due, att, perfect: due > 0 && att === due, monKey: new Date(mon).toISOString().slice(0, 10) };
 }
@@ -13072,6 +13095,7 @@ function ErrandsCard({ setActive, toast }) {
 
 // 출석 반응: 이번 주 출근이 세계의 반응이 된다 (소문 · 눈도장 · 개근)
 function AttendStrip({ user }) {
+  _useAttCal(0);   // ★ 2026-10-22 출근 달력과 같은 날짜 기록을 읽어 와서 센다
   const wk = _tyWeek(0);
   const pw = _tyPerfect();
   if (!wk || user.isViewingPast) return null;
@@ -13136,6 +13160,8 @@ function MembershipCard() {
 
 // 부팅 체크: 성실왕 지급 + 호봉 승급 알림 (홈 진입 시 1회)
 function TycoonBoot({ toast }) {
+  // ★ 2026-10-22 출근 달력 기록을 읽은 뒤 성실왕을 한 번 더 확인 (같은 주는 한 번만 지급)
+  React.useEffect(() => { const h = () => { try { _tyAwardCheck(toast); } catch (e) {} }; window.addEventListener("od-attcal", h); return () => window.removeEventListener("od-attcal", h); }, []);
   React.useEffect(() => {
     try {
       _tyAwardCheck(toast);
