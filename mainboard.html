@@ -92,6 +92,7 @@
   --line: #C9BBA0;
   --line-soft: rgba(58,40,18,0.12);
   --orange: #D85A2A;
+  --accent: #D85A2A;   /* ★ 2026-10-22: --orange 별칭. 상세페이지와 같은 이름으로 쓴 곳들이 색을 잃고 있었다 */
   --orange-soft: #F5DCC8;
   --stamp-red: #B23A2C;
   --stamp-blue: #2B4A6E;
@@ -9214,6 +9215,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
     fire();
   }, []);
   const [retQuiz, setRetQuiz] = useState(false);
+  // ★ 2026-10-22 입사 테스트 (개발 뷰 / ?placement=1): Day 1 첫 진입에 한 번
+  const [placement, setPlacement] = useState(() => { try { return _placementNeeded(USER); } catch (e) { return false; } });
   React.useEffect(() => {
     if (USER.isViewingPast) return;
     _retReconcile({ silent: true });   // 그림자 모드: 개발 뷰가 아니어도 집계·동기화는 돈다
@@ -9788,7 +9791,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       {_isDevNext() && !USER.isViewingPast && (
         null /* ★ 2026-10-17: 성장 리포트 발급 안내 팝업은 일단 끈다 (ReportIssuePopup) */
       )}
-      {retDebuff && !retQuiz && _slAbsence && (
+      {placement && <PlacementTestModal user={USER} onDone={() => { setPlacement(false); try { window.dispatchEvent(new Event("od-placement-done")); } catch (e) {} }} />}
+      {!placement && retDebuff && !retQuiz && _slAbsence && (
         <RetDebuffPopup rec={retDebuff}
           onOpenQuiz={() => setRetQuiz(true)}
           onClose={() => { _retDebuffPatch(USER.email, { seen: true }); try { _retGoalCheck(USER.email); } catch (e) {} setRetDebuff(null); }} />
@@ -10112,7 +10116,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       )}
 
       {/* Day 1 투어, 인터랙티브 spotlight (실제 UI 요소를 가리키며 안내) */}
-      {tourStep >= 0 && tourStep < TOUR_STEPS.length && (!_isPromoNext() || _slTour) && (() => {
+      {!placement && tourStep >= 0 && tourStep < TOUR_STEPS.length && (!_isPromoNext() || _slTour) && (() => {
         const step = TOUR_STEPS[tourStep];
         const tt = targetRect ? _computeTooltipPos(targetRect, step.placement) : null;
         const isLast = tourStep === TOUR_STEPS.length - 1;
@@ -17898,6 +17902,291 @@ function _pickWordObjects(excludeWord, count) {
 }
 
 // 공용 모달 셸
+// ============================================================
+// ★ 2026-10-22 입사 테스트 (Placement Test). 가입 직후 Day 1 시작 전에 한 번.
+//   10문제: 앞 5개 객관식(뜻 고르기) → 뒤 5개 빈칸(문장에 표현 써넣기). Day 가 올라갈수록 어려워진다.
+//   결과는 survey_responses(placement_test) 에 저장 → 운영자 뷰 '입사 테스트' 탭에서 본다.
+//   개발 뷰 전용. 주소에 ?placement=1 을 붙이면 그 브라우저에서 강제로 켜지고, ?placement=reset 으로 다시 볼 수 있다.
+// ============================================================
+function _placementOn() {
+  try {
+    const q = new URLSearchParams(location.search).get("placement");
+    if (q === "1") localStorage.setItem("__OD_PLACEMENT_ON", "1");
+    if (q === "0") localStorage.removeItem("__OD_PLACEMENT_ON");
+    if (q === "reset") { localStorage.removeItem("__OD_PLACEMENT"); localStorage.setItem("__OD_PLACEMENT_ON", "1"); }
+    if (localStorage.getItem("__OD_PLACEMENT_ON") === "1") return true;
+  } catch (e) {}
+  return _isDevNext();
+}
+function _placementRecord() { try { return JSON.parse(localStorage.getItem("__OD_PLACEMENT") || "null"); } catch (e) { return null; } }
+function _placementNeeded(user) {
+  if (!_placementOn()) return false;
+  if (!user || user.isViewingPast) return false;
+  if (_placementRecord()) return false;
+  const d = Number(user.realCurrentDay || user.currentDay || 1);
+  if (d > 1) return false;
+  try { if (Object.keys(JSON.parse(localStorage.getItem("__OD_TASKS_DAY_1") || "{}")).some(k => k.charAt(0) !== "_")) return false; } catch (e) {}
+  return true;
+}
+
+// 난이도 띠: 앞 5개(객관식)는 Day 1~44, 뒤 5개(빈칸)는 Day 45~90. 띠 안에서 무작위.
+const _PL_BANDS = [[1, 6], [7, 14], [15, 24], [25, 34], [35, 44], [45, 54], [55, 64], [65, 74], [75, 84], [85, 90]];
+function _plNorm(s) {
+  return String(s || "").toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' -]/g, " ").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+}
+function _plLev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; }
+  return prev[n];
+}
+function _plBlankOf(sc) {
+  const w = String(sc.word || ""); if (!w) return null;
+  const re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s-]+"), "i");
+  for (const src of [sc.quote, sc.sampleAnswer]) {
+    if (src && re.test(src)) return String(src).replace(re, "______");
+  }
+  return null;
+}
+function _plMeaning(sc) { return String(sc.meaning || "").replace(/[⭐★]/g, "").replace(/\s*\(.*?\)\s*$/, "").trim(); }
+function _plBuild(all) {
+  const pool = (all || []).filter(s => s && s.word && s.meaning && Number(s.day) >= 1 && Number(s.day) <= 90);
+  const used = new Set(); const qs = [];
+  const pick = (lo, hi, pred) => {
+    const c = pool.filter(s => s.day >= lo && s.day <= hi && !used.has(s.word) && (!pred || pred(s)));
+    if (!c.length) return null;
+    return c[Math.floor(Math.random() * c.length)];
+  };
+  _PL_BANDS.forEach((b, i) => {
+    const blank = i >= 5;
+    let sc = pick(b[0], b[1], blank ? (s => !!_plBlankOf(s)) : null);
+    if (!sc) sc = pick(1, 90, blank ? (s => !!_plBlankOf(s)) : null);
+    if (!sc) return;
+    used.add(sc.word);
+    if (!blank) {
+      const others = pool.filter(s => s.word !== sc.word && _plMeaning(s) && _plMeaning(s) !== _plMeaning(sc));
+      const ds = []; const seen = new Set([_plMeaning(sc)]);
+      while (ds.length < 3 && others.length) { const o = others.splice(Math.floor(Math.random() * others.length), 1)[0]; const m = _plMeaning(o); if (!seen.has(m)) { seen.add(m); ds.push(m); } }
+      const opts = [_plMeaning(sc), ...ds].sort(() => Math.random() - 0.5);
+      qs.push({ n: i + 1, type: "mc", day: sc.day, word: sc.word, phonetic: sc.phonetic || "", meaning: _plMeaning(sc), options: opts });
+    } else {
+      qs.push({ n: i + 1, type: "blank", day: sc.day, word: sc.word, meaning: _plMeaning(sc), sentence: _plBlankOf(sc), words: String(sc.word).trim().split(/\s+/).length });
+    }
+  });
+  return qs;
+}
+function _plCheckBlank(q, input) {
+  const a = _plNorm(input), w = _plNorm(q.word);
+  if (!a) return false;
+  if (a === w) return true;
+  if (w.length >= 7 && _plLev(a, w) <= 1) return true;
+  return false;
+}
+function _plLevel(score) {
+  if (score >= 9) return { id: "tf", ko: "대리 TF 감각", line: "이미 쓰고 계신 표현이 많아요. Day 1은 가볍게 지나가고, 뒤로 갈수록 진짜 실전이 나와요." };
+  if (score >= 7) return { id: "senior", ko: "대리 감각", line: "기본은 다 있어요. 회의에서 바로 꺼내 쓰는 연습이 핵심이에요." };
+  if (score >= 4) return { id: "staff", ko: "사원 감각", line: "아는 것과 쓰는 것 사이에 있어요. 매일 한 줄씩 쓰면 금방 붙어요." };
+  return { id: "probation", ko: "수습 감각", line: "딱 1일1비가 필요한 자리예요. Day 1부터 차근차근 가면 돼요." };
+}
+function _plDiffLabel(i) { return i < 3 ? "쉬움" : i < 6 ? "보통" : i < 8 ? "어려움" : "실전"; }
+
+function PlacementTestModal({ user, onDone }) {
+  const [stage, setStage] = useState("intro");     // intro → run → result
+  const [qs] = useState(() => _plBuild((window.__SIM && window.__SIM.SCENARIOS) || []));
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState(null);       // 객관식: 고른 보기
+  const [typed, setTyped] = useState("");           // 빈칸: 입력
+  const [checked, setChecked] = useState(null);     // {ok}
+  const [answers, setAnswers] = useState([]);
+  const [startAt] = useState(() => Date.now());
+  const [saving, setSaving] = useState(false);
+  const inputRef = React.useRef(null);
+  const q = qs[idx];
+  const total = qs.length;
+
+  useEffect(() => { if (stage === "run" && q && q.type === "blank" && !checked) setTimeout(() => { try { inputRef.current && inputRef.current.focus(); } catch (e) {} }, 60); }, [stage, idx, checked]);
+
+  const finish = async (list) => {
+    const score = list.filter(a => a.ok).length;
+    const lv = _plLevel(score);
+    const firstWrong = list.find(a => !a.ok);
+    const rec = {
+      score, total, level: lv.id, levelKo: lv.ko,
+      firstWrongDay: firstWrong ? firstWrong.day : null,
+      wrong: list.filter(a => !a.ok).map(a => a.word),
+      items: list.map(a => ({ n: a.n, type: a.type, day: a.day, word: a.word, ok: a.ok, answer: a.answer })),
+      durationSec: Math.round((Date.now() - startAt) / 1000),
+      at: new Date().toISOString(),
+    };
+    try { localStorage.setItem("__OD_PLACEMENT", JSON.stringify(rec)); } catch (e) {}
+    setSaving(true);
+    try { if (user && user.email && window.OD && window.OD.saveSurveyResponse) await window.OD.saveSurveyResponse(user.email, "placement_test", rec); } catch (e) {}
+    setSaving(false);
+    setStage("result");
+  };
+  const skip = () => {
+    try { localStorage.setItem("__OD_PLACEMENT", JSON.stringify({ skipped: true, at: new Date().toISOString() })); } catch (e) {}
+    onDone && onDone(null);
+  };
+  const check = (val) => {
+    if (checked) return;
+    let ok = false, answer = "";
+    if (q.type === "mc") { answer = val; ok = val === q.meaning; setPicked(val); }
+    else { answer = String(typed || "").trim(); if (!answer) return; ok = _plCheckBlank(q, answer); }
+    setChecked({ ok });
+    setAnswers(a => a.concat([{ n: q.n, type: q.type, day: q.day, word: q.word, ok, answer }]));
+  };
+  const next = () => {
+    const list = answers;
+    if (idx + 1 >= total) { finish(list); return; }
+    setIdx(idx + 1); setPicked(null); setTyped(""); setChecked(null);
+  };
+
+  const Pill = ({ children }) => <span style={{ fontSize: 12, fontWeight: 800, background: "var(--paper-warm)", padding: "6px 12px", borderRadius: 999, color: "var(--ink-soft)" }}>{children}</span>;
+
+  if (!qs.length) return null;
+
+  // ── 인트로 ──
+  if (stage === "intro") return (
+    <ActivityShell title="ENTRANCE TEST · 입사 테스트" onClose={skip}>
+      <div style={{ padding: "4px 0 2px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <span style={{ width: 46, height: 46, flexShrink: 0, borderRadius: 12, background: "var(--paper-warm)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>📝</span>
+          <span style={{ minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>DAY 1 전에</span>
+            <span style={{ display: "block", fontSize: 20, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em", marginTop: 2 }}>입사 전에 감 한번 볼게요</span>
+          </span>
+        </div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.75, color: "var(--ink-soft)", marginBottom: 16 }}>
+          10문제, 3분이면 끝나요. <b style={{ color: "var(--ink)" }}>틀려도 아무 불이익 없어요.</b><br/>
+          어디서부터 시작하면 좋을지, 사수가 미리 알아두려는 거예요.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+          {[["1~5", "객관식", "표현 보고 뜻 고르기"], ["6~10", "빈칸", "문장에 표현 써넣기"]].map(x => (
+            <div key={x[1]} style={{ background: "var(--paper-warm)", borderRadius: 10, padding: "11px 13px" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>Q {x[0]}</div>
+              <div style={{ fontSize: 14.5, fontWeight: 900, color: "var(--ink)", marginTop: 3 }}>{x[1]}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginTop: 2 }}>{x[2]}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18 }}>
+          {Array.from({ length: 10 }).map((_, i) => <span key={i} style={{ flex: 1, height: 6, borderRadius: 999, background: "var(--accent)", opacity: 0.25 + i * 0.075 }} />)}
+          <span style={{ fontSize: 11, color: "var(--ink-mute)", fontWeight: 700, whiteSpace: "nowrap", marginLeft: 4 }}>뒤로 갈수록 어려워요</span>
+        </div>
+        <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={() => setStage("run")}>시작하기 →</button>
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <button onClick={skip} style={{ background: "none", border: "none", fontFamily: "inherit", fontSize: 12.5, color: "var(--ink-mute)", textDecoration: "underline", cursor: "pointer", padding: 4 }}>나중에 할게요, 바로 출근</button>
+        </div>
+      </div>
+    </ActivityShell>
+  );
+
+  // ── 결과 ──
+  if (stage === "result") {
+    const score = answers.filter(a => a.ok).length;
+    const lv = _plLevel(score);
+    const wrong = answers.filter(a => !a.ok);
+    const fw = wrong[0];
+    return (
+      <ActivityShell title="ENTRANCE TEST · 결과" onClose={() => onDone && onDone(score)}>
+        <div style={{ padding: "4px 0 2px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 14, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>SCORE</div>
+              <div style={{ fontSize: 44, fontWeight: 900, color: "var(--ink)", lineHeight: 1, letterSpacing: "-0.02em", marginTop: 4 }}>{score}<span style={{ fontSize: 18, color: "var(--ink-mute)", fontWeight: 800 }}> / {total}</span></div>
+            </div>
+            <div style={{ marginLeft: "auto", textAlign: "right" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>지금 감각</div>
+              <div style={{ display: "inline-block", marginTop: 4, background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 900, padding: "7px 13px", borderRadius: 999 }}>{lv.ko}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+            {answers.map(a => <span key={a.n} title={a.word} style={{ flex: 1, height: 9, borderRadius: 999, background: a.ok ? "var(--accent)" : "var(--line)" }} />)}
+          </div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "var(--ink-soft)", marginBottom: 14 }}>
+            {lv.line}
+            {fw ? <><br/><b style={{ color: "var(--ink)" }}>Day {fw.day} ({fw.word})</b> 근처부터 낯설어지기 시작했어요.</> : <><br/>전부 맞히셨어요. 사수가 긴장하겠는데요.</>}
+          </div>
+          {wrong.length > 0 && (
+            <div style={{ background: "var(--paper-warm)", borderRadius: 11, padding: "12px 14px", marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)", marginBottom: 8 }}>다시 볼 표현 {wrong.length}개</div>
+              {wrong.map(a => { const qq = qs.find(x => x.n === a.n) || {}; return (
+                <div key={a.n} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "6px 0", borderTop: "1px dashed var(--line)" }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", width: 46, flexShrink: 0 }}>Day {a.day}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 900, color: "var(--ink)" }}>{a.word}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-soft)", marginTop: 1 }}>{qq.meaning}{a.answer ? <span style={{ color: "var(--ink-mute)" }}> · 내 답: {a.answer}</span> : null}</span>
+                  </span>
+                </div>
+              ); })}
+            </div>
+          )}
+          <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 12 }}>이 결과는 사수만 봐요. 틀린 표현은 나중에 그 Day 에서 다시 만나요.</div>
+          <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} disabled={saving} onClick={() => onDone && onDone(score)}>{saving ? "저장 중..." : "Day 1 시작하기 →"}</button>
+        </div>
+      </ActivityShell>
+    );
+  }
+
+  // ── 문제 ──
+  const diff = _plDiffLabel(idx);
+  return (
+    <ActivityShell title="ENTRANCE TEST · 입사 테스트" onClose={skip} guard="테스트 중이에요. 지금 닫으면 처음부터 다시 봐요. 닫을까요?">
+      <div style={{ padding: "2px 0 2px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 900, color: "var(--ink)" }}>Q {idx + 1} <span style={{ color: "var(--ink-mute)", fontWeight: 700 }}>/ {total}</span></span>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: diff === "실전" || diff === "어려움" ? "var(--accent)" : "var(--ink-mute)", background: "var(--paper-warm)", borderRadius: 999, padding: "3px 8px" }}>{diff}</span>
+          <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.08em" }}>{q.type === "mc" ? "객관식" : "빈칸"}</span>
+        </div>
+        <div style={{ display: "flex", gap: 3, marginBottom: 18 }}>
+          {qs.map((x, i) => { const a = answers.find(y => y.n === x.n); return <span key={x.n} style={{ flex: 1, height: 5, borderRadius: 999, background: a ? (a.ok ? "var(--accent)" : "#B8A58A") : i === idx ? "var(--ink)" : "var(--line)" }} />; })}
+        </div>
+
+        {q.type === "mc" ? (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>이 표현의 뜻은?</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "6px 0 2px" }}>{q.word}</div>
+            {q.phonetic ? <div style={{ fontSize: 12, color: "var(--ink-mute)", fontFamily: "'JetBrains Mono', monospace" }}>{q.phonetic}</div> : null}
+            <div style={{ display: "grid", gap: 7, marginTop: 16 }}>
+              {q.options.map((o, i) => {
+                const isP = picked === o, isC = o === q.meaning, show = !!checked;
+                const bg = show && isC ? "rgba(216,90,42,0.12)" : show && isP ? "rgba(58,40,18,0.06)" : "var(--paper)";
+                const bd = show && isC ? "var(--accent)" : show && isP ? "#B8A58A" : "var(--line)";
+                return (
+                  <button key={o} onClick={() => check(o)} disabled={show} style={{ textAlign: "left", background: bg, border: "1.5px solid " + bd, borderRadius: 10, padding: "12px 13px", fontFamily: "inherit", cursor: show ? "default" : "pointer", display: "flex", gap: 10, alignItems: "center" }}>
+                    <span style={{ width: 22, height: 22, borderRadius: "50%", flexShrink: 0, border: "1.5px solid " + (show && isC ? "var(--accent)" : "var(--line)"), background: show && isC ? "var(--accent)" : "transparent", color: show && isC ? "#fff" : "var(--ink-mute)", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{show && isC ? "✓" : show && isP ? "✕" : String.fromCharCode(65 + i)}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: show && isC ? 900 : 600, color: "var(--ink)", lineHeight: 1.45 }}>{o}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>빈칸에 들어갈 표현은?</div>
+            <div style={{ fontSize: 16.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.65, margin: "8px 0 10px", fontStyle: "italic" }}>“{q.sentence}”</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--paper-warm)", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)" }}>힌트 · {q.meaning}<span style={{ color: "var(--ink-mute)", fontWeight: 700 }}> · {q.words}단어</span></div>
+            <form onSubmit={e => { e.preventDefault(); checked ? next() : check(); }} style={{ display: "flex", gap: 8, marginTop: 14 }}>
+              <input ref={inputRef} value={typed} onChange={e => setTyped(e.target.value)} disabled={!!checked} placeholder="영어로 써보세요" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+                style={{ flex: 1, minWidth: 0, fontFamily: "inherit", fontSize: 16, padding: "12px 14px", borderRadius: 10, border: "1.5px solid " + (checked ? (checked.ok ? "var(--accent)" : "#B8A58A") : "var(--ink)"), background: checked ? (checked.ok ? "rgba(216,90,42,0.08)" : "rgba(58,40,18,0.05)") : "var(--paper)", color: "var(--ink)", fontWeight: 700 }} />
+              {!checked && <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>확인</button>}
+            </form>
+            {checked && !checked.ok && (
+              <div style={{ marginTop: 10, fontSize: 13, color: "var(--ink-soft)" }}>정답은 <b style={{ color: "var(--accent)", fontSize: 15 }}>{q.word}</b> 였어요.</div>
+            )}
+            {checked && checked.ok && <div style={{ marginTop: 10, fontSize: 13, fontWeight: 800, color: "var(--accent)" }}>맞았어요.</div>}
+          </>
+        )}
+
+        {checked && (
+          <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: 16 }} onClick={next}>{idx + 1 >= total ? "결과 보기 →" : "다음 →"}</button>
+        )}
+      </div>
+    </ActivityShell>
+  );
+}
+
 function ActivityShell({ title, children, onClose, footer, accent, guard }) {
   // guard: 진행 중엔 바깥 클릭으로 안 닫히고, ✕ 도 확인 뒤에 (퀴즈 중간에 날아가는 것 방지)
   const close = () => { if (guard && !confirm(typeof guard === "string" ? guard : "진행 중이에요. 지금 닫으면 저장되지 않아요. 닫을까요?")) return; onClose && onClose(); };
