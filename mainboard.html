@@ -13376,9 +13376,22 @@ function Gift48Banner({ user }) {
 
   if (!_isGift48On()) return null;
   const _coh = typeof user?.cohort === "string" ? user.cohort : "";
-  if (!_coh.startsWith("trial")) return null;     // 유료 전환되면 여기서 끝
-  if (user?.isViewingPast) return null;
-  if (!deadline || left == null || left <= 0) return null;
+  // ★ ?gift48=1 미리보기일 때는, 안 뜨는 이유를 한 줄로 알려준다 (일반 회원에겐 안 보임)
+  const _why = !_coh.startsWith("trial") ? ("체험 회원이 아니에요 (cohort: " + (_coh || "없음") + ")")
+    : user?.isViewingPast ? "지난 Day 를 보는 중이에요"
+    : !deadline ? "가입 시각(signupDate)이 없어요"
+    : (left != null && left <= 0) ? "48시간이 이미 지났어요"
+    : null;
+  if (_why) {
+    if (!_gift48Preview()) return null;
+    return (
+      <div style={{ margin: "10px 0 0", padding: "9px 12px", borderRadius: 10, background: "#2A1F14", color: "#F0A67E", fontSize: 11.5, fontWeight: 700, lineHeight: 1.5 }}>
+        🎁 48시간 배너가 안 보이는 이유: {_why}
+        <span style={{ display: "block", color: "#D9CDB8", fontWeight: 500, marginTop: 3 }}>미리보기(?gift48=1)에서만 뜨는 안내예요. 끌 땐 ?gift48=0</span>
+      </div>
+    );
+  }
+  if (left == null) return null;
 
   const pad = (n) => String(n).padStart(2, "0");
   const hh = Math.floor(left / 3600000);
