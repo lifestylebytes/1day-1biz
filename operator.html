@@ -2221,6 +2221,9 @@ function App() {
   const [draftBody, setDraftBody] = useState("");
   const [draftType, setDraftType] = useState("notice");
   const [draftPopup, setDraftPopup] = useState(false);
+  const [draftImages, setDraftImages] = useState([]);   // 첨부 사진 공개 주소 목록 (2026-10-22)
+  const [imgUploading, setImgUploading] = useState(0);  // 올리는 중인 사진 수
+  const [editHadImages, setEditHadImages] = useState(false);  // 수정 중인 공지에 원래 사진이 있었는지
   const [editingId, setEditingId] = useState(null);  // null이면 새 공지, 값 있으면 수정 중
   const [readCounts, setReadCounts] = useState({});   // { 'db-<id>': 확인자수 }
   const [previewNotice, setPreviewNotice] = useState(null);  // 사용자 팝업 미리보기
@@ -2526,6 +2529,7 @@ function App() {
         id: n.id, type: n.type, title: n.title, body: n.body,
         from: n.from_name, at: n.sent_at, popup: !!n.popup,
         target_emails: n.target_emails || null,
+        images: Array.isArray(n.image_urls) ? n.image_urls : [],
       }));
       setNotices(mapped); save(KEY_NOTICES, mapped);
     }
@@ -2553,7 +2557,57 @@ function App() {
   const resetDraft = () => {
     setEditingId(null); setDraftType("notice");
     setDraftTitle(""); setDraftBody(""); setDraftPopup(false);
+    setDraftImages([]); setEditHadImages(false);
   };
+
+  // ── 공지 사진 첨부 (2026-10-22) ──
+  // 고른 사진을 긴 변 1280px JPEG로 줄여서 올린다 (폰 사진 5MB → 200KB 안팎). GIF는 움직임 유지 위해 그대로.
+  const NOTICE_IMG_MAX = 4;
+  const shrinkImage = (file) => new Promise((resolve) => {
+    if (!file || file.type === 'image/gif' || !/^image\//.test(file.type)) { resolve(file); return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const MAX = 1280;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);   // 투명 PNG 배경은 흰색으로
+        ctx.drawImage(img, 0, 0, w, h);
+        cv.toBlob(b => { URL.revokeObjectURL(url); resolve(b && b.size < file.size ? b : file); }, 'image/jpeg', 0.85);
+      } catch (e) { URL.revokeObjectURL(url); resolve(file); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+  const addNoticeImages = async (fileList) => {
+    const files = Array.from(fileList || []).filter(f => f && /^image\//.test(f.type));
+    if (files.length === 0) return;
+    if (!window.OD || !window.OD.enabled || !window.OD.uploadNoticeImage) {
+      showToast("DB 연결 대기 중. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    const room = NOTICE_IMG_MAX - draftImages.length;
+    if (room <= 0) { showToast(`사진은 ${NOTICE_IMG_MAX}장까지 붙일 수 있어요`); return; }
+    const pick = files.slice(0, room);
+    if (files.length > room) showToast(`사진은 ${NOTICE_IMG_MAX}장까지라 ${room}장만 올려요`);
+    setImgUploading(n => n + pick.length);
+    for (const f of pick) {
+      const small = await shrinkImage(f);
+      const r = await window.OD.uploadNoticeImage(small);
+      setImgUploading(n => Math.max(0, n - 1));
+      if (r.ok && r.url) setDraftImages(prev => prev.length >= NOTICE_IMG_MAX ? prev : [...prev, r.url]);
+      else showToast("사진 올리기 실패: " + (r.error || "알 수 없는 오류"));
+    }
+  };
+  const removeDraftImage = (url) => setDraftImages(prev => prev.filter(u => u !== url));
+  const moveDraftImage = (i, d) => setDraftImages(prev => {
+    const j = i + d; if (j < 0 || j >= prev.length) return prev;
+    const next = prev.slice(); [next[i], next[j]] = [next[j], next[i]]; return next;
+  });
 
   // 발송 공지 클릭 → 폼에 로드해서 전체 확인 + 수정 모드 진입
   const startEditNotice = (n) => {
@@ -2562,6 +2616,8 @@ function App() {
     setDraftTitle(n.title || "");
     setDraftBody(n.body || "");
     setDraftPopup(!!n.popup);
+    setDraftImages(Array.isArray(n.images) ? n.images : []);
+    setEditHadImages(Array.isArray(n.images) && n.images.length > 0);
     showToast("수정 모드, 내용을 확인하고 고친 뒤 저장하세요");
     try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
   };
@@ -2578,6 +2634,9 @@ function App() {
       body: draftBody.trim(),
       popup: draftPopup,
     };
+    // 사진: 붙였거나, 원래 있던 사진을 다 지운 경우에만 보낸다 (사진 안 쓰는 공지는 image_urls 컬럼을 건드리지 않음)
+    if (draftImages.length > 0 || (editingId && editHadImages)) payload.imageUrls = draftImages;
+    if (imgUploading > 0) { showToast("사진 올리는 중이에요. 잠시만요"); return; }
     let r;
     if (editingId) {
       r = await window.OD.updateNotice(editingId, payload);
@@ -2676,14 +2735,52 @@ function App() {
               </div>
               <div className="form-row">
                 <label>본문</label>
-                <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…" />
+                <textarea rows={5} value={draftBody} onChange={e => setDraftBody(e.target.value)} placeholder="이번 달 전사 워크샵은…"
+                  onPaste={e => {
+                    const imgs = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(f => /^image\//.test(f.type));
+                    if (imgs.length > 0) { e.preventDefault(); addNoticeImages(imgs); }
+                  }} />
+              </div>
+              <div className="form-row">
+                <label>사진 <span style={{ fontWeight: 400, color: '#8A7964', fontSize: 11 }}>(선택 · 최대 {NOTICE_IMG_MAX}장 · 본문 아래에 보여요 · 본문 칸에 붙여넣기도 돼요)</span></label>
+                <div
+                  onDragOver={e => { e.preventDefault(); }}
+                  onDrop={e => { e.preventDefault(); addNoticeImages(e.dataTransfer && e.dataTransfer.files); }}
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'flex-start' }}
+                >
+                  {draftImages.map((u, i) => (
+                    <div key={u} style={{ position: 'relative', width: 92, height: 92, borderRadius: 8, overflow: 'hidden', border: '1px solid #D9C9A8', background: '#FBF7EE' }}>
+                      <img src={u} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <button onClick={() => removeDraftImage(u)} title="빼기"
+                        style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, border: 'none', background: 'rgba(42,33,24,0.72)', color: '#fff', fontSize: 12, cursor: 'pointer', lineHeight: '22px', padding: 0 }}>✕</button>
+                      {draftImages.length > 1 && (
+                        <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, display: 'flex', justifyContent: 'space-between' }}>
+                          <button onClick={() => moveDraftImage(i, -1)} disabled={i === 0} title="앞으로"
+                            style={{ width: 22, height: 20, borderRadius: 4, border: 'none', background: 'rgba(42,33,24,0.6)', color: '#fff', fontSize: 11, cursor: 'pointer', padding: 0, opacity: i === 0 ? 0.3 : 1 }}>◀</button>
+                          <button onClick={() => moveDraftImage(i, 1)} disabled={i === draftImages.length - 1} title="뒤로"
+                            style={{ width: 22, height: 20, borderRadius: 4, border: 'none', background: 'rgba(42,33,24,0.6)', color: '#fff', fontSize: 11, cursor: 'pointer', padding: 0, opacity: i === draftImages.length - 1 ? 0.3 : 1 }}>▶</button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {Array.from({ length: imgUploading }).map((_, i) => (
+                    <div key={'up' + i} style={{ width: 92, height: 92, borderRadius: 8, border: '1px dashed #D9C9A8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#8A7964', background: '#FBF7EE' }}>올리는 중…</div>
+                  ))}
+                  {draftImages.length + imgUploading < NOTICE_IMG_MAX && (
+                    <label style={{ width: 92, height: 92, borderRadius: 8, border: '1px dashed #C9B48F', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: 12, color: '#8A5A2B', cursor: 'pointer', background: '#FBF7EE', margin: 0 }}>
+                      <span style={{ fontSize: 22 }}>📷</span>사진 추가
+                      <input type="file" accept="image/*" multiple style={{ display: 'none' }}
+                        onChange={e => { addNoticeImages(e.target.files); e.target.value = ''; }} />
+                    </label>
+                  )}
+                </div>
               </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#5C4A36', cursor: 'pointer', margin: '4px 0 12px' }}>
                 <input type="checkbox" checked={draftPopup} onChange={e => setDraftPopup(e.target.checked)} style={{ width: 16, height: 16 }} />
                 🔔 사용자 입장 시 팝업으로 띄우기
               </label>
-              <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim()}>
-                {editingId ? "✏️ 수정 저장" : "📨 모든 입사자에게 발송"}
+              <button className="btn primary" onClick={addNotice} disabled={!draftTitle.trim() || !draftBody.trim() || imgUploading > 0}>
+                {imgUploading > 0 ? "📷 사진 올리는 중…" : editingId ? "✏️ 수정 저장" : "📨 모든 입사자에게 발송"}
               </button>
             </div>
             <div className="card">
@@ -2702,7 +2799,7 @@ function App() {
                   onClick={() => setPreviewNotice(n)}
                   style={{ position: 'relative', cursor: 'pointer', outline: editingId === n.id ? '2px solid #D8923A' : 'none' }}
                 >
-                  <div className="meta">[{n.type}]{n.popup ? ' · 🔔팝업' : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
+                  <div className="meta">[{n.type}]{n.popup ? ' · 🔔팝업' : ''}{n.images && n.images.length > 0 ? ` · 📷${n.images.length}` : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
                   <strong>{n.title}</strong>
                   <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{(n.body || '').slice(0, 100)}{(n.body || '').length > 100 ? "…" : ""}</div>
                   <div style={{ marginTop: 6, fontSize: 11, color: '#6E8A5C', fontWeight: 700 }}>👁 확인 {reads}명</div>
@@ -3383,6 +3480,15 @@ function App() {
               <div style={{ marginTop: 16, fontSize: 14, lineHeight: 1.75, color: '#2A2118', whiteSpace: 'pre-wrap', wordBreak: 'keep-all' }}>
                 {previewNotice.body}
               </div>
+              {Array.isArray(previewNotice.images) && previewNotice.images.length > 0 && (
+                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {previewNotice.images.map(u => (
+                    <a key={u} href={u} target="_blank" rel="noopener noreferrer">
+                      <img src={u} alt="" style={{ width: '100%', borderRadius: 8, border: '1px solid #E7DCC6', display: 'block' }} />
+                    </a>
+                  ))}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 8, marginTop: 22 }}>
                 <button
                   className="btn primary"

@@ -20716,6 +20716,15 @@ function MemoModal({ memo, onClose }) {
               </>
             )}
           </div>
+          {Array.isArray(memo.images) && memo.images.length > 0 && (
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              {memo.images.map(u => (
+                <a key={u} href={u} target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
+                  <img src={u} alt="" loading="lazy" style={{ width: "100%", height: "auto", borderRadius: 8, border: "1px solid var(--line)", display: "block" }} />
+                </a>
+              ))}
+            </div>
+          )}
           {memo.ctaUrl && (
             <a href={memo.ctaUrl} target="_blank" rel="noopener noreferrer"
                onClick={() => { try { if (memo.ctaUrl === _KAKAO_NOTICE_ROOM && window.__odRetEvent) window.__odRetEvent("room"); } catch (e) {} }}
@@ -23262,6 +23271,7 @@ function App() {
             isDb: true,
             popup: !!n.popup,
             isDirect: isTargeted,
+            images: Array.isArray(n.image_urls) ? n.image_urls.filter(u => typeof u === "string" && /^https:\/\//.test(u)) : [],
           };
         });
         setDbNotices(converted);
