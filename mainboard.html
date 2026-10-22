@@ -6590,6 +6590,8 @@ const USER = {
     ? ["첫 출근"].concat(_localUser.levelupCompletedAt || _localUser.levelup_completed_at ? ["정직원 전환 🎉"] : [])
     : ["첫 출근", "1주 개근", "사수 칭찬 3회", "외국인과 첫 대화"],
   email: _localUser?.email || null,
+  // ★ 2026-10-22: 체험/회원 구분. 48시간 사은품 배너·체험 구매 줄이 이걸 본다 (예전엔 USER 에 없어서 배너가 안 떴다)
+  cohort: (typeof _localUser?.cohort === "string" ? _localUser.cohort : null),
   // ★ 출근부·업무노트가 정확히 표시되려면 USER에 학습/노트 데이터가 반영돼있어야 함
   scenariosCompleted: _localUser?.scenariosCompleted || [],
   savedNotes: _localUser?.savedNotes || {},
