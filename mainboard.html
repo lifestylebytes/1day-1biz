@@ -8858,6 +8858,14 @@ function AttendCalBig({ onGoDay }) {
   const [ym, setYm] = useState(() => _acxKst(new Date().toISOString()).slice(0, 7));
   const [sel, setSel] = useState(null);
   const [allLeft, setAllLeft] = useState(false);
+  // ★ 2026-10-23 심부름 '출근 달력 크게 보기': 큰 달력이 화면에 절반 이상 보이면 도장 (PC 는 '크게 보기 ›', 모바일은 사원증 탭)
+  useEffect(() => {
+    if (!st) return;
+    const el = document.getElementById("acx-big"); if (!el) return;
+    if (!("IntersectionObserver" in window)) { try { _tyErrandProof("calbig"); } catch (e) {} return; }
+    const io = new IntersectionObserver((ents) => { if (ents.some(x => x.isIntersecting)) { try { _tyErrandProof("calbig"); } catch (e) {} io.disconnect(); } }, { threshold: 0.4 });
+    io.observe(el); return () => io.disconnect();
+  }, [!!st]);
   if (!st) return <div className="acx acx-big" id="acx-big"><div className="acx-head"><div><span className="acx-eb">출근부<i>›</i></span><b className="acx-t">출근 달력</b></div></div><div className="acx-load" /></div>;
   const data = st.data;
   const wp = _acxWp(USER.email);
@@ -8952,7 +8960,7 @@ function AttendCalBig({ onGoDay }) {
             <div>
               <h4>건너뛴 Day <em>{L.missed.length}</em><small>지나온 Day 중 완주 기록이 없는 날</small></h4>
               <div className="acx-chips">
-                {leftShown.map(d => <button key={d} className="d" onClick={() => onGoDay && onGoDay(d)} title={"Day " + d + " 채우러 가기"}>{d}</button>)}
+                {leftShown.map(d => <button key={d} className="d" onClick={() => { try { _tyErrandProof("skipday"); } catch (e) {} if (onGoDay) onGoDay(d); }} title={"Day " + d + " 채우러 가기"}>{d}</button>)}
                 {L.missed.length > LIM && <button className="more" onClick={() => setAllLeft(v => !v)}>{allLeft ? "접기" : "+" + (L.missed.length - LIM)}</button>}
               </div>
             </div>
@@ -10617,7 +10625,7 @@ function AwayReport({ user }) {
 //   ★ 2026-09-11: 5개뿐이라 매일 같은 게 돌았다. 20개로 늘리고, 최근 6일에 나온 건 다시 안 뽑는다.
 //   minDay: 그 기능이 열린 뒤에만 나오게 (출근부 3, 역량 스탯·마일스톤 4, 복습 30)
 //   nav: 이동할 탭 / sel: 그 화면에서 스크롤할 곳 (모바일은 사원증 탭에 있는 카드들)
-const _TY_ERRANDS = [
+const _TY_ERRANDS_BASE = [
   { id: "library",   icon: "📓", t: "업무 노트에서 지난 표현 하나 다시 읽기", verify: true, nav: "library" },
   { id: "libfav",    icon: "⭐", t: "업무 노트에서 마음에 드는 표현에 별 찍기", verify: true, nav: "library" },
   { id: "libsearch", icon: "🔎", t: "업무 노트 검색창에 아무 단어나 쳐보기", verify: true, nav: "library" },
@@ -10652,6 +10660,19 @@ const _TY_ERRANDS = [
   { id: "ladder",    icon: "🔓", t: "앞으로 뭐가 열리는지 확인하기", sel: ".unlock-ladder" },
   { id: "side",      icon: "🌙", t: "퇴근 후 사이드 프로젝트 열어보기", verify: true, sel: ".ot-card", minDay: 2 },
 ];
+// ★ 2026-10-23 (개발 뷰): 심부름 4개 교체. 회원 화면은 그대로 (_TY_ERRANDS_BASE).
+//   day1 → 건너뛴 Day 눌러보기 (출근 달력이 생겨서 Day 1 대신 건너뛴 Day 로 데려간다)
+//   inbox · inbox2 → 사내 메모함이 '사내 게시판'으로 바뀌어서 문구만 맞춘다 (id · 도장 조건 그대로)
+//   mynotes → 출근 달력 크게 보기
+//   cond: 그날 뽑을 때 할 수 있는 상태인지 (건너뛴 Day 가 하나도 없으면 안 뽑는다)
+const _TY_ERRANDS_DEV = {
+  day1:    { id: "skipday", icon: "🗓️", t: "출근 달력에서 건너뛴 Day 하나 눌러보기 (그날 학습을 채울 수 있어요)", verify: true, nav: "mypage", sel: ".acx-left", minDay: 3,
+             cond: (email) => { try { const c = _acxCache[email]; return !c || _acxLeft(c.data).missed.length > 0; } catch (e) { return true; } } },
+  inbox:   { id: "inbox",   icon: "🏆", t: "사내 게시판 열어보기", verify: true, nav: "inbox" },
+  inbox2:  { id: "inbox2",  icon: "📌", t: "사내 게시판에서 안 읽은 공지글 하나 읽기", verify: true, nav: "inbox" },
+  mynotes: { id: "calbig",  icon: "📅", t: "출근 달력 크게 보기 (날짜별 기록을 볼 수 있어요)", verify: true, nav: "mypage", sel: "#acx-big", minDay: 3 },
+};
+const _TY_ERRANDS = _TY_ERRANDS_BASE.map(e => (_isDevNext() && _TY_ERRANDS_DEV[e.id]) || e);
 const _tyErrandHistKey = (email) => "__OD_ERRAND_HIST_" + (email || "guest");
 // ★ 심부름 증빙 (2026-09-14): verify 가 붙은 심부름은 누른다고 도장이 안 찍힌다. 실제 그 행동이 일어난 곳에서 _tyErrandProof(id) 를 부르면 그날 심부름에 있을 때만 도장.
 function _tyErrandProof(id) {
@@ -10677,7 +10698,7 @@ function _tyPickErrands(email, today, rd, n) {
     const got = (saved.ids || []).map(id => _TY_ERRANDS.find(e => e.id === id)).filter(Boolean);
     if (got.length) return got;
   }
-  const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd);
+  const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd && (!e.cond || e.cond(email)));
   const recent = new Set(hist.slice(-6).flatMap(h => (h && h.ids) || []));
   // ★ 2026-09-15: 첫날은 알림 켜기 2개, 둘째 날은 공지방·게시판으로 고정 (그 뒤부터 안 한 것 위주 랜덤)
   if (_RET_ON()) {
@@ -22334,6 +22355,95 @@ function PopupGalleryDev({ onClose }) {
     </div>
   );
 }
+// ★ 2026-10-23 (개발 뷰): 심부름 모아보기. dev 패널 버튼으로 연다. 심부름 전체 목록 · 열리는 Day · 도장 방식 · 데려가는 곳 · 오늘 상태를 한 화면에.
+function ErrandGalleryHost() {
+  const [on, setOn] = React.useState(false);
+  React.useEffect(() => { const h = () => setOn(true); window.addEventListener("od-open-errand-gallery", h); return () => window.removeEventListener("od-open-errand-gallery", h); }, []);
+  return on ? <ErrandGalleryDev onClose={() => setOn(false)} /> : null;
+}
+const _EG_NAV = { home: "홈", library: "업무 노트", mypage: "사원증", inbox: "사내 게시판", test: "분기 평가", mynotes: "복습" };
+function ErrandGalleryDev({ onClose }) {
+  const email = _retEmail();
+  const USER = (window.__SIM && window.__SIM.USER) || {};
+  const rd = USER.realCurrentDay || USER.currentDay || 1;
+  const today = _tyTodayISO();
+  const [tick, setTick] = React.useState(0);
+  const [onlyOpen, setOnlyOpen] = React.useState(false);
+  const info = React.useMemo(() => {
+    const picked = new Set(_tyPickErrands(email, today, rd, 2).map(e => e.id));
+    let hist = []; try { hist = JSON.parse(localStorage.getItem(_tyErrandHistKey(email)) || "[]") || []; } catch (e) {}
+    const recent = new Set(hist.filter(h => h && h.d !== today).slice(-6).flatMap(h => (h && h.ids) || []));
+    const doneEver = new Set(); let todayDone = {};
+    try {
+      todayDone = JSON.parse(localStorage.getItem("__OD_ERRAND_" + today + "_" + email) || "{}") || {};
+      Object.keys(localStorage).forEach(k => { if (k.startsWith("__OD_ERRAND_") && k.endsWith("_" + email) && !k.startsWith("__OD_ERRAND_HIST_")) { const v = JSON.parse(localStorage.getItem(k) || "{}"); Object.keys(v).forEach(id => { if (v[id]) doneEver.add(id); }); } });
+    } catch (e) {}
+    return { picked, recent, doneEver, todayDone };
+  }, [email, today, rd, tick]);
+  const replacedFrom = {}; Object.keys(_TY_ERRANDS_DEV).forEach(k => { const b = _TY_ERRANDS_BASE.find(e => e.id === k); if (b && _isDevNext()) replacedFrom[_TY_ERRANDS_DEV[k].id] = b.t; });
+  const rows = _TY_ERRANDS.map(e => {
+    const locked = (e.minDay || 1) > rd;
+    const noCond = !locked && e.cond && !e.cond(email);
+    const st = info.picked.has(e.id) ? (info.todayDone[e.id] ? { t: "오늘 · 도장 ✓", c: "#2F7A4C" } : { t: "오늘 심부름", c: "var(--orange)" })
+      : locked ? { t: "Day " + e.minDay + "부터", c: "#9A8B74" }
+      : noCond ? { t: "지금은 할 게 없음", c: "#9A8B74" }
+      : info.doneEver.has(e.id) ? { t: "이미 도장 (다시 안 나옴)", c: "#5C4A36" }
+      : info.recent.has(e.id) ? { t: "최근 6일 나옴", c: "#2B4A6E" }
+      : { t: "뽑힐 수 있음", c: "#2B4A6E" };
+    return { e, locked, st };
+  });
+  const shown = (onlyOpen ? rows.filter(r => !r.locked) : rows).slice().sort((x, y) => info.picked.has(y.e.id) - info.picked.has(x.e.id));   // 오늘 뽑힌 2개를 맨 위로
+  const counts = { all: rows.length, open: rows.filter(r => !r.locked).length, verify: rows.filter(r => r.e.verify).length };
+  const redraw = () => {
+    try {
+      let hist = JSON.parse(localStorage.getItem(_tyErrandHistKey(email)) || "[]") || [];
+      localStorage.setItem(_tyErrandHistKey(email), JSON.stringify(hist.filter(h => h && h.d !== today)));
+      localStorage.removeItem("__OD_ERRAND_" + today + "_" + email);
+    } catch (e) {}
+    setTick(t => t + 1);
+  };
+  const pill = (t, c, solid) => <span style={{ fontSize: 10.5, fontWeight: 800, color: solid ? "#fff" : c, background: solid ? c : "transparent", border: "1px solid " + c, borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap" }}>{t}</span>;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9990, background: "rgba(20,15,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 14, width: "min(1000px, 100%)", maxHeight: "92vh", overflow: "auto", padding: "20px 22px" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+          <b style={{ fontSize: 18 }}>🧺 심부름 모아보기</b><span className="pag-dev">개발 뷰</span>
+          <small style={{ color: "var(--ink-mute)" }}>지금 Day {rd} · 전체 {counts.all}개 · 지금 열린 것 {counts.open}개 · 실제로 해야 도장 {counts.verify}개</small>
+          <button className="btn btn-ghost btn-mini" style={{ marginLeft: "auto" }} onClick={onClose}>닫기</button>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 10, lineHeight: 1.6, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 12px" }}>
+          홈 · 하루 <b>2개</b>, 하나에 <b>+{RET_EXP.errand} EXP</b>. 안 해도 불이익은 없어요.<br />
+          심부름이 열린 첫날은 🔔 푸시 + 💌 카톡 알림, 둘째 날은 📣 공지방 + 🏆 사내 게시판으로 고정. 그 뒤로는 랜덤이에요.<br />
+          최근 6일에 나온 것과 이미 도장 찍은 것은 다시 안 나와요. 다 돌면 처음부터 다시 나와요.<br />
+          <b>실제로 해야</b>: 그 화면에 가서 직접 해야 도장이 찍혀요. <b>눌러서</b>: '했어요'를 누르면 바로 도장이 찍혀요.
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12, flexWrap: "wrap" }}>
+          <label style={{ fontSize: 12, display: "flex", gap: 4, alignItems: "center" }}><input type="checkbox" checked={onlyOpen} onChange={e => setOnlyOpen(e.target.checked)} />지금 Day 에 열린 것만</label>
+          <button className="btn btn-ghost btn-mini" style={{ marginLeft: "auto" }} onClick={redraw} title="오늘 뽑힌 2개와 오늘 도장을 지우고 다시 뽑아요 (이 기기에서만)">오늘 심부름 다시 뽑기 ↻</button>
+        </div>
+        <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+          {shown.map(({ e, locked, st }) => (
+            <div key={e.id} style={{ display: "grid", gridTemplateColumns: "34px 1fr auto", gap: 10, alignItems: "center", padding: "9px 12px", border: "1px solid " + (info.picked.has(e.id) ? "var(--orange)" : "var(--line)"), borderRadius: 10, background: info.picked.has(e.id) ? "var(--orange-soft)" : locked ? "var(--paper-warm)" : "var(--paper)", opacity: locked ? 0.7 : 1 }}>
+              <div style={{ fontSize: 20, textAlign: "center" }}>{e.icon}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 13.5, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  {e.t}
+                  {pill(e.verify ? "실제로 해야" : "눌러서", e.verify ? "#D85A2A" : "#5C4A36", false)}
+                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && pill("개발 뷰 교체", "#2B4A6E", true)}
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>
+                  Day {e.minDay || 1}부터 · 데려가는 곳: {e.nav ? _EG_NAV[e.nav] || e.nav : "홈 (없으면 사원증)"}{e.sel ? " › " + e.sel : ""} · id {e.id}
+                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && <> · 회원 화면: "{replacedFrom[e.id]}"</>}
+                </div>
+              </div>
+              <div>{pill(st.t, st.c, info.picked.has(e.id))}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 function PromoEvalDayPopup({ T, onGo, onReview, onClose }) {
   const next = T.evalDay + 1;
   const who = T.kind === "p30" ? "사수 · 김 팀장 · 인사팀" : T.kind === "p90" ? "사수 · 김 팀장 · Daniel" : "TF 상대역 · 김 팀장 · 사수";
@@ -24555,6 +24665,7 @@ function App() {
       })()}
       {/* ── 팝업 전체보기 (dev 패널 버튼으로 연다) ── */}
       {_isInternal && <PopupGalleryHost />}
+      {_isInternal && <ErrandGalleryHost />}
       {/* ── 메인보드 2 토글 (개발 뷰 켜진 상태에서만). 기존 홈 ↔ 단순 홈 ── */}
       {_isInternal && _isNextFeature() && (() => {
         const _h2On = _isHome2();
@@ -25476,6 +25587,7 @@ window.SimApp = App;
           <button class="dp-btn" data-act="clear-learning" title="답변·일정체크·저널·팝업기록 전부 비우기">🧹 학습 비우기</button>
           <button class="dp-btn" data-act="reset-popups" style="grid-column: span 2" title="첫 주 팝업/투어/설문 1회 노출 기록만 초기화">🎁 팝업 기록만 리셋 (다시 보기)</button>
           <button class="dp-btn" data-act="popup-gallery" style="grid-column: span 2" title="회원에게 뜨는 팝업을 Day · 조건 · 순서대로 모아 보고 미리보기">🗂 팝업 전체보기</button>
+          <button class="dp-btn" data-act="errand-gallery" style="grid-column: span 2" title="오늘의 심부름 전체 목록 · 열리는 Day · 도장 방식 · 오늘 뽑힌 2개를 한 화면에">🧺 심부름 모아보기</button>
           <button class="dp-btn" data-act="view-phone" style="${document.getElementById('dev-phone-wrap') ? 'background:rgba(243,138,92,0.4)' : ''}" title="같은 화면을 폰 크기(390×844)로">📱 폰 화면</button>
           <button class="dp-btn" data-act="view-pc" style="${document.getElementById('dev-phone-wrap') ? '' : 'background:rgba(243,138,92,0.4)'}" title="원래 PC 화면">🖥 PC 화면</button>
         </div>
@@ -25903,6 +26015,7 @@ window.SimApp = App;
       case 'view-phone': phoneFrameOpen(); break;
       case 'view-pc': phoneFrameClose(); break;
       case 'popup-gallery': try { panel.classList.add('collapsed'); render(); window.dispatchEvent(new Event('od-open-popup-gallery')); } catch (e) {} break;
+      case 'errand-gallery': try { panel.classList.add('collapsed'); render(); window.dispatchEvent(new Event('od-open-errand-gallery')); } catch (e) {} break;
       case 'reload': location.reload(); break;
     }
   }
