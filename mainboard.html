@@ -6112,6 +6112,9 @@ const GIFT48_HOURS = 48;
 const GIFT48_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_gift48&utm_campaign=sat_launch";
 // ★ 2026-10-21 출근 달력 라이브: true 면 회원에게도 출근 달력(홈 출근부 자리 작게 + 사원증 탭 크게). 되돌릴 땐 false (개발 뷰에서만)
 function _attCalLive() { return true; }
+// ★ 2026-10-22 출근 세팅 카드 라이브: true 면 회원에게도 첫 출근 가이드 6/7 · 출근 환경 세팅 팝업이 주황 카드 3장(카톡 알림 · 홈 화면 추가 단계 그림 · 브라우저 알림)으로. 되돌릴 땐 false (개발 뷰에서만)
+function _setupCardsLive() { return true; }
+function _isSetupCardsOn() { return _setupCardsLive() || _isDevNext(); }
 function _isAttCalOn() { return _attCalLive() || _isDevNext(); }
 function _odEvalBlocked(d, u) {
   try {
@@ -9511,8 +9514,8 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
       body: _isAttCalOn() ? "오늘 일정 다 끝내면 달력 오늘 칸에 그날 Day가 찍혀요. '크게 보기'를 누르면 사원증 탭에서 날짜별 기록을 볼 수 있어요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨" : "오늘 일정 다 끝내면 '오늘' 칸에 빨간 출근 도장이 찍혀요. 30일 되면 정규직 승진이 기다리고 있을지도 ✨",
     },
     // ★ 2026-10-12 (재참여 설문): 카톡 알림·휴대폰 출근·공지방을 아무도 몰랐다. 첫 출근 가이드에서 한 번 짚어 준다.
-    // ★ 2026-10-22 (개발 뷰): 글 대신 그림 2칸 (카톡 출근 알림 · 홈 화면 추가). 넓은 카드라 화면 가운데에 띄운다.
-    _isDevNext() ? {
+    // ★ 2026-10-22: 글 대신 주황 카드 3장. 넓은 카드라 화면 가운데에 띄운다. 2026-10-22 라이브 (_setupCardsLive)
+    _isSetupCardsOn() ? {
       selector: null,
       wide: true,
       visual: "alerts",
@@ -21479,7 +21482,7 @@ function SetupPopup({ onClose }) {
         </div>
 
         {/* ★ 2026-10-22 (개발 뷰): ② 홈 화면 추가 · ③ 브라우저 알림도 카톡 칸처럼 주황 카드 + 칩. ②는 기기별 단계 그림(HomeAddGuide, 첫 출근 가이드 6/7과 같은 코드). */}
-        {_isDevNext() ? (
+        {_isSetupCardsOn() ? (
           <>
             <div style={{ background: "#FFF6E8", border: "2px solid var(--orange)", borderRadius: 12, padding: "13px 14px", marginBottom: 10, boxShadow: "0 6px 18px -10px rgba(216,90,42,0.55)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
