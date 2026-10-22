@@ -17929,6 +17929,51 @@ function _placementNeeded(user) {
   return true;
 }
 
+// ★ 입사 테스트 전용 표현 뱅크. 커리큘럼(Day 1~180)과 TF 트랙에 나오는 표현은 일부러 뺐다 (스포일러 방지).
+//   lv 1~10: 뒤로 갈수록 어렵다. 같은 lv 에서 하나씩 무작위로 뽑는다.
+const PLACEMENT_BANK = [
+  // lv1 쉬움
+  { lv: 1, word: "agenda", meaning: "회의 안건, 순서", ph: "/əˈdʒɛndə/", en: "Can you send the agenda before the 2pm call so everyone can prep?", ko: "2시 콜 전에 안건을 보내줄래요? 다들 준비할 수 있게요." },
+  { lv: 1, word: "wrap up", meaning: "마무리하다, 끝내다", ph: "/ræp ʌp/", en: "Let's wrap up here and continue the details over email.", ko: "여기서 마무리하고 세부 내용은 메일로 이어가죠." },
+  { lv: 1, word: "reach out", meaning: "연락하다, 먼저 접촉하다", ph: "/riːtʃ aʊt/", en: "I'll reach out to the vendor today and ask for a revised quote.", ko: "오늘 업체에 연락해서 수정 견적을 요청할게요." },
+  // lv2
+  { lv: 2, word: "on track", meaning: "계획대로 가고 있는", ph: "/ɒn træk/", en: "The launch is still on track for the 15th, no changes so far.", ko: "출시는 여전히 15일 계획대로예요. 아직 변경 없어요." },
+  { lv: 2, word: "FYI", meaning: "참고로 (알아두세요)", ph: "/ˌɛf waɪ ˈaɪ/", en: "FYI, the client moved our review to Thursday morning.", ko: "참고로, 고객사가 리뷰를 목요일 오전으로 옮겼어요." },
+  { lv: 2, word: "go ahead", meaning: "진행해도 좋다는 승인, 시작하라는 신호", ph: "/ɡoʊ əˈhɛd/", en: "We got the go ahead from legal, so you can publish the page.", ko: "법무팀 승인이 났으니 페이지 올리셔도 돼요." },
+  // lv3
+  { lv: 3, word: "bottleneck", meaning: "병목, 일이 막히는 지점", ph: "/ˈbɒtlnɛk/", en: "Design review is the bottleneck right now, three tickets are waiting on it.", ko: "지금 디자인 리뷰가 병목이에요. 티켓 세 개가 거기서 대기 중이에요." },
+  { lv: 3, word: "prioritize", meaning: "우선순위를 정하다", ph: "/praɪˈɒrɪtaɪz/", en: "We can't do all five this week, so let's prioritize the two that affect revenue.", ko: "이번 주에 다섯 개를 다 못 하니, 매출에 영향 있는 두 개부터 우선순위를 정하죠." },
+  { lv: 3, word: "touch on", meaning: "가볍게 언급하다, 짚고 넘어가다", ph: "/tʌtʃ ɒn/", en: "I'll touch on the budget briefly, but the full breakdown comes next week.", ko: "예산은 가볍게만 짚을게요. 전체 내역은 다음 주에 나와요." },
+  // lv4
+  { lv: 4, word: "on hold", meaning: "보류 중, 잠시 멈춘", ph: "/ɒn hoʊld/", en: "The redesign is on hold until we get the new headcount approved.", ko: "리디자인은 새 인원 승인이 날 때까지 보류예요." },
+  { lv: 4, word: "bring up", meaning: "(화제를) 꺼내다, 거론하다", ph: "/brɪŋ ʌp/", en: "Good point, I'll bring up the timeline risk in tomorrow's sync.", ko: "좋은 지적이에요. 내일 싱크에서 일정 리스크를 꺼낼게요." },
+  { lv: 4, word: "roll out", meaning: "출시하다, 단계적으로 적용하다", ph: "/roʊl aʊt/", en: "We'll roll out the new dashboard to the sales team first, then everyone else.", ko: "새 대시보드는 영업팀에 먼저 적용하고, 그다음 전체로 확대할게요." },
+  // lv5
+  { lv: 5, word: "flag", meaning: "(문제를) 미리 알리다, 표시해 두다", ph: "/flæɡ/", en: "I want to flag one thing early: the API vendor changed their pricing.", ko: "한 가지 미리 알려드릴게요. API 업체가 가격 정책을 바꿨어요." },
+  { lv: 5, word: "turnaround", meaning: "처리에 걸리는 시간, 회신까지의 시간", ph: "/ˈtɜːrnəraʊnd/", en: "What's the usual turnaround on legal review? I need it back by Friday.", ko: "법무 검토는 보통 얼마나 걸려요? 금요일까지는 받아야 해서요." },
+  { lv: 5, word: "across the board", meaning: "전반적으로, 예외 없이 모두", ph: "/əˈkrɒs ðə bɔːrd/", en: "Costs went up across the board, not just in one region.", ko: "비용이 한 지역만이 아니라 전반적으로 다 올랐어요." },
+  // lv6 보통 (빈칸 시작)
+  { lv: 6, word: "rule of thumb", meaning: "대략의 경험칙, 어림 기준", ph: "/ruːl əv θʌm/", en: "As a rule of thumb, we keep two weeks of buffer before any client demo.", ko: "경험상 기준으로, 고객 데모 전에는 2주 여유를 둬요." },
+  { lv: 6, word: "red tape", meaning: "불필요한 형식 절차, 관료적 절차", ph: "/rɛd teɪp/", en: "The approval itself is easy, it's the red tape around it that takes a month.", ko: "승인 자체는 쉬운데, 그 주변의 형식 절차 때문에 한 달이 걸려요." },
+  { lv: 6, word: "go-to", meaning: "믿고 찾는, 제일 먼저 떠올리는", ph: "/ˈɡoʊ tuː/", en: "Mina is our go-to for anything related to the billing system.", ko: "결제 시스템 관련은 미나가 우리가 믿고 찾는 사람이에요." },
+  // lv7
+  { lv: 7, word: "bite the bullet", meaning: "싫어도 감수하고 해버리다", ph: "/baɪt ðə ˈbʊlɪt/", en: "We should bite the bullet and migrate the database this quarter instead of patching it again.", ko: "또 땜질하지 말고, 이번 분기에 감수하고 DB를 옮기는 게 맞아요." },
+  { lv: 7, word: "on the back burner", meaning: "뒤로 미뤄둔, 당장은 안 하는", ph: "/ɒn ðə bæk ˈbɜːrnər/", en: "The mobile app is on the back burner until the web version is stable.", ko: "웹 버전이 안정될 때까지 모바일 앱은 뒤로 미뤄뒀어요." },
+  { lv: 7, word: "ahead of the curve", meaning: "남보다 앞서 있는, 선제적인", ph: "/əˈhɛd əv ðə kɜːrv/", en: "Switching to the new format early kept us ahead of the curve when the rule changed.", ko: "새 포맷으로 일찍 바꾼 덕에 규정이 바뀌었을 때 우리가 앞서 있었어요." },
+  // lv8 어려움
+  { lv: 8, word: "move the goalposts", meaning: "기준을 중간에 바꾸다", ph: "/muːv ðə ˈɡoʊlpoʊsts/", en: "We hit every target, and then they moved the goalposts in the final review.", ko: "목표를 다 맞췄는데, 마지막 리뷰에서 기준을 바꿔버렸어요." },
+  { lv: 8, word: "table stakes", meaning: "기본 요건, 그 판에 끼려면 당연히 있어야 하는 것", ph: "/ˈteɪbl steɪks/", en: "Dark mode isn't a differentiator anymore, it's table stakes.", ko: "다크 모드는 더 이상 차별점이 아니에요. 기본 요건이죠." },
+  { lv: 8, word: "push the envelope", meaning: "한계를 넓히다, 과감하게 시도하다", ph: "/pʊʃ ði ˈɛnvəloʊp/", en: "The brand team wants to push the envelope on this campaign, so expect some bold concepts.", ko: "브랜드팀이 이번 캠페인에서 과감하게 가고 싶어 해서, 대담한 컨셉이 나올 거예요." },
+  // lv9
+  { lv: 9, word: "boil the ocean", meaning: "불가능할 만큼 범위를 키우다", ph: "/bɔɪl ði ˈoʊʃən/", en: "Let's not boil the ocean. Fix the top three complaints first and measure.", ko: "범위를 다 키우려 하지 말죠. 상위 불만 세 개부터 고치고 측정해요." },
+  { lv: 9, word: "greenlight", meaning: "승인해서 시작시키다", ph: "/ˈɡriːnlaɪt/", en: "Finance gave us the greenlight on the pilot, so we can start hiring next month.", ko: "재무팀이 파일럿을 승인해서 다음 달부터 채용을 시작할 수 있어요." },
+  { lv: 9, word: "sandbag", meaning: "실력이나 수치를 일부러 낮춰 잡다", ph: "/ˈsændbæɡ/", en: "Don't sandbag the forecast just to beat it later, give us the real number.", ko: "나중에 넘기려고 예측치를 일부러 낮추지 말고, 진짜 숫자를 주세요." },
+  // lv10 실전
+  { lv: 10, word: "run interference", meaning: "대신 나서서 방해를 막아주다", ph: "/rʌn ˌɪntərˈfɪərəns/", en: "I'll run interference with the exec team so you can focus on shipping.", ko: "제가 임원진 쪽은 막아줄 테니, 출시에만 집중하세요." },
+  { lv: 10, word: "land the plane", meaning: "길어진 논의를 결론으로 매듭짓다", ph: "/lænd ðə pleɪn/", en: "We've debated this for an hour, so let me land the plane: we go with option B.", ko: "한 시간째 논의했으니 결론 내릴게요. B안으로 갑니다." },
+  { lv: 10, word: "herding cats", meaning: "제각각인 사람들을 한 방향으로 모으는 일", ph: "/ˈhɜːrdɪŋ kæts/", en: "Getting six teams to agree on one roadmap was like herding cats.", ko: "여섯 팀이 로드맵 하나에 합의하게 하는 건 고양이 떼 모는 것 같았어요." },
+];
+
 // 난이도 띠: 앞 5개(객관식)는 Day 1~44, 뒤 5개(빈칸)는 Day 45~90. 띠 안에서 무작위.
 const _PL_BANDS = [[1, 6], [7, 14], [15, 24], [25, 34], [35, 44], [45, 54], [55, 64], [65, 74], [75, 84], [85, 90]];
 function _plNorm(s) {
@@ -17949,7 +17994,38 @@ function _plBlankOf(sc) {
   return null;
 }
 function _plMeaning(sc) { return String(sc.meaning || "").replace(/[⭐★]/g, "").replace(/\s*\(.*?\)\s*$/, "").trim(); }
-function _plBuild(all) {
+function _plHint(word) {
+  return String(word).split(" ").map(w => w.split("-").map(p => p ? p[0] + "_".repeat(Math.max(0, p.length - 1)) : "").join("-")).join(" ");
+}
+function _plBuild() {
+  // 입사 테스트 뱅크에서 lv 1~10 하나씩. 뱅크가 비어 있으면(있을 리 없지만) 커리큘럼으로 대신한다.
+  const bank = (typeof PLACEMENT_BANK !== "undefined" && PLACEMENT_BANK.length >= 10) ? PLACEMENT_BANK : null;
+  if (!bank) return _plBuildFromCurriculum((window.__SIM && window.__SIM.SCENARIOS) || []);
+  const qs = [];
+  for (let lv = 1; lv <= 10; lv++) {
+    const c = bank.filter(b => b.lv === lv);
+    if (!c.length) continue;
+    const it = c[Math.floor(Math.random() * c.length)];
+    const blank = lv >= 6;
+    // 난이도 표시용 Day 환산 (lv 1 → Day 1, lv 10 → Day 90 근처)
+    const day = Math.min(90, Math.max(1, Math.round((lv - 0.5) * 9)));
+    if (!blank) {
+      const others = bank.filter(b => b.word !== it.word && b.meaning !== it.meaning);
+      const ds = []; const seen = new Set([it.meaning]);
+      // 보기는 비슷한 난이도(±2)에서 먼저 뽑아 너무 쉽게 걸러지지 않게
+      const near = others.filter(b => Math.abs(b.lv - lv) <= 2), far = others.filter(b => Math.abs(b.lv - lv) > 2);
+      for (const pool of [near, far]) { const p = pool.slice(); while (ds.length < 3 && p.length) { const o = p.splice(Math.floor(Math.random() * p.length), 1)[0]; if (!seen.has(o.meaning)) { seen.add(o.meaning); ds.push(o.meaning); } } }
+      const opts = [it.meaning, ...ds].sort(() => Math.random() - 0.5);
+      qs.push({ n: qs.length + 1, type: "mc", lv, day, word: it.word, phonetic: it.ph || "", meaning: it.meaning, options: opts, en: it.en, ko: it.ko });
+    } else {
+      const re = new RegExp(it.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s-]+"), "i");
+      const sentence = re.test(it.en) ? it.en.replace(re, "______") : (it.en + " (______)");
+      qs.push({ n: qs.length + 1, type: "blank", lv, day, word: it.word, meaning: it.meaning, sentence, ko: it.ko, hint: _plHint(it.word), words: it.word.trim().split(/\s+/).length });
+    }
+  }
+  return qs;
+}
+function _plBuildFromCurriculum(all) {
   const pool = (all || []).filter(s => s && s.word && s.meaning && Number(s.day) >= 1 && Number(s.day) <= 90);
   const used = new Set(); const qs = [];
   const pick = (lo, hi, pred) => {
@@ -17992,7 +18068,7 @@ function _plDiffLabel(i) { return i < 3 ? "쉬움" : i < 6 ? "보통" : i < 8 ? 
 
 function PlacementTestModal({ user, onDone }) {
   const [stage, setStage] = useState("intro");     // intro → run → result
-  const [qs] = useState(() => _plBuild((window.__SIM && window.__SIM.SCENARIOS) || []));
+  const [qs] = useState(() => _plBuild());
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState(null);       // 객관식: 고른 보기
   const [typed, setTyped] = useState("");           // 빈칸: 입력
@@ -18013,8 +18089,9 @@ function PlacementTestModal({ user, onDone }) {
     const rec = {
       score, total, level: lv.id, levelKo: lv.ko,
       firstWrongDay: firstWrong ? firstWrong.day : null,
+      firstWrongLv: firstWrong ? (firstWrong.lv || null) : null,
       wrong: list.filter(a => !a.ok).map(a => a.word),
-      items: list.map(a => ({ n: a.n, type: a.type, day: a.day, word: a.word, ok: a.ok, answer: a.answer })),
+      items: list.map(a => ({ n: a.n, type: a.type, day: a.day, lv: a.lv, word: a.word, ok: a.ok, answer: a.answer })),
       durationSec: Math.round((Date.now() - startAt) / 1000),
       at: new Date().toISOString(),
     };
@@ -18034,7 +18111,7 @@ function PlacementTestModal({ user, onDone }) {
     if (q.type === "mc") { answer = val; ok = val === q.meaning; setPicked(val); }
     else { answer = String(typed || "").trim(); if (!answer) return; ok = _plCheckBlank(q, answer); }
     setChecked({ ok });
-    setAnswers(a => a.concat([{ n: q.n, type: q.type, day: q.day, word: q.word, ok, answer }]));
+    setAnswers(a => a.concat([{ n: q.n, type: q.type, day: q.day, lv: q.lv, word: q.word, ok, answer }]));
   };
   const next = () => {
     const list = answers;
@@ -18106,14 +18183,14 @@ function PlacementTestModal({ user, onDone }) {
           </div>
           <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "var(--ink-soft)", marginBottom: 14 }}>
             {lv.line}
-            {fw ? <><br/><b style={{ color: "var(--ink)" }}>Day {fw.day} ({fw.word})</b> 근처부터 낯설어지기 시작했어요.</> : <><br/>전부 맞히셨어요. 사수가 긴장하겠는데요.</>}
+            {fw ? <><br/><b style={{ color: "var(--ink)" }}>{fw.lv ? _plDiffLabel(fw.lv - 1) + " 구간" : "Day " + fw.day} ({fw.word})</b>부터 낯설어지기 시작했어요.</> : <><br/>전부 맞히셨어요. 사수가 긴장하겠는데요.</>}
           </div>
           {wrong.length > 0 && (
             <div style={{ background: "var(--paper-warm)", borderRadius: 11, padding: "12px 14px", marginBottom: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)", marginBottom: 8 }}>다시 볼 표현 {wrong.length}개</div>
               {wrong.map(a => { const qq = qs.find(x => x.n === a.n) || {}; return (
                 <div key={a.n} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "6px 0", borderTop: "1px dashed var(--line)" }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", width: 46, flexShrink: 0 }}>Day {a.day}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", width: 46, flexShrink: 0 }}>{a.lv ? "Lv " + a.lv : "Day " + a.day}</span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 13.5, fontWeight: 900, color: "var(--ink)" }}>{a.word}</span>
                     <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-soft)", marginTop: 1 }}>{qq.meaning}{a.answer ? <span style={{ color: "var(--ink-mute)" }}> · 내 답: {a.answer}</span> : null}</span>
@@ -18165,8 +18242,12 @@ function PlacementTestModal({ user, onDone }) {
         ) : (
           <>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>빈칸에 들어갈 표현은?</div>
-            <div style={{ fontSize: 16.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.65, margin: "8px 0 10px", fontStyle: "italic" }}>“{q.sentence}”</div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--paper-warm)", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)" }}>힌트 · {q.meaning}<span style={{ color: "var(--ink-mute)", fontWeight: 700 }}> · {q.words}단어</span></div>
+            <div style={{ fontSize: 16.5, fontWeight: 700, color: "var(--ink)", lineHeight: 1.65, margin: "8px 0 4px", fontStyle: "italic" }}>“{q.sentence}”</div>
+            {q.ko ? <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 10 }}>{q.ko}</div> : null}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", background: "var(--paper-warm)", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)" }}>뜻 · {q.meaning}</span>
+              {q.hint ? <span style={{ display: "inline-flex", alignItems: "center", background: "var(--paper-warm)", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, fontWeight: 800, color: "var(--ink-soft)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em" }}>{q.hint}</span> : null}
+            </div>
             <form onSubmit={e => { e.preventDefault(); checked ? next() : check(); }} style={{ display: "flex", gap: 8, marginTop: 14 }}>
               <input ref={inputRef} value={typed} onChange={e => setTyped(e.target.value)} disabled={!!checked} placeholder="영어로 써보세요" autoCapitalize="off" autoCorrect="off" spellCheck={false}
                 style={{ flex: 1, minWidth: 0, fontFamily: "inherit", fontSize: 16, padding: "12px 14px", borderRadius: 10, border: "1.5px solid " + (checked ? (checked.ok ? "var(--accent)" : "#B8A58A") : "var(--ink)"), background: checked ? (checked.ok ? "rgba(216,90,42,0.08)" : "rgba(58,40,18,0.05)") : "var(--paper)", color: "var(--ink)", fontWeight: 700 }} />
