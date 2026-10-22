@@ -1244,13 +1244,13 @@ function SheetView({ items, onClose }) {
         감각: x.levelKo || x.level || '',
         객관식: mc.length ? `${mc.filter(i => i.ok).length}/${mc.length}` : '',
         빈칸: bl.length ? `${bl.filter(i => i.ok).length}/${bl.length}` : '',
-        '첫 오답 Day': x.firstWrongDay == null ? '전부 정답' : `Day ${x.firstWrongDay}`,
+        '첫 오답': x.firstWrongLv ? `Lv ${x.firstWrongLv} / 10` : (x.firstWrongDay == null ? '전부 정답' : `Day ${x.firstWrongDay}`),
         '틀린 표현': Array.isArray(x.wrong) ? x.wrong.join(', ') : '',
         '내 답': items.filter(i => !i.ok && i.type === 'blank').map(i => `${i.word} → ${i.answer || '(빈칸)'}`).join(' / '),
         시간: sec ? (sec >= 60 ? `${Math.floor(sec / 60)}분 ${sec % 60}초` : `${sec}초`) : '',
       };
     });
-    return { cols: ['날짜', '이메일', '점수', '감각', '객관식', '빈칸', '첫 오답 Day', '틀린 표현', '내 답', '시간'], num: new Set(), rows };
+    return { cols: ['날짜', '이메일', '점수', '감각', '객관식', '빈칸', '첫 오답', '틀린 표현', '내 답', '시간'], num: new Set(), rows };
   }, [day1.rows]);
 
   const d1 = React.useMemo(() => {
