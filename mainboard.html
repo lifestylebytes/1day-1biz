@@ -6097,7 +6097,17 @@ function _isPromoNext() { return _promoLive() || _promoDevOn(); }
 //   가입(체험 시작) 시각 + 48시간 안에 결제하면 2027 상반기 단어 달력을 보내준다.
 //   라이브할 땐 _gift48Live() 를 true 로 바꾸면 회원에게도 열린다. 되돌릴 땐 false.
 function _gift48Live() { return false; }
-function _isGift48On() { return _gift48Live() || _isDevNext(); }
+// ★ 미리보기 스위치: 주소 뒤에 ?gift48=1 을 붙이면 그 브라우저에서만 켜진다 (끌 땐 ?gift48=0).
+//   라이브 전에 체험 계정으로 48시간 플로우를 그대로 보려고 쓴다. 다른 회원에겐 영향 없다.
+function _gift48Preview() {
+  try {
+    const q = new URLSearchParams(location.search).get("gift48");
+    if (q === "1") localStorage.setItem("__OD_GIFT48", "1");
+    if (q === "0") localStorage.removeItem("__OD_GIFT48");
+    return localStorage.getItem("__OD_GIFT48") === "1";
+  } catch (e) { return false; }
+}
+function _isGift48On() { return _gift48Live() || _isDevNext() || _gift48Preview(); }
 const GIFT48_HOURS = 48;
 const GIFT48_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_gift48&utm_campaign=sat_launch";
 // ★ 2026-10-21 출근 달력 라이브: true 면 회원에게도 출근 달력(홈 출근부 자리 작게 + 사원증 탭 크게). 되돌릴 땐 false (개발 뷰에서만)
