@@ -3042,6 +3042,11 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       {_isDevSite() && (
         <div style={{ marginBottom: 16, background: "#2A1F14", borderRadius: 10, padding: "12px 13px" }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#F0A67E" }}>DEV ONLY</div>
+          {(() => { try { return new URLSearchParams(location.search).get("from") === "b48"; } catch (e) { return false; } })() && (
+            <div style={{ marginTop: 8, background: "#D85A2A", color: "#fff", borderRadius: 8, padding: "9px 11px", fontSize: 12.5, fontWeight: 800, lineHeight: 1.55 }}>
+              👉 결제 배너 페이지는 체험 계정으로 들어가야 보여요. 아래 <b>"체험 Day 1로 바로"</b>를 누르면 바로 열려요.
+            </div>
+          )}
           <div style={{ fontSize: 11.5, color: "#D9CDB8", marginTop: 4, lineHeight: 1.55 }}>
             왼쪽은 지원서·심사 화면을 건너뛰고 7일 체험 회원의 Day 1 화면(48시간 결제 배너)으로 바로 가요. 매번 새 주소로 만들어서 48시간이 새로 시작돼요.
           </div>
