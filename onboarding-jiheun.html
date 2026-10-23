@@ -1758,15 +1758,6 @@ function WhyMock({ kind }) {
           return x[3] ? <a key={x[1]} href={x[3]} target="_blank" rel="noopener" onClick={() => track("asseen_click", { k: x[1] })} style={st}>{inner}</a> : <div key={x[1]} style={st}>{inner}</div>;
         })}
       </div>
-      <a href="#" onClick={(e) => { e.preventDefault(); track("asseen_column_click"); }}
-        style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none", background: "#FBF8F0", border: "1px solid var(--line)", borderTop: "4px double var(--ink)", borderRadius: 6, padding: "12px 14px" }}>
-        <span style={{ fontSize: 19.5, flexShrink: 0 }}>📰</span>
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, color: "var(--ink-mute)", letterSpacing: "0.04em" }}>부산일보 · 2030 칼럼 연재 중</span>
-          <span style={{ display: "block", fontSize: 12, fontWeight: 900, color: "var(--ink)", marginTop: 3, lineHeight: 1.4 }}>[최근 칼럼 제목]</span>
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", flexShrink: 0 }}>읽기 →</span>
-      </a>
 
       <Divider />
 
