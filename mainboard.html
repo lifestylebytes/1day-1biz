@@ -10660,7 +10660,7 @@ const _TY_ERRANDS_BASE = [
   { id: "ladder",    icon: "🔓", t: "앞으로 뭐가 열리는지 확인하기", sel: ".unlock-ladder" },
   { id: "side",      icon: "🌙", t: "퇴근 후 사이드 프로젝트 열어보기", verify: true, sel: ".ot-card", minDay: 2 },
 ];
-// ★ 2026-10-23 (개발 뷰): 심부름 4개 교체. 회원 화면은 그대로 (_TY_ERRANDS_BASE).
+// ★ 2026-10-23 심부름 4개 교체. 같은 날 회원 화면까지 라이브 (_errandsV2Live). 되돌리려면 false (개발 뷰에서만)
 //   day1 → 건너뛴 Day 눌러보기 (출근 달력이 생겨서 Day 1 대신 건너뛴 Day 로 데려간다)
 //   inbox · inbox2 → 사내 메모함이 '사내 게시판'으로 바뀌어서 문구만 맞춘다 (id · 도장 조건 그대로)
 //   mynotes → 출근 달력 크게 보기
@@ -10672,7 +10672,8 @@ const _TY_ERRANDS_DEV = {
   inbox2:  { id: "inbox2",  icon: "📌", t: "사내 게시판에서 안 읽은 공지글 하나 읽기", verify: true, nav: "inbox" },
   mynotes: { id: "calbig",  icon: "📅", t: "출근 달력 크게 보기 (날짜별 기록을 볼 수 있어요)", verify: true, nav: "mypage", sel: "#acx-big", minDay: 3 },
 };
-const _TY_ERRANDS = _TY_ERRANDS_BASE.map(e => (_isDevNext() && _TY_ERRANDS_DEV[e.id]) || e);
+function _errandsV2Live() { return true; }
+const _TY_ERRANDS = _TY_ERRANDS_BASE.map(e => ((_errandsV2Live() || _isDevNext()) && _TY_ERRANDS_DEV[e.id]) || e);
 const _tyErrandHistKey = (email) => "__OD_ERRAND_HIST_" + (email || "guest");
 // ★ 심부름 증빙 (2026-09-14): verify 가 붙은 심부름은 누른다고 도장이 안 찍힌다. 실제 그 행동이 일어난 곳에서 _tyErrandProof(id) 를 부르면 그날 심부름에 있을 때만 도장.
 function _tyErrandProof(id) {
@@ -22380,7 +22381,7 @@ function ErrandGalleryDev({ onClose }) {
     } catch (e) {}
     return { picked, recent, doneEver, todayDone };
   }, [email, today, rd, tick]);
-  const replacedFrom = {}; Object.keys(_TY_ERRANDS_DEV).forEach(k => { const b = _TY_ERRANDS_BASE.find(e => e.id === k); if (b && _isDevNext()) replacedFrom[_TY_ERRANDS_DEV[k].id] = b.t; });
+  const replacedFrom = {}; Object.keys(_TY_ERRANDS_DEV).forEach(k => { const b = _TY_ERRANDS_BASE.find(e => e.id === k); if (b && (_errandsV2Live() || _isDevNext())) replacedFrom[_TY_ERRANDS_DEV[k].id] = b.t; });
   const rows = _TY_ERRANDS.map(e => {
     const locked = (e.minDay || 1) > rd;
     const noCond = !locked && e.cond && !e.cond(email);
@@ -22429,11 +22430,11 @@ function ErrandGalleryDev({ onClose }) {
                 <div style={{ fontWeight: 800, fontSize: 13.5, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                   {e.t}
                   {pill(e.verify ? "실제로 해야" : "눌러서", e.verify ? "#D85A2A" : "#5C4A36", false)}
-                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && pill("개발 뷰 교체", "#2B4A6E", true)}
+                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && pill(_errandsV2Live() ? "10/23 교체" : "개발 뷰 교체", "#2B4A6E", true)}
                 </div>
                 <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>
                   Day {e.minDay || 1}부터 · 데려가는 곳: {e.nav ? _EG_NAV[e.nav] || e.nav : "홈 (없으면 사원증)"}{e.sel ? " › " + e.sel : ""} · id {e.id}
-                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && <> · 회원 화면: "{replacedFrom[e.id]}"</>}
+                  {replacedFrom[e.id] != null && replacedFrom[e.id] !== e.t && <> · {_errandsV2Live() ? "예전 문구" : "회원 화면"}: "{replacedFrom[e.id]}"</>}
                 </div>
               </div>
               <div>{pill(st.t, st.c, info.picked.has(e.id))}</div>
