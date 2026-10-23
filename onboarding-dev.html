@@ -1662,18 +1662,19 @@ function WhyMock({ kind }) {
 
       <Divider />
 
-      {/* ── AS SEEN ON ── */}
-      <SectionTitle eyebrow="AS SEEN ON" title="이렇게 소개되고 있어요" />
-      <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+      {/* ── 숫자로 보는 신뢰 (예전 AS SEEN ON). '소개되고 있어요' 가 뭘 말하는지 모호해서 숫자 4칸으로 ── */}
+      <SectionTitle eyebrow="BY THE NUMBERS" title="누가 만들었는지 숫자로 볼게요" sub="외국계 7년차 팀장이 직접 쓰고, 매일 운영하고 있어요." />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 6 }}>
         {[
-          ["📰", "부산일보", "2030 칼럼 연재 중"],
-          ["📸", "인스타그램", "@youbuddy_day · 3.6만"],
-          ["👥", "누적 입사", "50명+"],
+          ["3.6만", "인스타그램 팔로워", "@youbuddy_day"],
+          ["1만", "유튜브 구독자", "외국계 실무 영어"],
+          ["50명+", "1일1비 누적 입사", "베타부터 지금까지"],
+          ["연재 중", "부산일보 2030 칼럼", "외국계 직장인의 일"],
         ].map(x => (
-          <div key={x[1]} style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 10px", textAlign: "center" }}>
-            <div style={{ fontSize: 17 }}>{x[0]}</div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginTop: 6 }}>{x[1]}</div>
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 3, lineHeight: 1.45 }}>{x[2]}</div>
+          <div key={x[1]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "14px 14px 12px" }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.02em", lineHeight: 1 }}>{x[0]}</div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", marginTop: 8 }}>{x[1]}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>{x[2]}</div>
           </div>
         ))}
       </div>
