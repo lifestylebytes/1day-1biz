@@ -1871,44 +1871,44 @@ function WhyMock({ kind }) {
         </div>
       </div>
 
-      {/* ② 퍼듀대 (어두운 카드) */}
-      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 18, padding: "20px 18px", marginBottom: 10 }}>
-        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.1em", color: "#F0B48F" }}>② 다시 꺼내면 / 퍼듀대 실험 (대학생 40명, 1주 뒤 시험)</div>
+      {/* ② 퍼듀대 (밝은 카드) */}
+      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", color: "var(--ink)", borderRadius: 18, padding: "20px 18px", marginBottom: 10 }}>
+        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>② 다시 꺼내면 / 퍼듀대 실험 (대학생 40명, 1주 뒤 시험)</div>
         <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.45, marginTop: 8 }}>
-          외운 뒤에도 퀴즈로 다시 꺼낸 사람은<br/>기억이 <span style={{ color: "#F0A070" }}>2배 넘게</span> 남았어요
+          외운 뒤에도 퀴즈로 다시 꺼낸 사람은<br/>기억이 <span style={{ color: "var(--accent)" }}>2배 넘게</span> 남았어요
         </div>
         <div style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#F0B48F" }}>외운 뒤에도 퀴즈로 계속 다시 꺼냄</div>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent)" }}>외운 뒤에도 퀴즈로 계속 다시 꺼냄</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
             <div style={{ width: "72%", height: 30, background: "var(--accent)", borderRadius: 6 }} />
-            <b style={{ fontSize: 16.5, color: "#F0A070", whiteSpace: "nowrap" }}>약 80%</b>
+            <b style={{ fontSize: 16.5, color: "var(--accent)", whiteSpace: "nowrap" }}>약 80%</b>
           </div>
-          <div style={{ fontSize: 12.5, color: "#DCCFB8", marginTop: 12 }}>외웠으면 퀴즈에서 빼고 끝</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-mute)", marginTop: 12 }}>외웠으면 퀴즈에서 빼고 끝</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
-            <div style={{ width: "32%", height: 30, background: "#6B5A45", borderRadius: 6 }} />
+            <div style={{ width: "32%", height: 30, background: "#D9CDB8", borderRadius: 6 }} />
             <b style={{ fontSize: 16.5, whiteSpace: "nowrap" }}>33~36%</b>
           </div>
         </div>
-        <div style={{ fontSize: 11.5, color: "#BFAF95", lineHeight: 1.65, marginTop: 14 }}>
+        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.65, marginTop: 14 }}>
           낯선 외국어 단어로 한 실험이에요. "이미 외웠으니 그만"이 가장 손해였어요.
         </div>
       </div>
 
-      {/* ③ 타이밍 */}
-      <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 18, padding: "20px 18px", marginBottom: 10 }}>
-        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>③ 언제 꺼낼까 / 1,350명 이상 참여한 실험</div>
-        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.45, color: "var(--ink)", marginTop: 8 }}>
-          가장 좋은 타이밍은 <span style={{ color: "var(--accent)" }}>잊힐 때쯤</span>이었어요
+      {/* ③ 타이밍 (어두운 카드 · 강조) */}
+      <div style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 18, padding: "20px 18px", marginBottom: 10, boxShadow: "0 12px 26px -16px rgba(42,31,20,0.8)" }}>
+        <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: "0.1em", color: "#F0B48F" }}>③ 언제 꺼낼까 / 1,350명 이상 참여한 실험</div>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.45, color: "var(--paper)", marginTop: 8 }}>
+          가장 좋은 타이밍은 <span style={{ color: "#F0A070" }}>잊힐 때쯤</span>이었어요
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, textAlign: "center", marginTop: 14 }}>
           {[["1주 뒤에 쓸 표현이면", "1~3일 뒤 복습"], ["1년 뒤에도 쓸 표현이면", "3~5주 뒤 복습"]].map(x => (
-            <div key={x[0]} style={{ background: "var(--paper-warm)", borderRadius: 12, padding: "13px 6px" }}>
-              <div style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>{x[0]}</div>
-              <div style={{ fontSize: 15, fontWeight: 900, color: "var(--ink)", marginTop: 3 }}>{x[1]}</div>
+            <div key={x[0]} style={{ background: "rgba(255,253,247,0.08)", border: "1px solid rgba(240,160,112,0.35)", borderRadius: 12, padding: "13px 6px" }}>
+              <div style={{ fontSize: 11.5, color: "#DCCFB8" }}>{x[0]}</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#F0A070", marginTop: 3 }}>{x[1]}</div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", lineHeight: 1.65, marginTop: 14 }}>
+        <div style={{ fontSize: 11.5, color: "#BFAF95", lineHeight: 1.65, marginTop: 14 }}>
           너무 빨리 복습하는 게, 오히려 조금 늦게 복습하는 것보다 손해였어요.
         </div>
       </div>
