@@ -1654,7 +1654,7 @@ function WhyMock({ kind }) {
       {/* ── 후기: 가로로 넘기는 카드 ── */}
       <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문·30일 수료 회고 그대로예요. 별점은 실제 제출된 만족도예요." />
       <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 12 }}>
-        {[["★ 5.0", "주간 설문 만족도"], ["100점", "30일 수료 시험"], ["30일", "완주 멤버 후기"]].map(s => (
+        {[["★★★★★", "실제 제출 별점"], ["100점", "30일 수료 시험"], ["10개", "멤버 후기 원문"]].map(s => (
           <div key={s[1]} style={{ flex: 1, background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "10px 4px", textAlign: "center" }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: "var(--accent)" }}>{s[0]}</div>
             <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 2 }}>{s[1]}</div>
