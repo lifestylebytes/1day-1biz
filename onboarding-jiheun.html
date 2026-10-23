@@ -1139,7 +1139,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
 // ── WHY 1일1비: 실제 앱 화면을 그대로 옮긴 미니 목업 ──
 function WhyMock({ kind }) {
   const wrap = {
-    marginTop: 12, background: "var(--paper-warm)", border: "1px solid var(--line)",
+    marginTop: 0, background: "var(--paper-warm)", border: "1px solid var(--line)",
     borderRadius: 10, padding: "11px 12px", overflow: "hidden",
   };
   const cap = { fontSize: 10, color: "var(--ink-mute)", marginTop: 8, lineHeight: 1.5 };
@@ -1305,57 +1305,83 @@ function WhyMock({ kind }) {
   }
 
   if (kind === "promo") {
+    const seg = ["ok", "ok", "ng", "ok", "now", "", "", "", "", "", "", "", "", "", ""];
+    const opts = [["A", "We should avoid any trade-off here."], ["B", "Let's weigh the trade-offs before we decide.", true], ["C", "The trade-off is already finished."]];
     return (
       <div style={wrap}>
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "var(--ink-mute)", marginBottom: 9 }}>승진 심사위원회 · 사원 전환</div>
-        <div style={{ display: "flex", gap: 6 }}>
-          {[["사수", "박지훈 과장", true], ["팀장", "김 팀장", true], ["인사팀", "HR", false]].map(j => (
-            <div key={j[0]} style={{ flex: 1, position: "relative", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 6px 9px", textAlign: "center" }}>
-              <div style={{ fontSize: 16 }}>🧑‍💼</div>
-              <div style={{ marginTop: 5, background: "var(--ink)", color: "var(--paper)", borderRadius: 4, padding: "3px 4px", fontSize: 9.5, fontWeight: 800 }}>{j[1]}</div>
-              <div style={{ fontSize: 9, color: "var(--ink-mute)", marginTop: 3 }}>{j[0]}</div>
-              {j[2] && <span style={{ position: "absolute", top: 4, right: 4, transform: "rotate(-12deg)", border: "2px solid var(--accent)", color: "var(--accent)", borderRadius: 4, fontSize: 8.5, fontWeight: 900, padding: "0 3px" }}>PASS</span>}
-            </div>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 900, color: "var(--accent)" }}>📝 사원 진급 평가</span>
+          <span style={{ fontSize: 9.5, color: "var(--ink-mute)" }}>15문항 · 5분 · 덜 익은 표현부터</span>
         </div>
-        <div style={{ display: "flex", gap: 5, marginTop: 9 }}>
-          {[["15문항", "내 기록으로 출제"], ["3지선다", "배운 단어로만"], ["다시 쓰기", "사수 첨삭"]].map(c => (
-            <div key={c[0]} style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 7, padding: "6px 6px" }}>
-              <div style={{ fontSize: 10.5, fontWeight: 900, color: "var(--accent)" }}>{c[0]}</div>
-              <div style={{ fontSize: 9.5, color: "var(--ink-mute)", marginTop: 1 }}>{c[1]}</div>
-            </div>
-          ))}
+        <div style={{ display: "flex", gap: 2, marginBottom: 4 }}>
+          {seg.map((s, i) => <span key={i} style={{ flex: 1, height: 7, borderRadius: 2, background: s === "ok" ? "#7FB08F" : s === "ng" ? "#F07A5A" : s === "now" ? "var(--ink)" : "var(--paper)", border: "1px solid " + (s === "ok" ? "#7FB08F" : s === "ng" ? "#F07A5A" : s === "now" ? "var(--ink)" : "var(--line)") }} />)}
         </div>
-        <div style={cap}>PASS 도장 3개면 발령이에요 · 화면 예시</div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, color: "var(--ink-mute)", marginBottom: 8 }}><span>5 / 15</span><span>맞힘 <b style={{ color: "#2E7D4F" }}>3</b> · 헷갈림 <b style={{ color: "#C0392B" }}>1</b></span></div>
+        <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 9px", borderBottom: "1px solid var(--line)" }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--accent)", color: "#fff", fontSize: 9.5, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>박</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)" }}>박지훈 과장</span>
+            <span style={{ fontSize: 9, color: "var(--ink-mute)" }}>사수 · 업무 DM</span>
+          </div>
+          <div style={{ padding: "8px 10px", fontSize: 11, color: "var(--ink)", lineHeight: 1.55 }}>
+            Before we pick a vendor, I want us to think about the <span style={{ background: "#FCE7A8", padding: "0 2px", borderRadius: 2 }}>trade-off</span> between cost and speed.
+          </div>
+          <div style={{ padding: "7px 9px 9px", background: "var(--paper-warm)", borderTop: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, fontWeight: 800, color: "var(--ink-soft)", marginBottom: 5 }}><span>보낼 답장 고르기</span><span>3개 중 하나</span></div>
+            {opts.map(o => (
+              <div key={o[0]} style={{ display: "flex", gap: 6, background: "var(--paper)", border: "1px solid " + (o[2] ? "var(--accent)" : "var(--line)"), borderRadius: 7, padding: "6px 8px", marginBottom: 4, fontSize: 10.5, color: "var(--ink)", lineHeight: 1.4 }}>
+                <b style={{ color: o[2] ? "var(--accent)" : "var(--ink-mute)" }}>{o[0]}</b><span>{o[1]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={cap}>사내 메신저 상황으로 나오는 진급 시험 · 화면 예시</div>
       </div>
     );
   }
 
   if (kind === "report") {
-    const cells = [1,1,1,0,1,1,2, 1,1,1,1,0,1,1, 1,2,1,1,1,1,1];
+    const wk = [9, 6, 2, 2, 3, 12, 4];
+    const pts = wk.map((v, i) => (i * 100 / 6) + "," + (40 - v * 3)).join(" ");
     return (
       <div style={wrap}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "var(--ink-mute)" }}>진급 리포트 · 수습 → 사원</span>
-          <span style={{ marginLeft: "auto", fontSize: 9.5, fontWeight: 800, color: "var(--accent)" }}>Day 1~30</span>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6, paddingBottom: 7, marginBottom: 9, borderBottom: "1px solid var(--line)" }}>
+          <span style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)" }}>○○○ <span style={{ color: "var(--accent)" }}>사원</span> 진급 리포트예요.</span>
+          <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 800, color: "var(--ink-mute)" }}>DAY 1~30</span>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "8px" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 800, color: "var(--ink-mute)", marginBottom: 5 }}>출근부</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
-              {cells.map((c, i) => <span key={i} style={{ aspectRatio: "1", borderRadius: 3, background: c === 1 ? "#9FB4C7" : c === 2 ? "#F2C94C" : "var(--line)" }} />)}
+        <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
+          <div style={{ flex: "0 0 44%", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "8px 9px" }}>
+            <div style={{ fontSize: 15, color: "var(--accent)", lineHeight: 1 }}>❝</div>
+            <div style={{ fontSize: 10.5, color: "var(--ink)", lineHeight: 1.55, marginTop: 2 }}>오랜만에 돌아와서 12문장 몰아쓴 날이 인상적이에요. 끝까지 달성했어요.</div>
+            <div style={{ fontSize: 9, fontWeight: 800, color: "var(--accent)", marginTop: 5 }}>사수 박지훈 과장</div>
+          </div>
+          <div style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "8px 9px" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: "var(--ink-soft)" }}>출근부 기록</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
+              <span style={{ width: 46, height: 46, borderRadius: "50%", background: "conic-gradient(var(--accent) 0 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: "var(--ink)" }}>100%</span>
+              </span>
+              <span style={{ fontSize: 9.5, color: "var(--ink-mute)", lineHeight: 1.6 }}>수습 Day 30 / 30<br/>쓴 문장 <b style={{ color: "var(--ink)" }}>30개</b></span>
             </div>
           </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-            <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "7px 8px", fontSize: 10, color: "var(--ink-soft)" }}><b style={{ color: "#2E8B57" }}>✓ 24</b> 완전 내 표현</div>
-            <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "7px 8px", fontSize: 10, color: "var(--ink-soft)" }}><b style={{ color: "var(--accent)" }}>↺ 6</b> 한 번 더 볼 표현</div>
-            <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 8, padding: "7px 8px", fontSize: 10, color: "var(--ink-soft)" }}><b style={{ color: "var(--ink)" }}>✍️ 3</b> 잘 쓴 문장</div>
+        </div>
+        <div style={{ display: "flex", gap: 7 }}>
+          <div style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "8px 9px" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: "var(--ink-soft)" }}>주별 흐름</div>
+            <svg viewBox="-4 0 108 44" style={{ display: "block", width: "100%", height: 42, marginTop: 3 }}>
+              <polygon points={"0,44 " + pts + " 100,44"} fill="rgba(216,90,42,0.13)" />
+              <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="1.6" />
+            </svg>
+          </div>
+          <div style={{ flex: "0 0 38%", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 9, padding: "8px 9px", textAlign: "center" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: "var(--ink-soft)", textAlign: "left" }}>진급 테스트</div>
+            <div style={{ width: 62, height: 31, margin: "6px auto 0", borderRadius: "62px 62px 0 0", background: "conic-gradient(from 270deg at 50% 100%, var(--accent) 0 156deg, var(--line) 156deg 180deg, transparent 180deg)", position: "relative" }}>
+              <span style={{ position: "absolute", left: 9, right: 9, bottom: 0, height: 22, borderRadius: "44px 44px 0 0", background: "var(--paper)" }} />
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 900, color: "var(--ink)", marginTop: 2 }}>13<span style={{ fontSize: 9.5, color: "var(--ink-mute)" }}> / 15</span></div>
           </div>
         </div>
-        <div style={{ marginTop: 8, background: "#FFF7D6", border: "1px solid #EAD9A0", borderRadius: 8, padding: "8px 10px", fontSize: 10.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>
-          💌 사수 편지 · "하루 한 문장씩 이어가다 보면, 어느새 불쑥 성장해 있을 거예요."
-        </div>
-        <div style={cap}>진급할 때마다 한 장씩 쌓여요 · 화면 예시</div>
+        <div style={cap}>진급할 때마다 사수 메모와 함께 한 장씩 쌓여요 · 화면 예시</div>
       </div>
     );
   }
@@ -1771,32 +1797,28 @@ function WhyMock({ kind }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 6 }}>
         {[
-          ["01", "하루가 회사 일정표로 짜여 있어요", "출근 → 시추에이션 → 퀴즈 → 퇴근. 하나 끝내야 다음이 열려요.", "img/jh-why-sched.jpg", "오늘 일정 화면", "실제 오늘 일정", 300, null],
-          ["02", "연속 출근이 불꽃으로 쌓여요", "하루를 끝내면 EXP와 <b>연속 출근 보너스</b>가 쌓여요. 기록이 아까워서 오늘도 들어오게 돼요.", "img/jh-why-streak.jpg", "하루 일정을 끝낸 뒤 뜨는 EXP 팝업: 연속 출근 4일, 7일 연속 출근 목표", "실제 퇴근 화면 · +250 EXP, 연속 출근 보너스", 420, null, 260],
-          ["03", "배운 표현이 전부 업무 노트에 쌓여요", "<b>★ 즐겨찾기한 표현</b>은 리뷰 퀴즈에 더 자주 나와요.", "img/jh-why-note.jpg", "업무 노트 화면, 단어와 뜻은 가림", "실제 업무 노트 · 단어와 뜻은 가렸어요", 260, null],
-          ["04", "동기들과 주간 순위로 같이 가요", "이번 주 EXP 순위판에서 동기들이 보여요. <b>혼자 하다 끊기지 않아요.</b>", "img/jh-why-rank.jpg", "주간 EXP 순위판, 이름은 가려져 있음", "실제 주간 순위판 · 이름은 가려서 보여요", 300, null],
-          ["05", "AI 사수가 내 문장을 바로 첨삭해요", "어디를 왜 고쳤는지 <b>문법 · 어휘 · 뉘앙스</b>로 나눠 알려줘요.", "img/jh-why-ai.jpg", "AI 사수 첨삭 화면", "실제 첨삭 화면", 420, null],
-          ["06", "헷갈리는 뉘앙스를 바로 물어봐요", "버튼 한 번이면 버디가 답해줘요. 마음에 드는 답은 노트에 저장.", "img/jh-why-ask.jpg", "버디에게 뉘앙스와 외우는 법을 묻는 채팅", "실제 버디 질문 화면", 340, null],
-          ["07", "결근해도 연속 출근은 지킬 수 있어요", "복지 포인트로 <b>연장권 · 연차 · 휴가</b>를 쓰면 출근으로 인정돼요.", "img/jh-why-welfare.jpg", "복지몰 화면: 동기 문장 엿보기, 연장권, 연차, 휴가", "실제 복지몰 화면", 330, null],
-          ["08", "진급 시험으로 실력을 확인해요", "15문항 · 5분. <b>덜 익은 표현부터</b> 실제 사내 메신저 상황으로 나와요.", "img/jh-why-promo.jpg", "분기 평가 화면: 사내 메신저에서 사수의 말에 답장 고르기", "실제 진급 평가 화면 · 이름은 가렸어요", 330, null],
-          ["09", "사수가 써주는 진급 리포트", "출근부 · 주별 흐름 · 진급 테스트까지, <b>사수 메모와 함께</b> 리포트로 받아요.", "img/jh-why-report.jpg", "성장 리포트 화면: 사수 메모, 출근부 기록, 주별 흐름, 요일별 Day, 진급 테스트 점수", "실제 진급 리포트 화면 · 이름은 가렸어요", 380, null],
+          ["01", "하루가 회사 일정표로 짜여 있어요", "출근 → 시추에이션 → 퀴즈 → 퇴근. 하나 끝내야 다음이 열려요.", null, "오늘 일정 화면", "실제 오늘 일정", 300, "sched"],
+          ["02", "연속 출근이 불꽃으로 쌓여요", "하루를 끝내면 EXP와 <b>연속 출근 보너스</b>가 쌓여요. 기록이 아까워서 오늘도 들어오게 돼요.", null, "하루 일정을 끝낸 뒤 뜨는 EXP 팝업: 연속 출근 4일, 7일 연속 출근 목표", "실제 퇴근 화면 · +250 EXP, 연속 출근 보너스", 420, "streak"],
+          ["03", "배운 표현이 전부 업무 노트에 쌓여요", "<b>★ 즐겨찾기한 표현</b>은 리뷰 퀴즈에 더 자주 나와요.", null, "업무 노트 화면, 단어와 뜻은 가림", "실제 업무 노트 · 단어와 뜻은 가렸어요", 260, "note"],
+          ["04", "동기들과 주간 순위로 같이 가요", "이번 주 EXP 순위판에서 동기들이 보여요. <b>혼자 하다 끊기지 않아요.</b>", null, "주간 EXP 순위판, 이름은 가려져 있음", "실제 주간 순위판 · 이름은 가려서 보여요", 300, "rank"],
+          ["05", "AI 사수가 내 문장을 바로 첨삭해요", "어디를 왜 고쳤는지 <b>문법 · 어휘 · 뉘앙스</b>로 나눠 알려줘요.", null, "AI 사수 첨삭 화면", "실제 첨삭 화면", 420, "ai"],
+          ["06", "헷갈리는 뉘앙스를 바로 물어봐요", "버튼 한 번이면 버디가 답해줘요. 마음에 드는 답은 노트에 저장.", null, "버디에게 뉘앙스와 외우는 법을 묻는 채팅", "실제 버디 질문 화면", 340, "ask"],
+          ["07", "결근해도 연속 출근은 지킬 수 있어요", "복지 포인트로 <b>연장권 · 연차 · 휴가</b>를 쓰면 출근으로 인정돼요.", null, "복지몰 화면: 동기 문장 엿보기, 연장권, 연차, 휴가", "실제 복지몰 화면", 330, "welfare"],
+          ["08", "진급 시험으로 실력을 확인해요", "15문항 · 5분. <b>덜 익은 표현부터</b> 실제 사내 메신저 상황으로 나와요.", null, "분기 평가 화면: 사내 메신저에서 사수의 말에 답장 고르기", "실제 진급 평가 화면 · 이름은 가렸어요", 330, "promo"],
+          ["09", "사수가 써주는 진급 리포트", "출근부 · 주별 흐름 · 진급 테스트까지, <b>사수 메모와 함께</b> 리포트로 받아요.", null, "성장 리포트 화면: 사수 메모, 출근부 기록, 주별 흐름, 요일별 Day, 진급 테스트 점수", "실제 진급 리포트 화면 · 이름은 가렸어요", 380, "report"],
         ].map(x => (
-          <div key={x[0]} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "13px 14px 12px" }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-              <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, color: "var(--accent)", letterSpacing: "0.06em" }}>{x[0]}</span>
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 800, color: "var(--ink)", lineHeight: 1.4 }}>{x[1]}{(x[7] === "promo" || x[7] === "report") && <span style={{ fontSize: 9.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px" }}>NEW</span>}</span>
-                <span style={{ display: "block", fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.6, marginTop: 3 }} dangerouslySetInnerHTML={{ __html: x[2] }} />
-              </span>
+          <div key={x[0]} style={{ display: "flex", gap: 10, alignItems: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 10px 11px 12px" }}>
+            <div style={{ flex: "0 0 40%", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{x[0]}</span>
+                {(x[7] === "promo" || x[7] === "report") && <span style={{ fontSize: 8.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px" }}>NEW</span>}
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginTop: 3 }}>{x[1]}</div>
+              <div style={{ fontSize: 10.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: x[2] }} />
             </div>
-            {x[3] ? (
-              <figure style={{ margin: "11px 0 0" }}>
-                <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid var(--line)", maxHeight: x[6], background: "var(--paper-warm)" }}>
-                  <img src={x[3]} alt={x[4]} loading="lazy" style={{ display: "block", width: "100%", maxWidth: x[8] || "none", height: "auto", margin: "0 auto" }} />
-                </div>
-                <figcaption style={{ fontSize: 10, color: "var(--ink-mute)", marginTop: 6 }}>{x[5]}</figcaption>
-              </figure>
-            ) : <WhyMock kind={x[7]} />}
+            <div style={{ flex: 1, minWidth: 0, zoom: 0.8 }}>
+              <WhyMock kind={x[7]} />
+            </div>
           </div>
         ))}
       </div>
