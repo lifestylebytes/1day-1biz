@@ -610,7 +610,7 @@ function OnboardingApp() {
     }
   }, [stage]);
 
-  const finishOnboarding = async () => {
+  const finishOnboarding = async (opt) => {
     const profile = {
       // identity
       email: email.trim().toLowerCase(),  // ★ 항상 소문자로 저장 (대소문자 가입 불일치 방지)
@@ -746,9 +746,16 @@ function OnboardingApp() {
     } else if (matchedDevCode && matchedDevCode.dev) {
       window.location.href = "mainboard.html?dev=1";
     } else {
-      window.location.href = "mainboard.html";
+      window.location.href = "mainboard.html" + (opt && opt.gift48 ? "?gift48=1" : "");
     }
   };
+
+  // ★ 개인 작업본 DEV: "체험 Day 1로 바로" 버튼. 지원서를 채운 뒤 심사·합격 화면을 건너뛰고
+  //   바로 가입 저장 → 체험 회원 Day 1 (48시간 사은품 배너 미리보기 ?gift48=1) 로 보낸다.
+  const [devAuto, setDevAuto] = useState(false);
+  useEffect(() => {
+    if (devAuto && _isDevSite() && _isDevTestEmail(email)) { setDevAuto(false); finishOnboarding({ gift48: true }); }
+  }, [devAuto, email]);
 
   return (
     <div className="stage">
@@ -770,6 +777,7 @@ function OnboardingApp() {
           submitting={submitting} submitError={submitError}
           stageIdx={stageIdx} totalStages={stageOrder.length}
           onSubmit={handleApplicationSubmit}
+          onDevStart={() => setDevAuto(true)}
           onBack={() => setStage("welcome")}
         />
       )}
@@ -1983,7 +1991,7 @@ function WhyMock({ kind }) {
         <img src="img/gift-calendar.png" alt="1일1비 상반기 영어 달력 세 가지 디자인" style={{ display: "block", width: "100%" }} />
         <div style={{ position: "absolute", top: 10, right: 10, transform: "rotate(6deg)", background: "var(--accent)", color: "#fff", borderRadius: 999, width: 84, height: 84, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px -8px rgba(0,0,0,0.5)", textAlign: "center" }}>
           <span style={{ fontSize: 9, fontWeight: 700 }}>최대</span>
-          <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.1 }}>45,000원</span>
+          <span style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.1 }}>65,000원</span>
           <span style={{ fontSize: 9, fontWeight: 700 }}>상당 무료</span>
         </div>
       </div>
@@ -2007,7 +2015,7 @@ function WhyMock({ kind }) {
 
       <div style={{ display: "grid", gap: 8, marginBottom: 8 }}>
         {[
-          { tag: "GIFT 01", nm: "1일1비 WorkBook", val: "30,000원 상당", sub: "승진 패스트트랙 · 임원 트랙",
+          { tag: "GIFT 01", nm: "1일1비 WorkBook", val: "50,000원 상당", sub: "승진 패스트트랙 · 임원 트랙",
             li: "<b>나만의 비즈니스 영어 WorkBook</b>이에요. Day 1~90 표현이 한 쪽에 하나씩, 실제 슬랙 대화와 사수 노트, 예문 세 줄까지 담겼어요. 빈칸에 <b>내 문장</b>을 채우다 보면 90일 뒤엔 내가 쓴 책이 돼요." },
           { tag: "GIFT 02", nm: "1일1비 상반기 영어 달력 (3종 중 택1)", val: "15,000원 상당", sub: "정규직 · 패스트트랙 · 임원 트랙", size: "A1 포스터",
             li: "책상 앞에 붙여두기만 해도 <b>매일 오늘의 표현이 눈에 들어와요.</b> 1월부터 6월까지 하루 한 칸씩, 써먹은 날은 체크하면서 채워가요. 주황 바탕 · 주황 포인트 · 6칸 스트립 <b>세 가지 디자인 중에 골라요.</b>" },
@@ -2027,8 +2035,8 @@ function WhyMock({ kind }) {
         ))}
       </div>
       <div style={{ background: "var(--accent, #D85A2A)", borderRadius: 11, padding: "13px 14px", textAlign: "center", color: "#fff" }}>
-        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.45 }}>🎁 지금 결제하시고<br/>최대 약 5만 원 상당 사은품 받아가세요</div>
-        <div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>WorkBook 30,000원 + 영어 달력 15,000원 · 3개월권 제외</div>
+        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.45 }}>🎁 지금 결제하시고<br/>최대 약 6만 5천 원 상당 사은품 받아가세요</div>
+        <div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>WorkBook 50,000원 + 영어 달력 15,000원 · 3개월권 제외</div>
       </div>
 
       <Divider />
@@ -2072,10 +2080,10 @@ function WhyMock({ kind }) {
 
       {[
         { id: "y12", nm: "임원 트랙", term: "12개월 + 유비챌", chip: "🗓 1년 내내 끊김 없이", desc: "가장 길게, 가장 꾸준하게",
-          was: "301,800원", now: "285,000원", total: "61,800원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true,
+          was: "301,800원", now: "285,000원", total: "81,800원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true,
           li: ["1일1비 12개월", "유비챌 1기수 (기간 안에 원하는 기수)"] },
         { id: "pkg", nm: "승진 패스트트랙", term: "6개월 + 유비챌", chip: "⭐ 혜택이 가장 커요", desc: "혼자 매일 쌓기 + 동료와 4주 실전",
-          was: "200,400원", now: "179,000원", total: "66,400원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true, best: true,
+          was: "200,400원", now: "179,000원", total: "86,400원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true, best: true,
           li: ["1일1비 6개월", "유비챌 1기수 (4주 챌린지)"] },
         { id: "m6", nm: "정규직", term: "6개월", chip: "👍 대리 + TF 트랙까지", desc: "습관이 확실히 붙는 기간",
           was: "101,400원", now: "94,900원", total: "21,500원", gift: "지금 결제 시 영어 달력 사은품 포함",
@@ -2122,7 +2130,7 @@ function WhyMock({ kind }) {
       ))}
 
       <div style={{ fontSize: 10.5, color: "var(--ink-mute)", lineHeight: 1.65, margin: "4px 0 12px" }}>
-        정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 30,000원 · 영어 달력 15,000원 상당
+        정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 50,000원 · 영어 달력 15,000원 상당
       </div>
 
       {CTAButtons}
@@ -2994,7 +3002,7 @@ function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, tot
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onBack, submitting, submitError, stageIdx, totalStages }) {
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onDevStart, onBack, submitting, submitError, stageIdx, totalStages }) {
   // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
   const [agreeAge, setAgreeAge] = React.useState(false);
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -3030,12 +3038,12 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         <div style={{ marginBottom: 16, background: "#2A1F14", borderRadius: 10, padding: "12px 13px" }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#F0A67E" }}>DEV ONLY</div>
           <div style={{ fontSize: 11.5, color: "#D9CDB8", marginTop: 4, lineHeight: 1.55 }}>
-            가입일이 새로 찍혀야 48시간 플로우가 다시 돌아서, 매번 새 주소로 만들어요.
+            왼쪽은 지원서·심사 화면을 건너뛰고 7일 체험 회원의 Day 1 화면(48시간 결제 배너)으로 바로 가요. 매번 새 주소로 만들어서 48시간이 새로 시작돼요.
           </div>
           <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
-            <button type="button" onClick={() => _devFill(true)}
+            <button type="button" onClick={() => { _devFill(true); if (onDevStart) onDevStart(); }}
               style={{ flex: 1, background: "#F0A67E", color: "#2A1F14", border: "none", borderRadius: 8, padding: "10px 8px", fontSize: 12, fontWeight: 900, fontFamily: "inherit", cursor: "pointer", lineHeight: 1.35 }}>
-              인증 건너뛰고 바로<br/><span style={{ fontSize: 10.5, fontWeight: 700 }}>testtestlogin@gmail.com</span>
+              체험 Day 1로 바로<br/><span style={{ fontSize: 10.5, fontWeight: 700 }}>48시간 결제 배너 보기</span>
             </button>
             <button type="button" onClick={() => _devFill(false)}
               style={{ flex: 1, background: "transparent", color: "#D9CDB8", border: "1px solid rgba(240,166,126,0.5)", borderRadius: 8, padding: "10px 8px", fontSize: 12, fontWeight: 800, fontFamily: "inherit", cursor: "pointer", lineHeight: 1.35 }}>
@@ -3062,23 +3070,27 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           무료기간 동안 결제하시면 마지막 만료일에 추가돼 그만큼 이용 기간이 길어집니다.
         </div>
         <div style={{ marginTop: 10, background: "rgba(216,90,42,0.1)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink-soft)", lineHeight: 1.65 }}>
+          <div style={{ background: "var(--accent, #D85A2A)", color: "#fff", borderRadius: 9, padding: "11px 12px", margin: "0 0 10px", textAlign: "center", boxShadow: "0 8px 18px -12px rgba(216,90,42,0.9)" }}>
+            <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.4 }}>⏳ 가입 후 <span style={{ background: "#fff", color: "var(--accent)", borderRadius: 5, padding: "0 6px" }}>48시간 안에</span> 결제하면</div>
+            <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 4, opacity: 0.95 }}>영어 달력까지 집으로 보내드려요 (3개월권 제외)</div>
+          </div>
           🎁 사은품은 두 가지예요. 실물로 집까지 보내드려요.
           <div style={{ display: "flex", gap: 8, margin: "9px 0 2px" }}>
             {[
-              { img: "img/gift-workbook.png", nm: "90일 워크북", sub: "124쪽 종이책", hot: false },
-              { img: "img/gift-calendar.png", nm: "2027 상반기 단어 달력", sub: "A1 포스터 / 3종 중 선택", hot: true, pos: "50% 24%" },
+              { img: "img/gift-workbook.png", nm: "1일1비 WorkBook", sub: "50,000원 상당", who: "패스트트랙 · 임원 트랙", hot: false },
+              { img: "img/gift-calendar.png", nm: "1일1비 상반기 영어 달력", sub: "15,000원 상당 · 3종 중 택1", who: "⏳ 48시간 안에 결제", hot: true, pos: "50% 24%" },
             ].map(g => (
-              <div key={g.nm} style={{ flex: 1, minWidth: 0, background: "var(--paper)", border: g.hot ? "1.5px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
+              <div key={g.nm} style={{ flex: 1, minWidth: 0, background: "var(--paper)", border: g.hot ? "2px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
                 <img src={g.img} alt={g.nm} style={{ width: "100%", height: 74, objectFit: "cover", objectPosition: g.pos || "50% 40%", display: "block" }} />
                 <div style={{ padding: "7px 8px 8px" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.35 }}>{g.nm}</div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: "var(--ink-mute)", marginTop: 2 }}>{g.sub}</div>
-                  <div style={{ fontSize: 9.5, fontWeight: 800, color: g.hot ? "var(--accent)" : "var(--ink-mute)", marginTop: 5 }}>{g.hot ? "⏳ 48시간 안에 결제" : "6개월권 이상 전부"}</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "var(--accent)", marginTop: 2 }}>{g.sub}</div>
+                  <div style={{ fontSize: 10, fontWeight: 900, color: g.hot ? "#fff" : "var(--ink-mute)", background: g.hot ? "var(--accent)" : "transparent", borderRadius: 5, padding: g.hot ? "2px 6px" : 0, display: "inline-block", marginTop: 5 }}>{g.who}</div>
                 </div>
               </div>
             ))}
           </div>
-          <b style={{ color: "var(--accent)" }}>달력은 가입하고 48시간 이내에 구매하신 분께만 증정돼요.</b>
+          <b style={{ color: "var(--accent)", fontSize: 12.5 }}>달력은 가입하고 48시간 안에 결제하신 분께만 드려요.</b>
         </div>
       </div>
       ) : (
