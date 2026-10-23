@@ -2896,7 +2896,7 @@ body.od-modal-open { overflow: hidden !important; }
     ));
     // 정식 오픈 후, 미인증·미가입 사용자는 onboarding으로
     if (!allowed) {
-      location.replace('onboarding.html');
+      location.replace('onboarding-jiheun.html?go=signup&code=TRY7DAYS&from=b48');
     } else {
       // 로그인 유지 보강: 최소 신원을 쿠키에도 (iOS 강제종료로 localStorage 날아가도 복구). 토큰·비번 안 넣음.
       try {
@@ -2908,7 +2908,7 @@ body.od-modal-open { overflow: hidden !important; }
       } catch(e) {}
     }
   } catch(e) {
-    location.replace('onboarding.html');
+    location.replace('onboarding-jiheun.html?go=signup&code=TRY7DAYS&from=b48');
   }
 })();
 </script>
@@ -25907,7 +25907,7 @@ window.SimApp = App;
       case 'reset':
         if (confirm('사용자 데이터를 모두 지울까요? 온보딩부터 다시 시작됨.')) {
           localStorage.removeItem(KEY_USER);
-          location.href = 'onboarding.html';
+          location.href = 'onboarding-jiheun.html';
         }
         break;
       case 'reset-day': {
