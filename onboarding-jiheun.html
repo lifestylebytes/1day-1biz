@@ -1808,7 +1808,7 @@ function WhyMock({ kind }) {
           ["09", "사수가 써주는 진급 리포트", "출근부 · 주별 흐름 · 진급 테스트까지, <b>사수 메모와 함께</b> 리포트로 받아요.", null, "성장 리포트 화면: 사수 메모, 출근부 기록, 주별 흐름, 요일별 Day, 진급 테스트 점수", "실제 진급 리포트 화면 · 이름은 가렸어요", 380, "report"],
         ].map(x => (
           <div key={x[0]} style={{ display: "flex", gap: 10, alignItems: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 10px 11px 12px" }}>
-            <div style={{ flex: "0 0 40%", minWidth: 0 }}>
+            <div style={{ flex: "0 0 36%", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <span style={{ fontSize: 11, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{x[0]}</span>
                 {(x[7] === "promo" || x[7] === "report") && <span style={{ fontSize: 8.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px" }}>NEW</span>}
@@ -1816,7 +1816,7 @@ function WhyMock({ kind }) {
               <div style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginTop: 3 }}>{x[1]}</div>
               <div style={{ fontSize: 10.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: x[2] }} />
             </div>
-            <div style={{ flex: 1, minWidth: 0, zoom: 0.8 }}>
+            <div style={{ flex: 1, minWidth: 0, zoom: 0.9 }}>
               <WhyMock kind={x[7]} />
             </div>
           </div>
