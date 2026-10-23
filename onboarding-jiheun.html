@@ -3021,11 +3021,12 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
     setEmail(skipVerify ? _devTestEmailNow() : DEV_TEST_MAILBOX.replace("@", "+1b" + tag + "@"));
     setSignupPw("test12345678");
     setMotivation("개발 테스트 계정이에요.");
-    setPhone("");
+    setPhone("010-0000-0000");
     setKakaoOptIn(false);
     setAgreeAge(true); setAgreeTerms(true); setAgreePrivacy(true);
   };
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && motivation.trim().length >= 2;
+  const phoneOk = /^01\d{8,9}$/.test(String(phone || "").replace(/\D/g, ""));  // 휴대폰 필수
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && phoneOk && motivation.trim().length >= 2;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -3120,7 +3121,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         <input value={name} onChange={e => setName(e.target.value)} placeholder="홍길동" autoFocus />
       </div>
       <div className="form-row">
-        <label>이메일 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· {_trialDefOf(inviteCode) ? "나중에 결제할 때도 이 이메일로 해주세요" : "이용권 구매하신 이메일로 작성해주세요"}</span></label>
+        <label>이메일 <span style={{ fontSize: 12, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· {_trialDefOf(inviteCode) ? "나중에 결제할 때도 이 이메일로 해주세요" : "이용권 구매하신 이메일로 작성해주세요"}</span></label>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={_trialDefOf(inviteCode) ? "자주 쓰는 이메일 (예: you@gmail.com)" : "구매하신 이메일 입력 (예: you@gmail.com)"} />
       </div>
       <div className="form-row">
@@ -3130,10 +3131,13 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>비밀번호는 8자 이상으로 정해주세요.</div>
         )}
       </div>
-      {/* ★ 카톡 출근 알림: 번호는 선택, 동의는 기본 체크 */}
+      {/* ★ 카톡 출근 알림: 번호는 필수(개인 작업본 2026-10-24), 동의는 기본 체크 */}
       <div className="form-row">
-        <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", letterSpacing: 0 }}>· 선택</span></label>
+        <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 필수</span></label>
         <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
+        {phone && !phoneOk && (
+          <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>휴대폰 번호를 다시 확인해주세요 (숫자 10~11자리).</div>
+        )}
         <label
           onClick={() => setKakaoOptIn(v => !v)}
           style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", marginTop: 9,
@@ -3145,7 +3149,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
             {kakaoOptIn ? "✓" : ""}
           </span>
           <span>
-            이 번호로 <strong>매일 아침 9시</strong> 오늘의 표현 받기
+            <span style={{ color: "var(--accent)" }}>이 번호로 <strong>매일 아침 9시</strong> 오늘의 표현 받기</span>
             <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", marginTop: 2 }}>
               앱을 안 열어도 카톡으로 와요. 시간 변경·해제는 사원증 → 설정에서 언제든.
             </span>
