@@ -746,16 +746,20 @@ function OnboardingApp() {
     } else if (matchedDevCode && matchedDevCode.dev) {
       window.location.href = "mainboard.html?dev=1";
     } else {
-      window.location.href = "mainboard.html" + (opt && opt.gift48 ? "?gift48=1" : "");
+      window.location.href = (opt && opt.gift48) ? "mainboard-jiheun.html?b48=in" : "mainboard.html";
     }
   };
 
   // ★ 개인 작업본 DEV: "체험 Day 1로 바로" 버튼. 지원서를 채운 뒤 심사·합격 화면을 건너뛰고
   //   바로 가입 저장 → 체험 회원 Day 1 (48시간 사은품 배너 미리보기 ?gift48=1) 로 보낸다.
   const [devAuto, setDevAuto] = useState(false);
+  const [devPreview, setDevPreview] = useState(false);  // 빈 지원서로 다음 화면 미리보기 → 끝나면 체험 Day 1 (복사본)
   useEffect(() => {
     if (devAuto && _isDevSite() && _isDevTestEmail(email)) { setDevAuto(false); finishOnboarding({ gift48: true }); }
   }, [devAuto, email]);
+  useEffect(() => {
+    if (devPreview === "go" && _isDevSite() && _isDevTestEmail(email)) { setDevPreview(true); setStage("reviewing"); }
+  }, [devPreview, email]);
 
   return (
     <div className="stage">
@@ -778,6 +782,7 @@ function OnboardingApp() {
           stageIdx={stageIdx} totalStages={stageOrder.length}
           onSubmit={handleApplicationSubmit}
           onDevStart={() => setDevAuto(true)}
+          onDevPreview={() => setDevPreview("go")}
           onBack={() => setStage("welcome")}
         />
       )}
@@ -804,7 +809,7 @@ function OnboardingApp() {
       )}
       {stage === "ready" && (
         <ReadyScreen name={name} mentor={mentor} stageIdx={stageIdx} totalStages={stageOrder.length}
-          onStart={finishOnboarding} />
+          onStart={() => finishOnboarding(devPreview ? { gift48: true } : undefined)} />
       )}
     </div>
   );
@@ -3002,7 +3007,7 @@ function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, tot
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onDevStart, onBack, submitting, submitError, stageIdx, totalStages }) {
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onDevStart, onDevPreview, onBack, submitting, submitError, stageIdx, totalStages }) {
   // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
   const [agreeAge, setAgreeAge] = React.useState(false);
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -3070,10 +3075,6 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           무료기간 동안 결제하시면 마지막 만료일에 추가돼 그만큼 이용 기간이 길어집니다.
         </div>
         <div style={{ marginTop: 10, background: "rgba(216,90,42,0.1)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink-soft)", lineHeight: 1.65 }}>
-          <div style={{ background: "var(--accent, #D85A2A)", color: "#fff", borderRadius: 9, padding: "11px 12px", margin: "0 0 10px", textAlign: "center", boxShadow: "0 8px 18px -12px rgba(216,90,42,0.9)" }}>
-            <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.4 }}>⏳ 가입 후 <span style={{ background: "#fff", color: "var(--accent)", borderRadius: 5, padding: "0 6px" }}>48시간 안에</span> 결제하면</div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 4, opacity: 0.95 }}>영어 달력까지 집으로 보내드려요 (3개월권 제외)</div>
-          </div>
           🎁 사은품은 두 가지예요. 실물로 집까지 보내드려요.
           <div style={{ display: "flex", gap: 8, margin: "9px 0 2px" }}>
             {[
@@ -3232,7 +3233,11 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         </div>
       )}
       <div className="btn-row">
-        <button className="btn" disabled={!valid || submitting} onClick={onSubmit}>
+        <button className="btn" disabled={(!valid && !_isDevSite()) || submitting} onClick={() => {
+          // ★ 개인 작업본: 빈칸이어도 눌리게. 테스트 정보로 채우고 심사 → 합격 → … 화면을 순서대로 보여준다.
+          if (!valid && _isDevSite()) { _devFill(true); if (onDevPreview) onDevPreview(); return; }
+          onSubmit();
+        }}>
           {submitting ? "코드 확인 중…" : "지원서 제출 →"}
         </button>
         <span className="fine-print" style={{ marginLeft: "auto", marginTop: 0 }}>
@@ -3270,7 +3275,7 @@ function ReviewingScreen({ name, stageIdx, totalStages }) {
   return (
     <div className="card">
       <StepBar idx={stageIdx} total={totalStages} />
-      <div className="eyebrow">STEP 2 · 심사 중</div>
+      <div className="eyebrow">STEP 3 · 심사 중</div>
       <h1>{name}님,<br/>지원서를 <em>검토하고 있어요</em>.</h1>
       <div className="loading">
         <div className="spinner"></div>
