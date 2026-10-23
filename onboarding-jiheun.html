@@ -1030,8 +1030,8 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
   const [journal, setJournal] = useState("");
   const [jrLoading, setJrLoading] = useState(false);
   const [jrFb, setJrFb] = useState(null);          // 일지 AI 피드백 (실제 mentor-feedback 함수 호출)
-  const [fontScale, setFontScale] = useState(() => { try { const v = parseFloat(localStorage.getItem("od_fs")); return v >= 0.85 && v <= 1.2 ? v : 1; } catch (e) { return 1; } });  // 글자 크기 (보는 사람이 고름)
-  const _setFs = (v) => { setFontScale(v); try { localStorage.setItem("od_fs", String(v)); } catch (e) {} try { track("font_scale", { v: v }); } catch (e) {} };
+  const [fontScale, setFontScale] = useState(() => { try { const v = parseFloat(localStorage.getItem("od_fs")); return v >= 0.5 && v <= 1.5 ? Math.round(v * 10) / 10 : 1; } catch (e) { return 1; } });  // 글자 크기 (보는 사람이 고름)
+  const _setFs = (v) => { v = Math.min(1.5, Math.max(0.5, Math.round(v * 10) / 10)); setFontScale(v); try { localStorage.setItem("od_fs", String(v)); } catch (e) {} try { track("font_scale", { v: v }); } catch (e) {} };
 
   const askJournalAi = async () => {
     if (jrLoading) return;
@@ -1407,6 +1407,7 @@ function WhyMock({ kind }) {
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      .od-rv-track:hover, .od-rv-track:active { animation-play-state: paused !important; }
       .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
       .od-bar-cta-short { display: none; }
       /* ★ 2026-09-13: 하단 고정 CTA. 엄지가 닿는 자리라 모바일에서만 (데스크톱은 상단바로 충분) */
@@ -1439,11 +1440,12 @@ function WhyMock({ kind }) {
         <div className="od-bar-title" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           1일1비 <span className="od-bar-sub" style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
         </div>
-        <div role="group" aria-label="글자 크기" style={{ display: "inline-flex", flexShrink: 0, border: "1px solid var(--line)", borderRadius: 8, overflow: "hidden", marginLeft: "auto" }}>
-          {[[0.9, 11, "작게"], [1, 13.5, "보통"], [1.12, 16, "크게"]].map(o => (
-            <button key={o[0]} onClick={() => _setFs(o[0])} aria-label={"글자 " + o[2]} aria-pressed={fontScale === o[0]}
-              style={{ width: 30, height: 32, border: "none", borderLeft: o[0] === 0.9 ? "none" : "1px solid var(--line)", background: fontScale === o[0] ? "var(--ink)" : "transparent", color: fontScale === o[0] ? "var(--paper)" : "var(--ink)", fontSize: o[1], fontWeight: 900, cursor: "pointer", fontFamily: "inherit", padding: 0, lineHeight: 1 }}>가</button>
-          ))}
+        <div role="group" aria-label="글자 크기" style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, marginLeft: "auto" }}>
+          {[[-0.1, "가-", "글자 작게"], [0, null, null], [0.1, "가+", "글자 크게"]].map(o => o[1] === null
+            ? <button key="fs" onClick={() => _setFs(1)} aria-label="글자 크기 원래대로" style={{ minWidth: 38, border: "none", background: "transparent", color: "var(--ink-soft)", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", padding: 0, fontVariantNumeric: "tabular-nums" }}>{Math.round(fontScale * 100)}%</button>
+            : <button key={o[1]} onClick={() => _setFs(fontScale + o[0])} aria-label={o[2]} disabled={o[0] < 0 ? fontScale <= 0.5 : fontScale >= 1.5}
+                style={{ height: 30, padding: "0 7px", border: "1px solid var(--line)", borderRadius: 8, background: "var(--paper)", color: "var(--ink)", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", lineHeight: 1, opacity: (o[0] < 0 ? fontScale <= 0.5 : fontScale >= 1.5) ? 0.35 : 1 }}>{o[1]}</button>
+          )}
         </div>
         <button onClick={() => setShowEnter(true)} className="od-bar-enter"
           style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
@@ -1647,7 +1649,7 @@ function WhyMock({ kind }) {
       {/* ── 후기: 설문 숫자 + 흐르는 한마디 + 후기 카드 + 요청이 반영된 것 ── */}
       <SectionTitle eyebrow="REVIEWS" title="먼저 다녀본 분들의 이야기" sub="멤버 설문·30일 수료 회고에서 그대로 가져왔어요. 이름은 빼고 Day만 남겼어요." />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginBottom: 12 }}>
-        {[["4.4", "/ 5", "설문 만족도 평균"], ["8건", "★5", "만점 응답"], ["Day 89", "★5", "90일 가까이 다닌 멤버"]].map(s => (
+        {[["4.8", "/ 5", "설문 만족도 평균"], ["100점", "", "30일 수료 시험"], ["Day 89", "★5", "90일 가까이 다닌 멤버"]].map(s => (
           <div key={s[2]} style={{ background: "var(--ink)", color: "var(--paper)", borderRadius: 11, padding: "11px 4px", textAlign: "center" }}>
             <div style={{ fontSize: 17, fontWeight: 900, color: "#F0A67E", letterSpacing: "-0.02em" }}>{s[0]}<span style={{ fontSize: 10, color: "#D9CDB8", marginLeft: 3 }}>{s[1]}</span></div>
             <div style={{ fontSize: 10, color: "#D9CDB8", marginTop: 3 }}>{s[2]}</div>
@@ -1655,14 +1657,15 @@ function WhyMock({ kind }) {
         ))}
       </div>
 
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em", color: "var(--ink-mute)", marginBottom: 7 }}>1일1비를 한마디로 정의하면</div>
+      <div style={{ background: "#FFF3EA", border: "1.5px solid rgba(216,90,42,0.35)", borderRadius: 14, padding: "12px 0 6px", margin: "0 -4px 6px" }}>
+      <div style={{ textAlign: "center", fontSize: 13, fontWeight: 900, color: "var(--ink)", marginBottom: 9 }}>💬 멤버들이 <span style={{ color: "var(--accent)" }}>한마디로 정의</span>한 1일1비</div>
       {[0, 1].map(row => {
         const items = row === 0
           ? [["부담 없이 루틴이 되는 비즈니스 영어 스터디", "Day 8"], ["외국계 체험 가능", "Day 11"], ["진짜 좋아!", "Day 88"], ["영어 버디", "Day 8"], ["실무 비즈니스 단어장", "Day 9"]]
           : [["실전 상황 대처를 영어로 하는 법을 배우는 앱", "Day 15"], ["비즈니스 표현 배울 수 있는 앱", "Day 89"], ["쉽고 빨라요", "베타 10일"], ["진짜 비즈니스 영어", "Day 40"], ["롤플레잉하니까 단어가 더 잘 외워져요", "30일 완주"]];
         const chips = items.map((c, i) => (
-          <span key={row + "-" + i} style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: row ? "var(--paper-warm)" : "var(--paper)", border: "1px solid var(--line)", borderRadius: 999, padding: "7px 12px", marginRight: 7, fontSize: 12, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap" }}>
-            “{c[0]}” <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ink-mute)" }}>{c[1]}</span>
+          <span key={row + "-" + i} style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: row ? "var(--paper)" : "var(--accent)", border: row ? "1.5px solid rgba(216,90,42,0.45)" : "none", borderRadius: 999, padding: "8px 14px", marginRight: 8, fontSize: 13, fontWeight: 900, color: row ? "var(--ink)" : "#fff", whiteSpace: "nowrap", boxShadow: "0 4px 10px -8px rgba(42,31,20,0.7)" }}>
+            “{c[0]}” <span style={{ fontSize: 10, fontWeight: 700, color: row ? "var(--ink-mute)" : "rgba(255,255,255,0.8)" }}>{c[1]}</span>
           </span>
         ));
         return (
@@ -1673,9 +1676,9 @@ function WhyMock({ kind }) {
           </div>
         );
       })}
+      </div>
 
-      <div style={{ display: "flex", gap: 9, overflowX: "auto", scrollSnapType: "x mandatory", padding: "6px 4px 6px", margin: "4px -4px 0", WebkitOverflowScrolling: "touch" }}>
-        {[
+      {(() => { const cards = [
           ["간단하게 부담 없이 하루에 하나씩 할 수 있어서 좋고, <b>진짜 비즈니스 영어</b>라 도움 돼요.", "Day 40 멤버 · 주간 설문", 5],
           ["매일 하기는 어려웠는데 <b>롤플레잉을 하니까 단어가 더 잘 외워졌어요!</b>", "30일 완주 멤버", 5],
           ["업무 상황처럼 재미있게 배울 수 있었고, <b>한 달 사이에도 점점 사용하기 편해졌어요.</b>", "30일 완주 · 수료 시험 100점", 0],
@@ -1692,14 +1695,20 @@ function WhyMock({ kind }) {
           ["<b>만들어놓으신 단어들</b>이 정말 너무 좋았어요!", "30일 완주 멤버 · 회고", 5],
           ["점심 대화가 랜덤 말고 <b>매일 있으면 좋겠어요.</b> (더 달라는 요청이 최고의 후기죠)", "30일 완주 멤버 · 요청", 5],
         ].map((r, i) => (
-          <div key={i} style={{ flex: "0 0 70%", scrollSnapAlign: "start", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px", display: "flex", flexDirection: "column", gap: 7, boxShadow: "0 6px 16px -14px rgba(42,31,20,0.6)" }}>
+          <div key={i} style={{ flex: "0 0 auto", width: 230, marginRight: 9, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px", display: "flex", flexDirection: "column", gap: 7, boxShadow: "0 6px 16px -14px rgba(42,31,20,0.6)" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.06em", color: r[2] ? "#E0A23A" : "var(--line)" }}>{r[2] === 5 ? "★★★★★" : r[2] === 4 ? "★★★★☆" : "❝"}</div>
             <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6, flex: 1 }} dangerouslySetInnerHTML={{ __html: r[0] }} />
             <div style={{ fontSize: 10, color: "var(--ink-mute)", fontWeight: 700 }}>{r[1]}</div>
           </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 10.5, color: "var(--ink-mute)", textAlign: "center", margin: "2px 0 12px" }}>← 옆으로 넘겨보세요 · 후기 15개 →</div>
+        ));
+        return (
+          <div style={{ overflow: "hidden", margin: "4px -4px 0", padding: "6px 0", maskImage: "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)" }}>
+            <div className="od-rv-track" style={{ display: "inline-flex", alignItems: "stretch", animation: "odTicker 110s linear infinite" }}>
+              {cards}{cards.map((c, i) => React.cloneElement(c, { key: "d" + i, "aria-hidden": true }))}
+            </div>
+          </div>
+        ); })()}
+      <div style={{ fontSize: 10.5, color: "var(--ink-mute)", textAlign: "center", margin: "2px 0 12px" }}>후기 15개가 계속 흘러가요 · 누르고 있으면 잠깐 멈춰요</div>
 
       <div style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px" }}>
         <div style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)", marginBottom: 8 }}>멤버 요청이 이렇게 반영됐어요</div>
@@ -1718,7 +1727,7 @@ function WhyMock({ kind }) {
       <Divider />
 
       {/* ── AS SEEN ON: 숫자 + 칼럼 ── */}
-      <SectionTitle eyebrow="AS SEEN ON" title="이미 이만큼 함께하고 있어요" />
+      <SectionTitle eyebrow="AS SEEN ON" title={<>이미 <span style={{ color: "var(--accent)", background: "linear-gradient(transparent 60%, rgba(216,90,42,0.18) 60%)" }}>이만큼</span> 함께하고 있어요</>} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 7, marginBottom: 9 }}>
         {[
           ["3.6만", "인스타그램 팔로워", "@youbuddy_day", "https://www.instagram.com/youbuddy_day/"],
@@ -1726,11 +1735,11 @@ function WhyMock({ kind }) {
           ["50명+", "1일1비 누적 입사", "베타·유료 멤버", null],
         ].map(x => {
           const inner = (<>
-            <div style={{ fontSize: 16.5, fontWeight: 900, color: "var(--accent)", letterSpacing: "-0.02em" }}>{x[0]}</div>
+            <div style={{ fontSize: 21, fontWeight: 900, color: "var(--accent)", letterSpacing: "-0.03em" }}>{x[0]}</div>
             <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)", marginTop: 4, lineHeight: 1.35 }}>{x[1]}</div>
             <div style={{ fontSize: 10, color: "var(--ink-mute)", marginTop: 2 }}>{x[2]}{x[3] ? " ↗" : ""}</div>
           </>);
-          const st = { display: "block", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "12px 6px", textAlign: "center", textDecoration: "none" };
+          const st = { display: "block", background: "#FFF3EA", border: "1.5px solid rgba(216,90,42,0.45)", borderRadius: 12, padding: "14px 6px", textAlign: "center", textDecoration: "none", boxShadow: "0 8px 18px -14px rgba(216,90,42,0.8)" };
           return x[3] ? <a key={x[1]} href={x[3]} target="_blank" rel="noopener" onClick={() => track("asseen_click", { k: x[1] })} style={st}>{inner}</a> : <div key={x[1]} style={st}>{inner}</div>;
         })}
       </div>
@@ -1775,7 +1784,10 @@ function WhyMock({ kind }) {
       <Divider />
 
       {/* ── WHY 1일1비: 실제 화면으로 보는 습관 구조 ── */}
-      <SectionTitle eyebrow="WHY 1일1비" title={<>그저 단어 외우기가 아니라,<br/>표현이 자연스럽게 나올 수밖에 없게<br/>만드는 구조를 만들었습니다</>} sub="실제 화면 그대로예요. 이름과 단어는 가렸어요." />
+      <div style={{ textAlign: "center", background: "linear-gradient(180deg, #FFF3EA, rgba(255,243,234,0))", borderTop: "3px solid var(--accent)", borderRadius: "14px 14px 0 0", padding: "20px 10px 6px", margin: "0 -4px 16px" }}>
+        <div style={{ display: "inline-block", fontSize: 10.5, fontWeight: 900, letterSpacing: "0.2em", color: "#fff", background: "var(--accent)", borderRadius: 999, padding: "4px 11px", marginBottom: 10 }}>WHY 1일1비</div>
+        <h2 style={{ fontSize: 19.5, fontWeight: 900, lineHeight: 1.42, margin: 0, color: "var(--ink)", letterSpacing: "-0.015em" }}>그저 단어 외우기가 아니라,<br/>표현이 <span style={{ color: "var(--accent)" }}>자연스럽게 나올 수밖에 없게</span><br/>만드는 <span style={{ background: "linear-gradient(transparent 58%, rgba(216,90,42,0.22) 58%)" }}>구조를 만들었습니다</span></h2>
+      </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, justifyContent: "center", marginBottom: 14 }}>
         {["📅 일정표", "🔥 연속 출근", "📒 업무 노트", "🏆 주간 순위", "✍️ AI 첨삭", "💬 버디 질문", "🎁 복지몰", "🎓 진급 시험", "📑 진급 리포트"].map(t => (
           <span key={t} style={{ fontSize: 10.5, fontWeight: 800, color: "var(--ink-soft)", background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 999, padding: "4px 9px" }}>{t}</span>
@@ -1967,7 +1979,7 @@ function WhyMock({ kind }) {
 
       <Divider />
 
-      <SectionTitle eyebrow="WELCOME KIT" title={<>3차 공채 입사자께<br/>드리는 웰컴 키트</>} sub="지금 결제하시면 실물로 집까지 보내드려요. 3개월권은 제외예요." />
+      <SectionTitle eyebrow="WELCOME KIT" title={<>3차 공채 입사자께<br/>드리는 웰컴 키트</>} sub="지금 결제하시면 실물로 집까지 보내드려요." />
       <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", border: "1px solid var(--line)", marginBottom: 10 }}>
         <img src="img/gift-workbook.png" alt="1일1비 WorkBook 표지와 속지" style={{ display: "block", width: "100%" }} />
         <img src="img/gift-calendar.png" alt="1일1비 상반기 영어 달력 세 가지 디자인" style={{ display: "block", width: "100%" }} />
@@ -1999,7 +2011,7 @@ function WhyMock({ kind }) {
         {[
           { tag: "GIFT 01", nm: "1일1비 WorkBook", val: "30,000원 상당", sub: "승진 패스트트랙 · 임원 트랙",
             li: "<b>나만의 비즈니스 영어 WorkBook</b>이에요. Day 1~90 표현이 한 쪽에 하나씩, 실제 슬랙 대화와 사수 노트, 예문 세 줄까지 담겼어요. 빈칸에 <b>내 문장</b>을 채우다 보면 90일 뒤엔 내가 쓴 책이 돼요." },
-          { tag: "GIFT 02", nm: "1일1비 상반기 영어 달력 (3종)", val: "15,000원 상당", sub: "A1 포스터 · 정규직 · 패스트트랙 · 임원 트랙",
+          { tag: "GIFT 02", nm: "1일1비 상반기 영어 달력 (3종 중 택1)", val: "15,000원 상당", sub: "정규직 · 패스트트랙 · 임원 트랙", size: "A1 포스터",
             li: "책상 앞에 붙여두기만 해도 <b>매일 오늘의 표현이 눈에 들어와요.</b> 1월부터 6월까지 하루 한 칸씩, 써먹은 날은 체크하면서 채워가요. 주황 바탕 · 주황 포인트 · 6칸 스트립 <b>세 가지 디자인 중에 골라요.</b>" },
         ].map(g => (
           <div key={g.nm} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px" }}>
@@ -2008,7 +2020,10 @@ function WhyMock({ kind }) {
               <span style={{ fontSize: 13.5, fontWeight: 900, color: "var(--ink)" }}>{g.nm}</span>
               <span style={{ marginLeft: "auto", fontSize: 11.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 999, padding: "3px 10px" }}>{g.val}</span>
             </div>
-            <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 3 }}>{g.sub}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 7 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 900, color: "var(--accent)", background: "rgba(216,90,42,0.1)", border: "1px solid rgba(216,90,42,0.35)", borderRadius: 7, padding: "3px 9px" }}>🎯 {g.sub} 결제 시</span>
+              {g.size && <span style={{ fontSize: 10.5, color: "var(--ink-mute)" }}>{g.size}</span>}
+            </div>
             <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, marginTop: 7 }} dangerouslySetInnerHTML={{ __html: g.li }} />
           </div>
         ))}
@@ -2073,7 +2088,8 @@ function WhyMock({ kind }) {
       ].map(p => (
         <div key={p.id} style={{
           background: p.best ? "#FFF3EA" : "#FFF8F2",
-          border: (p.best ? "2px" : "1.5px") + " solid rgba(216,90,42," + (p.best ? "0.75" : "0.45") + ")",
+          border: p.best ? "2px solid rgba(216,90,42,0.8)" : "1px solid var(--line)",
+          boxShadow: p.best ? "0 10px 22px -16px rgba(216,90,42,0.9)" : "none",
           borderRadius: 13, padding: "14px 15px", marginBottom: 9,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
@@ -2090,10 +2106,10 @@ function WhyMock({ kind }) {
             {p.total && <span style={{ fontSize: 12, fontWeight: 900, color: "var(--accent)" }}>총 {p.total} 혜택</span>}
           </div>
           {p.gift && (
-            <div style={{ marginTop: 9, background: p.strong ? "var(--accent)" : "rgba(216,90,42,0.1)", color: p.strong ? "#fff" : "var(--accent)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>🎁 {p.gift}</div>
+            <div style={{ marginTop: 9, background: "rgba(216,90,42,0.1)", color: "var(--accent)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>🎁 {p.gift}</div>
           )}
           {p.nogift && (
-            <div style={{ marginTop: 9, display: "inline-block", border: "1px dashed var(--ink-mute)", color: "var(--ink-mute)", borderRadius: 8, padding: "4px 9px", fontSize: 10.5, fontWeight: 800 }}>사은품 미포함</div>
+            <div style={{ marginTop: 9, background: "rgba(42,31,20,0.06)", border: "1.5px dashed var(--ink-soft)", color: "var(--ink)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>⚠️ 사은품 미포함 <span style={{ fontWeight: 700, color: "var(--ink-mute)", fontSize: 10.5 }}>(WorkBook · 영어 달력 없음)</span></div>
           )}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 9 }}>
             {p.li.map(x => <span key={x} style={{ fontSize: 10.5, color: "var(--ink-soft)", background: "var(--paper)", borderRadius: 6, padding: "3px 7px" }}>{x}</span>)}
@@ -2233,7 +2249,7 @@ function WhyMock({ kind }) {
           ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
           ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
           ["바로 결제해도 7일 무료가 있나요?", "네, 바로 결제하셔도 7일 무료는 포함돼요. 7일 무료가 먼저 시작되고, 결제한 기간은 그 뒤에 이어져요."],
-          ["영어 달력은 어떻게 받나요?", "결제하시면 1일1비 상반기 영어 달력 (3종 중 선택)을 집으로 보내드려요. 3개월권만 빼고 모든 플랜에 드려요. 배송지는 카톡 채널로 여쭤볼게요."],
+          ["영어 달력은 어떻게 받나요?", "결제하시면 1일1비 상반기 영어 달력 (3종 중 택1)을 집으로 보내드려요. 3개월권만 빼고 모든 플랜에 드려요. 배송지는 카톡 채널로 여쭤볼게요."],
           ["결제하면 바로 시작되나요?", <>결제 후에 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1일1비 카톡 채널</a>로 입사 코드를 보내드려요. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요. 궁금한 건 채널로 바로 물어보시면 돼요.</>],
           ["결제 기간이 끝나면 기록은 사라지나요?", "결제 기간이 끝나도 표현 노트와 진도는 2개월간 보관돼요. 그 안에 다시 결제하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
           ["누구한테 잘 맞나요?", "솔직하게 먼저 말씀드릴게요. 토익·오픽 점수가 목표인 분은 맞지 않아요. 시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았거든요. 점수에는 도움이 안 돼요. 대신 슬랙·메일·회의에서 영어를 이미 쓰고 계신 분이라면, 내일 회의에서 바로 쓸 한 문장을 매일 하나씩 가져가실 수 있어요."],
