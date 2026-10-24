@@ -402,7 +402,8 @@ const TRIAL_CODES = {
   // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
   //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
   //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
-  "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d" },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
+  "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d",
+    existingMsg: "이미 가입된 이메일이에요. 예전에 1일1비를 써보셨던 분이면, 이 이메일 그대로 처음부터 다시 시작할 수 있게 리셋해드려요. 아래 고객센터(카톡)로 이메일만 알려주세요." },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
 };
 const _isPreview = (() => { try { return new URLSearchParams(location.search).get("preview") === "1"; } catch (e) { return false; } })();
 // ★ 개발용 상세페이지(onboarding-dev.html)이거나 ?preview=1 일 때만 테스트 도구를 보여준다
@@ -1043,8 +1044,10 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
   const [journal, setJournal] = useState("");
   const [jrLoading, setJrLoading] = useState(false);
   const [jrFb, setJrFb] = useState(null);          // 일지 AI 피드백 (실제 mentor-feedback 함수 호출)
-  const [fontScale, setFontScale] = useState(() => { try { const v = parseFloat(localStorage.getItem("od_fs2")); if (v >= 0.5 && v <= 1.5) return Math.round(v * 10) / 10; } catch (e) {} try { return window.innerWidth <= 600 ? 0.8 : 1; } catch (e) { return 1; } });  // 처음 들어오면 모바일 80% · PC 100%  // 글자 크기 (보는 사람이 고름)
-  const _setFs = (v) => { v = Math.min(1.5, Math.max(0.5, Math.round(v * 10) / 10)); setFontScale(v); try { localStorage.setItem("od_fs2", String(v)); } catch (e) {} try { track("font_scale", { v: v }); } catch (e) {} };
+  // 글자 크기: 버튼 없이 모바일 80% · PC 100% (2026-10-24)
+  const _fsOf = () => { try { return window.innerWidth <= 600 ? 0.8 : 1; } catch (e) { return 1; } };
+  const [fontScale, setFontScale] = useState(_fsOf);
+  useEffect(() => { const on = () => setFontScale(_fsOf()); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
 
   const askJournalAi = async () => {
     if (jrLoading) return;
@@ -1479,15 +1482,8 @@ function WhyMock({ kind }) {
         <div className="od-bar-title" style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           1일1비 <span className="od-bar-sub" style={{ fontWeight: 600, color: "var(--ink-mute)" }}>· 신입 공채 접수 중</span>
         </div>
-        <div role="group" aria-label="글자 크기" style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, marginLeft: "auto" }}>
-          {[[-0.1, "가-", "글자 작게"], [0, null, null], [0.1, "가+", "글자 크게"]].map(o => o[1] === null
-            ? <button key="fs" onClick={() => _setFs(window.innerWidth <= 600 ? 0.8 : 1)} aria-label="글자 크기 원래대로" style={{ minWidth: 38, border: "none", background: "transparent", color: "var(--ink-soft)", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", padding: 0, fontVariantNumeric: "tabular-nums" }}>{Math.round(fontScale * 100)}%</button>
-            : <button key={o[1]} onClick={() => _setFs(fontScale + o[0])} aria-label={o[2]} disabled={o[0] < 0 ? fontScale <= 0.5 : fontScale >= 1.5}
-                style={{ height: 30, padding: "0 7px", border: "1px solid var(--line)", borderRadius: 8, background: "var(--paper)", color: "var(--ink)", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", lineHeight: 1, opacity: (o[0] < 0 ? fontScale <= 0.5 : fontScale >= 1.5) ? 0.35 : 1 }}>{o[1]}</button>
-          )}
-        </div>
         <button onClick={() => setShowEnter(true)} className="od-bar-enter"
-          style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          style={{ flexShrink: 0, background: "transparent", color: "var(--ink)", border: "1.5px solid var(--ink)", borderRadius: 8, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto", whiteSpace: "nowrap" }}>
           🚪 <span className="od-bar-enter-t">입장하기</span>
         </button>
         <button onClick={() => _goTrial("sticky")} className="od-bar-cta"
@@ -2043,7 +2039,7 @@ function WhyMock({ kind }) {
       {/* 공채 단계: 4차 인상 예정 강조 */}
       <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "13px 14px", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          {[["1차", "마감", 0], ["2차", "마감", 0], ["3차", "지금", 1], ["4차", "인상 예정", 2]].map((s, i) => (
+          {[["3차", "지금", 1], ["4차", "인상 예정", 2]].map((s, i) => (
             <React.Fragment key={s[0]}>
               {i > 0 && <span style={{ flex: 1, height: 2, background: s[2] === 2 ? "repeating-linear-gradient(90deg, #C0392B 0 4px, transparent 4px 7px)" : "var(--line)" }} />}
               <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0 }}>
@@ -2135,6 +2131,10 @@ function WhyMock({ kind }) {
 
       {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
       <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요." />
+      <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup_top" target="_blank" rel="noopener" onClick={() => track("lineup_ubc_route_click")}
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, margin: "-6px auto 16px", width: "fit-content", background: "var(--ink)", color: "var(--paper)", borderRadius: 999, padding: "10px 18px", fontSize: 13, fontWeight: 900, textDecoration: "none", boxShadow: "0 8px 18px -12px rgba(42,31,20,0.8)" }}>
+        🔥 유비챌 자세히 보기 <span style={{ color: "#F0A67E" }}>↗</span>
+      </a>
       <div style={{ fontSize: 12.5, color: "var(--ink-soft)", lineHeight: 1.7, background: "rgba(216,90,42,0.06)", border: "1px dashed var(--accent)", borderRadius: 10, padding: "11px 14px", marginBottom: 10 }}>
         둘 다 <strong style={{ color: "var(--ink)" }}>비즈니스 영어에 꼭 필요한 단어</strong>만 모았어요. 다른 건 <strong style={{ color: "var(--ink)" }}>고르는 방식</strong>이에요. 1일1비는 직급이 올라가는 순서대로, 유비챌은 <strong style={{ color: "var(--ink)" }}>기수마다 주제를 새로 큐레이션</strong>해요.
       </div>
@@ -2238,8 +2238,6 @@ function WhyMock({ kind }) {
           style={{ display: "block", width: "100%", marginTop: 10, background: "var(--accent, #D85A2A)", color: "#fff", border: "none", borderRadius: 9, padding: "11px 12px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
           같이 하는 플랜 보기 →
         </button>
-        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=better_together" target="_blank" rel="noopener" onClick={() => track("lineup_ubc_route_click")}
-          style={{ display: "block", textAlign: "center", marginTop: 9, fontSize: 11.5, color: "#F0A67E", fontWeight: 800 }}>유비챌 자세히 보기 ↗</a>
       </div>
 
       <Divider />
@@ -3076,13 +3074,14 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           <div style={{ display: "flex", gap: 8, margin: "9px 0 2px" }}>
             {[
               { img: "img/gift-workbook.png", nm: "1일1비 WorkBook", sub: "50,000원 상당", who: "패스트트랙 · 임원 트랙", hot: false },
-              { img: "img/gift-calendar.png", nm: "1일1비 상반기 영어 달력 (A2) (3종 중 택1)", sub: "15,000원 상당", who: "⏳ 48시간 안에 결제", hot: true, pos: "50% 24%" },
+              { img: "img/gift-calendar.png", nm: "1일1비 상반기 영어 달력 (A2) (3종 중 택1)", sub: "15,000원 상당", plans: "임원 트랙 · 승진 패스트트랙 · 정규직", who: "⏳ 48시간 안에 결제", hot: true, pos: "50% 24%" },
             ].map(g => (
               <div key={g.nm} style={{ flex: 1, minWidth: 0, background: "var(--paper)", border: g.hot ? "2px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
                 <img src={g.img} alt={g.nm} style={{ width: "100%", height: 74, objectFit: "cover", objectPosition: g.pos || "50% 40%", display: "block" }} />
                 <div style={{ padding: "7px 8px 8px" }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.35 }}>{g.nm}</div>
                   <div style={{ fontSize: 10, fontWeight: 800, color: "var(--accent)", marginTop: 2 }}>{g.sub}</div>
+                  {g.plans && <div style={{ fontSize: 10, fontWeight: 800, color: "var(--ink-soft)", marginTop: 4, lineHeight: 1.4 }}>{g.plans}</div>}
                   <div style={{ fontSize: 10, fontWeight: 900, color: g.hot ? "#fff" : "var(--ink-mute)", background: g.hot ? "var(--accent)" : "transparent", borderRadius: 5, padding: g.hot ? "2px 6px" : 0, display: "inline-block", marginTop: 5 }}>{g.who}</div>
                 </div>
               </div>
@@ -3230,6 +3229,12 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           borderRadius: 6, fontSize: 12.5, color: "#B8431A", fontWeight: 600,
         }}>
           ⚠ {submitError}
+          {/이미 (가입|1일1비 계정)/.test(String(submitError)) && (
+            <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener"
+              style={{ display: "block", marginTop: 9, background: "#FEE500", color: "#3A1D1D", borderRadius: 8, padding: "10px 12px", textAlign: "center", fontSize: 13, fontWeight: 900, textDecoration: "none" }}>
+              💬 고객센터(카톡) 연락하기 →
+            </a>
+          )}
         </div>
       )}
       <div className="btn-row">
