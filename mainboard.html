@@ -6129,7 +6129,7 @@ function _isPromoNext() { return _promoLive() || _promoDevOn(); }
 // ★ 2026-10-21 48시간 사은품(단어 달력) 배너.
 //   가입(체험 시작) 시각 + 48시간 안에 결제하면 2027 상반기 단어 달력을 보내준다.
 //   라이브할 땐 _gift48Live() 를 true 로 바꾸면 회원에게도 열린다. 되돌릴 땐 false.
-function _gift48Live() { return false; }
+function _gift48Live() { return true; }  // 2026-10-24 라이브
 // ★ 미리보기 스위치: 주소 뒤에 ?gift48=1 을 붙이면 그 브라우저에서만 켜진다 (끌 땐 ?gift48=0).
 //   라이브 전에 체험 계정으로 48시간 플로우를 그대로 보려고 쓴다. 다른 회원에겐 영향 없다.
 function _gift48Preview() {
@@ -13391,132 +13391,145 @@ function TycoonBoot({ toast }) {
 // ============================================================
 // ★ 48시간 사은품 배너. 체험 회원(cohort가 trial로 시작)에게만, 가입 + 48시간 안에만 보인다.
 //   결제해서 cohort가 member 로 바뀌면(웹훅/CSV 동기화) 조건이 깨져서 자동으로 사라진다.
-// ★ 체험 회원에게 상시로 보이는 구매 줄. 48시간이 지나도 계속 보인다 (Gift48Banner 는 48시간 안에만).
-function TrialBuyBar({ user }) {
-  if (!_isGift48On()) return null;
-  const _coh = typeof user?.cohort === "string" ? user.cohort : "";
-  if (!_coh.startsWith("trial")) return null;
-  if (user?.isViewingPast) return null;
-  const d = Number(user?.currentDay || user?.realCurrentDay || 1);
+// ★ 2026-10-24 체험 회원 결제 배너 (개인 작업본 mainboard-jiheun 시안을 라이브로 옮김).
+//   48시간 안: 시안 A (카운트다운 카드) · 48시간 뒤: 시안 E 디자인 + F 내용 (D-day · 쌓은 기록 · 4차 인상 전 가격)
+//   미리보기 전환: 주소 뒤 ?b48=in (48시간 안) / ?b48=after (48시간 뒤) / ?b48=off (실제 시간대로)
+function _b48Mode() {
+  try {
+    const q = new URLSearchParams(location.search).get("b48");
+    if (q === "in" || q === "after") localStorage.setItem("__OD_B48", q);
+    if (q === "off") localStorage.removeItem("__OD_B48");
+    return localStorage.getItem("__OD_B48") || "";
+  } catch (e) { return ""; }
+}
+function _b48Deadline() {
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    const t = new Date((u && u.signupDate) || "").getTime();
+    return isFinite(t) ? t + GIFT48_HOURS * 3600000 : null;
+  } catch (e) { return null; }
+}
+function _b48Left(now) {
+  const m = _b48Mode();
+  if (m === "after") return -1;
+  const dl = _b48Deadline();
+  if (m === "in") return dl && dl > now ? dl - now : 41 * 3600000 + 27 * 60000 + 8000;
+  return dl ? dl - now : null;
+}
+function _isTrialUser(user) {
+  const c = typeof user?.cohort === "string" ? user.cohort : "";
+  return _isGift48On() && c.startsWith("trial") && !user?.isViewingPast;  // _gift48Live() 를 false 로 바꾸면 배너 전부 꺼짐
+}
+function B48Switch() {
+  if (!(_isDevNext() || _gift48Preview())) return null;  // 회원에겐 안 보임
+  const m = _b48Mode();
+  const go = (v) => { try { const u = new URL(location.href); u.searchParams.set("b48", v); location.href = u.toString(); } catch (e) {} };
   return (
-    <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
-      display: "flex", alignItems: "center", gap: 10, textDecoration: "none",
-      margin: "0 0 2px", padding: "10px 14px", borderRadius: 10,
-      background: "var(--paper-2, #F1E6CF)", border: "1px solid var(--line)",
-    }}>
-      <span style={{ fontSize: _fs(15), flexShrink: 0 }}>🎟</span>
-      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.45 }}>
-        <span style={{ display: "block", fontSize: _fs(13), fontWeight: 800, color: "var(--ink)" }}>지금 결제하면 Day {d + 1}부터 그대로 이어져요</span>
-        <span style={{ display: "block", fontSize: _fs(11.5), color: "var(--ink-soft)", marginTop: 2 }}>남은 체험 날짜는 만료일에 더해드려요</span>
-      </span>
-      <span style={{
-        flexShrink: 0, background: "var(--accent, #D85A2A)", color: "#fff",
-        borderRadius: 8, padding: "7px 12px", fontSize: _fs(12.5), fontWeight: 800, whiteSpace: "nowrap",
-      }}>플랜 보기 →</span>
-    </a>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "10px 0 0", fontSize: 11, fontWeight: 800, color: "var(--muted, #9a8a74)" }}>
+      <span>배너 미리보기</span>
+      {[["in", "48시간 안"], ["after", "48시간 뒤"], ["off", "실제 시간"]].map(o => (
+        <button key={o[0]} onClick={() => go(o[0])} style={{
+          border: "1px solid var(--line)", borderRadius: 999, padding: "3px 9px", cursor: "pointer", fontFamily: "inherit",
+          fontSize: 11, fontWeight: 800,
+          background: (m || "off") === o[0] ? "#2A1F14" : "transparent", color: (m || "off") === o[0] ? "#FFFDF7" : "var(--ink-soft)",
+        }}>{o[1]}</button>
+      ))}
+    </div>
   );
 }
 
-function Gift48Banner({ user }) {
-  const [left, setLeft] = React.useState(null);
-  const [folded, setFolded] = React.useState(false);
-
-  const deadline = React.useMemo(() => {
-    try {
-      const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
-      const s = (u && u.signupDate) || null;
-      if (!s) return null;
-      const t = new Date(s).getTime();
-      if (!isFinite(t)) return null;
-      return t + GIFT48_HOURS * 3600000;
-    } catch (e) { return null; }
-  }, []);
-
-  React.useEffect(() => {
-    if (!deadline) return;
-    const tick = () => setLeft(deadline - Date.now());
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [deadline]);
-
-  if (!_isGift48On()) return null;
-  const _coh = typeof user?.cohort === "string" ? user.cohort : "";
-  // ★ ?gift48=1 미리보기일 때는, 안 뜨는 이유를 한 줄로 알려준다 (일반 회원에겐 안 보임)
-  const _why = !_coh.startsWith("trial") ? ("체험 회원이 아니에요 (cohort: " + (_coh || "없음") + ")")
-    : user?.isViewingPast ? "지난 Day 를 보는 중이에요"
-    : !deadline ? "가입 시각(signupDate)이 없어요"
-    : (left != null && left <= 0) ? "48시간이 이미 지났어요"
-    : null;
-  if (_why) {
-    if (!_gift48Preview()) return null;
-    return (
-      <div style={{ margin: "10px 0 0", padding: "9px 12px", borderRadius: 10, background: "#2A1F14", color: "#F0A67E", fontSize: _fs(11.5), fontWeight: 700, lineHeight: 1.5 }}>
-        🎁 48시간 배너가 안 보이는 이유: {_why}
-        <span style={{ display: "block", color: "#D9CDB8", fontWeight: 500, marginTop: 3 }}>미리보기(?gift48=1)에서만 뜨는 안내예요. 끌 땐 ?gift48=0</span>
-      </div>
-    );
-  }
-  if (left == null) return null;
-
-  const pad = (n) => String(n).padStart(2, "0");
-  const hh = Math.floor(left / 3600000);
-  const mm = Math.floor((left % 3600000) / 60000);
-  const ss = Math.floor((left % 60000) / 1000);
-  const urgent = left < 6 * 3600000;
-
-  if (folded) return (
-    <div onClick={() => setFolded(false)} style={{
-      margin: "10px 0 0", padding: "9px 14px", borderRadius: 10, cursor: "pointer",
-      background: "var(--paper-2, #F1E6CF)", border: "1px dashed var(--line)",
-      fontSize: _fs(12.5), fontWeight: 700, color: "var(--ink-soft)",
-      display: "flex", alignItems: "center", gap: 8,
-    }}>
-      🎁 단어 달력 받을 수 있는 시간 <b style={{ color: "#D85A2A" }}>{pad(hh)}:{pad(mm)}:{pad(ss)}</b>
-      <span style={{ marginLeft: "auto", fontSize: _fs(11), color: "var(--muted)" }}>펼치기</span>
+// 48시간 뒤 (시안 E 디자인 + F 내용)
+function TrialBuyBar({ user }) {
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => { const id = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(id); }, []);
+  if (!_isTrialUser(user)) return null;
+  const left = _b48Left(now);
+  if (left == null || left > 0) return null;
+  const d = Number(user?.currentDay || user?.realCurrentDay || 1);
+  let dLeft = null;
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
+    const e = new Date((u && (u.membershipEndsAt || u.membership_ends_at)) || "").getTime();
+    if (isFinite(e)) dLeft = Math.max(0, Math.ceil((e - now) / 86400000));
+  } catch (e) {}
+  if (dLeft == null) dLeft = Math.max(0, 7 - d);
+  const stat = (v, l) => (
+    <div style={{ flex: 1, background: "rgba(255,253,247,0.08)", borderRadius: 9, padding: "8px 4px", textAlign: "center" }}>
+      <div style={{ fontSize: 17, fontWeight: 900 }}>{v}</div>
+      <div style={{ fontSize: 10.5, color: "#D9CDB8", marginTop: 1 }}>{l}</div>
     </div>
   );
-
   return (
-    <div style={{
-      margin: "12px 0 0", borderRadius: 12, overflow: "hidden",
-      background: "#2A1F14", color: "#FFFDF7",
-      boxShadow: "0 10px 26px -12px rgba(42,31,20,.5)",
-    }}>
-      <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: _fs(11), fontWeight: 800, letterSpacing: "0.16em", color: "#F0A67E" }}>LIMITED GIFT</span>
-        <button onClick={() => setFolded(true)} style={{
-          marginLeft: "auto", background: "transparent", border: "none",
-          color: "rgba(255,253,247,0.55)", fontSize: _fs(11), fontWeight: 700, cursor: "pointer", padding: 2,
-        }}>접기</button>
+    <div style={{ margin: "12px 0 0", borderRadius: 12, background: "#2A1F14", color: "#FFFDF7", padding: "15px 16px", boxShadow: "0 10px 26px -12px rgba(42,31,20,.5)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 24, fontWeight: 900, color: "#F0A67E", lineHeight: 1 }}>D-{dLeft}</span>
+        <span style={{ fontSize: 13.5, fontWeight: 800 }}>무료 체험이 {dLeft}일 남았어요</span>
+        <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 900, color: "#fff", background: "#C0392B", borderRadius: 999, padding: "3px 9px" }}>📈 4차 공채 인상 예정</span>
       </div>
-
-      <div style={{ padding: "8px 16px 0", fontSize: _fs(15.5), fontWeight: 900, lineHeight: 1.45, letterSpacing: "-0.01em" }}>
-        지금 결제하면 <span style={{ color: "#F0A67E" }}>2027 상반기 단어 달력</span>을<br />집으로 보내드려요
+      <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+        {stat((user?.streak || 1) + "일", "연속 출근 🔥")}
+        {stat(d + "개", "모은 표현")}
+        {stat("Day " + d, "지금 진도")}
       </div>
-
-      <div style={{
-        margin: "12px 16px 0", padding: "10px 12px", borderRadius: 9,
-        background: urgent ? "rgba(216,90,42,0.22)" : "rgba(255,253,247,0.08)",
-        border: urgent ? "1px solid rgba(240,166,126,0.5)" : "1px solid rgba(255,253,247,0.12)",
-        display: "flex", alignItems: "center", gap: 10,
-      }}>
-        <span style={{ fontSize: _fs(12), fontWeight: 700, color: "#D9CDB8" }}>남은 시간</span>
-        <span style={{
-          marginLeft: "auto", fontSize: _fs(19), fontWeight: 900, letterSpacing: "0.04em",
-          color: urgent ? "#FFC9A6" : "#FFFDF7", fontVariantNumeric: "tabular-nums",
-        }}>{pad(hh)}:{pad(mm)}:{pad(ss)}</span>
+      <div style={{ fontSize: 12.5, color: "#D9CDB8", marginTop: 11, lineHeight: 1.7 }}>
+        결제하면 이 기록 그대로 <b style={{ color: "#FFFDF7" }}>Day {d + 1}부터</b> 이어져요.<br />
+        4차 공채부터 가격이 올라요. 지금 결제하면 <b style={{ color: "#F0A67E" }}>결제한 기간 내내 3차 가격 그대로</b>예요.
       </div>
-
-      <div style={{ padding: "11px 16px 0", fontSize: _fs(12), lineHeight: 1.7, color: "#D9CDB8" }}>
-        6개월권부터 드려요. 무료 기간에 결제하시면 남은 체험 날짜가 그대로 더해져서, 하루도 손해 안 보세요.
+      <div style={{ marginTop: 10, background: "rgba(255,253,247,0.08)", borderRadius: 9, padding: "9px 12px", fontSize: 12, color: "#D9CDB8", display: "flex", alignItems: "center", gap: 8 }}>
+        <span>⭐ 승진 패스트트랙</span><span style={{ textDecoration: "line-through", opacity: 0.7 }}>200,400원</span>
+        <b style={{ marginLeft: "auto", color: "#FFFDF7", fontSize: 14 }}>179,000원</b>
       </div>
-
       <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
-        display: "block", margin: "14px 16px 16px", padding: "13px 0", borderRadius: 9,
-        background: "#D85A2A", color: "#fff", textAlign: "center",
-        fontSize: _fs(14), fontWeight: 800, textDecoration: "none",
-      }}>플랜 보고 이어서 다니기 →</a>
+        display: "block", marginTop: 12, padding: "13px 0", borderRadius: 9, background: "#D85A2A", color: "#fff",
+        textAlign: "center", fontSize: 14, fontWeight: 900, textDecoration: "none",
+      }}>3차 가격으로 기록 이어가기 →</a>
+      <div style={{ fontSize: 11, color: "#D9CDB8", marginTop: 8, textAlign: "center" }}>남은 체험 날짜는 만료일에 그대로 더해드려요</div>
+      <B48Switch />
+    </div>
+  );
+}
+
+// 48시간 안 (시안 A)
+function Gift48Banner({ user }) {
+  const [now, setNow] = React.useState(Date.now());
+  const [folded, setFolded] = React.useState(false);
+  React.useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
+  if (!_isTrialUser(user)) return null;
+  const left = _b48Left(now);
+  if (left == null || left <= 0) return null;
+  const pad = (n) => String(n).padStart(2, "0");
+  const hh = Math.floor(left / 3600000), mm = Math.floor((left % 3600000) / 60000), ss = Math.floor((left % 60000) / 1000);
+  const t = pad(hh) + ":" + pad(mm) + ":" + pad(ss);
+  const urgent = left < 6 * 3600000;
+  if (folded) return (
+    <div onClick={() => setFolded(false)} style={{ margin: "10px 0 0", padding: "9px 14px", borderRadius: 10, cursor: "pointer", background: "var(--paper-2, #F1E6CF)", border: "1px dashed var(--line)", fontSize: 12.5, fontWeight: 700, color: "var(--ink-soft)", display: "flex", alignItems: "center", gap: 8 }}>
+      🎁 영어 달력 받을 수 있는 시간 <b style={{ color: "#D85A2A", fontVariantNumeric: "tabular-nums" }}>{t}</b>
+      <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>펼치기</span>
+    </div>
+  );
+  return (
+    <div style={{ margin: "12px 0 0", borderRadius: 12, background: "#2A1F14", color: "#FFFDF7", padding: "15px 16px", boxShadow: "0 10px 26px -12px rgba(42,31,20,.5)" }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", color: "#F0A67E" }}>입사 선물 · 48시간 한정</span>
+        <button onClick={() => setFolded(true)} style={{ marginLeft: "auto", background: "transparent", border: "none", color: "rgba(255,253,247,0.55)", fontSize: 11, fontWeight: 700, cursor: "pointer", padding: 2 }}>접기</button>
+      </div>
+      <div style={{ fontSize: 16.5, fontWeight: 900, lineHeight: 1.45, marginTop: 7, letterSpacing: "-0.01em" }}>
+        지금 결제하면 <span style={{ color: "#F0A67E" }}>1일1비 상반기 영어 달력 (A2)</span>을<br />집으로 보내드려요
+      </div>
+      <div style={{ display: "flex", alignItems: "center", marginTop: 12, borderRadius: 9, padding: "10px 12px",
+        background: urgent ? "rgba(216,90,42,0.22)" : "rgba(255,253,247,0.08)", border: urgent ? "1px solid rgba(240,166,126,0.5)" : "1px solid rgba(255,253,247,0.12)" }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: "#D9CDB8" }}>남은 시간</span>
+        <span style={{ marginLeft: "auto", fontSize: 23, fontWeight: 900, letterSpacing: "0.03em", color: urgent ? "#FFC9A6" : "#FFFDF7", fontVariantNumeric: "tabular-nums" }}>{t}</span>
+      </div>
+      <div style={{ fontSize: 12, color: "#D9CDB8", marginTop: 10, lineHeight: 1.7 }}>
+        1일1비 상반기 영어 달력 (A2) (3종 중 택1) 15,000원 상당 (3개월권 제외). 패스트트랙·임원 트랙은 <b style={{ color: "#FFFDF7" }}>WorkBook 50,000원 상당</b>도 함께.<br />
+        남은 체험 날짜는 만료일에 그대로 더해드려요.
+      </div>
+      <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
+        display: "block", marginTop: 12, padding: "13px 0", borderRadius: 9, background: "#D85A2A", color: "#fff",
+        textAlign: "center", fontSize: 14, fontWeight: 900, textDecoration: "none",
+      }}>플랜 보고 선물 받기 →</a>
+      <B48Switch />
     </div>
   );
 }
