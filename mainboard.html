@@ -7803,6 +7803,9 @@ const _POP_ORDER = {
   // ★ 2026-10-24 (개발 뷰): 👋 첫 주 웰컴 (Day 1~5)도 오늘 일정 끝낸 뒤로 (사용자 요청). EXP 바로 다음, 출근 환경 세팅(120) 앞.
   //   회원 화면은 아직 접속 시(first-week 70) 그대로. ?fwp=N 미리보기도 바로 뜨게 70 을 쓴다.
   "first-week-done": 118,
+  // ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차. 첫 주 웰컴(118) · 출근 환경 세팅(120) 다음, 마일스톤(130) 앞.
+  "trial-survey": 125, "trial-survey-pv": 75,   // ?tsv=5|7 미리보기는 바로
+
   // ★ 2026-10-18: 리포트 도착 · 늦게 열린 평가는 오늘 일정 끝낸 뒤로 (사용자 요청). 학습 먼저, 선물은 그 다음.
   "promo-batch": 114, "promo-retro": 116, "setup": 120,
   // ★ 2026-10-18: 밀린 평가도 오늘 일정 끝낸 뒤로 (사용자 요청). 평가 당일(135) 바로 앞.
@@ -18544,6 +18547,233 @@ function ActivityShell({ title, children, onClose, footer, accent, guard }) {
 }
 
 // ============================================================
+// ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차 (아티팩트 '체험 설문 미리보기' 시안 그대로)
+//   뜨는 때: 체험 회원(cohort trial*)이 그 Day 일정 4개를 끝낸 뒤 (팝업 줄 125). 개발 뷰는 운영자도 Day 5 · 7 이면 뜬다.
+//   5일차: 한 화면에 끝, 답하면 +50P. 끝 화면은 5일 동안 쌓인 것 + 1주 완주 배지까지 D-2 + (바꿀래요 고른 분만) 카톡 알림 시간.
+//          5일차는 이미 48시간이 지나 달력 사은품을 못 받으니 달력 얘기는 뺐다 (사용자 요청).
+//   7일차: 3장. ① 별점 + 좋았던 것 ② 계속 다닐지 + 걸리는 것 ③ 한 줄 + 끝. 2장 → 3장 넘어갈 때 +100P.
+//   저장: survey_responses (trial_day5 · trial_day7). 봤음 기록: __OD_TSV_<day>_<email> (이 기기). "다음에 할게요"는 이번 접속만 닫힘.
+//   미리보기: ?tsv=5 / ?tsv=7 (운영자 · Dev), dev 패널 > 팝업 전체보기.
+// ============================================================
+const _TSV_PLAN_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_trial_day7&utm_campaign=sat_launch";
+const _tsvKey = (day, email) => "__OD_TSV_" + day + "_" + (email || "guest");
+function _tsvDone(day, email) { try { return localStorage.getItem(_tsvKey(day, email)) === "1"; } catch (e) { return true; } }
+function _tsvSave(day, email, payload, final) {
+  try { if (final) localStorage.setItem(_tsvKey(day, email), "1"); } catch (e) {}
+  try { if (email && email !== "guest" && window.OD && window.OD.enabled && window.OD.saveSurveyResponse) window.OD.saveSurveyResponse(email, "trial_day" + day, Object.assign({ submittedAt: new Date().toISOString() }, payload)).catch(() => {}); } catch (e) {}
+}
+// 연속 출근: 오늘 Day 부터 거꾸로, 일정 다 끝낸 Day 가 끊기지 않고 이어진 수
+function _tsvStreak(u, rd) {
+  try { const s = _odCompletedDaySet(u); let n = 0; for (let d = rd; d >= 1 && s.has(d); d--) n++; return n; } catch (e) { return 0; }
+}
+const _TSV = {
+  ink: "#2A1F14", paper: "#FFFDF7", cream: "#F6EFE1", sand: "#EADFC9", line: "#E2D6BF", or: "#D85A2A", orSoft: "#FBE9DF", mute: "#8A7A66", soft: "#5E5040",
+};
+function TsvShell({ title, right, children, step, total }) {
+  return (
+    <div className="modal-bg" style={{ zIndex: 9400, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ width: "100%", maxWidth: 380, maxHeight: "92vh", overflowY: "auto", background: _TSV.paper, borderRadius: 16, boxShadow: "0 24px 60px -20px rgba(0,0,0,.55)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ background: _TSV.ink, color: _TSV.paper, padding: "13px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "16px 16px 0 0" }}>
+          <b style={{ fontSize: _fs(11.5), letterSpacing: "0.12em" }}>{title}</b>
+          <span style={{ fontSize: _fs(11), fontWeight: 800, color: right && right.startsWith("+") ? "#F3A27A" : "#E8DFCB" }}>{right}</span>
+        </div>
+        <div style={{ padding: "16px 18px 18px" }}>
+          {total > 1 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(" + total + ", 1fr)", gap: 4, marginBottom: 16 }}>
+              {Array.from({ length: total }, (_, i) => <span key={i} style={{ height: 4, borderRadius: 4, background: i < step ? _TSV.or : _TSV.sand }} />)}
+            </div>
+          )}
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+const _tsvQ = (t, sub) => <div style={{ fontSize: _fs(13.5), fontWeight: 900, color: _TSV.ink, margin: "16px 0 9px" }}>{t}{sub && <small style={{ fontSize: _fs(11), fontWeight: 700, color: _TSV.mute, marginLeft: 6 }}>{sub}</small>}</div>;
+function TsvChip({ on, onClick, children, block, sub }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      display: block ? "block" : "inline-flex", width: block ? "100%" : undefined, alignItems: "center", justifyContent: "center",
+      textAlign: block ? "left" : "center", padding: block ? "11px 14px" : "8px 13px", margin: block ? "0 0 8px" : 0,
+      borderRadius: block ? 10 : 999, border: "1.5px solid " + (on ? _TSV.or : _TSV.line), background: on ? _TSV.orSoft : _TSV.paper,
+      color: on ? _TSV.or : _TSV.ink, fontFamily: "inherit", fontSize: _fs(12.5), fontWeight: 800, cursor: "pointer", lineHeight: 1.35,
+    }}>
+      <span>{children}{sub && <small style={{ display: "block", fontSize: _fs(11), fontWeight: 600, color: _TSV.mute, marginTop: 3 }}>{sub}</small>}</span>
+    </button>
+  );
+}
+const _tsvBtn = (dis) => ({ display: "block", width: "100%", marginTop: 18, padding: "14px 0", border: "none", borderRadius: 10, background: dis ? "#E3C3B1" : _TSV.or, color: "#fff", fontFamily: "inherit", fontSize: _fs(14.5), fontWeight: 900, cursor: dis ? "default" : "pointer" });
+const _tsvLink = { display: "block", margin: "12px auto 0", background: "transparent", border: "none", color: _TSV.mute, textDecoration: "underline", fontFamily: "inherit", fontSize: _fs(12), cursor: "pointer" };
+
+// ── 5일차: 중간 점검 ──
+function TrialDay5Survey({ email, onClose, preview }) {
+  const { USER } = window.__SIM;
+  const [step, setStep] = useState(1);
+  const [a, setA] = useState({ time: "", level: "", kakao: "", stuck: "" });
+  const [hour, setHour] = useState(null);
+  const [kHour, setKHour] = useState(9);
+  const [msg, setMsg] = useState("");
+  useEffect(() => { let alive = true; (async () => { try { if (window.OD && window.OD.getKakaoNotify && email) { const r = await window.OD.getKakaoNotify(email); if (alive && r && r.ok && r.result && r.result.hour != null) setKHour(Number(r.result.hour)); } } catch (e) {} })(); return () => { alive = false; }; }, [email]);
+  const set = (k, v) => setA(p => Object.assign({}, p, { [k]: p[k] === v && k === "stuck" ? "" : v }));
+  const ok = a.time && a.level && a.kakao;
+  const submit = () => {
+    if (!ok) return;
+    if (!preview) { _tsvSave(5, email, a, true); try { _retAwardWp(email, "survey:trial_day5", 50, "5일차 중간 점검"); } catch (e) {} }
+    setStep(2);
+  };
+  const finish = async () => {
+    if (hour != null && !preview) {
+      try {
+        const r = window.OD && window.OD.setKakaoNotify ? await window.OD.setKakaoNotify(email, "", hour) : null;
+        if (!r || !r.ok) { setMsg("알림 시간은 사원증 > 설정에서 번호를 먼저 적고 바꿔주세요."); return; }
+        _tsvSave(5, email, Object.assign({}, a, { newHour: hour }), true);
+      } catch (e) {}
+    }
+    onClose();
+  };
+  if (step === 1) return (
+    <TsvShell title="DAY 5 · 중간 점검" right="20초" total={1}>
+      <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>닷새째 출근</div>
+      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px" }}>잘 다니고 계신지 세 개만 볼게요</div>
+      <div style={{ fontSize: _fs(12), color: _TSV.mute }}>전부 누르기만 하면 돼요. 답하면 복지 포인트 50P.</div>
+      {_tsvQ("1. 하루에 몇 분쯤 걸려요?")}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>{["5분 안", "5~10분", "10~20분", "20분 넘게"].map(o => <TsvChip key={o} on={a.time === o} onClick={() => set("time", o)}>{o}</TsvChip>)}</div>
+      {_tsvQ("2. 난이도는요?")}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>{["쉬워요", "딱 맞아요", "어려워요"].map(o => <TsvChip key={o} on={a.level === o} onClick={() => set("level", o)}>{o}</TsvChip>)}</div>
+      {_tsvQ("3. 아침 " + kHour + "시 카톡 알림, 시간 어때요?")}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>{["괜찮아요", "바꿀래요", "안 켰어요"].map(o => <TsvChip key={o} on={a.kakao === o} onClick={() => set("kakao", o)}>{o}</TsvChip>)}</div>
+      {_tsvQ("지금 제일 막히는 거 하나", "선택")}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{["시추에이션 답 쓰기", "퀴즈가 어려워요", "뭘 눌러야 할지 헷갈려요", "까먹고 안 들어와요", "없어요"].map(o => <TsvChip key={o} on={a.stuck === o} onClick={() => set("stuck", o)}>{o}</TsvChip>)}</div>
+      <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>제출하고 50P 받기 →</button>
+    </TsvShell>
+  );
+  const rd = USER.realCurrentDay || USER.currentDay || 5;
+  const streak = _tsvStreak(_localUser || USER, rd);
+  const words = Number(USER.wordsCollected) || rd;
+  const lines = ((USER.scenariosCompleted || []).filter(s => s && s.answer && String(s.answer).trim())).length;
+  const tile = (n, unit, t, s, hot) => (
+    <div style={{ background: hot ? "#FFF1EA" : _TSV.cream, border: "1px solid " + (hot ? "#F3C9B3" : _TSV.line), borderRadius: 10, padding: "10px 10px 9px" }}>
+      <b style={{ fontSize: _fs(22), fontWeight: 900, color: hot ? _TSV.or : _TSV.ink }}>{n}<small style={{ fontSize: _fs(12) }}>{unit}</small></b>
+      <div style={{ fontSize: _fs(11.5), fontWeight: 900, color: _TSV.ink, marginTop: 2 }}>{t}</div>
+      <div style={{ fontSize: _fs(10), color: _TSV.mute }}>{s}</div>
+    </div>
+  );
+  return (
+    <TsvShell title="DAY 5 · 중간 점검" right={preview ? "+50P 적립" : "+50P 적립"} total={1}>
+      <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>5일 동안 쌓인 것</div>
+      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 12px" }}>이거 다 두고 가긴 아깝죠</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+        {tile(streak, "일", "연속 출근", "하루 빠지면 0부터", true)}
+        {tile(words, "개", "내 표현", "업무 노트에")}
+        {tile(lines, "줄", "첨삭받은 문장", "전부 내가 쓴 것")}
+      </div>
+      <div style={{ background: _TSV.ink, color: _TSV.paper, borderRadius: 12, padding: "14px 15px 12px", marginTop: 12 }}>
+        <div style={{ fontSize: _fs(11), fontWeight: 900, color: "#F3A27A" }}>D-2</div>
+        <div style={{ fontSize: _fs(15), fontWeight: 900, lineHeight: 1.45, margin: "3px 0 10px" }}>이틀만 더 오면<br/>사원증에 <span style={{ color: "#F3A27A" }}>1주 완주 배지</span>가 붙어요</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>{[1, 2, 3, 4, 5, 6, 7].map(d => <span key={d} style={{ height: 5, borderRadius: 4, background: d <= 5 ? "#F3A27A" : "rgba(255,255,255,.18)" }} />)}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: _fs(10), marginTop: 5, color: "#CDBFA8" }}><span>Day 1</span><b style={{ color: "#F3A27A" }}>Day 5 여기</b><span>Day 7</span></div>
+      </div>
+      {a.kakao === "바꿀래요" && (
+        <div style={{ background: _TSV.sand, borderRadius: 12, padding: "12px 12px 13px", marginTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}><b style={{ fontSize: _fs(12.5), color: _TSV.ink }}>아침 알림 시간</b><small style={{ fontSize: _fs(10), color: _TSV.mute }}>"바꿀래요" 고르셨을 때만 열려요</small></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5 }}>{[7, 8, 9, 12, 21].map(h => <TsvChip key={h} on={hour === h} onClick={() => setHour(h)}>{String(h).padStart(2, "0")}:00</TsvChip>)}</div>
+        </div>
+      )}
+      {msg && <div style={{ fontSize: _fs(11.5), color: _TSV.or, fontWeight: 800, marginTop: 10 }}>{msg}</div>}
+      <button style={_tsvBtn(false)} onClick={finish}>내일 또 올게요 →</button>
+    </TsvShell>
+  );
+}
+
+// ── 7일차: 체험 마지막 날 ──
+function TrialDay7Survey({ email, onClose, onLater, preview }) {
+  const [step, setStep] = useState(1);
+  const [a, setA] = useState({ rating: 0, best: [], stay: "", block: "", note: "" });
+  const set = (k, v) => setA(p => Object.assign({}, p, { [k]: v }));
+  const toggleBest = (o) => setA(p => {
+    let b = p.best.includes(o) ? p.best.filter(x => x !== o) : p.best.concat([o]);
+    if (o === "딱히 없어요" && b.includes(o)) b = [o]; else b = b.filter(x => x !== "딱히 없어요" || o === "딱히 없어요");
+    return Object.assign({}, p, { best: b });
+  });
+  const later = () => { if (onLater) onLater(); else onClose(); };
+  if (step === 1) return (
+    <TsvShell title="DAY 7 · 체험 마지막 날" right="1 / 3" step={1} total={3}>
+      <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>7일 다 다니셨어요</div>
+      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px" }}>1분만요. 사수가 궁금한 게 있어요</div>
+      <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>답하면 복지 포인트 100P를 드려요. 다음 사람을 위해 솔직하게요.</div>
+      {_tsvQ("1. 7일 다녀보니 어땠어요?")}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+        {[[1, "별로"], [2, ""], [3, "보통"], [4, ""], [5, "최고"]].map(([n, t]) => (
+          <button key={n} type="button" onClick={() => set("rating", n)} style={{ padding: "10px 0 7px", borderRadius: 10, border: "1.5px solid " + (a.rating === n ? _TSV.or : _TSV.line), background: a.rating === n ? _TSV.orSoft : _TSV.paper, color: a.rating === n ? _TSV.or : _TSV.ink, fontFamily: "inherit", cursor: "pointer" }}>
+            <b style={{ display: "block", fontSize: _fs(18), fontWeight: 900 }}>{n}</b><small style={{ fontSize: _fs(9.5), color: _TSV.mute, minHeight: 12, display: "block" }}>{t}</small>
+          </button>
+        ))}
+      </div>
+      {_tsvQ("2. 제일 좋았던 건요?", "여러 개 골라도 돼요")}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{["매일 아침 표현 하나", "시추에이션 답장", "AI 사수 첨삭", "퀴즈 / 복습", "출근 도장 / 연속 출근", "카톡 알림", "업무 노트", "딱히 없어요"].map(o => <TsvChip key={o} on={a.best.includes(o)} onClick={() => toggleBest(o)}>{o}</TsvChip>)}</div>
+      <button style={_tsvBtn(!a.rating)} disabled={!a.rating} onClick={() => setStep(2)}>다음 →</button>
+      <button style={_tsvLink} onClick={later}>다음에 할게요</button>
+    </TsvShell>
+  );
+  if (step === 2) {
+    const pay = a.stay === "pay";
+    const ok = a.stay && (pay || a.block);
+    const next = () => {
+      if (!ok) return;
+      if (!preview) { _tsvSave(7, email, a, true); try { _retAwardWp(email, "survey:trial_day7", 100, "7일차 체험 설문"); } catch (e) {} }
+      setStep(3);
+    };
+    return (
+      <TsvShell title="DAY 7 · 체험 마지막 날" right="2 / 3" step={2} total={3}>
+        {_tsvQ("3. 계속 다닐 생각이 있으세요?")}
+        <TsvChip block on={a.stay === "pay"} onClick={() => set("stay", "pay")} sub="끝나면 플랜 페이지로 바로 보내드려요">네, 바로 결제할게요</TsvChip>
+        <TsvChip block on={a.stay === "thinking"} onClick={() => set("stay", "thinking")} sub="뭐가 걸리는지 아래에서 하나만 골라주세요">고민 중이에요</TsvChip>
+        <TsvChip block on={a.stay === "no"} onClick={() => set("stay", "no")} sub="괜찮아요. 이유만 알려주시면 다음 분께 도움이 돼요">아니요, 여기까지요</TsvChip>
+        {!pay && (
+          <>
+            <div style={{ borderTop: "1px dashed " + _TSV.line, margin: "8px 0 0" }} />
+            {_tsvQ("4. 뭐가 제일 걸려요?", "하나만")}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{["가격", "매일 할 시간이 없어요", "내 업무랑 안 맞아요", "너무 쉬워요", "너무 어려워요", "혼자 하니까 안 돼요", "6개월은 길어요", "기타"].map(o => <TsvChip key={o} on={a.block === o} onClick={() => set("block", o)}>{o}</TsvChip>)}</div>
+          </>
+        )}
+        <button style={_tsvBtn(!ok)} disabled={!ok} onClick={next}>다음 →</button>
+      </TsvShell>
+    );
+  }
+  const no = a.stay === "no";
+  const done = (go) => {
+    if (!preview && a.note.trim()) _tsvSave(7, email, a, true);
+    if (go) { try { window.open(_TSV_PLAN_URL, "_blank", "noopener"); } catch (e) {} }
+    onClose();
+  };
+  return (
+    <TsvShell title="DAY 7 · 체험 마지막 날" right="3 / 3" step={3} total={3}>
+      {_tsvQ("5. 사수한테 한 줄 남긴다면?", "선택")}
+      <div style={{ fontSize: _fs(11.5), color: _TSV.mute, margin: "-4px 0 8px" }}>좋았던 거, 아쉬운 거, 바라는 거 뭐든요.</div>
+      <textarea value={a.note} onChange={e => set("note", e.target.value)} rows={3} placeholder="예) 시추에이션이 진짜 우리 회사 슬랙 같아서 좋았어요. 알림이 9시보다 8시였으면 더 좋겠어요."
+        style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: "1.5px solid " + _TSV.line, background: _TSV.paper, fontFamily: "inherit", fontSize: _fs(12.5), lineHeight: 1.55, resize: "vertical" }} />
+      <div style={{ background: _TSV.ink, color: _TSV.paper, borderRadius: 12, padding: "15px 15px 14px", marginTop: 14 }}>
+        <div style={{ fontSize: _fs(10.5), fontWeight: 900, letterSpacing: "0.14em", color: "#F3A27A" }}>THANK YOU</div>
+        <div style={{ fontSize: _fs(16), fontWeight: 900, margin: "4px 0 6px" }}>7일 다 다니셨어요. 수습 끝.</div>
+        <div style={{ fontSize: _fs(12), lineHeight: 1.65, color: "#E8DFCB" }}>답해주신 거 복지 포인트 <b style={{ color: "#fff" }}>+100P</b> 넣어드렸어요.<br/>계속 다니시면 노트, 출근 기록 전부 그대로 <b style={{ color: "#fff" }}>Day 8부터</b> 이어져요. 남은 체험일은 만료일에 더해드려요.</div>
+        <div style={{ background: "rgba(216,90,42,.16)", border: "1px solid rgba(216,90,42,.35)", borderRadius: 8, padding: "9px 10px", marginTop: 10, fontSize: _fs(11), fontWeight: 800, color: "#F3A27A", lineHeight: 1.5 }}>🕒 단어 달력은 가입 후 48시간 안에 결제하신 분께 드리는 선물이에요. 워크북은 6개월권부터 언제 결제하셔도 함께 가요.</div>
+      </div>
+      {no ? (
+        <>
+          <button style={_tsvBtn(false)} onClick={() => done(false)}>오늘은 퇴근할게요</button>
+          <button style={_tsvLink} onClick={() => done(true)}>플랜 보기</button>
+        </>
+      ) : (
+        <>
+          <button style={_tsvBtn(false)} onClick={() => done(true)}>플랜 보고 이어서 다니기 →</button>
+          <button style={_tsvLink} onClick={() => done(false)}>오늘은 퇴근할게요</button>
+        </>
+      )}
+    </TsvShell>
+  );
+}
+
+// ============================================================
 // SurveyModal, Day 2 진입 시 1일차 후기 받기
 // ============================================================
 function SurveyModal({ email, onClose }) {
@@ -22294,6 +22524,8 @@ function _pgCatalog2(email) {
   const L = [
     { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", tm: "in", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
     { day: 1, name: "👋 첫 주 웰컴 (Day 1~5)", when: "Day 1~5 매일 1번, 오늘 일정 4개를 끝낸 뒤", cond: "EXP 다음에 떠요. Day 1은 투어 뒤, Day 2는 1일차 후기 설문 뒤. 그날 일정을 안 끝내면 그날 카드는 안 떠요. (회원 화면은 아직 접속 시, 줄 70)", queue: 118, v: [1, 2, 3, 4, 5].map(d => ({ label: "Day " + d, render: (c) => <FirstWeekPopup day={d} onClose={c} /> })) },
+    { day: 5, name: "📋 체험 설문 · 5일차 중간 점검", when: "Day 5, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험 회원만 (개발 뷰는 운영자도). 한 화면에 3문항 + 막히는 것 1개, 답하면 +50P. 끝 화면: 5일 동안 쌓인 것 · 1주 완주 배지 D-2 · '바꿀래요' 고르면 카톡 알림 시간. 달력 얘기 없음. 저장 trial_day5", queue: 125, v: [{ label: "5일차", render: (c) => <TrialDay5Survey email={em} preview onClose={c} /> }] },
+    { day: 7, name: "📋 체험 설문 · 7일차 마지막 날", when: "Day 7, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험 회원만 (개발 뷰는 운영자도). 3장: 별점 · 좋았던 것 → 계속 다닐지 · 걸리는 것('바로 결제'면 건너뜀, 여기서 +100P) → 한 줄 + 끝. '다음에 할게요'는 이번 접속만 닫힘. 저장 trial_day7", queue: 125, v: [{ label: "7일차", render: (c) => <TrialDay7Survey email={em} preview onClose={c} /> }] },
     { day: 1, name: "🛠 출근 환경 세팅", when: "Day 1 학습을 다 끝낸 직후", cond: "③ 카톡 알림 칸이 회원 상태에 따라 달라요.", queue: 120, v: [
       { label: "카톡 알림 아직 안 켬", sub: "번호 입력 칸", pv: { kakao: "off" }, render: (c) => <SetupPopup onClose={c} /> },
       { label: "번호는 있고 알림만 안 켬", pv: { kakao: "phone" }, render: (c) => <SetupPopup onClose={c} /> },
@@ -24277,6 +24509,26 @@ function App() {
   const PULSE_SURVEY_KEY = "__OD_SURVEY_2026_08";  // 새 설문 돌릴 땐 이 키만 변경
   const [_showSurvey, _setShowSurvey] = useState(false);
 
+  // ── ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차. 오늘 일정 끝낸 뒤 줄(125). ?tsv=5|7 은 운영자/Dev 미리보기 ──
+  const _tsvForce = (() => { try { const v = Number(new URLSearchParams(location.search).get('tsv')); return v === 5 || v === 7 ? v : null; } catch (e) { return null; } })();
+  const _tsvSessKey = "__OD_TSV_LATER_" + ((_localUserNow && _localUserNow.email) || "guest") + "_" + _realDay;
+  const [_tsvClosed, _setTsvClosed] = useState(() => { try { return sessionStorage.getItem(_tsvSessKey) === "1"; } catch (e) { return false; } });
+  const _tsvDay = (() => {
+    if (_tsvForce && _isInternal) return _tsvForce;
+    try {
+      if (!_isDevNext() || USER.isViewingPast || _tsvClosed) return 0;
+      const isTrial = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
+      if (!isTrial && !_isInternal) return 0;
+      const d = _realDay === 5 ? 5 : _realDay === 7 ? 7 : 0;
+      return d && !_tsvDone(d, _localUserNow?.email) ? d : 0;
+    } catch (e) { return 0; }
+  })();
+  const _closeTsv = () => {
+    _setTsvClosed(true);
+    if (_tsvForce) { try { const u = new URL(location.href); u.searchParams.delete('tsv'); history.replaceState(null, '', u.toString()); } catch (e) {} }
+  };
+  const _laterTsv = () => { try { sessionStorage.setItem(_tsvSessKey, "1"); } catch (e) {} _closeTsv(); };
+
   // ── 첫 주 웰컴 팝업 (Day 1~5, 하루 1회. ?fwp=N 은 운영자/Dev 미리보기) ──
   const _fwpForce = (() => { try { const v = new URLSearchParams(location.search).get('fwp'); return v ? Number(v) : null; } catch (e) { return null; } })();
   const [_fwpDay, _setFwpDay] = useState(null);
@@ -24453,6 +24705,7 @@ function App() {
   const _slTf = usePopSlot("tf-select", !!_showTfSelect);
   const _slFwp = usePopSlot((_isDevNext() && !_fwpForce) ? "first-week-done" : "first-week", !!_fwpDay);   // ★ 2026-10-24 개발 뷰: 오늘 일정 끝낸 뒤 (118)
   const _slSetup = usePopSlot("setup", !!_showSetup);
+  const _slTsv = usePopSlot(_tsvForce ? "trial-survey-pv" : "trial-survey", !!_tsvDay && !_tsvClosed);   // ★ 2026-10-24 개발 뷰: 체험 설문 5일차 · 7일차 (125)
   const _slMs = usePopSlot("milestone", !!_milestonePopup);
   const _slD1 = usePopSlot("promo-d1", !!_showD1Popup);
   const _slDay60 = usePopSlot("day60", !!_showDay60);
@@ -24793,6 +25046,9 @@ function App() {
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
+      {/* ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차 */}
+      {_tsvDay === 5 && _slTsv && <TrialDay5Survey email={_localUserNow?.email} preview={!!_tsvForce} onClose={_closeTsv} />}
+      {_tsvDay === 7 && _slTsv && <TrialDay7Survey email={_localUserNow?.email} preview={!!_tsvForce} onClose={_closeTsv} onLater={_laterTsv} />}
       {_showKakao && _slKakao && (
         <KakaoNudgePopup email={_localUserNow?.email} onClose={_closeKakao} />
       )}
