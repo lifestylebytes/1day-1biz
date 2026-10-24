@@ -18615,7 +18615,7 @@ function TrialDay5Survey({ email, onClose, preview }) {
   const [msg, setMsg] = useState("");
   useEffect(() => { let alive = true; (async () => { try { if (window.OD && window.OD.getKakaoNotify && email) { const r = await window.OD.getKakaoNotify(email); if (alive && r && r.ok && r.result && r.result.hour != null) setKHour(Number(r.result.hour)); } } catch (e) {} })(); return () => { alive = false; }; }, [email]);
   const set = (k, v) => setA(p => Object.assign({}, p, { [k]: p[k] === v && k === "stuck" ? "" : v }));
-  const ok = a.time && a.level && a.kakao;
+  const ok = a.time && a.level && a.kakao && a.stuck;   // ★ 2026-10-24 전부 골라야 제출 (사용자 요청)
   const submit = () => {
     if (!ok) return;
     if (!preview) { _tsvSave(5, email, a, true); try { _retAwardWp(email, "survey:trial_day5", 50, "5일차 중간 점검"); } catch (e) {} }
@@ -18642,7 +18642,7 @@ function TrialDay5Survey({ email, onClose, preview }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>{["쉬워요", "딱 맞아요", "어려워요"].map(o => <TsvChip key={o} on={a.level === o} onClick={() => set("level", o)}>{o}</TsvChip>)}</div>
       {_tsvQ("3. 아침 " + kHour + "시 카톡 알림, 시간 어때요?")}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>{["괜찮아요", "바꿀래요", "안 켰어요"].map(o => <TsvChip key={o} on={a.kakao === o} onClick={() => set("kakao", o)}>{o}</TsvChip>)}</div>
-      {_tsvQ("지금 제일 막히는 거 하나", "선택")}
+      {_tsvQ("4. 지금 제일 막히는 거 하나")}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{["시추에이션 답 쓰기", "퀴즈가 어려워요", "뭘 눌러야 할지 헷갈려요", "까먹고 안 들어와요", "없어요"].map(o => <TsvChip key={o} on={a.stuck === o} onClick={() => set("stuck", o)}>{o}</TsvChip>)}</div>
       <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>제출하고 50P 받기 →</button>
     </TsvShell>
@@ -18711,7 +18711,7 @@ function TrialDay7Survey({ email, onClose, onLater, preview }) {
       </div>
       {_tsvQ("2. 제일 좋았던 건요?", "여러 개 골라도 돼요")}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{["매일 아침 표현 하나", "시추에이션 답장", "AI 사수 첨삭", "퀴즈 / 복습", "출근 도장 / 연속 출근", "카톡 알림", "업무 노트", "딱히 없어요"].map(o => <TsvChip key={o} on={a.best.includes(o)} onClick={() => toggleBest(o)}>{o}</TsvChip>)}</div>
-      <button style={_tsvBtn(!a.rating)} disabled={!a.rating} onClick={() => setStep(2)}>다음 →</button>
+      <button style={_tsvBtn(!a.rating || !a.best.length)} disabled={!a.rating || !a.best.length} onClick={() => setStep(2)}>다음 →</button>
       <button style={_tsvLink} onClick={later}>다음에 할게요</button>
     </TsvShell>
   );
