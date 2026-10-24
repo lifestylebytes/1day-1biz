@@ -2038,10 +2038,10 @@ function WhyMock({ kind }) {
 
       {/* 공채 단계: 4차 인상 예정 강조 */}
       <div style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "13px 14px", marginBottom: 10 }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           {[["3차", "지금", 1], ["4차", "인상 예정", 2]].map((s, i) => (
             <React.Fragment key={s[0]}>
-              {i > 0 && <span style={{ flex: 1, height: 2, background: s[2] === 2 ? "repeating-linear-gradient(90deg, #C0392B 0 4px, transparent 4px 7px)" : "var(--line)" }} />}
+              {i > 0 && <span style={{ flex: "0 0 80px", height: 2, background: s[2] === 2 ? "repeating-linear-gradient(90deg, #C0392B 0 4px, transparent 4px 7px)" : "var(--line)" }} />}
               <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0 }}>
                 <span style={{ width: s[2] ? 14 : 10, height: s[2] ? 14 : 10, borderRadius: "50%", background: s[2] === 1 ? "var(--accent)" : s[2] === 2 ? "#C0392B" : "var(--line)", boxShadow: s[2] ? "0 0 0 4px " + (s[2] === 1 ? "rgba(216,90,42,0.16)" : "rgba(192,57,43,0.16)") : "none" }} />
                 <span style={{ fontSize: 10.5, fontWeight: 800, color: s[2] === 1 ? "var(--accent)" : s[2] === 2 ? "#C0392B" : "var(--ink-mute)" }}>{s[0]} 공채</span>
