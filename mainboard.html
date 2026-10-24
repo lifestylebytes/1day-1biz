@@ -43,7 +43,7 @@
 <style>
 /* --fsu = 사원증 > 설정 > 글씨 크기 (80% = -0.2, 100% = 0, 120% = 0.2). 기본 배율에 곱하고, 키울 때만 최대 증가폭도 같이 늘린다 */
 html.fs-up { --fs: calc(0.805 * (1 + var(--fsu, 0))); --fsk: calc(2px + max(0, var(--fsu, 0)) * 20px); }                                /* 모바일: 1.15 x 70% = 0.805 (사용자 요청, 본문 10.5 → 8.5) */
-@media (min-width: 881px) { html.fs-up { --fs: calc(1.17 * (1 + var(--fsu, 0))); --fsk: calc(4px + max(0, var(--fsu, 0)) * 20px); } }   /* PC: 1.3 x 90% = 1.17 (사용자 요청, 본문 12.5 → 14.6) */
+@media (min-width: 881px) { html.fs-up { --fs: calc(1 * (1 + var(--fsu, 0))); --fsk: calc(0px + max(0, var(--fsu, 0)) * 20px); } }   /* PC: 기본은 원래 크기 그대로 (2026-10-24 사용자 요청, 예전 1.17). 설정 80~120%만 적용 */
 html.fs-up .unlock-chip, html.fs-up .memo-box-head > b { white-space: nowrap; }   /* 글씨가 커져도 칩 · 제목이 두 줄로 안 깨지게 */
 </style>
 <script>
