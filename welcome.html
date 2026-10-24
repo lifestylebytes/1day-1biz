@@ -91,7 +91,7 @@
         <div class="num">1</div>
         <div style="flex:1;min-width:0">
           <h3>고객센터에 결제 이메일을 남겨주세요</h3>
-          <p>확인 후 <span class="only-new">입사 코드와 </span>사은품 안내를 드려요. 아래 문구 그대로 복사해서 보내시면 제일 빨라요.</p>
+          <p id="s1lead"></p>
           <div class="copy" id="msg"></div>
           <button type="button" class="copybtn" id="copyMsg">문구 복사하기</button>
           <a class="btn btn-kakao" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
@@ -129,7 +129,7 @@
 
       <!-- STEP 4 · 유비챌 -->
       <div class="step only-ubc" id="s4">
-        <div class="num">4</div>
+        <div class="num" id="n4">4</div>
         <div style="flex:1;min-width:0">
           <h3>유비챌 기수를 배정받으세요</h3>
           <p>구매하신 트랙엔 유비챌 1기수(4주)가 들어 있어요. 1일1비와 별도로 진행되는 코호트 챌린지라, <b>원하시는 기수를 고객센터에 말씀해주시면</b> 그 기수 공지방으로 초대해드려요. 바로 안 하셔도 돼요. 1일1비 다니면서 편한 기수에 쓰시면 됩니다.</p>
@@ -180,7 +180,9 @@
     $$(".only-trial").forEach(function (el) { el.classList.toggle("hide", trial !== "yes"); });
     $$(".only-ubc").forEach(function (el) { el.classList.toggle("hide", !p.ubc); });
     $("#monthsText").textContent = p.months + "개월";
-    $("#n5").textContent = p.ubc ? "5" : "4";
+    var n = 3; if (p.workbook || p.calendar) n++; if (p.ubc) n++;
+    $("#n4").textContent = (p.workbook || p.calendar) ? "4" : "3";
+    $("#n5").textContent = String(n);
     $("#signupLink").href = "onboarding.html?go=signup&code=" + CODE + "&utm_source=welcome&utm_medium=page&utm_campaign=longpass&plan=" + plan;
 
     // 고객센터에 보낼 문구
@@ -197,17 +199,17 @@
       if (p.calendar) lines.push("달력 디자인: 주황 바탕 / 주황 포인트 / 6칸 스트립 중 하나");
     }
     $("#msg").textContent = lines.join("\n");
+    var hasGift = p.workbook || p.calendar;
+    $("#s1lead").innerHTML = (trial === "yes"
+      ? ("확인되면 체험 끝나는 날부터 " + p.months + "개월이 이어져요." + (hasGift ? " 사은품 배송지도 같은 톡에서 받아요." : ""))
+      : ("확인 후 입사 코드" + (hasGift ? "와 사은품 안내" : "") + "를 드려요.")) + " 아래 문구 그대로 복사해서 보내시면 제일 빨라요.";
 
     // 사은품
     var g = [];
     if (p.workbook) g.push(["📒", "90일 워크북 (124쪽 종이책)", "Day 1~90 표현 전부. 결제하신 분 모두에게 보내드려요."]);
-    if (p.calendar) g.push(["🗓", "2027 상반기 단어 달력 (A1 포스터)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 주황 바탕 / 주황 포인트 / 6칸 스트립 중 고르세요."]);
-    if (!g.length) {
-      $("#s3").classList.add("muted");
-      $("#giftLead").innerHTML = "인턴 트랙엔 실물 사은품이 없어요. 이 단계는 건너뛰셔도 돼요. 나중에 정규직 이상으로 올리시면 그때 받으실 수 있어요.";
-      $("#gifts").innerHTML = "";
-    } else {
-      $("#s3").classList.remove("muted");
+    if (p.calendar) g.push(["🗓", "2027 상반기 단어 달력 (A2 포스터)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 주황 바탕 / 주황 포인트 / 6칸 스트립 중 고르세요."]);
+    $("#s3").classList.toggle("hide", !g.length);
+    if (g.length) {
       $("#giftLead").innerHTML = "구매하신 트랙에 들어 있는 사은품이에요. <b>이름, 연락처, 주소</b>" + (p.calendar ? "<b>, 달력 디자인</b>" : "") + "을 고객센터 톡에 남겨주세요.";
       $("#gifts").innerHTML = g.map(function (x) { return '<div class="gift"><span>' + x[0] + '</span><span><b>' + x[1] + '</b><small>' + x[2] + '</small></span></div>'; }).join("");
     }
