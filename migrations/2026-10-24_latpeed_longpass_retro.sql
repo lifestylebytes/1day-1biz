@@ -153,3 +153,83 @@ revoke all on function apply_latpeed_pending(text, text) from public;
 grant execute on function apply_latpeed_pending(text, text) to anon, authenticated;
 
 -- 확인: select latpeed_apply_pending('가입이메일');
+
+-- ============================================================
+-- 4) 결제 옮기기: 옛 이메일로 결제가 들어가 '다른 계정'에 적용됐을 때, 그 결제를 새 계정으로 옮긴다
+--    예) 옛 계정(만료) rbxo@... 로 결제, 새 계정 kyugaby@... 로 재가입 → 웹훅이 옛 계정에 넣음
+--    하는 일: (a) 별칭 등록 (래피드 이메일 → 새 앱 이메일, 다음 결제부터 자동)
+--             (b) 옛 계정에서 가장 최근 적용된 결제 성공 1건을 되돌림 (장기권: N개월 뺌 / 월구독: 그 이벤트 전 만료일로)
+--             (c) 그 이벤트를 미적용으로 돌리고 새 계정에 소급 적용
+-- ============================================================
+create or replace function latpeed_move_last_payment(p_latpeed_email text, p_app_email text)
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  ev      record;
+  old_u   users%rowtype;
+  months  int;
+  res     text;
+begin
+  if p_latpeed_email is null or p_app_email is null then return 'no_email'; end if;
+  if lower(p_latpeed_email) = lower(p_app_email) then return 'same_email'; end if;
+  if not exists (select 1 from users where lower(email) = lower(p_app_email)) then return 'target_user_not_found'; end if;
+
+  -- (a) 별칭. 트리거(_trg_aliases_latpeed_retro)가 돌지만 아직 미적용 이벤트가 없어 no-op 이다.
+  insert into latpeed_aliases(latpeed_email, app_email, note)
+    values (lower(trim(p_latpeed_email)), lower(trim(p_app_email)), 'moved_payment ' || to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD'))
+  on conflict (latpeed_email) do update set app_email = excluded.app_email, note = excluded.note;
+
+  -- (b) 옛 계정에 적용된 최근 결제 성공 1건
+  select * into old_u from users where lower(email) = lower(p_latpeed_email) limit 1;
+  select e.* into ev from latpeed_events e
+   where lower(e.email) = lower(p_latpeed_email)
+     and e.applied = true
+     and (e.raw->>'subtype' = 'PAYMENT_SUCCESS' or (e.raw->>'subtype' is null and upper(e.status) = 'SUCCESS'))
+     and coalesce(e.apply_note, '') not like '%via_alias%'
+   order by e.received_at desc limit 1;
+  if ev.id is null then return 'no_applied_payment_on_old_account (별칭만 등록함)'; end if;
+
+  if old_u.email is not null then
+    if ev.type = 'NORMAL_PAYMENT' then
+      months := coalesce(nullif((regexp_match(coalesce(ev.option_text, ''), '(\d+)\s*개월'))[1], '')::int,
+                         (old_u.preferences->>'plan_months')::int, 0);
+      update users set
+        membership_ends_at = case when membership_ends_at is null then null else membership_ends_at - make_interval(months => months) end,
+        cohort = coalesce(nullif(preferences->>'prev_cohort', ''), cohort),
+        preferences = (preferences - 'plan' - 'plan_months' - 'plan_option' - 'plan_amount' - 'plan_paid_at' - 'plan_order_id')
+                      || jsonb_build_object('pay_count', greatest(coalesce((preferences->>'pay_count')::int, 1) - 1, 0),
+                                            'moved_payment_to', lower(p_app_email), 'moved_at', now())
+      where email = old_u.email;
+    else
+      -- 월 구독: 그 결제 전 만료일을 모르니 결제 시각으로 되돌린다 (= 그 결제분만 뺀 효과)
+      update users set
+        membership_ends_at = least(membership_ends_at, coalesce(ev.event_at, now())),
+        preferences = preferences || jsonb_build_object('pay_count', greatest(coalesce((preferences->>'pay_count')::int, 1) - 1, 0),
+                                                        'moved_payment_to', lower(p_app_email), 'moved_at', now())
+      where email = old_u.email;
+    end if;
+  end if;
+
+  -- (c) 이벤트를 미적용으로 돌리고 새 계정에 적용
+  update latpeed_events set applied = false,
+    apply_note = coalesce(apply_note, '') || ' | moved_from_' || lower(p_latpeed_email) || '_to_' || lower(p_app_email)
+  where id = ev.id;
+  res := latpeed_apply_pending(p_app_email);
+  insert into ops_log(email, action, detail, by_email)
+    values (lower(p_app_email), 'latpeed_move_payment', jsonb_build_object('from', lower(p_latpeed_email), 'event_id', ev.id, 'result', res), 'system')
+  on conflict do nothing;
+  return 'moved: ' || res;
+exception when undefined_table then
+  return 'moved: ' || res;
+end $$;
+revoke all on function latpeed_move_last_payment(text, text) from public, anon, authenticated;
+
+create or replace function move_latpeed_payment(p_op_email text, p_latpeed_email text, p_app_email text)
+returns text language plpgsql security definer set search_path = public as $$
+begin
+  if not _is_operator_email(coalesce(nullif(auth.email(), ''), p_op_email)) then raise exception 'not operator'; end if;
+  return latpeed_move_last_payment(p_latpeed_email, p_app_email);
+end $$;
+revoke all on function move_latpeed_payment(text, text, text) from public;
+grant execute on function move_latpeed_payment(text, text, text) to anon, authenticated;
+
+-- 쓰는 법: select move_latpeed_payment('운영자이메일', '래피드결제이메일', '앱가입이메일');

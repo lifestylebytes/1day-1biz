@@ -129,25 +129,18 @@ Deno.serve(async (req) => {
   let applyNote: string | null = null;
 
   try {
-    // 결제 이메일로 먼저 찾고, 없으면 운영자가 이어둔 별칭(latpeed_aliases: 래피드 이메일 → 앱 이메일)으로 한 번 더 찾는다
+    // ★ 별칭이 먼저다. 운영자가 "래피드 이메일 → 앱 이메일" 로 이어뒀으면, 결제 이메일과 같은 옛 계정이 있어도 앱 이메일 쪽에 넣는다.
+    //   (예: 옛 계정 만료된 사람이 새 이메일로 재가입하고 결제는 옛 이메일로 한 경우)
     let targetEmail = email;
-    let { data: existing } = await supabase
+    {
+      const { data: alias } = await supabase.from("latpeed_aliases").select("app_email").eq("latpeed_email", email).maybeSingle();
+      if (alias && alias.app_email) targetEmail = String(alias.app_email).toLowerCase().trim();
+    }
+    const { data: existing } = await supabase
       .from("users")
       .select("email, signup_date, cohort, membership_ends_at, membership_cancel_at, preferences")
-      .eq("email", email)
+      .eq("email", targetEmail)
       .maybeSingle();
-    if (!existing) {
-      const { data: alias } = await supabase.from("latpeed_aliases").select("app_email").eq("latpeed_email", email).maybeSingle();
-      if (alias && alias.app_email) {
-        targetEmail = String(alias.app_email).toLowerCase().trim();
-        const r2 = await supabase
-          .from("users")
-          .select("email, signup_date, cohort, membership_ends_at, membership_cancel_at, preferences")
-          .eq("email", targetEmail)
-          .maybeSingle();
-        existing = r2.data;
-      }
-    }
     const prefs = (existing && existing.preferences && typeof existing.preferences === "object") ? existing.preferences as Record<string, any> : {};
     const payMeta = (extra: Record<string, unknown>) => ({
       ...prefs,
