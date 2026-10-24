@@ -316,8 +316,8 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
     if (r && r.ok && onDone) onDone();
   };
   return (
-    <div className="card" style={{ marginTop: 14 }}>
-      <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>✋ 수동 재활성 · 연장 (복귀 회원, 개별 처리)</div>
+    <details className="card" style={{ marginTop: 14 }}>
+      <summary style={{ fontWeight: 800, fontSize: 14, marginBottom: 6, cursor: 'pointer', userSelect: 'none' }}>✋ 수동 재활성 · 연장 (복귀 회원, 개별 처리)</summary>
       <div style={{ fontSize: 12.5, color: "#6B5B4A", lineHeight: 1.6, marginBottom: 10 }}>결제를 따로 확인한 회원 한 명을 바로 풀 때 써요. 만료일은 기본 오늘 + 1개월이에요. 진도 옵션: 밀린 Day 를 그대로 보여주려면 "진도 그대로", 오래 쉬고 돌아온 분이 예전 Day 에서 바로 이어가게 하려면 "특정 Day 이어서"(예: Day 87).</div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <input list="mm-emails" value={email} onChange={e => setEmail(e.target.value)} placeholder="이메일 (이름으로 검색돼요)" style={{ flex: "1 1 260px", padding: "8px 10px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} />
@@ -333,7 +333,7 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
       </div>
       {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.membership_cancel_reason ? " · 퇴직 사유 남음(" + u.membership_cancel_reason + ")" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
       {msg && <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: msg.startsWith("✅") ? "#2D6E3A" : "#B23A2C" }}>{msg}</div>}
-    </div>
+    </details>
   );
 }
 
@@ -447,7 +447,71 @@ function CampaignMatchPanel({ supaUsers }) {
   );
 }
 
-function ChurnPanel({ supaUsers }) {
+// ★ 2026-10-24 🗑 휴지통: ✕ 로 지운 테스트 계정을 deleted_users 에 담아 두고 여기서 복구한다. SQL 20261024_user_trash.sql
+function UserTrashPanel({ refreshKey, onRestored }) {
+  const [rows, setRows] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const [msg, setMsg] = useState("");
+  const opBy = () => (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email || null;
+  const load = async () => {
+    if (!window.OD || !window.OD.listUserTrash) { setRows([]); return; }
+    const r = await window.OD.listUserTrash(opBy());
+    setRows(r && r.ok ? (r.rows || []) : []);
+    if (r && !r.ok) setMsg("휴지통을 못 불러왔어요: " + (r.error || '?') + " (SQL 20261024_user_trash.sql 실행 필요)");
+  };
+  useEffect(() => { load(); }, [refreshKey]);
+  const restore = async (d) => {
+    if (!confirm(d.email + " 계정을 복구할까요?\n지웠을 때 담아 둔 학습 기록까지 같이 돌아와요.")) return;
+    setBusy(d.id); setMsg("");
+    const r = await window.OD.restoreDeletedUser(opBy(), d.id);
+    setBusy(null);
+    if (!r || !r.ok) { setMsg("복구 실패: " + ((r && (r.error + (r.hint ? ' · ' + r.hint : ''))) || '?')); return; }
+    const auth = r.result && r.result.detail && r.result.detail.auth;
+    setMsg("✅ " + d.email + " 복구 (" + (r.result.rows_restored || 0) + "행)" + (auth && String(auth).startsWith('skipped') ? " · 로그인 계정은 못 살렸어요. 같은 메일로 다시 가입하면 기록이 이어져요." : ""));
+    load(); if (onRestored) onRestored();
+  };
+  const purge = async (d) => {
+    if (!confirm((d ? d.email + " 을(를)" : "복구됐거나 30일 지난 항목을") + " 휴지통에서 완전히 비울까요? 되돌릴 수 없어요.")) return;
+    const r = await window.OD.purgeUserTrash(opBy(), d ? d.id : null);
+    setMsg(r && r.ok ? "🧹 " + (r.result && r.result.purged || 0) + "건 비움" : "실패: " + (r && r.error || '?'));
+    load();
+  };
+  const n = rows ? rows.length : 0;
+  return (
+    <details style={{ marginTop: 14 }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 13, color: '#8A7964', userSelect: 'none' }}>🗑 휴지통 {rows === null ? '' : '(' + n + ')'} <span style={{ fontWeight: 500, fontSize: 11.5 }}>· ✕ 로 지운 테스트 계정. 복구하면 학습 기록까지 돌아와요. 30일 지나면 비울 수 있어요.</span></summary>
+      <div className="card" style={{ marginTop: 8, padding: 12 }}>
+        {msg && <div style={{ fontSize: 12.5, fontWeight: 700, color: msg.startsWith('✅') || msg.startsWith('🧹') ? '#2D6E3A' : '#B23A2C', marginBottom: 8 }}>{msg}</div>}
+        {rows === null ? <div style={{ fontSize: 12, color: '#8A7964' }}>불러오는 중…</div>
+         : n === 0 ? <div style={{ fontSize: 12, color: '#8A7964' }}>비어 있어요.</div>
+         : (
+          <table style={{ width: '100%', fontSize: 12.5, borderCollapse: 'collapse' }}><tbody>
+            {rows.map(d => {
+              const days = Math.floor((Date.now() - new Date(d.deleted_at).getTime()) / 86400000);
+              const tbl = d.tables || {};
+              const summ = Object.keys(tbl).filter(k => k !== 'users' && !k.startsWith('auth_')).map(k => k + ' ' + tbl[k]).join(' · ');
+              return (
+                <tr key={d.id} style={{ borderBottom: '1px solid #F0E9DA' }}>
+                  <td style={{ padding: '8px 6px', verticalAlign: 'top' }}>
+                    <div style={{ fontWeight: 800 }}>{d.name || '(이름 없음)'} <span style={{ fontWeight: 500, color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5 }}>{d.email}</span></div>
+                    <div style={{ fontSize: 11, color: '#8A7964', marginTop: 2 }}>{new Date(d.deleted_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · {days}일 전 · {d.deleted_by || ''}{summ ? ' · ' + summ : ''}{tbl.auth_users ? ' · 로그인 계정 포함' : ''}</div>
+                  </td>
+                  <td style={{ padding: '8px 6px', whiteSpace: 'nowrap', textAlign: 'right', verticalAlign: 'top' }}>
+                    <button className="btn btn-primary btn-mini" style={{ fontSize: 11.5, padding: '5px 10px' }} disabled={busy === d.id} onClick={() => restore(d)}>{busy === d.id ? '복구 중…' : '↩ 복구'}</button>
+                    {days >= 30 && <button className="btn btn-ghost btn-mini" style={{ fontSize: 11.5, padding: '5px 10px', marginLeft: 6, color: '#993C1D' }} onClick={() => purge(d)}>비우기</button>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody></table>
+        )}
+        {n > 0 && <div style={{ marginTop: 8, textAlign: 'right' }}><button className="btn btn-ghost btn-mini" style={{ fontSize: 11, color: '#8A7964' }} onClick={() => purge(null)}>30일 지난 것 전부 비우기</button></div>}
+      </div>
+    </details>
+  );
+}
+
+function ChurnPanel({ supaUsers, gateDoneMap, progMap }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState("");
   const now = new Date();
@@ -456,8 +520,13 @@ function ChurnPanel({ supaUsers }) {
   const churned = real.filter(u => u.cohort === 'member' && ends(u) && ends(u) <= now);
   if (!churned.length) return null;
 
+  // ★ 2026-10-24: 완주 Day 수 = 실제 완주 기록(get_progress_overview). users.scenarios_completed 는 이제 안 채워져서 전원 0 으로 나오던 버그
   const doneOf = u => {
-    try { const a = u.scenarios_completed; return Array.isArray(a) ? a.length : 0; } catch (e) { return 0; }
+    const em = String(u.email || '').toLowerCase();
+    const g = (gateDoneMap && gateDoneMap[em]) || (progMap && progMap[em]) || null;
+    if (Array.isArray(g)) return g.length;
+    try { const a = u.scenarios_completed; if (Array.isArray(a) && a.length) return a.length; } catch (e) {}
+    return Math.max(0, (Number(u.real_day) || 0) - 1);
   };
   const rows = churned.map(u => {
     const done = doneOf(u);
@@ -637,14 +706,15 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
   const unfilled = smsFor && smsFor.text.includes(UNM_FILL);
 
   return (
-    <div className="card" style={{ marginBottom: 16, background: '#FFFBF2', border: '2px solid #E9B99F', position: 'relative' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+    <details className="card" style={{ marginBottom: 16, background: '#FFFBF2', border: '2px solid #E9B99F', position: 'relative' }}>
+      {/* ★ 2026-10-24: 접었다 펼 수 있게 (기본 접힘). 숫자는 접혀 있어도 보인다 */}
+      <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', marginBottom: 10, userSelect: 'none' }}>
         <div>
-          <div style={{ fontWeight: 900, fontSize: 15 }}>💳 결제했는데 앱 계정 없는 사람 <span style={{ color: '#B8431A' }}>{open.length}명</span></div>
-          <div style={{ fontSize: 12, color: '#8A7964', marginTop: 3, lineHeight: 1.6 }}>래피드 시트엔 결제가 있는데, 같은 이메일로 가입한 계정이 없어요. 매일 07:00 동기화 결과예요. 계좌이체(해외결제)는 여기 안 잡혀요.</div>
+          <div style={{ fontWeight: 900, fontSize: 15 }}>▸ 💳 결제했는데 앱 계정 없는 사람 <span style={{ color: '#B8431A' }}>{open.length}명</span></div>
+          <div style={{ fontSize: 12, color: '#8A7964', marginTop: 3, lineHeight: 1.6 }}>래피드 시트엔 결제가 있는데, 같은 이메일로 가입한 계정이 없어요. 매일 07:00 동기화 결과예요. 계좌이체(해외결제)는 여기 안 잡혀요. 눌러서 펼치기.</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}><span style={pill(true)}>결제 중 {activeN}명</span><span style={pill(false)}>결제 끝남 {open.length - activeN}명</span></div>
-      </div>
+      </summary>
       {err && <div style={{ fontSize: 12.5, color: '#993C1D', background: '#FFF3D6', borderRadius: 6, padding: '8px 12px' }}>⚠ {err}</div>}
       {sorted.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
@@ -724,7 +794,7 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
         </div>
       )}
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: '#2E5E2A', color: '#fff', padding: '10px 18px', borderRadius: 22, fontSize: 13.5, fontWeight: 700, zIndex: 60, boxShadow: '0 6px 18px rgba(0,0,0,.2)' }}>{toast}</div>}
-    </div>
+    </details>
   );
 }
 
@@ -1080,7 +1150,7 @@ function parseSurveyRow(it) {
 }
 
 function SurveySummary({ items }) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);   // ★ 2026-10-24: 기본 접힘, 제목 줄 클릭으로 펼침
   const rows = (items || []).filter(it => it.category === 'survey').map(parseSurveyRow);
   if (!rows.length) return null;
 
@@ -2290,6 +2360,8 @@ function App() {
   const [opsLogOpen, setOpsLogOpen] = useState(null);     // { email, rows } 이력 보기
   const [memoEdit, setMemoEdit] = useState(null);         // { email, text, busy } 회원 메모 편집 중 (2026-10-09)
   const [delBusy, setDelBusy] = useState(null);           // ★ 2026-10-24: 테스트 계정 삭제 중인 이메일
+  const [expiredOpen, setExpiredOpen] = useState(false);   // ★ 2026-10-24: 회원 표에서 만료·종료 펼침
+  const [trashKey, setTrashKey] = useState(0);             // ★ 2026-10-24: 휴지통 다시 불러오기 신호
   const deleteTestAcct = async (u) => {
     if (!window.OD || !window.OD.deleteTestUser) { alert('삭제 기능이 아직 없어요 (supabase-client.js 갱신 필요)'); return; }
     if (!confirm('테스트 계정을 완전히 지울까요?\n\n' + u.email + '\n\n학습 기록과 로그인 계정까지 지워지고 되돌릴 수 없어요.')) return;
@@ -2299,6 +2371,7 @@ function App() {
     setDelBusy(null);
     if (!r || !r.ok) { alert('삭제 실패: ' + (r && r.error || '?') + '\n(SQL 20261024_test_accounts.sql 을 아직 안 돌렸으면 먼저 실행)'); return; }
     setSupaUsers(list => list.filter(x => x.email !== u.email));
+    setTrashKey(k => k + 1);
   };
   const saveMemo = async (u, text) => {
     const opBy = (JSON.parse(localStorage.getItem('__OD_USER') || '{}') || {}).email || null;
@@ -2929,7 +3002,7 @@ function App() {
                 </div>
               );
             })()}
-            {supaUsers.length > 0 && <ChurnPanel supaUsers={supaUsers} />}
+            {supaUsers.length > 0 && <ChurnPanel supaUsers={supaUsers} gateDoneMap={gateDoneMap} progMap={progMap} />}
             {supaUsers.length > 0 && <UnmatchedPayPanel supaUsers={supaUsers} onDone={refreshSupabase} />}
             {supaUsers.length > 0 && <CampaignMatchPanel supaUsers={supaUsers} />}
             {/* ★ 2026-10-08: Latpeed CSV 동기화 패널은 숨김. 매일 07:00 구글시트 → Supabase 자동 동기화(latpeed-sheet-sync)가 대신한다.
@@ -2991,7 +3064,9 @@ function App() {
             </div>
             <AttendanceCalendarModal open={attCalOpen} onClose={() => setAttCalOpen(null)} />
             {opsLogOpen && (
-                  <div style={{ marginTop: 10, padding: '12px 14px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 10, background: '#fff' }}>
+                  /* ★ 2026-10-24: 표 상단이 아니라 팝업으로. 바깥 클릭·닫기로 닫힘 */
+                  <div onClick={() => setOpsLogOpen(null)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(42,31,20,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                  <div onClick={e => e.stopPropagation()} style={{ width: 'min(760px, 100%)', maxHeight: '80vh', overflowY: 'auto', padding: '16px 18px', border: '1px solid var(--line, #E3D7C3)', borderRadius: 12, background: '#fff', boxShadow: '0 18px 50px rgba(0,0,0,0.25)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><b>🗂 운영 이력 · {opsLogOpen.name || opsLogOpen.email}</b><button className="btn btn-ghost btn-mini" onClick={() => setOpsLogOpen(null)}>닫기</button></div>
                     {opsLogOpen.rows.length === 0 ? <div style={{ marginTop: 6, fontSize: 12, color: '#8A7964' }}>기록된 운영 이력이 없어요 (이력은 2026-10-02 부터 쌓여요)</div> : (
                       <table style={{ marginTop: 6, fontSize: 12, width: '100%' }}><tbody>{opsLogOpen.rows.map((r, i) => {
@@ -3011,6 +3086,7 @@ function App() {
                         );
                       })}</tbody></table>
                     )}
+                  </div>
                   </div>
                 )}
             {showDayHelp && (
@@ -3059,7 +3135,12 @@ function App() {
               </div>
               {supaUsers.length === 0 ? (
                 <div className="empty">아직 가입자 없음. 너가 onboarding.html에서 첫 가입자 되어보기.</div>
-              ) : [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
+              ) : (() => {
+                // ★ 2026-10-24: 만료·종료 회원은 구분선 아래로 모아 접어 둔다 (기본 접힘)
+                const sortedAll = [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0)));
+                const liveRows = sortedAll.filter(u => payGroup(u) !== 3);
+                const deadRows = sortedAll.filter(u => payGroup(u) === 3);
+                const renderRow = (u) => {
                 const dLeft = daysUntilEnd(u.membership_ends_at);
                 const isPaidMember = u.cohort === 'member';
                 const isInternal = u.is_operator || u.is_dev_mode || u.is_tester;   // ★ 2026-09-14: 테스트 계정도 결제 상태는 '내부 사용자' (유형 배지는 그대로)
@@ -3307,11 +3388,24 @@ function App() {
                     )}
                   </div>
                 </div>
-              );})}
+              );};
+                return (<>
+                  {liveRows.map(renderRow)}
+                  {deadRows.length > 0 && (
+                    <div onClick={() => setExpiredOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', cursor: 'pointer', userSelect: 'none', background: '#F7F1E4', borderTop: '2px dashed #C9BBA0', borderBottom: expiredOpen ? '1px solid #E8DFCB' : 'none' }}>
+                      <span style={{ flex: 1, height: 1, background: '#C9BBA0' }} />
+                      <span style={{ fontSize: 12, fontWeight: 800, color: '#8A7964' }}>{expiredOpen ? '▾' : '▸'} 🔴 만료·종료 {deadRows.length}명 {expiredOpen ? '접기' : '펼치기'}</span>
+                      <span style={{ flex: 1, height: 1, background: '#C9BBA0' }} />
+                    </div>
+                  )}
+                  {expiredOpen && deadRows.map(renderRow)}
+                </>);
+              })()}
             </div>
             <div style={{ fontSize: 11, color: '#8A7964', marginTop: 10, lineHeight: 1.6 }}>
               실시간 데이터. 새 가입자는 30초마다 자동 ↻ 또는 위 버튼으로 갱신.
             </div>
+            <UserTrashPanel refreshKey={trashKey} onRestored={refreshSupabase} />
 
             {/* 💬 지원 동기 (가입할 때 작성한 동기 모음) */}
             <div className="section-title" style={{ marginTop: 36 }}>💬 지원 동기 (가입 시 작성)</div>
