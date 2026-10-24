@@ -763,7 +763,7 @@ function OnboardingApp() {
   }, [devPreview, email]);
 
   return (
-    <div className="stage">
+    <div className="stage" style={{ zoom: (stage !== "welcome" && typeof window !== "undefined" && window.innerWidth <= 600) ? 0.8 : 1 }}>  {/* 지원서 이후 화면도 모바일 80% (랜딩과 맞춤) */}
       {stage === "welcome" && (
         <WelcomeScreen onNext={() => setStage("application")} initialLogin={_goParam === "login"} />
       )}
@@ -3072,18 +3072,18 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
         </div>
         <div style={{ marginTop: 10, background: "rgba(216,90,42,0.1)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "10px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink-soft)", lineHeight: 1.65 }}>
           🎁 사은품은 두 가지예요. 실물로 집까지 보내드려요.
-          <div style={{ display: "flex", gap: 8, margin: "9px 0 2px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "9px 0 8px" }}>
             {[
-              { img: "img/gift-workbook.png", nm: "1일1비 WorkBook", sub: "50,000원 상당", who: "패스트트랙 · 임원 트랙", hot: false },
+              { img: "img/gift-workbook.png", nm: "1일1비 WorkBook", sub: "50,000원 상당", plans: "승진 패스트트랙 · 임원 트랙", hot: false },
               { img: "img/gift-calendar.png", nm: "1일1비 상반기 영어 달력 (A2) (3종 중 택1)", sub: "15,000원 상당", plans: "임원 트랙 · 승진 패스트트랙 · 정규직", who: "⏳ 48시간 안에 결제", hot: true, pos: "50% 24%" },
             ].map(g => (
-              <div key={g.nm} style={{ flex: 1, minWidth: 0, background: "var(--paper)", border: g.hot ? "2px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
-                <img src={g.img} alt={g.nm} style={{ width: "100%", height: 74, objectFit: "cover", objectPosition: g.pos || "50% 40%", display: "block" }} />
-                <div style={{ padding: "7px 8px 8px" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink)", lineHeight: 1.35 }}>{g.nm}</div>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: "var(--accent)", marginTop: 2 }}>{g.sub}</div>
-                  {g.plans && <div style={{ fontSize: 10, fontWeight: 800, color: "var(--ink-soft)", marginTop: 4, lineHeight: 1.4 }}>{g.plans}</div>}
-                  <div style={{ fontSize: 10, fontWeight: 900, color: g.hot ? "#fff" : "var(--ink-mute)", background: g.hot ? "var(--accent)" : "transparent", borderRadius: 5, padding: g.hot ? "2px 6px" : 0, display: "inline-block", marginTop: 5 }}>{g.who}</div>
+              <div key={g.nm} style={{ display: "flex", alignItems: "stretch", background: "var(--paper)", border: g.hot ? "2px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
+                <img src={g.img} alt={g.nm} style={{ width: 104, minHeight: 84, flexShrink: 0, objectFit: "cover", objectPosition: g.pos || "50% 40%", display: "block" }} />
+                <div style={{ flex: 1, minWidth: 0, padding: "8px 10px 9px" }}>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: "var(--ink)", lineHeight: 1.35 }}>{g.nm}</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", marginTop: 2 }}>{g.sub}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink-soft)", marginTop: 3, lineHeight: 1.4 }}>{g.plans}</div>
+                  {g.who && <div style={{ fontSize: 10.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 5, padding: "2px 7px", display: "inline-block", marginTop: 5 }}>{g.who}</div>}
                 </div>
               </div>
             ))}
