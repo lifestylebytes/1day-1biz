@@ -21,19 +21,13 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="1일1비" />
 <script>
-/* ★ 2026-10-24 (개발 뷰): 글씨 크기를 PC와 모바일에서 다르게 (사용자 요청).
+/* ★ 2026-10-24: 글씨 크기를 PC와 모바일에서 다르게 (사용자 요청). 개발 뷰에서 맞춘 뒤 같은 날 회원 화면까지 라이브.
    모든 글씨 크기를 min(원래 x 배율, 원래 + 최대 증가폭) 으로 바꿔 두었다. 작은 글씨는 배율대로, 큰 제목은 조금만 커진다.
-   회원 화면은 배율 변수가 없어 원래 크기 그대로다. 숫자 조정은 아래 CSS 의 --fs(배율) · --fsk(최대 증가폭) 만 바꾸면 된다. */
+   숫자 조정은 아래 CSS 의 --fs(배율) · --fsk(최대 증가폭) 만 바꾸면 된다. on = false 로 두면 예전 크기로 돌아간다. */
 (function(){
-  var on = false;
-  try {
-    var q = new URLSearchParams(location.search).get("next");
-    var next = q === "1" ? true : q === "0" ? false : localStorage.getItem("__OD_NEXT") === "1";
-    var u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
-    on = !!(next && u && (u.isOperator || u.is_operator || u.isDevMode || u.is_dev_mode));
-  } catch (e) {}
+  var on = true;
   if (on) document.documentElement.classList.add("fs-up");
-  // ★ 2026-10-24 (개발 뷰): 사원증 > 설정 > 글씨 크기 (80~120%, 10%씩). 이 기기에만 저장된다.
+  // ★ 2026-10-24: 사원증 > 설정 > 글씨 크기 (80~120%, 10%씩). 이 기기에만 저장된다. (회원 화면 라이브)
   //   기본(100%)은 사용자가 고른 크기: PC = 예전 90%, 모바일 = 예전 70%. 예전 값(__OD_FONT_PCT)은 기준이 달라 새 키로 처음부터 시작.
   window._fsPct = function(){ var v = 100; try { v = Number(localStorage.getItem("__OD_FONT_PCT2")) || 100; } catch (e) {} return Math.max(80, Math.min(120, Math.round(v / 10) * 10)); };
   window._fsSet = function(pct){
@@ -15059,7 +15053,7 @@ function MyNotesPage({ openScene }) {
   );
 }
 
-// ★ 2026-10-24 (개발 뷰): 사원증 > 설정 > 글씨 크기. 80% 에서 120% 까지 10%씩. 바로 화면에 반영, 이 기기에만 저장.
+// ★ 2026-10-24 (회원 화면 라이브): 사원증 > 설정 > 글씨 크기. 80% 에서 120% 까지 10%씩. 바로 화면에 반영, 이 기기에만 저장.
 function FontSizeRow() {
   const [pct, setPct] = useState(() => (window._fsPct ? window._fsPct() : 100));
   const set = (v) => { setPct(window._fsSet ? window._fsSet(v) : 100); };
@@ -16750,8 +16744,8 @@ function MyPage({ setActive, setViewingDay }) {
               출근 잊지 않게 리마인드를 받아요. 언제든 끌 수 있어요. 아이폰은 <strong>홈 화면에 추가한 앱</strong>에서만 동작해요 (iOS 16.4+).
             </div>
 
-            {/* ★ 2026-10-24 (개발 뷰): 글씨 크기 80~120%, 10%씩. 이 기기에만 저장 */}
-            {_isDevNext() && <FontSizeRow />}
+            {/* ★ 2026-10-24 (회원 화면 라이브): 글씨 크기 80~120%, 10%씩. 이 기기에만 저장 */}
+            <FontSizeRow />
 
             {/* 카톡 출근 알림 (2026-09-03). 2026-09-07 템플릿 승인 + 발송 확인 후 전 회원 공개 */}
             <div data-errand="kakao"><KakaoNotifyRow email={USER.email} /></div>
