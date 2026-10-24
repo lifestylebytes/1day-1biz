@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8117WHRMS4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8117WHRMS4');
+</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>구매해주셔서 감사합니다 · 1일1비</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+  :root { --paper:#FFFDF7; --paper-warm:#ECE3CF; --bg:#E8DFCB; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8A7964; --line:#D8CBB2; --accent:#D85A2A; --accent-soft:#F0A67E; --kakao:#FEE500; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; }
+  body { font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; background:linear-gradient(180deg,#E8DFCB 0%,#DBCFB4 100%); color:var(--ink); min-height:100vh; padding:28px 16px 60px; word-break:keep-all; }
+  .wrap { max-width:520px; margin:0 auto; }
+  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; box-shadow:0 24px 50px -24px rgba(58,40,18,.45); overflow:hidden; }
+  .head { background:var(--ink); color:var(--paper); padding:26px 22px 24px; }
+  .eyebrow { font-size:11px; letter-spacing:.2em; font-weight:800; color:var(--accent-soft); }
+  .head h1 { font-size:24px; font-weight:900; line-height:1.3; margin:8px 0 10px; letter-spacing:-.01em; }
+  .head p { margin:0; font-size:13.5px; color:#D9CDB8; line-height:1.7; }
+  .body { padding:20px 20px 24px; }
+  .label { font-size:11px; letter-spacing:.14em; font-weight:800; color:var(--ink-mute); margin-bottom:8px; }
+  .tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-bottom:10px; }
+  .tab { border:1.5px solid var(--line); background:var(--paper); border-radius:10px; padding:10px 4px 9px; font-family:inherit; cursor:pointer; text-align:center; color:var(--ink); }
+  .tab b { display:block; font-size:12.5px; font-weight:900; }
+  .tab small { display:block; font-size:10px; color:var(--ink-mute); margin-top:2px; }
+  .tab.on { border-color:var(--accent); background:rgba(216,90,42,.1); color:var(--accent); }
+  .tab.on small { color:var(--accent); }
+  .toggle { display:flex; gap:6px; margin-bottom:20px; }
+  .tog { flex:1; border:1.5px solid var(--line); background:var(--paper); border-radius:999px; padding:9px 8px; font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; color:var(--ink-soft); }
+  .tog.on { border-color:var(--ink); background:var(--ink); color:var(--paper); }
+  .step { display:flex; gap:12px; padding:16px 0; border-top:1px dashed var(--line); }
+  .step:first-of-type { border-top:none; padding-top:4px; }
+  .num { flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:900; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step.muted .num { background:var(--line); color:var(--ink-mute); }
+  .step h3 { margin:0; font-size:15px; font-weight:900; line-height:1.4; }
+  .step p { margin:6px 0 0; font-size:13px; color:var(--ink-soft); line-height:1.7; }
+  .step .hint { font-size:12px; color:var(--ink-mute); margin-top:6px; line-height:1.6; }
+  .btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:12px; padding:13px 14px; border-radius:10px; font-size:14px; font-weight:900; text-decoration:none; font-family:inherit; border:none; cursor:pointer; }
+  .btn-kakao { background:var(--kakao); color:#191919; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-ghost { background:transparent; border:1.5px solid var(--line); color:var(--ink); }
+  .box { background:var(--paper-warm); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--ink-soft); line-height:1.7; margin-top:10px; }
+  .box b { color:var(--ink); }
+  .gift { display:flex; gap:10px; align-items:flex-start; background:var(--paper-warm); border-radius:10px; padding:11px 13px; margin-top:8px; }
+  .gift span:first-child { font-size:18px; flex-shrink:0; }
+  .gift b { display:block; font-size:13px; }
+  .gift small { display:block; font-size:11.5px; color:var(--ink-mute); margin-top:2px; line-height:1.5; }
+  .copy { font-family:'Noto Sans KR',monospace; background:var(--paper); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; font-size:12.5px; line-height:1.7; color:var(--ink); margin-top:8px; white-space:pre-line; }
+  .copybtn { margin-top:6px; font-size:11.5px; font-weight:800; color:var(--accent); background:none; border:none; cursor:pointer; font-family:inherit; padding:4px 0; }
+  .foot { margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11.5px; color:var(--ink-mute); line-height:1.7; }
+  .foot a { color:var(--ink-mute); }
+  .hide { display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="head">
+      <div class="eyebrow">WELCOME ABOARD</div>
+      <h1>구매해주셔서 감사합니다.<br>이제 입사 절차만 남았어요.</h1>
+      <p>아래에서 사신 트랙을 고르면 지금 해야 할 일만 순서대로 보여드려요. 3분이면 끝나요.</p>
+    </div>
+    <div class="body">
+
+      <div class="label">어떤 트랙을 사셨어요?</div>
+      <div class="tabs" id="tabs">
+        <button type="button" class="tab" data-plan="intern"><b>인턴</b><small>3개월</small></button>
+        <button type="button" class="tab" data-plan="regular"><b>정규직</b><small>6개월</small></button>
+        <button type="button" class="tab" data-plan="fast"><b>패스트트랙</b><small>6개월+유비챌</small></button>
+        <button type="button" class="tab" data-plan="exec"><b>임원 트랙</b><small>12개월+유비챌</small></button>
+      </div>
+
+      <div class="label" style="margin-top:14px">1일1비 7일 무료 체험 중이셨어요?</div>
+      <div class="toggle" id="toggle">
+        <button type="button" class="tog" data-trial="no">아니요, 처음이에요</button>
+        <button type="button" class="tog" data-trial="yes">네, 체험 중이에요</button>
+      </div>
+
+      <!-- STEP 1 · 고객센터 -->
+      <div class="step" id="s1">
+        <div class="num">1</div>
+        <div style="flex:1;min-width:0">
+          <h3>고객센터에 결제 이메일을 남겨주세요</h3>
+          <p>확인 후 <span class="only-new">입사 코드와 </span>사은품 안내를 드려요. 아래 문구 그대로 복사해서 보내시면 제일 빨라요.</p>
+          <div class="copy" id="msg"></div>
+          <button type="button" class="copybtn" id="copyMsg">문구 복사하기</button>
+          <a class="btn btn-kakao" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
+        </div>
+      </div>
+
+      <!-- STEP 2 · 가입 (처음) / 새로고침 (체험 중) -->
+      <div class="step" id="s2">
+        <div class="num">2</div>
+        <div style="flex:1;min-width:0">
+          <div class="only-new">
+            <h3>입사 코드 받으면 지원서를 써주세요</h3>
+            <p>고객센터에서 코드가 오면 아래 버튼으로 들어가 지원서를 쓰세요. <b>이메일은 결제하신 것과 똑같이</b> 적어야 결제가 자동으로 연결돼요. 사번이 나오면 그날이 Day 1이에요.</p>
+            <a class="btn btn-primary" id="signupLink" href="onboarding.html?go=signup&utm_source=welcome&utm_medium=page&utm_campaign=longpass" onclick="gtag('event','welcome_signup_click',{plan:window.__plan})">입사 지원서 쓰러 가기 →</a>
+          </div>
+          <div class="only-trial">
+            <h3>앱에서 새로고침 한 번이면 끝이에요</h3>
+            <p>따로 가입하거나 코드를 넣지 않아도 돼요. 결제가 확인되면 체험이 끝나는 날부터 <b id="monthsText">N개월</b>이 그대로 이어져요. 체험 중 남은 날은 만료일에 더해드려요.</p>
+            <a class="btn btn-primary" href="mainboard.html?utm_source=welcome&utm_medium=page&utm_campaign=longpass">1일1비 출근하기 →</a>
+            <div class="hint">배너가 아직 보이면 결제 확인 전이에요. 고객센터 답장 뒤에 다시 새로고침해주세요.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 · 사은품 -->
+      <div class="step" id="s3">
+        <div class="num">3</div>
+        <div style="flex:1;min-width:0">
+          <h3>사은품 받으실 주소를 알려주세요</h3>
+          <p id="giftLead"></p>
+          <div id="gifts"></div>
+          <div class="hint">배송지는 1번에서 보내신 고객센터 톡에 이어서 남겨주시면 돼요. 안내 후 영업일 기준 5일 안에 출고돼요.</div>
+        </div>
+      </div>
+
+      <!-- STEP 4 · 유비챌 -->
+      <div class="step only-ubc" id="s4">
+        <div class="num">4</div>
+        <div style="flex:1;min-width:0">
+          <h3>유비챌 기수를 배정받으세요</h3>
+          <p>구매하신 트랙엔 유비챌 1기수(4주)가 들어 있어요. 1일1비와 별도로 진행되는 코호트 챌린지라, <b>원하시는 기수를 고객센터에 말씀해주시면</b> 그 기수 공지방으로 초대해드려요. 바로 안 하셔도 돼요. 1일1비 다니면서 편한 기수에 쓰시면 됩니다.</p>
+          <div class="box">유비챌은 같은 기수 동료들과 4주 동안 매일 문장 하나씩 써서 인증하는 챌린지예요. 1일1비가 "혼자, 매일 5분"이라면 유비챌은 "함께, 4주, 마감 있게"예요.</div>
+          <a class="btn btn-ghost" href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=welcome&utm_medium=page&utm_campaign=longpass" target="_blank" rel="noopener">유비챌 자세히 보기 →</a>
+        </div>
+      </div>
+
+      <!-- STEP 5 · 알림 · 공지방 -->
+      <div class="step" id="s5">
+        <div class="num" id="n5">4</div>
+        <div style="flex:1;min-width:0">
+          <h3>매일 아침 알림과 공지방을 켜두세요</h3>
+          <p>가입 첫날 가이드에서 카톡 알림을 켜면 매일 아침 9시에 오늘의 표현이 와요. 앱을 안 열어도요. 업데이트와 이벤트는 공지방에서 알려드려요.</p>
+          <a class="btn btn-ghost" href="https://open.kakao.com/o/gwgtrZti" target="_blank" rel="noopener">📢 1일1비 공지방 들어가기 →</a>
+        </div>
+      </div>
+
+      <div class="foot">
+        환불은 1개월 단위로 가능하며, 사용 개월 수를 월 정가(16,900원) 기준으로 차감한 뒤 잔액을 환불합니다. 실물 사은품 수령 후에는 사은품 정가를 함께 차감합니다. 궁금한 건 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">1일1비 고객센터</a>로 남겨주세요.<br>
+        <a href="onboarding.html?utm_source=welcome&utm_medium=page&utm_campaign=longpass">1일1비 소개 페이지 다시 보기</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PLANS = {
+    intern:  { name: "인턴 · 1일1비 3개월",             months: 3,  ubc: false, workbook: false, calendar: false },
+    regular: { name: "정규직 · 1일1비 6개월",           months: 6,  ubc: false, workbook: false, calendar: true  },
+    fast:    { name: "승진 패스트트랙 · 6개월 + 유비챌", months: 6,  ubc: true,  workbook: true,  calendar: true  },
+    exec:    { name: "임원 트랙 · 12개월 + 유비챌",      months: 12, ubc: true,  workbook: true,  calendar: true  }
+  };
+  var CODE = "1DAY1BIZ365-2";
+  var q = new URLSearchParams(location.search);
+  var plan = PLANS[q.get("plan")] ? q.get("plan") : "regular";
+  var trial = q.get("trial") === "1" ? "yes" : (q.get("trial") === "0" ? "no" : null);
+  try { trial = trial || localStorage.getItem("__OD_WELCOME_TRIAL") || "no"; } catch (e) { trial = trial || "no"; }
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  function render() {
+    var p = PLANS[plan]; window.__plan = plan;
+    $$(".tab").forEach(function (b) { b.classList.toggle("on", b.dataset.plan === plan); });
+    $$(".tog").forEach(function (b) { b.classList.toggle("on", b.dataset.trial === trial); });
+    $$(".only-new").forEach(function (el) { el.classList.toggle("hide", trial === "yes"); });
+    $$(".only-trial").forEach(function (el) { el.classList.toggle("hide", trial !== "yes"); });
+    $$(".only-ubc").forEach(function (el) { el.classList.toggle("hide", !p.ubc); });
+    $("#monthsText").textContent = p.months + "개월";
+    $("#n5").textContent = p.ubc ? "5" : "4";
+    $("#signupLink").href = "onboarding.html?go=signup&code=" + CODE + "&utm_source=welcome&utm_medium=page&utm_campaign=longpass&plan=" + plan;
+
+    // 고객센터에 보낼 문구
+    var lines = ["[1일1비 " + p.name + "] 결제했어요."];
+    lines.push("결제 이메일: (여기에 적어주세요)");
+    if (trial === "yes") lines.push("7일 체험 중인 계정이에요. 같은 이메일로 결제했어요.");
+    else lines.push("1일1비는 처음이에요. 입사 코드 부탁드려요.");
+    if (p.workbook || p.calendar) {
+      lines.push("");
+      lines.push("사은품 받을 곳");
+      lines.push("이름: ");
+      lines.push("연락처: ");
+      lines.push("주소: ");
+      if (p.calendar) lines.push("달력 디자인: 주황 바탕 / 주황 포인트 / 6칸 스트립 중 하나");
+    }
+    $("#msg").textContent = lines.join("\n");
+
+    // 사은품
+    var g = [];
+    if (p.workbook) g.push(["📒", "90일 워크북 (124쪽 종이책)", "Day 1~90 표현 전부. 결제하신 분 모두에게 보내드려요."]);
+    if (p.calendar) g.push(["🗓", "2027 상반기 단어 달력 (A1 포스터)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 주황 바탕 / 주황 포인트 / 6칸 스트립 중 고르세요."]);
+    if (!g.length) {
+      $("#s3").classList.add("muted");
+      $("#giftLead").innerHTML = "인턴 트랙엔 실물 사은품이 없어요. 이 단계는 건너뛰셔도 돼요. 나중에 정규직 이상으로 올리시면 그때 받으실 수 있어요.";
+      $("#gifts").innerHTML = "";
+    } else {
+      $("#s3").classList.remove("muted");
+      $("#giftLead").innerHTML = "구매하신 트랙에 들어 있는 사은품이에요. <b>이름, 연락처, 주소</b>" + (p.calendar ? "<b>, 달력 디자인</b>" : "") + "을 고객센터 톡에 남겨주세요.";
+      $("#gifts").innerHTML = g.map(function (x) { return '<div class="gift"><span>' + x[0] + '</span><span><b>' + x[1] + '</b><small>' + x[2] + '</small></span></div>'; }).join("");
+    }
+    try { localStorage.setItem("__OD_WELCOME_TRIAL", trial); } catch (e) {}
+    try { history.replaceState(null, "", location.pathname + "?plan=" + plan + "&trial=" + (trial === "yes" ? "1" : "0")); } catch (e) {}
+  }
+
+  $$(".tab").forEach(function (b) { b.addEventListener("click", function () { plan = b.dataset.plan; gtag('event', 'welcome_plan_pick', { plan: plan }); render(); }); });
+  $$(".tog").forEach(function (b) { b.addEventListener("click", function () { trial = b.dataset.trial; render(); }); });
+  $("#copyMsg").addEventListener("click", function () {
+    var t = $("#msg").textContent;
+    var done = function () { $("#copyMsg").textContent = "복사됐어요. 고객센터 톡에 붙여넣으세요"; setTimeout(function () { $("#copyMsg").textContent = "문구 복사하기"; }, 2200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, done);
+    else { var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); done(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
