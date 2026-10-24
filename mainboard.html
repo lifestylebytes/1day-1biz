@@ -24472,8 +24472,8 @@ function App() {
     const _isTrialUser = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
     if (_isTrialUser) {
       const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : _localUserNow.cohort === 'trial-7d' ? '7일 무료 체험' : '7일 체험';
-      const _upUrl = LATPEED_3M_URL || LATPEED_MEMBERSHIP_URL;
-      const _upPrice = (LATPEED_3M_URL && LATPEED_3M_PRICE_LINE) ? LATPEED_3M_PRICE_LINE : "월 13,900원 · 언제든 해지";
+      // ★ 2026-10-24 새 플랜(1회 결제) 상품 페이지로. 랜딩·48시간 배너와 같은 주소.
+      const _upUrl = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_trial_end&utm_campaign=sat_launch";
       return (
         <div className="office" style={{ filter: "saturate(0.6)" }}>
           <main className="desk">
@@ -24482,13 +24482,21 @@ function App() {
                 <div style={{ display: "inline-block", fontSize: _fs(11), letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", borderRadius: 4, transform: "rotate(0deg)", marginBottom: 18 }}>체험 완료</div>
                 <h1 style={{ fontSize: _fs(22), fontWeight: 900, lineHeight: 1.35, marginBottom: 14, color: "var(--ink)" }}>{_trialName}이<br/><span style={{ color: "var(--accent)" }}>끝났어요</span></h1>
                 <p style={{ fontSize: _fs(13.5), color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
-                  지난 7일처럼 매일 한 표현씩 계속 쌓으려면<br/>멤버십으로 이어가세요.<br/>
-                  <span style={{ color: "var(--ink-mute)", fontSize: _fs(12.5) }}>{_upPrice}</span>
+                  지난 7일처럼 매일 한 표현씩 계속 쌓으려면<br/>플랜을 골라 이어가세요.
                 </p>
-                <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 8, padding: "12px 14px", fontSize: _fs(12.5), color: "var(--ink)", lineHeight: 1.65, fontWeight: 500, marginBottom: 18 }}>
-                  💼 결제하면 그동안의 단어, 노트, 출근 기록 그대로 <b>Day 8부터</b> 이어져요. 꼭 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
+                <div style={{ display: "inline-block", fontSize: _fs(11), fontWeight: 900, color: "#fff", background: "#C0392B", borderRadius: 999, padding: "4px 11px", marginBottom: 12 }}>📈 4차 공채부터 가격 인상 · 지금은 3차 가격</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16, textAlign: "left" }}>
+                  {[["인턴 3개월", "49,900원", ""], ["정규직 6개월", "94,900원", ""], ["⭐ 승진 패스트트랙", "179,000원", "WorkBook", true], ["임원 트랙 12개월", "285,000원", "WorkBook"]].map(p => (
+                    <div key={p[0]} style={{ background: p[3] ? "#FFF3EA" : "#FFF8F2", border: p[3] ? "2px solid rgba(216,90,42,0.8)" : "1px solid var(--line)", borderRadius: 8, padding: "7px 9px", lineHeight: 1.45 }}>
+                      <div style={{ fontSize: _fs(12), fontWeight: 800, color: "var(--ink)" }}>{p[0]}</div>
+                      <div style={{ fontSize: _fs(11.5) }}><b style={{ color: "var(--accent)" }}>{p[1]}</b>{p[2] ? <span style={{ color: "var(--ink-soft)" }}> · {p[2]}</span> : null}</div>
+                    </div>
+                  ))}
                 </div>
-                <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "14px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", borderRadius: 8, fontSize: _fs(14), fontWeight: 700, marginBottom: 10, boxSizing: "border-box" }}>멤버십으로 이어가기 →</a>
+                <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", borderRadius: 8, padding: "12px 14px", fontSize: _fs(12.5), color: "var(--ink)", lineHeight: 1.65, fontWeight: 500, marginBottom: 18 }}>
+                  💼 결제하면 그동안의 단어, 노트, 출근 기록 그대로 <b>Day 8부터</b> 이어져요. 1회 결제라 자동으로 빠져나가지 않아요. 꼭 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
+                </div>
+                <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "14px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", borderRadius: 8, fontSize: _fs(14), fontWeight: 700, marginBottom: 10, boxSizing: "border-box" }}>플랜 보고 이어가기 →</a>
                 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 8, fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 고객센터</a>
                 <div style={{ marginTop: 22, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제하면 보통 바로 열려요 (새로고침). 늦어도 다음 날 아침 7시엔 열리고, 안 열리면 고객센터로 알려주세요.</div>
               </div>
