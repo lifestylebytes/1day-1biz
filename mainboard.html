@@ -18547,8 +18547,8 @@ function ActivityShell({ title, children, onClose, footer, accent, guard }) {
 }
 
 // ============================================================
-// ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차 (아티팩트 '체험 설문 미리보기' 시안 그대로)
-//   뜨는 때: 체험 회원(cohort trial*)이 그 Day 일정 4개를 끝낸 뒤 (팝업 줄 125). 개발 뷰는 운영자도 Day 5 · 7 이면 뜬다.
+// ★ 2026-10-24: 체험 설문 5일차 · 7일차 (아티팩트 '체험 설문 미리보기' 시안 그대로). 같은 날 회원 화면 라이브
+//   뜨는 때: 체험 회원(cohort trial*)이 그 Day 일정 4개를 끝낸 뒤 (팝업 줄 125). 운영자 · Dev 는 개발 뷰를 켰을 때만 Day 5 · 7 에 뜬다.
 //   5일차: 한 화면에 끝, 답하면 +50P. 끝 화면은 5일 동안 쌓인 것 + 1주 완주 배지까지 D-2 + (바꿀래요 고른 분만) 카톡 알림 시간.
 //          5일차 · 7일차 모두 이미 48시간이 지나 달력 사은품을 못 받으니 달력 얘기는 뺐다 (사용자 요청).
 //   7일차: 3장. ① 별점 + 좋았던 것 ② 계속 다닐지 + 걸리는 것 ③ 한 줄 + 끝. 2장 → 3장 넘어갈 때 +100P.
@@ -22524,8 +22524,8 @@ function _pgCatalog2(email) {
   const L = [
     { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", tm: "in", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
     { day: 1, name: "👋 첫 주 웰컴 (Day 1~5)", when: "Day 1~5 매일 1번, 오늘 일정 4개를 끝낸 뒤", cond: "EXP 다음에 떠요. Day 1은 투어 뒤, Day 2는 1일차 후기 설문 뒤. 그날 일정을 안 끝내면 그날 카드는 안 떠요. (회원 화면은 아직 접속 시, 줄 70)", queue: 118, v: [1, 2, 3, 4, 5].map(d => ({ label: "Day " + d, render: (c) => <FirstWeekPopup day={d} onClose={c} /> })) },
-    { day: 5, name: "📋 체험 설문 · 5일차 중간 점검", when: "Day 5, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험 회원만 (개발 뷰는 운영자도). 한 화면에 3문항 + 막히는 것 1개, 답하면 +50P. 끝 화면: 5일 동안 쌓인 것 · 1주 완주 배지 D-2 · '바꿀래요' 고르면 카톡 알림 시간. 달력 얘기 없음. 저장 trial_day5", queue: 125, v: [{ label: "5일차", render: (c) => <TrialDay5Survey email={em} preview onClose={c} /> }] },
-    { day: 7, name: "📋 체험 설문 · 7일차 마지막 날", when: "Day 7, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험 회원만 (개발 뷰는 운영자도). 3장: 별점 · 좋았던 것 → 계속 다닐지 · 걸리는 것('바로 결제'면 건너뜀, 여기서 +100P) → 한 줄 + 끝. '다음에 할게요'는 이번 접속만 닫힘. 저장 trial_day7", queue: 125, v: [{ label: "7일차", render: (c) => <TrialDay7Survey email={em} preview onClose={c} /> }] },
+    { day: 5, name: "📋 체험 설문 · 5일차 중간 점검", when: "Day 5, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 한 화면에 3문항 + 막히는 것 1개, 답하면 +50P. 끝 화면: 5일 동안 쌓인 것 · 1주 완주 배지 D-2 · '바꿀래요' 고르면 카톡 알림 시간. 달력 얘기 없음. 저장 trial_day5", queue: 125, v: [{ label: "5일차", render: (c) => <TrialDay5Survey email={em} preview onClose={c} /> }] },
+    { day: 7, name: "📋 체험 설문 · 7일차 마지막 날", when: "Day 7, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 3장: 별점 · 좋았던 것 → 계속 다닐지 · 걸리는 것('바로 결제'면 건너뜀, 여기서 +100P) → 한 줄 + 끝. '다음에 할게요'는 이번 접속만 닫힘. 저장 trial_day7", queue: 125, v: [{ label: "7일차", render: (c) => <TrialDay7Survey email={em} preview onClose={c} /> }] },
     { day: 1, name: "🛠 출근 환경 세팅", when: "Day 1 학습을 다 끝낸 직후", cond: "③ 카톡 알림 칸이 회원 상태에 따라 달라요.", queue: 120, v: [
       { label: "카톡 알림 아직 안 켬", sub: "번호 입력 칸", pv: { kakao: "off" }, render: (c) => <SetupPopup onClose={c} /> },
       { label: "번호는 있고 알림만 안 켬", pv: { kakao: "phone" }, render: (c) => <SetupPopup onClose={c} /> },
@@ -24516,9 +24516,10 @@ function App() {
   const _tsvDay = (() => {
     if (_tsvForce && _isInternal) return _tsvForce;
     try {
-      if (!_isDevNext() || USER.isViewingPast || _tsvClosed) return 0;
+      if (USER.isViewingPast || _tsvClosed) return 0;
+      // ★ 2026-10-24 회원 화면 라이브: 체험 회원은 누구나. 운영자 · Dev 는 개발 뷰를 켰을 때만 (시험용)
       const isTrial = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
-      if (!isTrial && !_isInternal) return 0;
+      if (!isTrial && !(_isInternal && _isDevNext())) return 0;
       const d = _realDay === 5 ? 5 : _realDay === 7 ? 7 : 0;
       return d && !_tsvDone(d, _localUserNow?.email) ? d : 0;
     } catch (e) { return 0; }
@@ -25046,7 +25047,7 @@ function App() {
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
-      {/* ★ 2026-10-24 (개발 뷰): 체험 설문 5일차 · 7일차 */}
+      {/* ★ 2026-10-24: 체험 설문 5일차 · 7일차 (회원 화면 라이브) */}
       {_tsvDay === 5 && _slTsv && <TrialDay5Survey email={_localUserNow?.email} preview={!!_tsvForce} onClose={_closeTsv} />}
       {_tsvDay === 7 && _slTsv && <TrialDay7Survey email={_localUserNow?.email} preview={!!_tsvForce} onClose={_closeTsv} onLater={_laterTsv} />}
       {_showKakao && _slKakao && (
