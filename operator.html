@@ -2960,6 +2960,30 @@ function App() {
               </div>
             )}
             {supaUsers.length > 0 && (() => {
+              // ★ 2026-10-24: 활성 학습자 (DAU/WAU/MAU). 접속(last_active) 기준, 운영자/DEV/테스트 제외
+              const nowMs = Date.now();
+              const realU = supaUsers.filter(u => !u.is_operator && !u.is_dev_mode && !u.is_tester && !_isTestAcct(u));
+              const within = d => realU.filter(u => u.last_active && (nowMs - new Date(u.last_active).getTime()) <= d * 86400000).length;
+              const pctOf = n => realU.length ? Math.round(n / realU.length * 100) : 0;
+              const acard = (label, sub, n, color) => (
+                <div style={{ flex: '1 1 110px', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{label} <span style={{ fontWeight: 500 }}>{sub}</span></div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span> <span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>· {pctOf(n)}%</span></div>
+                </div>
+              );
+              return (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#8A7964', marginBottom: 8 }}>📈 활성 학습자 (접속 기준 · 운영자·테스트 제외 {realU.length}명 중)</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {acard('DAU', '오늘 (24h)', within(1), '#2D6E3A')}
+                    {acard('3일', '최근 3일', within(3), '#3D4DA8')}
+                    {acard('WAU', '최근 7일', within(7), '#8C6510')}
+                    {acard('MAU', '최근 30일', within(30), '#5C4A36')}
+                  </div>
+                </div>
+              );
+            })()}
+            {supaUsers.length > 0 && (() => {
               const now = new Date();
               // ★ 2026-10-24: 테스트 계정도 빼고, 만료일 없는 정식 회원은 '정상 활성'에서 떼어 따로 센다 (SQL 집계와 숫자가 맞게)
               const real = supaUsers.filter(u => !u.is_operator && !u.is_dev_mode && !u.is_tester && !_isTestAcct(u) && u.email !== 'youbuddy.co@gmail.com');
