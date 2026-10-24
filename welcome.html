@@ -55,6 +55,16 @@
   .gift span:first-child { font-size:18px; flex-shrink:0; }
   .gift b { display:block; font-size:13px; }
   .gift small { display:block; font-size:11.5px; color:var(--ink-mute); margin-top:2px; line-height:1.5; }
+  /* 달력 3종 고르기 (2026-10-24) */
+  .calpick { margin-top:10px; border-radius:12px; overflow:hidden; background:#2A1F14; position:relative; cursor:zoom-in; }
+  .calpick img { display:block; width:100%; height:auto; }
+  .calpick .cap { position:absolute; left:0; right:0; bottom:0; padding:14px 14px 12px; background:linear-gradient(180deg, rgba(42,31,20,0) 0%, rgba(42,31,20,.92) 60%); color:#FFFDF7; }
+  .calpick .cap b { display:block; font-size:14px; }
+  .calpick .cap small { display:block; font-size:11.5px; color:#D9CDB8; margin-top:3px; line-height:1.5; }
+  .calpick .cap a { color:#F0A67E; font-weight:800; }
+  .calpick.zoom { position:fixed; inset:0; z-index:50; border-radius:0; overflow:auto; background:rgba(20,14,8,.96); cursor:zoom-out; display:flex; align-items:flex-start; justify-content:center; padding:16px; }
+  .calpick.zoom img { max-width:720px; width:100%; height:auto; }
+  .calpick.zoom .cap { display:none; }
   .copy { font-family:'Noto Sans KR',monospace; background:var(--paper); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; font-size:12.5px; line-height:1.7; color:var(--ink); margin-top:8px; white-space:pre-line; }
   .copybtn { margin-top:6px; font-size:11.5px; font-weight:800; color:var(--accent); background:none; border:none; cursor:pointer; font-family:inherit; padding:4px 0; }
   .foot { margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11.5px; color:var(--ink-mute); line-height:1.7; }
@@ -123,6 +133,13 @@
           <h3>사은품 받으실 주소를 알려주세요</h3>
           <p id="giftLead"></p>
           <div id="gifts"></div>
+          <div class="calpick hide" id="calpick" title="눌러서 크게 보기">
+            <img src="img/gift-calendar-3types.jpg" alt="1일1비 상반기 영어 달력 A2, 크림 / 주황 / 삼색 3종" loading="lazy">
+            <div class="cap">
+              <b>154개 표현이 한 장에. 벽에 붙이면 6개월이 보여요</b>
+              <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">고객센터 톡</a>에 번호로 알려주세요. 눌러서 크게 볼 수 있어요.</small>
+            </div>
+          </div>
           <div class="hint">배송지는 1번에서 보내신 고객센터 톡에 이어서 남겨주시면 돼요. 안내 후 영업일 기준 5일 안에 출고돼요.</div>
         </div>
       </div>
@@ -196,7 +213,7 @@
       lines.push("이름: ");
       lines.push("연락처: ");
       lines.push("주소: ");
-      if (p.calendar) lines.push("달력 디자인: 주황 바탕 / 주황 포인트 / 6칸 스트립 중 하나");
+      if (p.calendar) lines.push("달력 디자인: 1 크림 / 2 주황 / 3 삼색 중 번호 하나: ");
     }
     $("#msg").textContent = lines.join("\n");
     var hasGift = p.workbook || p.calendar;
@@ -207,16 +224,21 @@
     // 사은품
     var g = [];
     if (p.workbook) g.push(["📒", "1일1비 WorkBook (50,000원 상당)", "나만의 비즈니스 영어 WorkBook. Day 1~90 표현 전부. 결제하신 분 모두에게 보내드려요."]);
-    if (p.calendar) g.push(["🗓", "1일1비 상반기 영어 달력 (A2) (3종 중 택1) (15,000원 상당)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 주황 바탕 / 주황 포인트 / 6칸 스트립 중 고르세요."]);
+    if (p.calendar) g.push(["🗓", "1일1비 상반기 영어 달력 (A2) (3종 중 택1) (15,000원 상당)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 아래 3종 중 하나를 번호로 골라주세요. 1 크림 / 2 주황 / 3 삼색"]);
     $("#s3").classList.toggle("hide", !g.length);
     if (g.length) {
       $("#giftLead").innerHTML = "구매하신 트랙에 들어 있는 사은품이에요. <b>이름, 연락처, 주소</b>" + (p.calendar ? "<b>, 달력 디자인</b>" : "") + "을 고객센터 톡에 남겨주세요.";
       $("#gifts").innerHTML = g.map(function (x) { return '<div class="gift"><span>' + x[0] + '</span><span><b>' + x[1] + '</b><small>' + x[2] + '</small></span></div>'; }).join("");
     }
+    $("#calpick").classList.toggle("hide", !(g.length && p.calendar));
     try { localStorage.setItem("__OD_WELCOME_TRIAL", trial); } catch (e) {}
     try { history.replaceState(null, "", location.pathname + "?plan=" + plan + "&trial=" + (trial === "yes" ? "1" : "0")); } catch (e) {}
   }
 
+  $("#calpick").addEventListener("click", function (e) {
+    if (e.target && e.target.tagName === "A") return;
+    this.classList.toggle("zoom");
+  });
   $$(".tab").forEach(function (b) { b.addEventListener("click", function () { plan = b.dataset.plan; gtag('event', 'welcome_plan_pick', { plan: plan }); render(); }); });
   $$(".tog").forEach(function (b) { b.addEventListener("click", function () { trial = b.dataset.trial; render(); }); });
   $("#copyMsg").addEventListener("click", function () {
