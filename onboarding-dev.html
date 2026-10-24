@@ -1640,7 +1640,7 @@ function WhyMock({ kind }) {
             li: "Day 1부터 90까지 표현을 전부 담은 종이책이에요. 표현 하나당 한 쪽씩, 발음기호와 뜻, 실제 슬랙 대화 예시, 사수 노트, 예문 세 줄, 내 문장 쓰는 칸까지 있어요. 10일마다 회고 페이지랑 빈칸 퀴즈도 껴 있고요.",
             when: null },
           { img: "img/gift-calendar.png", tag: "GIFT 02", nm: "2027 상반기 단어 달력",
-            sub: "A1 포스터 / 디자인 3종 중 선택 / 48시간 안에 결제한 분만",
+            sub: "A2 포스터 / 디자인 3종 중 선택 / 48시간 안에 결제한 분만",
             li: "월~토 매일 표현 하나씩, 상반기 154개가 한 장에 다 들어있어요. 망각곡선에 맞춰 1일 / 3일 / 7일 뒤에 같은 표현이 다시 올라오고, 복습까지 합치면 303번이에요. 써먹은 날은 체크하면서 채워가요. 주황 바탕 / 주황 포인트 / 6칸 스트립 세 가지 디자인 중에 고르실 수 있어요.",
             when: "가입하고 48시간 안에 결제하셔야 받으실 수 있어요" },
         ].map(g => (
@@ -1857,7 +1857,7 @@ function WhyMock({ kind }) {
           ["📩", "1일1비 6개월", "표현 180개 + AI 첨삭 무제한", "101,400원"],
           ["🔥", "유비챌 4주 1기수", "동료와 함께 매일 문장 인증", "99,000원"],
           ["📒", "90일 워크북 (124쪽)", "표현 90개 전부 담긴 종이책", "50,000원"],
-          ["🗓", "2027 상반기 단어 달력", "A1 포스터, 디자인 3종 중 선택", "15,000원"],
+          ["🗓", "2027 상반기 단어 달력", "A2 포스터, 디자인 3종 중 선택", "15,000원"],
         ].map(x => (
           <div key={x[1]} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "9px 0", borderBottom: "1px dashed rgba(255,253,247,0.16)" }}>
             <span style={{ fontSize: 15, flexShrink: 0 }}>{x[0]}</span>
@@ -2893,7 +2893,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           <div style={{ display: "flex", gap: 8, margin: "9px 0 2px" }}>
             {[
               { img: "img/gift-workbook.png", nm: "90일 워크북", sub: "124쪽 종이책", hot: false },
-              { img: "img/gift-calendar.png", nm: "2027 상반기 단어 달력", sub: "A1 포스터 / 3종 중 선택", hot: true, pos: "50% 24%" },
+              { img: "img/gift-calendar.png", nm: "2027 상반기 단어 달력", sub: "A2 포스터 / 3종 중 선택", hot: true, pos: "50% 24%" },
             ].map(g => (
               <div key={g.nm} style={{ flex: 1, minWidth: 0, background: "var(--paper)", border: g.hot ? "1.5px solid var(--accent)" : "1px solid var(--line)", borderRadius: 9, overflow: "hidden" }}>
                 <img src={g.img} alt={g.nm} style={{ width: "100%", height: 74, objectFit: "cover", objectPosition: g.pos || "50% 40%", display: "block" }} />
