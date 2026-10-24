@@ -119,7 +119,9 @@ Deno.serve(async (req) => {
   }
 
   const logRow = {
-    email, type: type || null, status: subtype || null, amount,
+    // status 컬럼은 예전 값(SUCCESS / CANCEL / SUBSCRIPTION_FAILED)을 유지한다. latpeed_apply_pending 과 시트 동기화가 이걸 본다.
+    // 구독 이벤트처럼 payment 가 없으면 subtype 을 넣는다. 새 subtype 은 raw->>'subtype' 으로 본다.
+    email, type: type || null, status: (status || subtype || null), amount,
     event_at: eventAt.toISOString(), option_text: optText, raw: body,
     applied: false as boolean, apply_note: null as string | null,
   };
@@ -127,11 +129,25 @@ Deno.serve(async (req) => {
   let applyNote: string | null = null;
 
   try {
-    const { data: existing } = await supabase
+    // 결제 이메일로 먼저 찾고, 없으면 운영자가 이어둔 별칭(latpeed_aliases: 래피드 이메일 → 앱 이메일)으로 한 번 더 찾는다
+    let targetEmail = email;
+    let { data: existing } = await supabase
       .from("users")
       .select("email, signup_date, cohort, membership_ends_at, membership_cancel_at, preferences")
       .eq("email", email)
       .maybeSingle();
+    if (!existing) {
+      const { data: alias } = await supabase.from("latpeed_aliases").select("app_email").eq("latpeed_email", email).maybeSingle();
+      if (alias && alias.app_email) {
+        targetEmail = String(alias.app_email).toLowerCase().trim();
+        const r2 = await supabase
+          .from("users")
+          .select("email, signup_date, cohort, membership_ends_at, membership_cancel_at, preferences")
+          .eq("email", targetEmail)
+          .maybeSingle();
+        existing = r2.data;
+      }
+    }
     const prefs = (existing && existing.preferences && typeof existing.preferences === "object") ? existing.preferences as Record<string, any> : {};
     const payMeta = (extra: Record<string, unknown>) => ({
       ...prefs,
@@ -179,10 +195,10 @@ Deno.serve(async (req) => {
             // 48시간 달력 판정은 앱이 signupDate 로 한다. 여기선 결제 시각만 남긴다.
           }),
         };
-        const { data, error } = await supabase.from("users").update(updates).eq("email", email).select("email");
+        const { data, error } = await supabase.from("users").update(updates).eq("email", targetEmail).select("email");
         if (error) applyNote = "update_error: " + error.message;
         else if (!data || !data.length) applyNote = "user_not_found";
-        else { applied = true; applyNote = `longpass_${plan.months}mo_from_${base.toISOString().slice(0, 10)}_until_${endsAt.toISOString().slice(0, 10)}${trialEnd && base.getTime() === trialEnd.getTime() ? "_after_trial" : ""}`; }
+        else { applied = true; applyNote = `longpass_${plan.months}mo_from_${base.toISOString().slice(0, 10)}_until_${endsAt.toISOString().slice(0, 10)}${trialEnd && base.getTime() === trialEnd.getTime() ? "_after_trial" : ""}${targetEmail !== email ? `_via_alias(${targetEmail})` : ""}`; }
       }
     }
     else if (type === "NORMAL_PAYMENT" && subtype === "PAYMENT_CANCEL") {
@@ -202,7 +218,7 @@ Deno.serve(async (req) => {
           membership_ends_at: endsAt.toISOString(),
           membership_cancel_reason: payment?.canceledReason || "latpeed_refund",
           preferences: { ...prefs, refund_at: eventAt.toISOString(), refund_amount: amount },
-        }).eq("email", email).select("email");
+        }).eq("email", targetEmail).select("email");
         if (error) applyNote = "update_error: " + error.message;
         else if (!data || !data.length) applyNote = "user_not_found";
         else { applied = true; applyNote = fullRefund ? "refund_full_immediate_expiry" : `refund_partial_until_${endsAt.toISOString().slice(0, 10)}`; }
@@ -239,7 +255,7 @@ Deno.serve(async (req) => {
           gapDays = Math.floor((eventAt.getTime() - prevEnds.getTime()) / 86400000);
           if (gapDays > 0) updates.signup_date = addDays(new Date(existing.signup_date), gapDays).toISOString();
         }
-        const { data, error } = await supabase.from("users").update(updates).eq("email", email).select("email");
+        const { data, error } = await supabase.from("users").update(updates).eq("email", targetEmail).select("email");
         if (error) applyNote = "update_error: " + error.message;
         else if (!data || !data.length) applyNote = "user_not_found";
         else { applied = true; applyNote = `${subtype.toLowerCase()}_until_${endsAt.toISOString().slice(0, 10)}${gapDays > 0 ? `_resume_after_${gapDays}d_gap` : ""}`; }
@@ -251,7 +267,7 @@ Deno.serve(async (req) => {
         membership_cancel_at: (parseDate(subscription?.canceledAt) || eventAt).toISOString(),
         membership_cancel_reason: subscription?.canceledReason || "latpeed_subscription_canceled",
         ...(parseDate(subscription?.finishedAt) ? { membership_ends_at: parseDate(subscription?.finishedAt)!.toISOString() } : {}),
-      }).eq("email", email).select("email");
+      }).eq("email", targetEmail).select("email");
       if (error) applyNote = "update_error: " + error.message;
       else if (!data || !data.length) applyNote = "user_not_found";
       else { applied = true; applyNote = "subscription_canceled_marked"; }
@@ -260,7 +276,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase.from("users").update({
         membership_cancel_at: null, membership_cancel_reason: null,
         ...(parseDate(subscription?.finishedAt) ? { membership_ends_at: parseDate(subscription?.finishedAt)!.toISOString() } : {}),
-      }).eq("email", email).select("email");
+      }).eq("email", targetEmail).select("email");
       if (error) applyNote = "update_error: " + error.message;
       else if (!data || !data.length) applyNote = "user_not_found";
       else { applied = true; applyNote = "subscription_resumed"; }
@@ -270,7 +286,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase.from("users").update({
         membership_ends_at: endsAt.toISOString(),
         membership_cancel_reason: payment?.canceledReason || subscription?.canceledReason || (subtype === "PAYMENT_CANCEL" ? "latpeed_refund" : "latpeed_subscription_finished"),
-      }).eq("email", email).select("email");
+      }).eq("email", targetEmail).select("email");
       if (error) applyNote = "update_error: " + error.message;
       else if (!data || !data.length) applyNote = "user_not_found";
       else { applied = true; applyNote = subtype === "PAYMENT_CANCEL" ? "refunded_immediate_expiry" : `subscription_finished_at_${endsAt.toISOString().slice(0, 10)}`; }
