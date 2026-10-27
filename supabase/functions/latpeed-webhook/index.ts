@@ -14,7 +14,7 @@
 //   [단건 상품 = 장기권]  NORMAL_PAYMENT
 //     PAYMENT_SUCCESS : 옵션명에서 N개월을 읽고 (못 읽으면 금액으로),
 //                       기존 만료일(또는 체험 종료일)과 지금 중 늦은 쪽에 N개월을 이어 붙인다. cohort → member
-//     PAYMENT_CANCEL  : 환불 금액 ÷ 월 정가(16,900) 만큼 개월을 뺀다. 전액이면 즉시 만료
+//     PAYMENT_CANCEL  : 환불 금액 ÷ 월 정가(16,900) 만큼 개월을 뺀다. 전액이면 즉시 만료 + 해지 마커(membership_cancel_at)
 //   [멤버십 = 월 구독]   MEMBERSHIP_PAYMENT
 //     PAYMENT_SUCCESS / SUBSCRIPTION_RENEWED / SUBSCRIPTION_RECOVERED : 만료일 = subscription.finishedAt (없으면 +31일). cohort → member
 //     SUBSCRIPTION_CANCELED : membership_cancel_at 기록 (유예 없이 만료일에 차단)
@@ -209,6 +209,8 @@ Deno.serve(async (req) => {
         }
         const { data, error } = await supabase.from("users").update({
           membership_ends_at: endsAt.toISOString(),
+          // ★ 2026-10-27: 앱은 membership_cancel_at 이 있어야 만료일에 바로 막는다 (없으면 '해지 마커 없는 유료회원' 으로 봐서 안 막음). 환불이면 마커도 같이
+          membership_cancel_at: eventAt.toISOString(),
           membership_cancel_reason: payment?.canceledReason || "latpeed_refund",
           preferences: { ...prefs, refund_at: eventAt.toISOString(), refund_amount: amount },
         }).eq("email", targetEmail).select("email");
@@ -278,6 +280,7 @@ Deno.serve(async (req) => {
       const endsAt = subtype === "PAYMENT_CANCEL" ? now : (parseDate(subscription?.finishedAt) || now);
       const { data, error } = await supabase.from("users").update({
         membership_ends_at: endsAt.toISOString(),
+        membership_cancel_at: (parseDate(subscription?.canceledAt) || eventAt).toISOString(),   // ★ 2026-10-27: 종료/환불도 해지 마커 (앱이 이걸 봐야 막힘)
         membership_cancel_reason: payment?.canceledReason || subscription?.canceledReason || (subtype === "PAYMENT_CANCEL" ? "latpeed_refund" : "latpeed_subscription_finished"),
       }).eq("email", targetEmail).select("email");
       if (error) applyNote = "update_error: " + error.message;
