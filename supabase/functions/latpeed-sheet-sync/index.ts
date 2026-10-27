@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
     if (!dry) {
       await sb.from("users").update({
         membership_ends_at: wantIso, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
-        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid, ...(comp ? { comp_months: comp } : {}) },
+        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid, ...(r.amount ? { last_amount: r.amount } : {}), ...(comp ? { comp_months: comp } : {}) },
       }).eq("email", u.email);
     }
   }

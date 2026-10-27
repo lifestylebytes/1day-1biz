@@ -267,7 +267,8 @@ Deno.serve(async (req) => {
           membership_ends_at: endsAt.toISOString(),
           membership_cancel_at: null,
           membership_cancel_reason: null,
-          preferences: payMeta({ subscription_id: subscription?.subscriptionId || prefs.subscription_id || null, membership_name: body?.membership?.name || prefs.membership_name || null, prev_cohort: existing.cohort || null }),
+          // ★ 2026-10-27 운영자 뷰 '구매 옵션 · 금액' 표시용: 월 구독도 옵션명과 금액을 남긴다
+          preferences: payMeta({ subscription_id: subscription?.subscriptionId || prefs.subscription_id || null, membership_name: body?.membership?.name || prefs.membership_name || null, last_option: optText || body?.membership?.name || prefs.last_option || null, last_amount: amount ?? prefs.last_amount ?? null, prev_cohort: existing.cohort || null }),
         };
         let gapDays = 0;
         const prevEnds = parseDate(existing.membership_ends_at);
