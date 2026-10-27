@@ -15,6 +15,7 @@
 //     PAYMENT_SUCCESS : 옵션명에서 N개월을 읽고 (못 읽으면 금액으로),
 //                       기존 만료일(또는 체험 종료일)과 지금 중 늦은 쪽에 N개월을 이어 붙인다. cohort → member
 //     PAYMENT_CANCEL  : 환불 금액 ÷ 월 정가(16,900) 만큼 개월을 뺀다. 전액이면 즉시 만료 + 해지 마커(membership_cancel_at)
+//                       단, 체험(가입 + 7일) 중에 결제했다가 전액 환불이면 체험 상태로 되돌린다 (prev_cohort)
 //   [멤버십 = 월 구독]   MEMBERSHIP_PAYMENT
 //     PAYMENT_SUCCESS / SUBSCRIPTION_RENEWED / SUBSCRIPTION_RECOVERED : 만료일 = subscription.finishedAt (없으면 +31일). cohort → member
 //     SUBSCRIPTION_CANCELED : membership_cancel_at 기록 (유예 없이 만료일에 차단)
@@ -155,6 +156,27 @@ Deno.serve(async (req) => {
       ? addDays(new Date(existing.signup_date), TRIAL_DAYS) : null;
     const now = new Date();
 
+    // ★ 2026-10-27 전액 환불인데 가입 7일(체험 기간) 안이면 체험 상태로 되돌린다.
+    //   체험 중에 결제했다가 환불한 사람은 남은 체험을 그대로 쓰는 게 맞다. 체험이 끝났으면 그냥 만료 + 해지 마커.
+    //   prev_cohort 가 없으면(수동 반영 등) 가입 7일 안이면 체험으로 본다 → 'trial'
+    const prevCohort = (typeof prefs.prev_cohort === "string" && prefs.prev_cohort.startsWith("trial")) ? prefs.prev_cohort : "trial";
+    const trialStillOn = !!(existing && existing.signup_date && addDays(new Date(existing.signup_date), TRIAL_DAYS) > now);
+    const revertToTrial = async () => {
+      const { refund_at: _ra, refund_amount: _rm, ...rest } = prefs;
+      const cleaned: Record<string, unknown> = { ...rest, refund_at: eventAt.toISOString(), refund_amount: amount, reverted_to_trial_at: eventAt.toISOString() };
+      for (const k of ["plan_months", "plan_amount", "plan_name", "pay_source", "last_paid_at", "subscription_id", "membership_name", "prev_cohort"]) delete cleaned[k];
+      const { data, error } = await supabase.from("users").update({
+        cohort: prevCohort,
+        membership_ends_at: null,
+        membership_cancel_at: null,
+        membership_cancel_reason: null,
+        preferences: cleaned,
+      }).eq("email", targetEmail).select("email");
+      if (error) applyNote = "update_error: " + error.message;
+      else if (!data || !data.length) applyNote = "user_not_found";
+      else { applied = true; applyNote = `refund_full_reverted_to_${prevCohort}`; }
+    };
+
     // ─────────────────────────────────────────────
     // A. 단건 상품 = 장기권
     // ─────────────────────────────────────────────
@@ -200,6 +222,8 @@ Deno.serve(async (req) => {
         const prevEnds = parseDate(existing.membership_ends_at);
         const paid = Number(prefs.plan_amount || 0);
         const fullRefund = amount != null && paid > 0 && amount >= paid - 500;
+        if (fullRefund && trialStillOn) { await revertToTrial(); }
+        else {
         let endsAt: Date;
         if (fullRefund || !prevEnds || amount == null) endsAt = now;
         else {
@@ -217,6 +241,7 @@ Deno.serve(async (req) => {
         if (error) applyNote = "update_error: " + error.message;
         else if (!data || !data.length) applyNote = "user_not_found";
         else { applied = true; applyNote = fullRefund ? "refund_full_immediate_expiry" : `refund_partial_until_${endsAt.toISOString().slice(0, 10)}`; }
+        }
       }
     }
 
@@ -275,6 +300,9 @@ Deno.serve(async (req) => {
       if (error) applyNote = "update_error: " + error.message;
       else if (!data || !data.length) applyNote = "user_not_found";
       else { applied = true; applyNote = "subscription_resumed"; }
+    }
+    else if (type === "MEMBERSHIP_PAYMENT" && subtype === "PAYMENT_CANCEL" && existing && trialStillOn) {
+      await revertToTrial();
     }
     else if (type === "MEMBERSHIP_PAYMENT" && (subtype === "SUBSCRIPTION_FINISHED" || subtype === "PAYMENT_CANCEL")) {
       const endsAt = subtype === "PAYMENT_CANCEL" ? now : (parseDate(subscription?.finishedAt) || now);
