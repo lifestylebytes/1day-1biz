@@ -2465,10 +2465,10 @@ function App() {
   // 구글 스프레드시트로 받기 (CSV · UTF-8 BOM → 시트에서 바로 열림)
   const downloadProgressCsv = () => {
     const esc = (v) => { const t = String(v == null ? '' : v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
-    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '실제 학습 Day', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
+    const head = ['이름', '이메일', '사번', '유형', '결제 상태', '다음 결제/종료일', '총 결제 횟수', '마지막 결제', '코드/쿠폰', '구매 옵션', '결제 금액', '실제 학습 Day', '앱 Day', '달력 Day', '밀린 Day', '빠뜨린 Day 수', '빠뜨린 Day', '직급', '마지막 학습일', '가입일'];
     const rows = [...supaUsers].sort((a, b) => (payGroup(a) - payGroup(b)) || (new Date(b.last_active || 0) - new Date(a.last_active || 0))).map(u => {
       const pr = calcProgress(u); const pi = payInfo(u);
-      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pr.realDay == null ? '' : pr.realDay, pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
+      return [u.name, u.email, u.emp_number || '', pi.type, pi.line1.replace(/^\S+\s/, ''), pi.dateLine, pi.count, pi.lastPaid, pi.codes.join(' '), pi.option, pi.amount || '', pr.realDay == null ? '' : pr.realDay, pr.appDay, pr.calDay, pr.behind == null ? '' : pr.behind, pr.missing ? pr.missing.length : '', pr.missing ? pr.missing.join(' ') : '', pr.rank, pr.lastStudy, u.signup_date ? String(u.signup_date).slice(0, 10) : ''].map(esc).join(',');
     });
     const csv = '\ufeff' + head.join(',') + '\n' + rows.join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -2513,7 +2513,14 @@ function App() {
     if (pref.plan === 'part2' && !codes.includes('1DAY1BIZ365-2')) codes.push('1DAY1BIZ365-2');
     if (pref.plan === 'part1' && !codes.includes('1DAY1BIZ365')) codes.push('1DAY1BIZ365');
     if (Array.isArray(pref.codes_used)) pref.codes_used.forEach(c => { if (c && !codes.includes(c)) codes.push(c); });
-    return { line1, dateLine, count, lastPaid, codes, type };
+    // ★ 2026-10-27 구매 옵션 · 금액: 장기권은 plan_option/plan_amount, 월 구독은 last_option/last_amount (래피드 웹훅 · 시트 동기화가 저장)
+    const optRaw = pref.plan_option || pref.last_option || pref.membership_name || '';
+    const option = String(optRaw).trim();
+    const amtRaw = pref.plan_amount != null ? pref.plan_amount : pref.last_amount;
+    const amount = Number(amtRaw) > 0 ? Number(amtRaw) : null;
+    const amountText = amount ? amount.toLocaleString('ko-KR') + '원' : '';
+    const fromTrial = typeof pref.prev_cohort === 'string' && pref.prev_cohort.startsWith('trial');
+    return { line1, dateLine, count, lastPaid, codes, type, option, amount, amountText, fromTrial };
   };
 
   // ★ 멤버십 퇴직 처리 (인수인계 30일 후 자동 만료)
@@ -3386,6 +3393,7 @@ function App() {
                       return (
                         <>
                           <div className="pay-meta">{pi.count ? '총 ' + pi.count + '회 결제' + (pi.lastPaid ? ' · 마지막 ' + pi.lastPaid : '') : '결제 기록 없음'}</div>
+                          {(pi.option || pi.amountText) && <div className="pay-meta" style={{ color: '#2D3E5C', fontWeight: 600 }} title={pi.fromTrial ? '무료체험 중에 결제해 정식 회원이 됐어요' : '마지막으로 결제한 옵션과 금액'}>💳 {pi.fromTrial ? '체험 후 ' : ''}{pi.option || '옵션 기록 없음'}{pi.amountText ? ' · ' + pi.amountText : ''}</div>}
                           {pi.codes.length > 0 && <div className="pay-meta" style={{ color: '#8A7964' }}>🎟 {pi.codes.join(', ')}</div>}
                         </>
                       );
