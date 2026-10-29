@@ -2362,6 +2362,7 @@ function App() {
   const [delBusy, setDelBusy] = useState(null);           // ★ 2026-10-24: 테스트 계정 삭제 중인 이메일
   const [expiredOpen, setExpiredOpen] = useState(false);   // ★ 2026-10-24: 회원 표에서 만료·종료 펼침
   const [trashKey, setTrashKey] = useState(0);             // ★ 2026-10-24: 휴지통 다시 불러오기 신호
+  const [memListOpen, setMemListOpen] = useState(null);     // ★ 2026-10-29: 현황 카드 클릭 → 명단 (카드 라벨)
   const deleteTestAcct = async (u) => {
     if (!window.OD || !window.OD.deleteTestUser) { alert('삭제 기능이 아직 없어요 (supabase-client.js 갱신 필요)'); return; }
     if (!confirm('테스트 계정을 완전히 지울까요?\n\n' + u.email + '\n\n학습 기록과 로그인 계정까지 지워지고 되돌릴 수 없어요.')) return;
@@ -2996,15 +2997,28 @@ function App() {
               // ★ 2026-10-24: 베타(파일럿)는 끝났다. 그 자리에 7일 무료 체험 중인 사람 (cohort trial*, 가입 7일 안)
               const trialing   = real.filter(u => typeof u.cohort === 'string' && u.cohort.startsWith('trial') && !isMember(u)
                                                 && u.signup_date && (new Date(u.signup_date).getTime() + 7 * 86400000) > now.getTime());
-              const cell = (label, n, color) => (
-                <div style={{ flex: '1 1 110px', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8, padding: '12px 14px' }}>
-                  <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span></div>
-                </div>
-              );
+              // ★ 2026-10-29: 카드를 누르면 아래에 그 명단이 펼쳐진다 (한 번 더 누르면 접힘)
+              const groups = {
+                '🟢 정상 활성': activePaid, '🟡 취소 예정': canceling, '🔴 만료·종료': expired, '🧪 무료 체험 중': trialing, '⚠️ 만료일 없음': noEnds,
+              };
+              const cell = (label, n, color) => {
+                const on = memListOpen === label;
+                return (
+                  <div onClick={() => setMemListOpen(on ? null : label)} title="눌러서 명단 보기"
+                       style={{ flex: '1 1 110px', background: on ? '#FFF7EC' : '#fff', border: '1px solid ' + (on ? color : '#E8DFCB'), borderRadius: 8, padding: '12px 14px', cursor: 'pointer', userSelect: 'none' }}>
+                    <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{label} <span style={{ fontWeight: 500, color: '#B8A88E' }}>{on ? '▾' : '▸'}</span></div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span></div>
+                  </div>
+                );
+              };
+              const fmtD = d => d ? new Date(d).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '-';
+              const listRows = memListOpen && groups[memListOpen] ? [...groups[memListOpen]].sort((a, b) => {
+                const ea = ends(a) ? ends(a).getTime() : 0, eb = ends(b) ? ends(b).getTime() : 0;
+                return memListOpen === '🔴 만료·종료' ? eb - ea : (ea || 9e15) - (eb || 9e15);
+              }) : null;
               return (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#8A7964', marginBottom: 8 }}>📊 멤버십 현황 (운영자·테스트 제외 {real.length}명)</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#8A7964', marginBottom: 8 }}>📊 멤버십 현황 (운영자·테스트 제외 {real.length}명) <span style={{ fontWeight: 500 }}>· 카드를 누르면 명단이 보여요</span></div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {cell('🟢 정상 활성', activePaid.length, '#2D6E3A')}
                     {cell('🟡 취소 예정', canceling.length, '#B8431A')}
@@ -3012,6 +3026,28 @@ function App() {
                     {cell('🧪 무료 체험 중', trialing.length, '#3D4DA8')}
                     {noEnds.length > 0 && cell('⚠️ 만료일 없음', noEnds.length, '#8C6510')}
                   </div>
+                  {listRows && (
+                    <div className="card" style={{ marginTop: 8, padding: '10px 14px' }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: '#5C4A36', marginBottom: 6 }}>{memListOpen} {listRows.length}명</div>
+                      {listRows.length === 0 ? <div style={{ fontSize: 12, color: '#8A7964' }}>없어요.</div> : (
+                        <table style={{ width: '100%', fontSize: 12.5, borderCollapse: 'collapse' }}><tbody>
+                          {listRows.map(u => {
+                            const isTrial = memListOpen === '🧪 무료 체험 중';
+                            const tEnd = isTrial && u.signup_date ? new Date(new Date(u.signup_date).getTime() + 7 * 86400000) : null;
+                            const dateCol = isTrial ? ('체험 종료 ' + fmtD(tEnd)) : (ends(u) ? ((memListOpen === '🔴 만료·종료' ? '종료 ' : (memListOpen === '🟡 취소 예정' ? '종료 예정 ' : '다음 결제 ')) + fmtD(u.membership_ends_at)) : '만료일 없음');
+                            return (
+                              <tr key={u.email} style={{ borderBottom: '1px solid #F0E9DA' }}>
+                                <td style={{ padding: '5px 4px', fontWeight: 700, whiteSpace: 'nowrap' }}>{u.name || '-'}</td>
+                                <td style={{ padding: '5px 4px', color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5 }}>{u.email}</td>
+                                <td style={{ padding: '5px 4px', whiteSpace: 'nowrap' }}>{dateCol}</td>
+                                <td style={{ padding: '5px 4px', color: '#8A7964', whiteSpace: 'nowrap' }}>{u.membership_cancel_reason ? ('사유 ' + u.membership_cancel_reason) : ''}{u.last_active ? ' · 접속 ' + fmtD(u.last_active) : ''}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody></table>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })()}
