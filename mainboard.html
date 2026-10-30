@@ -7697,8 +7697,8 @@ function WeekendHomePage({ kind, setActive, openMemo }) {
 //   Day 1 일정표·사내 메모(탭이 항상 열려 있어 잠그면 모순)는 처음부터 → Day 3 출근부·표현 모음 → Day 4 승진 트랙·역량 스탯 → Day 5 사원 서류 → Day 8 심부름
 // ★ 2026-09-15 (리텐션 엔진): Day 3 출근부·내 목표 / Day 4 심부름 / Day 7 복지몰 / Day 30 성장 리포트·PDF·연봉협상 준비 / Day 60 사수 리포트 4종
 const _UNLOCK_AT = _isNextFeature()
-  ? { schedule: 1, memo: 1, board: 2, attendance: 3, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }
-  : { schedule: 1, attendance: 3, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
+  ? { schedule: 1, memo: 1, board: 2, attendance: 1, goal: 3, errands: 4, shop: 7, pdf: 15, mynotes: 30, reports: 30, nego: 30 }   // ★ 2026-10-30: 출근부 Day 1부터 (체험 전환용, 버디님)
+  : { schedule: 1, attendance: 1, accum: 3, promo: 4, skills: 4, doc: 5, memo: 1, errands: 8, mynotes: 30, points: 30, aireport: 60 };
 const _UNLOCK_LABEL = _isNextFeature()
   ? { schedule: "오늘 일정표", memo: "사내 게시판", board: "WEEKLY BIZ SCORE", attendance: "출근부", goal: "내 목표", errands: "오늘의 심부름", shop: "복지몰 SHOP", pdf: "내 단어 모음 PDF", mynotes: "진급 리포트 (성장 리포트 보관함)", reports: "사수 리포트 4종 (준비 중)", nego: _isDevNext() ? "분기 평가 (진급 평가 · Preview Ticket)" : "분기 평가 (준비 중)" }   // ★ 2026-10-17: 개발 뷰는 분기 평가 오픈
   : { schedule: "오늘 일정표", attendance: "출근부", accum: "표현 모음", promo: "승진 마일스톤", skills: "내 역량 스탯", doc: "사원 서류", memo: "사내 메모", errands: "오늘의 심부름", mynotes: "나만의 노트", points: "복지포인트", aireport: "AI 성장 리포트" };
@@ -13481,8 +13481,12 @@ function TrialBuyBar({ user }) {
         4차 공채부터 가격이 올라요. 지금 결제하면 <b style={{ color: "#F0A67E" }}>결제한 기간 내내 3차 가격 그대로</b>예요.
       </div>
       <div style={{ marginTop: 10, background: "rgba(255,253,247,0.08)", borderRadius: 9, padding: "9px 12px", fontSize: 12, color: "#D9CDB8", display: "flex", alignItems: "center", gap: 8 }}>
-        <span>⭐ 승진 패스트트랙</span><span style={{ textDecoration: "line-through", opacity: 0.7 }}>200,400원</span>
-        <b style={{ marginLeft: "auto", color: "#FFFDF7", fontSize: 14 }}>179,000원</b>
+        {/* ★ 2026-10-30: 상세페이지처럼 월 환산가로 (유비챌 99,000원 뺀 1일1비 몫). 총액은 작게 */}
+        <span>⭐ 승진 패스트트랙</span>
+        <span style={{ marginLeft: "auto", textAlign: "right", lineHeight: 1.3 }}>
+          <b style={{ color: "#FFFDF7", fontSize: 15 }}>월 13,300원</b>
+          <span style={{ display: "block", fontSize: 10.5, opacity: 0.75 }}>총 179,000원 / 6개월 + 유비챌 1기수 · 1회 결제</span>
+        </span>
       </div>
       <a href={GIFT48_URL} target="_blank" rel="noopener" style={{
         display: "block", marginTop: 12, padding: "13px 0", borderRadius: 9, background: "#D85A2A", color: "#fff",
@@ -25022,10 +25026,12 @@ function App() {
                 </p>
                 <div style={{ display: "inline-block", fontSize: _fs(11), fontWeight: 900, color: "#fff", background: "#C0392B", borderRadius: 999, padding: "4px 11px", marginBottom: 12 }}>📈 4차 공채부터 가격 인상 · 지금은 3차 가격</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16, textAlign: "left" }}>
-                  {[["인턴 3개월", "49,900원", ""], ["정규직 6개월", "94,900원", ""], ["⭐ 승진 패스트트랙", "179,000원", "WorkBook", true], ["임원 트랙 12개월", "285,000원", "WorkBook"]].map(p => (
+                  {/* ★ 2026-10-30: 상세페이지와 같은 월 환산가. [이름, 월가, 총액 설명, 강조] */}
+                  {[["인턴 3개월", "월 16,600원", "총 49,900원"], ["정규직 6개월", "월 15,800원", "총 94,900원"], ["⭐ 승진 패스트트랙", "월 13,300원", "총 179,000원 · 유비챌 + WorkBook", true], ["임원 트랙 12개월", "월 15,500원", "총 285,000원 · 유비챌 + WorkBook"]].map(p => (
                     <div key={p[0]} style={{ background: p[3] ? "#FFF3EA" : "#FFF8F2", border: p[3] ? "2px solid rgba(216,90,42,0.8)" : "1px solid var(--line)", borderRadius: 8, padding: "7px 9px", lineHeight: 1.45 }}>
                       <div style={{ fontSize: _fs(12), fontWeight: 800, color: "var(--ink)" }}>{p[0]}</div>
-                      <div style={{ fontSize: _fs(11.5) }}><b style={{ color: "var(--accent)" }}>{p[1]}</b>{p[2] ? <span style={{ color: "var(--ink-soft)" }}> · {p[2]}</span> : null}</div>
+                      <div style={{ fontSize: _fs(12.5) }}><b style={{ color: "var(--accent)" }}>{p[1]}</b></div>
+                      <div style={{ fontSize: _fs(10.5), color: "var(--ink-soft)" }}>{p[2]} · 1회 결제</div>
                     </div>
                   ))}
                 </div>
