@@ -6922,7 +6922,9 @@ function getScheduleForDay(day) {
   })();
 
   // ★ 개발 뷰 (2026-09-10, 지흔 제안): 14:00 은 매일 '미니 퀴즈' (오늘 단어 위주 최소 10문제). id 는 로테이션 것을 그대로 써서 완료 기록이 호환된다.
-  const slot3 = (typeof _isQuizLive === "function" && _isQuizLive() && day <= 90)
+  // ★ 2026-10-30: TF 기간(Day 91+)도 미니 퀴즈. 예전엔 Day 90까지만이라 TF 회원은 5단계 콤보만 풀고 퀴즈 기록(복습 일정 · 틀린 단어 · 운영자 퀴즈 통계)이 하나도 안 남았다.
+  //   미니 퀴즈 문제 유형(뜻 · 스펠링 · 조립 · 빈칸)이 콤보와 같고, 어제 단어 · 틀린 단어까지 이어서 나온다. id 는 그대로 "mission" 이라 완료 기록 호환.
+  const slot3 = (typeof _isQuizLive === "function" && _isQuizLive())
     ? { id: variantItem.id, time: "14:00", type: "mini_quiz", title: "미니 퀴즈, 오늘 표현 10문제", note: "뜻·스펠링·문장 조립 + 어제 단어", context: variantItem.context }
     : variantItem;
   // 4개 고정 슬롯, 출근+단어 / 시추에이션 / Day별 변동 / 일지+퇴근
@@ -8185,10 +8187,12 @@ function OvertimeCard({ today, tomorrow, email, catchUp }) {
     persist({ ...saved, preview: { text, at: new Date().toISOString() } });
   };
   // ★ 2026-09-21: 밀린 사람도 '내일 미리 쓰기' 는 열어둔다 (회원 대부분이 2일+ 밀려 있어 아예 못 보던 문제). 복지P 는 하루 첫 1회만.
-  const doneCount = catchUp ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0))
-    : _sideProject ? ((attempts.length ? 1 : 0) + (preSaved ? 1 : 0))
+  // ★ 2026-10-30: 내일 단어를 모르는 날(Day 90 · TF 기간 Day 91+)은 '내일 미리 쓰기' 칸이 없으니 Review Quiz 하나로 완료
+  const _hasPre = !!(tomorrow && tomorrow.word);
+  const doneCount = catchUp ? ((attempts.length ? 1 : 0) + (_hasPre && preSaved ? 1 : 0))
+    : _sideProject ? ((attempts.length ? 1 : 0) + (_hasPre && preSaved ? 1 : 0))
     : (Object.keys(saved.sentences || {}).length + (preSaved ? 1 : 0));
-  const doneTotal = catchUp ? 2 : (_sideProject ? 2 : 4);
+  const doneTotal = catchUp ? (_hasPre ? 2 : 1) : (_sideProject ? (_hasPre ? 2 : 1) : 4);
   // ★ 내일 미리 쓰기 (2026-09-10): 한국어 지시문에 내일 표현이 영어 그대로 박혀 있는 날이 있다
   //   (예: "그분 인맥 leverage하는 방향으로 갈게요"). 그러면 위의 '내일 단어 미리 맞히기' 답이 그냥 보인다.
   //   개발 뷰에선 그 표현만 빈칸으로 가리고, 정답은 내일 아침 사수 카드에서 공개한다.
@@ -10134,7 +10138,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
               </div>
             ))}
             {/* ★ 2026-09-18 (개발 뷰): 퇴근 후 SIDE PROJECT 는 오늘 일정의 5번째 줄 */}
-            {_RET_ON() && _isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
+            {_RET_ON() && _isHomeLive() && !USER.isViewingPast && today && (today.day <= 90 || _isQuizLive()) && (   /* ★ 2026-10-30 TF 기간도 퇴근 후 SIDE PROJECT (Review Quiz) */
               (allTodayDone || !!doneTasks.wrapup)
                 ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} catchUp={_catchUp} />
                 : <div className="ot-card ot-inrow ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}>
@@ -10144,7 +10148,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             )}
           </div>
           {!USER.isViewingPast && !_RET_ON() && <OfficeTodayStrip />}
-          {!_RET_ON() && _isHomeLive() && !USER.isViewingPast && today && today.day <= 90 && (
+          {!_RET_ON() && _isHomeLive() && !USER.isViewingPast && today && (today.day <= 90 || _isQuizLive()) && (
             (allTodayDone || !!doneTasks.wrapup)
               ? <OvertimeCard key={"ot-" + USER.currentDay} today={today} tomorrow={SCENARIOS.find(x => x.day === today.day + 1)} email={USER.email} catchUp={_catchUp} />
               : <div className="ot-card ot-card-locked"><div className="ot-head" style={{ cursor: "default" }}>{_isQuizLive()
@@ -21163,7 +21167,8 @@ function _qzBuildMini(today) {
   const push = (q, tagLabel) => { if (q) { if (tagLabel) q.tag = tagLabel; out.push(q); } };
   // 필수(오늘 4종 + 어제 + 틀린 단어 + 같이 쓰는 표현 1개) 외에는 10문제를 넘기지 않는다
   const pushIfRoom = (q, tagLabel) => { if (out.length < 10) push(q, tagLabel); };
-  const T = byDay[rd] || [];
+  // ★ 2026-10-30: TF 표현 목록(__TF_SCN)이 아직 안 불러와졌으면 오늘 카드(today)로 오늘 문제를 만든다
+  const T = byDay[rd] || ((today && today.word) ? _qzMakeAll(today, pool, rd) : []);
   const ofType = (qs, t) => qs.filter(q => q.type === t);
   // 1) 오늘 필수: 뜻 → 스펠링 → 블록 조립 → 빈칸
   push(P.take(ofType(T, "mean"), true) || P.take(ofType(T, "word"), true), "오늘");
