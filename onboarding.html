@@ -713,7 +713,7 @@ function OnboardingApp() {
   }, [devPreview, email]);
 
   return (
-    <div className="stage" style={{ zoom: (stage !== "welcome" && typeof window !== "undefined" && window.innerWidth <= 600) ? 0.8 : 1 }}>  {/* 지원서 이후 화면도 모바일 80% (랜딩과 맞춤) */}
+    <div className="stage" style={{ zoom: 1 }}>  {/* 2026-10-30: 모바일도 100% (80%는 너무 작다는 버디님 피드백) */}
       {stage === "welcome" && (
         <WelcomeScreen onNext={() => setStage("application")} initialLogin={_goParam === "login"} />
       )}
@@ -995,7 +995,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
   const [jrLoading, setJrLoading] = useState(false);
   const [jrFb, setJrFb] = useState(null);          // 일지 AI 피드백 (실제 mentor-feedback 함수 호출)
   // 글자 크기: 버튼 없이 모바일 80% · PC 100% (2026-10-24)
-  const _fsOf = () => { try { return window.innerWidth <= 600 ? 0.8 : 1; } catch (e) { return 1; } };
+  const _fsOf = () => 1;   // 2026-10-30: 모바일도 100% (80%는 너무 작다는 버디님 피드백)
   const [fontScale, setFontScale] = useState(_fsOf);
   useEffect(() => { const on = () => setFontScale(_fsOf()); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
 
@@ -2023,15 +2023,19 @@ function WhyMock({ kind }) {
       {[
         { id: "y12", nm: "임원 트랙", term: "12개월 + 유비챌", chip: "🗓 1년 내내 끊김 없이", desc: "가장 길게, 가장 꾸준하게",
           was: "301,800원", now: "285,000원", total: "81,800원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true,
+          monthly: "15,500원", monthlyNote: "1일1비 몫 · 유비챌 1기수 99,000원 별도 포함", months: 12,
           li: ["1일1비 12개월", "유비챌 1기수 (기간 안에 원하는 기수)"] },
         { id: "pkg", nm: "승진 패스트트랙", term: "6개월 + 유비챌", chip: "⭐ 혜택이 가장 커요", desc: "혼자 매일 쌓기 + 동료와 4주 실전",
           was: "200,400원", now: "179,000원", total: "86,400원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true, best: true,
+          monthly: "13,300원", monthlyNote: "1일1비 몫 · 유비챌 1기수 99,000원 별도 포함", months: 6,
           li: ["1일1비 6개월", "유비챌 1기수 (4주 챌린지)"] },
         { id: "m6", nm: "정규직", term: "6개월", chip: "👍 대리 + TF 트랙까지", desc: "습관이 확실히 붙는 기간",
           was: "101,400원", now: "94,900원", total: "21,500원", gift: "지금 결제 시 영어 달력 사은품 포함",
+          monthly: "15,800원", monthlyNote: null, months: 6,
           li: ["1일1비 6개월"], up: "84,100원 더하면 유비챌 4주 + WorkBook까지" },
         { id: "m3", nm: "인턴", term: "3개월", chip: "🌱 가볍게 맛보기", desc: "습관이 붙는 평균 66일을 넘겨보는 첫걸음",
           was: "50,700원", now: "49,900원", total: null, gift: null, nogift: true,
+          monthly: "16,600원", monthlyNote: null, months: 3,
           li: ["1일1비 3개월"] },
       ].map(p => (
         <div key={p.id} style={{
@@ -2046,13 +2050,13 @@ function WhyMock({ kind }) {
             <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 800, color: "var(--accent)", background: "rgba(216,90,42,0.1)", borderRadius: 999, padding: "3px 8px" }}>{p.chip}</span>
           </div>
           <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 3 }}>{p.desc}</div>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 10, marginTop: 10 }}>
-            <span style={{ flex: 1 }}>
-              <span style={{ display: "block", fontSize: 11, color: "var(--ink-mute)", textDecoration: "line-through" }}>{p.was}</span>
-              <span style={{ display: "block", fontSize: 21, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.02em" }}>{p.now}</span>
-            </span>
-            {p.total && <span style={{ fontSize: 12, fontWeight: 900, color: "var(--accent)" }}>총 {p.total} 혜택</span>}
+          {/* 2026-10-30: 큰 숫자는 월 환산가, 아래 작게 총액 · 기간 · 1회 결제. 유비챌 든 트랙은 유비챌 99,000원을 뺀 1일1비 몫 */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 10 }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "var(--ink)", letterSpacing: "-0.02em" }}>월 {p.monthly}</span>
+            {p.total && <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 900, color: "var(--accent)", whiteSpace: "nowrap" }}>총 {p.total} 혜택</span>}
           </div>
+          <div style={{ fontSize: 11.5, color: "var(--ink-soft)", fontWeight: 700, marginTop: 2 }}>총 {p.now} / {p.months}개월 · 1회 결제 <span style={{ color: "var(--ink-mute)", fontWeight: 500, textDecoration: "line-through", whiteSpace: "nowrap" }}>{p.was}</span></div>
+          {p.monthlyNote && <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 1 }}>{p.monthlyNote}</div>}
           {p.gift && (
             <div style={{ marginTop: 9, background: "rgba(216,90,42,0.1)", color: "var(--accent)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>🎁 {p.gift}</div>
           )}
@@ -2072,7 +2076,7 @@ function WhyMock({ kind }) {
       ))}
 
       <div style={{ fontSize: 10.5, color: "var(--ink-mute)", lineHeight: 1.65, margin: "4px 0 12px" }}>
-        정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 50,000원 · 영어 달력 15,000원 상당
+        월 환산가는 총액을 개월 수로 나눈 값이고, 유비챌이 든 트랙은 유비챌 1기수 99,000원을 뺀 1일1비 몫이에요. 정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 50,000원 · 영어 달력 15,000원 상당
       </div>
 
       {CTAButtons}
