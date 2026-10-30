@@ -1292,9 +1292,9 @@ var LW=[{"w": "stakeholder", "d": 1, "m": "이해관계자"}, {"w": "deadline", 
       if(it.kind==='msg'){var box=document.createElement('div');box.className='app';box.dataset.kind=it.k;el.appendChild(box);var c=Object.assign({},it.cfg,{retryMode:true});Msg(box,c);}
       else{var w=document.createElement('div');w.innerHTML=it.html;el.appendChild(w);}
       old.parentNode.replaceChild(el,old);roots[q]=el;}
-    function post(stage){var ok=0,no=0,miss=[];for(var q=0;q<total();q++){var a=ans[q];if(a!=null){a?ok++:(no++,miss.push(D.words[q]));}}
+    function post(stage){var ok=0,no=0,miss=[],hit=[];for(var q=0;q<total();q++){var a=ans[q];if(a!=null){a?(ok++,hit.push(D.words[q])):(no++,miss.push(D.words[q]));}}
       var fx=Object.keys(fixed).map(function(q){return D.words[q];});
-      try{parent.postMessage({promo:{set:D.set,ids:D.ids,title:window.PTITLE,mode:mode,ok:ok,no:no,total:total(),miss:miss,ans:ans,stage:stage,fixed:fx}},'*');}catch(e){}}
+      try{parent.postMessage({promo:{set:D.set,ids:D.ids,title:window.PTITLE,mode:mode,ok:ok,no:no,total:total(),miss:miss,hit:hit,ans:ans,stage:stage,fixed:fx}},'*');}catch(e){}}
     D.items.forEach(function(it,n){var el=document.createElement('div');el.hidden=true;stage.appendChild(el);
       if(it.kind==='msg'){el.className='app';el.dataset.kind=it.k;el.dataset.q=n;var c=it.cfg;c.counter=function(){return (n+1)+'/'+N;};c.nextLabel=window.PNEXT;c.turns.forEach(function(t){t.options=t.options.map(function(o){return O(o.t,o.ko,o.ok,o.tag,o.note);});});Msg(el,c);}
       else if(it.kind==='card'){el.innerHTML=it.html;el.dataset.q=n;}

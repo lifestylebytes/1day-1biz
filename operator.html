@@ -1370,10 +1370,13 @@ function SheetView({ items, onClose }) {
     (items || []).filter(it => it.category === 'survey' && it.context && it.context.via === 'trial_paid_reason').forEach(it => { pulse[(it.email || '').toLowerCase()] = parseSurveyRow(it); });
     const rows = _byKey('trial_paid_reason').map(r => {
       const x = r.responses || {}; const pz = pulse[(r.email || '').toLowerCase()] || {};
-      return { ..._base(r), '체험 며칠째 결제': x.paidTrialDay != null ? x.paidTrialDay + '일째' : '', '결제 이유': _list(x.reasons), '제일 큰 이유': x.top || '', '직접 쓴 이유': x.other || '',
+      // ★ 2026-10-30 v2 = 결제 직후 설문 (결심한 순간 · 망설인 것 · 전에 하던 공부 · 결제 직전 생각). 예전 Day 8 답은 그 칸이 비어 있다
+      return { ..._base(r), 버전: x.v === 2 ? '결제 직후' : 'Day 8', '체험 며칠째 결제': x.paidTrialDay != null ? x.paidTrialDay + '일째' : '',
+        '결심한 순간': x.moment ? (x.moment === '기타' && x.momentEtc ? '기타: ' + x.momentEtc : x.moment) : '', '결제 이유': _list(x.reasons), '제일 큰 이유': x.top || '',
+        '망설였던 것': x.hesitate || '', '전에 하던 공부': x.before || '', '결제 직전 생각': x.thought || '', '직접 쓴 이유': x.other || '',
         만족도: pz.rating || '', '한마디로 정의': pz.oneLiner || '', '그만둔다면 이유': pz.quit || '', '있으면 계속 쓸 것': pz.keep || '' };
     });
-    return { cols: ['날짜', '이름', '이메일', '체험 며칠째 결제', '결제 이유', '제일 큰 이유', '직접 쓴 이유', '만족도', '한마디로 정의', '그만둔다면 이유', '있으면 계속 쓸 것'], num: new Set(['만족도']), rows };
+    return { cols: ['날짜', '이름', '이메일', '버전', '체험 며칠째 결제', '결심한 순간', '결제 이유', '제일 큰 이유', '망설였던 것', '전에 하던 공부', '결제 직전 생각', '직접 쓴 이유', '만족도', '한마디로 정의', '그만둔다면 이유', '있으면 계속 쓸 것'], num: new Set(['만족도']), rows };
   }, [day1.rows, items, _nameOf]);
   const d60 = React.useMemo(() => {
     const rows = (items || []).filter(_isD60).map(it => {
@@ -1430,19 +1433,20 @@ function SheetView({ items, onClose }) {
   const pe = React.useMemo(() => {
     const rows = (learn.rows || []).filter(r => r.qe && typeof r.qe === 'object').map(r => { const q = r.qe;
       return { _at: q.at || r.updated_at, 날짜: _fmtAt(q.at || r.updated_at), 이름: r.name || '', 이메일: r.email || '', 평가: q.title || q.kind || '', '평가 Day': q.evalDay || r.day,
-        점수: q.total ? q.ok + ' / ' + q.total : '', '정답률': q.total ? Math.round(q.ok / q.total * 100) : '', '첫 시도': q.firstTry === false ? '다시 봄' : '첫 시도', '틀린 표현': _list(q.miss) }; });
-    return { cols: ['날짜', '이름', '이메일', '평가', '평가 Day', '점수', '정답률', '첫 시도', '틀린 표현'], num: new Set(['평가 Day', '정답률']), rows };
+        점수: q.total ? q.ok + ' / ' + q.total : '', '정답률': q.total ? Math.round(q.ok / q.total * 100) : '', '첫 시도': q.firstTry === false ? '다시 봄' : '첫 시도', '맞힌 표현': _list(q.hit), '틀린 표현': _list(q.miss) }; });
+    return { cols: ['날짜', '이름', '이메일', '평가', '평가 Day', '점수', '정답률', '첫 시도', '맞힌 표현', '틀린 표현'], num: new Set(['평가 Day', '정답률']), rows };
   }, [learn.rows]);
   const qz = React.useMemo(() => {
     const wordDay = {}; Object.entries(_dayWord).forEach(([d, w]) => { wordDay[String(w).toLowerCase()] = Number(d); });
-    const agg = {}; const at = (d) => (agg[d] = agg[d] || { k: 0, w: 0, people: new Set(), pe: 0 });
+    const agg = {}; const at = (d) => (agg[d] = agg[d] || { k: 0, w: 0, people: new Set(), pe: 0, pk: 0 });
     (learn.rows || []).forEach(r => {
       const z = r.qzst; if (z && typeof z === 'object' && ((z.k || 0) + (z.w || 0)) > 0) { const a = at(Number(r.day)); a.k += Number(z.k || 0); a.w += Number(z.w || 0); a.people.add((r.email || '').toLowerCase()); }
       const q = r.qe; if (q && Array.isArray(q.miss)) q.miss.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pe += 1; });
+      if (q && Array.isArray(q.hit)) q.hit.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pk += 1; });   // ★ 2026-10-30 맞힌 표현은 이날부터 저장
     });
     const rows = Object.keys(agg).map(Number).sort((a, b) => a - b).map(d => { const a = agg[d]; const n = a.k + a.w;
-      return { _at: '', Day: d, 표현: _dayWord[d] || '', '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
-    return { cols: ['Day', '표현', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 틀림', '푼 회원'], num: new Set(['Day', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 틀림', '푼 회원']), rows };
+      return { _at: '', Day: d, 표현: _dayWord[d] || '', '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
+    return { cols: ['Day', '표현', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['Day', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows };
   }, [learn.rows, _dayWord]);
   const ws = React.useMemo(() => {
     const rows = (learn.subs || []).map(s => ({ _at: s.submitted_at, 날짜: _fmtAt(s.submitted_at), 이름: s.name || '', 이메일: s.email || '', Day: s.day, 표현: s.word || _dayWord[s.day] || '', '쓴 문장': s.answer_text || '', '사수 첨삭': s.corrected || '' }));
@@ -1526,7 +1530,7 @@ function SheetView({ items, onClose }) {
         <div className="sheet-tabs">
           <button className={'sheet-tab' + (tab === 'survey' ? ' on' : '')} onClick={() => setTab('survey')}>설문<small>{survey.rows.length}</small></button>
           <button className={'sheet-tab' + (tab === 'fb' ? ' on' : '')} onClick={() => setTab('fb')}>피드백<small>{fb.rows.length}</small></button>
-          {[['s1', '📝 1일차 후기', s1], ['t5', '📋 체험 5일차', t5], ['t7', '📋 체험 7일차', t7], ['d8', '💳 Day 8 결제 이유', d8], ['d60', '🌟 Day 60', d60], ['cb', '🏖️ 결근 복귀', cb], ['pw', '🎖️ 진급 한마디', pw], ['gr', '🎓 수습 30일 회고', gr], ['cx', '🚪 해지 의견', cx]].map(([k, l, d]) => (
+          {[['s1', '📝 1일차 후기', s1], ['t5', '📋 체험 5일차', t5], ['t7', '📋 체험 7일차', t7], ['d8', '💳 결제 이유', d8], ['d60', '🌟 Day 60', d60], ['cb', '🏖️ 결근 복귀', cb], ['pw', '🎖️ 진급 한마디', pw], ['gr', '🎓 수습 30일 회고', gr], ['cx', '🚪 해지 의견', cx]].map(([k, l, d]) => (
             <button key={k} className={'sheet-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)}>{l}<small>{(day1.loading && ['s1', 't5', 't7', 'd8', 'cb'].includes(k)) ? '…' : d.rows.length}</small></button>
           ))}
           {[['pe', '📈 진급 평가', pe], ['qz', '🧠 퀴즈 통계', qz], ['ws', '✍️ 내 문장', ws]].map(([k, l, d]) => (
