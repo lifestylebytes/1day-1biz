@@ -3099,12 +3099,16 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
             {kakaoOptIn ? "✓" : ""}
           </span>
           <span>
-            <span style={{ color: "var(--accent)" }}><strong>매일 아침 9시</strong> 오늘의 표현을 카톡으로 받기</span>
+            <span style={{ color: "var(--accent)" }}><strong>매일 아침 9시</strong> 오늘의 표현을 카톡으로 받기!</span>
             <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", marginTop: 2 }}>
-              학습 리마인더만 와요. 광고는 안 보내요. 시간 변경·해제는 사원증 → 설정에서 언제든.
+              시간 변경·해제는 사원증 → 설정에서 언제든 변경하실 수 있어요.
             </span>
           </span>
         </label>
+        {kakaoOptIn && (
+          <img src="img/jh-kakao.jpg" alt="실제 카톡 출근 알림 예시: 오늘 상황, 오늘 표현, 학습 Day, 연속 출근, 학습하러 가기 버튼" loading="lazy"
+               style={{ display: "block", width: "100%", maxWidth: 230, marginTop: 8, borderRadius: 12, border: "1px solid var(--line)" }} />
+        )}
         {kakaoOptIn && (
           <div style={{ marginTop: 9 }}>
             <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 카톡 받을 번호</span></label>
