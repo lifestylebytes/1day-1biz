@@ -2076,7 +2076,8 @@ function WhyMock({ kind }) {
       ))}
 
       <div style={{ fontSize: 10.5, color: "var(--ink-mute)", lineHeight: 1.65, margin: "4px 0 12px" }}>
-        월 환산가는 총액을 개월 수로 나눈 값이고, 유비챌이 든 트랙은 유비챌 1기수 99,000원을 뺀 1일1비 몫이에요. 정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 50,000원 · 영어 달력 15,000원 상당
+        월 환산가는 총액을 개월 수로 나눈 값이고, 유비챌이 든 트랙은 유비챌 1기수 99,000원을 뺀 1일1비 몫이에요. 정가는 1일1비 월 16,900원, 유비챌 1기수 99,000원 기준 · 사은품 WorkBook 50,000원 · 영어 달력 15,000원 상당<br />
+        유료 기간이 시작되고 학습 기록이 생기면 청약철회가 제한되고 1개월 단위 환불 기준이 적용돼요. 자세한 건 <a href="terms.html#refund" target="_blank" rel="noopener" style={{ color: "var(--ink-mute)" }}>이용약관 제7조</a>
       </div>
 
       {CTAButtons}
@@ -2250,8 +2251,26 @@ function WhyMock({ kind }) {
       <div className="fine-print" style={{ marginTop: 12 }}>
         결제 기간이 끝나도 기록은 2개월 보관 · 다시 결제하면 하던 Day 그대로 이어져요
       </div>
+      <BizFooter />
     </div>
     </>
+  );
+}
+
+// ★ 2026-10-30: 사업자 정보 푸터 (전자상거래법 표시 의무). welcome / cancel 에도 같은 내용
+function BizFooter() {
+  return (
+    <footer style={{ marginTop: 22, borderTop: "1px dashed var(--line)", padding: "16px 2px 6px", fontSize: 11.5, lineHeight: 1.8, color: "var(--ink-mute)", wordBreak: "keep-all" }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 6, fontWeight: 800 }}>
+        <a href="terms.html" style={{ color: "var(--ink)", textDecoration: "none", borderBottom: "1px solid var(--line)" }}>이용약관</a>
+        <a href="privacy.html" style={{ color: "var(--ink)", textDecoration: "none", borderBottom: "1px solid var(--line)" }}>개인정보처리방침</a>
+        <a href="terms.html#refund" style={{ color: "var(--ink)", textDecoration: "none", borderBottom: "1px solid var(--line)" }}>환불 규정</a>
+        <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--ink)", textDecoration: "none", borderBottom: "1px solid var(--line)" }}>고객센터</a>
+      </div>
+      <div><strong style={{ color: "var(--ink)" }}>버디버디</strong> · 대표 유가람 · 사업자등록번호 703-91-02314</div>
+      <div>서울특별시 종로구 지봉로17길 9, A302 · youbuddy.co@gmail.com · 고객센터 1일1비 카카오 채널 (평일 10~18시)</div>
+      <div style={{ fontSize: 11, marginTop: 4 }}>결제는 래피드(Latpeed)를 통해 진행됩니다. © 2026 YOUBUDDY</div>
+    </footer>
   );
 }
 
