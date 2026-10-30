@@ -2521,7 +2521,11 @@ function App() {
     const amount = Number(amtRaw) > 0 ? Number(amtRaw) : null;
     const amountText = amount ? amount.toLocaleString('ko-KR') + '원' : '';
     const fromTrial = typeof pref.prev_cohort === 'string' && pref.prev_cohort.startsWith('trial');
-    return { line1, dateLine, count, lastPaid, codes, type, option, amount, amountText, fromTrial };
+    // ★ 2026-10-30 체험 며칠째에 결제했는지: 결제 날짜 - 가입 날짜 + 1 (한국 시간). 결제 시각은 plan_paid_at, 없으면 last_paid_at
+    const _kd = (v) => { const t = Date.parse(v); return isNaN(t) ? null : new Date(t + 9 * 3600000).toISOString().slice(0, 10); };
+    const _paidK = _kd(pref.plan_paid_at || pref.last_paid_at), _signK = _kd(u.signup_date);
+    const trialPaidDay = (fromTrial && _paidK && _signK) ? Math.max(1, Math.round((Date.parse(_paidK) - Date.parse(_signK)) / 86400000) + 1) : null;
+    return { line1, dateLine, count, lastPaid, codes, type, option, amount, amountText, fromTrial, trialPaidDay };
   };
 
   // ★ 멤버십 퇴직 처리 (인수인계 30일 후 자동 만료)
@@ -3429,7 +3433,7 @@ function App() {
                       return (
                         <>
                           <div className="pay-meta">{pi.count ? '총 ' + pi.count + '회 결제' + (pi.lastPaid ? ' · 마지막 ' + pi.lastPaid : '') : '결제 기록 없음'}</div>
-                          {(pi.option || pi.amountText) && <div className="pay-meta" style={{ color: '#2D3E5C', fontWeight: 600 }} title={pi.fromTrial ? '무료체험 중에 결제해 정식 회원이 됐어요' : '마지막으로 결제한 옵션과 금액'}>💳 {pi.fromTrial ? '체험 후 ' : ''}{pi.option || '옵션 기록 없음'}{pi.amountText ? ' · ' + pi.amountText : ''}</div>}
+                          {(pi.option || pi.amountText) && <div className="pay-meta" style={{ color: '#2D3E5C', fontWeight: 600 }} title={pi.fromTrial ? (pi.trialPaidDay ? '가입 ' + pi.trialPaidDay + '일째(체험 ' + (pi.trialPaidDay <= 7 ? pi.trialPaidDay + '일째' : '끝난 뒤') + ')에 결제해 정식 회원이 됐어요' : '무료체험 중에 결제해 정식 회원이 됐어요') : '마지막으로 결제한 옵션과 금액'}>💳 {pi.fromTrial ? (pi.trialPaidDay ? (pi.trialPaidDay <= 7 ? '체험 ' + pi.trialPaidDay + '일째 후 ' : '체험 끝나고 (가입 ' + pi.trialPaidDay + '일째) ') : '체험 후 ') : ''}{pi.option || '옵션 기록 없음'}{pi.amountText ? ' · ' + pi.amountText : ''}</div>}
                           {pi.codes.length > 0 && <div className="pay-meta" style={{ color: '#8A7964' }}>🎟 {pi.codes.join(', ')}</div>}
                         </>
                       );
