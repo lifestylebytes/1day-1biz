@@ -7797,7 +7797,7 @@ function UnlockChip({ k, rd }) {
 const _POP_ORDER = {
   // 🚪 접속하자마자
   // ★ 2026-10-17 (개발 뷰): 투어(첫 출근 · 정직원 모드 가이드)와 진급 결과 흐름도 같은 줄에 선다. 예전엔 줄 밖이라 EXP 팝업과 같이 떴다.
-  "tour": 5, "retire-d7": 10, "notice-personal": 20, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "tf-select": 50, "absence": 60, "first-week": 70,
+  "tour": 5, "retire-d7": 10, "notice-personal": 20, "paid-reason": 22, "promo-flow": 25, "promo-ceremony": 30, "senior": 40, "tf-select": 50, "absence": 60, "first-week": 70,
   // ✅ 오늘 일정 끝낸 뒤
   "exp": 110,
   // ★ 2026-10-24 (개발 뷰): 👋 첫 주 웰컴 (Day 1~5)도 오늘 일정 끝낸 뒤로 (사용자 요청). EXP 바로 다음, 출근 환경 세팅(120) 앞.
@@ -7807,6 +7807,7 @@ const _POP_ORDER = {
   "trial-survey": 125, "trial-survey-pv": 75,   // ?tsv=5|7 미리보기는 바로
   // ★ 2026-10-30 (개발 뷰): Day 8 결제 이유 설문 (체험 출신 결제 회원). ?tpw=1 미리보기는 바로
   "trial-paid": 126, "trial-paid-pv": 76,
+  // ★ 2026-10-30 (개발 뷰): 결제 직후 설문은 접속하자마자 줄 22 (위 tour · 퇴직 D-7 · 개인 공지 다음)
 
   // ★ 2026-10-18: 리포트 도착 · 늦게 열린 평가는 오늘 일정 끝낸 뒤로 (사용자 요청). 학습 먼저, 선물은 그 다음.
   "promo-batch": 114, "promo-retro": 116, "setup": 120,
@@ -18914,6 +18915,94 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
 }
 
 // ============================================================
+// ★ 2026-10-30 (개발 뷰): 결제 직후 설문 (1장 · 5문항). Day 8 결제 이유 2장을 대신한다 (사용자 요청: 기억이 정확한 결제 직후에)
+//   대상: 체험으로 시작해서 결제한 회원 (_tpwInfo). 뜨는 때: 결제가 반영된 뒤 첫 접속, 접속하자마자 (팝업 줄 22), 계정당 1번.
+//   ① 결심한 순간 (하나) ② 결심한 이유 (전부 + 제일 큰 이유 ★) ③ 망설였던 것 (하나) ④ 1일1비 전 영어 공부 (하나) ⑤ 결제 직전 든 생각 한 줄 (선택)
+//   ①~④ 를 다 골라야 제출, 제출하면 +50P. 저장: survey_responses 'trial_paid_reason' (v: 2) + 체험 며칠째 결제(paidTrialDay).
+//   완료 표시는 기기 + 서버(ret_state PAIDSV) 둘 다라 다른 기기에서 또 안 뜬다. 미리보기 ?prs=1, dev 패널 > 팝업 전체보기.
+// ============================================================
+const _PRS_MOMENT = ["체험 첫날", "며칠 써보고", "48시간 사은품 보고", "체험 끝난다는 안내 보고", "쌓인 기록이 아까워서", "유비챌 · 인스타 보고", "기타"];
+const _PRS_REASONS = _TPW_REASONS.concat(["사은품 · 48시간", "체험 끝나면 아까워서", "다른 앱보다 나아서"]);
+const _PRS_HESITATE = ["가격", "꾸준히 할 자신", "효과 의심", "다른 앱과 비교 중", "없었어요"];
+const _PRS_BEFORE = ["안 함", "다른 앱", "학원 · 과외", "유튜브 · 책"];
+const _prsKey = (email) => "__OD_PRS_DONE_" + (email || "guest");
+function _prsMarkServer(email) { try { if (email && email !== "guest" && window.OD && window.OD.setRetState) window.OD.setRetState(email, { PAIDSV: { v: 2, at: new Date().toISOString() } }).catch(() => {}); } catch (e) {} }
+async function _prsDoneOnServer(email) {
+  try {
+    if (!email || email === "guest" || !window.OD || !window.OD.getRetState) return false;
+    const r = await window.OD.getRetState(email);
+    const hit = !!(r && r.ok && r.result && r.result.PAIDSV);
+    if (hit) { try { localStorage.setItem(_prsKey(email), "1"); } catch (e) {} }
+    return hit;
+  } catch (e) { return false; }
+}
+function PaidReasonSurvey({ email, info, onClose, preview }) {
+  const [moment, setMoment] = useState("");
+  const [momentEtc, setMomentEtc] = useState("");
+  const [picked, setPicked] = useState([]);
+  const [top, setTop] = useState("");
+  const [hesitate, setHesitate] = useState("");
+  const [before, setBefore] = useState("");
+  const [thought, setThought] = useState("");
+  const [done, setDone] = useState(false);
+  const toggle = (r) => setPicked(p => { const on = p.includes(r); if (on && top === r) setTop(""); return on ? p.filter(x => x !== r) : p.concat([r]); });
+  const topNow = picked.length === 1 ? picked[0] : top;
+  const ok = !!moment && (moment !== "기타" || momentEtc.trim()) && picked.length > 0 && !!topNow && !!hesitate && !!before;
+  const submit = () => {
+    if (!ok) return;
+    if (!preview) {
+      const payload = { v: 2, moment, momentEtc: moment === "기타" ? momentEtc.trim() : null, reasons: picked, top: topNow, hesitate, before, thought: thought.trim() || null,
+        paidTrialDay: info ? info.paidTrialDay : null, paidAt: info ? info.paidAt : null, prevCohort: info ? info.prevCohort : null, paidDaySrc: info ? info.src : null, submittedAt: new Date().toISOString() };
+      try { localStorage.setItem(_prsKey(email), "1"); } catch (e) {}
+      _prsMarkServer(email);
+      try { if (email && window.OD && window.OD.enabled && window.OD.saveSurveyResponse) window.OD.saveSurveyResponse(email, "trial_paid_reason", payload).catch(() => {}); } catch (e) {}
+      try { _retAwardWp(email, "survey:trial_paid", 50, "정식 입사 설문"); } catch (e) {}
+    }
+    setDone(true); setTimeout(onClose, 1400);
+  };
+  if (done) return (
+    <TsvShell title="정식 입사 · 결제 완료" right="+50P 적립" total={1}>
+      <div style={{ textAlign: "center", padding: "18px 0 8px" }}>
+        <div style={{ fontSize: _fs(18), fontWeight: 900, color: _TSV.ink }}>고마워요. 잘 받았어요.</div>
+        <div style={{ fontSize: _fs(12.5), color: _TSV.mute, marginTop: 6 }}>복지 포인트 50P 넣어드렸어요.</div>
+      </div>
+    </TsvShell>
+  );
+  const star = (on) => (<svg width="16" height="16" viewBox="0 0 24 24" fill={on ? "#FFFDF7" : "none"} stroke={on ? "#FFFDF7" : "#9C8B72"} strokeWidth="2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>);
+  const one = (list, val, set) => <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{list.map(o => <TsvChip key={o} on={val === o} onClick={() => set(val === o ? "" : o)}>{o}</TsvChip>)}</div>;
+  const inp = { width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: "1.5px solid " + _TSV.line, background: _TSV.paper, fontFamily: "inherit", fontSize: _fs(12.5), lineHeight: 1.5, color: _TSV.ink };
+  return (
+    <TsvShell title="정식 입사 · 결제 완료" right="+50P" total={1}>
+      <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>결제해주셔서 고마워요. 정식 입사를 축하해요</div>
+      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px", lineHeight: 1.35 }}>기억이 생생할 때,<br/>1분만 물어볼게요</div>
+      <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>답하면 복지 포인트 50P를 드려요.</div>
+      {_tsvQ("1. 결제를 결심한 순간은 언제였나요?", "하나")}
+      {one(_PRS_MOMENT, moment, setMoment)}
+      {moment === "기타" && <input value={momentEtc} onChange={e => setMomentEtc(e.target.value)} placeholder="언제였는지 짧게 적어주세요" aria-label="결심한 순간 직접 쓰기" style={Object.assign({}, inp, { marginTop: 8, borderColor: momentEtc.trim() ? _TSV.or : _TSV.line })} />}
+      {_tsvQ("2. 이유를 전부 골라주세요", picked.length > 1 ? "제일 큰 이유에 ★" : "여러 개 골라도 돼요")}
+      {picked.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+          {picked.map(r => (
+            <div key={r} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px 7px 14px", borderRadius: 10, border: "1.5px solid " + _TSV.or, background: _TSV.orSoft }}>
+              <button type="button" onClick={() => toggle(r)} style={{ flex: 1, textAlign: "left", background: "transparent", border: "none", padding: 0, fontFamily: "inherit", fontSize: _fs(12.5), fontWeight: 800, color: "#B5461C", cursor: "pointer" }}>{r}</button>
+              {picked.length > 1 && <button type="button" aria-label={topNow === r ? "제일 큰 이유" : "제일 큰 이유로 표시"} onClick={() => setTop(r)} style={{ width: 30, height: 30, borderRadius: 8, border: "1.5px solid " + (topNow === r ? _TSV.or : _TSV.line), background: topNow === r ? _TSV.or : _TSV.paper, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>{star(topNow === r)}</button>}
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{_PRS_REASONS.filter(r => !picked.includes(r)).map(r => <TsvChip key={r} on={false} onClick={() => toggle(r)}>{r}</TsvChip>)}</div>
+      {_tsvQ("3. 결제 전에 망설였던 건?", "하나")}
+      {one(_PRS_HESITATE, hesitate, setHesitate)}
+      {_tsvQ("4. 1일1비 전엔 영어 공부를?", "하나")}
+      {one(_PRS_BEFORE, before, setBefore)}
+      {_tsvQ("5. 결제 버튼 누르기 직전에 든 생각, 한 줄만", "선택")}
+      <input value={thought} onChange={e => setThought(e.target.value)} placeholder="예) 이번엔 진짜 끝까지 해보자" aria-label="결제 직전에 든 생각" style={inp} />
+      <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>제출하고 50P 받기 →</button>
+    </TsvShell>
+  );
+}
+
+// ============================================================
 // SurveyModal, Day 2 진입 시 1일차 후기 받기
 // ============================================================
 function SurveyModal({ email, onClose }) {
@@ -22665,6 +22754,7 @@ function _pgCatalog2(email) {
     { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", tm: "in", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
     { day: 1, name: "👋 첫 주 웰컴 (Day 1~5)", when: "Day 1~5 매일 1번, 오늘 일정 4개를 끝낸 뒤", cond: "EXP 다음에 떠요. Day 1은 투어 뒤, Day 2는 1일차 후기 설문 뒤. 그날 일정을 안 끝내면 그날 카드는 안 떠요. (회원 화면은 아직 접속 시, 줄 70)", queue: 118, v: [1, 2, 3, 4, 5].map(d => ({ label: "Day " + d, render: (c) => <FirstWeekPopup day={d} onClose={c} /> })) },
     { day: 5, name: "📋 체험 설문 · 5일차 중간 점검", when: "Day 5, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 한 화면에 3문항 + 막히는 것 1개, 답하면 +50P. 끝 화면: 5일 동안 쌓인 것 · 1주 완주 배지 D-2 · '바꿀래요' 고르면 카톡 알림 시간. 달력 얘기 없음. 저장 trial_day5", queue: 125, v: [{ label: "5일차", render: (c) => <TrialDay5Survey email={em} preview onClose={c} /> }] },
+    { day: 1, name: "💳 결제 직후 설문 (1장 · 5문항)", when: "결제가 반영된 뒤 첫 접속, 접속하자마자 (개발 뷰)", cond: "체험으로 시작해서 결제한 회원만, 계정당 1번 (기기 + 서버 기록). ① 결심한 순간 ② 이유 전부 + ★ ③ 망설였던 것 ④ 1일1비 전 영어 공부 ⑤ 결제 직전 생각 한 줄(선택). ①~④ 다 골라야 제출, +50P. 개발 뷰에선 아래 Day 8 2장 대신 이게 떠요. 저장 trial_paid_reason (v 2)", queue: 22, v: [{ label: "결제 직후", render: (c) => <PaidReasonSurvey email={em} preview info={{ prevCohort: "trial-7d", paidAt: null, paidTrialDay: 3, src: "preview" }} onClose={c} /> }] },
     { day: 8, name: "💳 Day 8 결제 이유 + 요즘 어떠세요? (2장)", when: "Day 8 이상, 오늘 일정 4개를 끝낸 뒤", cond: "체험으로 시작해서 결제한 회원만 (운영자는 개발 뷰에서만), 계정당 1번. 2장: ① 결제 이유 (여러 개 + 제일 큰 이유 별표 + 직접 쓰기) ② 요즘 어떠세요? 의견 설문 (별점, 같은 저장, 끝내면 의견 설문은 따로 안 뜸). 마지막에 제출하면 +50P. 체험 며칠째에 결제했는지(paidTrialDay)도 같이 저장. 저장 trial_paid_reason", queue: 126, v: [{ label: "1장 결제 이유 → 2장 의견 설문", render: (c) => <TrialPaidReasonPopup email={em} preview info={{ prevCohort: "trial-7d", paidAt: null, paidTrialDay: 3, src: "preview" }} onClose={c} /> }] },
     { day: 7, name: "📋 체험 설문 · 7일차 마지막 날", when: "Day 7, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 3장: 별점 · 좋았던 것 → 계속 다닐지 · 걸리는 것('바로 결제'면 건너뜀, 여기서 +100P) → 한 줄 + 끝. '다음에 할게요'는 이번 접속만 닫힘. 저장 trial_day7", queue: 125, v: [{ label: "7일차", render: (c) => <TrialDay7Survey email={em} preview onClose={c} /> }] },
     { day: 1, name: "🛠 출근 환경 세팅", when: "Day 1 학습을 다 끝낸 직후", cond: "③ 카톡 알림 칸이 회원 상태에 따라 달라요.", queue: 120, v: [
@@ -24662,9 +24752,32 @@ function App() {
       // ★ 2026-10-30 회원 화면 라이브: 체험 출신 결제 회원 누구나. 운영자 · Dev 는 개발 뷰를 켰을 때만 (시험용)
       if (USER.isViewingPast || !_tpwInf || _realDay < 8) return false;
       if (_isInternal && !_isDevNext()) return false;
+      if (_isDevNext()) return false;   // ★ 2026-10-30 개발 뷰는 결제 직후 설문(PaidReasonSurvey)으로 대신한다
       return localStorage.getItem(_tpwKey(_localUserNow && _localUserNow.email)) !== '1';
     } catch (e) { return false; }
   })();
+  // ── ★ 2026-10-30 (개발 뷰): 결제 직후 설문. 체험 출신 결제 회원, 결제 반영 뒤 첫 접속에 바로 (줄 22), 계정당 1번 ──
+  const _prsForce = (() => { try { return new URLSearchParams(location.search).get('prs') === '1'; } catch (e) { return false; } })();
+  const [_prsClosed, _setPrsClosed] = useState(false);
+  const [_prsSrvDone, _setPrsSrvDone] = useState(false);
+  const _prsWant = (() => {
+    if (_prsClosed || _prsSrvDone) return false;
+    if (_prsForce && _isInternal) return true;
+    try {
+      if (!_isDevNext() || USER.isViewingPast || !_tpwInf) return false;
+      return localStorage.getItem(_prsKey(_localUserNow && _localUserNow.email)) !== '1';
+    } catch (e) { return false; }
+  })();
+  React.useEffect(() => {
+    if (!_prsWant || _prsForce) return;
+    let alive = true;
+    _prsDoneOnServer(_localUserNow && _localUserNow.email).then(d => { if (alive && d) _setPrsSrvDone(true); });
+    return () => { alive = false; };
+  }, [_prsWant]);
+  const _closePrs = () => {
+    _setPrsClosed(true);
+    if (_prsForce) { try { const u = new URL(location.href); u.searchParams.delete('prs'); history.replaceState(null, '', u.toString()); } catch (e) {} }
+  };
   const _closeTpw = () => {
     _setTpwClosed(true);
     if (_tpwForce) { try { const u = new URL(location.href); u.searchParams.delete('tpw'); history.replaceState(null, '', u.toString()); } catch (e) {} }
@@ -24868,6 +24981,7 @@ function App() {
   const _slFwp = usePopSlot((_isDevNext() && !_fwpForce) ? "first-week-done" : "first-week", !!_fwpDay);   // ★ 2026-10-24 개발 뷰: 오늘 일정 끝낸 뒤 (118)
   const _slSetup = usePopSlot("setup", !!_showSetup);
   const _slTpw = usePopSlot(_tpwForce ? "trial-paid-pv" : "trial-paid", !!_tpwShow);   // ★ 2026-10-30 개발 뷰: Day 8 결제 이유 (126)
+  const _slPrs = usePopSlot("paid-reason", !!_prsWant);   // ★ 2026-10-30 개발 뷰: 결제 직후 설문 (22)
   const _slTsv = usePopSlot(_tsvForce ? "trial-survey-pv" : "trial-survey", !!_tsvDay && !_tsvClosed);   // ★ 2026-10-24 개발 뷰: 체험 설문 5일차 · 7일차 (125)
   const _slMs = usePopSlot("milestone", !!_milestonePopup);
   const _slD1 = usePopSlot("promo-d1", !!_showD1Popup);
@@ -25209,6 +25323,8 @@ function App() {
         <SetupPopup onClose={_closeSetup} />
       )}
       {/* 카톡 출근 알림 1회 안내 (아직 안 켠 회원). 다른 팝업이 하나라도 떠 있으면 양보 */}
+      {/* ★ 2026-10-30 (개발 뷰): 결제 직후 설문 1장 · 5문항 */}
+      {_prsWant && _slPrs && <PaidReasonSurvey email={_localUserNow?.email} info={_tpwInf} preview={!!_prsForce} onClose={_closePrs} />}
       {/* ★ 2026-10-30: Day 8 결제 이유 + 의견 설문 2장 (회원 화면 라이브) */}
       {_tpwShow && _slTpw && <TrialPaidReasonPopup email={_localUserNow?.email} info={_tpwInf} preview={!!_tpwForce} pulseKey={PULSE_SURVEY_KEY} pulseDone={_surveyDone || _surveySrvDone} onClose={_closeTpw} />}
       {/* ★ 2026-10-24: 체험 설문 5일차 · 7일차 (회원 화면 라이브) */}
