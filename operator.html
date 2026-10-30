@@ -45,14 +45,15 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #F4EFE3; color: #2A1
 .card.warn { background: #FFF7E8; border-color: #E8C99B; }
 .card .title { font-size: 13px; color: #8A7964; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-.user-row { display: grid; grid-template-columns: 1.25fr 270px 100px 240px 90px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row { display: grid; grid-template-columns: 1.2fr 250px 96px 260px 92px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid #E8DFCB; align-items: center; font-size: 13px; }
+.user-row > * { min-width: 0; }   /* ★ 2026-10-30: 칸 안 내용이 길어도 카드가 옆 칸을 밀지 않게 */
 .user-row .col-progress { font-size: 12px; line-height: 1.5; }
 .user-row .col-progress .progress-day { font-weight: 800; color: #2A1F14; font-size: 13px; }
 .user-row .col-progress .progress-last { font-size: 11px; color: #8A7964; margin-top: 2px; }
 .user-row .col-type { display: flex; gap: 4px; flex-wrap: wrap; }
 .user-row .col-payment { font-size: 12px; line-height: 1.5; }
 .user-row .col-payment .pay-status { font-weight: 800; font-size: 12px; }
-.user-row .col-payment .pay-meta { font-size: 11px; color: #5C4A36; margin-top: 2px; }
+.user-row .col-payment .pay-meta { font-size: 11px; color: #5C4A36; margin-top: 2px; word-break: keep-all; overflow-wrap: anywhere; }
 .day-help { margin: 0 0 12px; padding: 12px 16px; background: #FFF8E6; border: 1px solid #EBD9A6; border-radius: 8px; font-size: 12.5px; line-height: 1.7; color: #5C4A36; }
 .day-help b { color: #2A1F14; }
 .prog-line1 { font-weight: 900; font-size: 14px; color: #2A1F14; white-space: nowrap; }
@@ -3229,6 +3230,8 @@ function App() {
               };
               const fmtD = d => d ? new Date(d).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '-';
               const listRows = memListOpen && groups[memListOpen] ? [...groups[memListOpen]].sort((a, b) => {
+                // ★ 2026-10-30: 체험 중은 최근 가입순. 나머지는 날짜순 (만료·종료는 최근 종료순)
+                if (memListOpen === '🧪 무료 체험 중') return (new Date(b.signup_date || 0) - new Date(a.signup_date || 0));
                 const ea = ends(a) ? ends(a).getTime() : 0, eb = ends(b) ? ends(b).getTime() : 0;
                 return memListOpen === '🔴 만료·종료' ? eb - ea : (ea || 9e15) - (eb || 9e15);
               }) : null;
@@ -3250,7 +3253,7 @@ function App() {
                           {listRows.map(u => {
                             const isTrial = memListOpen === '🧪 무료 체험 중';
                             const tEnd = isTrial && u.signup_date ? new Date(new Date(u.signup_date).getTime() + 7 * 86400000) : null;
-                            const dateCol = isTrial ? ('체험 종료 ' + fmtD(tEnd)) : (ends(u) ? ((memListOpen === '🔴 만료·종료' ? '종료 ' : (memListOpen === '🟡 취소 예정' ? '종료 예정 ' : '다음 결제 ')) + fmtD(u.membership_ends_at)) : '만료일 없음');
+                            const dateCol = isTrial ? ('가입 ' + fmtD(u.signup_date) + ' · 체험 종료 ' + fmtD(tEnd)) : (ends(u) ? ((memListOpen === '🔴 만료·종료' ? '종료 ' : (memListOpen === '🟡 취소 예정' ? '종료 예정 ' : '다음 결제 ')) + fmtD(u.membership_ends_at)) : '만료일 없음');
                             return (
                               <tr key={u.email} style={{ borderBottom: '1px solid #F0E9DA' }}>
                                 <td style={{ padding: '5px 4px', fontWeight: 700, whiteSpace: 'nowrap' }}>{u.name || '-'}</td>
