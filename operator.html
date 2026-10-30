@@ -1433,19 +1433,20 @@ function SheetView({ items, onClose }) {
   const pe = React.useMemo(() => {
     const rows = (learn.rows || []).filter(r => r.qe && typeof r.qe === 'object').map(r => { const q = r.qe;
       return { _at: q.at || r.updated_at, 날짜: _fmtAt(q.at || r.updated_at), 이름: r.name || '', 이메일: r.email || '', 평가: q.title || q.kind || '', '평가 Day': q.evalDay || r.day,
-        점수: q.total ? q.ok + ' / ' + q.total : '', '정답률': q.total ? Math.round(q.ok / q.total * 100) : '', '첫 시도': q.firstTry === false ? '다시 봄' : '첫 시도', '틀린 표현': _list(q.miss) }; });
-    return { cols: ['날짜', '이름', '이메일', '평가', '평가 Day', '점수', '정답률', '첫 시도', '틀린 표현'], num: new Set(['평가 Day', '정답률']), rows };
+        점수: q.total ? q.ok + ' / ' + q.total : '', '정답률': q.total ? Math.round(q.ok / q.total * 100) : '', '첫 시도': q.firstTry === false ? '다시 봄' : '첫 시도', '맞힌 표현': _list(q.hit), '틀린 표현': _list(q.miss) }; });
+    return { cols: ['날짜', '이름', '이메일', '평가', '평가 Day', '점수', '정답률', '첫 시도', '맞힌 표현', '틀린 표현'], num: new Set(['평가 Day', '정답률']), rows };
   }, [learn.rows]);
   const qz = React.useMemo(() => {
     const wordDay = {}; Object.entries(_dayWord).forEach(([d, w]) => { wordDay[String(w).toLowerCase()] = Number(d); });
-    const agg = {}; const at = (d) => (agg[d] = agg[d] || { k: 0, w: 0, people: new Set(), pe: 0 });
+    const agg = {}; const at = (d) => (agg[d] = agg[d] || { k: 0, w: 0, people: new Set(), pe: 0, pk: 0 });
     (learn.rows || []).forEach(r => {
       const z = r.qzst; if (z && typeof z === 'object' && ((z.k || 0) + (z.w || 0)) > 0) { const a = at(Number(r.day)); a.k += Number(z.k || 0); a.w += Number(z.w || 0); a.people.add((r.email || '').toLowerCase()); }
       const q = r.qe; if (q && Array.isArray(q.miss)) q.miss.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pe += 1; });
+      if (q && Array.isArray(q.hit)) q.hit.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pk += 1; });   // ★ 2026-10-30 맞힌 표현은 이날부터 저장
     });
     const rows = Object.keys(agg).map(Number).sort((a, b) => a - b).map(d => { const a = agg[d]; const n = a.k + a.w;
-      return { _at: '', Day: d, 표현: _dayWord[d] || '', '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
-    return { cols: ['Day', '표현', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 틀림', '푼 회원'], num: new Set(['Day', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 틀림', '푼 회원']), rows };
+      return { _at: '', Day: d, 표현: _dayWord[d] || '', '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
+    return { cols: ['Day', '표현', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['Day', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows };
   }, [learn.rows, _dayWord]);
   const ws = React.useMemo(() => {
     const rows = (learn.subs || []).map(s => ({ _at: s.submitted_at, 날짜: _fmtAt(s.submitted_at), 이름: s.name || '', 이메일: s.email || '', Day: s.day, 표현: s.word || _dayWord[s.day] || '', '쓴 문장': s.answer_text || '', '사수 첨삭': s.corrected || '' }));
