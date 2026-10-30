@@ -1290,6 +1290,14 @@ function _wordFor(u, day, scn, tf) {
   return s && s.word ? { word: s.word, where: (_TF_NAME[id] || id) + ' ' + n + '/30', ord: 1000 + _TF_IDS.indexOf(id) * 100 + n } : null;
 }
 
+// ★ 2026-10-30 정답률 칸 색: 90% 이상은 초록(100%에 가까울수록 진하게), 90% 미만은 빨강(낮을수록 진하게)
+function _rateBg(v) {
+  if (v === '' || v == null || isNaN(Number(v))) return undefined;
+  const n = Number(v);
+  if (n >= 90) { const a = 0.08 + (n - 90) / 10 * 0.4; return { background: `rgba(45,140,70,${a.toFixed(2)})`, fontWeight: 700 }; }
+  const a = Math.min(0.6, 0.15 + (90 - n) / 40 * 0.45); return { background: `rgba(200,60,45,${a.toFixed(2)})`, fontWeight: 700, color: n < 70 ? '#fff' : undefined };
+}
+
 function SheetView({ items, onClose }) {
   const [tab, setTab] = React.useState('survey');
   const [q, setQ] = React.useState('');
@@ -1297,6 +1305,7 @@ function SheetView({ items, onClose }) {
   const [day1, setDay1] = React.useState({ rows: [], loading: true, error: '' });
   // ★ 2026-10-30 퀴즈 통계 · 진급 평가 · 내 문장: 탭을 처음 열 때 불러온다 (SQL 20261030_operator_learning_sheet.sql 필요)
   const [learn, setLearn] = React.useState({ rows: [], subs: [], loading: false, loaded: false, error: '' });
+  const [qzAll, setQzAll] = React.useState(false);   // 퀴즈 통계: 기록 없는 단어도 보기
   // 퀴즈 통계 · 내 문장은 Day 순서로 먼저 보여준다 (헤더 클릭으로 바꿀 수 있음)
   React.useEffect(() => { if (tab === 'qz') setSort({ key: '_ord', dir: 1 }); else if (tab === 'ws') setSort({ key: 'Day', dir: 1 }); else setSort({ key: '_at', dir: -1 }); }, [tab]);
   React.useEffect(() => {
@@ -1471,12 +1480,12 @@ function SheetView({ items, onClose }) {
       if (info) { a.where.add(info.where); a.ord = Math.min(a.ord, info.ord); } return a; };
     // 단어 → 어디서 배우는지 (진급 평가에만 나온 단어도 위치를 보여주려고)
     const home = {};
-    (learn.scn || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = { where: 'Day ' + s.day, ord: Number(s.day) }; });
-    Object.entries(_V2_WORDS).forEach(([d, w]) => { home[w.toLowerCase()] = home[w.toLowerCase()] || { where: 'Day ' + d + ' (개정판)', ord: Number(d) + 0.5 }; });
-    _TF_IDS.forEach((id, i) => ((learn.tf || {})[id]?.scenarios || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = home[String(s.word).toLowerCase()] || { where: _TF_NAME[id] + ' ' + s.tfDay + '/30', ord: 1000 + i * 100 + Number(s.tfDay) }; }));
-    let unknown = 0;
+    (learn.scn || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = { word: s.word, where: 'Day ' + s.day, ord: Number(s.day) }; });
+    Object.entries(_V2_WORDS).forEach(([d, w]) => { home[w.toLowerCase()] = home[w.toLowerCase()] || { word: w, where: 'Day ' + d + ' (개정판)', ord: Number(d) + 0.5 }; });
+    _TF_IDS.forEach((id, i) => ((learn.tf || {})[id]?.scenarios || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = home[String(s.word).toLowerCase()] || { word: s.word, where: _TF_NAME[id] + ' ' + s.tfDay + '/30', ord: 1000 + i * 100 + Number(s.tfDay) }; }));
+    let unknown = 0, maxDay = 0; const members = new Set();
     (learn.rows || []).forEach(r => {
-      const em = (r.email || '').toLowerCase();
+      const em = (r.email || '').toLowerCase(); members.add(em); maxDay = Math.max(maxDay, Number(r.day) || 0);
       const z = r.qzst; if (z && typeof z === 'object' && ((z.k || 0) + (z.w || 0)) > 0) {
         const info = _wordFor(users[em], r.day, learn.scn, learn.tf);
         if (!info) { unknown += 1; } else { const a = at(info.word, info); a.k += Number(z.k || 0); a.w += Number(z.w || 0); a.people.add(em); }
@@ -1486,10 +1495,15 @@ function SheetView({ items, onClose }) {
       if (q && Array.isArray(q.hit)) q.hit.forEach(w => { if (w) at(w, home[String(w).toLowerCase()]).pk += 1; });   // 맞힌 표현은 2026-10-30부터 저장
     });
     if (unknown) console.warn('[퀴즈 통계] 단어를 못 찾은 기록', unknown, '개 (회원 정보 · TF 트랙 없음)');
+    // 기록 있는 단어 수 (기록 없는 단어를 더하기 전)
+    const hasRec = Object.keys(agg).length;
+    // ★ 기록 없는 단어도 보기: 아직 아무도 퀴즈에서 안 만난 단어까지 전부 (퀴즈 기록은 회원이 이미 도착한 Day 의 단어만 쌓인다)
+    if (qzAll) Object.entries(home).forEach(([k, h]) => { if (!agg[k]) agg[k] = { word: h.word, where: new Set([h.where]), ord: h.ord, k: 0, w: 0, people: new Set(), pe: 0, pk: 0, none: true }; });
     const rows = Object.values(agg).map(a => { const n = a.k + a.w;
-      return { _at: '', _ord: a.ord, 표현: a.word, '배우는 곳': [...a.where].join(', '), '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
-    return { cols: ['표현', '배우는 곳', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows };
-  }, [learn.rows, learn.users, learn.scn, learn.tf]);
+      return { _at: '', _ord: a.ord, _none: !!a.none && !a.pe && !a.pk, 표현: a.word, '배우는 곳': [...a.where].join(', '), '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
+    return { cols: ['표현', '배우는 곳', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows,
+      info: { hasRec, total: Object.keys(home).length, recs: (learn.rows || []).length, members: members.size, maxDay } };
+  }, [learn.rows, learn.users, learn.scn, learn.tf, qzAll]);
   const ws = React.useMemo(() => {
     const rows = (learn.subs || []).map(s => ({ _at: s.submitted_at, 날짜: _fmtAt(s.submitted_at), 이름: s.name || '', 이메일: s.email || '', Day: s.day, 표현: s.word || _dayWord[s.day] || '', '쓴 문장': s.answer_text || '', '사수 첨삭': s.corrected || '' }));
     return { cols: ['Day', '표현', '쓴 문장', '사수 첨삭', '이름', '이메일', '날짜'], num: new Set(['Day']), rows };
@@ -1537,6 +1551,12 @@ function SheetView({ items, onClose }) {
           <h3>📊 전체 설문 · 피드백</h3>
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="검색 (이름, 이메일, 내용…)" />
           <span className="cnt">{sorted.length}행{needle ? ` / 전체 ${cur.rows.length}` : ''}</span>
+          {tab === 'qz' && learn.loaded && qz.info && (
+            <span className="cnt" title="퀴즈 기록은 회원이 이미 도착한 Day 의 단어만 쌓여요 (10/17부터). 아직 아무도 안 간 Day 의 단어는 기록이 없어요.">
+              · 기록 있는 단어 {qz.info.hasRec} / 전체 {qz.info.total} · 기록 {qz.info.recs}줄 · 회원 {qz.info.members}명 · 가장 먼 Day {qz.info.maxDay}
+              <label style={{ marginLeft: 10, cursor: 'pointer' }}><input type="checkbox" checked={qzAll} onChange={e => setQzAll(e.target.checked)} style={{ verticalAlign: 'middle' }} /> 기록 없는 단어도 보기</label>
+            </span>
+          )}
           <span style={{ flex: 1 }} />
           <button className="btn btn-ghost btn-mini" onClick={exportCsv} disabled={!sorted.length}>⬇ CSV 내보내기</button>
           <button className="btn btn-mini" onClick={onClose}>닫기 (Esc)</button>
@@ -1562,9 +1582,9 @@ function SheetView({ items, onClose }) {
               </thead>
               <tbody>
                 {sorted.map((r, i) => (
-                  <tr key={i}>
+                  <tr key={i} style={r._none ? { opacity: 0.45 } : undefined}>
                     <td className="rowno">{i + 1}</td>
-                    {cur.cols.map(c => <td key={c} className={cur.num.has(c) || c === '날짜' ? 'num' : ''}>{r[c] ?? ''}</td>)}
+                    {cur.cols.map(c => <td key={c} className={cur.num.has(c) || c === '날짜' ? 'num' : ''} style={c === '정답률' ? _rateBg(r[c]) : undefined}>{r[c] ?? ''}</td>)}
                   </tr>
                 ))}
               </tbody>
