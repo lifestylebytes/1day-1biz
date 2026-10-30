@@ -225,7 +225,7 @@ label { display: block; font-size: 11px; font-weight: 700; color: #8A7964; text-
 .sheet-body td.rowno { color: #B8AA90; text-align: right; white-space: nowrap; background: #FCFAF4; font-size: 11px; }
 .sheet-body tbody tr:nth-child(even) td { background: #FCFAF4; }
 .sheet-body tbody tr:hover td { background: #FFF6E8; }
-.sheet-tabs { display: flex; gap: 2px; padding: 6px 10px 0; background: #EFE7D6; border-top: 1px solid #E6DCC8; }
+.sheet-tabs { display: flex; gap: 2px; padding: 6px 10px 0; background: #EFE7D6; border-top: 1px solid #E6DCC8; overflow-x: auto; }   /* ★ 2026-10-30 탭이 늘어서 좁은 화면에선 옆으로 스크롤 */
 .sheet-tab { font-family: inherit; font-size: 12px; font-weight: 700; padding: 7px 14px; border: 1px solid #D9CDB3; border-bottom: none; border-radius: 6px 6px 0 0; background: #E6DCC8; color: #6B5A45; cursor: pointer; }
 .sheet-tab.on { background: #FFFDF8; color: #2A1F14; }
 .sheet-tab small { font-weight: 600; color: #8A7964; margin-left: 5px; }
@@ -1264,6 +1264,8 @@ function _csvDownload(filename, headers, rows) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 const _CAT_KO = { bug: '오류', suggestion: '제안', content: '콘텐츠', general: '일반', survey: '설문' };
+// ★ 2026-10-30 Day 60 설문은 피드백 테이블(설문)에 들어온다. '설문' 탭(요즘 어떠세요?)과 섞이지 않게 따로
+const _isD60 = (it) => !!(it && it.category === 'survey' && ((it.context && it.context.type === 'day60_survey') || /^\[Day 60 설문\]/.test(it.message || '')));
 
 function SheetView({ items, onClose }) {
   const [tab, setTab] = React.useState('survey');
@@ -1285,7 +1287,7 @@ function SheetView({ items, onClose }) {
 
   // 탭별 컬럼/행 구성. 각 행은 {_at, ...} 객체, 컬럼은 {key, label, num?}
   const survey = React.useMemo(() => {
-    const rows = (items || []).filter(it => it.category === 'survey').map(it => {
+    const rows = (items || []).filter(it => it.category === 'survey' && !_isD60(it)).map(it => {
       const p = parseSurveyRow(it);
       return { _at: it.created_at, 날짜: _fmtAt(it.created_at), 이름: p.who, 이메일: p.email, Day: p.day || '', 만족도: p.rating || '', '한마디로 정의': p.oneLiner, '그만둔다면 이유': p.quit, '있으면 계속 쓸 것': p.keep, 원문: it.message || '' };
     });
@@ -1323,10 +1325,57 @@ function SheetView({ items, onClose }) {
     return { cols: ['날짜', '이메일', '점수', '감각', '객관식', '빈칸', '첫 오답', '틀린 표현', '내 답', '시간'], num: new Set(), rows };
   }, [day1.rows]);
 
+  // ★ 2026-10-30 설문별 탭: 1일차 후기 · 체험 5일차 · 체험 7일차 · Day 8 결제 이유 · Day 60. 나머지 키는 '기타 설문'
+  const _own = new Set(['placement_test', 'day1_feedback', 'trial_day5', 'trial_day7', 'trial_paid_reason']);
+  const _byKey = (k) => {
+    // 같은 사람이 여러 번 저장한 설문(7일차는 2장 · 3장에서 두 번 저장)은 마지막 것만
+    const m = new Map();
+    (day1.rows || []).filter(r => r.survey_key === k).forEach(r => { const e = (r.email || '').toLowerCase(); const p = m.get(e); if (!p || Date.parse(r.created_at) > Date.parse(p.created_at)) m.set(e, r); });
+    return [...m.values()];
+  };
+  const _nameOf = React.useMemo(() => { const m = {}; (items || []).forEach(it => { if (it.email && it.name) m[it.email.toLowerCase()] = it.name; }); return m; }, [items]);
+  const _base = (r) => ({ _at: r.created_at, 날짜: _fmtAt(r.created_at), 이름: _nameOf[(r.email || '').toLowerCase()] || '', 이메일: r.email || '' });
+  const _list = (v) => Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v));
+  const _MATCH_KO = { better: '예상보다 좋았어요', match: '딱 기대만큼', worse: '예상보다 별로', unsure: '잘 모르겠어요' };
+  const s1 = React.useMemo(() => {
+    const rows = _byKey('day1_feedback').map(r => { const x = r.responses || {}; return { ..._base(r), 만족도: x.rating || '', '기대와 비교': _MATCH_KO[x.match] || x.match || '', '느낌': x.feeling || '', '바라는 점': x.improvement || '' }; });
+    return { cols: ['날짜', '이름', '이메일', '만족도', '기대와 비교', '느낌', '바라는 점'], num: new Set(['만족도']), rows };
+  }, [day1.rows, _nameOf]);
+  const t5 = React.useMemo(() => {
+    const rows = _byKey('trial_day5').map(r => { const x = r.responses || {}; return { ..._base(r), '하루 걸리는 시간': x.time || '', 난이도: x.level || '', '카톡 알림': x.kakao || '', '막히는 것': x.stuck || '', '바꾼 알림 시각': x.newHour != null ? x.newHour + '시' : '' }; });
+    return { cols: ['날짜', '이름', '이메일', '하루 걸리는 시간', '난이도', '카톡 알림', '막히는 것', '바꾼 알림 시각'], num: new Set(), rows };
+  }, [day1.rows, _nameOf]);
+  const _STAY_KO = { pay: '바로 결제', thinking: '고민 중', no: '여기까지' };
+  const t7 = React.useMemo(() => {
+    const rows = _byKey('trial_day7').map(r => { const x = r.responses || {}; return { ..._base(r), 점수: x.rating || '', '좋았던 것': _list(x.best), '계속 다닐지': _STAY_KO[x.stay] || x.stay || '', '걸리는 것': x.block || '', '사수에게 한 줄': x.note || '' }; });
+    return { cols: ['날짜', '이름', '이메일', '점수', '좋았던 것', '계속 다닐지', '걸리는 것', '사수에게 한 줄'], num: new Set(['점수']), rows };
+  }, [day1.rows, _nameOf]);
+  const d8 = React.useMemo(() => {
+    // 2장 '요즘 어떠세요?' 는 피드백 테이블(설문)로 가서, 같은 이메일의 via=trial_paid_reason 의견 설문을 붙인다
+    const pulse = {};
+    (items || []).filter(it => it.category === 'survey' && it.context && it.context.via === 'trial_paid_reason').forEach(it => { pulse[(it.email || '').toLowerCase()] = parseSurveyRow(it); });
+    const rows = _byKey('trial_paid_reason').map(r => {
+      const x = r.responses || {}; const pz = pulse[(r.email || '').toLowerCase()] || {};
+      return { ..._base(r), '체험 며칠째 결제': x.paidTrialDay != null ? x.paidTrialDay + '일째' : '', '결제 이유': _list(x.reasons), '제일 큰 이유': x.top || '', '직접 쓴 이유': x.other || '',
+        만족도: pz.rating || '', '한마디로 정의': pz.oneLiner || '', '그만둔다면 이유': pz.quit || '', '있으면 계속 쓸 것': pz.keep || '' };
+    });
+    return { cols: ['날짜', '이름', '이메일', '체험 며칠째 결제', '결제 이유', '제일 큰 이유', '직접 쓴 이유', '만족도', '한마디로 정의', '그만둔다면 이유', '있으면 계속 쓸 것'], num: new Set(['만족도']), rows };
+  }, [day1.rows, items, _nameOf]);
+  const d60 = React.useMemo(() => {
+    const rows = (items || []).filter(_isD60).map(it => {
+      const c = it.context || {}; const msg = it.message || '';
+      const g = (re) => { const m = re.exec(msg); return m ? m[1].trim() : ''; };
+      const v = (a) => (a && a !== '-') ? a : '';
+      return { _at: it.created_at, 날짜: _fmtAt(it.created_at), 이름: it.name || '', 이메일: it.email || '', Day: it.day || '',
+        '영어가 절실한 순간': v(c.q1 || g(/절실한 순간:\s*(.*?)\s*\/\s*업종/)), 업종: v(c.q2 || g(/업종:\s*(.*?)(?:\n|$)/)), '대리가 되면': v(c.q3 || g(/대리가 되면:\s*([\s\S]*)$/)) };
+    });
+    return { cols: ['날짜', '이름', '이메일', 'Day', '영어가 절실한 순간', '업종', '대리가 되면'], num: new Set(['Day']), rows };
+  }, [items]);
+
   const d1 = React.useMemo(() => {
     const keys = [];
-    (day1.rows || []).filter(r => r.survey_key !== 'placement_test').forEach(r => Object.keys(r.responses || {}).forEach(k => { if (!keys.includes(k)) keys.push(k); }));
-    const rows = (day1.rows || []).filter(r => r.survey_key !== 'placement_test').map(r => {
+    (day1.rows || []).filter(r => !_own.has(r.survey_key)).forEach(r => Object.keys(r.responses || {}).forEach(k => { if (!keys.includes(k)) keys.push(k); }));
+    const rows = (day1.rows || []).filter(r => !_own.has(r.survey_key)).map(r => {
       const o = { _at: r.created_at, 날짜: _fmtAt(r.created_at), 이메일: r.email || '', 설문키: r.survey_key || '' };
       keys.forEach(k => { const v = (r.responses || {})[k]; o[k] = (v && typeof v === 'object') ? JSON.stringify(v) : (v == null ? '' : String(v)); });
       return o;
@@ -1334,7 +1383,8 @@ function SheetView({ items, onClose }) {
     return { cols: ['날짜', '이메일', '설문키', ...keys], num: new Set(), rows };
   }, [day1.rows]);
 
-  const cur = tab === 'survey' ? survey : (tab === 'fb' ? fb : (tab === 'place' ? place : d1));
+  const _TABS = { survey, fb, s1, t5, t7, d8, d60, place, day1: d1 };
+  const cur = _TABS[tab] || d1;
   const needle = q.trim().toLowerCase();
   const filtered = needle ? cur.rows.filter(r => cur.cols.some(c => String(r[c] ?? '').toLowerCase().includes(needle))) : cur.rows;
   const sorted = [...filtered].sort((a, b) => {
@@ -1347,7 +1397,7 @@ function SheetView({ items, onClose }) {
   const clickSort = (c) => setSort(s => ({ key: c === '날짜' ? '_at' : c, dir: (s.key === (c === '날짜' ? '_at' : c)) ? -s.dir : -1 }));
   const sortMark = (c) => { const k = c === '날짜' ? '_at' : c; return sort.key === k ? (sort.dir < 0 ? ' ▼' : ' ▲') : ''; };
 
-  const tabLabel = tab === 'survey' ? '설문' : (tab === 'fb' ? '피드백' : (tab === 'place' ? '입사테스트' : 'Day1설문'));
+  const tabLabel = { survey: '설문', fb: '피드백', s1: '1일차후기', t5: '체험5일차', t7: '체험7일차', d8: 'Day8결제이유', d60: 'Day60설문', place: '입사테스트', day1: '기타설문' }[tab] || '설문';
   const exportCsv = () => _csvDownload(`1일1비_${tabLabel}_${new Date().toISOString().slice(0, 10)}.csv`, cur.cols, sorted.map(r => cur.cols.map(c => r[c])));
 
   React.useEffect(() => {
@@ -1367,9 +1417,9 @@ function SheetView({ items, onClose }) {
           <button className="btn btn-mini" onClick={onClose}>닫기 (Esc)</button>
         </div>
         <div className="sheet-body">
-          {(tab === 'day1' || tab === 'place') && day1.loading ? (
+          {['day1', 'place', 's1', 't5', 't7', 'd8'].includes(tab) && day1.loading ? (
             <div className="sheet-empty">불러오는 중…</div>
-          ) : (tab === 'day1' || tab === 'place') && day1.error ? (
+          ) : ['day1', 'place', 's1', 't5', 't7', 'd8'].includes(tab) && day1.error ? (
             <div className="sheet-empty">Day1 설문을 못 불러왔어요: {day1.error}<br /><small>list_survey_responses RPC(20260904_survey_sheet.sql)가 DB에 있어야 해요.</small></div>
           ) : !sorted.length ? (
             <div className="sheet-empty">{needle ? '검색 결과가 없어요.' : '아직 데이터가 없어요.'}</div>
@@ -1395,8 +1445,11 @@ function SheetView({ items, onClose }) {
         <div className="sheet-tabs">
           <button className={'sheet-tab' + (tab === 'survey' ? ' on' : '')} onClick={() => setTab('survey')}>설문<small>{survey.rows.length}</small></button>
           <button className={'sheet-tab' + (tab === 'fb' ? ' on' : '')} onClick={() => setTab('fb')}>피드백<small>{fb.rows.length}</small></button>
-          <button className={'sheet-tab' + (tab === 'day1' ? ' on' : '')} onClick={() => setTab('day1')}>Day1 설문<small>{day1.loading ? '…' : d1.rows.length}</small></button>
+          {[['s1', '📝 1일차 후기', s1], ['t5', '📋 체험 5일차', t5], ['t7', '📋 체험 7일차', t7], ['d8', '💳 Day 8 결제 이유', d8], ['d60', '🌟 Day 60', d60]].map(([k, l, d]) => (
+            <button key={k} className={'sheet-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)}>{l}<small>{(day1.loading && k !== 'd60') ? '…' : d.rows.length}</small></button>
+          ))}
           <button className={'sheet-tab' + (tab === 'place' ? ' on' : '')} onClick={() => setTab('place')}>입사 테스트<small>{day1.loading ? '…' : place.rows.length}</small></button>
+          <button className={'sheet-tab' + (tab === 'day1' ? ' on' : '')} onClick={() => setTab('day1')} title="결근 사유 등 따로 탭이 없는 설문">기타 설문<small>{day1.loading ? '…' : d1.rows.length}</small></button>
         </div>
       </div>
     </div>
