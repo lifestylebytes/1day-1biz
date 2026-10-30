@@ -18826,17 +18826,19 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
       const payload = { reasons: picked, top: topNow || null, other: other.trim() || null, paidTrialDay: info ? info.paidTrialDay : null, paidAt: info ? info.paidAt : null, prevCohort: info ? info.prevCohort : null, paidDaySrc: info ? info.src : null, submittedAt: new Date().toISOString() };
       try { localStorage.setItem(_tpwKey(email), "1"); } catch (e) {}
       try { if (email && window.OD && window.OD.enabled && window.OD.saveSurveyResponse) window.OD.saveSurveyResponse(email, "trial_paid_reason", payload).catch(() => {}); } catch (e) {}
-      try { _retAwardWp(email, "survey:trial_paid", 50, "정식 입사 설문"); } catch (e) {}
     }
-    if (pulseDone) { setDone(true); setTimeout(onClose, 1400); return; }   // 의견 설문을 이미 낸 분은 1장으로 끝
+    // ★ 2026-10-30 포인트는 설문 마지막에 (사용자 요청). 의견 설문을 이미 낸 분은 1장이 마지막이라 여기서
+    if (pulseDone) { if (!preview) { try { _retAwardWp(email, "survey:trial_paid", 50, "정식 입사 설문"); } catch (e) {} } setDone(true); setTimeout(onClose, 1400); return; }
     setStep(2);
   };
   // 2장: 의견 설문. PulseSurveyModal 과 같은 방식으로 저장 (운영자 피드함 · 의견 설문 키 완료 표시라 따로 또 안 뜬다)
   const local = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
   const pulseAny = !!(pv.rating || pv.oneLiner.trim() || pv.quit || pv.keep.trim());
   const pulseMarkDone = () => { if (preview || !pulseKey) return; try { localStorage.setItem(pulseKey, "1"); } catch (e) {} try { _pulseSurveyMarkServer(email, pulseKey); } catch (e) {} };
+  const [gotP, setGotP] = useState(false);
   const pulseFinish = (send) => {
     pulseMarkDone();
+    if (send && pulseAny) { setGotP(true); if (!preview) { try { _retAwardWp(email, "survey:trial_paid", 50, "정식 입사 설문"); } catch (e) {} } }
     if (send && pulseAny && !preview && email && window.OD && window.OD.submitFeedback) {
       const stars = pv.rating ? "★".repeat(pv.rating) + "☆".repeat(5 - pv.rating) + ` (${pv.rating}/5)` : "(미선택)";
       const msg = `[의견 설문] 만족도 ${stars}\n` + `한마디로 정의: ${pv.oneLiner.trim() || "(없음)"}\n` + `그만둔다면 이유: ${pv.quit || "(미선택)"}\n` + `있으면 계속 쓸 것: ${pv.keep.trim() || "(없음)"}`;
@@ -18845,10 +18847,10 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
     setDone(true); setTimeout(onClose, 1400);
   };
   if (done) return (
-    <TsvShell title="DAY 8 · 정식 입사 첫날" right="+50P 적립" step={2} total={pulseDone ? 1 : 2}>
+    <TsvShell title="DAY 8 · 정식 입사 첫날" right={(gotP || pulseDone) ? "+50P 적립" : "2 / 2"} step={2} total={pulseDone ? 1 : 2}>
       <div style={{ textAlign: "center", padding: "18px 0 8px" }}>
         <div style={{ fontSize: _fs(18), fontWeight: 900, color: _TSV.ink }}>고마워요. 잘 받았어요.</div>
-        <div style={{ fontSize: _fs(12.5), color: _TSV.mute, marginTop: 6 }}>복지 포인트 50P 넣어드렸어요. 남겨주신 의견은 다음 업데이트에 반영할게요.</div>
+        <div style={{ fontSize: _fs(12.5), color: _TSV.mute, marginTop: 6 }}>{(gotP || pulseDone) ? "복지 포인트 50P 넣어드렸어요. " : ""}남겨주신 의견은 다음 업데이트에 반영할게요.</div>
       </div>
     </TsvShell>
   );
@@ -18862,20 +18864,19 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
         <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px", lineHeight: 1.35 }}>하나만 더, 요즘 어떠세요?</div>
         <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>좋은 말 안 해주셔도 돼요. 솔직한 게 제일 도움이 됩니다. 한 문제만 답하고 닫으셔도 괜찮아요.</div>
         {_tsvQ("1일1비, 요즘 어떠세요?")}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+        <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
           {[1, 2, 3, 4, 5].map(n => (
-            <button key={n} type="button" onClick={() => setP("rating", n)} style={{ padding: "10px 0 7px", borderRadius: 10, border: "1.5px solid " + (pv.rating === n ? _TSV.or : _TSV.line), background: pv.rating === n ? _TSV.orSoft : _TSV.paper, color: pv.rating === n ? _TSV.or : _TSV.ink, fontFamily: "inherit", cursor: "pointer" }}>
-              <b style={{ display: "block", fontSize: _fs(18), fontWeight: 900 }}>{n}</b><small style={{ fontSize: _fs(9.5), color: _TSV.mute, minHeight: 12, display: "block" }}>{n === 1 || n === 3 || n === 5 ? RATE[n] : ""}</small>
-            </button>
+            <button key={n} type="button" aria-label={n + "점 · " + RATE[n]} title={RATE[n]} onClick={() => setP("rating", n)} style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: _fs(30), lineHeight: 1, padding: 2, fontFamily: "inherit", filter: n <= pv.rating ? "none" : "grayscale(1) opacity(0.35)", transform: n <= pv.rating ? "scale(1.05)" : "scale(1)", transition: "all 0.12s" }}>⭐</button>
           ))}
         </div>
+        {pv.rating > 0 && <div style={{ textAlign: "center", fontSize: _fs(12), color: _TSV.or, fontWeight: 800, marginTop: 4 }}>{RATE[pv.rating]}</div>}
         {_tsvQ("친구한테 1일1비를 한마디로 설명한다면?")}
         <input value={pv.oneLiner} onChange={e => setP("oneLiner", e.target.value)} placeholder="예: 영어로 회사 다니는 시늉하는 앱" style={inp} />
         {_tsvQ("만약 내일 그만둔다면, 이유는 뭘까요?")}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{QUIT.map(o => <TsvChip key={o} on={pv.quit === o} onClick={() => setP("quit", pv.quit === o ? "" : o)}>{o}</TsvChip>)}</div>
         {_tsvQ("이것만 있으면 계속 쓰겠다, 싶은 게 있나요?", "선택")}
         <textarea value={pv.keep} onChange={e => setP("keep", e.target.value)} rows={2} placeholder="아무거나 편하게 적어주세요" style={Object.assign({}, inp, { resize: "none" })} />
-        <button style={_tsvBtn(false)} onClick={() => pulseFinish(true)}>{pulseAny ? "의견 보내기 →" : "그냥 닫기"}</button>
+        <button style={_tsvBtn(false)} onClick={() => pulseFinish(true)}>{pulseAny ? "제출하고 50P 받기 →" : "그냥 닫기"}</button>
         <button style={_tsvLink} onClick={() => pulseFinish(false)}>나중에 할게요</button>
       </TsvShell>
     );
@@ -18907,7 +18908,7 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
       <div style={{ fontSize: _fs(11), color: _TSV.mute, margin: "0 0 6px" }}>위에서 못 고르셨으면 여기만 써도 돼요.</div>
       <textarea id="tpw-other" value={other} onChange={e => setOther(e.target.value)} rows={2} placeholder="자유롭게 적어주세요."
         style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: "1.5px solid " + (other.trim() ? _TSV.or : _TSV.line), background: _TSV.paper, fontFamily: "inherit", fontSize: _fs(12.5), lineHeight: 1.5, color: _TSV.ink, resize: "none" }} />
-      <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>{pulseDone ? "제출하고 50P 받기 →" : "50P 받고 다음 →"}</button>
+      <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>{pulseDone ? "제출하고 50P 받기 →" : "다음 →"}</button>
     </TsvShell>
   );
 }
@@ -22664,7 +22665,7 @@ function _pgCatalog2(email) {
     { day: 1, name: "📍 첫 출근 가이드 (투어)", when: "Day 1 첫 접속", cond: "실제 화면 위에 불빛으로 안내해서 미리보기 대신 다시 띄우기로 봐요. 사원증 > '첫날 가이드 다시 보기'와 같아요.", queue: "투어 · 제일 먼저", tm: "in", replay: () => { try { localStorage.setItem("__OD_TOUR_REPLAY", "1"); } catch (e) {} location.reload(); } },
     { day: 1, name: "👋 첫 주 웰컴 (Day 1~5)", when: "Day 1~5 매일 1번, 오늘 일정 4개를 끝낸 뒤", cond: "EXP 다음에 떠요. Day 1은 투어 뒤, Day 2는 1일차 후기 설문 뒤. 그날 일정을 안 끝내면 그날 카드는 안 떠요. (회원 화면은 아직 접속 시, 줄 70)", queue: 118, v: [1, 2, 3, 4, 5].map(d => ({ label: "Day " + d, render: (c) => <FirstWeekPopup day={d} onClose={c} /> })) },
     { day: 5, name: "📋 체험 설문 · 5일차 중간 점검", when: "Day 5, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 한 화면에 3문항 + 막히는 것 1개, 답하면 +50P. 끝 화면: 5일 동안 쌓인 것 · 1주 완주 배지 D-2 · '바꿀래요' 고르면 카톡 알림 시간. 달력 얘기 없음. 저장 trial_day5", queue: 125, v: [{ label: "5일차", render: (c) => <TrialDay5Survey email={em} preview onClose={c} /> }] },
-    { day: 8, name: "💳 Day 8 결제 이유 설문", when: "Day 8 이상, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험으로 시작해서 결제한 회원만, 계정당 1번. 2장: ① 결제 이유 (여러 개 + 제일 큰 이유 별표 + 직접 쓰기, +50P) ② 요즘 어떠세요? 의견 설문 (같은 저장, 끝내면 의견 설문은 따로 안 뜸). 체험 며칠째에 결제했는지(paidTrialDay)도 같이 저장. 저장 trial_paid_reason", queue: 126, v: [{ label: "Day 8", render: (c) => <TrialPaidReasonPopup email={em} preview info={{ prevCohort: "trial-7d", paidAt: null, paidTrialDay: 3, src: "preview" }} onClose={c} /> }] },
+    { day: 8, name: "💳 Day 8 결제 이유 설문", when: "Day 8 이상, 오늘 일정 4개를 끝낸 뒤 (개발 뷰)", cond: "체험으로 시작해서 결제한 회원만, 계정당 1번. 2장: ① 결제 이유 (여러 개 + 제일 큰 이유 별표 + 직접 쓰기) ② 요즘 어떠세요? 의견 설문 (별점, 같은 저장, 끝내면 의견 설문은 따로 안 뜸). 마지막에 제출하면 +50P. 체험 며칠째에 결제했는지(paidTrialDay)도 같이 저장. 저장 trial_paid_reason", queue: 126, v: [{ label: "Day 8", render: (c) => <TrialPaidReasonPopup email={em} preview info={{ prevCohort: "trial-7d", paidAt: null, paidTrialDay: 3, src: "preview" }} onClose={c} /> }] },
     { day: 7, name: "📋 체험 설문 · 7일차 마지막 날", when: "Day 7, 오늘 일정 4개를 끝낸 뒤", cond: "체험 회원 (운영자는 개발 뷰에서만). 3장: 별점 · 좋았던 것 → 계속 다닐지 · 걸리는 것('바로 결제'면 건너뜀, 여기서 +100P) → 한 줄 + 끝. '다음에 할게요'는 이번 접속만 닫힘. 저장 trial_day7", queue: 125, v: [{ label: "7일차", render: (c) => <TrialDay7Survey email={em} preview onClose={c} /> }] },
     { day: 1, name: "🛠 출근 환경 세팅", when: "Day 1 학습을 다 끝낸 직후", cond: "③ 카톡 알림 칸이 회원 상태에 따라 달라요.", queue: 120, v: [
       { label: "카톡 알림 아직 안 켬", sub: "번호 입력 칸", pv: { kakao: "off" }, render: (c) => <SetupPopup onClose={c} /> },
