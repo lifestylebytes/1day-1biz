@@ -1267,6 +1267,29 @@ const _CAT_KO = { bug: '오류', suggestion: '제안', content: '콘텐츠', gen
 // ★ 2026-10-30 Day 60 설문은 피드백 테이블(설문)에 들어온다. '설문' 탭(요즘 어떠세요?)과 섞이지 않게 따로
 const _isD60 = (it) => !!(it && it.category === 'survey' && ((it.context && it.context.type === 'day60_survey') || /^\[Day 60 설문\]/.test(it.message || '')));
 
+// ★ 2026-10-30 퀴즈 통계 단어별: 회원 · Day → 그 회원이 그날 배운 단어
+//   Day 1~90 = scenarios.json (가입일 2026-09-06 이후면 Day 1~4 는 첫 주 개정판 단어)
+//   Day 91+  = 회원마다 고른 TF 트랙 순서(users.tf_done 다음 tf_track), 트랙마다 30일 (mainboard _tfRowsFor 와 같은 계산)
+const _TF_IDS = ['nego', 'people', 'docs', 'meeting'];
+const _TF_NAME = { nego: '🤝 협상 TF', people: '👥 피플 TF', docs: '✉️ 문서 TF', meeting: '🎤 미팅 TF' };
+const _CONTENT_CUTOVER = '2026-09-06';
+const _V2_WORDS = { 1: "on someone's plate", 2: 'back-to-back', 3: 'keep you posted', 4: 'pencil in' };   // mainboard SCENARIOS_V2 와 같아야 함
+function _wordFor(u, day, scn, tf) {
+  const d = Number(day) || 0; if (d < 1) return null;
+  if (d <= 90) {
+    const sk = u && u.signup_date ? new Date(u.signup_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) : '';
+    if (sk && sk >= _CONTENT_CUTOVER && _V2_WORDS[d]) return { word: _V2_WORDS[d], where: 'Day ' + d + ' (개정판)', ord: d + 0.5 };
+    const s = (scn || []).find(x => Number(x.day) === d);
+    return s && s.word ? { word: s.word, where: 'Day ' + d, ord: d } : null;
+  }
+  if (!u) return null;
+  const done = (Array.isArray(u.tf_done) ? u.tf_done : []).map(x => (x && typeof x === 'object') ? x.id : x).filter(Boolean);
+  const order = done.concat(u.tf_track && !done.includes(u.tf_track) ? [u.tf_track] : []);
+  const id = order[Math.floor((d - 91) / 30)]; const n = (d - 91) % 30 + 1;
+  const s = id && tf && tf[id] ? tf[id].scenarios.find(x => Number(x.tfDay) === n) : null;
+  return s && s.word ? { word: s.word, where: (_TF_NAME[id] || id) + ' ' + n + '/30', ord: 1000 + _TF_IDS.indexOf(id) * 100 + n } : null;
+}
+
 function SheetView({ items, onClose }) {
   const [tab, setTab] = React.useState('survey');
   const [q, setQ] = React.useState('');
@@ -1275,15 +1298,19 @@ function SheetView({ items, onClose }) {
   // ★ 2026-10-30 퀴즈 통계 · 진급 평가 · 내 문장: 탭을 처음 열 때 불러온다 (SQL 20261030_operator_learning_sheet.sql 필요)
   const [learn, setLearn] = React.useState({ rows: [], subs: [], loading: false, loaded: false, error: '' });
   // 퀴즈 통계 · 내 문장은 Day 순서로 먼저 보여준다 (헤더 클릭으로 바꿀 수 있음)
-  React.useEffect(() => { if (tab === 'qz' || tab === 'ws') setSort({ key: 'Day', dir: 1 }); else setSort({ key: '_at', dir: -1 }); }, [tab]);
+  React.useEffect(() => { if (tab === 'qz') setSort({ key: '_ord', dir: 1 }); else if (tab === 'ws') setSort({ key: 'Day', dir: 1 }); else setSort({ key: '_at', dir: -1 }); }, [tab]);
   React.useEffect(() => {
     if (!['qz', 'pe', 'ws'].includes(tab) || learn.loaded || learn.loading) return;
     setLearn(l => ({ ...l, loading: true }));
     (async () => {
       const me = (() => { try { return JSON.parse(localStorage.getItem('__OD_USER') || 'null')?.email || ''; } catch (e) { return ''; } })();
       if (!window.OD?.fetchLearningRecords || !window.OD?.fetchAllSubmissions) { setLearn({ rows: [], subs: [], loading: false, loaded: true, error: '연결 안 됨' }); return; }
-      const [a, b] = await Promise.all([window.OD.fetchLearningRecords(me), window.OD.fetchAllSubmissions(me)]);
-      setLearn({ rows: a.rows || [], subs: b.rows || [], loading: false, loaded: true, error: (!a.ok ? a.error : '') || (!b.ok ? b.error : '') || '' });
+      // ★ 2026-10-30 퀴즈 통계를 단어별로 보려고 단어표(Day 1~90 · 첫 주 개정판 · TF 4트랙)와 회원의 가입일 · TF 순서도 같이 불러온다
+      const _j = (u) => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null);
+      const [a, b, us, sc, ...tfs] = await Promise.all([window.OD.fetchLearningRecords(me), window.OD.fetchAllSubmissions(me),
+        (window.OD.fetchAllUsers ? window.OD.fetchAllUsers() : Promise.resolve({ users: [] })), _j('scenarios.json'), ..._TF_IDS.map(id => _j('data/tf-scenarios-' + id + '.json'))]);
+      const tf = {}; _TF_IDS.forEach((id, i) => { if (tfs[i] && Array.isArray(tfs[i].scenarios)) tf[id] = tfs[i]; });
+      setLearn({ rows: a.rows || [], subs: b.rows || [], users: us.users || [], scn: Array.isArray(sc) ? sc : [], tf, loading: false, loaded: true, error: (!a.ok ? a.error : '') || (!b.ok ? b.error : '') || '' });
     })();
   }, [tab]);
 
@@ -1436,18 +1463,33 @@ function SheetView({ items, onClose }) {
         점수: q.total ? q.ok + ' / ' + q.total : '', '정답률': q.total ? Math.round(q.ok / q.total * 100) : '', '첫 시도': q.firstTry === false ? '다시 봄' : '첫 시도', '맞힌 표현': _list(q.hit), '틀린 표현': _list(q.miss) }; });
     return { cols: ['날짜', '이름', '이메일', '평가', '평가 Day', '점수', '정답률', '첫 시도', '맞힌 표현', '틀린 표현'], num: new Set(['평가 Day', '정답률']), rows };
   }, [learn.rows]);
+  // ★ 2026-10-30 퀴즈 통계 = 단어별 (Day 상관없이). Day 91+ TF 단어도 회원의 트랙 순서로 찾아서 센다.
   const qz = React.useMemo(() => {
-    const wordDay = {}; Object.entries(_dayWord).forEach(([d, w]) => { wordDay[String(w).toLowerCase()] = Number(d); });
-    const agg = {}; const at = (d) => (agg[d] = agg[d] || { k: 0, w: 0, people: new Set(), pe: 0, pk: 0 });
+    const users = {}; (learn.users || []).forEach(u => { if (u && u.email) users[String(u.email).toLowerCase()] = u; });
+    const agg = {}; const at = (w, info) => { const key = String(w).toLowerCase().trim();
+      const a = (agg[key] = agg[key] || { word: w, where: new Set(), ord: 99999, k: 0, w: 0, people: new Set(), pe: 0, pk: 0 });
+      if (info) { a.where.add(info.where); a.ord = Math.min(a.ord, info.ord); } return a; };
+    // 단어 → 어디서 배우는지 (진급 평가에만 나온 단어도 위치를 보여주려고)
+    const home = {};
+    (learn.scn || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = { where: 'Day ' + s.day, ord: Number(s.day) }; });
+    Object.entries(_V2_WORDS).forEach(([d, w]) => { home[w.toLowerCase()] = home[w.toLowerCase()] || { where: 'Day ' + d + ' (개정판)', ord: Number(d) + 0.5 }; });
+    _TF_IDS.forEach((id, i) => ((learn.tf || {})[id]?.scenarios || []).forEach(s => { if (s && s.word) home[String(s.word).toLowerCase()] = home[String(s.word).toLowerCase()] || { where: _TF_NAME[id] + ' ' + s.tfDay + '/30', ord: 1000 + i * 100 + Number(s.tfDay) }; }));
+    let unknown = 0;
     (learn.rows || []).forEach(r => {
-      const z = r.qzst; if (z && typeof z === 'object' && ((z.k || 0) + (z.w || 0)) > 0) { const a = at(Number(r.day)); a.k += Number(z.k || 0); a.w += Number(z.w || 0); a.people.add((r.email || '').toLowerCase()); }
-      const q = r.qe; if (q && Array.isArray(q.miss)) q.miss.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pe += 1; });
-      if (q && Array.isArray(q.hit)) q.hit.forEach(w => { const d = wordDay[String(w).toLowerCase()]; if (d) at(d).pk += 1; });   // ★ 2026-10-30 맞힌 표현은 이날부터 저장
+      const em = (r.email || '').toLowerCase();
+      const z = r.qzst; if (z && typeof z === 'object' && ((z.k || 0) + (z.w || 0)) > 0) {
+        const info = _wordFor(users[em], r.day, learn.scn, learn.tf);
+        if (!info) { unknown += 1; } else { const a = at(info.word, info); a.k += Number(z.k || 0); a.w += Number(z.w || 0); a.people.add(em); }
+      }
+      const q = r.qe;
+      if (q && Array.isArray(q.miss)) q.miss.forEach(w => { if (w) at(w, home[String(w).toLowerCase()]).pe += 1; });
+      if (q && Array.isArray(q.hit)) q.hit.forEach(w => { if (w) at(w, home[String(w).toLowerCase()]).pk += 1; });   // 맞힌 표현은 2026-10-30부터 저장
     });
-    const rows = Object.keys(agg).map(Number).sort((a, b) => a - b).map(d => { const a = agg[d]; const n = a.k + a.w;
-      return { _at: '', Day: d, 표현: _dayWord[d] || '', '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
-    return { cols: ['Day', '표현', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['Day', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows };
-  }, [learn.rows, _dayWord]);
+    if (unknown) console.warn('[퀴즈 통계] 단어를 못 찾은 기록', unknown, '개 (회원 정보 · TF 트랙 없음)');
+    const rows = Object.values(agg).map(a => { const n = a.k + a.w;
+      return { _at: '', _ord: a.ord, 표현: a.word, '배우는 곳': [...a.where].join(', '), '퀴즈 맞힘': a.k, '퀴즈 틀림': a.w, '정답률': n ? Math.round(a.k / n * 100) : '', '진급 평가 맞힘': a.pk, '진급 평가 틀림': a.pe, '푼 회원': a.people.size }; });
+    return { cols: ['표현', '배우는 곳', '퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원'], num: new Set(['퀴즈 맞힘', '퀴즈 틀림', '정답률', '진급 평가 맞힘', '진급 평가 틀림', '푼 회원']), rows };
+  }, [learn.rows, learn.users, learn.scn, learn.tf]);
   const ws = React.useMemo(() => {
     const rows = (learn.subs || []).map(s => ({ _at: s.submitted_at, 날짜: _fmtAt(s.submitted_at), 이름: s.name || '', 이메일: s.email || '', Day: s.day, 표현: s.word || _dayWord[s.day] || '', '쓴 문장': s.answer_text || '', '사수 첨삭': s.corrected || '' }));
     return { cols: ['Day', '표현', '쓴 문장', '사수 첨삭', '이름', '이메일', '날짜'], num: new Set(['Day']), rows };
@@ -1475,8 +1517,10 @@ function SheetView({ items, onClose }) {
     if (va !== '' && vb !== '' && !isNaN(na) && !isNaN(nb)) return (na - nb) * sort.dir;
     return String(va).localeCompare(String(vb), 'ko') * sort.dir;
   });
-  const clickSort = (c) => setSort(s => ({ key: c === '날짜' ? '_at' : c, dir: (s.key === (c === '날짜' ? '_at' : c)) ? -s.dir : -1 }));
-  const sortMark = (c) => { const k = c === '날짜' ? '_at' : c; return sort.key === k ? (sort.dir < 0 ? ' ▼' : ' ▲') : ''; };
+  // 날짜는 실제 시각(_at), 퀴즈 통계 '배우는 곳'은 Day · TF 순서(_ord)로 정렬
+  const _sk = (c) => c === '날짜' ? '_at' : c === '배우는 곳' ? '_ord' : c;
+  const clickSort = (c) => setSort(s => ({ key: _sk(c), dir: s.key === _sk(c) ? -s.dir : (c === '배우는 곳' ? 1 : -1) }));
+  const sortMark = (c) => { const k = _sk(c); return sort.key === k ? (sort.dir < 0 ? ' ▼' : ' ▲') : ''; };
 
   const tabLabel = { survey: '설문', fb: '피드백', s1: '1일차후기', t5: '체험5일차', t7: '체험7일차', d8: 'Day8결제이유', d60: 'Day60설문', cb: '결근복귀', pw: '진급한마디', gr: '수습30일회고', cx: '해지의견', pe: '진급평가', qz: '퀴즈통계', ws: '내문장', place: '입사테스트', day1: '기타설문' }[tab] || '설문';
   const exportCsv = () => _csvDownload(`1일1비_${tabLabel}_${new Date().toISOString().slice(0, 10)}.csv`, cur.cols, sorted.map(r => cur.cols.map(c => r[c])));
@@ -1534,7 +1578,7 @@ function SheetView({ items, onClose }) {
             <button key={k} className={'sheet-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)}>{l}<small>{(day1.loading && ['s1', 't5', 't7', 'd8', 'cb'].includes(k)) ? '…' : d.rows.length}</small></button>
           ))}
           {[['pe', '📈 진급 평가', pe], ['qz', '🧠 퀴즈 통계', qz], ['ws', '✍️ 내 문장', ws]].map(([k, l, d]) => (
-            <button key={k} className={'sheet-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)} title={k === 'qz' ? 'Day 마다 미니 퀴즈 + 리뷰 퀴즈 누적(10/17부터)과 진급 평가에서 틀린 표현' : ''}>{l}<small>{learn.loaded ? d.rows.length : '·'}</small></button>
+            <button key={k} className={'sheet-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)} title={k === 'qz' ? '단어마다 미니 퀴즈 + 리뷰 퀴즈 누적(10/17부터)과 진급 평가에서 맞힌·틀린 횟수. Day 91+ TF 단어는 회원의 트랙 순서로 찾음' : ''}>{l}<small>{learn.loaded ? d.rows.length : '·'}</small></button>
           ))}
           <button className={'sheet-tab' + (tab === 'place' ? ' on' : '')} onClick={() => setTab('place')}>입사 테스트<small>{day1.loading ? '…' : place.rows.length}</small></button>
           <button className={'sheet-tab' + (tab === 'day1' ? ' on' : '')} onClick={() => setTab('day1')} title="결근 사유 등 따로 탭이 없는 설문">기타 설문<small>{day1.loading ? '…' : d1.rows.length}</small></button>
