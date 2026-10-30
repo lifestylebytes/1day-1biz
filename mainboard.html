@@ -18939,6 +18939,7 @@ async function _prsDoneOnServer(email) {
   } catch (e) { return false; }
 }
 function PaidReasonSurvey({ email, info, onClose, preview }) {
+  // ★ 2026-10-30 한 화면에 다 보이게 (사용자 요청): 칩 작게, 문항 간격 좁게, 고른 이유는 제자리에서 ★ 표시
   const [moment, setMoment] = useState("");
   const [momentEtc, setMomentEtc] = useState("");
   const [picked, setPicked] = useState([]);
@@ -18970,36 +18971,36 @@ function PaidReasonSurvey({ email, info, onClose, preview }) {
       </div>
     </TsvShell>
   );
-  const star = (on) => (<svg width="16" height="16" viewBox="0 0 24 24" fill={on ? "#FFFDF7" : "none"} stroke={on ? "#FFFDF7" : "#9C8B72"} strokeWidth="2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>);
-  const one = (list, val, set) => <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{list.map(o => <TsvChip key={o} on={val === o} onClick={() => set(val === o ? "" : o)}>{o}</TsvChip>)}</div>;
-  const inp = { width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: "1.5px solid " + _TSV.line, background: _TSV.paper, fontFamily: "inherit", fontSize: _fs(12.5), lineHeight: 1.5, color: _TSV.ink };
+  const Q = (t, sub) => <div style={{ fontSize: _fs(12.5), fontWeight: 900, color: _TSV.ink, margin: "11px 0 6px" }}>{t}{sub && <small style={{ fontSize: _fs(10.5), fontWeight: 700, color: _TSV.mute, marginLeft: 5 }}>{sub}</small>}</div>;
+  const chip = (on) => ({ padding: "5px 9px", borderRadius: 999, border: "1.5px solid " + (on ? _TSV.or : _TSV.line), background: on ? _TSV.orSoft : _TSV.paper, color: on ? _TSV.or : _TSV.ink, fontFamily: "inherit", fontSize: _fs(11.5), fontWeight: 800, cursor: "pointer", lineHeight: 1.3 });
+  const one = (list, val, set) => <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{list.map(o => <button key={o} type="button" style={chip(val === o)} onClick={() => set(val === o ? "" : o)}>{o}</button>)}</div>;
+  const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 9, border: "1.5px solid " + _TSV.line, background: _TSV.paper, fontFamily: "inherit", fontSize: _fs(12), color: _TSV.ink };
   return (
     <TsvShell title="정식 입사 · 결제 완료" right="+50P" total={1}>
-      <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>결제해주셔서 고마워요. 정식 입사를 축하해요</div>
-      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px", lineHeight: 1.35 }}>기억이 생생할 때,<br/>1분만 물어볼게요</div>
-      <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>답하면 복지 포인트 50P를 드려요.</div>
-      {_tsvQ("1. 결제를 결심한 순간은 언제였나요?", "하나")}
+      <div style={{ fontSize: _fs(16.5), fontWeight: 900, color: _TSV.ink, lineHeight: 1.35 }}>기억이 생생할 때, 1분만 물어볼게요</div>
+      <div style={{ fontSize: _fs(11.5), color: _TSV.mute, marginTop: 2 }}>정식 입사를 축하해요. 답하면 복지 포인트 50P를 드려요.</div>
+      {Q("1. 결제를 결심한 순간은 언제였나요?", "하나")}
       {one(_PRS_MOMENT, moment, setMoment)}
-      {moment === "기타" && <input value={momentEtc} onChange={e => setMomentEtc(e.target.value)} placeholder="언제였는지 짧게 적어주세요" aria-label="결심한 순간 직접 쓰기" style={Object.assign({}, inp, { marginTop: 8, borderColor: momentEtc.trim() ? _TSV.or : _TSV.line })} />}
-      {_tsvQ("2. 이유를 전부 골라주세요", picked.length > 1 ? "제일 큰 이유에 ★" : "여러 개 골라도 돼요")}
-      {picked.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
-          {picked.map(r => (
-            <div key={r} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px 7px 14px", borderRadius: 10, border: "1.5px solid " + _TSV.or, background: _TSV.orSoft }}>
-              <button type="button" onClick={() => toggle(r)} style={{ flex: 1, textAlign: "left", background: "transparent", border: "none", padding: 0, fontFamily: "inherit", fontSize: _fs(12.5), fontWeight: 800, color: "#B5461C", cursor: "pointer" }}>{r}</button>
-              {picked.length > 1 && <button type="button" aria-label={topNow === r ? "제일 큰 이유" : "제일 큰 이유로 표시"} onClick={() => setTop(r)} style={{ width: 30, height: 30, borderRadius: 8, border: "1.5px solid " + (topNow === r ? _TSV.or : _TSV.line), background: topNow === r ? _TSV.or : _TSV.paper, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>{star(topNow === r)}</button>}
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{_PRS_REASONS.filter(r => !picked.includes(r)).map(r => <TsvChip key={r} on={false} onClick={() => toggle(r)}>{r}</TsvChip>)}</div>
-      {_tsvQ("3. 결제 전에 망설였던 건?", "하나")}
+      {moment === "기타" && <input value={momentEtc} onChange={e => setMomentEtc(e.target.value)} placeholder="언제였는지 짧게 적어주세요" aria-label="결심한 순간 직접 쓰기" style={Object.assign({}, inp, { marginTop: 6, borderColor: momentEtc.trim() ? _TSV.or : _TSV.line })} />}
+      {Q("2. 이유를 전부 골라주세요", picked.length > 1 ? "제일 큰 이유 하나에 ★" : "여러 개 골라도 돼요")}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+        {_PRS_REASONS.map(r => {
+          const on = picked.includes(r); const isTop = on && topNow === r;
+          return (
+            <span key={r} style={{ display: "inline-flex", alignItems: "stretch", borderRadius: 999, border: "1.5px solid " + (on ? _TSV.or : _TSV.line), background: isTop ? _TSV.or : on ? _TSV.orSoft : _TSV.paper, overflow: "hidden" }}>
+              <button type="button" onClick={() => toggle(r)} style={{ padding: "5px 9px", border: "none", background: "transparent", color: isTop ? "#fff" : on ? _TSV.or : _TSV.ink, fontFamily: "inherit", fontSize: _fs(11.5), fontWeight: 800, cursor: "pointer", lineHeight: 1.3 }}>{r}</button>
+              {on && picked.length > 1 && <button type="button" aria-label={isTop ? "제일 큰 이유" : "제일 큰 이유로 표시"} onClick={() => setTop(r)} style={{ padding: "0 8px 0 2px", border: "none", background: "transparent", color: isTop ? "#fff" : "#B9A88F", fontSize: _fs(13), cursor: "pointer", lineHeight: 1 }}>★</button>}
+            </span>
+          );
+        })}
+      </div>
+      {Q("3. 결제 전에 망설였던 건?", "하나")}
       {one(_PRS_HESITATE, hesitate, setHesitate)}
-      {_tsvQ("4. 1일1비 전엔 영어 공부를?", "하나")}
+      {Q("4. 1일1비 전엔 영어 공부를?", "하나")}
       {one(_PRS_BEFORE, before, setBefore)}
-      {_tsvQ("5. 결제 버튼 누르기 직전에 든 생각, 한 줄만", "선택")}
+      {Q("5. 결제 버튼 누르기 직전에 든 생각, 한 줄만", "선택")}
       <input value={thought} onChange={e => setThought(e.target.value)} placeholder="예) 이번엔 진짜 끝까지 해보자" aria-label="결제 직전에 든 생각" style={inp} />
-      <button style={_tsvBtn(!ok)} disabled={!ok} onClick={submit}>제출하고 50P 받기 →</button>
+      <button style={Object.assign({}, _tsvBtn(!ok), { marginTop: 12, padding: "12px 0", fontSize: _fs(14) })} disabled={!ok} onClick={submit}>제출하고 50P 받기 →</button>
     </TsvShell>
   );
 }
