@@ -589,7 +589,7 @@ function OnboardingApp() {
       totalSessionMs: 0,
       // settings
       preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null },
-      phone: (phone || "").trim() || null,
+      phone: kakaoOptIn ? ((phone || "").trim() || null) : null,   // ★ 2026-10-30: 리마인더 끈 사람 번호는 저장 안 함
       // 운영 메타
       onboardingMotivation: motivation.trim(),
       schemaVersion: 1,
@@ -2978,7 +2978,8 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
     setKakaoOptIn(false);
     setAgreeAge(true); setAgreeTerms(true); setAgreePrivacy(true);
   };
-  const phoneOk = /^01\d{8,9}$/.test(String(phone || "").replace(/\D/g, ""));  // 휴대폰 필수
+  // ★ 2026-10-30: 휴대폰 번호는 카톡 리마인더를 켠 사람만 (최소수집). 끄면 번호칸이 사라지고 필수도 아님
+  const phoneOk = !kakaoOptIn || /^01\d{8,9}$/.test(String(phone || "").replace(/\D/g, ""));
   const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && phoneOk && motivation.trim().length >= 2;
   return (
     <div className="card">
@@ -3085,16 +3086,11 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>비밀번호는 8자 이상으로 정해주세요.</div>
         )}
       </div>
-      {/* ★ 카톡 출근 알림: 번호는 필수(개인 작업본 2026-10-24), 동의는 기본 체크 */}
+      {/* ★ 카톡 학습 리마인더: 체크는 기본 켜짐(서비스 안내라 광고 아님). 번호는 켠 사람만 받는다 (2026-10-30, 최소수집) */}
       <div className="form-row">
-        <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 필수</span></label>
-        <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
-        {phone && !phoneOk && (
-          <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>휴대폰 번호를 다시 확인해주세요 (숫자 10~11자리).</div>
-        )}
         <label
           onClick={() => setKakaoOptIn(v => !v)}
-          style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", marginTop: 9,
+          style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", marginTop: 0,
                    fontSize: 12.5, fontWeight: 700, color: "var(--ink)", textTransform: "none", letterSpacing: "normal", lineHeight: 1.55 }}>
           <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                          width: 18, height: 18, marginTop: 1, borderRadius: 5,
@@ -3103,12 +3099,22 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
             {kakaoOptIn ? "✓" : ""}
           </span>
           <span>
-            <span style={{ color: "var(--accent)" }}>이 번호로 <strong>매일 아침 9시</strong> 오늘의 표현 받기</span>
+            <span style={{ color: "var(--accent)" }}><strong>매일 아침 9시</strong> 오늘의 표현을 카톡으로 받기</span>
             <span style={{ display: "block", fontSize: 11, fontWeight: 500, color: "var(--ink-mute)", marginTop: 2 }}>
-              앱을 안 열어도 카톡으로 와요. 시간 변경·해제는 사원증 → 설정에서 언제든.
+              학습 리마인더만 와요. 광고는 안 보내요. 시간 변경·해제는 사원증 → 설정에서 언제든.
             </span>
           </span>
         </label>
+        {kakaoOptIn && (
+          <div style={{ marginTop: 9 }}>
+            <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 카톡 받을 번호</span></label>
+            <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
+            {phone && !phoneOk && (
+              <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>휴대폰 번호를 다시 확인해주세요 (숫자 10~11자리).</div>
+            )}
+            <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 4 }}>리마인더 발송에만 쓰고, 알림을 끄면 지워요.</div>
+          </div>
+        )}
       </div>
       <div className="form-row">
         <label>지원 동기 (한 줄)</label>
