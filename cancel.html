@@ -1,114 +1,90 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8117WHRMS4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-8117WHRMS4');
-</script>
-
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>구독 해지 · 1일1비</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="lib/supabase-config.js"></script>
-<script src="lib/supabase-client.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>해지 · 환불 안내 · 1일1비</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <style>
-  :root { --paper:#F4EFE3; --paper-warm:#EDE4D0; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#8C7B63; --line:#D9CDB4; --accent:#D85A2A; --green:#2D7A3D; }
+  :root { --paper:#F4EFE3; --paper-warm:#EDE4D0; --ink:#2A1F14; --ink-soft:#5C4A36; --ink-mute:#6F5F4C; --line:#D9CDB4; --accent:#D85A2A; --green:#2D7A3D; }
   * { box-sizing:border-box; }
-  body { font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif; background:linear-gradient(180deg,#E8DFCB,#DBCFB4); margin:0; min-height:100vh; color:var(--ink); display:flex; align-items:center; justify-content:center; padding:20px; }
-  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; max-width:460px; width:100%; padding:28px 26px; box-shadow:0 24px 50px -20px rgba(58,40,18,.4); }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; background:linear-gradient(180deg,#E8DFCB,#DBCFB4); margin:0; min-height:100vh; color:var(--ink); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card { background:var(--paper); border:1px solid var(--line); border-radius:14px; max-width:480px; width:100%; padding:28px 26px; box-shadow:0 24px 50px -20px rgba(58,40,18,.4); }
   .eyebrow { font-size:11px; letter-spacing:.2em; font-weight:800; color:var(--accent); text-transform:uppercase; margin-bottom:10px; }
-  h1 { font-size:22px; font-weight:900; margin:0 0 6px; letter-spacing:-.01em; }
-  .lead { font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 18px; }
-  label { display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px; }
-  input, textarea { width:100%; padding:12px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff; color:var(--ink); font-family:inherit; }
-  textarea { resize:vertical; min-height:84px; line-height:1.5; }
-  .count { font-size:11px; color:var(--ink-mute); text-align:right; margin-top:4px; }
-  .count.ok { color:var(--green); }
-  .btn { display:block; width:100%; text-align:center; padding:14px 0; border:none; border-radius:9px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-top:16px; }
-  .btn-warn { background:#9A3B2A; color:#fff; }
-  .btn:disabled { opacity:.45; cursor:not-allowed; }
-  .guide { display:none; margin-top:8px; background:var(--paper-warm); border:1px solid var(--line); border-radius:10px; padding:18px 18px; }
-  .guide h2 { font-size:15px; margin:0 0 10px; }
-  .guide ol { margin:0; padding-left:20px; font-size:13px; color:var(--ink); line-height:1.7; }
-  .guide .muted { font-size:12px; color:var(--ink-mute); line-height:1.6; margin-top:12px; }
-  .guide a { color:var(--accent); font-weight:700; }
-  .saved { display:none; font-size:12.5px; color:var(--green); font-weight:700; margin-top:10px; }
-  .formwrap { transition:opacity .2s; }
+  h1 { font-size:22px; font-weight:900; margin:0 0 6px; letter-spacing:-.02em; }
+  .lead { font-size:13.5px; color:var(--ink-soft); line-height:1.7; margin:0 0 18px; }
+  .tabs { display:flex; gap:6px; margin-bottom:14px; }
+  .tab { flex:1; padding:9px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:800; color:var(--ink-soft); cursor:pointer; text-align:center; font-family:inherit; }
+  .tab.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .panel { display:none; } .panel.on { display:block; }
+  .step { display:flex; gap:10px; align-items:flex-start; margin:0 0 12px; }
+  .num { flex:none; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+  .step p { margin:0; font-size:13.5px; line-height:1.65; color:var(--ink); }
+  .step small { display:block; font-size:11.5px; color:var(--ink-mute); margin-top:2px; }
+  .box { background:var(--paper-warm); border-radius:10px; padding:12px 14px; font-size:12.5px; line-height:1.65; color:var(--ink-soft); margin:12px 0; }
+  .box b { color:var(--ink); }
+  .btn { display:block; width:100%; text-align:center; padding:13px; border-radius:10px; background:var(--accent); color:#fff; font-weight:900; font-size:14px; text-decoration:none; margin-top:14px; }
+  .btn.ghost { background:transparent; color:var(--ink-soft); border:1px solid var(--line); font-weight:700; font-size:13px; padding:10px; margin-top:8px; }
+  textarea { width:100%; padding:11px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; background:#fff; color:var(--ink); font-family:inherit; resize:vertical; }
+  label { display:block; font-size:12px; font-weight:800; color:var(--ink-soft); margin:14px 0 6px; }
+  .foot { font-size:11px; color:var(--ink-mute); line-height:1.6; margin-top:18px; padding-top:12px; border-top:1px dashed var(--line); }
+  .foot a { color:var(--ink-mute); }
+  .copied { font-size:12px; color:var(--green); font-weight:800; margin-top:6px; display:none; }
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="eyebrow">SUBSCRIPTION · CANCEL</div>
-  <h1>구독 해지</h1>
-  <p class="lead">떠나신다니 아쉬워요. 더 나은 1일1비를 위해, 해지 이유를 한 줄만 남겨주시면 큰 도움이 돼요. (10자 이상)</p>
+  <div class="eyebrow">1DAY 1BIZ · CANCEL / REFUND</div>
+  <h1>해지 · 환불 안내</h1>
+  <p class="lead">어떤 이용권인지 골라주세요. 방법이 달라요.</p>
 
-  <div class="formwrap" id="formwrap">
-    <label>가입 이메일</label>
-    <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
-
-    <label>해지하는 이유 (10자 이상)</label>
-    <textarea id="reason" placeholder="예: 너무 바빠서 매일 못 들어가요 / 원하던 내용이랑 달랐어요 / 가격이 부담돼요"></textarea>
-    <div class="count" id="count">0자</div>
-
-    <button class="btn btn-warn" id="submitBtn" disabled>해지 방법 안내받기 →</button>
-    <div class="saved" id="saved">✓ 이유 전해주셔서 감사해요. 꼭 반영할게요.</div>
+  <div class="tabs">
+    <button class="tab on" data-p="long" type="button">기간권 (3·6·12개월)</button>
+    <button class="tab" data-p="sub" type="button">월 구독</button>
   </div>
 
-  <div class="guide" id="guide">
-    <h2>구독 해지 방법</h2>
-    <ol>
-      <li>결제 시 받은 <b>Lemon Squeezy 영수증 이메일</b>을 열어요.</li>
-      <li>이메일 안의 <b>"Manage your subscription"</b> 버튼을 눌러요.</li>
-      <li>고객 포털에서 <b>"Cancel subscription"</b>을 눌러요.</li>
-      <li>해지해도 <b>결제 기간 말일까지는 그대로 이용</b>할 수 있어요. 그 후 자동 만료돼요.</li>
-    </ol>
-    <div class="muted">
-      영수증 이메일을 못 찾거나 막히시면, 1일1비 고객센터로 알려주세요. 바로 도와드릴게요.<br/>
-      💬 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">1일1비 고객센터 →</a>
-    </div>
+  <div class="panel on" id="p-long">
+    <div class="box"><b>기간권은 자동 갱신이 없어요.</b> 따로 해지할 게 없고, 기간이 끝나면 저절로 종료돼요. 중간에 그만두고 환불받고 싶을 때만 아래로요.</div>
+    <div class="step"><div class="num">1</div><p>결제 후 7일 안이고 아직 학습을 시작하지 않았으면 <b>전액 환불</b>이에요.<small>유료 기간이 시작되기 전이거나 학습 기록이 없는 경우</small></p></div>
+    <div class="step"><div class="num">2</div><p>그 뒤에는 <b>쓴 개월 수 × 16,900원</b>을 빼고 돌려드려요. 며칠만 썼어도 그 달은 1개월로 쳐요.<small>예: 6개월권 94,900원을 2개월 쓰고 환불하면 61,100원</small></p></div>
+    <div class="step"><div class="num">3</div><p>사은품을 이미 받았으면 정가(워크북 50,000원 · 달력 15,000원)를 더 빼요. 미개봉 반송하면 안 빼요.</p></div>
+    <div class="step"><div class="num">4</div><p>고객센터 톡에 <b>결제 이메일</b>과 함께 "환불 요청"이라고 남겨주세요. 확인 후 영업일 3일 안에 원래 결제 수단으로 돌려드려요.</p></div>
+  </div>
+
+  <div class="panel" id="p-sub">
+    <div class="box"><b>월 구독은 다음 결제일 전에 해지하면 돼요.</b> 해지해도 이미 결제한 달은 끝까지 쓸 수 있고, 그 뒤 자동으로 종료돼요.</div>
+    <div class="step"><div class="num">1</div><p>결제할 때 쓴 <b>래피드(Latpeed)</b> 계정으로 로그인해요.<small>latpeed.com → 내 멤버십</small></p></div>
+    <div class="step"><div class="num">2</div><p>"1일1비" 멤버십에서 <b>구독 해지</b>를 눌러요. 그 자리에서 바로 끝나요.</p></div>
+    <div class="step"><div class="num">3</div><p>래피드에 로그인이 안 되거나 못 찾겠으면 고객센터 톡에 결제 이메일을 남겨주세요. 저희가 대신 처리해드려요.</p></div>
+    <div class="step"><div class="num">4</div><p>이번 달 결제 후 7일 안이고 그 달 학습 기록이 없으면 그 달 결제분은 전액 환불돼요. 고객센터로 알려주세요.</p></div>
+  </div>
+
+  <label for="why">그만두는 이유, 한 줄만 (선택)</label>
+  <textarea id="why" rows="2" placeholder="안 써주셔도 해지는 돼요. 써주시면 꼭 반영할게요."></textarea>
+  <div class="copied" id="copied">복사됐어요. 고객센터 톡에 붙여넣으세요.</div>
+
+  <a class="btn" id="cs" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">1일1비 고객센터 열기 →</a>
+  <a class="btn ghost" href="https://www.latpeed.com/" target="_blank" rel="noopener">래피드에서 월 구독 해지하기</a>
+
+  <div class="foot">
+    환불 기준 전문은 <a href="terms.html#refund">이용약관 제7조</a>에 있어요. · 버디버디 (대표 유가람) · 사업자등록번호 703-91-02314 · <a href="privacy.html">개인정보처리방침</a>
   </div>
 </div>
-
 <script>
-  var $ = function(id){ return document.getElementById(id); };
-
-  try {
-    var u = JSON.parse(localStorage.getItem("__OD_USER") || "null");
-    if (u && u.email) $("email").value = u.email;
-  } catch (e) {}
-
-  var reason = $("reason"), count = $("count"), submitBtn = $("submitBtn");
-  function _update(){
-    var n = reason.value.trim().length;
-    count.textContent = n + "자";
-    count.className = "count" + (n >= 10 ? " ok" : "");
-    submitBtn.disabled = n < 10;
-  }
-  reason.oninput = _update;
-  _update();
-
-  submitBtn.onclick = async function(){
-    var email = ($("email").value || "").trim().toLowerCase();
-    var msg = reason.value.trim();
-    if (msg.length < 10) { alert("이유를 10자 이상 적어주세요."); return; }
-    submitBtn.disabled = true; submitBtn.textContent = "전송 중...";
-    try {
-      if (window.OD && window.OD.submitFeedback) {
-        await window.OD.submitFeedback({ email: email || null, category: "cancel", message: msg, context: "cancel-page" });
-      }
-    } catch (e) {}
-    // 저장 성공 여부와 무관하게 안내는 보여줌 (해지 막지 않기)
-    $("saved").style.display = "block";
-    $("formwrap").style.opacity = ".55";
-    submitBtn.style.display = "none";
-    $("guide").style.display = "block";
-    $("guide").scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  document.querySelectorAll('.tab').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('on', x === b); });
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('on', p.id === 'p-' + b.dataset.p); });
+    });
+  });
+  // 고객센터 열 때 이유를 적어뒀으면 클립보드에 같이 담아준다 (붙여넣기만 하면 되게)
+  document.getElementById('cs').addEventListener('click', function () {
+    var w = document.getElementById('why').value.trim();
+    if (!w) return;
+    var t = '[1일1비 해지/환불 요청]\n결제 이메일: \n이유: ' + w;
+    try { navigator.clipboard.writeText(t).then(function () { document.getElementById('copied').style.display = 'block'; }); } catch (e) {}
+  });
 </script>
 </body>
 </html>
