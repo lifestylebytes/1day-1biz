@@ -1418,6 +1418,13 @@ function WhyMock({ kind }) {
         .od-bar-enter { padding: 8px 10px !important; }
         .od-bar-cta { padding: 9px 12px !important; font-size: 12.5px !important; }
         .od-bar-cta-long { display: none; } .od-bar-cta-short { display: inline; }
+        /* 2026-11-02: WHY 1일1비 01~09 카드는 폰에서 좌우로 나누지 않고 위아래로 (제목 · 설명 → 인포그래픽 전체 폭) */
+        .od-why-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; padding: 14px 14px 12px !important; border-radius: 14px !important; }
+        .od-why-text { flex: none !important; width: 100%; }
+        .od-why-num { color: #fff !important; background: var(--accent); border-radius: 6px; padding: 2px 7px; }
+        .od-why-title { font-size: 14.5px !important; margin-top: 6px !important; letter-spacing: -0.01em; }
+        .od-why-desc { font-size: 12px !important; line-height: 1.6 !important; margin-top: 5px !important; }
+        .od-why-mock { zoom: 1 !important; width: 100%; }
       }
       @media (max-width: 380px) { .od-bar-enter-t { display: none; } }
     `}</style>
@@ -1759,16 +1766,16 @@ function WhyMock({ kind }) {
           ["08", "진급 시험으로 실력을 확인해요", "15문항 · 5분. <b>덜 익은 표현부터</b> 실제 사내 메신저 상황으로 나와요.", null, "분기 평가 화면: 사내 메신저에서 사수의 말에 답장 고르기", "실제 진급 평가 화면 · 이름은 가렸어요", 330, "promo"],
           ["09", "사수가 써주는 진급 리포트", "출근부 · 주별 흐름 · 진급 테스트까지, <b>사수 메모와 함께</b> 리포트로 받아요.", null, "성장 리포트 화면: 사수 메모, 출근부 기록, 주별 흐름, 요일별 Day, 진급 테스트 점수", "실제 진급 리포트 화면 · 이름은 가렸어요", 380, "report"],
         ].map(x => (
-          <div key={x[0]} style={{ display: "flex", gap: 10, alignItems: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 10px 11px 12px" }}>
-            <div style={{ flex: "0 0 36%", minWidth: 0 }}>
+          <div key={x[0]} className="od-why-card" style={{ display: "flex", gap: 10, alignItems: "center", background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "11px 10px 11px 12px" }}>
+            <div className="od-why-text" style={{ flex: "0 0 36%", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 11, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{x[0]}</span>
+                <span className="od-why-num" style={{ fontSize: 11, fontWeight: 900, color: "var(--accent)", letterSpacing: "0.04em" }}>{x[0]}</span>
                 {(x[7] === "promo" || x[7] === "report") && <span style={{ fontSize: 8.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px" }}>NEW</span>}
               </div>
-              <div style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginTop: 3 }}>{x[1]}</div>
-              <div style={{ fontSize: 10.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: x[2] }} />
+              <div className="od-why-title" style={{ fontSize: 12.5, fontWeight: 900, color: "var(--ink)", lineHeight: 1.4, marginTop: 3 }}>{x[1]}</div>
+              <div className="od-why-desc" style={{ fontSize: 10.5, color: "var(--ink-soft)", lineHeight: 1.55, marginTop: 4 }} dangerouslySetInnerHTML={{ __html: x[2] }} />
             </div>
-            <div style={{ flex: 1, minWidth: 0, zoom: 0.9 }}>
+            <div className="od-why-mock" style={{ flex: 1, minWidth: 0, zoom: 0.9 }}>
               <WhyMock kind={x[7]} />
             </div>
           </div>
