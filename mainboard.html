@@ -1707,6 +1707,9 @@ span.ret-hud-item { cursor: default; }
 .acx-det { margin-top: 16px; border-top: 1.5px solid var(--ink); padding-top: 12px; }
 .acx-det-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .acx-det-h b { font-size: min(15px * var(--fs, 1), 15px + var(--fsk, 0px)); font-weight: 900; }
+.acx-det-h .acx-sp { flex: 1; }
+.acx-go { font-family: inherit; cursor: pointer; font-size: min(11.5px * var(--fs, 1), 11.5px + var(--fsk, 0px)); font-weight: 800; color: var(--orange); background: var(--sf); border: 1.5px solid var(--orange); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.acx-go:hover { background: var(--orange); color: #fff; }
 .acx-tl { list-style: none; margin: 0 0 0 5px; padding: 0 0 0 16px; border-left: 2px solid var(--al); }
 .acx-tl li { position: relative; display: flex; gap: 12px; padding: 5px 0; font-size: min(12.5px * var(--fs, 1), 12.5px + var(--fsk, 0px)); }
 .acx-tl li::before { content: ""; position: absolute; left: -22px; top: 9px; width: 10px; height: 10px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 3px var(--sf); }
@@ -8979,6 +8982,11 @@ function AttendCalBig({ onGoDay }) {
       <div className="acx-det" id="acx-det">
         <div className="acx-det-h">
           <b>{showDay != null ? "Day " + showDay : "활동 시각"}</b>
+          {/* ★ 2026-11-02 (개발 뷰): 작은 달력처럼 지난 Day 로 가기. 오늘 Day 전만 (작은 달력 first < _rdNow 와 같은 규칙) */}
+          {_isDevNext() && onGoDay && showDay != null && showDay < L.rd && (
+            <button className="acx-go" onClick={() => onGoDay(showDay)}>Day {showDay} 다시 보기 ›</button>
+          )}
+          <span className="acx-sp" />
           {recDays.length > 1 && showDay != null && (
             <div className="acx-nav">
               <button onClick={() => setSel(recDays[idx - 1])} disabled={idx <= 0} aria-label="이전 Day">‹</button>
