@@ -2292,12 +2292,12 @@ function _acActLabel(a) {
 }
 // ★ 2026-10-19 복지포인트 장부 (users.ret_state.WP = { v: { earn: [{key, p, label, at}], spend: [{cost, item, title, at}] } })
 //   9/24 부터 서버에 올라와요. 장부가 없으면(9/24 이후 포인트를 받거나 쓴 적 없음) has: false.
-//   운영자 테스트 포인트(op:bonus)는 뺀다. 아이템은 '산 날' 포인트가 빠지고, 결근을 막은 날엔 안 빠진다.
+//   ★ 2026-11-02 운영자 테스트 포인트(op:bonus)도 합산 (회원 화면 출근 달력 · 복지몰과 같은 기준, 운영자 계정에만 있음). 아이템은 '산 날' 포인트가 빠지고, 결근을 막은 날엔 안 빠진다.
 const ATTCAL_WP_ITEM = { extend: '연장권', annual: '연차', vacay: '휴가', preview: 'Preview Ticket', report: '사수 리포트', pdf: 'PDF 1회권', peek: '동기 문장 엿보기' };
 function _wpOf(rs) {
   const v = rs && rs.WP && rs.WP.v;
   if (!v || typeof v !== 'object') return { has: false, earn: [], spend: [], earned: 0, spent: 0 };
-  const earn = (Array.isArray(v.earn) ? v.earn : []).filter(e => e && e.key !== 'op:bonus' && Number(e.p) > 0)
+  const earn = (Array.isArray(v.earn) ? v.earn : []).filter(e => e && Number(e.p) > 0)
     .map(e => ({ at: e.at, p: Number(e.p), label: e.label || e.key || '' }));
   const spend = (Array.isArray(v.spend) ? v.spend : []).filter(s => s && Number(s.cost) > 0)
     .map(s => ({ at: s.at, p: Number(s.cost), label: s.title || ATTCAL_WP_ITEM[s.item] || s.item || '' }));
@@ -2380,7 +2380,7 @@ function AttendanceCalendarModal({ open, onClose }) {
               <div className="attcal-num">아이템 방어일<b>{total.itemDates}일</b></div>
               {wp && (wp.has ? (
                 <>
-                  <div className="attcal-num wp-e" title="이벤트·목표·퇴근 후 컨텐츠 등으로 모은 복지포인트 합계 (운영자 테스트 포인트 제외)">🎁 모은<b>{_wpFmt(wp.earned)}</b></div>
+                  <div className="attcal-num wp-e" title="이벤트·목표·퇴근 후 컨텐츠 등으로 모은 복지포인트 합계 (운영자 테스트 포인트 포함)">🎁 모은<b>{_wpFmt(wp.earned)}</b></div>
                   <div className="attcal-num wp-s" title="복지몰에서 아이템을 사거나 예문 채우기에 쓴 합계">쓴<b>{_wpFmt(wp.spent)}</b></div>
                   <div className="attcal-num">남은<b>{_wpFmt(Math.max(0, wp.earned - wp.spent))}</b></div>
                 </>
@@ -3622,7 +3622,7 @@ function App() {
                           <div className="prog-line1"><span title="실제 학습 Day (앱 화면의 오늘 Day)">DAY {pr.realDay == null ? '-' : pr.realDay}{pr.realDayEst ? <span title="새 버전 앱 접속 전이라 완주 기록으로 추정한 값" style={{ fontSize: 10, color: '#B5452B', fontWeight: 600 }}>추정</span> : null}</span> / <span title="달력 Day (가입일부터 오늘까지 며칠째)">{pr.calDay}</span> {pr.behind != null ? <span className="behind" title="밀린 Day 수">({pr.behind})</span> : <span className="behind" title="완주 기록 RPC 필요">(-)</span>} <span className="rank" title="직급">[{pr.rank}]</span></div>
                           <div className="prog-tools"><a className="attcal-btn" onClick={(e) => { e.stopPropagation(); openAttCal(u); }} title="며칠에 Day 몇을 완주했는지 달력으로 보기 (실제 학습 기록 기준)">📅 출근 달력</a>{tfBlock}</div>
                           {(() => { const w = _wpOf(u.ret_state); return w.has
-                            ? <div className="prog-wp" title="복지포인트 (운영자 테스트 포인트 제외)">🎁 모은 <b className="wp-e">{_wpFmt(w.earned)}</b> · 쓴 <b className="wp-s">{_wpFmt(w.spent)}</b> · 남은 <b>{_wpFmt(Math.max(0, w.earned - w.spent))}</b></div>
+                            ? <div className="prog-wp" title="복지포인트 (운영자 테스트 포인트 포함)">🎁 모은 <b className="wp-e">{_wpFmt(w.earned)}</b> · 쓴 <b className="wp-s">{_wpFmt(w.spent)}</b> · 남은 <b>{_wpFmt(Math.max(0, w.earned - w.spent))}</b></div>
                             : <div className="prog-wp none" title="9/24 이후 복지포인트를 받거나 쓴 기록이 서버에 없어요">🎁 포인트 기록 없음</div>; })()}
                           {m ? (
                             pr.behind > 0 ? <div className="prog-line3" title="전체 목록은 📅 출근 달력 아래에">밀린 Day {pr.behind}개 · 빠뜨린 {shown.join(', ')}{m.length > 5 ? ' 외 ' + (m.length - 5) + '개' : ''}</div> : null
