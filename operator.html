@@ -1304,6 +1304,19 @@ function SheetView({ items, onClose }) {
   const [q, setQ] = React.useState('');
   const [sort, setSort] = React.useState({ key: '_at', dir: -1 });
   const [day1, setDay1] = React.useState({ rows: [], loading: true, error: '' });
+  // ★ 2026-11-02 이름 칸: 피드백을 남긴 적 없는 회원은 이름이 비었다. 회원 정보(users.name)에서 먼저 찾는다
+  const [userNames, setUserNames] = React.useState({});
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!window.OD?.fetchAllUsers) return;
+      const r = await window.OD.fetchAllUsers();
+      if (!alive || !r || !r.ok) return;
+      const m = {}; (r.users || []).forEach(u => { if (u && u.email && u.name) m[String(u.email).toLowerCase()] = u.name; });
+      setUserNames(m);
+    })();
+    return () => { alive = false; };
+  }, []);
   // ★ 2026-10-30 퀴즈 통계 · 진급 평가 · 내 문장: 탭을 처음 열 때 불러온다 (SQL 20261030_operator_learning_sheet.sql 필요)
   const [learn, setLearn] = React.useState({ rows: [], subs: [], loading: false, loaded: false, error: '' });
   const [qzAll, setQzAll] = React.useState(false);   // 퀴즈 통계: 기록 없는 단어도 보기
@@ -1384,7 +1397,7 @@ function SheetView({ items, onClose }) {
     (day1.rows || []).filter(r => r.survey_key === k).forEach(r => { const e = (r.email || '').toLowerCase(); const p = m.get(e); if (!p || Date.parse(r.created_at) > Date.parse(p.created_at)) m.set(e, r); });
     return [...m.values()];
   };
-  const _nameOf = React.useMemo(() => { const m = {}; (items || []).forEach(it => { if (it.email && it.name) m[it.email.toLowerCase()] = it.name; }); return m; }, [items]);
+  const _nameOf = React.useMemo(() => { const m = { ...userNames }; (items || []).forEach(it => { const k = it.email && it.email.toLowerCase(); if (k && it.name && !m[k]) m[k] = it.name; }); return m; }, [items, userNames]);
   const _base = (r) => ({ _at: r.created_at, 날짜: _fmtAt(r.created_at), 이름: _nameOf[(r.email || '').toLowerCase()] || '', 이메일: r.email || '' });
   const _list = (v) => Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v));
   const _MATCH_KO = { better: '예상보다 좋았어요', match: '딱 기대만큼', worse: '예상보다 별로', unsure: '잘 모르겠어요' };
