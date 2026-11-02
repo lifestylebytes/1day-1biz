@@ -1368,6 +1368,7 @@ function SheetView({ items, onClose }) {
   }, [items]);
 
   // ★ 2026-10-22 입사 테스트 (placement_test): 점수 · 감각 · 첫 오답 Day · 틀린 표현
+  const items0 = items;   // place 안에서 문항 배열(items)과 이름이 겹쳐서 따로 둔다
   const place = React.useMemo(() => {
     const rows = (day1.rows || []).filter(r => r.survey_key === 'placement_test').map(r => {
       const x = r.responses || {};
@@ -1375,7 +1376,9 @@ function SheetView({ items, onClose }) {
       const mc = items.filter(i => i.type === 'mc'), bl = items.filter(i => i.type === 'blank');
       const sec = Number(x.durationSec || 0);
       return {
-        _at: r.created_at, 날짜: _fmtAt(r.created_at), 이메일: r.email || '',
+        _at: r.created_at, 날짜: _fmtAt(r.created_at),
+        이름: userNames[(r.email || '').toLowerCase()] || ((items0 || []).find(it => it.name && it.email && it.email.toLowerCase() === (r.email || '').toLowerCase()) || {}).name || '',   // ★ 2026-11-02 회원 정보 이름 (가입 전 응시자는 빈칸)
+        이메일: r.email || '',
         점수: x.score == null ? '' : `${x.score} / ${x.total || 10}`,
         감각: x.levelKo || x.level || '',
         객관식: mc.length ? `${mc.filter(i => i.ok).length}/${mc.length}` : '',
@@ -1386,8 +1389,8 @@ function SheetView({ items, onClose }) {
         시간: sec ? (sec >= 60 ? `${Math.floor(sec / 60)}분 ${sec % 60}초` : `${sec}초`) : '',
       };
     });
-    return { cols: ['날짜', '이메일', '점수', '감각', '객관식', '빈칸', '첫 오답', '틀린 표현', '내 답', '시간'], num: new Set(), rows };
-  }, [day1.rows]);
+    return { cols: ['날짜', '이름', '이메일', '점수', '감각', '객관식', '빈칸', '첫 오답', '틀린 표현', '내 답', '시간'], num: new Set(), rows };
+  }, [day1.rows, userNames, items0]);
 
   // ★ 2026-10-30 설문별 탭: 1일차 후기 · 체험 5일차 · 체험 7일차 · Day 8 결제 이유 · Day 60. 나머지 키는 '기타 설문'
   const _own = new Set(['placement_test', 'day1_feedback', 'trial_day5', 'trial_day7', 'trial_paid_reason', 'absence_reason']);
