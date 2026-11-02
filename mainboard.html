@@ -8740,11 +8740,11 @@ function _acxBuild(data) {
   Object.keys(known).forEach(d => { if (!cell(d).item) cell(d).item = known[d]; });
   return { byDate, unknown: unknown.sort((a, b) => a - b) };
 }
-// 복지포인트 장부 (운영자 뷰 _wpOf 와 같은 규칙: 운영자 테스트 포인트 제외)
+// 복지포인트 장부. ★ 2026-11-02: 운영자 테스트 포인트(op:bonus)도 합산 (운영자 계정에만 있음. 복지몰 잔액과 맞춤)
 function _acxWp(email) {
   let l = null; try { l = _retLoad("WP", email, null); } catch (e) {}
   if (!l || (!Array.isArray(l.earn) && !Array.isArray(l.spend))) return { has: false, earned: 0, spent: 0, byDate: {} };
-  const earn = (Array.isArray(l.earn) ? l.earn : []).filter(e => e && e.key !== "op:bonus" && Number(e.p) > 0).map(e => ({ at: e.at, p: Number(e.p), label: e.label || e.key || "", kind: "earn" }));
+  const earn = (Array.isArray(l.earn) ? l.earn : []).filter(e => e && Number(e.p) > 0).map(e => ({ at: e.at, p: Number(e.p), label: e.label || e.key || "", kind: "earn" }));
   const spend = (Array.isArray(l.spend) ? l.spend : []).filter(s => s && Number(s.cost) > 0).map(s => ({ at: s.at, p: Number(s.cost), label: s.title || _ACX_WP_ITEM[s.item] || s.item || "", kind: "spend" }));
   const byDate = {};
   earn.concat(spend).forEach(x => { const d = x.at ? _acxKst(x.at) : null; if (!d) return; const c = (byDate[d] = byDate[d] || { earn: 0, spend: 0, list: [] }); c[x.kind] += x.p; c.list.push(x); });
