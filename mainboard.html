@@ -8982,8 +8982,8 @@ function AttendCalBig({ onGoDay }) {
       <div className="acx-det" id="acx-det">
         <div className="acx-det-h">
           <b>{showDay != null ? "Day " + showDay : "활동 시각"}</b>
-          {/* ★ 2026-11-02 (개발 뷰): 작은 달력처럼 지난 Day 로 가기. 오늘 Day 전만 (작은 달력 first < _rdNow 와 같은 규칙) */}
-          {_isDevNext() && onGoDay && showDay != null && showDay < L.rd && (
+          {/* ★ 2026-11-02 (회원 화면 적용, 대표님 컨펌): 작은 달력처럼 지난 Day 로 가기. 오늘 Day 전만 (작은 달력 first < _rdNow 와 같은 규칙) */}
+          {onGoDay && showDay != null && showDay < L.rd && (
             <button className="acx-go" onClick={() => onGoDay(showDay)}>Day {showDay} 다시 보기 ›</button>
           )}
           <span className="acx-sp" />
