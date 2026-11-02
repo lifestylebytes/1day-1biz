@@ -1398,6 +1398,8 @@ function WhyMock({ kind }) {
       @keyframes odStampIn { 0% { transform: scale(2.2) rotate(-18deg); opacity: 0; } 60% { transform: scale(0.94) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
       @keyframes odRise { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .od-rise { animation: odRise 0.4s ease both; }
+      @keyframes odLimPulse { 0% { box-shadow: 0 0 0 0 rgba(192,57,43,0.5); } 70% { box-shadow: 0 0 0 6px rgba(192,57,43,0); } 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); } }
+      .od-lim-dot { width: 8px; height: 8px; border-radius: 50%; background: #C0392B; flex-shrink: 0; animation: odLimPulse 1.2s infinite; }
       @keyframes odTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       .od-rv-track:hover, .od-rv-track:active { animation-play-state: paused !important; }
       .od-ticker-track { display: inline-flex; white-space: nowrap; animation: odTicker 72s linear infinite; will-change: transform; font-family: "JetBrains Mono", monospace; }
@@ -1955,30 +1957,35 @@ function WhyMock({ kind }) {
         ))}
       </div>
 
+      {/* 2026-11-02: 웰컴 키트 한정 수량 (1차 WorkBook 10부 · 달력 30부, 선착순). 남은 수량 숫자는 보여주지 않음 */}
       <div style={{ display: "grid", gap: 8, marginBottom: 8 }}>
         {[
-          { tag: "GIFT 01", nm: "1일1비 WorkBook", val: "50,000원 상당", sub: "승진 패스트트랙 · 임원 트랙",
-            li: "<b>나만의 비즈니스 영어 WorkBook</b>이에요. Day 1~90 표현이 한 쪽에 하나씩, 실제 슬랙 대화와 사수 노트, 예문 세 줄까지 담겼어요. 빈칸에 <b>내 문장</b>을 채우다 보면 90일 뒤엔 내가 쓴 책이 돼요." },
-          { tag: "GIFT 02", nm: "1일1비 상반기 영어 달력 (A2) (3종 중 택1)", val: "15,000원 상당", sub: "정규직 · 패스트트랙 · 임원 트랙", size: "A2 포스터",
-            li: "책상 앞에 붙여두기만 해도 <b>매일 오늘의 표현이 눈에 들어와요.</b> 1월부터 6월까지 하루 한 칸씩, 써먹은 날은 체크하면서 채워가요. 주황 바탕 · 주황 포인트 · 6칸 스트립 <b>세 가지 디자인 중에 골라요.</b>" },
+          { tag: "GIFT 01", nm: "1일1비 WorkBook", val: "50,000원 상당", lim: "1차 10부 한정", who: "🎯 패스트트랙 · 임원 트랙",
+            li: "Day 1~90 표현이 한 쪽에 하나씩. 빈칸에 <b>내 문장</b>을 채우다 보면 90일 뒤엔 내가 쓴 책이 돼요." },
+          { tag: "GIFT 02", nm: "상반기 영어 달력 (A2)", val: "15,000원 상당", lim: "1차 30부 한정", who: "⏳ 가입 48시간 안 결제",
+            li: "책상 앞에 붙여두기만 해도 <b>매일 오늘의 표현이 눈에 들어와요.</b> 세 가지 디자인 중에 골라요." },
         ].map(g => (
-          <div key={g.nm} style={{ background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px" }}>
+          <div key={g.nm} style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 13px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
               <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "var(--accent)" }}>{g.tag}</span>
               <span style={{ fontSize: 13.5, fontWeight: 900, color: "var(--ink)" }}>{g.nm}</span>
               <span style={{ marginLeft: "auto", fontSize: 11.5, fontWeight: 900, color: "#fff", background: "var(--accent)", borderRadius: 999, padding: "3px 10px" }}>{g.val}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 7 }}>
-              <span style={{ fontSize: 11.5, fontWeight: 900, color: "var(--accent)", background: "rgba(216,90,42,0.1)", border: "1px solid rgba(216,90,42,0.35)", borderRadius: 7, padding: "3px 9px" }}>🎯 {g.sub} 결제 시</span>
-              {g.size && <span style={{ fontSize: 10.5, color: "var(--ink-mute)" }}>{g.size}</span>}
+              <span style={{ fontSize: 11, fontWeight: 900, color: "#fff", background: "#C0392B", borderRadius: 7, padding: "3px 8px" }}>{g.lim}</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: "var(--accent)", background: "rgba(216,90,42,0.1)", border: "1px solid rgba(216,90,42,0.35)", borderRadius: 7, padding: "3px 8px" }}>{g.who}</span>
             </div>
             <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.7, marginTop: 7 }} dangerouslySetInnerHTML={{ __html: g.li }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 9, paddingTop: 9, borderTop: "1px dashed var(--line)", fontSize: 13.5, fontWeight: 900, color: "#C0392B" }}>
+              <span className="od-lim-dot" />🔥 선착순 마감 예정
+              <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "var(--ink-mute)" }}>2차 입고 미정</span>
+            </div>
           </div>
         ))}
       </div>
-      <div style={{ background: "var(--accent, #D85A2A)", borderRadius: 11, padding: "13px 14px", textAlign: "center", color: "#fff" }}>
-        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.45 }}>🎁 지금 결제하시고<br/>최대 약 6만 5천 원 상당 사은품 받아가세요</div>
-        <div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>WorkBook 50,000원 + 영어 달력 15,000원 · 3개월권 제외</div>
+      <div style={{ background: "#C0392B", borderRadius: 11, padding: "13px 14px", textAlign: "center", color: "#fff" }}>
+        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.45 }}>🔥 WorkBook 1차 10부 한정 · 선착순 마감 예정<br/>지금 결제하시고 최대 6만 5천 원 상당 받아가세요</div>
+        <div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>다음 입고 시기는 미정이에요 · 마감되면 사은품 없이 결제돼요</div>
       </div>
 
       <Divider />
@@ -2022,11 +2029,11 @@ function WhyMock({ kind }) {
 
       {[
         { id: "y12", nm: "임원 트랙", term: "12개월 + 유비챌", chip: "🗓 1년 내내 끊김 없이", desc: "가장 길게, 가장 꾸준하게",
-          was: "301,800원", now: "285,000원", total: "81,800원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true,
+          was: "301,800원", now: "285,000원", total: "81,800원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", wbLim: true, strong: true,
           monthly: "15,500원", monthlyNote: "1일1비 몫 · 유비챌 1기수 99,000원 별도 포함", months: 12,
           li: ["1일1비 12개월", "유비챌 1기수 (기간 안에 원하는 기수)"] },
         { id: "pkg", nm: "승진 패스트트랙", term: "6개월 + 유비챌", chip: "⭐ 혜택이 가장 커요", desc: "혼자 매일 쌓기 + 동료와 4주 실전",
-          was: "200,400원", now: "179,000원", total: "86,400원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", strong: true, best: true,
+          was: "200,400원", now: "179,000원", total: "86,400원", gift: "지금 결제 시 WorkBook + 영어 달력 사은품 포함", wbLim: true, strong: true, best: true,
           monthly: "13,300원", monthlyNote: "1일1비 몫 · 유비챌 1기수 99,000원 별도 포함", months: 6,
           li: ["1일1비 6개월", "유비챌 1기수 (4주 챌린지)"] },
         { id: "m6", nm: "정규직", term: "6개월", chip: "👍 대리 + TF 트랙까지", desc: "습관이 확실히 붙는 기간",
@@ -2059,6 +2066,9 @@ function WhyMock({ kind }) {
           {p.monthlyNote && <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 1 }}>{p.monthlyNote}</div>}
           {p.gift && (
             <div style={{ marginTop: 9, background: "rgba(216,90,42,0.1)", color: "var(--accent)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>🎁 {p.gift}</div>
+          )}
+          {p.wbLim && (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 6, background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.35)", color: "#C0392B", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}><span className="od-lim-dot" />🔥 WorkBook 1차 10부 한정 · 선착순 마감 예정</div>
           )}
           {p.nogift && (
             <div style={{ marginTop: 9, background: "rgba(42,31,20,0.06)", border: "1.5px dashed var(--ink-soft)", color: "var(--ink)", borderRadius: 8, padding: "7px 10px", fontSize: 11.5, fontWeight: 900 }}>⚠️ 사은품 미포함 <span style={{ fontWeight: 700, color: "var(--ink-mute)", fontSize: 10.5 }}>(WorkBook · 영어 달력 없음)</span></div>
