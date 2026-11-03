@@ -6186,6 +6186,16 @@ function _computeGatedDay() {
   } catch (e) {}
   let _u = _localUser;
   try { _u = JSON.parse(localStorage.getItem('__OD_USER') || 'null') || _localUser; } catch (e) {}
+  // ★ 2026-11-03: 서버가 아는 진짜 오늘 Day(users.real_day, 로그인 때 realDay 로 내려옴)가 이 기기 바닥값보다 크면 그걸 쓴다.
+  //   완주 기록은 이 기기 localStorage 에만 있어서, 다른 기기나 캐시 지운 브라우저에선 Day 1 로 돌아가던 버그 (11/3 신고: Day 3 인데 Day 1 만 보임).
+  try {
+    const _rd = Number((_u && (_u.realDay || _u.real_day)) || 0);
+    if (_rd > _floor && _rd <= _autoDay) {
+      _floor = _rd;
+      const _sv0 = JSON.parse(localStorage.getItem(_GK) || 'null') || {};
+      localStorage.setItem(_GK, JSON.stringify({ ..._sv0, floor: _floor, at: _todayKST, from: 'server_real_day' }));
+    }
+  } catch (e) {}
   // ★ 2026-08-26 수정: 게이트 = "floor에서 시작해, 완주한 날은 지나가고, 완주 못 한 첫 날에서 멈춤".
   //   예전 공식 max(완주기록수+1, floor)는 floor가 큰 기존 회원(예: Day 96 스냅샷)이
   //   완주 기록 수로는 floor를 영영 못 넘어 그 자리에 갇혔다 (매일 끝내도 같은 날 반복,
@@ -25537,6 +25547,8 @@ window.SimApp = App;
               local.membership_cancel_at = u.membership_cancel_at || null;
               local.membershipCancelAt = u.membership_cancel_at || null;
               local.cohort = u.cohort;
+              // ★ 2026-11-03: 서버 real_day 도 내려받는다 (다른 기기에서 Day 가 1 로 돌아가는 버그 방지. 게이트가 읽음)
+              if (u.real_day != null) { local.realDay = u.real_day; local.real_day = u.real_day; }
               // ★ 2026-10-30: 체험 출신 결제 회원 구분용 (Day 8 결제 이유 설문). 래피드 웹훅이 preferences 에 남긴 값
               try { const _pf = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.prevCohort = _pf.prev_cohort || local.prevCohort || null; local.planPaidAt = _pf.plan_paid_at || _pf.last_paid_at || local.planPaidAt || null; } catch (e) {}
               local.isPilotHire = u.is_pilot_hire;
