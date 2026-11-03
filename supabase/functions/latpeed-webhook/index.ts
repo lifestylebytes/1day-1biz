@@ -165,9 +165,10 @@ Deno.serve(async (req) => {
       const { refund_at: _ra, refund_amount: _rm, ...rest } = prefs;
       const cleaned: Record<string, unknown> = { ...rest, refund_at: eventAt.toISOString(), refund_amount: amount, reverted_to_trial_at: eventAt.toISOString() };
       for (const k of ["plan_months", "plan_amount", "plan_name", "pay_source", "last_paid_at", "subscription_id", "membership_name", "prev_cohort"]) delete cleaned[k];
+      // ★ 2026-11-03: 체험 종료일은 비우지 않고 가입 + 7일로 (비우면 앱이 '종료일 없음' 으로 보고 무기한 열림)
       const { data, error } = await supabase.from("users").update({
         cohort: prevCohort,
-        membership_ends_at: null,
+        membership_ends_at: addDays(new Date(existing.signup_date), TRIAL_DAYS).toISOString(),
         membership_cancel_at: null,
         membership_cancel_reason: null,
         preferences: cleaned,

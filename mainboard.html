@@ -13465,6 +13465,10 @@ function TrialBuyBar({ user }) {
     const e = new Date((u && (u.membershipEndsAt || u.membership_ends_at)) || "").getTime();
     if (isFinite(e)) dLeft = Math.max(0, Math.ceil((e - now) / 86400000));
   } catch (e) {}
+  // ★ 2026-11-03: 종료일이 없으면 가입일 + 7일로 센다 (학습 Day 로 세면 안 하는 사람은 D-5 에 멈춰 보임)
+  if (dLeft == null) {
+    try { const u = JSON.parse(localStorage.getItem("__OD_USER") || "null"); const s = new Date((u && (u.signupDate || u.signup_date)) || "").getTime(); if (isFinite(s)) dLeft = Math.max(0, Math.ceil((s + 7 * 86400000 - now) / 86400000)); } catch (e) {}
+  }
   if (dLeft == null) dLeft = Math.max(0, 7 - d);
   const stat = (v, l) => (
     <div style={{ flex: 1, background: "rgba(255,253,247,0.08)", borderRadius: 9, padding: "8px 4px", textAlign: "center" }}>
