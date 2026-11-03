@@ -25548,7 +25548,23 @@ window.SimApp = App;
               local.membershipCancelAt = u.membership_cancel_at || null;
               local.cohort = u.cohort;
               // ★ 2026-11-03: 서버 real_day 도 내려받는다 (다른 기기에서 Day 가 1 로 돌아가는 버그 방지. 게이트가 읽음)
-              if (u.real_day != null) { local.realDay = u.real_day; local.real_day = u.real_day; }
+              if (u.real_day != null) {
+                local.realDay = u.real_day; local.real_day = u.real_day;
+                // 이 기기가 서버보다 뒤처져 있으면(캐시 지움 · 새 기기) 바닥값을 올리고 한 번만 새로고침해서 바로 그 Day 로 연다.
+                // 안 그러면 이 기기가 낮은 Day 를 서버에 다시 보내 다른 기기까지 끌어내린다.
+                try {
+                  const _rd = Number(u.real_day) || 0, _cur = Number(USER.realCurrentDay || USER.currentDay || 1), _cal = Number(window.__odAutoDay || 999);
+                  const _flag = "__OD_RD_RELOAD_" + local.email;
+                  if (_rd > _cur && _rd <= _cal && !sessionStorage.getItem(_flag)) {
+                    sessionStorage.setItem(_flag, "1");
+                    const _gk = "__OD_DAYGATE_" + local.email;
+                    const _sv = JSON.parse(localStorage.getItem(_gk) || "null") || {};
+                    localStorage.setItem(_gk, JSON.stringify({ ..._sv, floor: _rd, from: "server_real_day_sync" }));
+                    localStorage.setItem("__OD_USER", JSON.stringify(local));
+                    setTimeout(() => { try { location.reload(); } catch (e) {} }, 50);
+                  }
+                } catch (e) {}
+              }
               // ★ 2026-10-30: 체험 출신 결제 회원 구분용 (Day 8 결제 이유 설문). 래피드 웹훅이 preferences 에 남긴 값
               try { const _pf = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.prevCohort = _pf.prev_cohort || local.prevCohort || null; local.planPaidAt = _pf.plan_paid_at || _pf.last_paid_at || local.planPaidAt || null; } catch (e) {}
               local.isPilotHire = u.is_pilot_hire;
