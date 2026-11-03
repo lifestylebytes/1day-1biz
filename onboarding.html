@@ -2459,6 +2459,7 @@ function LoginScreen({ onBack }) {
             signup_date: u.signup_date,
             agreedAt: u.agreed_at || existing.agreedAt,
             dayInCompany: u.day_in_company || existing.dayInCompany || 1,
+            realDay: u.real_day || existing.realDay || null,   // ★ 2026-11-03: 서버가 아는 진짜 오늘 Day (다른 기기에서 Day 1 로 돌아가는 버그 방지)
             cohort: u.cohort,
             unlocked: !!u.unlocked,
             isOperator: !!u.is_operator,
