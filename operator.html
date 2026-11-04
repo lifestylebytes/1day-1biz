@@ -668,6 +668,7 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
   const [linkFor, setLinkFor] = useState(null); // { row, app }
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
+  const [manual, setManual] = useState({ lp: "", app: "" });   // ★ 2026-11-04 명단 없이 바로 연결 입력칸 (훅은 early return 앞에)
   const load = async () => {
     if (!window.OD || !window.OD.fetchLatpeedUnmatched) { setErr("lib 배포 전이에요."); setRows([]); return; }
     const r = await window.OD.fetchLatpeedUnmatched(opEmail);
@@ -704,7 +705,6 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
   };
   const pill = (on) => ({ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 12, background: on ? '#FBE3D8' : '#ECE6DA', color: on ? '#B8431A' : '#5C4A36', whiteSpace: 'nowrap' });
   // ★ 2026-11-04: 명단에 없는 결제도 바로 잇기 (결제 이메일 ≠ 가입 이메일인데 표에 안 뜬 경우). 별칭을 걸면 DB 트리거가 결제를 즉시 적용한다
-  const [manual, setManual] = useState({ lp: "", app: "" });
   const manualLink = async () => {
     const lp = (manual.lp || "").trim().toLowerCase(), app = (manual.app || "").trim().toLowerCase();
     if (!lp.includes("@") || !app.includes("@")) { flash("이메일 두 개를 다 적어주세요"); return; }
