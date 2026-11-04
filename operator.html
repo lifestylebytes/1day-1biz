@@ -703,6 +703,21 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
     setLinkFor(null); flash("✅ 연결했어요. 내일 07:00 동기화 때 반영돼요"); load(); if (onDone) onDone();
   };
   const pill = (on) => ({ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 12, background: on ? '#FBE3D8' : '#ECE6DA', color: on ? '#B8431A' : '#5C4A36', whiteSpace: 'nowrap' });
+  // ★ 2026-11-04: 명단에 없는 결제도 바로 잇기 (결제 이메일 ≠ 가입 이메일인데 표에 안 뜬 경우). 별칭을 걸면 DB 트리거가 결제를 즉시 적용한다
+  const [manual, setManual] = useState({ lp: "", app: "" });
+  const manualLink = async () => {
+    const lp = (manual.lp || "").trim().toLowerCase(), app = (manual.app || "").trim().toLowerCase();
+    if (!lp.includes("@") || !app.includes("@")) { flash("이메일 두 개를 다 적어주세요"); return; }
+    const u = (supaUsers || []).find(x => String(x.email || "").toLowerCase() === app);
+    if (!u) { flash("가입 이메일의 앱 계정이 없어요: " + app); return; }
+    if (!window.OD || !window.OD.linkLatpeedAlias) { flash("lib 배포 전이에요."); return; }
+    if (!confirm("래피드 결제 이메일 " + lp + " 을(를)\n앱 계정 " + (u.name || "") + " (" + u.email + ") 에 연결할까요?\n\n이 이메일로 들어온 결제(이미 온 것 포함)가 이 계정에 바로 적용돼요.")) return;
+    setBusy(true);
+    const res = await window.OD.linkLatpeedAlias(opEmail, lp, u.email);
+    setBusy(false);
+    if (!res || !res.ok) { flash("실패: " + ((res && res.error) || "?")); return; }
+    setManual({ lp: "", app: "" }); flash("✅ 연결했어요. 결제가 있으면 바로 적용돼요 (회원은 새로고침)"); load(); if (onDone) onDone();
+  };
   const cell = { padding: '9px 10px', borderBottom: '1px solid #F0E9DA', verticalAlign: 'top', fontSize: 12.5, lineHeight: 1.5 };
   const unfilled = smsFor && smsFor.text.includes(UNM_FILL);
 
@@ -717,6 +732,15 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
         <div style={{ display: 'flex', gap: 6 }}><span style={pill(true)}>결제 중 {activeN}명</span><span style={pill(false)}>결제 끝남 {open.length - activeN}명</span></div>
       </summary>
       {err && <div style={{ fontSize: 12.5, color: '#993C1D', background: '#FFF3D6', borderRadius: 6, padding: '8px 12px' }}>⚠ {err}</div>}
+      <div style={{ background: '#fff', border: '1px dashed #E9B99F', borderRadius: 8, padding: '10px 12px', marginBottom: 10 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, marginBottom: 6 }}>🔗 명단에 없어도 바로 연결 <span style={{ fontWeight: 500, color: '#8A7964' }}>· 결제 이메일과 가입 이메일이 다른 회원</span></div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <input value={manual.lp} onChange={e => setManual(m => ({ ...m, lp: e.target.value }))} placeholder="래피드 결제 이메일" style={{ flex: '1 1 200px', fontSize: 12.5, padding: '7px 9px', border: '1px solid #E8DFCB', borderRadius: 6, fontFamily: 'inherit' }} />
+          <span style={{ color: '#8A7964' }}>→</span>
+          <input value={manual.app} onChange={e => setManual(m => ({ ...m, app: e.target.value }))} placeholder="1일1비 가입 이메일" style={{ flex: '1 1 200px', fontSize: 12.5, padding: '7px 9px', border: '1px solid #E8DFCB', borderRadius: 6, fontFamily: 'inherit' }} />
+          <button className="btn btn-primary btn-mini" style={{ fontSize: 12, padding: '7px 12px' }} disabled={busy} onClick={manualLink}>{busy ? '연결 중…' : '연결하기'}</button>
+        </div>
+      </div>
       {sorted.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', border: '1px solid #E8DFCB', borderRadius: 8 }}>

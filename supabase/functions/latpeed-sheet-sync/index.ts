@@ -228,10 +228,14 @@ Deno.serve(async (req) => {
       const { error: ue } = await sb.from("latpeed_unmatched").upsert(unmatched.map(x => ({ ...x, last_seen_at: nowSeen, resolved_at: null })), { onConflict: "latpeed_email" });
       unmatchedSaved = !ue;
     } else unmatchedSaved = true;
-    const keep = unmatched.map(x => x.latpeed_email);
-    let q = sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).is("resolved_at", null);
-    if (keep.length) q = q.not("latpeed_email", "in", "(" + keep.map(e => '"' + e.replace(/"/g, "") + '"').join(",") + ")");
-    await q.then(() => {}, () => {});   // 표가 아직 없으면(SQL 미실행) 조용히 넘어간다
+    // ★ 2026-11-04: '이번 시트에 없으면 해결' 로 보던 걸 고쳤다. 시트에는 월 구독만 있어서, 웹훅이 올린 장기권(단건) 결제자가
+    //   다음 날 07:00 에 전부 '해결' 로 바뀌어 운영자뷰 명단에서 사라졌다 (11/2 황OO님 케이스). 이제는 그 이메일로 가입했거나 별칭이 생긴 경우만 해결로 본다.
+    try {
+      const userEmails = new Set((users || []).map((x: any) => String(x.email).toLowerCase()));
+      const { data: openRows } = await sb.from("latpeed_unmatched").select("latpeed_email").is("resolved_at", null);
+      const toResolve = (openRows || []).map((r: any) => String(r.latpeed_email)).filter((e) => userEmails.has(e.toLowerCase()) || !!alias[e.toLowerCase()]);
+      if (toResolve.length) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).in("latpeed_email", toResolve);
+    } catch (_e) { /* 표가 아직 없으면(SQL 미실행) 조용히 넘어간다 */ }
   }
   if (!dry && (applied.length || cancelled.length || ended.length)) {
     await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, ended: ended.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email), ended.map(e => e.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
