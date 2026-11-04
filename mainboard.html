@@ -10709,7 +10709,8 @@ const _TY_ERRANDS_BASE = [
   { id: "notice",    icon: "📣", t: "1일1비 공지방 한번 들어가보기", verify: true, nav: "mypage", sel: "[data-errand='notice']" },
   { id: "desk",      icon: "☕️", t: "물 한 잔 마시고 책상 정리하기" },
   // ── 숨어 있어서 찾아보지 않으면 모르는 것들 (2026-09-11 아이디어) ──
-  { id: "stealth",   icon: "🥸", t: "업무 위장 모드 켜보기 (탭 제목이 바뀌어요)", verify: true, nav: "mypage", sel: "[data-errand='stealth']" },
+  // ★ 2026-11-04 업무 위장 모드는 개발 뷰에만 있는 기능이라 회원 화면 심부름에서는 뺀다 (devOnly).
+  { id: "stealth",   icon: "🥸", t: "업무 위장 모드 켜보기 (탭 제목이 바뀌어요)", verify: true, nav: "mypage", sel: "[data-errand='stealth']", devOnly: true },
   { id: "profile",   icon: "👤", t: "직무 프로필 채워보기 (리포트가 더 정확해져요)", verify: true, nav: "mypage", sel: "[data-errand='profile']" },
   { id: "guide",     icon: "🧭", t: "첫날 가이드 다시 보기 눌러보기", verify: true, nav: "mypage", sel: "[data-errand='guide']", minDay: 3 },
   { id: "push",      icon: "🔔", t: "설정에서 푸시 알림 켜보기", verify: true, nav: "mypage", sel: "[data-errand='push']", evt: "od-open-settings" },
@@ -10731,7 +10732,7 @@ const _TY_ERRANDS_DEV = {
   mynotes: { id: "calbig",  icon: "📅", t: "출근 달력 크게 보기 (날짜별 기록을 볼 수 있어요)", verify: true, nav: "mypage", sel: "#acx-big", minDay: 3 },
 };
 function _errandsV2Live() { return true; }
-const _TY_ERRANDS = _TY_ERRANDS_BASE.map(e => ((_errandsV2Live() || _isDevNext()) && _TY_ERRANDS_DEV[e.id]) || e);
+const _TY_ERRANDS = _TY_ERRANDS_BASE.map(e => ((_errandsV2Live() || _isDevNext()) && _TY_ERRANDS_DEV[e.id]) || e).filter(e => !e.devOnly || _isDevNext());
 const _tyErrandHistKey = (email) => "__OD_ERRAND_HIST_" + (email || "guest");
 // ★ 심부름 증빙 (2026-09-14): verify 가 붙은 심부름은 누른다고 도장이 안 찍힌다. 실제 그 행동이 일어난 곳에서 _tyErrandProof(id) 를 부르면 그날 심부름에 있을 때만 도장.
 function _tyErrandProof(id) {
@@ -10753,14 +10754,17 @@ function _tyPickErrands(email, today, rd, n) {
   let hist = [];
   try { hist = JSON.parse(localStorage.getItem(_tyErrandHistKey(email)) || "[]") || []; } catch (e) {}
   const saved = hist.find(h => h && h.d === today);
+  // ★ 2026-11-04: 오늘 뽑힌 심부름 중 빠진 것(개발 뷰 전용 등)이 있으면 남은 건 그대로 두고 빈자리만 새로 채운다
+  let keep = [];
   if (saved) {
     const got = (saved.ids || []).map(id => _TY_ERRANDS.find(e => e.id === id)).filter(Boolean);
-    if (got.length) return got;
+    if (got.length && got.length >= (saved.ids || []).length) return got;
+    keep = got;
   }
-  const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd && (!e.cond || e.cond(email)));
+  const avail = _TY_ERRANDS.filter(e => (e.minDay || 1) <= rd && (!e.cond || e.cond(email)) && !keep.some(k => k.id === e.id));
   const recent = new Set(hist.slice(-6).flatMap(h => (h && h.ids) || []));
   // ★ 2026-09-15: 첫날은 알림 켜기 2개, 둘째 날은 공지방·게시판으로 고정 (그 뒤부터 안 한 것 위주 랜덤)
-  if (_RET_ON()) {
+  if (_RET_ON() && !keep.length) {
     const shown = new Set(hist.flatMap(h => (h && h.ids) || []));
     const fixed = [["push", "kakao"], ["notice", "inbox"]];
     for (const pair of fixed) {
@@ -10780,7 +10784,7 @@ function _tyPickErrands(email, today, rd, n) {
   const rnd = () => (r = (r * 1664525 + 1013904223) >>> 0) / 4294967296;
   const sh = pool.slice();
   for (let i = sh.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = sh[i]; sh[i] = sh[j]; sh[j] = t; }
-  const picked = sh.slice(0, n);
+  const picked = keep.concat(sh.slice(0, Math.max(0, n - keep.length)));
   try {
     const next = hist.filter(h => h && h.d !== today).concat([{ d: today, ids: picked.map(e => e.id) }]).slice(-14);
     localStorage.setItem(_tyErrandHistKey(email), JSON.stringify(next));
