@@ -7755,7 +7755,7 @@ const _UNLOCK_DESC = {
   promo: "Day 30 사원 승진까지의 마일스톤이에요. 어디까지 왔는지 한눈에 보여요.",
   skills: "표현을 5개 영역으로 나눠 모아요. 회의·메일·관계·보고·협상 중 어디가 비었는지 보여요.",
   doc: "사원 서류 칸이 열려요. 문서번호와 상태가 회사 문서처럼 찍혀요.",
-  errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 호봉이 올라요.",
+  errands: "오늘의 심부름이 열려요. 작은 업무를 처리하면 EXP가 쌓여요.",   // ★ 2026-11-04: 호봉은 개발 뷰 전용이라 회원 문구에서 뺌
   mynotes: _isNextFeature() ? "복습이 열려요. 연봉협상 준비하듯 내가 쓴 표현을 복기하고 흔들리는 표현을 3분씩 다지면 협상 자리에서 꺼낼 카드가 늘어요. 사수의 주간 코칭도 여기서 받아요." : "나만의 노트가 열려요. 저장한 팁, 유버디 답변, 첫 주 카드, 내 문장이 한곳에 모여요.",
   points: "복지포인트가 쌓이기 시작해요. 출근 완주 100P, 야근 50P, 복기 1장 10P(하루 5장), 하루 최대 200P. 모아서 사원증/인사에서 커리어·직무·영어·직장생활 리포트를 받아요.",
   aireport: "AI 성장 리포트가 열려요. 사수가 내 기록을 읽고 숫자와 함께 10일 단위로 정리해 줘요.",
@@ -13255,7 +13255,7 @@ function RetNegoResultCard({ r, fresh }) {
       <div className="ret-promo-grid">
         <div><small>출근율</small><b>{r.cards.rate}%</b></div>
         <div><small>EXP</small><b>{Number(r.cards.exp).toLocaleString()}</b></div>
-        <div><small>호봉</small><b>{r.hobong ? "+" + r.hobong : "유지"}</b></div>
+        {_isDevNext() && <div><small>호봉</small><b>{r.hobong ? "+" + r.hobong : "유지"}</b></div>}   {/* ★ 2026-11-04: 호봉은 개발 뷰 전용 */}
         <div><small>복지포인트</small><b>{r.preview ? "연습" : "+" + r.wp + "P"}</b></div>
       </div>
       <div className="ret-nego-lines">{(r.lines || []).map((l, i) => <div key={i}><span>{["성과", "요청", "마무리"][i]}</span>"{l}"</div>)}</div>
