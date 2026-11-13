@@ -133,14 +133,15 @@
           <h3>사은품 받으실 주소를 알려주세요</h3>
           <p id="giftLead"></p>
           <div id="gifts"></div>
+          <a class="btn btn-primary" href="https://docurise.io/youbuddy/d/1day1biz-gift?utm_source=welcome&utm_medium=page&utm_campaign=longpass" target="_blank" rel="noopener" onclick="gtag('event','welcome_gift_form_click',{plan:window.__plan})">사은품 신청하기 →</a>
           <div class="calpick hide" id="calpick" title="눌러서 크게 보기">
             <img src="img/gift-calendar-3types.jpg" alt="1일1비 상반기 영어 달력 A2, 크림 / 주황 / 삼색 3종" loading="lazy">
             <div class="cap">
               <b>154개 표현이 한 장에. 벽에 붙이면 6개월이 보여요</b>
-              <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener">고객센터 톡</a>에 번호로 알려주세요. 눌러서 크게 볼 수 있어요.</small>
+              <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 신청서에서 번호로 골라주세요. 눌러서 크게 볼 수 있어요.</small>
             </div>
           </div>
-          <div class="hint">배송지는 1번에서 보내신 고객센터 톡에 이어서 남겨주시면 돼요. 안내 후 영업일 기준 5일 안에 출고돼요.</div>
+          <div class="hint">신청서는 1분이면 끝나요. 결제 확인 후 영업일 기준 5일 안에 출고돼요. 고객센터 톡 메뉴의 "사은품 신청하기"로도 열 수 있어요.</div>
         </div>
       </div>
 
@@ -149,7 +150,7 @@
         <div class="num" id="n4">4</div>
         <div style="flex:1;min-width:0">
           <h3>유비챌 기수를 배정받으세요</h3>
-          <p>구매하신 트랙엔 유비챌 1기수(4주)가 들어 있어요. 1일1비와 별도로 진행되는 코호트 챌린지라, <b>원하시는 기수를 고객센터에 말씀해주시면</b> 그 기수 공지방으로 초대해드려요. 바로 안 하셔도 돼요. 1일1비 다니면서 편한 기수에 쓰시면 됩니다.</p>
+          <p>구매하신 트랙엔 유비챌 1기수(4주)가 들어 있어요. 1일1비와 별도로 진행되는 코호트 챌린지라, <b>원칙은 결제 후 바로 다음 기수 참여</b>예요. 다음 기수 공지방으로 초대해드려요. 개인 사정으로 다른 기수를 원하시면 사은품 신청서나 고객센터에 말씀해주시면 바꿔드려요.</p>
           <div class="box">유비챌은 같은 기수 동료들과 4주 동안 매일 문장 하나씩 써서 인증하는 챌린지예요. 1일1비가 "혼자, 매일 5분"이라면 유비챌은 "함께, 4주, 마감 있게"예요.</div>
           <a class="btn btn-ghost" href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=welcome&utm_medium=page&utm_campaign=longpass" target="_blank" rel="noopener">유비챌 자세히 보기 →</a>
         </div>
@@ -212,18 +213,11 @@
     lines.push("결제 이메일: (여기에 적어주세요)");
     if (trial === "yes") lines.push("7일 체험 중인 계정이에요. 같은 이메일로 결제했어요.");
     else lines.push("1일1비는 처음이에요. 입사 코드 부탁드려요.");
-    if (p.workbook || p.calendar) {
-      lines.push("");
-      lines.push("사은품 받을 곳");
-      lines.push("이름: ");
-      lines.push("연락처: ");
-      lines.push("주소: ");
-      if (p.calendar) lines.push("달력 디자인: 1 크림 / 2 주황 / 3 삼색 중 번호 하나: ");
-    }
+    if (p.workbook || p.calendar) lines.push("사은품은 신청서로 보낼게요.");
     $("#msg").textContent = lines.join("\n");
     var hasGift = p.workbook || p.calendar;
     $("#s1lead").innerHTML = (trial === "yes"
-      ? ("확인되면 체험 끝나는 날부터 " + p.months + "개월이 이어져요." + (hasGift ? " 사은품 배송지도 같은 톡에서 받아요." : ""))
+      ? ("확인되면 체험 끝나는 날부터 " + p.months + "개월이 이어져요." + (hasGift ? " 사은품은 3번 신청서로 받아요." : ""))
       : ("확인 후 입사 코드" + (hasGift ? "와 사은품 안내" : "") + "를 드려요.")) + " 아래 문구 그대로 복사해서 보내시면 제일 빨라요.";
 
     // 사은품
@@ -232,7 +226,7 @@
     if (p.calendar) g.push(["🗓", "1일1비 상반기 영어 달력 (A2) (3종 중 택1) (15,000원 상당)", "1일1비 가입 후 48시간 안에 결제하신 분께 드려요. 아래 3종 중 하나를 번호로 골라주세요. 1 크림 / 2 주황 / 3 삼색"]);
     $("#s3").classList.toggle("hide", !g.length);
     if (g.length) {
-      $("#giftLead").innerHTML = "구매하신 트랙에 들어 있는 사은품이에요. <b>이름, 연락처, 주소</b>" + (p.calendar ? "<b>, 달력 디자인</b>" : "") + "을 고객센터 톡에 남겨주세요.";
+      $("#giftLead").innerHTML = "구매하신 트랙에 들어 있는 사은품이에요. 아래 <b>사은품 신청하기</b>에서 <b>이름, 연락처, 주소</b>" + (p.calendar ? "<b>, 달력 디자인</b>" : "") + "을 적어주시면 돼요.";
       $("#gifts").innerHTML = g.map(function (x) { return '<div class="gift"><span>' + x[0] + '</span><span><b>' + x[1] + '</b><small>' + x[2] + '</small></span></div>'; }).join("");
     }
     $("#calpick").classList.toggle("hide", !(g.length && p.calendar));
