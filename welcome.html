@@ -104,7 +104,7 @@
           <p id="s1lead"></p>
           <div class="copy only-manual" id="msg"></div>
           <button type="button" class="copybtn only-manual" id="copyMsg">문구 복사하기</button>
-          <a class="btn btn-kakao" id="csBtn" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
+          <a class="btn btn-kakao" id="csBtn" href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
         </div>
       </div>
 
@@ -133,7 +133,7 @@
           <h3>사은품 받으실 주소를 알려주세요</h3>
           <p id="giftLead"></p>
           <div id="gifts"></div>
-          <a class="btn btn-primary" href="https://docurise.io/youbuddy/d/1day1biz-gift?utm_content=welcome" target="_blank" rel="noopener" onclick="gtag('event','welcome_gift_form_click',{plan:window.__plan})">사은품 신청하기 →</a>
+          <a class="btn btn-kakao" href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" onclick="gtag('event','welcome_gift_form_click',{plan:window.__plan})">💬 1:1 톡에서 '사은품 신청하기' 누르기</a>
           <div class="calpick hide" id="calpick" title="눌러서 크게 보기">
             <img src="img/gift-calendar-3types.jpg" alt="1일1비 상반기 영어 달력 A2, 크림 / 주황 / 삼색 3종" loading="lazy">
             <div class="cap">
@@ -141,7 +141,7 @@
               <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 신청서에서 번호로 골라주세요. 가입한 지 48시간이 지났는지 애매하면 그냥 고르세요. 가입일은 저희가 확인해요. 눌러서 크게 볼 수 있어요.</small>
             </div>
           </div>
-          <div class="hint">신청서는 1분이면 끝나요. 결제 확인 후 영업일 기준 5일 안에 출고돼요. 고객센터 톡 메뉴의 "사은품 신청하기"로도 열 수 있어요.</div>
+          <div class="hint">1:1 톡 아래쪽 메뉴에 <b>사은품 신청하기</b> 버튼이 있어요. 신청서는 1분이면 끝나고, 결제 확인 후 영업일 기준 5일 안에 출고돼요. 톡이 안 열리면 <a href="https://docurise.io/youbuddy/d/1day1biz-gift?utm_content=welcome" target="_blank" rel="noopener">여기서 바로 신청</a>해도 돼요.</div>
         </div>
       </div>
 
@@ -220,9 +220,9 @@
     var hasGift = p.workbook || p.calendar;
     $$(".only-manual").forEach(function (el) { el.classList.toggle("hide", viaDR); });
     if (viaDR) {
-      $("#s1title").textContent = "결제 확인은 저희가 할게요";
-      $("#s1lead").innerHTML = "결제할 때 적어주신 이메일로 " + p.months + "개월을 붙이고, 확인되면 <b>결제하신 번호로 카톡을 보내드려요</b>. 보통 몇 시간 안에 가고, 밤에 결제하셨으면 다음 날 오전에 가요. " + (trial === "yes" ? "체험 중이면 체험 끝나는 날부터 이어져요." : "처음이면 그 카톡에 입사 코드가 같이 가요.") + " 그 카톡이 1:1 대화방이라, 이후 궁금한 건 거기에 답장으로 물어보시면 돼요." + (hasGift ? " 사은품은 기다리지 말고 아래 3번에서 바로 신청해두세요." : "");
-      $("#csBtn").textContent = "💬 카톡이 안 와요 / 이메일을 잘못 적었어요";
+      $("#s1title").textContent = "결제 확인은 저희가 할게요. 1:1 톡만 하나 보내주세요";
+      $("#s1lead").innerHTML = "결제할 때 적어주신 이메일에 <b>" + p.months + "개월</b>을 붙여드려요. 확인은 사람이 해서 시간이 조금 걸릴 수 있어요(보통 몇 시간, 밤이면 다음 날 오전). " + (trial === "yes" ? "체험 중이면 체험 끝나는 날부터 이어져요." : "처음이면 입사 코드도 같이 보내드려요.") + "<br><br>그 전에 <b>아래 버튼으로 1:1 톡에 \"결제했어요\" 한 줄만 보내주세요.</b> 카카오 규정상 회원이 먼저 말을 걸어야 저희가 그 방으로 연락할 수 있어요. 확인 결과도, 사은품도, 유비챌 안내도 전부 그 방에서 해요.";
+      $("#csBtn").textContent = "💬 1:1 톡에 \"결제했어요\" 보내기";
     } else
     $("#s1lead").innerHTML = (trial === "yes"
       ? ("확인되면 체험 끝나는 날부터 " + p.months + "개월이 이어져요." + (hasGift ? " 사은품은 3번 신청서로 받아요." : ""))
