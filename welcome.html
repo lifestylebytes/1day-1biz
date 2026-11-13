@@ -100,11 +100,11 @@
       <div class="step" id="s1">
         <div class="num">1</div>
         <div style="flex:1;min-width:0">
-          <h3>고객센터에 결제 이메일을 남겨주세요</h3>
+          <h3 id="s1title">고객센터에 결제 이메일을 남겨주세요</h3>
           <p id="s1lead"></p>
-          <div class="copy" id="msg"></div>
-          <button type="button" class="copybtn" id="copyMsg">문구 복사하기</button>
-          <a class="btn btn-kakao" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
+          <div class="copy only-manual" id="msg"></div>
+          <button type="button" class="copybtn only-manual" id="copyMsg">문구 복사하기</button>
+          <a class="btn btn-kakao" id="csBtn" href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
         </div>
       </div>
 
@@ -114,14 +114,14 @@
         <div style="flex:1;min-width:0">
           <div class="only-new">
             <h3>입사 코드 받으면 지원서를 써주세요</h3>
-            <p>고객센터에서 코드가 오면 아래 버튼으로 들어가 지원서를 쓰세요. <b>이메일은 결제하신 것과 똑같이</b> 적어야 결제가 자동으로 연결돼요. 사번이 나오면 그날이 Day 1이에요.</p>
+            <p>카톡으로 입사 코드가 오면 아래 버튼으로 들어가 지원서를 쓰세요. <b>이메일은 결제하신 것과 똑같이</b> 적어야 결제가 자동으로 연결돼요. 사번이 나오면 그날이 Day 1이에요.</p>
             <a class="btn btn-primary" id="signupLink" href="onboarding.html?go=signup&utm_source=welcome&utm_medium=page&utm_campaign=longpass" onclick="gtag('event','welcome_signup_click',{plan:window.__plan})">입사 지원서 쓰러 가기 →</a>
           </div>
           <div class="only-trial">
             <h3>앱에서 새로고침 한 번이면 끝이에요</h3>
             <p>따로 가입하거나 코드를 넣지 않아도 돼요. 결제가 확인되면 체험이 끝나는 날부터 <b id="monthsText">N개월</b>이 그대로 이어져요. 체험 중 남은 날은 만료일에 더해드려요.</p>
             <a class="btn btn-primary" href="mainboard.html?utm_source=welcome&utm_medium=page&utm_campaign=longpass">1일1비 출근하기 →</a>
-            <div class="hint">배너가 아직 보이면 결제 확인 전이에요. 고객센터 답장 뒤에 다시 새로고침해주세요.</div>
+            <div class="hint">배너가 아직 보이면 결제 확인 전이에요. 확인 카톡이 온 뒤에 다시 새로고침해주세요.</div>
           </div>
         </div>
       </div>
@@ -133,12 +133,12 @@
           <h3>사은품 받으실 주소를 알려주세요</h3>
           <p id="giftLead"></p>
           <div id="gifts"></div>
-          <a class="btn btn-primary" href="https://docurise.io/youbuddy/d/1day1biz-gift?utm_source=welcome&utm_medium=page&utm_campaign=longpass" target="_blank" rel="noopener" onclick="gtag('event','welcome_gift_form_click',{plan:window.__plan})">사은품 신청하기 →</a>
+          <a class="btn btn-primary" href="https://docurise.io/youbuddy/d/1day1biz-gift?utm_content=welcome" target="_blank" rel="noopener" onclick="gtag('event','welcome_gift_form_click',{plan:window.__plan})">사은품 신청하기 →</a>
           <div class="calpick hide" id="calpick" title="눌러서 크게 보기">
             <img src="img/gift-calendar-3types.jpg" alt="1일1비 상반기 영어 달력 A2, 크림 / 주황 / 삼색 3종" loading="lazy">
             <div class="cap">
               <b>154개 표현이 한 장에. 벽에 붙이면 6개월이 보여요</b>
-              <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 신청서에서 번호로 골라주세요. 눌러서 크게 볼 수 있어요.</small>
+              <small>1월 1일부터 6월 30일까지 하루 하나, 외우면 동그라미. 셋 중 하나를 골라 신청서에서 번호로 골라주세요. 가입한 지 48시간이 지났는지 애매하면 그냥 고르세요. 가입일은 저희가 확인해요. 눌러서 크게 볼 수 있어요.</small>
             </div>
           </div>
           <div class="hint">신청서는 1분이면 끝나요. 결제 확인 후 영업일 기준 5일 안에 출고돼요. 고객센터 톡 메뉴의 "사은품 신청하기"로도 열 수 있어요.</div>
@@ -172,7 +172,7 @@
         <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)">
           <a href="terms.html">이용약관</a> · <a href="privacy.html">개인정보처리방침</a> · <a href="terms.html#refund">환불 규정</a><br>
           버디버디 · 대표 유가람 · 사업자등록번호 703-91-02314 · 서울특별시 종로구 지봉로17길 9, A302 · youbuddy.co@gmail.com<br>
-          결제는 래피드(Latpeed)를 통해 진행됩니다. © 2026 YOUBUDDY
+          결제는 래피드(Latpeed) 또는 다큐라이즈(DocuRise)를 통해 진행됩니다. © 2026 YOUBUDDY
         </div>
       </div>
     </div>
@@ -191,6 +191,8 @@
   var q = new URLSearchParams(location.search);
   var plan = PLANS[q.get("plan")] ? q.get("plan") : "regular";
   var trial = q.get("trial") === "1" ? "yes" : (q.get("trial") === "0" ? "no" : null);
+  // 기본은 다큐라이즈 결제 흐름(저희가 확인하고 카톡으로 연락). ?via=lp 일 때만 옛 래피드 흐름(고객센터에 직접 남기기).
+  var viaDR = q.get("via") !== "lp";
   try { trial = trial || localStorage.getItem("__OD_WELCOME_TRIAL") || "no"; } catch (e) { trial = trial || "no"; }
   var $ = function (s) { return document.querySelector(s); };
   var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
@@ -216,6 +218,12 @@
     if (p.workbook || p.calendar) lines.push("사은품은 신청서로 보낼게요.");
     $("#msg").textContent = lines.join("\n");
     var hasGift = p.workbook || p.calendar;
+    $$(".only-manual").forEach(function (el) { el.classList.toggle("hide", viaDR); });
+    if (viaDR) {
+      $("#s1title").textContent = "결제 확인은 저희가 할게요";
+      $("#s1lead").innerHTML = "결제할 때 적어주신 이메일로 " + p.months + "개월을 붙이고, 확인되면 <b>결제하신 번호로 카톡을 보내드려요</b>. 보통 몇 시간 안에 가고, 밤에 결제하셨으면 다음 날 오전에 가요. " + (trial === "yes" ? "체험 중이면 체험 끝나는 날부터 이어져요." : "처음이면 그 카톡에 입사 코드가 같이 가요.") + " 그 카톡이 1:1 대화방이라, 이후 궁금한 건 거기에 답장으로 물어보시면 돼요." + (hasGift ? " 사은품은 기다리지 말고 아래 3번에서 바로 신청해두세요." : "");
+      $("#csBtn").textContent = "💬 카톡이 안 와요 / 이메일을 잘못 적었어요";
+    } else
     $("#s1lead").innerHTML = (trial === "yes"
       ? ("확인되면 체험 끝나는 날부터 " + p.months + "개월이 이어져요." + (hasGift ? " 사은품은 3번 신청서로 받아요." : ""))
       : ("확인 후 입사 코드" + (hasGift ? "와 사은품 안내" : "") + "를 드려요.")) + " 아래 문구 그대로 복사해서 보내시면 제일 빨라요.";
@@ -231,7 +239,7 @@
     }
     $("#calpick").classList.toggle("hide", !(g.length && p.calendar));
     try { localStorage.setItem("__OD_WELCOME_TRIAL", trial); } catch (e) {}
-    try { history.replaceState(null, "", location.pathname + "?plan=" + plan + "&trial=" + (trial === "yes" ? "1" : "0")); } catch (e) {}
+    try { history.replaceState(null, "", location.pathname + "?plan=" + plan + "&trial=" + (trial === "yes" ? "1" : "0") + (viaDR ? "" : "&via=lp")); } catch (e) {}
   }
 
   $("#calpick").addEventListener("click", function (e) {
