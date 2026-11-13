@@ -6139,7 +6139,7 @@ function _gift48Preview() {
 }
 function _isGift48On() { return _gift48Live() || _isDevNext() || _gift48Preview(); }
 const GIFT48_HOURS = 48;
-const GIFT48_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_gift48&utm_campaign=sat_launch";
+const GIFT48_URL = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_gift48";
 // ★ 2026-10-21 출근 달력 라이브: true 면 회원에게도 출근 달력(홈 출근부 자리 작게 + 사원증 탭 크게). 되돌릴 땐 false (개발 뷰에서만)
 function _attCalLive() { return true; }
 // ★ 2026-10-22 출근 세팅 카드 라이브: true 면 회원에게도 첫 출근 가이드 6/7 · 출근 환경 세팅 팝업이 주황 카드 3장(카톡 알림 · 홈 화면 추가 단계 그림 · 브라우저 알림)으로. 되돌릴 땐 false (개발 뷰에서만)
@@ -18594,7 +18594,7 @@ function ActivityShell({ title, children, onClose, footer, accent, guard }) {
 //   저장: survey_responses (trial_day5 · trial_day7). 봤음 기록: __OD_TSV_<day>_<email> (이 기기). "다음에 할게요"는 이번 접속만 닫힘.
 //   미리보기: ?tsv=5 / ?tsv=7 (운영자 · Dev), dev 패널 > 팝업 전체보기.
 // ============================================================
-const _TSV_PLAN_URL = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_trial_day7&utm_campaign=sat_launch";
+const _TSV_PLAN_URL = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_trial_day7";
 const _tsvKey = (day, email) => "__OD_TSV_" + day + "_" + (email || "guest");
 function _tsvDone(day, email) { try { return localStorage.getItem(_tsvKey(day, email)) === "1"; } catch (e) { return true; } }
 function _tsvSave(day, email, payload, final) {
@@ -23600,7 +23600,7 @@ function RetireD7Popup({ daysLeft, endsAt, onClose }) {
               마음 바뀌셨으면 인수인계 기간 안에<br/>재계약 진행하시면 그대로 근무 이어가실 수 있어요.
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <a href="https://www.latpeed.com/products/-iJGr" target="_blank" rel="noopener"
+              <a href="https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app" target="_blank" rel="noopener"
                  onClick={_dismissD7}
                  style={{
                    flex: 1, padding: "12px 0",
@@ -24656,7 +24656,7 @@ function App() {
   // 1) 베타 만료: PILOT 사용자가 14일 지나면 (정식 런칭 전까지 연장)
   // 2) 멤버십 만료: 정식 멤버가 membership_ends_at 지나면 (퇴직 완료)
   // 3) D-7 알림: 인수인계 기간 중 마지막 출근일 7일 이내
-  const LATPEED_MEMBERSHIP_URL = "https://www.latpeed.com/products/-iJGr";
+  const LATPEED_MEMBERSHIP_URL = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app";
   // ★ 2026-10-16 3개월권: 오픈하는 날 URL 과 가격 문구만 채우면 '체험 완료' 화면 결제 버튼이 3개월권으로 바뀐다. 비어 있으면 월 구독 그대로.
   const LATPEED_3M_URL = "";
   const LATPEED_3M_PRICE_LINE = "";   // 예: "3개월 41,700원 · 언제든 해지"
@@ -25039,7 +25039,7 @@ function App() {
     if (_isTrialUser) {
       const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : _localUserNow.cohort === 'trial-7d' ? '7일 무료 체험' : '7일 체험';
       // ★ 2026-10-24 새 플랜(1회 결제) 상품 페이지로. 랜딩·48시간 배너와 같은 주소.
-      const _upUrl = "https://www.latpeed.com/products/-iJGr?utm_source=1day1biz&utm_medium=app_trial_end&utm_campaign=sat_launch";
+      const _upUrl = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_trial_end";
       return (
         <div className="office" style={{ filter: "saturate(0.6)" }}>
           <main className="desk">
