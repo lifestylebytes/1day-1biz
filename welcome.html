@@ -195,7 +195,7 @@
     fast:    { name: "승진 패스트트랙 · 6개월 + 유비챌", months: 6,  ubc: true,  workbook: true,  calendar: true  },
     exec:    { name: "임원 트랙 · 12개월 + 유비챌",      months: 12, ubc: true,  workbook: true,  calendar: true  }
   };
-  var CODE = "1DAY1BIZ365-2";
+  var CODE = "TRY7DAYS";   // ★ 2026-11-14 지원서는 무조건 7일 체험 코드로 시작 (결제 반영은 운영자가 체험 종료일 뒤로 연장)
   var q = new URLSearchParams(location.search);
   var plan = PLANS[q.get("plan")] ? q.get("plan") : "regular";
   var trial = q.get("trial") === "1" ? "yes" : (q.get("trial") === "0" ? "no" : null);
