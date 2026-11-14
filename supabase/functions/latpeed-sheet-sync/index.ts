@@ -76,6 +76,17 @@ export function plusMonthsKstEnd(iso: string, months: number): string {
   for (let i = 0; i < months; i++) cur = plusOneMonthKstEnd(cur);
   return cur;
 }
+// 체험 종료일 (가입일 + 체험 일수 - 1, 그날 23:59:59 KST). 체험 이력이 없으면 null
+const TRIAL_DAYS: Record<string, number> = { "trial-ubc10g": 30 };
+export function trialEndOf(u: any): string | null {
+  const prefs = (u && u.preferences && typeof u.preferences === "object") ? u.preferences : {};
+  if (prefs.trial_end) { const d = new Date(prefs.trial_end); return isNaN(d.getTime()) ? null : d.toISOString(); }
+  const pc = String(prefs.prev_cohort || u?.cohort || "");
+  if (!pc.startsWith("trial") || !u?.signup_date) return null;
+  const days = TRIAL_DAYS[pc] || 7;
+  const k = new Date(new Date(u.signup_date).getTime() + 9 * 3600000 + (days - 1) * 86400000);
+  return new Date(`${k.toISOString().slice(0, 10)}T23:59:59+09:00`).toISOString();
+}
 // 전화번호 비교용: 숫자만, 뒤 8자리 (010 유무·하이픈·국가번호 차이 무시)
 export function phoneKey(p: string | number | undefined): string {
   const d = String(p || "").replace(/\D/g, "");
@@ -142,7 +153,11 @@ Deno.serve(async (req) => {
     const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
     const comp = u ? unusedMonthsBeforeSignup(r.paid, u.signup_date) : 0;
-    const want = plusMonthsKstEnd(r.lastPaid, (r.lastMonths || periodMonths(r.amount)) + comp);   // 월 구독 = 1개월, 3개월권 = 3개월
+    // ★ 2026-11-14 체험 중에 결제한 사람: 남은 체험 기간을 날리지 않도록 '체험 끝나는 날' 부터 이어 붙인다 (FAQ 약속).
+    //   매일 같은 값이 나오도록 체험 종료일은 가입일 + 체험 일수로 계산하고, 처음 반영할 때 preferences.trial_end 에 저장해 둔다.
+    const tEnd = u ? trialEndOf(u) : null;
+    const baseAt = (tEnd && tEnd > r.lastPaid) ? tEnd : r.lastPaid;
+    const want = plusMonthsKstEnd(baseAt, (r.lastMonths || periodMonths(r.amount)) + (baseAt === r.lastPaid ? comp : 0));   // 월 구독 = 1개월, 3개월권 = 3개월
     const wantIso = new Date(want).toISOString();
     if (!u) {
       // 래피드 이메일 ≠ 앱 이메일 인 사람 찾기: ① 전화번호 뒤 8자리가 같은 계정이 딱 하나면 별칭을 자동으로 넣고 그 계정에 바로 적용
@@ -212,7 +227,9 @@ Deno.serve(async (req) => {
     if (!dry) {
       await sb.from("users").update({
         membership_ends_at: wantIso, cohort: "member", unlocked: true, membership_cancel_at: null, membership_cancel_reason: null,
-        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid, ...(r.amount ? { last_amount: r.amount } : {}), ...(comp ? { comp_months: comp } : {}) },
+        preferences: { ...prefs, pay_source: "latpeed_sheet", last_paid_at: r.lastPaid,
+          ...(tEnd && !prefs.trial_end ? { trial_end: tEnd } : {}),
+          ...(String(u.cohort || "").startsWith("trial") && !prefs.prev_cohort ? { prev_cohort: u.cohort } : {}), ...(r.amount ? { last_amount: r.amount } : {}), ...(comp ? { comp_months: comp } : {}) },
       }).eq("email", u.email);
     }
   }
