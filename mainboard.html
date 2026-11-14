@@ -16688,11 +16688,45 @@ function MyPage({ setActive, setViewingDay }) {
               if (cohort.startsWith("season") || cohort === "pilot" || _u?.isPilotHire) {
                 return <><b>1일 1비즈니스</b> · 베타</>;
               }
+              if (cohort === "trial-ubc10g") return <><b>유비챌 10기 수료 1개월권</b></>;
+              if (cohort === "trial-ubc10") return <><b>유비챌 10기 7일 체험</b></>;
+              if (cohort.startsWith("trial")) return <><b>7일 무료 체험</b></>;
               return <><b>1일 1비즈니스</b></>;
             })()}
           </span>
         </div>
         <div className="hr-row"><span className="hr-row-label">상태</span><span className="hr-row-value" style={{ color: paused ? "var(--ink-mute)" : "var(--green)" }}>{paused ? "● 일시중지" : "● 진행 중"}</span></div>
+        {/* ★ 2026-11-14 이용 기간: 회원이 자기 만료일을 직접 본다. 월 구독은 래피드 갱신이 늦게 동기화돼 날짜가 뒤처질 수 있어 한 줄 덧붙인다 */}
+        {(() => {
+          const _u = (function() { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null"); } catch(e) { return null; } })() || {};
+          const cohort = _u.cohort || "";
+          const raw = _u.membershipEndsAt || _u.membership_ends_at || null;
+          const end = raw ? new Date(raw) : null;
+          if (!end || isNaN(end.getTime())) return null;
+          const isTrial = cohort.startsWith("trial");
+          const dLeft = Math.ceil((end.getTime() - Date.now()) / 86400000);
+          const f = (d) => d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") + " (" + ["일","월","화","수","목","금","토"][d.getDay()] + ")";
+          const isMonthly = !isTrial && !(_u.preferences && (_u.preferences.plan_months || _u.preferences.plan === "intern" || _u.preferences.plan === "regular" || _u.preferences.plan === "fast" || _u.preferences.plan === "exec"));
+          const gradRaw = _u.ubc10GradUntil || (_u.preferences && _u.preferences.ubc10_grad_until) || null;
+          const grad = gradRaw ? new Date(gradRaw) : null;
+          return (
+            <>
+              <div className="hr-row">
+                <span className="hr-row-label">{isTrial ? "체험 종료일" : "이용 기간"}</span>
+                <span className="hr-row-value">
+                  <b>{f(end)}까지</b>{dLeft > 0 ? <span style={{ color: "var(--ink-mute)", fontWeight: 600 }}> · D-{dLeft}</span> : dLeft === 0 ? <span style={{ color: "var(--ink-mute)", fontWeight: 600 }}> · 오늘까지</span> : null}
+                  {isMonthly && <div style={{ fontSize: "0.85em", color: "var(--ink-mute)", fontWeight: 500, marginTop: 2 }}>월 구독은 결제가 확인되면 한 달씩 자동으로 늘어나요. 날짜가 며칠 늦게 바뀔 수 있어요.</div>}
+                </span>
+              </div>
+              {grad && !isNaN(grad.getTime()) && (
+                <div className="hr-row">
+                  <span className="hr-row-label">수료 혜택</span>
+                  <span className="hr-row-value">🎓 유비챌 10기 수료 1개월권 · <b>{f(grad)}까지</b></span>
+                </div>
+              )}
+            </>
+          );
+        })()}
         {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
         {false && (
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
