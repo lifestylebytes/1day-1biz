@@ -348,7 +348,7 @@ const TRIAL_CODES = {
   // ★ 2026-10-12 유비챌 10기 전용 7일 체험. 8일째 아침부터 '체험 완료' 화면 → 멤버십 결제 안내. 끝낼 땐 active:false
   // ★ 2026-10-18 신청 마감(until): 10/25(일) 밤까지 등록한 사람만. 그래야 체험이 11/1 전에 다 끝나고, 수료 보상(1개월)과 안 겹친다.
   "UBC10-7DAYS": { label: "유비챌 10기 7일 체험", days: 7, cohort: "trial-ubc10", until: "2026-10-25T23:59:59+09:00", untilLabel: "10/25(일)",
-    existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 구독 중이시면 체험권 대신 7일 연장으로 넣어드려요! 1일1비 고객센터(카톡)로 이메일만 알려주세요." },
+    existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 구독 중이시면 체험권 대신 7일 연장으로 넣어드려요! 1일1비 1:1 챗(카톡)으로 이메일만 알려주세요." },
   // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
   //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
   //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
@@ -359,7 +359,7 @@ const TRIAL_CODES = {
     gradKey: "ubc10_grad_until",
     existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 수료 혜택 1개월은 기존 계정에 연장으로 넣어드려요! 유버디 1:1 챗으로 이메일만 알려주세요." },
   "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d",
-    existingMsg: "이미 가입된 이메일이에요. 예전에 1일1비를 써보셨던 분이면, 이 이메일 그대로 처음부터 다시 시작할 수 있게 리셋해드려요. 아래 고객센터(카톡)로 이메일만 알려주세요." },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
+    existingMsg: "이미 가입된 이메일이에요. 예전에 1일1비를 써보셨던 분이면, 이 이메일 그대로 처음부터 다시 시작할 수 있게 리셋해드려요. 아래 1:1 챗(카톡)으로 이메일만 알려주세요." },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
 };
 const _isPreview = (() => { try { return new URLSearchParams(location.search).get("preview") === "1"; } catch (e) { return false; } })();
 // ★ 개발용 상세페이지(onboarding-dev.html)이거나 ?preview=1 일 때만 테스트 도구를 보여준다
@@ -485,7 +485,7 @@ function OnboardingApp() {
         const _isMemberCode = !!MEMBER_CODES[code];
         const _isTrialCode = !!TRIAL_CODES[code];
         if (_isTrialCode && TRIAL_CODES[code].until && Date.now() > Date.parse(TRIAL_CODES[code].until)) {
-          setSubmitError(TRIAL_CODES[code].label + " 신청 기간(" + (TRIAL_CODES[code].untilLabel || "") + "까지)이 끝났어요. 궁금한 점은 1일1비 고객센터(카톡)로 물어봐 주세요.");
+          setSubmitError(TRIAL_CODES[code].label + " 신청 기간(" + (TRIAL_CODES[code].untilLabel || "") + "까지)이 끝났어요. 궁금한 점은 1일1비 1:1 챗(카톡)으로 물어봐 주세요.");
           setSubmitting(false);
           return;
         }
@@ -1407,7 +1407,7 @@ function WhyMock({ kind }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <button className="btn" onClick={() => _goTrial("cta")} style={{ background: "var(--accent, #D85A2A)", boxShadow: "0 8px 18px -10px rgba(216,90,42,0.9)", justifyContent: "center", fontSize: 14, padding: "15px 20px" }}>🎟 7일 무료로 시작하기 →</button>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>결제 정보 없이 바로 시작해요. 7일 뒤에 정하시면 돼요.</div>
-      <button onClick={() => { track("cta_apply_click"); onNext(); }} style={{ background: "none", border: "none", color: "var(--ink-soft)", fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", marginTop: 2 }}>📝 결제하고 입사 코드 받으셨어요? 지원서 작성하기</button>
+      <button onClick={() => { track("cta_apply_click"); onNext(); }} style={{ background: "none", border: "none", color: "var(--ink-soft)", fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", marginTop: 2 }}>📝 이미 결제하셨어요? 지원서 작성하기</button>
     </div>
   );
 
@@ -2262,9 +2262,9 @@ function WhyMock({ kind }) {
           ["영어 왕초보인데 할 수 있나요?", "Day 1은 비교적 쉬운 (빈도가 높은) 단어부터 나와요. 승급할수록 빈도가 낮고 긴 어구가 나오고, 대리가 되면 협상·피플·문서·미팅 중에서 내 일에 맞는 트랙을 골라 배우실 수 있답니다. 모든 영어 문장에 한국어 해석이 붙고, 위 데모 난이도가 실제 Day 1 난이도예요."],
           ["하루 놓치면 어떻게 되나요?", "자동으로 다음 날 어휘로 넘어가지 않아서 매일 해주시는 걸 권장합니다. 다만 밀린 어휘를 다 하면 열린 날까지 몰아서 학습할 수 있어요. 하루 안 했다고 다음 날 것까지 못 하지는 않아요."],
           ["바로 결제해도 7일 무료가 있나요?", "네, 바로 결제하셔도 7일 무료는 포함돼요. 7일 무료가 먼저 시작되고, 결제한 기간은 그 뒤에 이어져요."],
-          ["결제하면 바로 시작되나요?", <>결제 후에 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1일1비 카톡 채널</a>로 입사 코드를 보내드려요. 지원서에 그 코드를 넣으시면 사번이 바로 발급되고, 그날부터 Day 1이에요. 궁금한 건 채널로 바로 물어보시면 돼요.</>],
-          ["사은품과 WorkBook은 어떻게 받나요?", <>결제 후 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1일1비 고객센터(카카오 채널)</a>로 결제 이메일을 남겨주세요. 확인 후 입사 코드와 함께 사은품 배송지를 안내합니다. 1일1비 WorkBook은 승진 패스트트랙·임원 트랙, 1일1비 상반기 영어 달력 (A2)은 가입 후 48시간 이내 결제한 경우에 한해 제공됩니다. 배송은 안내 후 영업일 기준 5일 이내 출고됩니다. 7일 무료 체험 중 결제한 경우 체험 종료일에 이어서 적용됩니다.</>],
-          ["환불은 어떻게 되나요?", <>환불은 1개월 단위로 가능합니다. 사용한 개월 수를 월 정가(16,900원) 기준으로 차감한 뒤 잔액을 환불합니다. 사용 개월은 결제일 기준으로 계산하며, 일부만 사용한 달도 1개월로 산정합니다.<br/>예시: 6개월권(94,900원)을 2개월 사용 후 환불하면 94,900원에서 33,800원을 차감한 61,100원이 환불됩니다.<br/>실물 사은품을 이미 수령한 경우 사은품 정가(1일1비 WorkBook 50,000원, 1일1비 상반기 영어 달력 (A2) 15,000원)를 함께 차감합니다. 환불 요청은 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1일1비 고객센터(카카오 채널)</a>로 결제 이메일과 함께 남겨주시면 확인 후 영업일 기준 3일 이내 처리합니다.</>],
+          ["결제하면 바로 시작되나요?", <>네! 결제가 끝나면 입사 안내 페이지로 넘어가요. 처음이시면 거기서 바로 지원서를 쓰시면 사번이 나오고 그날부터 Day 1이에요(입사 코드는 버튼에 이미 들어 있어요). 7일 체험 중이면 따로 할 건 없고, 체험 끝나는 날부터 기간이 이어져요. 결제 후 <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1:1 챗</a>에 "결제했어요" 한 줄만 보내주세요.</>],
+          ["사은품과 WorkBook은 어떻게 받나요?", <>결제 후 <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1:1 챗</a> 아래 메뉴의 '사은품 신청하기'에서 주소를 적어주세요. WorkBook은 승진 패스트트랙 / 임원 트랙, 상반기 영어 달력 (A2)은 정규직 이상 중 가입 후 48시간 안에 결제한 분께 드려요. 신청 후 영업일 기준 5일 안에 출고돼요.</>],
+          ["환불은 어떻게 되나요?", <>환불은 1개월 단위로 가능합니다. 사용한 개월 수를 월 정가(16,900원) 기준으로 차감한 뒤 잔액을 환불합니다. 사용 개월은 결제일 기준으로 계산하며, 일부만 사용한 달도 1개월로 산정합니다.<br/>예시: 6개월권(94,900원)을 2개월 사용 후 환불하면 94,900원에서 33,800원을 차감한 61,100원이 환불됩니다.<br/>실물 사은품을 이미 수령한 경우 사은품 정가(1일1비 WorkBook 50,000원, 1일1비 상반기 영어 달력 (A2) 15,000원)를 함께 차감합니다. 환불 요청은 <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ color: "var(--accent)", fontWeight: 800 }}>1일1비 1:1 챗</a>으로 결제 이메일과 함께 남겨주시면 확인 후 영업일 기준 3일 이내 처리합니다.</>],
           ["결제 기간이 끝나면 기록은 사라지나요?", "결제 기간이 끝나도 표현 노트와 진도는 2개월간 보관돼요. 그 안에 다시 결제하시면 하던 Day부터 이어집니다. 2개월이 지나면 기록은 삭제돼요."],
           ["누구한테 잘 맞나요?", "솔직하게 먼저 말씀드릴게요. 토익·오픽 점수가 목표인 분은 맞지 않아요. 시험에 나오는 표현이 아니라, 외국계 사무실에서 실제로 오가는 말을 모았거든요. 점수에는 도움이 안 돼요. 대신 슬랙·메일·회의에서 영어를 이미 쓰고 계신 분이라면, 내일 회의에서 바로 쓸 한 문장을 매일 하나씩 가져가실 수 있어요."],
           ["휴대폰으로도 할 수 있나요?", "네. 가입부터 매일 출근까지 전부 폰에서 돼요. 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 아이콘으로 열리고, 컴퓨터로 하던 진도도 그대로 이어져요. 별도 앱 설치는 없어요."],
@@ -3275,7 +3275,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           {/이미 (가입|1일1비 계정)/.test(String(submitError)) && (
             <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener"
               style={{ display: "block", marginTop: 9, background: "#FEE500", color: "#3A1D1D", borderRadius: 8, padding: "10px 12px", textAlign: "center", fontSize: 13, fontWeight: 900, textDecoration: "none" }}>
-              💬 고객센터(카톡) 연락하기 →
+              💬 1:1 챗(카톡) 연락하기 →
             </a>
           )}
         </div>

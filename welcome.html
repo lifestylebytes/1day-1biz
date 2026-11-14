@@ -102,6 +102,7 @@
         <div style="flex:1;min-width:0">
           <h3 id="s1title">고객센터에 결제 이메일을 남겨주세요</h3>
           <p id="s1lead"></p>
+          <div id="graceNote" class="hide" style="margin:10px 0 4px;padding:10px 12px;border:1.5px solid #2E7D4F;background:#EEF8F1;border-radius:8px;font-size:13px;line-height:1.6;color:#1F5A38"><b>앱은 지금 바로 열어두었습니다!</b> 결제 확인 전이라도 48시간 동안은 체험이 끝났어도 그대로 출근하실 수 있습니다.</div>
           <div class="copy only-manual" id="msg"></div>
           <button type="button" class="copybtn only-manual" id="copyMsg">문구 복사하기</button>
           <a class="btn btn-kakao" id="csBtn" href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" onclick="gtag('event','welcome_cs_click',{plan:window.__plan})">💬 1일1비 고객센터 열기</a>
@@ -274,6 +275,28 @@
     else { var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); done(); }
   });
   render();
+
+  // ★ 2026-11-14 결제 직후 48시간 임시 통과 (개발 뷰 먼저: __OD_NEXT=1 인 기기만).
+  //   로그인 흔적이 있는 기기로 이 페이지에 들어오면 그 계정에 paid_grace_at 을 찍는다(계정당 1회, SQL 20261114_paid_grace).
+  //   이용 기간 반영(사람이 SQL)보다 체험이 먼저 끝나도 돈 낸 사람이 막히지 않게 하려는 장치.
+  (function paidGrace() {
+    var dev = false; try { dev = localStorage.getItem("__OD_NEXT") === "1"; } catch (e) {}
+    if (!dev || !_hasAccount()) return;
+    var email = ""; try { email = (JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}).email || ""; } catch (e) {}
+    function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+    load("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4")
+      .then(function () { return load("lib/supabase-config.js"); })
+      .then(function () { return load("lib/supabase-client.js"); })
+      .then(function () { return (window.OD && window.OD.claimPaidGrace) ? window.OD.claimPaidGrace(email, "welcome") : { ok: false }; })
+      .then(function (r) {
+        var fresh = r && (r.ok || (r.used && r.at && (Date.now() - new Date(r.at).getTime()) < 48 * 3600 * 1000));
+        if (fresh) $("#graceNote").classList.remove("hide");
+        if (r && r.ok) {
+          try { var u = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; u.paidGraceAt = r.at || new Date().toISOString(); localStorage.setItem("__OD_USER", JSON.stringify(u)); } catch (e) {}
+          try { gtag("event", "paid_grace_claim", { source: "welcome" }); } catch (e) {}
+        }
+      })["catch"](function () {});
+  })();
 })();
 </script>
 </body>

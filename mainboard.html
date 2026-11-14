@@ -13467,6 +13467,34 @@ function B48Switch() {
 }
 
 // ★ 2026-11-14 유비챌 10기 수료 혜택 배지: 1개월권이 언제까지인지 보여준다 (코드 가입자 + 기존 회원 연장 둘 다)
+// ★ 2026-11-14 체험 완료(차단) 화면의 "이미 결제했어요" 버튼 (개발 뷰 먼저). 누르면 48시간 임시 통과(계정당 1회).
+//   서버 기록(preferences.paid_grace_at + ops_log)이 남아서 운영자가 실제 결제와 대조한다.
+function PaidGraceButton({ email }) {
+  const [st, setSt] = React.useState("idle");   // idle | busy | used | err
+  const go = async () => {
+    if (st === "busy") return;
+    setSt("busy");
+    let r = { ok: false };
+    try { r = (window.OD && window.OD.claimPaidGrace) ? await window.OD.claimPaidGrace(email, "blocked_screen") : { ok: false, error: "no client" }; } catch (e) { r = { ok: false }; }
+    if (r && r.ok) {
+      try { const u = JSON.parse(localStorage.getItem("__OD_USER") || "{}") || {}; u.paidGraceAt = r.at || new Date().toISOString(); localStorage.setItem("__OD_USER", JSON.stringify(u)); } catch (e) {}
+      try { gtag("event", "paid_grace_claim", { source: "blocked_screen" }); } catch (e) {}
+      location.reload();
+      return;
+    }
+    setSt(r && r.used ? "used" : "err");
+  };
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <button type="button" onClick={go} style={{ display: "block", width: "100%", padding: "12px 0", background: "#FFF3EA", color: "var(--accent)", border: "1.5px solid var(--accent)", borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+        {st === "busy" ? "여는 중이에요..." : "🧾 이미 결제했어요 (확인 전까지 48시간 먼저 열기)"}
+      </button>
+      {st === "used" && <div style={{ fontSize: 11.5, color: "#C0392B", marginTop: 6, lineHeight: 1.5 }}>임시 열기는 계정당 한 번만 쓸 수 있어요. 1:1 챗에 "결제했어요"라고 보내주시면 바로 확인해드릴게요.</div>}
+      {st === "err" && <div style={{ fontSize: 11.5, color: "#C0392B", marginTop: 6, lineHeight: 1.5 }}>지금은 열 수 없었어요. 1:1 챗에 "결제했어요"라고 보내주세요.</div>}
+    </div>
+  );
+}
+
 function Ubc10GradBadge({ user }) {
   if (user?.isViewingPast) return null;
   let until = null;
@@ -24759,11 +24787,16 @@ function App() {
   //   해지 안 한 유료회원(member)은 날짜로 절대 자동 차단하지 않는다. 차단은 딱 두 경우:
   //   (a) 운영자 수동 회수(unlocked=false), (b) 해지마커(membership_cancel_at) + 만료일 경과.
   //   해지 안 하고 카드 실패한 사람은 다음 CSV 대조에서 '구독 종료' 로 잡혀 해지마커가 붙는다. 그 며칠은 손해가 아니라 보험이다.
+  // ★ 2026-11-14 결제 직후 48시간 임시 통과 (paid grace). 다큐라이즈 결제는 반영을 사람이 해서,
+  //   그 사이 체험이 끝나면 돈 낸 사람이 막혔다. 입사 안내 페이지 진입 또는 차단 화면 "이미 결제했어요"로
+  //   preferences.paid_grace_at 이 찍히면 48시간 동안 비유료 만료 차단을 건너뛴다. 계정당 1회 (SQL 20261114_paid_grace).
+  const _paidGraceAt = (() => { try { const r = _localUserNow?.paidGraceAt || (_localUserNow?.preferences && _localUserNow.preferences.paid_grace_at) || null; return r ? new Date(r).getTime() : 0; } catch (e) { return 0; } })();
+  const _paidGraceOk = !!_paidGraceAt && (Date.now() - _paidGraceAt) < 48 * 3600 * 1000;
   const _membershipExpired = !_isInternalUser && (_forceExpired
     || (_isPaidMember
         ? (_accessRevoked
            || (!!_cancelAtRaw && _endsAt && _msUntilEnd <= 0))
-        : (_endsAt && _msUntilEnd <= 0)));
+        : (_endsAt && _msUntilEnd <= 0 && !_paidGraceOk)));
   // D-7 "곧 만료" 안내는 만료일 기반이라 갱신 미동기화 시 오발동 가능 → 비활성화 (fail-open과 일관)
   const _d7Warning = false;
   const _daysLeft = _endsAt ? Math.ceil(_msUntilEnd / 86400000) : null;
@@ -25143,8 +25176,9 @@ function App() {
                   💼 결제하면 그동안의 단어, 노트, 출근 기록 그대로 <b>Day 8부터</b> 이어져요. 1회 결제라 자동으로 빠져나가지 않아요. 꼭 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
                 </div>
                 <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "14px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", borderRadius: 8, fontSize: _fs(14), fontWeight: 700, marginBottom: 10, boxSizing: "border-box" }}>플랜 보고 이어가기 →</a>
-                <a href="http://pf.kakao.com/_RXxcxaX" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 8, fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 고객센터</a>
-                <div style={{ marginTop: 22, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제하면 보통 바로 열려요 (새로고침). 늦어도 다음 날 아침 7시엔 열리고, 안 열리면 고객센터로 알려주세요.</div>
+                {_isDevNext() && <PaidGraceButton email={_localUserNow?.email} />}
+                <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", borderRadius: 8, fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 1:1 챗</a>
+                <div style={{ marginTop: 22, paddingTop: 14, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제 확인은 사람이 해서 보통 몇 시간, 밤이면 다음 날 오전까지 걸려요. 결제 후 1:1 챗에 "결제했어요" 한 줄 보내주시면 확인되는 대로 연장해드려요.</div>
               </div>
             </div>
           </main>
@@ -25650,7 +25684,7 @@ window.SimApp = App;
               // ★ 2026-10-30: 체험 출신 결제 회원 구분용 (Day 8 결제 이유 설문). 래피드 웹훅이 preferences 에 남긴 값
               try { const _pf = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.prevCohort = _pf.prev_cohort || local.prevCohort || null; local.planPaidAt = _pf.plan_paid_at || _pf.last_paid_at || local.planPaidAt || null; } catch (e) {}
               // ★ 2026-11-14 유비챌 10기 수료 혜택(1개월권) 끝나는 날. 가입 코드 UBC10-1MONTH 또는 운영자 SQL 이 preferences 에 넣는다 (앱 배지용)
-              try { const _pf2 = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.ubc10GradUntil = _pf2.ubc10_grad_until || null; } catch (e) {}
+              try { const _pf2 = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.ubc10GradUntil = _pf2.ubc10_grad_until || null; local.paidGraceAt = _pf2.paid_grace_at || local.paidGraceAt || null; } catch (e) {}
               local.isPilotHire = u.is_pilot_hire;
               local.is_pilot_hire = u.is_pilot_hire;
               local.unlocked = u.unlocked;
