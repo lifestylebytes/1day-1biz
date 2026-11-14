@@ -160,7 +160,7 @@
           <h3>유비챌은 다음 기수 베이직으로 자동 배정됩니다!</h3>
           <p>구매하신 트랙에는 유비챌 1기수(4주)가 들어 있습니다. 따로 신청하지 않으셔도 <b>결제하면 다음 기수 베이직으로 자동 배정</b>되고, 공지방 링크는 기수 시작 3일 전에 보내드립니다!<br>프리미엄(240,000원, 베이직과의 차액 141,000원만 추가)으로 바꾸고 싶으시거나 개인 사정으로 다른 기수를 원하시면 1:1 톡방에 말씀해주세요.</p>
           <div class="box">유비챌은 같은 기수 동료들과 4주 동안 매일 문장 하나씩 써서 인증하는 챌린지입니다. 1일1비가 "혼자, 매일 5분"이라면 유비챌은 "함께, 4주, 마감 있게"입니다!</div>
-          <a class="btn btn-ghost" href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=welcome&utm_medium=page&utm_campaign=longpass" target="_blank" rel="noopener">유비챌 자세히 보기 →</a>
+          <a class="btn btn-ghost" id="ubcLink" href="https://docurise.io/youbuddy/d/youbuddy-challenge-11?utm_content=welcome" target="_blank" rel="noopener">유비챌 자세히 보기 →</a>
         </div>
       </div>
 
@@ -227,6 +227,8 @@
     var n = 3; if (p.workbook || p.calendar) n++; if (p.ubc) n++;
     $("#n4").textContent = (p.workbook || p.calendar) ? "4" : "3";
     $("#n5").textContent = String(n);
+    // ★ 2026-11-14 다큐라이즈 추적은 utm_content 하나로만 (utm_source / src 는 다큐라이즈 통계에 안 잡힘). 트랙까지 구분
+    try { $("#ubcLink").href = "https://docurise.io/youbuddy/d/youbuddy-challenge-11?utm_content=welcome_" + plan; } catch (e) {}
     $("#signupLink").href = "onboarding.html?go=signup&code=" + CODE + "&utm_source=welcome&utm_medium=page&utm_campaign=longpass&plan=" + plan;
 
     // 고객센터에 보낼 문구
