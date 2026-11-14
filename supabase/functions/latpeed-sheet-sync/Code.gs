@@ -11,8 +11,9 @@ var SHEET_NAME = "래피드";
 var ENDPOINT = "https://ssjzwnmqywopocpnvjvw.supabase.co/functions/v1/latpeed-sheet-sync";
 
 function readRows_() {
-  var sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
-  if (!sh) throw new Error("시트 탭 '" + SHEET_NAME + "' 이 없습니다");
+  // ★ 2026-11-14 탭 이름이 '래피드' 에서 '결제기록' 으로 바뀌어 있어 둘 다 찾는다
+  var sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME) || SpreadsheetApp.getActive().getSheetByName("결제기록");
+  if (!sh) throw new Error("시트 탭 '" + SHEET_NAME + "' / '결제기록' 이 없습니다");
   var values = sh.getDataRange().getValues();
   var head = values[0].map(function (h) { return String(h).replace(/\s+/g, ""); });
   var col = function (names) {
