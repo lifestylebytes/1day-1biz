@@ -372,6 +372,31 @@ const DEV_TEST_EMAIL = "testtestlogin@gmail.com";
 const _isDevTestEmail = (e) => /^testtestlogin(\+[^@]*)?@gmail\.com$/i.test(String(e || "").trim());
 const _devTestEmailNow = () => "testtestlogin+" + Date.now().toString(36).slice(-4) + "@gmail.com";
 function _trialDefOf(code) { return TRIAL_CODES[String(code || "").trim().toUpperCase()] || null; }
+// ★ 2026-11-14 가입 이메일 자동 대조 혜택: 유비챌 10기 수료자는 어떤 체험 링크로 가입하든(TRY7DAYS 등) 자동으로 1개월권으로 바뀐다.
+//   이메일은 공개 저장소라 SHA-256 해시로만 둔다. 11/22(일) 밤까지 가입한 사람만. 코드 UBC10-1MONTH 는 예비용으로 남긴다.
+const GRAD_BENEFIT = { ...(TRIAL_CODES["UBC10-1MONTH"] || {}), hashes: [
+    "9dbf95f1e5225f90302cf321618eeaf8e42513dd958442ec2315a547ffa9732b",
+    "c5dc4b5c6dee3f2a89c0de927e102fa88f222f9e1eeade8b8cc0a371abbd3bf1",
+    "ddfe029cf634dc1ca74b10b83067cec8d658ea60060acc98906b585c3ca634d6",
+    "db613e446e68cad9b98ce4892e2ec283e4fb6a1caf2177c92b03c874dbf7dea0",
+    "9fc1f751a1abcb84dac5c138fa243a87d79dfbcf8e76e06ddee03f6cc0a83031",
+    "21df5e0c302fe58c56495aa28b6ae7e99f9c30e42793ea3bf9e57321930bc545",
+    "61863b7f4b6cc485569fabf6bf6ff9409df588baae0a36d7fcfa221e018fa907",
+    "2cf77bc5d339aeaf4ae66f2cd97a415e4aa7d0daaac0db69c8c140b47271c383",
+    "b00bb5ead7e8a8d333732678ec0fb1407aa85a9efd561d5eaff09d4a90c3d6b0",
+    "5ebfb2431d35ea068b6f5282cb0d9b5645c527442d4008fbb60afe584fc8d02c",
+    "6440f476eb14a925aa0e04b8da5f0b73cb9cea38c5d3e8a6d0a018ad26a19497"
+  ] };
+async function _gradBenefitFor(email) {
+  try {
+    const e = String(email || "").trim().toLowerCase(); if (!e || !GRAD_BENEFIT.hashes || !GRAD_BENEFIT.hashes.length) return null;
+    if (GRAD_BENEFIT.until && Date.now() > Date.parse(GRAD_BENEFIT.until)) return null;
+    if (!(window.crypto && window.crypto.subtle)) return null;
+    const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(e));
+    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return GRAD_BENEFIT.hashes.includes(hex) ? GRAD_BENEFIT : null;
+  } catch (e) { return null; }
+}
 
 // ============================================================
 // 유틸, 사번 / 입사일 / 추정값 생성
@@ -634,7 +659,10 @@ function OnboardingApp() {
       if (_mplan) profile.preferences = { ...(profile.preferences || {}), plan: _mplan };
     }
     // 체험 코드: N일 뒤 만료일을 박아서 자동 종료 (비유료 게이트가 만료일 기준으로 차단 → 휴직 화면 → 결제 유도)
-    const _trialDef = TRIAL_CODES[(inviteCode || "").trim().toUpperCase()];
+    const _trialDef0 = TRIAL_CODES[(inviteCode || "").trim().toUpperCase()];
+    // ★ 수료자 이메일이면(체험 코드로 왔을 때만) 1개월권 정의로 갈아끼운다. 유료 코드로 결제해 들어온 사람은 그대로.
+    let _trialDef = _trialDef0;
+    if (_trialDef0 && !MEMBER_CODES[(inviteCode || "").trim().toUpperCase()]) { try { const g = await _gradBenefitFor(profile.email || email); if (g) _trialDef = g; } catch (e) {} }
     if (_trialDef) {
       profile.isPilotHire = false;
       profile.isTester = false;
@@ -666,7 +694,7 @@ function OnboardingApp() {
         console.log("[Supabase] 가입 동기화 완료");
         // ★ 2026-11-14 수료 혜택 코드로 가입하면 운영자 뷰 메모에 자동으로 남긴다 (실패해도 가입은 계속)
         if (_trialDef && _trialDef.opsMemo && window.OD.saveOpsMemo) {
-          try { await window.OD.saveOpsMemo(profile.email, _trialDef.opsMemo, "signup:" + (inviteCode || "").trim().toUpperCase()); } catch (e) { console.warn("[ops_memo] 저장 실패", e); }
+          try { await window.OD.saveOpsMemo(profile.email, _trialDef.opsMemo, "signup:" + (_trialDef === _trialDef0 ? (inviteCode || "").trim().toUpperCase() : "grad-match")); } catch (e) { console.warn("[ops_memo] 저장 실패", e); }
         }
         // ★ 번호를 적고 동의하셨으면 매일 09:00 카톡 알림을 바로 켠다 (실패해도 가입은 계속)
         try {
