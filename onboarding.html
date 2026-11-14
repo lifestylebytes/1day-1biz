@@ -439,7 +439,11 @@ function OnboardingApp() {
     try { return new URLSearchParams(location.search).get('code') || ""; } catch(e) { return ""; }
   }, []);
   // ★ 2026-11-14 코드 없이 들어온 지원서(?go=signup 등)는 7일 무료 체험 코드를 기본으로 넣는다. 초대 코드를 몰라 막히는 일이 없게.
-  const [inviteCode, setInviteCode] = useState((urlCode || "TRY7DAYS").toUpperCase());
+  // ★ 2026-11-14 (버디님 결정) 지원서는 무조건 7일 체험 코드로 시작한다. 링크에 유료 회원 코드(MEMBER_CODES)가 붙어 와도 무시.
+  //   유료 코드로 가입하면 만료일 없는 member 가 돼서, 코드가 공개된 페이지에 있으면 결제 없이 무기한 이용이 가능했다.
+  //   결제 반영은 운영자가 체험 종료일 뒤로 연장하는 방식(SQL)으로 통일. 수료자 해시 대조(1개월권)는 그대로 동작.
+  //   체험 / 초대(PILOT) / 직원 코드는 링크로 와도 그대로 쓴다.
+  const [inviteCode, setInviteCode] = useState(((urlCode && !MEMBER_CODES[urlCode.toUpperCase()]) ? urlCode : "TRY7DAYS").toUpperCase());
 
   // 입사 지원 가능 여부, 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
   // 운영자(DEV-OPS/DEV-BUDDY)는 operator.html로 직접 접근하므로 이 흐름과 무관
@@ -830,7 +834,7 @@ function WelcomeScreenV2({ onNext }) {
   const [showLogin, setShowLogin] = useState(false);
   const [showPay, setShowPay] = useState(false);
   const _goDomestic = () => {
-    const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
+    const url = LATPEED_MEMBERSHIP_URL;   // ★ 2026-11-14 상세페이지는 utm_content=landing (공용 설정값 app 을 쓰면 앱과 구분이 안 됨)
     window.open(url, "_blank", "noopener");
   };
   const _goIntl = () => {
@@ -1084,7 +1088,7 @@ function WelcomeScreenV3({ onNext, initialLogin }) {
     demo_done: [0, 1, 2, 3].filter(i => done[i]).length,
   });
   const _goDomestic = (channel) => {
-    const url = (window.__PAY_CONFIG && window.__PAY_CONFIG.latpeedUrl) || LATPEED_MEMBERSHIP_URL;
+    const url = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=landing_" + (channel || "plans");   // ★ 2026-11-14 버튼별 구분
     track("cta_purchase_click", _payParams(channel || "domestic"));
     window.open(url, "_blank", "noopener");
   };
@@ -1742,7 +1746,7 @@ function WhyMock({ kind }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 7, marginBottom: 9 }}>
         {[
           ["3.6만", "인스타그램 팔로워", "@youbuddy_day", "https://www.instagram.com/youbuddy_day/"],
-          ["235명", "유비챌 누적 챌린저", "만족도 4.9 / 5", "https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=asseen"],
+          ["235명", "유비챌 누적 챌린저", "만족도 4.9 / 5", "https://docurise.io/youbuddy/d/youbuddy-challenge-11?utm_content=landing_asseen"],
           ["130명+", "1일1비 누적 입사", "베타 / 체험 / 유료 멤버", null],
         ].map(x => {
           const inner = (<>
@@ -2148,7 +2152,7 @@ function WhyMock({ kind }) {
 
       {/* ── 6. 유비챌과 뭐가 다른가 (헷갈림 해소) ── */}
       <SectionTitle eyebrow="YOUBUDDY LINE-UP" title="유비챌이랑 뭐가 달라요?" sub="같은 비즈니스 영어인데 방식이 정반대예요. 둘 다 유버디가 만들었지만 겹치지 않아요." />
-      <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup_top" target="_blank" rel="noopener" onClick={() => track("lineup_ubc_route_click")}
+      <a href="https://docurise.io/youbuddy/d/youbuddy-challenge-11?utm_content=landing_lineup_top" target="_blank" rel="noopener" onClick={() => track("lineup_ubc_route_click")}
         style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, margin: "-6px auto 16px", width: "fit-content", background: "var(--ink)", color: "var(--paper)", borderRadius: 999, padding: "10px 18px", fontSize: 13, fontWeight: 900, textDecoration: "none", boxShadow: "0 8px 18px -12px rgba(42,31,20,0.8)" }}>
         🔥 유비챌 자세히 보기 <span style={{ color: "#F0A67E" }}>↗</span>
       </a>
@@ -2189,7 +2193,7 @@ function WhyMock({ kind }) {
           <div style={{ fontSize: 11.5, color: "var(--accent)", fontWeight: 800, margin: "3px 0 7px" }}>혼자 · 매일 5분 · 쌓기</div>
           <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>단톡방도 인증 압박도 마감도 없어요. <strong style={{ color: "var(--ink)" }}>혼자 하는 게 편한 분</strong>이 내 속도로 어휘 사전을 채워가요.</div>
         </div>
-        <a href="https://lifestylebytes.github.io/youbuddy-challenge/?utm_source=1day1biz&utm_medium=landing&utm_campaign=lineup"
+        <a href="https://docurise.io/youbuddy/d/youbuddy-challenge-11?utm_content=landing_lineup"
            target="_blank" rel="noopener"
            onClick={() => track("lineup_ubc_click")}
            style={{ flex: 1, background: "var(--paper)", border: "1px solid var(--line)", borderRadius: 11, padding: "13px 14px", textDecoration: "none", display: "block" }}>
