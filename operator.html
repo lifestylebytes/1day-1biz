@@ -1846,14 +1846,15 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
   );
   const allIds = sameUserItems.map(it => it.id);
 
-  const defaultTitle = `${target.name || ''}님, 소중한 피드백 정말 감사드려요!`;
+  const defaultTitle = `[1일1비] ${target.name || ''}님, 알려주신 내용 확인했어요`;
   const defaultBody = (() => {
     const name = target.name || '';
-    const greet = `${name}님, 안녕하세요! 유버디예요 :)\n\n소중한 피드백 정말정말 감사드려요. ${name}님이 학습하시면서 직접 발견하신 부분을 이렇게 자세히 적어주셔서 정말 큰 도움이 됐어요. 1일1비가 진짜 도움 되는 서비스로 자라려면 ${name}님 같은 분의 피드백이 정말 중요하거든요. 한 분 한 분 보내주시는 내용 다 정성껏 챙겨보고 있어요.\n\n${name}님이 보내주신 의견 정리해봤어요:`;
+    // ★ 2026-11-14 버그 답장 형식: IT팀 인사 → 감사 한 줄 → 확인한 사실 → 언제 반영 → 감사 :) → 서명. 배경 서사나 과잉 공감은 넣지 않는다.
+    const greet = `${name}님, 안녕하세요! 1일1비 IT팀이에요 :)\n\n알려주셔서 감사해요.\n보내주신 내용 확인했어요.`;
     const list = sameUserItems
       .map(it => `\n• (Day ${it.day || '-'}, ${CAT_LABEL[it.category] || it.category}) "${it.message}"`)
       .join('');
-    const promise = `\n\n주신 내용 다음주 금요일(6/6)까지 반영해서 업데이트해두겠습니다. 학습 흐름에 영향 가는 부분이라 우선순위로 챙길게요!\n\n학습하시다가 또 어색하거나 막히는 부분, "이런 게 있으면 좋겠다" 싶은 거 있으면 언제든 우상단 💬 피드백 버튼으로 편하게 보내주세요. 작은 거라도 다 환영이에요 :)\n\n오늘도 한 단어, 한 줄 챙겨가는 하루 되세요!\n\n유버디 드림 💛`;
+    const promise = `\n\n(여기에 원인과 고칠 내용을 한두 줄로 적어주세요)\n다음 주 금요일까지 반영해서 업데이트해두겠습니다. 반영되면 다시 알려드릴게요.\n\n알려주셔서 감사합니다 :)\n\n1일1비 버디 드림`;
     return greet + list + promise;
   })();
 
@@ -2007,17 +2008,17 @@ function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
   // 사전 답장 여부에 따라 톤 살짝 다르게 (약속 지킨 톤 vs 바로 해결 톤)
   const _hasPriorReply = sameUserItems.some(it => it.replied_at);
   const defaultTitle = _hasPriorReply
-    ? `${target.name || ''}님, 약속드린 부분 반영했어요! ✅`
-    : `${target.name || ''}님, 피드백 주신 부분 바로 반영했어요! ✅`;
+    ? `[1일1비] ${target.name || ''}님, 말씀드린 부분 반영했어요`
+    : `[1일1비] ${target.name || ''}님, 알려주신 부분 반영했어요`;
   const defaultBody = (() => {
     const name = target.name || '';
     const greet = _hasPriorReply
-      ? `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 반영해서 방금 업데이트 완료했어요. 약속 지킬 수 있어 다행이에요!\n\n반영된 내용:`
-      : `${name}님, 안녕하세요! 유버디예요 :)\n\n${name}님이 보내주신 피드백 보고 바로 손봐서 방금 업데이트 완료했어요! 빠르게 알려주신 덕분에 빨리 고칠 수 있었습니다 🙏\n\n반영된 내용:`;
+      ? `${name}님, 안녕하세요! 1일1비 IT팀이에요 :)\n\n알려주셔서 감사해요.\n말씀드린 대로 반영해 업데이트했습니다.\n\n반영한 내용:`
+      : `${name}님, 안녕하세요! 1일1비 IT팀이에요 :)\n\n알려주셔서 감사해요.\n확인해서 반영해 업데이트했습니다.\n\n반영한 내용:`;
     const list = sameUserItems
       .map(it => `\n• (Day ${it.day || '-'}, ${CAT_LABEL[it.category] || it.category}) "${it.message}"`)
       .join('');
-    const action = `\n\n위 부분들 다 손봤어요. 페이지에서 한 번 새로고침(Mac은 Cmd+Shift+R) 해주시면 새 내용으로 보입니다!\n\n또 학습하시다가 어색하거나 막히는 부분, 새로 발견하신 게 있으면 언제든 우상단 💬 피드백 버튼으로 편하게 보내주세요. ${name}님 의견이 진짜 큰 도움 됩니다 :)\n\n오늘도 한 단어, 한 줄 챙겨가는 하루 되세요!\n\n유버디 드림 💛`;
+    const action = `\n\n(여기에 원인과 고친 내용을 한두 줄로 적어주세요)\n앱을 한 번 새로고침하면 새 내용으로 보여요. (예: PWA는 완전히 닫았다가 다시 열기)\n\n알려주셔서 감사합니다 :)\n\n1일1비 버디 드림`;
     return greet + list + action;
   })();
 
