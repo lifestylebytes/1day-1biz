@@ -13467,7 +13467,7 @@ function B48Switch() {
 }
 
 // ★ 2026-11-14 유비챌 10기 수료 혜택 배지: 1개월권이 언제까지인지 보여준다 (코드 가입자 + 기존 회원 연장 둘 다)
-// ★ 2026-11-14 수강확인서 (개발 뷰 먼저): 회사 교육비 지원/자기계발비 증빙용. 사원증 > 구독 정보에서 발급.
+// ★ 2026-11-14 수강확인서 (라이브, 체험 회원 제외): 회사 교육비 지원/자기계발비 증빙용. 사원증 > 구독 정보에서 발급.
 //   금액은 적지 않는다(결제 영수증은 결제처에서 따로 받는다). 숫자는 앱 기록 그대로라 "수강 사실 확인" 용도.
 function _certHtml({ name, email, joinDate, endStr, day, done, plan, no, today }) {
   const esc = (x) => String(x || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -13502,7 +13502,7 @@ ${row("교육 내용", "실무 상황(회의, 메신저, 이메일) 기반 비�
 </table>
 <p class="body">위 사람은 1일1비 비즈니스 영어 과정을<br/>위와 같이 수강하고 있음을 확인합니다.</p>
 <p class="date">${esc(today)}</p>
-<div class="issuer">버디버디 (1일1비) 대표 유가람<span class="seal">1일1비<br/>발급<br/>확인</span></div>
+<div class="issuer">버디버디 (1일1비)<span class="seal">1일1비<br/>발급<br/>확인</span></div>
 <div class="biz">사업자등록번호 703-91-02314 · 서울특별시 종로구 지봉로17길 9, A302<br/>youbuddy.co@gmail.com · https://1day-1biz.youbuddy.co.kr</div>
 <div class="note">이 문서는 수강 사실을 확인하는 용도이며 결제 금액은 포함하지 않습니다. 결제 증빙(영수증)은 결제하신 곳의 결제 내역에서 받으실 수 있습니다. 학습 현황은 발급 시점의 앱 기록 기준입니다.</div>
 <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
@@ -16835,7 +16835,8 @@ function MyPage({ setActive, setViewingDay }) {
             </>
           );
         })()}
-        {_isDevNext() && <CertIssueRow />}
+        {/* ★ 2026-11-14 수강확인서 라이브 (체험 회원은 제외) */}
+        {(() => { try { const c = (JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}).cohort || ""; return !c.startsWith("trial"); } catch (e) { return true; } })() && <CertIssueRow />}
         {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
         {false && (
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
