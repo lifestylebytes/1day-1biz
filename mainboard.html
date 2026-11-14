@@ -11197,7 +11197,16 @@ function _odPrintHtml(html) {
     const d = f.contentWindow.document; d.open(); d.write(html); d.close();
     try { _retToast("wp", "📄", "인쇄 창이 열려요", "대상에서 'PDF로 저장' 을 고르면 다운로드돼요"); } catch (e) {}
     window.__odLastPrint = { at: Date.now(), title: (d.title || "") };
-    setTimeout(() => { try { if (f.parentNode) f.remove(); } catch (e) {} }, 60000);
+    // PDF 파일 이름은 바깥 페이지 제목을 따라가는 브라우저가 있어서(사파리/크롬 일부), 인쇄하는 동안만 바깥 제목을 문서 제목으로 바꿔둔다 (2026-11-14)
+    const _topTitle = document.title;
+    let _restored = false;
+    const _restore = () => { if (_restored) return; _restored = true; try { document.title = _topTitle; } catch (e) {} };
+    if (d.title) {
+      document.title = d.title;
+      try { f.contentWindow.addEventListener("afterprint", () => setTimeout(_restore, 500)); } catch (e) {}
+      try { window.addEventListener("afterprint", () => setTimeout(_restore, 500), { once: true }); } catch (e) {}
+    }
+    setTimeout(() => { _restore(); try { if (f.parentNode) f.remove(); } catch (e) {} }, 60000);
   } catch (e) { alert("인쇄 창을 열지 못했어요. 다시 한 번 눌러주세요."); }
 }
 // ── 토스트 (EXP / 복지P) ──
@@ -13472,7 +13481,7 @@ function B48Switch() {
 function _certHtml({ name, email, joinDate, endStr, day, done, plan, no, today }) {
   const esc = (x) => String(x || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`;
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>1일1비 수강확인서 ${esc(name)}</title>
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>1일1비즈니스영어_수강확인서</title>
 <style>
 @page { size: A4; margin: 22mm 20mm; }
 * { box-sizing: border-box; }
