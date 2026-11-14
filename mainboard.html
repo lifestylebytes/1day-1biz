@@ -13467,6 +13467,86 @@ function B48Switch() {
 }
 
 // ★ 2026-11-14 유비챌 10기 수료 혜택 배지: 1개월권이 언제까지인지 보여준다 (코드 가입자 + 기존 회원 연장 둘 다)
+// ★ 2026-11-14 수강확인서 (개발 뷰 먼저): 회사 교육비 지원/자기계발비 증빙용. 사원증 > 구독 정보에서 발급.
+//   금액은 적지 않는다(결제 영수증은 결제처에서 따로 받는다). 숫자는 앱 기록 그대로라 "수강 사실 확인" 용도.
+function _certHtml({ name, email, joinDate, endStr, day, done, plan, no, today }) {
+  const esc = (x) => String(x || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>1일1비 수강확인서 ${esc(name)}</title>
+<style>
+@page { size: A4; margin: 22mm 20mm; }
+* { box-sizing: border-box; }
+body { font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #1c1712; margin: 0; }
+.no { font-size: 10.5pt; color: #666; }
+h1 { text-align: center; font-size: 26pt; letter-spacing: 0.5em; margin: 26mm 0 16mm; font-weight: 800; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5pt; }
+th, td { border: 1px solid #1c1712; padding: 9pt 11pt; text-align: left; vertical-align: top; }
+th { width: 28%; background: #f3efe6; font-weight: 700; }
+.body { margin: 16mm 0 0; font-size: 12.5pt; line-height: 1.9; text-align: center; }
+.date { margin-top: 16mm; text-align: center; font-size: 12.5pt; }
+.issuer { margin-top: 14mm; text-align: center; position: relative; font-size: 15pt; font-weight: 800; letter-spacing: 0.08em; }
+.seal { display: inline-block; width: 21mm; height: 21mm; border: 2.5px solid #B23A2C; color: #B23A2C; border-radius: 50%; font-size: 9.5pt; line-height: 1.25; font-weight: 800; letter-spacing: 0; padding-top: 5.2mm; vertical-align: middle; margin-left: 6mm; transform: rotate(-8deg); }
+.biz { margin-top: 12mm; font-size: 9.5pt; color: #555; line-height: 1.7; text-align: center; }
+.note { margin-top: 8mm; font-size: 9pt; color: #777; line-height: 1.6; border-top: 1px dashed #bbb; padding-top: 5mm; }
+</style></head><body>
+<div class="no">발급번호 ${esc(no)}</div>
+<h1>수강확인서</h1>
+<table>
+${row("성명", esc(name))}
+${row("회원 이메일", esc(email))}
+${row("과정명", "1일1비 비즈니스 영어 (온라인, 매일 학습형)")}
+${row("이용권", esc(plan))}
+${row("수강 기간", esc(joinDate) + " ~ " + esc(endStr))}
+${row("학습 현황", "Day " + esc(day) + " 진행 중 / 학습 완료 " + esc(done) + "일")}
+${row("교육 내용", "실무 상황(회의, 메신저, 이메일) 기반 비즈니스 영어 표현 학습과 영작 AI 첨삭")}
+</table>
+<p class="body">위 사람은 1일1비 비즈니스 영어 과정을<br/>위와 같이 수강하고 있음을 확인합니다.</p>
+<p class="date">${esc(today)}</p>
+<div class="issuer">버디버디 (1일1비) 대표 유가람<span class="seal">1일1비<br/>발급<br/>확인</span></div>
+<div class="biz">사업자등록번호 703-91-02314 · 서울특별시 종로구 지봉로17길 9, A302<br/>youbuddy.co@gmail.com · https://1day-1biz.youbuddy.co.kr</div>
+<div class="note">이 문서는 수강 사실을 확인하는 용도이며 결제 금액은 포함하지 않습니다. 결제 증빙(영수증)은 결제하신 곳의 결제 내역에서 받으실 수 있습니다. 학습 현황은 발급 시점의 앱 기록 기준입니다.</div>
+<script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); };<\/script>
+</body></html>`;
+}
+function CertIssueRow() {
+  const u = (() => { try { return JSON.parse(localStorage.getItem("__OD_USER") || "null") || {}; } catch (e) { return {}; } })();
+  const [name, setName] = React.useState(u.realName || u.name || "");
+  const [open, setOpen] = React.useState(false);
+  const issue = () => {
+    const nm = String(name || "").trim();
+    if (!nm) return;
+    const f = (d) => d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+    const now = new Date();
+    const endRaw = u.membershipEndsAt || u.membership_ends_at || null;
+    const end = endRaw ? new Date(endRaw) : null;
+    const cohort = u.cohort || "";
+    const pm = u.preferences && u.preferences.plan_months;
+    const plan = cohort.startsWith("trial") ? "체험" : pm ? ("1일1비 " + pm + "개월권") : "1일1비 멤버십";
+    let done = 0; try { done = _completedDayCount(u); } catch (e) {}
+    let h = 0; const em = String(u.email || ""); for (let i = 0; i < em.length; i++) h = (h * 31 + em.charCodeAt(i)) >>> 0;
+    const no = "1D1B-" + f(now).replace(/\./g, "") + "-" + String(h % 10000).padStart(4, "0");
+    _odPrintHtml(_certHtml({ name: nm, email: em, joinDate: USER.joinDate, endStr: (end && !isNaN(end.getTime()) && end > now) ? f(end) : f(now) + " (발급일 현재)", day: USER.currentDay, done, plan, no, today: now.getFullYear() + "년 " + (now.getMonth() + 1) + "월 " + now.getDate() + "일" }));
+    try { gtag("event", "cert_issue"); } catch (e) {}
+  };
+  return (
+    <div className="hr-row" style={{ display: "block" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <span className="hr-row-label">📄 수강확인서 <span style={{ fontWeight: 500, color: "var(--ink-mute)" }}>(회사 제출용)</span></span>
+        <button type="button" onClick={() => setOpen(!open)} style={{ border: "1.5px solid var(--ink)", background: "var(--paper)", borderRadius: 6, padding: "5px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", color: "var(--ink)" }}>{open ? "닫기" : "발급하기"}</button>
+      </div>
+      {open && (
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 11.5, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 6 }}>문서에 들어갈 성명(실명)을 확인해주세요. 인쇄 창에서 'PDF로 저장'을 고르면 파일로 받을 수 있어요. 결제 금액은 들어가지 않아요.</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="성명" style={{ flex: 1, minWidth: 0, border: "1px solid var(--line)", borderRadius: 6, padding: "8px 10px", fontSize: 13, fontFamily: "inherit", background: "var(--paper)" }} />
+            <button type="button" onClick={issue} disabled={!String(name || "").trim()} style={{ border: "none", background: "var(--ink)", color: "var(--paper)", borderRadius: 6, padding: "8px 14px", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", opacity: String(name || "").trim() ? 1 : 0.4 }}>PDF 만들기</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ★ 2026-11-14 체험 완료(차단) 화면의 "이미 결제했어요" 버튼 (개발 뷰 먼저). 누르면 48시간 임시 통과(계정당 1회).
 //   서버 기록(preferences.paid_grace_at + ops_log)이 남아서 운영자가 실제 결제와 대조한다.
 function PaidGraceButton({ email }) {
@@ -16755,6 +16835,7 @@ function MyPage({ setActive, setViewingDay }) {
             </>
           );
         })()}
+        {_isDevNext() && <CertIssueRow />}
         {/* TEMP DISABLED, 정식 출시 시 false → true 로 복원 */}
         {false && (
           <div className="hr-row"><span className="hr-row-label">휴가 (Saved Point)</span><span className="hr-row-value"><b>{USER.vacationDays}일</b> 보관 중 · 자동 이월</span></div>
