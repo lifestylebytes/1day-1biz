@@ -3164,6 +3164,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           return (
             <div style={{ marginTop: 7, fontSize: 12.5, fontWeight: 800, color: "#2E7D4F", lineHeight: 1.5 }}>
               ✅ {lbl}까지 {d}일 동안 무료로 체험할 수 있어요
+              <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 600, color: "var(--ink-soft)" }}>지금 바로 결제하고 싶으시면 가입 후 앱 안에서 결제하실 수 있어요. 결제한 기간은 체험이 끝난 다음 날부터 이어져요.</div>
               <button type="button" onClick={() => setInviteCode("")} style={{ display: "block", marginTop: 3, background: "none", border: "none", padding: 0, fontSize: 11, fontWeight: 600, color: "var(--ink-mute)", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>다른 초대 코드가 있으면 여기를 눌러 바꿔주세요</button>
             </div>
           );
