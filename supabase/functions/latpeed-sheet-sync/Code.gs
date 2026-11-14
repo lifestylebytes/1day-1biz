@@ -28,6 +28,7 @@ function readRows_() {
   if (!sh) throw new Error("시트 탭 '" + SHEET_NAME + "' / '결제기록' 이 없습니다");
   var values = sh.getDataRange().getValues();
   var rows = [];
+  var testKeys = {};   // 테스트로 취소한 결제(이메일|구매옵션|금액). 그 결제의 '결제 완료' 줄도 같이 뺀다
   var reStatus = /^결제\s*(완료|취소|실패)$/;
   var reAt = /^\d{2}\.\d{1,2}\.\d{1,2}(\s+\d{1,2}:\d{2})?$/;
   for (var r = 1; r < values.length; r++) {
@@ -39,16 +40,18 @@ function readRows_() {
     if (sIdx < 0) continue;
     var aIdx = -1; for (var k2 = sIdx + 1; k2 < v.length; k2++) { if (reAt.test(v[k2])) { aIdx = k2; break; } }
     if (aIdx < 0) continue;
-    if (/테스트/.test(v[aIdx + 2] || "")) continue;              // 테스트 결제·취소 줄은 보내지 않는다 (예: 10/24 이규태 테스트)
     var amount = String(v[sIdx + 1] || "").replace(/[^\d]/g, "");
     var opt = (v[3] && v[3] !== "동의") ? v[3] : "";
+    var tkey = email.toLowerCase() + "|" + opt.replace(/\s+/g, "") + "|" + amount;
+    if (/테스트/.test(v[aIdx + 2] || "")) { testKeys[tkey] = true; continue; }   // 테스트 취소 줄 (예: 10/24 이규태 테스트)
     rows.push({
       name: v[0], email: email, phone: String(v[2] || "").replace(/[^\d]/g, ""),
       status: v[sIdx], amount: amount, at: v[aIdx],
-      reason: v[aIdx + 2] || "", option: opt, months: optionMonths_(opt)
+      reason: v[aIdx + 2] || "", option: opt, months: optionMonths_(opt), _tkey: tkey
     });
   }
-  return rows;
+  // 테스트로 취소된 결제의 '결제 완료' 줄도 뺀다 (취소 줄만 빼면 테스트 결제가 진짜 결제로 남는다)
+  return rows.filter(function (x) { var k = x._tkey; delete x._tkey; return !testKeys[k]; });
 }
 
 function post_(dry) {
