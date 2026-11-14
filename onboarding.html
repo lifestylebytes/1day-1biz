@@ -438,7 +438,8 @@ function OnboardingApp() {
   const urlCode = useMemo(() => {
     try { return new URLSearchParams(location.search).get('code') || ""; } catch(e) { return ""; }
   }, []);
-  const [inviteCode, setInviteCode] = useState(urlCode.toUpperCase());
+  // ★ 2026-11-14 코드 없이 들어온 지원서(?go=signup 등)는 7일 무료 체험 코드를 기본으로 넣는다. 초대 코드를 몰라 막히는 일이 없게.
+  const [inviteCode, setInviteCode] = useState((urlCode || "TRY7DAYS").toUpperCase());
 
   // 입사 지원 가능 여부, 유효한 PILOT-XXXX 코드가 URL/state에 있어야만 진행 가능
   // 운영자(DEV-OPS/DEV-BUDDY)는 operator.html로 직접 접근하므로 이 흐름과 무관
@@ -3148,6 +3149,18 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
           placeholder="초대받으신 코드를 입력하세요"
           style={{ fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}
         />
+        {/* ★ 2026-11-14 체험 코드면 언제까지 무료인지 바로 보여준다 (가입 처리와 같은 계산: 오늘 + days - 1일 밤까지) */}
+        {_trialDefOf(inviteCode) && (() => {
+          const d = _trialDefOf(inviteCode).days || 7;
+          const e = new Date(Date.now() + (d - 1) * 86400000);
+          const lbl = (e.getMonth() + 1) + "월 " + e.getDate() + "일(" + ["일","월","화","수","목","금","토"][e.getDay()] + ")";
+          return (
+            <div style={{ marginTop: 7, fontSize: 12.5, fontWeight: 800, color: "#2E7D4F", lineHeight: 1.5 }}>
+              ✅ {lbl}까지 {d}일 동안 무료로 체험할 수 있어요
+              <button type="button" onClick={() => setInviteCode("")} style={{ display: "block", marginTop: 3, background: "none", border: "none", padding: 0, fontSize: 11, fontWeight: 600, color: "var(--ink-mute)", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>다른 초대 코드가 있으면 여기를 눌러 바꿔주세요</button>
+            </div>
+          );
+        })()}
       </div>
       <div className="form-row">
         <label>이름</label>
