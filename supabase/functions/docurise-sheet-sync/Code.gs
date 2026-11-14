@@ -2,15 +2,17 @@
 // 1일1비 구매관리 › 다큐라이즈 탭 → Supabase 이용 기간 자동 반영 (Apps Script)
 // 붙이는 곳: 구글 시트 "1일1비 구매관리" → 확장 프로그램 → Apps Script → 파일 + → 스크립트 "Docurise.gs" 로 새로 만들어 통째로 붙이기
 //   (래피드용 Code.gs 와 같은 프로젝트에 둔다. SHEET_SYNC_SECRET 스크립트 속성을 같이 쓴다)
+// 흐름: 다큐라이즈 주문 → (매시간 예약 작업이 브라우저로 읽어) "다큐라이즈" 탭에 한 줄 추가 → 이 스크립트(10분마다) → Supabase
+//   (다큐라이즈 Iconic 플랜 Sheets 연동 없이 돈다. 연동을 켜게 되면 그 탭을 DR_SHEET_NAMES 에 넣으면 된다)
 // 순서:
-//   1) 다큐라이즈 대시보드 → 연동 → Google Sheets 연결 → 이 시트(1일1비 구매관리)를 고르고, 결제폼 "1일1비 입사 결제" 를 연결
-//   2) 다큐라이즈가 만든 탭 이름을 아래 DR_SHEET_NAMES 에 넣는다 (기본 후보 몇 개는 이미 들어 있음)
+//   1) 자동반영제외 칸: 이미 손으로 SQL 반영한 결제는 "수동 반영함" 이라고 적어 둔다 (2026-11-14 기존 5건은 적어 둠)
+//   2) (예비)
 //   3) docuriseDryRun 실행 → 로그의 applied(연장될 사람) / pending(미가입) / unknown(상품 못 알아봄) 확인
 //      이미 손으로 SQL 반영한 사람이 applied 에 있으면, 그 사람의 key 를 docurise_applied 표에 먼저 넣는다 (마이그레이션 파일 하단 예시)
 //   4) docuriseSync 실행 (실제 반영)
 //   5) 트리거(⏰) → 추가 → 함수 docuriseSync · 시간 기반 · 분 단위 타이머 · 10분마다
 // ============================================================
-var DR_SHEET_NAMES = ["다큐라이즈", "DocuRise", "1일1비 입사 결제", "결제", "Sheet1"];
+var DR_SHEET_NAMES = ["다큐라이즈"];   // 이 탭은 매시간 자동 작업(다큐라이즈 주문 → 시트)이 채운다
 var DR_ENDPOINT = "https://ssjzwnmqywopocpnvjvw.supabase.co/functions/v1/docurise-sheet-sync";
 
 function drSheet_() {
@@ -34,13 +36,15 @@ function drReadRows_() {
   var cStatus = col(["결제상태", "상태", "status", "주문상태"]);
   var cAmount = col(["결제금액", "금액", "amount", "가격"]);
   var cAt = col(["결제일시", "결제일", "일시", "paidat", "createdat", "제출일시", "날짜"]);
-  var cOrder = col(["주문번호", "주문id", "orderid", "결제id", "id"]);
+  var cOrder = col(["주문번호", "주문id", "orderid", "결제id"]);
+  var cSkip = col(["자동반영제외"]);   // 값이 있으면 보내지 않는다 (이미 손으로 SQL 반영한 결제)
   if (cEmail < 0 || cProduct < 0) throw new Error("이메일/상품 열을 못 찾았습니다: " + head.join(","));
   var rows = [];
   for (var r = 1; r < values.length; r++) {
     var v = values[r];
     var email = String(v[cEmail] || "").trim();
     if (!email || email.indexOf("@") < 0) continue;
+    if (cSkip >= 0 && String(v[cSkip] || "").trim()) continue;
     var at = cAt >= 0 ? v[cAt] : "";
     if (at instanceof Date) at = Utilities.formatDate(at, "Asia/Seoul", "yyyy-MM-dd HH:mm");
     rows.push({
