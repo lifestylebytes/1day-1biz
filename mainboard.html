@@ -10248,6 +10248,7 @@ function HomePage({ setActive, openScene, openMemo, setViewingDay }) {
             )}
           </div>
 
+          <Ubc10GradBadge user={USER} />
           <TrialBuyBar user={USER} />
           <CatchUpBanner user={USER} />
           <Gift48Banner user={USER} />
@@ -13461,6 +13462,29 @@ function B48Switch() {
           background: (m || "off") === o[0] ? "#2A1F14" : "transparent", color: (m || "off") === o[0] ? "#FFFDF7" : "var(--ink-soft)",
         }}>{o[1]}</button>
       ))}
+    </div>
+  );
+}
+
+// ★ 2026-11-14 유비챌 10기 수료 혜택 배지: 1개월권이 언제까지인지 보여준다 (코드 가입자 + 기존 회원 연장 둘 다)
+function Ubc10GradBadge({ user }) {
+  if (user?.isViewingPast) return null;
+  let until = null;
+  try {
+    const u = JSON.parse(localStorage.getItem("__OD_USER") || "null") || {};
+    const raw = u.ubc10GradUntil || (u.preferences && u.preferences.ubc10_grad_until) || null;
+    if (raw) until = new Date(raw);
+  } catch (e) {}
+  if (!until || !isFinite(until.getTime())) return null;
+  const now = Date.now();
+  const dLeft = Math.ceil((until.getTime() - now) / 86400000);
+  if (dLeft < -3) return null;   // 끝나고 3일 지나면 조용히 사라진다
+  const dateStr = until.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" });
+  return (
+    <div style={{ margin: "10px 0 0", padding: "9px 13px", borderRadius: 10, background: "#FFF3EA", border: "1px solid rgba(216,90,42,0.35)", fontSize: 12.5, fontWeight: 700, color: "#2A1F14", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <span>🎓 유비챌 10기 수료 혜택</span>
+      <span style={{ color: "#D85A2A" }}>1일1비 1개월권 적용 중</span>
+      <span style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--ink-soft)" }}>{dateStr}까지{dLeft > 0 ? " · D-" + dLeft : dLeft === 0 ? " · 오늘까지" : " · 끝났어요"}</span>
     </div>
   );
 }
@@ -22161,7 +22185,11 @@ function _tfState() {
     const _rd = (typeof USER !== "undefined" && (USER.realCurrentDay || USER.currentDay)) || 0;
     if (track && _rd > 90) {
       const _first = 91 + 30 * done.length;  // 트랙 시작 Day (Day 91 절대 기준, 2026-08-26)
-      if (_rd >= _first + 30) {
+      // ★ 2026-11-14: 트랙 마지막 날(Day 30)에 TF 수료 평가를 '마무리'까지 냈으면 다음 날을 기다리지 않고 바로 수료 처리한다.
+      //   (정주혜님 신고: 협상 TF 수료 평가를 봤는데 다음 TF 신청서가 안 떴다. 예전엔 날짜로만 수료를 쳐서 Day 31 아침까지 트랙이 안 비었다.)
+      let _examDone = false;
+      try { const _rec = _qeLoad(u.email || "guest"); _examDone = _rd >= _first + 29 && _qeDone(_rec, _first + 29); } catch (e) {}
+      if (_rd >= _first + 30 || _examDone) {
         const _gid = track.id || track;
         if (_gid && !done.includes(_gid)) done.push(_gid);
         localStorage.setItem("__OD_TF_DONE_" + em, JSON.stringify(done));
@@ -23363,7 +23391,7 @@ function PPReportIssued({ kind, from, to, ok, total, tfName, retro, onOpen, onCl
       <div className="hd" style={{ paddingTop: 12 }}><span className="eb">{step}</span><h2>사수가 쓴 <em>{kind === "tf" ? (tfName || "TF") + " 수료 리포트" : "진급 리포트"}</em>가 왔어요</h2><p className="lede">출근부, 모은 표현, 잘 쓴 문장, {kind === "tf" ? "수료 평가" : "진급 테스트"}, 사수 편지까지 한 권으로.</p></div>
       <div className="bd">
         <button className="btn t" onClick={onOpen}>지금 열어보기</button>
-        <div className="sub">닫아도 성장 리포트 보관함에 그대로 있어요{kind === "p90" ? " · 닫으면 TF 신청서가 떠요" : kind === "tf" ? " · 다음 날 TF 신청서가 떠요" : ""}</div>
+        <div className="sub">닫아도 성장 리포트 보관함에 그대로 있어요{kind === "p90" ? " · 닫으면 TF 신청서가 떠요" : kind === "tf" ? " · 닫으면 다음 TF 신청서가 떠요" : ""}</div>
       </div>
     </PPShell>
   );
@@ -24751,6 +24779,8 @@ function App() {
   const _isInternalTester = !!(_localUserNow?.isOperator || _localUserNow?.isDevMode);
   const _forceTest = (() => { try { return new URLSearchParams(location.search).get('forcetest'); } catch (e) { return null; } })();
   const [_tf, _setTf] = useState(_tfState());
+  // ★ 2026-11-14: 평가 뒤 팝업(수료 → 리포트)이 끝나면 TF 상태를 다시 읽어 신청서가 새로고침 없이 바로 뜨게 한다
+  React.useEffect(() => { const h = () => { try { _setTf(_tfState()); } catch (e) {} }; window.addEventListener("od-pflow", h); return () => window.removeEventListener("od-pflow", h); }, []);
   // ★ 2026-09-11: 완주 60일 조건만 보면, 게이트 도입(2026-08-16) 전 스냅샷 때문에 Day 가 먼저
   //   90 을 넘어간 회원은 심사가 영영 안 뜨고 → 트랙도 못 고르고 → 매일 Day 90 콘텐츠
   //   ('pay it forward') 만 반복해서 본다 (이규태님 Day 90·91·92 동일 단어 신고).
@@ -25037,7 +25067,8 @@ function App() {
     // ★ 2026-10-12 체험 코드(UBC10-7DAYS 등) 회원: '휴직' 대신 '체험 완료' 화면. 결제하면 다음 07:00 시트 동기화가 member 로 바꿔 열린다.
     const _isTrialUser = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
     if (_isTrialUser) {
-      const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : _localUserNow.cohort === 'trial-7d' ? '7일 무료 체험' : '7일 체험';
+      const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : _localUserNow.cohort === 'trial-ubc10g' ? '유비챌 10기 수료 1개월권' : _localUserNow.cohort === 'trial-7d' ? '7일 무료 체험' : '7일 체험';
+      const _trialSpan = _localUserNow.cohort === 'trial-ubc10g' ? '지난 한 달처럼' : '지난 7일처럼';
       // ★ 2026-10-24 새 플랜(1회 결제) 상품 페이지로. 랜딩·48시간 배너와 같은 주소.
       const _upUrl = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_trial_end";
       return (
@@ -25048,7 +25079,7 @@ function App() {
                 <div style={{ display: "inline-block", fontSize: _fs(11), letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", borderRadius: 4, transform: "rotate(0deg)", marginBottom: 18 }}>체험 완료</div>
                 <h1 style={{ fontSize: _fs(22), fontWeight: 900, lineHeight: 1.35, marginBottom: 14, color: "var(--ink)" }}>{_trialName}이<br/><span style={{ color: "var(--accent)" }}>끝났어요</span></h1>
                 <p style={{ fontSize: _fs(13.5), color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
-                  지난 7일처럼 매일 한 표현씩 계속 쌓으려면<br/>플랜을 골라 이어가세요.
+                  {_trialSpan} 매일 한 표현씩 계속 쌓으려면<br/>플랜을 골라 이어가세요.
                 </p>
                 <div style={{ display: "inline-block", fontSize: _fs(11), fontWeight: 900, color: "#fff", background: "#C0392B", borderRadius: 999, padding: "4px 11px", marginBottom: 12 }}>📈 4차 공채부터 가격 인상 · 지금은 3차 가격</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16, textAlign: "left" }}>
@@ -25571,6 +25602,8 @@ window.SimApp = App;
               }
               // ★ 2026-10-30: 체험 출신 결제 회원 구분용 (Day 8 결제 이유 설문). 래피드 웹훅이 preferences 에 남긴 값
               try { const _pf = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.prevCohort = _pf.prev_cohort || local.prevCohort || null; local.planPaidAt = _pf.plan_paid_at || _pf.last_paid_at || local.planPaidAt || null; } catch (e) {}
+              // ★ 2026-11-14 유비챌 10기 수료 혜택(1개월권) 끝나는 날. 가입 코드 UBC10-1MONTH 또는 운영자 SQL 이 preferences 에 넣는다 (앱 배지용)
+              try { const _pf2 = (u.preferences && typeof u.preferences === 'object') ? u.preferences : {}; local.ubc10GradUntil = _pf2.ubc10_grad_until || null; } catch (e) {}
               local.isPilotHire = u.is_pilot_hire;
               local.is_pilot_hire = u.is_pilot_hire;
               local.unlocked = u.unlocked;

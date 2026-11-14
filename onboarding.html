@@ -352,6 +352,12 @@ const TRIAL_CODES = {
   // ★ 2026-10-16 7일 무료 체험 (공유 링크: https://1day-1biz.youbuddy.co.kr/onboarding.html?go=signup&code=TRY7DAYS)
   //   3개월권 오픈하는 날 active:false 를 지우면 열린다. 그 전엔 링크 끝에 &preview=1 을 붙여야만 들어가짐 (운영 테스트용).
   //   8일째 아침 '체험 완료' 화면 → 같은 이메일로 결제하면 웹훅이 바로 member 로 바꾸고 Day 8부터 이어진다.
+  // ★ 2026-11-14 유비챌 10기 수료 혜택: 가입 시점부터 30일 무료 (코드 UBC10-1MONTH, 11/22(일)까지 가입). 끝나면 7일 체험과 똑같이 '체험 완료' 화면 → 결제 안내.
+  //   가입하면 운영자 뷰 메모(ops_memo)에 10기 수료자라고 자동으로 적히고, preferences.ubc10_grad_until 에 혜택 끝나는 날이 들어간다(앱 배지용).
+  "UBC10-1MONTH": { label: "유비챌 10기 수료 1개월권", days: 30, cohort: "trial-ubc10g", until: "2026-11-22T23:59:59+09:00", untilLabel: "11/22(일)",
+    opsMemo: "유비챌 10기 수료자. 수료 혜택 1개월권(코드 UBC10-1MONTH)으로 가입. 끝나면 체험 완료 화면 → 결제 안내.",
+    gradKey: "ubc10_grad_until",
+    existingMsg: "이미 1일1비 계정이 있는 이메일이에요. 수료 혜택 1개월은 기존 계정에 연장으로 넣어드려요! 유버디 1:1 챗으로 이메일만 알려주세요." },
   "TRY7DAYS": { label: "7일 무료 체험", days: 7, cohort: "trial-7d",
     existingMsg: "이미 가입된 이메일이에요. 예전에 1일1비를 써보셨던 분이면, 이 이메일 그대로 처음부터 다시 시작할 수 있게 리셋해드려요. 아래 고객센터(카톡)로 이메일만 알려주세요." },  // ★ onboarding-dev 전용: 실제 체험 가입 테스트용으로 열어둠
 };
@@ -640,6 +646,7 @@ function OnboardingApp() {
       _tEnd.setHours(23, 59, 59, 0);
       profile.membershipEndsAt = _tEnd.toISOString();
       profile.membership_ends_at = _tEnd.toISOString();
+      if (_trialDef.gradKey) profile.preferences = { ...(profile.preferences || {}), [_trialDef.gradKey]: _tEnd.toISOString() };
     }
     // ★ Supabase 동기화 먼저, 실패 시 가입 전체 차단 (silent fail 방지)
     if (window.OD && window.OD.enabled) {
@@ -657,6 +664,10 @@ function OnboardingApp() {
           return;  // localStorage 도 안 건드림
         }
         console.log("[Supabase] 가입 동기화 완료");
+        // ★ 2026-11-14 수료 혜택 코드로 가입하면 운영자 뷰 메모에 자동으로 남긴다 (실패해도 가입은 계속)
+        if (_trialDef && _trialDef.opsMemo && window.OD.saveOpsMemo) {
+          try { await window.OD.saveOpsMemo(profile.email, _trialDef.opsMemo, "signup:" + (inviteCode || "").trim().toUpperCase()); } catch (e) { console.warn("[ops_memo] 저장 실패", e); }
+        }
         // ★ 번호를 적고 동의하셨으면 매일 09:00 카톡 알림을 바로 켠다 (실패해도 가입은 계속)
         try {
           const _ph = (phone || "").trim();
