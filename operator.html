@@ -1893,7 +1893,7 @@ function FeedbackReplyModal({ target, allItems, onClose, onSent }) {
       alert('답장 발송 실패: ' + (r.error || ''));
       return;
     }
-    alert(`${target.name || email} 님께 사내 메모 발송 + 피드백 ${r.count}건에 답장 기록 + 마감일 ${deadline || '미설정'} ✓`);
+    alert(`${target.name || email} 님께 사내 메모 발송 + 피드백 ${r.count}건에 답장 기록 + 마감일 ${deadline || '미설정'} ✓` + (r.kakao && r.kakao.ok ? ' + 알림톡 ✓' : (r.kakao && r.kakao.skipped === 'no_phone' ? ' (번호 없어 알림톡 X)' : (r.kakao && r.kakao.skipped === 'template_not_set' ? ' (알림톡 템플릿 승인 전)' : ''))));
     onSent();
   };
 
@@ -2045,7 +2045,7 @@ function FeedbackCompletionModal({ target, allItems, onClose, onSent }) {
       alert('완료 알림 발송 실패: ' + (r.error || ''));
       return;
     }
-    alert(`${target.name || email} 님께 완료 알림 발송 + 피드백 ${r.count}건 해결됨 마킹 ✅`);
+    alert(`${target.name || email} 님께 완료 알림 발송 + 피드백 ${r.count}건 해결됨 마킹 ✅` + (r.kakao && r.kakao.ok ? ' + 알림톡 ✓' : (r.kakao && r.kakao.skipped === 'no_phone' ? ' (번호 없어 알림톡 X)' : (r.kakao && r.kakao.skipped === 'template_not_set' ? ' (알림톡 템플릿 승인 전)' : ''))));
     onSent();
   };
 
