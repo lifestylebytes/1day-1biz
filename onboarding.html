@@ -1542,10 +1542,11 @@ function WhyMock({ kind }) {
       {/* ★ 인스타 등에서 들어온 첫 화면: 무료 체험이 1순위, 바로 결제는 플랜으로 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "4px 0 6px" }}>
         <button className="btn" onClick={() => _goTrial("hero")} style={{ background: "var(--accent, #D85A2A)", boxShadow: "0 8px 18px -10px rgba(216,90,42,0.9)", justifyContent: "center", fontSize: 15, padding: "16px 20px" }}>🎟 7일 무료로 시작하기 →</button>
-        <button onClick={() => { track("hero_plans_click"); try { document.getElementById("od-plans").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }}
-          style={{ background: "transparent", border: "2px solid var(--accent, #D85A2A)", color: "var(--accent, #D85A2A)", borderRadius: 10, padding: "12px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-          💳 바로 결제하기 (플랜 보기)
-        </button>
+        {/* ★ 2026-11-14: 바로 결제하기는 플랜 섹션 대신 다큐라이즈 결제폼으로 바로 (결제폼에 4트랙 가격표가 있다) */}
+        <a href="https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=hero" target="_blank" rel="noopener" onClick={() => { track("hero_pay_click"); }}
+          style={{ display: "block", textAlign: "center", textDecoration: "none", background: "transparent", border: "2px solid var(--accent, #D85A2A)", color: "var(--accent, #D85A2A)", borderRadius: 10, padding: "12px 16px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+          💳 바로 결제하기
+        </a>
         <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>
           결제 정보 없이 바로 시작해요. 바로 결제하셔도 7일 무료는 포함돼요.
         </div>
@@ -2295,10 +2296,10 @@ function WhyMock({ kind }) {
         <div style={{ fontSize: 11, color: "rgba(245,238,221,0.6)", marginTop: 10, lineHeight: 1.6 }}>
           결제 정보는 필요 없어요. 7일 다녀보고 8일째에 계속 다닐지 정해주세요.
         </div>
-        <button onClick={() => { track("footer_plans_click"); try { document.getElementById("od-plans").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }}
-          style={{ marginTop: 12, background: "none", border: "none", color: "#F0A57A", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
-          💳 바로 결제하고 시작하기 (플랜 보기)
-        </button>
+        <a href="https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=footer" target="_blank" rel="noopener" onClick={() => { track("footer_pay_click"); }}
+          style={{ display: "inline-block", marginTop: 12, background: "none", border: "none", color: "#F0A57A", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
+          💳 바로 결제하고 시작하기
+        </a>
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
