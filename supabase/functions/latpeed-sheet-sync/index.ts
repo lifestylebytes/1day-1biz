@@ -33,7 +33,9 @@ export function periodMonths(amount: number | string | null | undefined): number
 }
 const GRACE_DAYS = 2;   // 결제 지연 유예: 만료 후 이틀 안에 결제가 안 찍히면 구독 종료로 본다
 
-type Row = { name?: string; email?: string; phone?: string; status?: string; amount?: string | number; at?: string; reason?: string };
+type Row = { name?: string; email?: string; phone?: string; status?: string; amount?: string | number; at?: string; reason?: string; option?: string; months?: number };
+// ★ 2026-11-14 래피드 장기권(인턴/정규직/패스트트랙/임원)은 Apps Script 가 구매옵션으로 months 를 같이 보낸다. 있으면 금액 추정보다 우선.
+function rowMonths(r: Row): number { const m = Number(r.months || 0); return m > 0 ? m : periodMonths(r.amount); }
 
 // "26.09.20 21:25" (KST) → ISO
 export function parseKstAt(s: string | undefined): string | null {
@@ -88,7 +90,7 @@ export function normalizeStatus(s: string | undefined): "paid" | "cancel" | "fai
 }
 // 이메일별로 '마지막 결제 완료' 와 '그 뒤의 취소' 를 찾는다
 export function reduceRows(rows: Row[]) {
-  const by: Record<string, { name: string; phone: string; lastPaid: string | null; firstPaid: string | null; cancelAfter: string | null; amount: number; payCount: number; paidAts: string[]; paid: { at: string; months: number }[] }> = {};
+  const by: Record<string, { name: string; phone: string; lastPaid: string | null; lastMonths: number; firstPaid: string | null; cancelAfter: string | null; amount: number; payCount: number; paidAts: string[]; paid: { at: string; months: number }[] }> = {};
   const seen = new Set<string>();   // ★ 2026-10-13: 시트에 같은 구간을 두 번 붙여 넣은 줄(이메일·시각·상태가 같음)은 한 번만 센다
   for (const r of rows) {
     const email = String(r.email || "").trim().toLowerCase();
@@ -96,12 +98,12 @@ export function reduceRows(rows: Row[]) {
     const at = parseKstAt(r.at); if (!at) continue;
     const st = normalizeStatus(r.status);
     const key = email + "|" + at + "|" + st; if (seen.has(key)) continue; seen.add(key);
-    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, firstPaid: null, cancelAfter: null, amount: 0, payCount: 0, paidAts: [], paid: [] });
+    const cur = by[email] || (by[email] = { name: String(r.name || ""), phone: phoneKey(r.phone), lastPaid: null, lastMonths: 1, firstPaid: null, cancelAfter: null, amount: 0, payCount: 0, paidAts: [], paid: [] });
     if (!cur.phone) cur.phone = phoneKey(r.phone);
     if (st === "paid") {
-      cur.payCount++; cur.paidAts.push(at); cur.paid.push({ at, months: periodMonths(r.amount) });
+      cur.payCount++; cur.paidAts.push(at); cur.paid.push({ at, months: rowMonths(r) });
       if (!cur.firstPaid || at < cur.firstPaid) cur.firstPaid = at;
-      if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.cancelAfter = null; cur.amount = Number(String(r.amount ?? "").replace(/[^\d.]/g, "")) || 0; }
+      if (!cur.lastPaid || at > cur.lastPaid) { cur.lastPaid = at; cur.lastMonths = rowMonths(r); cur.cancelAfter = null; cur.amount = Number(String(r.amount ?? "").replace(/[^\d.]/g, "")) || 0; }
     }
     else if (st === "cancel") { if (cur.lastPaid && at >= cur.lastPaid && (!cur.cancelAfter || at > cur.cancelAfter)) cur.cancelAfter = at; }
   }
@@ -140,7 +142,7 @@ Deno.serve(async (req) => {
     const r = by[email]; const u = umap[alias[email] || email];
     if (!r.lastPaid) { skipped++; continue; }
     const comp = u ? unusedMonthsBeforeSignup(r.paid, u.signup_date) : 0;
-    const want = plusMonthsKstEnd(r.lastPaid, periodMonths(r.amount) + comp);   // 월 구독 = 1개월, 3개월권 = 3개월
+    const want = plusMonthsKstEnd(r.lastPaid, (r.lastMonths || periodMonths(r.amount)) + comp);   // 월 구독 = 1개월, 3개월권 = 3개월
     const wantIso = new Date(want).toISOString();
     if (!u) {
       // 래피드 이메일 ≠ 앱 이메일 인 사람 찾기: ① 전화번호 뒤 8자리가 같은 계정이 딱 하나면 별칭을 자동으로 넣고 그 계정에 바로 적용
