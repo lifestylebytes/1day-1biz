@@ -2736,6 +2736,7 @@ function App() {
     else if (u.cohort === 'member') {
       if (!ends) { line1 = '⚠️ 만료일 없음'; dateLine = '갱신일 미설정'; }
       else if (dLeft <= 0) { line1 = '🔴 만료'; dateLine = '종료일 ' + md(ends); }
+      else if (cr === 'docurise_pass') { line1 = '🟢 장기권 이용 중'; dateLine = '종료 ' + md(ends) + ' (D-' + dLeft + ') / 1회 결제'; }
       else if (cr) { line1 = cr.startsWith('latpeed_') ? '🟡 취소 예정' : '🟡 퇴직 처리됨'; dateLine = '종료: ' + md(ends) + ' (D-' + dLeft + ')'; }
       else { line1 = '🟢 정상 활성'; dateLine = '다음 결제 ' + md(ends) + ' (D-' + dLeft + ')'; }
     } else if (typeof u.cohort === 'string' && u.cohort.startsWith('trial')) {
@@ -3472,8 +3473,10 @@ function App() {
                 const day = u.day_in_company || 1;
 
                 // 정식 회원 상태
-                const isPaidActive    = isPaidMember && (dLeft === null || (dLeft > 0 && !cancelReason));
-                const isPaidCanceling = isPaidMember && dLeft !== null && dLeft > 0 && !!cancelReason;
+                // ★ 2026-11-17 다큐라이즈 장기권(1회 결제)은 끝나는 날을 cancel_at 으로 박아둔다. 퇴직이 아니라 정상 이용 중으로 본다
+                const isPassEnd = cancelReason === 'docurise_pass';
+                const isPaidActive    = isPaidMember && (dLeft === null || (dLeft > 0 && (!cancelReason || isPassEnd)));
+                const isPaidCanceling = isPaidMember && dLeft !== null && dLeft > 0 && !!cancelReason && !isPassEnd;
                 const isPaidExpired   = isPaidMember && dLeft !== null && dLeft <= 0;
                 const isLatpeedCancel = cancelReason && cancelReason.startsWith('latpeed_');
 
@@ -3504,7 +3507,9 @@ function App() {
                 if (isInternal) {
                   payStatus = { line1: '🔧 내부 사용자', line2: '결제 무관', bg: '#F4EFE3', color: '#5C4A36' };
                 } else if (isPaidActive) {
-                  if (dLeft !== null) {
+                  if (dLeft !== null && isPassEnd) {
+                    payStatus = { line1: '🟢 장기권 이용 중', line2: `종료 ${endsAtMD} (D-${dLeft}) / 1회 결제`, bg: '#DDEFD9', color: '#2D6E3A' };
+                  } else if (dLeft !== null) {
                     payStatus = {
                       line1: '🟢 정상 활성',
                       line2: `다음 결제 ${endsAtMD} (D-${dLeft})`,
