@@ -332,7 +332,7 @@ function ManualMembershipPanel({ supaUsers, onDone }) {
         {mode === "from" && <label style={{ fontSize: 12.5, display: "flex", gap: 6, alignItems: "center" }}>Day <input type="number" min={1} max={90} value={fromDay} onChange={e => setFromDay(e.target.value)} style={{ width: 64, padding: "7px 8px", border: "1px solid #D9CDB8", borderRadius: 6, fontFamily: "inherit", fontSize: 13 }} /> 부터</label>}
         <button className="btn btn-primary" onClick={apply} disabled={busy || !email.trim()}>{busy ? "반영 중..." : "활성화"}</button>
       </div>
-      {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.membership_cancel_reason ? " · 퇴직 사유 남음(" + u.membership_cancel_reason + ")" : ""}{u.unlocked === false ? " · 잠김" : ""}</div>}
+      {u && <div style={{ marginTop: 8, fontSize: 12, color: "#6B5B4A" }}>{u.name || "(이름 없음)"} · 지금 상태: {u.cohort || "-"} · 만료 {u.membership_ends_at ? String(u.membership_ends_at).slice(0, 10) : "없음"}{u.membership_cancel_at ? " · 해지마커 있음" : ""}{u.membership_cancel_reason === "docurise_pass" ? " · 장기권(1회 결제)" : (u.membership_cancel_reason ? " · 퇴직 사유 남음(" + u.membership_cancel_reason + ")" : "")}{u.unlocked === false ? " · 잠김" : ""}</div>}
       {msg && <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: msg.startsWith("✅") ? "#2D6E3A" : "#B23A2C" }}>{msg}</div>}
     </details>
   );
@@ -883,10 +883,13 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       if (u.is_operator || u.is_dev_mode) continue;
       const dbEnd = (u.membership_ends_at || "").slice(0, 10);
       const hasCancel = !!u.membership_cancel_at || !!u.membership_cancel_reason;   // 해지마커 또는 퇴직 사유가 남아 있으면 같이 지운다
+      // ★ 2026-11-18: 다큐라이즈 장기권 회원은 Latpeed 날짜로 절대 줄이지 않는다 (월구독 해지 후 장기권으로 갈아탄 경우 등)
+      const passKeeps = (want) => u.membership_cancel_reason === "docurise_pass" && dbEnd && dbEnd >= want;
       if (isPaymentSheet) {
         const paid = latestPaid[email];
         if (!paid || kdate(c[iPaidAt]) !== paid) continue;   // 같은 이메일의 옛 결제 행은 건너뜀
         const want = plusMonth(paid);
+        if (passKeeps(want)) continue;
         if (dbEnd < want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st: "결제 완료 " + (c[iAmount] || ""),
             detail: "결제 " + paid + " → 만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
@@ -900,6 +903,7 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       if (st === "구독 중") {
         const want = kdate(c[iNext]);
         if (!want) continue;
+        if (passKeeps(want)) continue;
         if (dbEnd !== want || u.cohort !== "member" || u.unlocked === false || hasCancel || u.membership_cancel_reason) {
           out.push({ email, name, st,
             detail: "만료 " + (dbEnd || "없음") + " → " + want + (hasCancel ? " · 해지마커 해제" : ""),
@@ -910,6 +914,7 @@ function CsvSyncPanel({ supaUsers, onDone }) {
       } else if (st === "구독 취소" || st === "구독 종료") {
         const want = kdate(c[iEnd]) || kdate(c[iCancel]);
         if (!want) continue;
+        if (passKeeps(want)) continue;
         if (dbEnd !== want || !hasCancel) {
           const patch = { membership_ends_at: want + "T23:59:59+09:00", cohort: "member" };
           if (!hasCancel) patch.membership_cancel_at = new Date().toISOString();
