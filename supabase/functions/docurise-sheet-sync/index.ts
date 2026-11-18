@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
   const { data: users, error } = await sb.from("users")
-    .select("email, name, cohort, unlocked, membership_ends_at, membership_cancel_at, is_operator, is_dev_mode, withdrawn_at, preferences");
+    .select("email, name, cohort, unlocked, signup_date, membership_ends_at, membership_cancel_at, is_operator, is_dev_mode, withdrawn_at, preferences");
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
   const umap: Record<string, any> = {};
   (users || []).forEach((u: any) => { umap[String(u.email).toLowerCase()] = u; });
@@ -108,11 +108,27 @@ Deno.serve(async (req) => {
     const base = dbEnd && dbEnd > nowIso ? dbEnd : nowIso;
     const newEnd = addMonthsKstEnd(base, m.months);
     const prefs = (u.preferences && typeof u.preferences === "object") ? u.preferences : {};
-    applied.push({ email: u.email, name: u.name, product: r.product, months: m.months, from: dbEnd, to: newEnd, prevCohort: u.cohort });
+    // ★ 2026-11-18: 끊겼다 다시 결제한 사람(체험 종료/만료 후)은 마지막으로 끝낸 Day 다음 날부터 이어지게 signup_date 를 당긴다.
+    //   Day 는 가입일 달력 기준이라, 그대로 두면 쉰 날만큼 밀린 Day 가 한꺼번에 열린다 (2026-11-19 김미소님: Day 7 에서 멈췄는데 Day 22 로 열림).
+    let resumeSignup: string | null = null, resumeDay: number | null = null;
+    if (dbEnd && dbEnd <= nowIso && u.signup_date) {
+      const { data: sub } = await sb.from("submissions").select("day").eq("email", u.email).order("day", { ascending: false }).limit(1);
+      const lastDone = sub && sub[0] ? Number(sub[0].day) || 0 : 0;
+      const todayKst = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+      const signKst = new Date(new Date(u.signup_date).getTime() + 9 * 3600000).toISOString().slice(0, 10);
+      const calDay = Math.round((Date.parse(todayKst) - Date.parse(signKst)) / 86400000) + 1;
+      const want = lastDone + 1;
+      if (calDay > want) {
+        const d0 = new Date(Date.parse(todayKst) - (want - 1) * 86400000).toISOString().slice(0, 10);
+        resumeSignup = `${d0}T00:00:00+09:00`; resumeDay = want;
+      }
+    }
+    applied.push({ email: u.email, name: u.name, product: r.product, months: m.months, from: dbEnd, to: newEnd, prevCohort: u.cohort, resumeDay });
     if (!dry) {
       const { error: upErr } = await sb.from("users").update({
         membership_ends_at: newEnd, cohort: "member", unlocked: true,
         membership_cancel_at: newEnd, membership_cancel_reason: "docurise_pass",
+        ...(resumeSignup ? { signup_date: resumeSignup } : {}),
         preferences: { ...prefs, pay_source: "docurise", plan: m.plan, plan_months: m.months, last_paid_at: r.iso,
           ...(String(u.cohort || "").startsWith("trial") && !prefs.prev_cohort ? { prev_cohort: u.cohort } : {}),
           ...(r.amount ? { last_amount: Number(String(r.amount).replace(/[^\d]/g, "")) || null } : {}) },
