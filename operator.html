@@ -3249,9 +3249,10 @@ function App() {
               const real = supaUsers.filter(u => !u.is_operator && !u.is_dev_mode && !u.is_tester && !_isTestAcct(u) && u.email !== 'youbuddy.co@gmail.com');
               const ends = u => u.membership_ends_at ? new Date(u.membership_ends_at) : null;
               const isMember = u => u.cohort === 'member';
-              const activePaid = real.filter(u => isMember(u) && !u.membership_cancel_reason && ends(u) && ends(u) > now);
+              const isPass = u => u.membership_cancel_reason === 'docurise_pass';  // 장기권 1회 결제: 해지가 아니라 정상 이용
+              const activePaid = real.filter(u => isMember(u) && (!u.membership_cancel_reason || isPass(u)) && ends(u) && ends(u) > now);
               const noEnds     = real.filter(u => isMember(u) && !ends(u) && !u.withdrawn_at);
-              const canceling  = real.filter(u => u.membership_cancel_reason && ends(u) && ends(u) > now);
+              const canceling  = real.filter(u => u.membership_cancel_reason && !isPass(u) && ends(u) && ends(u) > now);
               const expired    = real.filter(u => isMember(u) && ends(u) && ends(u) <= now);
               // ★ 2026-10-24: 베타(파일럿)는 끝났다. 그 자리에 7일 무료 체험 중인 사람 (cohort trial*, 가입 7일 안)
               const trialing   = real.filter(u => typeof u.cohort === 'string' && u.cohort.startsWith('trial') && !isMember(u)
@@ -3270,7 +3271,7 @@ function App() {
                   </div>
                 );
               };
-              const fmtD = d => d ? new Date(d).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '-';
+              const fmtD = d => d ? new Date(d).toLocaleDateString('ko-KR', new Date(d).getFullYear() !== now.getFullYear() ? { year: 'numeric', month: 'numeric', day: 'numeric' } : { month: 'numeric', day: 'numeric' }) : '-';
               const listRows = memListOpen && groups[memListOpen] ? [...groups[memListOpen]].sort((a, b) => {
                 // ★ 2026-10-30: 체험 중은 최근 가입순. 나머지는 날짜순 (만료·종료는 최근 종료순)
                 if (memListOpen === '🧪 무료 체험 중') return (new Date(b.signup_date || 0) - new Date(a.signup_date || 0));
@@ -3297,13 +3298,13 @@ function App() {
                             const tEnd = isTrial && u.signup_date ? new Date(new Date(u.signup_date).getTime() + 7 * 86400000) : null;
                             // ★ 2026-10-30: 체험 중은 가입 시각(시:분)까지. 48시간 사은품 판단용
                             const fmtDT = d => d ? new Date(d).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '-';
-                            const dateCol = isTrial ? ('가입 ' + fmtDT(u.signup_date) + ' · 체험 종료 ' + fmtD(tEnd)) : (ends(u) ? ((memListOpen === '🔴 만료·종료' ? '종료 ' : (memListOpen === '🟡 취소 예정' ? '종료 예정 ' : '다음 결제 ')) + fmtD(u.membership_ends_at)) : '만료일 없음');
+                            const dateCol = isTrial ? ('가입 ' + fmtDT(u.signup_date) + ' · 체험 종료 ' + fmtD(tEnd)) : (ends(u) ? ((memListOpen === '🔴 만료·종료' ? '종료 ' : (memListOpen === '🟡 취소 예정' ? '종료 예정 ' : (isPass(u) ? '장기권 종료 ' : '다음 결제 '))) + fmtD(u.membership_ends_at)) : '만료일 없음');
                             return (
                               <tr key={u.email} style={{ borderBottom: '1px solid #F0E9DA' }}>
                                 <td style={{ padding: '5px 4px', fontWeight: 700, whiteSpace: 'nowrap' }}>{u.name || '-'}</td>
                                 <td style={{ padding: '5px 4px', color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5 }}>{u.email}</td>
                                 <td style={{ padding: '5px 4px', whiteSpace: 'nowrap' }}>{dateCol}</td>
-                                <td style={{ padding: '5px 4px', color: '#8A7964', whiteSpace: 'nowrap' }}>{u.membership_cancel_reason ? ('사유 ' + u.membership_cancel_reason) : ''}{u.last_active ? ' · 접속 ' + fmtD(u.last_active) : ''}</td>
+                                <td style={{ padding: '5px 4px', color: '#8A7964', whiteSpace: 'nowrap' }}>{u.membership_cancel_reason && !isPass(u) ? ('사유 ' + u.membership_cancel_reason) : (isPass(u) ? '장기권 1회 결제' : '')}{u.last_active ? ' · 접속 ' + fmtD(u.last_active) : ''}</td>
                               </tr>
                             );
                           })}
