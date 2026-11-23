@@ -1009,7 +1009,7 @@ function WelcomeScreenV2({ onNext }) {
           onClick={() => setShowLogin(true)}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
         >
-          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+          이미 입사하셨나요? <strong>다시 출근하기 →</strong>
         </a>
       </div>
 
@@ -1414,7 +1414,7 @@ function WhyMock({ kind }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <button className="btn" onClick={() => _goTrial("cta")} style={{ background: "var(--accent, #D85A2A)", boxShadow: "0 8px 18px -10px rgba(216,90,42,0.9)", justifyContent: "center", fontSize: 14, padding: "15px 20px" }}>🎟 7일 무료로 시작하기 →</button>
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", textAlign: "center", lineHeight: 1.55 }}>결제 정보 없이 바로 시작해요. 7일 뒤에 정하시면 돼요.</div>
-      <button onClick={() => { track("cta_apply_click"); onNext(); }} style={{ background: "none", border: "none", color: "var(--ink-soft)", fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", marginTop: 2 }}>📝 이미 결제하셨어요? 지원서 작성하기</button>
+      <button onClick={() => { track("cta_apply_click"); onNext(); }} style={{ background: "none", border: "none", color: "var(--ink-soft)", fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", marginTop: 2 }}>📝 이미 결제하셨나요? 지원서 작성하기</button>
     </div>
   );
 
@@ -2324,7 +2324,7 @@ function WhyMock({ kind }) {
       </div>
 
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--line)", textAlign: "center" }}>
-        <a onClick={() => setShowLogin(true)} style={{ fontSize: 12, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}>이미 입사하셨어요? <strong>다시 출근하기 →</strong></a>
+        <a onClick={() => setShowLogin(true)} style={{ fontSize: 12, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}>이미 입사하셨나요? <strong>다시 출근하기 →</strong></a>
         <div style={{ height: 74 }} />
       </div>
       <div className="fine-print" style={{ marginTop: 12 }}>
@@ -2455,7 +2455,7 @@ function WelcomeScreenV1({ onNext }) {
           onClick={() => setShowLogin(true)}
           style={{ fontSize: 13, color: "var(--ink-soft)", cursor: "pointer", textDecoration: "underline" }}
         >
-          이미 입사하셨어요? <strong>다시 출근하기 →</strong>
+          이미 입사하셨나요? <strong>다시 출근하기 →</strong>
         </a>
       </div>
 

@@ -12205,7 +12205,7 @@ function RetPerkShopPage({ setActive }) {
       </div>
       <div className="ret-shop-balance">
         <div><small>지금 쓸 수 있는 복지포인트</small><b>🎁 {wp.toLocaleString()}P</b></div>
-        <div className="ret-shop-balance-r"><span>적립 {_retWpEarnedTotal(email).toLocaleString()}P · 사용 {_retWpSpentTotal(email).toLocaleString()}P</span><span>보유 아이템 {Object.values(inv).reduce((n, x) => n + (Number(x) || 0), 0)}개</span><a href="#ret-how" onClick={e => { e.preventDefault(); try { document.querySelector(".ret-shop-how").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e2) {} }}>어떻게 쌓아요? ↓</a></div>
+        <div className="ret-shop-balance-r"><span>적립 {_retWpEarnedTotal(email).toLocaleString()}P · 사용 {_retWpSpentTotal(email).toLocaleString()}P</span><span>보유 아이템 {Object.values(inv).reduce((n, x) => n + (Number(x) || 0), 0)}개</span><a href="#ret-how" onClick={e => { e.preventDefault(); try { document.querySelector(".ret-shop-how").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e2) {} }}>어떻게 쌓나요? ↓</a></div>
       </div>
       {msg && <div className="ret-shop-msg">{msg}</div>}
       <RetCodeBox email={email} />
@@ -14248,7 +14248,7 @@ function ReportSurvey({ day, email, name }) {
   };
   return (
     <div className="air-survey">
-      <b>이 리포트, 어땠어요?</b>
+      <b>이 리포트, 어떠셨나요?</b>
       <div className="air-stars">{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" className={n <= rating ? "on" : ""} onClick={() => setRating(n)}>★</button>)}</div>
       <div className="air-chips">{["숫자가 와닿았어요", "습관 지적이 정확했어요", "다음 10일 과제가 좋았어요", "내 직종 조언이 유용했어요", "별로 안 맞았어요"].map(v => <button key={v} type="button" className={"filter-chip " + (useful === v ? "active" : "")} onClick={() => setUseful(v)}>{v}</button>)}</div>
       <input value={line} onChange={e => setLine(e.target.value)} placeholder="한마디 (선택)" />
@@ -14563,7 +14563,7 @@ function WbReviewCard({ card, mode, onGrade, mentorName }) {
       )}
       {revealed && (
         <div className="wb-grade">
-          <span>얼마나 떠올랐어요?</span>
+          <span>얼마나 떠올랐나요?</span>
           <button onClick={() => onGrade("again", { sentence: checked ? typed : "" })}>😵 몰랐어요</button>
           <button onClick={() => onGrade("hard", { sentence: checked ? typed : "" })}>🤔 가물가물</button>
           <button onClick={() => onGrade("good", { sentence: checked ? typed : "" })}>🙂 떠올랐어요</button>
@@ -14666,7 +14666,7 @@ function LibReviewInline({ s, myAnswer, savedNotes, myJournal }) {
           <>
             <textarea className="lib-review-input" rows={2} value={line} onChange={(e) => setLine(e.target.value)} placeholder={"예: " + (s.sampleAnswer ? String(s.sampleAnswer).slice(0, 60) + (String(s.sampleAnswer).length > 60 ? "…" : "") : s.word + " 를 넣어 한 줄")} />
             <div className="lib-review-btns">
-              <span className="lib-review-q">떠올리기 어땠어요?</span>
+              <span className="lib-review-q">떠올리기 어떠셨나요?</span>
               <button className="btn btn-ghost btn-mini" onClick={() => grade("again")}>몰랐음</button>
               <button className="btn btn-ghost btn-mini" onClick={() => grade("hard")}>가물가물</button>
               <button className="btn btn-primary btn-mini" disabled={line.trim() && !hasWord} title={line.trim() && !hasWord ? s.word + " 가 안 들어갔어요" : ""} onClick={() => grade("good")}>떠올림 · 저장</button>
@@ -16011,19 +16011,19 @@ const WP_DIAG = {
     { id: "stage", q: "지금 어디쯤이에요?", type: "single", opts: ["이직 고민을 시작했어요", "이미 지원하고 있어요", "면접을 앞뒀어요", "오퍼를 비교 중이에요", "사내 이동을 생각해요"] },
     { id: "direction", q: "가고 싶은 방향은요?", sub: "다 골라도 돼요", type: "multi", opts: ["외국계에서 외국계로", "국내 기업에서 외국계로", "본사·해외 포지션", "직무 전환", "연봉을 올리고 싶어요"] },
     { id: "block", q: "제일 막히는 건요?", type: "single", opts: ["영어 면접", "영문 이력서·링크드인", "레퍼런스·네트워킹", "연봉 협상", "내 강점을 한 줄로 못 말해요"] },
-    { id: "when", q: "언제까지 움직이고 싶어요?", type: "single", opts: ["1개월 안", "3개월 안", "6개월 이상", "아직 몰라요"] },
+    { id: "when", q: "언제까지 움직이고 싶으신가요?", type: "single", opts: ["1개월 안", "3개월 안", "6개월 이상", "아직 몰라요"] },
     { id: "note", q: "사수가 알아야 할 사정이 있으면 한 줄만요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 지금 회사에서 2년을 채우고 싶어요" },
   ],
   job: [
     { id: "kind", q: "요즘 일에서 제일 막히는 건요?", type: "single", opts: ["우선순위·업무량", "상사·본사의 기대치", "협업 (시차·비동기)", "성과를 인정받는 것", "내 역할이 불명확해요"] },
     { id: "who", q: "그 고민의 상대는 누구예요?", sub: "다 골라도 돼요", type: "multi", opts: ["한국 팀장", "외국인 상사", "본사·해외 동료", "클라이언트", "같은 팀 동료"] },
     { id: "tried", q: "지금까지 해본 건요?", sub: "다 골라도 돼요", type: "multi", opts: ["1:1을 요청했어요", "문서로 정리해 보냈어요", "그냥 버티고 있어요", "동료에게 물어봤어요", "아직 아무것도 안 했어요"] },
-    { id: "urgency", q: "얼마나 급해요?", sub: "1 천천히 · 5 이번 주 안에", type: "scale" },
+    { id: "urgency", q: "얼마나 급하신가요?", sub: "1 천천히 · 5 이번 주 안에", type: "scale" },
     { id: "note", q: "상황을 한 줄로 적어주면 더 정확해져요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 본사 PM이 일정을 자꾸 바꾸는데 팀장은 그냥 맞추래요" },
   ],
   work: [
     { id: "heavy", q: "요즘 제일 무거운 건요?", type: "single", opts: ["피드백 받을 때 위축돼요", "관계·소외감", "번아웃·과로", "리모트라 고립돼요", "평가·불안"] },
-    { id: "since", q: "얼마나 됐어요?", type: "single", opts: ["이번 주부터", "한 달쯤", "몇 달째예요"] },
+    { id: "since", q: "얼마나 되셨나요?", type: "single", opts: ["이번 주부터", "한 달쯤", "몇 달째예요"] },
     { id: "rest", q: "쉴 땐 주로 뭘 해요?", sub: "다 골라도 돼요", type: "multi", opts: ["운동", "친구·가족", "혼자 있기", "제대로 못 쉬어요"] },
     { id: "energy", q: "지금 에너지는요?", sub: "1 바닥 · 5 충분", type: "scale" },
     { id: "note", q: "한 줄만 더 들려주세요.", sub: "건너뛰어도 돼요", type: "text", ph: "예: 외국인 상사 피드백이 직설적이라 매번 위축돼요" },
@@ -16597,7 +16597,7 @@ function MyPage({ setActive, setViewingDay }) {
   const _tyGlow = _isDevNext() && (() => { try { const w = _tyWeek(0); return !!(w && w.due >= 3 && w.perfect); } catch (e) { return false; } })();
 
   const handleLogout = () => {
-    if (!confirm("로그아웃 하시겠어요?\n\n진도는 서버에 저장돼있어서 다음에 같은 이메일로 다시 들어오면 그대로 이어져요.")) return;
+    if (!confirm("로그아웃할까요?\n\n진도는 서버에 저장돼있어서 다음에 같은 이메일로 다시 들어오면 그대로 이어져요.")) return;
     // 사용자 + 일정·투어 진행상태 정리
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -17361,7 +17361,7 @@ function JournalEditor({ day }) {
         <textarea
           value={draft}
           onChange={e => setDraft(e.target.value)}
-          placeholder="오늘 단어, 어디서 쓸 수 있을 것 같아요? 한 줄로."
+          placeholder="오늘 단어, 어디서 쓸 수 있을 것 같나요? 한 줄로."
           style={{
             width: "100%", minHeight: 80, padding: "10px 12px",
             fontSize: _fs(13), fontFamily: "inherit",
@@ -18917,7 +18917,7 @@ function TrialDay7Survey({ email, onClose, onLater, preview }) {
       <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>7일 다 다니셨어요</div>
       <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px" }}>1분만요. 사수가 궁금한 게 있어요</div>
       <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>답하면 복지 포인트 100P를 드려요. 다음 사람을 위해 솔직하게요.</div>
-      {_tsvQ("1. 7일 다녀보니 어땠어요?")}
+      {_tsvQ("1. 7일 다녀보니 어떠셨나요?")}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
         {[[1, "별로"], [2, ""], [3, "보통"], [4, ""], [5, "최고"]].map(([n, t]) => (
           <button key={n} type="button" onClick={() => set("rating", n)} style={{ padding: "10px 0 7px", borderRadius: 10, border: "1.5px solid " + (a.rating === n ? _TSV.or : _TSV.line), background: a.rating === n ? _TSV.orSoft : _TSV.paper, color: a.rating === n ? _TSV.or : _TSV.ink, fontFamily: "inherit", cursor: "pointer" }}>
@@ -19101,7 +19101,7 @@ function TrialPaidReasonPopup({ email, info, onClose, preview, pulseKey, pulseDo
   return (
     <TsvShell title="DAY 8 · 정식 입사 첫날" right={pulseDone ? "+50P" : "1 / 2"} step={1} total={pulseDone ? 1 : 2}>
       <div style={{ fontSize: _fs(11), fontWeight: 800, color: _TSV.soft }}>수습 끝, 정식 입사를 축하해요</div>
-      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px", lineHeight: 1.35 }}>무엇이 결제를<br/>결심하게 했어요?</div>
+      <div style={{ fontSize: _fs(19), fontWeight: 900, color: _TSV.ink, margin: "3px 0 5px", lineHeight: 1.35 }}>무엇이 결제를<br/>결심하게 했나요?</div>
       <div style={{ fontSize: _fs(12), color: _TSV.mute, lineHeight: 1.55 }}>여러 개 골라도 돼요. 두 개 이상이면 제일 큰 이유 하나에 별을 눌러주세요.</div>
       {picked.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14 }}>
@@ -19270,7 +19270,7 @@ function SurveyModal({ email, onClose }) {
         </div>
         <div className="modal-doc-body">
           <p style={{ fontSize: _fs(14), lineHeight: 1.7, marginBottom: 20 }}>
-            첫 출근 어떠셨어요?<br/>
+            첫 출근 어떠셨나요?<br/>
             잠깐 알려주시면 정말 큰 도움이 돼요. 편하게 답해주세요.
           </p>
 
@@ -19291,7 +19291,7 @@ function SurveyModal({ email, onClose }) {
 
           {/* 기대 일치 */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: _fs(13), fontWeight: 700, marginBottom: 8 }}>기대한 거랑 비슷했어요?</div>
+            <div style={{ fontSize: _fs(13), fontWeight: 700, marginBottom: 8 }}>기대한 거랑 비슷했나요?</div>
             <div style={{ display: "grid", gap: 6 }}>
               {[
                 { key: "better",  label: "✨ 예상보다 좋았어요" },
@@ -19313,7 +19313,7 @@ function SurveyModal({ email, onClose }) {
           {/* 자유 입력: 느낌 */}
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontSize: _fs(13), fontWeight: 700, marginBottom: 8 }}>
-              실제 어떤 느낌이었어요? <span style={{ fontSize: _fs(11), color: "var(--ink-mute)", fontWeight: 400 }}>(선택)</span>
+              실제로는 어떤 느낌이었나요? <span style={{ fontSize: _fs(11), color: "var(--ink-mute)", fontWeight: 400 }}>(선택)</span>
             </div>
             <textarea value={feeling} onChange={e => setFeeling(e.target.value)}
               placeholder="예: 사수 피드백이 따뜻해서 좋았어요 / 영작이 어려웠어요 / 시간 짧아 좋아요"
@@ -20627,7 +20627,7 @@ function WrapupScreen({ today, onDone }) {
 
       <div style={box}>
         <div style={head}>실전 체크</div>
-        <div style={{ fontSize: _fs(13), color: "var(--ink)", marginBottom: 8 }}>오늘 표현 <b>{today.word}</b>, 회사에서 쓸 자리가 있었어요?</div>
+        <div style={{ fontSize: _fs(13), color: "var(--ink)", marginBottom: 8 }}>오늘 표현 <b>{today.word}</b>, 회사에서 쓸 자리가 있었나요?</div>
         <div style={{ display: "flex", gap: 8 }}>
           <button className={"btn " + (used === "1" ? "btn-primary" : "btn-ghost")} style={{ fontSize: _fs(12), padding: "6px 14px" }} onClick={() => mark("1")}>네, 써봤어요</button>
           <button className={"btn " + (used === "0" ? "btn-primary" : "btn-ghost")} style={{ fontSize: _fs(12), padding: "6px 14px" }} onClick={() => mark("0")}>아직이요</button>
@@ -20745,7 +20745,7 @@ function JournalActivity({ today, item, onClose, onComplete }) {
     <ActivityShell title="MY SITUATION · 내 시추에이션 + 퇴근" onClose={onClose}>
       <span className="label-doc label-orange">▶ 17:00 · 오늘의 한 줄</span>
       <div style={{ marginTop: 10, fontSize: _fs(13), color: "var(--ink-soft)", lineHeight: 1.6 }}>
-        오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b>, 진짜 어디서 쓸 수 있을 것 같아요? 한 줄만.
+        오늘 단어 <b style={{ background: "var(--highlight)", padding: "1px 6px" }}>{today.word}</b>, 진짜 어디서 쓸 수 있을 것 같나요? 한 줄만.
         <span style={{ display: "block", marginTop: 6, fontSize: _fs(11.5), color: "var(--ink-mute)" }}>
           📒 작성한 내 시추에이션은 <b>업무노트 → 해당 날짜 카드</b>에서 다시 볼 수 있어요.
         </span>
@@ -23486,7 +23486,7 @@ function PPWord({ kind, evalDay, onNext, onClose }) {
   const LBL = ["", "별로예요", "그저 그래요", "괜찮아요", "좋아요", "최고예요"];
   return (
     <PPShell onClose={onClose}>
-      <div className="hd"><span className="eb">{step} · 사수에게 한마디</span><h2>{days}일, <em>어땠어요?</em></h2><p className="lede">직접 써서 보내는 칸이에요. 사수가 진급 리포트에 답장을 달아요.</p></div>
+      <div className="hd"><span className="eb">{step} · 사수에게 한마디</span><h2>{days}일, <em>어떠셨나요?</em></h2><p className="lede">직접 써서 보내는 칸이에요. 사수가 진급 리포트에 답장을 달아요.</p></div>
       <div className="bd">
         <div className="cap">받는 사람 · {mentor} <span style={{ color: "var(--mute)" }}>사수 · "편하게 써요. 짧아도 다 읽어요."</span></div>
         <div className="box">
@@ -25391,7 +25391,7 @@ function App() {
               <p style={{ fontSize: _fs(13.5), color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 18 }}>
                 바쁘신 와중에 1일1비 체험에 함께해주셔서 정말 감사해요.<br/>
                 지금까지의 학습 기록은 그대로 남아있어요.<br/>
-                정식 멤버십으로 이어서 출근하시겠어요?
+                정식 멤버십으로 이어서 출근해볼까요?
               </p>
               <div style={{
                 background: "var(--paper-warm)", border: "1px dashed var(--line)",
