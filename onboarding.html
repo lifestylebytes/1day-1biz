@@ -3239,7 +3239,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
       </div>
       {/* ★ 2026-11-23: 어디서 알게 됐는지 (한 번 탭). users.preferences.found_via 에 저장 */}
       <div className="form-row">
-        <label>1일1비를 어디서 알게 되셨어요? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-mute)", letterSpacing: 0 }}>(하나만 눌러주세요)</span></label>
+        <label>1일1비를 어디서 알게 되셨나요? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-mute)", letterSpacing: 0 }}>(하나만 눌러주세요)</span></label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
           {["인스타그램", "유튜브", "스레드", "유비챌", "지인 추천", "검색", "기타"].map(o => (
             <button key={o} type="button" onClick={() => setFoundVia(o)}
