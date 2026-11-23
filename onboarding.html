@@ -1541,7 +1541,7 @@ function WhyMock({ kind }) {
       <div className="eyebrow">하루 5분 · 혼자 · 매일</div>
       <h1 style={{ lineHeight: 1.25 }}>영어로 일은 하는데,<br/>늘 <em>쓰던 표현만</em> 나와요</h1>
       <p className="lead" style={{ marginBottom: 12 }}>
-        그 상황에서 원어민이 실제로 쓰는 한마디를 <strong>매일 아침 카톡으로</strong> 하나씩 보내드려요.<br/>
+        그 상황에서 원어민이 실제로 쓰는 한마디를 <strong>매일 아침 카톡으로</strong> 하나씩 보내드려요. <span style={{ fontSize: "0.85em", color: "var(--ink-mute)" }}>(가입할 때 휴대폰 번호를 적으면 와요)</span><br/>
         그 자리에서 한 번 써보면 <strong>내 비즈니스 어휘 사전</strong>에 한 칸이 채워져요.
       </p>
       {/* ★ 인스타 등에서 들어온 첫 화면: 무료 체험이 1순위, 바로 결제는 플랜으로 */}
@@ -1957,6 +1957,11 @@ function WhyMock({ kind }) {
           ))}
         </div>
       </div>
+      {/* ★ 2026-11-23: 카톡 알림이 자동으로 오는 줄 알고 아무것도 못 받은 분이 있었다. 번호를 적어야 온다는 걸 분명히 */}
+      <div style={{ marginTop: 12, background: "#FFF3D6", border: "1.5px solid #E0C070", borderRadius: 10, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.6, color: "var(--ink)" }}>
+        <b>📌 카톡 알림은 자동으로 오지 않아요.</b> 가입할 때 <b>휴대폰 번호를 적고 "카톡으로 받기"에 체크</b>해야 와요.
+        가입할 때 놓치셨다면 앱의 <b>사원증 → 설정 → 카톡 출근 알림</b>에서 번호와 시간을 넣으면 다음 날부터 와요.
+      </div>
 
       <Divider />
 
@@ -2282,7 +2287,7 @@ function WhyMock({ kind }) {
           ["결제 기간이 끝나면 기록은 사라지나요?", <>바로 사라지지 않아요.<br/><br/><b>· 2개월 동안</b> 표현 노트와 진도를 보관해요.<br/><b>· 그 안에 다시 결제하면</b> 하던 Day부터 이어져요.<br/><b>· 2개월이 지나면</b> 기록은 삭제돼요.</>],
           ["누구한테 잘 맞나요?", <>먼저 솔직하게 말씀드릴게요.<br/><br/><b>· 맞지 않는 분</b>: 토익 / 오픽 점수가 목표인 분이요. 시험 표현이 아니라 외국계 사무실에서 실제로 오가는 말을 모았거든요.<br/><b>· 잘 맞는 분</b>: 슬랙 / 메일 / 회의에서 영어를 이미 쓰고 계신 분이요. 내일 회의에서 바로 쓸 한 문장을 매일 하나씩 가져가요.</>],
           ["휴대폰으로도 할 수 있나요?", <>네, 가입부터 매일 출근까지 전부 폰에서 돼요.<br/><br/><b>· 앱 설치는 없어요.</b> 폰 브라우저에서 '홈 화면에 추가'를 누르면 앱처럼 열려요.<br/><b>· 컴퓨터로 하던 진도</b>도 그대로 이어져요.</>],
-          ["매일 알림이 오나요?", <>네, 카톡 출근 알림을 켜면 와요.<br/><br/><b>· 내가 정한 시각</b>에 오늘의 표현이 카톡으로 와요. 앱을 안 열어도 돼요.<br/><b>· 시간 변경 / 끄기</b>는 사원증 → 설정에서 언제든 할 수 있어요.<br/><b>· 1일1비 공지방(카톡)</b>도 같은 곳에서 들어가요.</>],
+          ["매일 알림이 오나요?", <>네, 카톡 출근 알림을 <b>직접 켜야</b> 와요. 자동으로 오지 않아요.<br/><br/><b>· 켜는 방법</b>: 가입할 때 휴대폰 번호를 적고 체크하거나, 가입 후 사원증 → 설정 → 카톡 출근 알림에서 번호와 시간을 넣어요.<br/><b>· 내가 정한 시각</b>에 오늘의 표현이 카톡으로 와요. 앱을 안 열어도 돼요.<br/><b>· 시간 변경 / 끄기</b>는 사원증 → 설정에서 언제든 할 수 있어요.<br/><b>· 1일1비 공지방(카톡)</b>도 같은 곳에서 들어가요.</>],
         ].map(q => (
           <details key={q[0]} style={{ background: "var(--paper-warm)", border: "1px solid var(--line)", borderRadius: 10, padding: "0" }}>
             <summary style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", padding: "12px 14px", cursor: "pointer", listStyle: "none" }}>Q. {q[0]}</summary>
@@ -3210,13 +3215,18 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
             </span>
           </span>
         </label>
+        {!kakaoOptIn && (
+          <div style={{ marginTop: 8, background: "#FAEBE6", border: "1px solid #E7B9A6", borderRadius: 8, padding: "8px 10px", fontSize: 11.5, fontWeight: 700, color: "#993C1D", lineHeight: 1.55 }}>
+            체크를 풀면 매일 아침 카톡 알림이 오지 않아요. 나중에 사원증 → 설정 → 카톡 출근 알림에서 켤 수 있어요.
+          </div>
+        )}
         {kakaoOptIn && (
           <img src="img/kakao-alimtalk.png" alt="실제 카톡 출근 알림 예시: 오늘 상황, 오늘 표현, 학습 Day, 연속 출근, 학습하러 가기 버튼" loading="lazy"
                style={{ display: "block", width: "100%", maxWidth: 230, marginTop: 8, borderRadius: 12, border: "1px solid var(--line)" }} />
         )}
         {kakaoOptIn && (
           <div style={{ marginTop: 9 }}>
-            <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 카톡 받을 번호</span></label>
+            <label>휴대폰 번호 <span style={{ fontSize: 11, fontWeight: 800, color: "var(--accent)", letterSpacing: 0 }}>· 이 번호로 카톡이 가요 (안 적으면 안 와요)</span></label>
             <input type="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010-0000-0000" />
             {phone && !phoneOk && (
               <div style={{ fontSize: 11, color: "#B8431A", marginTop: 4, fontWeight: 600 }}>휴대폰 번호를 다시 확인해주세요 (숫자 10~11자리).</div>
