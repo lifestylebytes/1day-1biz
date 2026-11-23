@@ -461,6 +461,7 @@ function OnboardingApp() {
   const [name, setName] = useState(matchedInvite ? matchedInvite.name : "");
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
+  const [foundVia, setFoundVia] = useState("");   // ★ 2026-11-23: 유입 경로 (어디서 알게 됐는지). 콘텐츠 효과 측정용
   const [signupPw, setSignupPw] = useState("");  // 가입 시 비밀번호 (선택)
   // ★ 2026-09-13: 카톡 출근 알림을 기본값으로. 번호는 선택이고, 적으면 매일 09:00 알림이 켜진다.
   const [phone, setPhone] = useState("");
@@ -624,7 +625,7 @@ function OnboardingApp() {
       totalSessions: 1,
       totalSessionMs: 0,
       // settings
-      preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null },
+      preferences: { notifications: true, timezone: "Asia/Seoul", signup_code: (inviteCode || "").trim().toUpperCase() || null, found_via: foundVia || null },
       phone: kakaoOptIn ? ((phone || "").trim() || null) : null,   // ★ 2026-10-30: 리마인더 끈 사람 번호는 저장 안 함
       // 운영 메타
       onboardingMotivation: motivation.trim(),
@@ -769,6 +770,7 @@ function OnboardingApp() {
           phone={phone} setPhone={setPhone}
           kakaoOptIn={kakaoOptIn} setKakaoOptIn={setKakaoOptIn}
           motivation={motivation} setMotivation={setMotivation}
+          foundVia={foundVia} setFoundVia={setFoundVia}
           inviteCode={inviteCode} setInviteCode={setInviteCode}
           devMode={devMode} setDevMode={setDevMode}
           devCode={devCode} setDevCode={setDevCode}
@@ -3048,7 +3050,7 @@ function SignupVerifyScreen({ email, password, onVerified, onBack, stageIdx, tot
 // ============================================================
 // 1. Application Form
 // ============================================================
-function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onDevStart, onDevPreview, onBack, submitting, submitError, stageIdx, totalStages }) {
+function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignupPw, phone, setPhone, kakaoOptIn, setKakaoOptIn, motivation, setMotivation, foundVia, setFoundVia, inviteCode, setInviteCode, devMode, setDevMode, devCode, setDevCode, isDevValid, onSubmit, onDevStart, onDevPreview, onBack, submitting, submitError, stageIdx, totalStages }) {
   // 법적 동의 상태 (만 14세 + 약관 + 개인정보처리방침)
   const [agreeAge, setAgreeAge] = React.useState(false);
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -3077,7 +3079,7 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
   };
   // ★ 2026-10-30: 휴대폰 번호는 카톡 리마인더를 켠 사람만 (최소수집). 끄면 번호칸이 사라지고 필수도 아님
   const phoneOk = !kakaoOptIn || /^01\d{8,9}$/.test(String(phone || "").replace(/\D/g, ""));
-  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && phoneOk && motivation.trim().length >= 2;
+  const valid = name.trim().length >= 2 && /\S+@\S+\.\S+/.test(email) && inviteCode.trim().length > 0 && allAgreed && pwOk && phoneOk && motivation.trim().length >= 2 && !!foundVia;
   return (
     <div className="card">
       <div className="stamp">DRAFT</div>
@@ -3234,6 +3236,18 @@ function ApplicationScreen({ name, setName, email, setEmail, signupPw, setSignup
             <div style={{ fontSize: 10.5, color: "var(--ink-mute)", marginTop: 4 }}>리마인더 발송에만 쓰고, 알림을 끄면 지워요.</div>
           </div>
         )}
+      </div>
+      {/* ★ 2026-11-23: 어디서 알게 됐는지 (한 번 탭). users.preferences.found_via 에 저장 */}
+      <div className="form-row">
+        <label>1일1비를 어디서 알게 되셨어요? <span style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-mute)", letterSpacing: 0 }}>(하나만 눌러주세요)</span></label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
+          {["인스타그램", "유튜브", "스레드", "유비챌", "지인 추천", "검색", "기타"].map(o => (
+            <button key={o} type="button" onClick={() => setFoundVia(o)}
+              style={{ padding: "7px 12px", fontSize: 12.5, fontWeight: 700, borderRadius: 999, cursor: "pointer", fontFamily: "inherit",
+                       border: "1.5px solid " + (foundVia === o ? "var(--accent)" : "var(--line)"),
+                       background: foundVia === o ? "var(--accent)" : "transparent", color: foundVia === o ? "#fff" : "var(--ink)" }}>{o}</button>
+          ))}
+        </div>
       </div>
       <div className="form-row">
         <label>지원 동기 (한 줄)</label>
