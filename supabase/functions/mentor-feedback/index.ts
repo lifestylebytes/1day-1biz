@@ -114,6 +114,8 @@ Deno.serve(async (req) => {
   const sample     = String(b?.sampleAnswer || "").slice(0, 300);
   const koSentence = String(b?.koSentence || "").slice(0, 300).trim();
   const promptKo   = String(b?.promptKo || "").slice(0, 300).trim();
+  // ★ 2026-11-24: 회원이 '내 상황으로 바꾸기' 로 직접 적은 한국어 의도면 true (koSentence = 회원 문장)
+  const ownSituation = !!b?.ownSituation;
   const mentor     = String(b?.mentorName || "사수").slice(0, 20);
   const mode       = String(b?.mode || "").trim();
   const email      = String(b?.email || "").slice(0, 120).trim().toLowerCase();
@@ -408,8 +410,9 @@ Deno.serve(async (req) => {
     `핵심 원칙: 실제로 고칠 게 있을 때만 고친다. 신입 문장이 이미 자연스러운 네이티브 문장이면 corrected는 제출 문장을 "글자 하나도 바꾸지 말고 그대로" 넣고, segments는 전부 keep 한 덩어리로, grammar는 "문법은 정확해요"로 시작해. 대신 nuance나 vocab에서 "오 이건 몰랐는데" 할 팁 하나를 줘. 억지로 다른 버전을 만들어내는 것 금지(사소한 취향 차이로 바꾸지 마).`,
     `일관성 원칙: 한 번 추천한 문장을 신입이 받아들여 다시 제출하면, 그 문장을 다시 다른 버전으로 되돌리지 마라. 추천이 왔다갔다 하면 신뢰를 잃는다.`,
     prevCorrected ? `★ 직전에 네가 추천했던 문장: "${prevCorrected}". 신입이 이 추천을 그대로(또는 거의 그대로) 반영해 제출했다면 절대 예전 문장이나 다른 변형으로 바꾸지 말고, corrected에 제출 문장을 그대로 두고 칭찬해.` : ``,
-    koSentence ? `★ 가장 중요: 이번 미션의 의도(한국어 뜻)는 "${koSentence}" 이다. corrected는 반드시 이 한국어 뜻 "전체"를 자연스러운 영어로 옮긴 문장이어야 한다(오늘 단어 살려서). 신입 문장을 이 의도와 비교해서 채점해.` : ``,
-    koSentence ? `의도와 비교 규칙: (a) 신입이 딴 얘기를 썼거나 단어만 끼워넣었으면 grammar에서 "의도한 뜻과 달라요"라고 분명히 짚고 ok=false. (b) 의도의 일부만 담기고 핵심 내용이 빠졌으면(예: "주간으로 진행 상황 공유" 같은 부분이 없으면) nuance에서 "빠진 내용: ~"이라고 알려주고, corrected에는 빠진 내용까지 채워 넣어. (c) 오늘 단어가 들어갔다고 의미가 부족한데 통과시키지 마.` : ``,
+    `★ 내용 보존 원칙 (가장 중요, 2026-11-24): corrected는 "신입이 쓴 문장을 다듬은 것"이어야 한다. 신입이 적은 업무, 사람, 숫자, 일정, 상황은 그대로 두고 문법, 어휘, 어순, 톤만 최소로 고쳐라. 모범답안이나 미션 예시의 내용(예시 속 업무, 이름, 숫자)으로 바꿔 끼우는 것은 절대 금지. 신입 문장에 있던 내용을 빼거나 없던 내용을 지어서 붙이지 마라.`,
+    (koSentence && ownSituation) ? `★ 신입이 이번엔 예시 대신 "자기 상황"을 한국어로 직접 적었다: "${koSentence}". 이 한국어 뜻이 신입이 말하고 싶은 의도다. corrected는 이 의도를 오늘 단어("${word}")를 살려 자연스러운 영어로 옮긴 문장이되, 신입이 쓴 영어 문장을 바탕으로 고쳐라. 신입 영어 문장이 이 의도와 다르거나 일부가 빠졌으면 nuance에서 "적은 뜻과 비교하면 ~가 빠졌어요"처럼 짚고 corrected에 채워 넣어. 미션 예시 상황과 다른 것은 감점 사유가 아니다.` : ``,
+    (koSentence && !ownSituation) ? `참고: 이번 미션 예시의 의도(한국어 뜻)는 "${koSentence}" 이다. 신입이 이 예시 상황대로 썼다면 의도와 비교해 빠진 부분을 nuance에서 짚고 corrected에 채워 넣어. 하지만 신입이 오늘 단어를 살려 "자기 실제 상황"을 썼다면(예시와 업무나 내용이 달라도 문장 자체가 말이 되면) 그건 틀린 게 아니다. 그때는 예시 뜻으로 덮어쓰지 말고 신입 내용 그대로 다듬고, ok는 문장이 자연스러우면 true. 단어만 억지로 끼워 넣어 뜻이 안 통할 때만 grammar에서 "단어가 문장 안에서 어색해요"라고 짚어.` : ``,
     promptKo ? `미션 안내(참고): ${promptKo}` : ``,
     `아래 필드를 채워. corrected와 segments의 text만 영어, 나머지 설명은 한국어로, 짧고 명확하게(각 1~2문장).`,
     `1) corrected: 신입 문장을 네이티브 동료가 쓸 가장 자연스러운 "한 문장"으로 다시 쓴 영어 문장. 오늘 단어("${word}")는 반드시 살려. 영어 문장 하나만, 앞뒤 설명이나 따옴표 없이.`,
@@ -424,34 +427,45 @@ Deno.serve(async (req) => {
     `언어 규칙: 설명 필드(grammar, vocab.reason, nuance, vsSample, praise)는 전부 한국어로 써. 영어 문장으로 설명하지 마. 영어는 corrected, segments의 text, vocab의 to/from/similar 표현에만 쓴다.`,
     `기호 규칙: 어떤 필드에도 em-dash(U+2014)나 en-dash(U+2013) 문자를 절대 쓰지 마. 대신 쉼표나 콜론으로. 비난조 금지. 친근한 존댓말 사수 말투("~네요","~해봐요").`,
     `오늘의 학습 단어: "${word}" (뜻: ${meaning}). 상황: ${scene}`,
-    sample ? `참고용 모범답안: "${sample}"` : ``,
+    sample ? `참고용 모범답안(내용을 베끼지 말 것, 표현 감각만 참고): "${sample}"` : ``,
     `반드시 아래 JSON 형식으로만: {"corrected":"...","segments":[{"text":"...","type":"keep|removed|added","cat":"grammar|vocab|nuance|tone"}],"grammar":"...","vocab":{"from":"...","to":"...","reason":"...","similar":["...","..."]},"nuance":"...","vsSample":"...","praise":"...","ok":true}`,
     `ok는 문장이 단어를 적절히 살리고 톤이 맞으면 true, 크게 어긋나면 false. (ok와 무관하게 corrected에는 항상 더 나은 버전을 담아.)`,
   ].join("\n");
 
   try {
-    const r = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: `신입이 제출한 문장: "${sentence}"` },
-        ],
-        temperature: 0.25,   // 재제출 시 답이 흔들리지 않게 (왔다갔다 방지)
-        max_tokens: 700,
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (!r.ok) {
-      const t = await r.text();
-      return json({ ok: false, error: "openai_" + r.status, detail: t.slice(0, 200) }, 200);
+    // ★ 2026-11-24 내용 보존 가드: 신입 문장의 핵심 단어가 corrected 에 너무 적게 남으면(예시 문장으로 갈아끼운 것) 한 번 더 요청한다.
+    const STOP = new Set(["the","and","for","with","this","that","have","has","are","was","were","will","would","can","could","our","your","you","we","i'm","it's","about","from","into","just","then","than","them","they","their","there","what","when","which","been","being","some","more","also","very","really"]);
+    const toks = (t: string) => String(t || "").toLowerCase().replace(/[^a-z0-9' ]/g, " ").split(/\s+/).filter(w => w.length > 2 && !STOP.has(w));
+    const keepRatio = (corr: string) => { const mine = toks(sentence).filter(w => w !== String(word).toLowerCase()); if (mine.length < 3) return 1; const got = new Set(toks(corr)); return mine.filter(w => got.has(w) || got.has(w.replace(/s$/, ""))).length / mine.length; };
+    const ask = async (extra: string) => {
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            { role: "system", content: system + extra },
+            { role: "user", content: `신입이 제출한 문장: "${sentence}"` },
+          ],
+          temperature: 0.25,   // 재제출 시 답이 흔들리지 않게 (왔다갔다 방지)
+          max_tokens: 700,
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (!r.ok) return { err: "openai_" + r.status, detail: (await r.text()).slice(0, 200) };
+      const data = await r.json();
+      let p: any = {};
+      try { p = JSON.parse(data?.choices?.[0]?.message?.content || "{}"); } catch { p = {}; }
+      return { p };
+    };
+    let res: any = await ask("");
+    if (res.err) return json({ ok: false, error: res.err, detail: res.detail }, 200);
+    let parsed: any = res.p || {};
+    let retried = false;
+    if (parsed.corrected && keepRatio(String(parsed.corrected)) < 0.4) {
+      const again: any = await ask(`\n★ 다시: 방금 네 corrected("${String(parsed.corrected).slice(0, 200)}")는 신입이 쓴 내용을 지우고 다른 내용으로 바꿨다. 신입 문장의 단어와 내용(업무, 대상, 숫자)을 최대한 그대로 두고 틀린 부분만 고쳐서 다시 답해.`);
+      if (!again.err && again.p && again.p.corrected && keepRatio(String(again.p.corrected)) >= keepRatio(String(parsed.corrected))) { parsed = again.p; retried = true; }
     }
-    const data = await r.json();
-    const raw = data?.choices?.[0]?.message?.content || "{}";
-    let parsed: any = {};
-    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
     const clean = (s: any) => String(s || "").replace(/[\u2014\u2013]/g, ", ").trim();
     const segments = Array.isArray(parsed.segments) ? parsed.segments.slice(0, 40).map((x: any) => ({
       text: clean(x?.text).slice(0, 200),
@@ -486,7 +500,7 @@ Deno.serve(async (req) => {
       if (!/^문법은 정확/.test(fb.grammar)) fb.grammar = "문법은 정확해요. 지난번 추천을 그대로 소화했네요, 이 문장 그대로 쓰면 돼요.";
     }
     if (!fb.corrected && !fb.grammar && !fb.nuance) return json({ ok: false, error: "empty" }, 200);
-    return json({ ok: true, fb, good: parsed.ok !== false });
+    return json({ ok: true, fb, good: parsed.ok !== false, retried });
   } catch (e: any) {
     return json({ ok: false, error: "exception", detail: String(e?.message || e).slice(0, 200) }, 200);
   }

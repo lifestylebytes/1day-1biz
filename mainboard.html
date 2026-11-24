@@ -17458,6 +17458,12 @@ function SceneModal({ scenario, onClose }) {
   // 이미 푼 day면 저장된 답변 + 피드백 복원
   const saved = useMemo(() => _loadCompletion(scenario.day), [scenario.day]);
   const [draft, setDraft] = useState(saved?.sentence || "");
+  // ★ 2026-11-24 개발 뷰: '내 상황으로 바꾸기'. 예시 상황 대신 내 상황을 한국어로 적으면 사수가 그 뜻에 맞춰 첨삭한다.
+  const _MYKO_KEY = "__OD_MYKO_" + scenario.day;
+  const [myKoOn, setMyKoOn] = useState(() => { try { return !!(saved?.myKo || localStorage.getItem(_MYKO_KEY)); } catch (e) { return !!saved?.myKo; } });
+  const [myKo, setMyKo] = useState(() => { try { return saved?.myKo || localStorage.getItem(_MYKO_KEY) || ""; } catch (e) { return saved?.myKo || ""; } });
+  React.useEffect(() => { try { if (myKoOn && myKo) localStorage.setItem(_MYKO_KEY, myKo); else localStorage.removeItem(_MYKO_KEY); } catch (e) {} }, [myKoOn, myKo]);
+  const _myKoUse = _isDevNext() && myKoOn && myKo.trim().length > 0;
   const [submitted, setSubmitted] = useState(!!saved);
   const [feedback, setFeedback] = useState(saved?.feedback || null);
   // "이미 알아요"로 들어온 경우: 설명 건너뛰고 작성란으로 (홈 단순 카드에서 세팅)
@@ -17504,8 +17510,9 @@ function SceneModal({ scenario, onClose }) {
         meaning: scenario.meaning,
         scene: scenario.scene,
         sampleAnswer: scenario.sampleAnswer,
-        koSentence: (scenario.task && scenario.task.koSentence) || "",
-        promptKo: (scenario.task && scenario.task.promptKo) || "",
+        koSentence: _myKoUse ? myKo.trim() : ((scenario.task && scenario.task.koSentence) || ""),
+        ownSituation: _myKoUse,
+        promptKo: _myKoUse ? "" : ((scenario.task && scenario.task.promptKo) || ""),
         mentorName: CHARACTERS.mentor.name,
         prevCorrected: _prevAiCorrected,
       }).then(r => {
@@ -17547,6 +17554,7 @@ function SceneModal({ scenario, onClose }) {
       word: scenario.word,
       sentence: draft,
       feedback: fb,
+      ...(_myKoUse ? { myKo: myKo.trim() } : {}),
       submittedAt: new Date().toISOString(),
     });
 
@@ -17758,6 +17766,44 @@ function SceneModal({ scenario, onClose }) {
             const toShort = sameAsSpeaker ? (/[가-힣]/.test(String(npc.name)) ? String(npc.name) : String(npc.name).split(" ")[0]) : toChar.name;
             const myInitial = (((window.__SIM && window.__SIM.USER && window.__SIM.USER.name) || "나").trim().slice(0, 1)) || "나";
             const composing = !submitted || editing;
+            // ★ 2026-11-24 개발 뷰: 메모(미션)를 입력창 위로 올리고 '내 상황으로 바꾸기' 를 붙였다.
+            const _memoNote = (
+                  <div className="scene-hint-note">
+                    <div className="scene-hint-eyebrow"><span>MEMO · {CHARACTERS.mentor.name} 사수</span><span className="scene-hint-chip"><b className="scene-hint-word">{scenario.word}</b> 꼭 넣기</span></div>
+                    <div className="scene-hint-main">{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</div>
+                    {_isDevNext() && myKoOn ? (
+                      <div style={{ display: "grid", gap: 6 }}>
+                        <textarea className="scene-input" rows={2} autoFocus value={myKo} onChange={e => setMyKo(e.target.value)}
+                          placeholder="내 상황을 한국어로 한 줄 적어주세요 (예: 이번 주엔 신규 앱 개발이랑 가격표 검토가 있어요)"
+                          style={{ minHeight: 0, fontSize: _fs(13), lineHeight: 1.6, padding: "8px 10px" }} />
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          <span style={{ fontSize: _fs(11.5), color: "var(--ink-mute)" }}>이 뜻을 <b>{scenario.word}</b> 넣어 영어로 쓰면, 사수가 이 뜻에 맞춰 첨삭해줘요.</span>
+                          <button className="btn btn-ghost btn-mini" style={{ marginLeft: "auto" }} onClick={() => { setMyKoOn(false); setMyKo(""); }}>예시 상황으로 돌아가기</button>
+                        </div>
+                      </div>
+                    ) : (scenario.task && scenario.task.koSentence && (
+                      _isDevNext()
+                        ? <div style={{ display: "flex", gap: 8, alignItems: "stretch", flexWrap: "wrap" }}>
+                            <div className="scene-hint-quote" style={{ flex: "1 1 220px" }}>{scenario.task.koSentence}</div>
+                            <button className="btn btn-ghost btn-mini" style={{ alignSelf: "center" }} onClick={() => setMyKoOn(true)}>✏️ 내 상황으로 바꾸기</button>
+                          </div>
+                        : <div className="scene-hint-quote">{scenario.task.koSentence}</div>))}
+                    <div className="scene-hint-actions">
+                      <span className="scene-hint-sub">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span>
+                      {(_isDevNext() && myKoOn) ? null : _RET_ON() ? (() => {
+                        const em = _retEmail(); const usedKey = "sample:" + scenario.day;
+                        const used = _retWpLedger(em).spend.some(x => x.item === usedKey);
+                        const bal = _retWpBalance(em);
+                        if (used) return <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기 (오늘 구매함)</button>;
+                        return <button className="btn btn-ghost btn-mini" disabled={bal < 100} title={bal < 100 ? "복지포인트가 모자라요" : ""} onClick={() => {
+                          if (!confirm("예문 채우기는 복지포인트 100P 예요. 쓸까요? (지금 " + bal.toLocaleString() + "P)")) return;
+                          if (!_retSpendWp(em, 100, usedKey, "예문 채우기 · Day " + scenario.day)) { alert("복지포인트가 모자라요"); return; }
+                          _retPing(); setDraft(scenario.sampleAnswer);
+                        }}>예문 채우기 · 🎁 100P{bal < 100 ? " (모자람)" : ""}</button>;
+                      })() : <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button>}
+                    </div>
+                  </div>
+            );
             return (
               <div className="scene-thread">
                 {/* 상대 메시지 */}
@@ -17770,6 +17816,7 @@ function SceneModal({ scenario, onClose }) {
                   </div>
                 </div>
 
+                {composing && _isDevNext() && _memoNote}
                 {/* 내 답장: 말풍선 바로 아래 입력창 + 전송. 힌트·뜻·표현은 아래 노란 메모로 분리 (2026-09-14 디자인 정리) */}
                 <div className="scene-reply-row">
                   <div className="scene-reply-col">
@@ -17797,27 +17844,7 @@ function SceneModal({ scenario, onClose }) {
                   </div>
                   <div className="scene-avatar scene-avatar-me">{myInitial}</div>
                 </div>
-                {composing && (
-                  <div className="scene-hint-note">
-                    <div className="scene-hint-eyebrow"><span>MEMO · {CHARACTERS.mentor.name} 사수</span><span className="scene-hint-chip"><b className="scene-hint-word">{scenario.word}</b> 꼭 넣기</span></div>
-                    <div className="scene-hint-main">{(scenario.task && scenario.task.promptKo) || ("상황에 맞게 " + toShort + "에게 한 줄로 답하세요.")}</div>
-                    {scenario.task && scenario.task.koSentence && <div className="scene-hint-quote">{scenario.task.koSentence}</div>}
-                    <div className="scene-hint-actions">
-                      <span className="scene-hint-sub">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span>
-                      {_RET_ON() ? (() => {
-                        const em = _retEmail(); const usedKey = "sample:" + scenario.day;
-                        const used = _retWpLedger(em).spend.some(x => x.item === usedKey);
-                        const bal = _retWpBalance(em);
-                        if (used) return <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기 (오늘 구매함)</button>;
-                        return <button className="btn btn-ghost btn-mini" disabled={bal < 100} title={bal < 100 ? "복지포인트가 모자라요" : ""} onClick={() => {
-                          if (!confirm("예문 채우기는 복지포인트 100P 예요. 쓸까요? (지금 " + bal.toLocaleString() + "P)")) return;
-                          if (!_retSpendWp(em, 100, usedKey, "예문 채우기 · Day " + scenario.day)) { alert("복지포인트가 모자라요"); return; }
-                          _retPing(); setDraft(scenario.sampleAnswer);
-                        }}>예문 채우기 · 🎁 100P{bal < 100 ? " (모자람)" : ""}</button>;
-                      })() : <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button>}
-                    </div>
-                  </div>
-                )}
+                {composing && !_isDevNext() && _memoNote}
                 {_RET_ON() && <RetPeekBox day={scenario.day} exclude={scenario.sampleAnswer} />}
               </div>
             );
