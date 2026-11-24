@@ -25233,15 +25233,64 @@ function App() {
   const _slPulse = usePopSlot("pulse", !!(_showSurvey && _surveyEligible && !_absSurveyToday && !_surveySrvDone && !_surveyDone && !_tpwShow));   // ★ 2026-10-30: Day 8 결제 이유 2장에 합쳐진 회원은 따로 안 띄움
 
   // ── 멤버십 만료 (퇴직 완료) 화면 ──
-  if (_membershipExpired) {
+  // ★ 2026-11-24 개발 뷰 미리보기: 운영자/Dev 가 ?trialend=1 로 체험 완료 화면을 본다.
+  const _trialEndPv = _isInternalUser && _isDevNext() && (() => { try { return new URLSearchParams(location.search).get('trialend') === '1'; } catch (e) { return false; } })();
+  if (_membershipExpired || _trialEndPv) {
     const endDateStr = _endsAt ? _endsAt.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
     // ★ 2026-10-12 체험 코드(UBC10-7DAYS 등) 회원: '휴직' 대신 '체험 완료' 화면. 결제하면 다음 07:00 시트 동기화가 member 로 바꿔 열린다.
-    const _isTrialUser = typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial');
+    const _isTrialUser = _trialEndPv || (typeof _localUserNow?.cohort === 'string' && _localUserNow.cohort.startsWith('trial'));
     if (_isTrialUser) {
       const _trialName = _localUserNow.cohort === 'trial-ubc10' ? '유비챌 10기 7일 체험' : _localUserNow.cohort === 'trial-ubc10g' ? '유비챌 10기 수료 1개월권' : _localUserNow.cohort === 'trial-7d' ? '7일 무료 체험' : '7일 체험';
       const _trialSpan = _localUserNow.cohort === 'trial-ubc10g' ? '지난 한 달처럼' : '지난 7일처럼';
       // ★ 2026-10-24 새 플랜(1회 결제) 상품 페이지로. 랜딩·48시간 배너와 같은 주소.
       const _upUrl = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_trial_end";
+      // ★ 2026-11-24 개발 뷰: 체험 기록(출근 일수 / 쌓은 표현 / 이어질 Day)을 보여주고 '돌아와요' 로 부른다.
+      //   이어질 Day = 마지막으로 끝낸 Day + 1 (돌아온 회원은 끝낸 Day 다음부터 이어 준다는 원칙).
+      const _tb = (() => {
+        if (!_isDevNext()) return null;
+        try {
+          const u = _localUserNow || {}; const days = new Set();
+          (u.scenariosCompleted || []).forEach(x => { if (x && x.day) days.add(Number(x.day)); });
+          Object.keys(u.dailyJournals || {}).forEach(k => { const n = Number(k); if (n) days.add(n); });
+          try { Object.keys(localStorage).filter(k => k.startsWith("__OD_TASKS_DAY_") && !k.endsWith("_ts")).forEach(k => {
+            const t = JSON.parse(localStorage.getItem(k) || "{}");
+            if (Object.entries(t).filter(([kk, v]) => v && !String(kk).startsWith("_")).length >= 4) { const n = Number(k.replace("__OD_TASKS_DAY_", "")); if (n) days.add(n); }
+          }); } catch (e) {}
+          const list = [...days].filter(d => d >= 1);
+          let att = 0; try { att = _retActivityDates(u.email || "").size; } catch (e) {}
+          const nm = String(u.name || "").trim();
+          return { words: list.length, att: Math.max(att, list.length), next: (list.length ? Math.max(...list) : 0) + 1, name: nm };
+        } catch (e) { return null; }
+      })();
+      if (_tb) return (
+        <div className="office" style={{ filter: "saturate(0.6)" }}>
+          <main className="desk">
+            <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(42,31,20,0.78)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+              <div style={{ background: "var(--paper)", border: "2px solid var(--ink)", padding: "32px 28px 24px", maxWidth: 460, width: "100%", textAlign: "center" }}>
+                <div style={{ display: "inline-block", fontSize: _fs(11), letterSpacing: "0.22em", fontWeight: 800, color: "var(--accent)", border: "2px solid var(--accent)", padding: "5px 14px", marginBottom: 16 }}>{_trialName} 완료</div>
+                <h1 style={{ fontSize: _fs(23), fontWeight: 900, lineHeight: 1.35, marginBottom: 10, color: "var(--ink)" }}>돌아와요,<br/><span style={{ color: "var(--accent)" }}>{_tb.name ? _tb.name + " 사원님!" : "사원님!"}</span></h1>
+                <p style={{ fontSize: _fs(13.5), color: "var(--ink-soft)", lineHeight: 1.7, marginBottom: 16 }}>체험은 끝났지만 기록은 그대로 있어요.<br/>{_trialSpan} 이렇게 쌓았어요.</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, border: "2px solid var(--ink)", marginBottom: 16 }}>
+                  {[["출근", _tb.att, "일"], ["쌓은 표현", _tb.words, "개"], ["다음 출근", "Day " + _tb.next, ""]].map((c, i) => (
+                    <div key={c[0]} style={{ padding: "12px 4px", borderLeft: i ? "2px solid var(--ink)" : "none", background: i === 2 ? "#FFF3EA" : "transparent" }}>
+                      <div style={{ fontSize: _fs(11), fontWeight: 700, color: "var(--ink-soft)", marginBottom: 4 }}>{c[0]}</div>
+                      <div style={{ fontSize: _fs(i === 2 ? 18 : 22), fontWeight: 900, color: i === 2 ? "var(--accent)" : "var(--ink)" }}>{c[1]}<span style={{ fontSize: _fs(12) }}>{c[2]}</span></div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", fontSize: _fs(12.5), color: "var(--ink)", lineHeight: 1.65, fontWeight: 500, marginBottom: 16, textAlign: "left" }}>
+                  💼 복직하면 단어, 노트, 출근 기록 그대로 <b>Day {_tb.next}부터</b> 이어져요. 1회 결제라 자동으로 빠져나가지 않아요. 꼭 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
+                </div>
+                <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "15px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", fontSize: _fs(14.5), fontWeight: 800, marginBottom: 8, boxSizing: "border-box" }}>복직하고 Day {_tb.next}부터 이어가기 →</a>
+                <div style={{ fontSize: _fs(11), color: "var(--ink-mute)", marginBottom: 12 }}>인턴 3개월 50,700원부터 고를 수 있어요.</div>
+                <PaidGraceButton email={_localUserNow?.email} />
+                <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 1:1 챗</a>
+                <div style={{ marginTop: 18, paddingTop: 12, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제하면 보통 1시간 안에 자동으로 열려요(밤 11시 넘어 결제하면 다음 날 아침). 새로고침해도 안 열리면 1:1 챗에 "결제했어요" 한 줄 보내주세요.</div>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
       return (
         <div className="office" style={{ filter: "saturate(0.6)" }}>
           <main className="desk">
