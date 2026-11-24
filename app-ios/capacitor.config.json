@@ -1,0 +1,17 @@
+{
+  "appId": "kr.co.youbuddy.onedayonebiz",
+  "appName": "1일1비",
+  "webDir": "www",
+  "server": {
+    "url": "https://1day-1biz.youbuddy.co.kr/index.html?app=ios",
+    "allowNavigation": [
+      "1day-1biz.youbuddy.co.kr"
+    ],
+    "errorPath": "offline.html"
+  },
+  "ios": {
+    "appendUserAgent": "OD1D1B-iOS",
+    "contentInset": "always",
+    "backgroundColor": "#F4EFE3"
+  }
+}
