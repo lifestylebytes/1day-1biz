@@ -13973,12 +13973,12 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done, scena
           {scenario.word
             ? <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <div className="scs-word">{scenario.word}</div>
-                {/* ★ 2026-11-24 단어 옆 한 덩어리 버튼: ▶ + 상황 보러가기 (+ NEW 는 11/29 까지) → 그 표현이 나오는 영화 장면 */}
+                {/* ★ 2026-11-24 단어 옆 작은 알약 버튼: ▶ + 상황 보러가기 (+ NEW 는 11/29 까지) → 그 표현이 나오는 영화 장면 */}
                 <a href={_ppUrl(scenario.word)} target="_blank" rel="noopener" title="이 표현이 나오는 영화 장면 보기" onClick={() => _ppClick(scenario.day, "home")}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", color: "var(--ink)", fontSize: _fs(13), fontWeight: 800, lineHeight: 1, padding: "5px 14px 5px 5px", border: "1.5px solid var(--ink)", borderRadius: 999, background: "var(--paper, #fff)", position: "relative", top: 3, whiteSpace: "nowrap" }}>
-                  <span style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--accent)", color: "#fff", fontSize: 11, paddingLeft: 2, boxSizing: "border-box", lineHeight: 1 }}>▶</span>
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", color: "var(--ink-soft)", fontSize: _fs(11.5), fontWeight: 700, lineHeight: 1, padding: "3px 10px 3px 3px", border: "1px solid var(--line)", borderRadius: 999, background: "transparent", position: "relative", top: 2, whiteSpace: "nowrap" }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--accent)", color: "#fff", fontSize: 8, paddingLeft: 1.5, boxSizing: "border-box", lineHeight: 1 }}>▶</span>
                   <span style={{ lineHeight: 1 }}>상황 보러가기</span>
-                  {Date.now() < Date.parse("2026-11-30T00:00:00+09:00") && <span style={{ background: "var(--accent)", color: "#fff", fontSize: 10, fontWeight: 900, letterSpacing: ".06em", padding: "3px 7px", borderRadius: 999, lineHeight: 1 }}>NEW</span>}
+                  {Date.now() < Date.parse("2026-11-30T00:00:00+09:00") && <span style={{ color: "var(--accent)", fontSize: 9, fontWeight: 900, letterSpacing: ".06em", lineHeight: 1 }}>NEW</span>}
                 </a>
               </div>
             : <div className="scs-word">{scenario.word}</div>}
