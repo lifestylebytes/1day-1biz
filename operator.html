@@ -3024,7 +3024,7 @@ function App() {
     if (editingId) {
       r = await window.OD.updateNotice(editingId, payload);
     } else {
-      r = await window.OD.sendNotice({ ...payload, fromName: "유버디 (Buddy)" });
+      r = await window.OD.sendNotice({ ...payload, fromName: "1일1비 기획팀" });
     }
     if (!r.ok) { showToast((editingId ? "수정" : "발송") + " 실패: " + (r.error || "알 수 없는 오류")); return; }
     showToast(editingId ? "공지 수정됨 ✓" : "모든 입사자에게 공지 발송됨 ✓");
@@ -3182,7 +3182,7 @@ function App() {
                   onClick={() => setPreviewNotice(n)}
                   style={{ position: 'relative', cursor: 'pointer', outline: editingId === n.id ? '2px solid #D8923A' : 'none' }}
                 >
-                  <div className="meta">[{n.type}]{n.popup ? ' · 🔔팝업' : ''}{n.images && n.images.length > 0 ? ` · 📷${n.images.length}` : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
+                  <div className="meta">[{(Array.isArray(n.target_emails) && n.target_emails.length > 0) ? '1:1 메시지' : ({ notice: '전체 공지', announcement: '전체 공지', event: '이벤트' }[n.type] || n.type)}]{n.popup ? ' · 🔔팝업' : ''}{n.images && n.images.length > 0 ? ` · 📷${n.images.length}` : ''} · {n.at ? new Date(n.at).toLocaleString('ko-KR') : ''}</div>
                   <strong>{n.title}</strong>
                   <div style={{ color: '#5C4A36', marginTop: 4, fontSize: 12, lineHeight: 1.5 }}>{(n.body || '').slice(0, 100)}{(n.body || '').length > 100 ? "…" : ""}</div>
                   <div style={{ marginTop: 6, fontSize: 11, color: '#6E8A5C', fontWeight: 700 }}>👁 확인 {reads}명</div>
@@ -4024,7 +4024,7 @@ function App() {
               <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', paddingBottom: 14, borderBottom: '1px dashed #D9C9A8' }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E8915C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🐥</div>
                 <div style={{ fontSize: 12, color: '#5C4A36' }}>
-                  <b>{previewNotice.from || '유버디 (Buddy)'}</b><br/>
+                  <b>{previewNotice.from || '1일1비 기획팀'}</b><br/>
                   <span style={{ color: '#8A7964' }}>
                     받는 사람: {Array.isArray(previewNotice.target_emails) && previewNotice.target_emails.length > 0
                       ? previewNotice.target_emails.join(', ')
