@@ -1074,6 +1074,7 @@ body::before {
 .scene-v2 .scene-hint-note { margin: 12px var(--sv-r) 0 var(--sv-in); border: 1px solid var(--line); border-bottom: none; border-radius: 12px 12px 0 0; background: var(--paper-warm); padding: 14px 16px 12px; gap: 8px; }
 .scene-v2 .scene-hint-main { font-size: min(14px * var(--fs, 1), 14px + var(--fsk, 0px)); }
 .scene-v2 .scene-hint-quote { border-left: none; border-radius: 8px; padding: 8px 12px; background: var(--paper); }
+.scene-v2 .scene-hint-actions { margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .scene-v2 .scene-hint-note + .scene-reply-row { margin-top: 0; }
 .scene-v2 .scene-hint-note + .scene-reply-row .scene-composer { border-radius: 0 0 12px 12px; }
 .scene-v2 .scene-reply-row { margin-top: 12px; }
@@ -17806,11 +17807,14 @@ function SceneModal({ scenario, onClose }) {
                       true
                         ? <div style={{ display: "flex", gap: 8, alignItems: "stretch", flexWrap: "wrap" }}>
                             <div className="scene-hint-quote" style={{ flex: "1 1 220px" }}>{scenario.task.koSentence}</div>
-                            <button className="btn btn-ghost btn-mini" style={{ alignSelf: "center" }} onClick={() => setMyKoOn(true)}>✏️ 내 상황으로 바꾸기</button>
+                            {!_isDevNext() && <button className="btn btn-ghost btn-mini" style={{ alignSelf: "center" }} onClick={() => setMyKoOn(true)}>✏️ 내 상황으로 바꾸기</button>}
                           </div>
                         : <div className="scene-hint-quote">{scenario.task.koSentence}</div>))}
                     <div className="scene-hint-actions">
                       <span className="scene-hint-sub">보내면 {CHARACTERS.mentor.name} 사수가 바로 첨삭해줘요</span>
+                      {/* 개발 뷰(scene-v2): 버튼 두 개를 메모 맨 아래 오른쪽에 나란히 둔다 */}
+                      <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginLeft: "auto" }}>
+                      {_isDevNext() && !myKoOn && scenario.task && scenario.task.koSentence ? <button className="btn btn-ghost btn-mini" onClick={() => setMyKoOn(true)}>✏️ 내 상황으로 바꾸기</button> : null}
                       {myKoOn ? null : _RET_ON() ? (() => {
                         const em = _retEmail(); const usedKey = "sample:" + scenario.day;
                         const used = _retWpLedger(em).spend.some(x => x.item === usedKey);
@@ -17822,6 +17826,7 @@ function SceneModal({ scenario, onClose }) {
                           _retPing(); setDraft(scenario.sampleAnswer);
                         }}>예문 채우기 · 🎁 100P{bal < 100 ? " (모자람)" : ""}</button>;
                       })() : <button className="btn btn-ghost btn-mini" onClick={() => setDraft(scenario.sampleAnswer)}>예문 채우기</button>}
+                      </span>
                     </div>
                   </div>
             );
