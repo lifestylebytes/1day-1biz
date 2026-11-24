@@ -25248,6 +25248,7 @@ function App() {
       //   이어질 Day = 마지막으로 끝낸 Day + 1 (돌아온 회원은 끝낸 Day 다음부터 이어 준다는 원칙).
       const _tb = (() => {
         if (!_isDevNext()) return null;
+        try { if (new URLSearchParams(location.search).get('old') === '1') return null; } catch (e) {}   // ?trialend=1&old=1 : 지금 회원 화면 비교용
         try {
           const u = _localUserNow || {}; const days = new Set();
           (u.scenariosCompleted || []).forEach(x => { if (x && x.day) days.add(Number(x.day)); });
@@ -25281,8 +25282,17 @@ function App() {
                 <div style={{ background: "var(--paper-warm)", border: "1px dashed var(--line)", padding: "12px 14px", fontSize: _fs(12.5), color: "var(--ink)", lineHeight: 1.65, fontWeight: 500, marginBottom: 16, textAlign: "left" }}>
                   💼 복직하면 단어, 노트, 출근 기록 그대로 <b>Day {_tb.next}부터</b> 이어져요. 1회 결제라 자동으로 빠져나가지 않아요. 꼭 지금 이 이메일({_localUserNow?.email})로 결제해 주세요.
                 </div>
-                <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "15px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", fontSize: _fs(14.5), fontWeight: 800, marginBottom: 8, boxSizing: "border-box" }}>복직하고 Day {_tb.next}부터 이어가기 →</a>
-                <div style={{ fontSize: _fs(11), color: "var(--ink-mute)", marginBottom: 12 }}>인턴 3개월 50,700원부터 고를 수 있어요.</div>
+                <div style={{ fontSize: _fs(12), fontWeight: 800, color: "var(--ink)", textAlign: "left", marginBottom: 6 }}>복직 플랜을 골라요 <span style={{ fontWeight: 600, color: "var(--ink-mute)" }}>(전부 1회 결제)</span></div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14, textAlign: "left" }}>
+                  {[["인턴 3개월", "월 16,900원", "총 50,700원"], ["정규직 6개월", "월 16,316원", "총 97,900원 / 달력"], ["⭐ 승진 패스트트랙", "월 15,633원", "총 182,900원 / 유비챌 + WorkBook", true], ["임원 트랙 12개월", "월 16,900원", "총 291,900원 / 유비챌 + WorkBook"]].map(p => (
+                    <a key={p[0]} href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", textDecoration: "none", background: p[3] ? "#FFF3EA" : "transparent", border: p[3] ? "2px solid var(--accent)" : "1.5px solid var(--ink)", padding: "8px 10px", lineHeight: 1.45 }}>
+                      <div style={{ fontSize: _fs(12), fontWeight: 800, color: "var(--ink)" }}>{p[0]}</div>
+                      <div style={{ fontSize: _fs(13) }}><b style={{ color: "var(--accent)" }}>{p[1]}</b></div>
+                      <div style={{ fontSize: _fs(10.5), color: "var(--ink-soft)" }}>{p[2]}</div>
+                    </a>
+                  ))}
+                </div>
+                <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "15px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", fontSize: _fs(14.5), fontWeight: 800, marginBottom: 12, boxSizing: "border-box" }}>복직하고 Day {_tb.next}부터 이어가기 →</a>
                 <PaidGraceButton email={_localUserNow?.email} />
                 <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 1:1 챗</a>
                 <div style={{ marginTop: 18, paddingTop: 12, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제하면 보통 1시간 안에 자동으로 열려요(밤 11시 넘어 결제하면 다음 날 아침). 새로고침해도 안 열리면 1:1 챗에 "결제했어요" 한 줄 보내주세요.</div>
