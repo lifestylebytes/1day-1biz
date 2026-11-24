@@ -6144,6 +6144,9 @@ const GIFT48_URL = "https://docurise.io/youbuddy/d/1day1biz-pay?utm_content=app_
 function _attCalLive() { return true; }
 // ★ 2026-10-22 출근 세팅 카드 라이브: true 면 회원에게도 첫 출근 가이드 6/7 · 출근 환경 세팅 팝업이 주황 카드 3장(카톡 알림 · 홈 화면 추가 단계 그림 · 브라우저 알림)으로. 되돌릴 땐 false (개발 뷰에서만)
 function _setupCardsLive() { return true; }
+// ★ 2026-11-24: PlayPhrase 에서 그 표현이 나오는 실제 영화/드라마 장면 검색 링크
+function _ppUrl(w) { return "https://www.playphrase.me/#/search?q=" + encodeURIComponent(String(w || "").trim()).replace(/%20/g, "+") + "&language=en"; }
+function _ppClick(day, where) { try { gtag("event", "playphrase_click", { day: day, where: where }); } catch (e) {} }
 function _isSetupCardsOn() { return _setupCardsLive() || _isDevNext(); }
 function _isAttCalOn() { return _attCalLive() || _isDevNext(); }
 function _odEvalBlocked(d, u) {
@@ -13967,7 +13970,14 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done, scena
         <div className="scene-card-tag">{scenario._tfInfo ? `오늘의 시추에이션 · ${scenario._tfInfo.name} DAY ${scenario._tfInfo.tfDay}/30` : `오늘의 시추에이션 · DAY ${scenario.day}`}</div>
         <div className="scene-card-body">
           <div className="scs-label">오늘의 표현</div>
-          <div className="scs-word">{scenario.word}</div>
+          {_isDevNext() && scenario.word
+            ? <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div className="scs-word">{scenario.word}</div>
+                {/* ★ 2026-11-24 개발 뷰: 단어 옆 플레이 버튼 → 그 표현이 나오는 영화 장면 */}
+                <a href={_ppUrl(scenario.word)} target="_blank" rel="noopener" title="이 표현이 나오는 영화 장면 보기" aria-label="영화 장면 보기" onClick={() => _ppClick(scenario.day, "home")}
+                  style={{ width: 38, height: 38, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--ink)", background: "var(--accent)", color: "#fff", fontSize: 15, textDecoration: "none", paddingLeft: 3, boxSizing: "border-box" }}>▶</a>
+              </div>
+            : <div className="scs-word">{scenario.word}</div>}
           {(!_isQuizLive() || !needCheckin)
             ? <div className="scs-mean">{scenario.meaning}</div>
             : <div className="scs-mean scs-mean-hidden">뜻은 출근하고 맞혀봐요 · 틀려도 바로 알려드려요</div>}
@@ -19405,15 +19415,10 @@ function CheckinActivity({ today, item, onClose, onComplete }) {
             {_isQuizLive()
               ? <div style={{ fontSize: _fs(13), color: "var(--ink-soft)", marginTop: 8, fontWeight: 700 }}>뜻은 아직 비밀. 아는 단어 같나요?</div>
               : <div style={{ fontSize: _fs(14), color: "var(--ink)", marginTop: 8, fontWeight: 700 }}>{today.meaning}</div>}
-            {/* ★ 2026-11-24 개발 뷰: 옆에 '영화 장면' 버튼. PlayPhrase 에서 그 표현이 나오는 실제 장면을 새 탭으로 연다 */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-              <button className="btn btn-soft" onClick={speak}>🔊 한 번 들어보기</button>
-              {_isDevNext() && today.word && (
-                <a className="btn btn-soft" href={"https://www.playphrase.me/#/search?q=" + encodeURIComponent(String(today.word).trim()).replace(/%20/g, "+") + "&language=en"}
-                  target="_blank" rel="noopener" style={{ textDecoration: "none" }}
-                  onClick={() => { try { gtag("event", "playphrase_click", { day: today.day }); } catch (e) {} }}>▶ 영화 장면 보기</a>
-              )}
-            </div>
+            {/* ★ 2026-11-24 개발 뷰: '한 번 들어보기' 대신 '👀 상황 보기'. PlayPhrase 에서 그 표현이 나오는 실제 장면을 새 탭으로 연다 */}
+            {_isDevNext() && today.word
+              ? <a className="btn btn-soft" href={_ppUrl(today.word)} target="_blank" rel="noopener" style={{ marginTop: 14, textDecoration: "none", display: "inline-flex" }} onClick={() => _ppClick(today.day, "checkin")}>👀 상황 보기</a>
+              : <button className="btn btn-soft" style={{ marginTop: 14 }} onClick={speak}>🔊 한 번 들어보기</button>}
           </div>
           <div style={{ fontSize: _fs(12.5), color: "var(--ink-soft)", marginTop: 14, lineHeight: 1.6 }}>
             {_isQuizLive() ? "먼저 뜻을 맞혀볼까요? 틀려도 괜찮아요, 바로 알려드려요." : "한 번 들어봤다면 다음, 진짜 외웠는지 가벼운 매칭 테스트 한 번."}
