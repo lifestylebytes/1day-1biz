@@ -17946,7 +17946,7 @@ function SceneModal({ scenario, onClose }) {
                                     <span style={{ fontSize: _fs(12.5), color: "var(--ink-soft)", lineHeight: 1.6 }}>{aiFb.grammar}</span>
                                   </div>
                                 )}
-                                {aiFb.vocab && (typeof aiFb.vocab === "object" ? (aiFb.vocab.to || aiFb.vocab.reason || (aiFb.vocab.similar && aiFb.vocab.similar.length)) : true) && (
+                                {aiFb.vocab && (typeof aiFb.vocab === "object" ? !!(aiFb.vocab.to || aiFb.vocab.reason || (aiFb.vocab.similar && aiFb.vocab.similar.length > 0)) : true) && (
                                   <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                                     <span style={{ flex: "0 0 auto", fontSize: _fs(10.5), fontWeight: 800, color: "#1E6FA8", background: "rgba(30,111,168,0.1)", padding: "2px 8px", borderRadius: 999, marginTop: 1 }}>📚 어휘</span>
                                     <div style={{ fontSize: _fs(12.5), color: "var(--ink-soft)", lineHeight: 1.6 }}>
