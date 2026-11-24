@@ -1551,8 +1551,14 @@ function WhyMock({ kind }) {
       {/* ★ 랜딩 순서 (2026-10-24 개인 작업본에서 옮김): 히어로 → 편지 → 1일1비 소개 → 후기 → 소개된 곳 → 써본 방법들 → 습관 구조(실제 화면·진급) → 망각곡선 → 폰·카톡 → 7일 무료 → 웰컴 키트 → 플랜 → 유비챌 → FAQ → 마지막 CTA */}
       {/* ── 1. 히어로 ── */}
       {/* ★ 광고(입사 시뮬레이션) message match: 클릭한 사람 머릿속 단어를 첫 줄에 */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, marginBottom: 12, letterSpacing: "-0.01em" }}>
-        👔 외국계 회사 출근 시뮬레이터
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)", borderRadius: 20, padding: "7px 14px", fontSize: 12.5, fontWeight: 800, letterSpacing: "-0.01em" }}>
+          👔 외국계 회사 출근 시뮬레이터
+        </div>
+        {/* ★ 2026-11-24: 회사 운영 D+N (오픈일 2026-05-20, 한국 날짜 기준으로 매일 하나씩 늘어난다) */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1.5px solid var(--ink)", color: "var(--ink)", borderRadius: 20, padding: "5.5px 12px", fontSize: 12.5, fontWeight: 800, letterSpacing: "-0.01em" }}>
+          🏢 회사 운영 D+{Math.max(1, Math.floor((Date.now() + 9 * 3600000) / 86400000) - Math.floor(Date.parse("2026-05-20T00:00:00Z") / 86400000))}
+        </div>
       </div>
       <div className="eyebrow">하루 5분 · 혼자 · 매일</div>
       {/* ★ 2026-11-24: 첫 화면 제목을 '입사 시뮬레이션' 컨셉으로 (버디님 요청). 예전 제목은 아래 한 줄로 내림 */}
