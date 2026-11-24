@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
   const nowIso = new Date().toISOString();
 
-  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = [], unmatched: any[] = []; let skipped = 0;
+  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = [], unmatched: any[] = [], refundedNoAcct: string[] = []; let skipped = 0;
   const sheetEmails = new Set(emails);
   const queue = emails.slice();
   while (queue.length) {
@@ -167,6 +167,9 @@ Deno.serve(async (req) => {
       const nm = r.name.replace(/\s+/g, "");
       const nameMatches = nm ? pool.filter((x: any) => String(x.name || "").replace(/\s+/g, "") === nm).map((x: any) => x.email) : [];
       // ★ 2026-10-13: 결제가 끝난 사람도 운영자 뷰에 보이도록 계정 없는 결제자로 모아 둔다 (전화번호 자동 연결은 결제 중인 사람만)
+      // ★ 2026-11-24: 마지막 결제 뒤에 '결제 취소'(환불/미사용 해지)가 찍힌 사람은 챙길 게 없으니 명단에서 뺀다.
+      //   (11/23 환불 4명이 '결제 중' 으로 계속 보였다)
+      if (r.cancelAfter) { refundedNoAcct.push(email); skipped++; continue; }
       const expired = wantIso < nowIso;
       if (expired || phoneMatches.length !== 1) {
         unmatched.push({ latpeed_email: email, name: r.name, phone: r.phone || null, first_paid_at: r.firstPaid, last_paid_at: r.lastPaid,
@@ -254,10 +257,11 @@ Deno.serve(async (req) => {
       const { data: openRows } = await sb.from("latpeed_unmatched").select("latpeed_email").is("resolved_at", null);
       const toResolve = (openRows || []).map((r: any) => String(r.latpeed_email)).filter((e) => userEmails.has(e.toLowerCase()) || !!alias[e.toLowerCase()]);
       if (toResolve.length) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).in("latpeed_email", toResolve);
+      if (refundedNoAcct.length) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).in("latpeed_email", refundedNoAcct).is("resolved_at", null);
     } catch (_e) { /* 표가 아직 없으면(SQL 미실행) 조용히 넘어간다 */ }
   }
   if (!dry && (applied.length || cancelled.length || ended.length)) {
     await sb.from("ops_log").insert({ email: "*", action: "sheet_sync", detail: { applied: applied.length, cancelled: cancelled.length, ended: ended.length, pending: pending.length, emails: applied.map(a => a.email).concat(cancelled.map(c => c.email), ended.map(e => e.email)) }, by_email: "apps-script" }).then(() => {}, () => {});
   }
-  return Response.json({ ok: true, dry, applied, cancelled, ended, autoAliased, pending, unmatched, unmatchedSaved, notInSheet, skipped });
+  return Response.json({ ok: true, dry, applied, cancelled, ended, autoAliased, pending, unmatched, refundedNoAcct, unmatchedSaved, notInSheet, skipped });
 });
