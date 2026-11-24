@@ -2615,6 +2615,7 @@ function App() {
   const [expiredOpen, setExpiredOpen] = useState(false);   // ★ 2026-10-24: 회원 표에서 만료·종료 펼침
   const [trashKey, setTrashKey] = useState(0);             // ★ 2026-10-24: 휴지통 다시 불러오기 신호
   const [memListOpen, setMemListOpen] = useState(null);
+  const [trialMore, setTrialMore] = useState(null);   // ★ 2026-11-24: 체험 카드 아래 '결제함 / 끝나고 미결제' 펼치기
   const [memSearch, setMemSearch] = useState('');       // ★ 2026-11-18: 이름/이메일로 어느 카드에 있는지 찾기     // ★ 2026-10-29: 현황 카드 클릭 → 명단 (카드 라벨)
   const deleteTestAcct = async (u) => {
     if (!window.OD || !window.OD.deleteTestUser) { alert('삭제 기능이 아직 없어요 (supabase-client.js 갱신 필요)'); return; }
@@ -3263,17 +3264,23 @@ function App() {
               // ★ 2026-10-24: 베타(파일럿)는 끝났다. 그 자리에 7일 무료 체험 중인 사람 (cohort trial*, 가입 7일 안)
               const trialing   = real.filter(u => typeof u.cohort === 'string' && u.cohort.startsWith('trial') && !isMember(u)
                                                 && u.signup_date && (new Date(u.signup_date).getTime() + 7 * 86400000) > now.getTime());
+              // ★ 2026-11-24: 7일 체험으로 들어온 사람 전체 (지금 체험 중 + 끝난 사람). 유비챌 수료 1개월권(trial-ubc10g)은 체험이 아니라 뺀다
+              const isTrialSignup = u => { const p = u.preferences || {}; return /^TRY/i.test(p.signup_code || '') || u.cohort === 'trial-7d' || p.prev_cohort === 'trial-7d'; };
+              const everTrial  = real.filter(isTrialSignup);
+              const trialPaid  = everTrial.filter(u => isMember(u));
+              const trialEnded = everTrial.filter(u => !isMember(u) && !trialing.includes(u));
               // ★ 2026-10-29: 카드를 누르면 아래에 그 명단이 펼쳐진다 (한 번 더 누르면 접힘)
               const groups = {
                 '🟢 정상 활성': activePaid, '🟡 취소 예정': canceling, '🔴 만료·종료': expired, '🧪 무료 체험 중': trialing, '⚠️ 만료일 없음': noEnds,
               };
-              const cell = (label, n, color) => {
+              const cell = (label, n, color, total, sub) => {
                 const on = memListOpen === label;
                 return (
                   <div onClick={() => setMemListOpen(on ? null : label)} title="눌러서 명단 보기"
                        style={{ flex: '1 1 110px', background: on ? '#FFF7EC' : '#fff', border: '1px solid ' + (on ? color : '#E8DFCB'), borderRadius: 8, padding: '12px 14px', cursor: 'pointer', userSelect: 'none' }}>
                     <div style={{ fontSize: 11, color: '#8A7964', fontWeight: 700, marginBottom: 4 }}>{label} <span style={{ fontWeight: 500, color: '#B8A88E' }}>{on ? '▾' : '▸'}</span></div>
-                    <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span></div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color }}>{n}{total != null && <span style={{ fontSize: 15, color: '#A8997F', fontWeight: 800 }}> / {total}</span>}<span style={{ fontSize: 12, color: '#A8997F', fontWeight: 700 }}>명</span></div>
+                    {sub && <div style={{ fontSize: 11, color: '#8A7964', marginTop: 3, fontWeight: 600 }}>{sub}</div>}
                   </div>
                 );
               };
@@ -3296,7 +3303,7 @@ function App() {
                     {cell('🟢 정상 활성', activePaid.length, '#2D6E3A')}
                     {cell('🟡 취소 예정', canceling.length, '#B8431A')}
                     {cell('🔴 만료·종료', expired.length, '#993C1D')}
-                    {cell('🧪 무료 체험 중', trialing.length, '#3D4DA8')}
+                    {cell('🧪 무료 체험 중', trialing.length, '#3D4DA8', everTrial.length, '누적 ' + everTrial.length + ' / 결제 ' + trialPaid.length + ' / 끝나고 미결제 ' + trialEnded.length)}
                     {noEnds.length > 0 && cell('⚠️ 만료일 없음', noEnds.length, '#8C6510')}
                   </div>
                   <div style={{ marginTop: 8 }}>
@@ -3342,6 +3349,39 @@ function App() {
                           })}
                         </tbody></table>
                       )}
+                      {memListOpen === '🧪 무료 체험 중' && (() => {
+                        const fmtDT2 = d => d ? new Date(d).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '-';
+                        const sets = { paid: ['💳 체험 후 결제', trialPaid], ended: ['⌛ 체험 끝, 미결제', trialEnded] };
+                        const rows = trialMore && sets[trialMore] ? [...sets[trialMore][1]].sort((a, b) => new Date(b.signup_date || 0) - new Date(a.signup_date || 0)) : null;
+                        return (
+                          <div style={{ marginTop: 10, borderTop: '1px dashed #E8DFCB', paddingTop: 8 }}>
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                              {Object.keys(sets).map(k => (
+                                <button key={k} onClick={() => setTrialMore(trialMore === k ? null : k)}
+                                  style={{ fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
+                                           border: '1px solid ' + (trialMore === k ? '#3D4DA8' : '#E8DFCB'), background: trialMore === k ? '#EEF0FA' : '#fff', color: '#2A1F14' }}>
+                                  {sets[k][0]} {sets[k][1].length}명 {trialMore === k ? '▾' : '▸'}
+                                </button>
+                              ))}
+                            </div>
+                            {rows && (rows.length === 0 ? <div style={{ fontSize: 12, color: '#8A7964', marginTop: 6 }}>없어요.</div> : (
+                              <table style={{ width: '100%', fontSize: 12.5, borderCollapse: 'collapse', marginTop: 6 }}><tbody>
+                                {rows.map(u => {
+                                  const tEnd = u.signup_date ? new Date(new Date(u.signup_date).getTime() + 7 * 86400000) : null;
+                                  return (
+                                    <tr key={'t' + u.email} style={{ borderBottom: '1px solid #F0E9DA' }}>
+                                      <td style={{ padding: '5px 4px', fontWeight: 700, whiteSpace: 'nowrap' }}>{u.name || '-'}</td>
+                                      <td style={{ padding: '5px 4px', color: '#8A7964', fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5 }}>{u.email}</td>
+                                      <td style={{ padding: '5px 4px', whiteSpace: 'nowrap' }}>가입 {fmtDT2(u.signup_date)}{trialMore === 'paid' ? (u.preferences && u.preferences.last_paid_at ? ' / 결제 ' + fmtDT2(u.preferences.last_paid_at) : '') : ' / 체험 종료 ' + fmtD(tEnd)}</td>
+                                      <td style={{ padding: '5px 4px', color: '#8A7964', whiteSpace: 'nowrap' }}>{u.last_active ? '접속 ' + fmtD(u.last_active) : ''}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody></table>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
