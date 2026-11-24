@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     (al || []).forEach((a: any) => { alias[String(a.latpeed_email).toLowerCase()] = String(a.app_email).toLowerCase(); }); }
   const nowIso = new Date().toISOString();
 
-  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = [], unmatched: any[] = [], refundedNoAcct: string[] = []; let skipped = 0;
+  const applied: any[] = [], cancelled: any[] = [], ended: any[] = [], pending: any[] = [], autoAliased: any[] = [], unmatched: any[] = [], refundedNoAcct: { email: string; at: string }[] = []; let skipped = 0;
   const sheetEmails = new Set(emails);
   const queue = emails.slice();
   while (queue.length) {
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       // ★ 2026-10-13: 결제가 끝난 사람도 운영자 뷰에 보이도록 계정 없는 결제자로 모아 둔다 (전화번호 자동 연결은 결제 중인 사람만)
       // ★ 2026-11-24: 마지막 결제 뒤에 '결제 취소'(환불/미사용 해지)가 찍힌 사람은 챙길 게 없으니 명단에서 뺀다.
       //   (11/23 환불 4명이 '결제 중' 으로 계속 보였다)
-      if (r.cancelAfter) { refundedNoAcct.push(email); skipped++; continue; }
+      if (r.cancelAfter) { refundedNoAcct.push({ email, at: r.cancelAfter }); skipped++; continue; }
       const expired = wantIso < nowIso;
       if (expired || phoneMatches.length !== 1) {
         unmatched.push({ latpeed_email: email, name: r.name, phone: r.phone || null, first_paid_at: r.firstPaid, last_paid_at: r.lastPaid,
@@ -257,7 +257,12 @@ Deno.serve(async (req) => {
       const { data: openRows } = await sb.from("latpeed_unmatched").select("latpeed_email").is("resolved_at", null);
       const toResolve = (openRows || []).map((r: any) => String(r.latpeed_email)).filter((e) => userEmails.has(e.toLowerCase()) || !!alias[e.toLowerCase()]);
       if (toResolve.length) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).in("latpeed_email", toResolve);
-      if (refundedNoAcct.length) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).in("latpeed_email", refundedNoAcct).is("resolved_at", null);
+      // ★ 2026-11-24: 사라지게 하지 않고 '확인 완료' 칸으로 접어 'MM/DD 환불 완료' 를 남긴다 (dismiss_note 칸이 없으면 예전처럼 해결 처리)
+      for (const x of refundedNoAcct) {
+        const k = new Date(new Date(x.at).getTime() + 9 * 3600000); const note = (k.getUTCMonth() + 1) + "/" + k.getUTCDate() + " 환불 완료";
+        const { error: de } = await sb.from("latpeed_unmatched").update({ dismissed_at: nowSeen, dismissed_by: "sheet-sync", dismiss_note: note }).eq("latpeed_email", x.email).is("dismissed_at", null);
+        if (de) await sb.from("latpeed_unmatched").update({ resolved_at: nowSeen }).eq("latpeed_email", x.email).is("resolved_at", null);
+      }
     } catch (_e) { /* 표가 아직 없으면(SQL 미실행) 조용히 넘어간다 */ }
   }
   if (!dry && (applied.length || cancelled.length || ended.length)) {

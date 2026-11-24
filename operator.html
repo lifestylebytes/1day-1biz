@@ -686,8 +686,15 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
   if (!err && rows.length === 0) return null;   // 아무도 없으면 칸을 안 띄운다
 
   const dismiss = async (r, flag) => {
+    // ★ 2026-11-24: 왜 접는지 같이 남긴다 (예: "11/23 환불 완료"). 날짜는 오늘로 미리 채운다.
+    let note = null;
+    if (flag) {
+      const t = new Date(); const md = (t.getMonth() + 1) + "/" + t.getDate();
+      note = prompt("접는 이유를 적어주세요 (예: " + md + " 환불 완료 / " + md + " 미사용 해지 / " + md + " 연락 완료)", md + " 환불 완료");
+      if (note === null) return;
+    }
     setBusy(true);
-    const res = await window.OD.dismissLatpeedUnmatched(opEmail, r.latpeed_email, flag);
+    const res = await window.OD.dismissLatpeedUnmatched(opEmail, r.latpeed_email, flag, note);
     setBusy(false);
     if (!res.ok) { flash("실패: " + (res.error || "?")); return; }
     flash(flag ? "접어 뒀어요" : "다시 펼쳤어요"); load();
@@ -775,7 +782,7 @@ function UnmatchedPayPanel({ supaUsers, onDone }) {
         <div style={{ marginTop: 10, fontSize: 12, color: '#8A7964' }}>
           <button className="btn btn-ghost btn-mini" onClick={() => setShowDismissed(!showDismissed)}>확인 완료 {dismissed.length}명 {showDismissed ? '숨기기' : '보기'}</button>
           {showDismissed && <div style={{ marginTop: 6, display: 'grid', gap: 4 }}>{dismissed.map(r => (
-            <div key={r.latpeed_email}>{r.name || '-'} <span style={{ color: '#A8997F' }}>{r.latpeed_email}</span> · {unmMd(r.dismissed_at)} 확인 <button className="btn btn-ghost btn-mini" onClick={() => dismiss(r, false)}>되돌리기</button></div>
+            <div key={r.latpeed_email}>{r.name || '-'} <span style={{ color: '#A8997F' }}>{r.latpeed_email}</span> · <b style={{ color: '#6B5B4A' }}>{r.dismiss_note || (unmMd(r.dismissed_at) + ' 확인')}</b> <button className="btn btn-ghost btn-mini" onClick={() => dismiss(r, false)}>되돌리기</button></div>
           ))}</div>}
         </div>
       )}
