@@ -13978,6 +13978,8 @@ function SceneCard({ scenario, npc, onOpen, checkinDone, onStartDay, done, scena
                   style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", color: "var(--ink)", fontSize: _fs(13), fontWeight: 800 }}>
                   <span style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--accent)", color: "#fff", fontSize: 14, paddingLeft: 3, boxSizing: "border-box" }}>▶</span>
                   상황 보러가기
+                  {/* NEW 배지: 2026-11-29(일) 23:59 KST까지만 보인다 */}
+                  {Date.now() < Date.parse("2026-11-30T00:00:00+09:00") && <span style={{ background: "var(--accent)", color: "#fff", fontSize: 10, fontWeight: 900, letterSpacing: ".06em", padding: "2px 7px", borderRadius: 999, lineHeight: 1.5 }}>NEW</span>}
                 </a>
               </div>
             : <div className="scs-word">{scenario.word}</div>}
