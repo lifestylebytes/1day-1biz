@@ -25247,8 +25247,8 @@ function App() {
       // ★ 2026-11-24 개발 뷰: 체험 기록(출근 일수 / 쌓은 표현 / 이어질 Day)을 보여주고 '돌아와요' 로 부른다.
       //   이어질 Day = 마지막으로 끝낸 Day + 1 (돌아온 회원은 끝낸 Day 다음부터 이어 준다는 원칙).
       const _tb = (() => {
-        if (!_isDevNext()) return null;
-        try { if (new URLSearchParams(location.search).get('old') === '1') return null; } catch (e) {}   // ?trialend=1&old=1 : 지금 회원 화면 비교용
+        // 2026-11-24 라이브. ?old=1 은 운영자 비교용으로만 남긴다.
+        try { if (_isInternalUser && new URLSearchParams(location.search).get('old') === '1') return null; } catch (e) {}   // ?trialend=1&old=1 : 지금 회원 화면 비교용
         try {
           const u = _localUserNow || {}; const days = new Set();
           (u.scenariosCompleted || []).forEach(x => { if (x && x.day) days.add(Number(x.day)); });
@@ -25293,7 +25293,7 @@ function App() {
                   ))}
                 </div>
                 <a href={_upUrl} target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "15px 0", background: "var(--ink)", color: "var(--paper)", textDecoration: "none", fontSize: _fs(14.5), fontWeight: 800, marginBottom: 12, boxSizing: "border-box" }}>복직하고 Day {_tb.next}부터 이어가기 →</a>
-                <PaidGraceButton email={_localUserNow?.email} />
+                {_isDevNext() && <PaidGraceButton email={_localUserNow?.email} />}
                 <a href="http://pf.kakao.com/_RXxcxaX/chat" target="_blank" rel="noopener" style={{ display: "block", width: "100%", padding: "12px 0", background: "transparent", color: "var(--ink-soft)", border: "1px solid var(--line)", fontSize: _fs(13), fontWeight: 600, textDecoration: "none", boxSizing: "border-box" }}>💬 1일1비 1:1 챗</a>
                 <div style={{ marginTop: 18, paddingTop: 12, borderTop: "1px dashed var(--line)", fontSize: _fs(11), color: "var(--ink-mute)" }}>결제하면 보통 1시간 안에 자동으로 열려요(밤 11시 넘어 결제하면 다음 날 아침). 새로고침해도 안 열리면 1:1 챗에 "결제했어요" 한 줄 보내주세요.</div>
               </div>
