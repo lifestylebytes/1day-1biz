@@ -1067,6 +1067,18 @@ body::before {
 .scene-hint-word { background: var(--highlight); padding: 1px 7px; border-radius: 4px; color: var(--ink); font-size: min(12.5px * var(--fs, 1), 12.5px + var(--fsk, 0px)); }
 .scene-hint-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
 .scene-hint-sub { font-size: min(11.5px * var(--fs, 1), 11.5px + var(--fsk, 0px)); color: var(--ink-mute); }
+/* ★ 2026-11-24 개발 뷰: 시추에이션 시트 대화 영역 통일 (scene-v2). 상대 말풍선/사수 메모/내 답장/동기 문장을 같은 세로줄, 같은 모서리, 같은 테두리로 맞춘다 */
+.scene-v2 { --sv-in: 58px; }
+.scene-v2 .scene-hint-note { margin: 10px var(--sv-in) 0 var(--sv-in); border: 1px solid var(--line); border-radius: 0 12px 12px 12px; background: var(--paper); padding: 14px 16px; }
+.scene-v2 .scene-hint-quote { border-left: none; border-radius: 8px; padding: 8px 12px; }
+.scene-v2 .scene-reply-row { margin-top: 10px; }
+.scene-v2 .scene-reply-col { max-width: none; margin-left: var(--sv-in); }
+.scene-v2 .scene-composer { border-width: 1px; border-radius: 12px 0 12px 12px; }
+.scene-v2 .scene-send { border-radius: 999px; }
+.scene-v2 .ret-peek, .scene-v2 ~ .ret-peek { margin: 10px var(--sv-in) 0 var(--sv-in); border: 1px solid var(--line); border-radius: 12px; }
+.scene-v2 .scene-hint-note .btn, .scene-v2 .ret-peek .btn, .scene-v2 ~ .ret-peek .btn { border-radius: 999px; border-width: 1px; padding: 6px 12px; font-size: min(12px * var(--fs, 1), 12px + var(--fsk, 0px)); box-shadow: none; background: #fff; }
+.scene-v2 .scene-hint-note .btn:hover, .scene-v2 .ret-peek .btn:hover, .scene-v2 ~ .ret-peek .btn:hover { transform: none; box-shadow: none; background: var(--paper-warm); }
+@media (max-width: 560px) { .scene-v2 { --sv-in: 0px; } }
 /* ===== 리텐션 엔진 (2026-09-14, 개발 뷰): EXP · 복지P · PERK SHOP · 디버프 · 내 목표 · 순위판 · 진급 리포트 ===== */
 #ret-toast-host { position: fixed; top: 16px; right: 16px; z-index: 9400; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .ret-toast { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--paper); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.45); transform: translateX(24px); opacity: 0; transition: transform .25s, opacity .25s; min-width: 200px; }
@@ -17806,7 +17818,7 @@ function SceneModal({ scenario, onClose }) {
                   </div>
             );
             return (
-              <div className="scene-thread">
+              <div className={"scene-thread" + (_isDevNext() ? " scene-v2" : "")}>
                 {/* 상대 메시지 */}
                 <div className="scene-quote-row">
                   <div className="scene-avatar" style={{ background: npc.color }}>{npc.avatar}</div>
