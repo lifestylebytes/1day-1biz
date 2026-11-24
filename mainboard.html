@@ -11795,6 +11795,11 @@ function RetDebuffPopup({ rec, onClose, onOpenQuiz }) {
           </button>
         </div>
         {lv === 3 && <div className="ret-cb-note">⏳ 휴가는 7일 결근까지만 쓸 수 있어요</div>}
+        {/* ★ 2026-11-24 개발 뷰: '쉰 날 Day 가 넘어갔나?' 문의(11/24 1:1 챗) 대응. 어느 쪽을 골라도 진도는 멈춘 자리부터. */}
+        {_isDevNext() && (() => { let n = 0; try { n = (window.__SIM && window.__SIM.USER && window.__SIM.USER.currentDay) || 0; } catch (e) {} return (
+          <div className="ret-cb-note" style={{ marginTop: 10, lineHeight: 1.6 }}>
+            📌 쉰 날 Day는 넘어가지 않아요. 오늘은 멈춘 {n ? <b>Day {n}</b> : "Day"}부터 그대로 이어져요. {item.name}은 연속 출근 기록만 지켜줘요.
+          </div>); })()}
       </div>
     </div>
   );
